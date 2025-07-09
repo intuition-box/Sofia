@@ -29,8 +29,8 @@ But it's more than just an assistant:
 | Node.js          | v20.19.3      |
 | pnpm             | v10.8.2       |
 | Vite             | v7.0.0        |
-| UI Framework     | [Chakra UI](https://chakra-ui.com/) / [Shadcn UI](https://ui.shadcn.com/) |
-| Auth             | MetaMask / Wagmi |
+| UI Framework     | [Shadcn UI](https://ui.shadcn.com/) |
+| Auth             | MetaMask |
 | APIs             | Google Maps, Intuition.systems |
 | Extension        | Chrome |
 | Web3             | On-chain integration via signals/atoms/triplets |
@@ -142,7 +142,7 @@ Eliza OS: GitHub – Website
 
 Chrome Extension: Intuition Extension
 
-Metamask Auth: wagmi.sh
+Metamask Auth: RainbowKit
 
 ##⚖️ License
 This project is licensed under the MIT License. See LICENSE for details.

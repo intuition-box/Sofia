@@ -82,7 +82,7 @@ npm run build
 This PR completes **Task 1.2** from the project roadmap. The next logical steps are:
 
 1. **Task 1.3**: Create `manifest.json` with required permissions
-2. **Task 1.4**: Install main dependencies (RainbowKit, Wagmi, Chakra UI)
+2. **Task 1.4**: Install main dependencies (RainbowKit, Shadcn)
 3. **Task 1.5**: Implement core extension functionality
 
 ## 🔍 Code Review Notes
