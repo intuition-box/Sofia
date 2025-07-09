@@ -6,13 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:extension": "npm run build && npm run copy:manifest",
-    "copy:manifest": "cp manifest.json dist/",
+    "build:extension": "npm run build",
     "lint": "eslint .",
     "preview": "vite preview",
     "dev:extension": "vite build --watch"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.5",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@tailwindcss/postcss": "^4.1.11",
     "@tanstack/react-query": "^5.81.5",
@@ -39,9 +40,11 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "tw-animate-css": "^1.3.5",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
     "vite": "^7.0.3",
+    "vite-plugin-static-copy": "^3.1.0",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

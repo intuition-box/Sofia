@@ -1,29 +1,34 @@
-# 📋 PRD - Extension Chrome SOFIA : Connexion Wallet & Suivi Historique
+# 📋 PRD - SOFIA : Your Personal AI Agent for the Web
 
 ## 🎯 Vue d'ensemble du produit
 
 ### Description
-Développement d'une extension Chrome permettant aux utilisateurs de connecter leur portefeuille crypto via RainbowKit et de suivre automatiquement leur historique de navigation web pour créer un profil d'intérêts personnalisé.
+**SOFIA** est une extension Chrome alimentée par l'IA, conçue comme un agent personnel intelligent qui vous assiste pendant votre navigation web. SOFIA capture vos centres d'intérêt et les transforme en une **mémoire digitale vivante**, **sécurisée** et **vérifiable via blockchain**.
+
+Plus qu'un simple assistant, SOFIA **structure, contextualise et certifie** votre identité numérique. Grâce à l'infrastructure décentralisée d'[Intuition.systems](https://www.intuition.systems/), chaque interaction peut devenir un **atom**, une unité de connaissance. Vous décidez si ces données restent **privées**, **partagées** ou **ancrées on-chain**.
 
 ### Objectifs
-- Simplifier l'onboarding Web3 via une connexion wallet intuitive
-- Capturer automatiquement l'activité de navigation de l'utilisateur
-- Créer une base de données locale JSON pour l'analyse comportementale
-- Préparer l'intégration future avec l'écosystème Intuition.systems
+- Créer un **journal assisté** intelligent de votre activité web
+- Développer un **graphe personnel vivant** de vos connaissances
+- Fournir un **planificateur intelligent** basé sur vos patterns
+- Agir comme un **filtre cognitif** pour l'information
+- Être un **complice éthique** de votre mémoire digitale
+- Transformer vos interactions en **atoms** vérifiables via Intuition.systems
 
 ---
 
 ## 👥 Utilisateurs cibles
 
-### Persona principal
-- **Crypto-curieux** : Utilisateurs familiers avec les wallets mais nouveaux aux extensions Web3
-- **Chercheurs/Étudiants** : Personnes voulant structurer leurs recherches web
-- **Early adopters** : Utilisateurs intéressés par la décentralisation des données personnelles
+### Personas principaux
+- **Étudiants & Apprenants** : Personnes en formation continue qui veulent transformer leur navigation en apprentissage structuré
+- **Early adopters Web3** : Utilisateurs intéressés par la décentralisation et la propriété de leurs données personnelles
 
 ### Besoins utilisateurs
+- **Mémoire digitale intelligente** : Retrouver et connecter ses découvertes passées
 - Connexion wallet simple et sécurisée
-- Contrôle sur les données collectées
-- Interface claire pour visualiser l'activité
+- **Confidentialité et contrôle** : Décider ce qui reste privé ou devient public
+- **Intelligence contextuelle** : Recommandations pertinentes basées sur l'historique
+- **Certification des connaissances** : Prouver et valoriser son expertise via blockchain
 
 ---
 
@@ -40,110 +45,152 @@ Extension Chrome (Manifest V3)
 ```
 
 ### Stack technique
-- **Framework** : Vite + TypeScript
-- **UI** : Shadcn UI
-- **Auth Web3** : RainbowKit
-- **Storage** : Chrome Storage API
-- **APIs** : Chrome History API, Chrome Tabs API
+- **Framework** : Vite v6.0.1 + TypeScript v5.6.3
+- **UI Framework** : [Shadcn UI](https://ui.shadcn.com/) + Tailwind CSS v4.1.10
+- **Auth Web3** : MetaMask (integration avec Intuition.systems)
+- **Storage** : Chrome Storage API (local extension)
+- **APIs** : Chrome History API, Chrome Tabs API, Google Maps, Intuition.systems
+- **AI Agent** : Eliza OS pour l'intelligence contextuelle
+- **Runtime** : Node.js v20.19.3 + pnpm v10.8.2
 
 ---
 
 ## 📋 Fonctionnalités détaillées
 
-### 🔐 F1 - Connexion Wallet (Priorité 1)
-**Description** : Interface de connexion via RainbowKit
+### 🔐 F1 - Authentification & Identité Numérique (Priorité 1)
+**Description** : Interface de connexion MetaMask pour créer une identité numérique vérifiable
 
 **User Stories :**
-- En tant qu'utilisateur, je veux connecter mon wallet MetaMask facilement
-- En tant qu'utilisateur, je veux voir mon adresse de wallet
-- En tant qu'utilisateur, je veux pouvoir me déconnecter à tout moment
-
+- En tant qu'utilisateur, je veux connecter mon wallet MetaMask pour créer mon identité SOFIA
+- En tant qu'utilisateur, je veux que mon adresse soit liée à mes atoms de connaissance
+- En tant qu'utilisateur, je veux contrôler la visibilité de mon identité (privé/public)
+- En tant qu'utilisateur, je veux pouvoir désactivé ma collecte de données
+- En tant qu'utilisateur, je veux pouvoir me déconnecter tout en préservant mes données locales
 
 **Critères d'acceptation :**
-- ✅ Support MetaMask, WalletConnect, Coinbase Wallet
+- ✅ Support MetaMask natif (pas de RainbowKit nécessaire)
 - ✅ Affichage adresse tronquée (0x1234...abcd)
-- ✅ Gestion des erreurs de connexion
-- ✅ Persistance de la session (local storage)
-- ✅ Button de déconnexion visible
+- ✅ Gestion des erreurs de connexion avec feedback utilisateur
+- ✅ Persistance de la session et sync avec Intuition.systems
+- ✅ Contrôle granulaire de la visibilité des données
 
 
 
 **Spécifications techniques :**
 ```typescript
-interface WalletState {
+interface DigitalIdentity {
   address: string | null;
   isConnected: boolean;
   chainId: number;
-}
-```
-
-### 📊 F2 - Suivi Historique Navigation (Priorité 1)
-**Description** : Capture automatique de l'historique de navigation
-
-**User Stories :**
-- En tant qu'utilisateur, je veux que l'extension suive mes visites de sites automatiquement
-- En tant qu'utilisateur, je veux pouvoir activer/désactiver le suivi
-- En tant qu'utilisateur, je veux voir un résumé de mon activité dans un dashboard (page web)
-
-**Critères d'acceptation :**
-- ✅ Capture URL, titre, timestamp, durée de visite
-- ✅ Filtrage des sites sensibles (ex: banking, private)
-- ✅ Toggle ON/OFF dans l'interface d'extension
-- ✅ Respect des permissions Chrome
-
-
-**Spécifications techniques :**
-```typescript
-interface NavigationEntry {
-  id: string;
-  url: string;
-  title: string;
-  domain: string;
-  timestamp: number;
-  duration?: number; // en secondes
-  category?: string; // auto-détectée
-}
-
-interface HistoryData {
-  entries: NavigationEntry[];
-  settings: {
-    trackingEnabled: boolean;
-    excludedDomains: string[];
-    retentionDays: number;
+  sofiaProfile: {
+    onboardingComplete: boolean;
+    privacySettings: 'private' | 'public' | 'selective';
+    reputationScore: number;
   };
 }
 ```
 
-### 📁 F3 - Stockage JSON Local (Priorité 1)
-**Description** : Gestion des données en local avec structure JSON
+### 🧠 F2 - Intelligence Contextuelle & Capture d'Atoms (Priorité 1)
+**Description** : Transformation intelligente de l'activité de navigation en unités de connaissance (atoms)
 
 **User Stories :**
-- En tant qu'utilisateur, je veux que mes données soient stockées localement
-- En tant qu'utilisateur, je veux que mes données soit exportés vers Eliza OS
-
+- En tant qu'utilisateur, je veux que SOFIA comprenne et contextualise mes intérêts automatiquement
+- En tant qu'utilisateur, je veux que mes découvertes soient transformées en atoms vérifiables
+- En tant qu'utilisateur, je veux contrôler quels atoms restent privés ou deviennent publics
 
 **Critères d'acceptation :**
-- ✅ Stockage via Chrome Storage API
-- ✅ Structure JSON lisible et extensible
-- ✅ Fonction d'export (téléchargement .json)
-- ✅ Fonction de reset/clear
-- ✅ Compression pour optimiser l'espace
+- ✅ Transformation automatique en atoms (URL, contexte, catégorie, timestamp)
+- ✅ Classification automatique des contenus (recherche, apprentissage, travail)
+- ✅ Toggle ON/OFF dans l'interface d'extension
+- ✅ Interface pour marquer et annoter les moments importants
+- ✅ Filtrage éthique des sites sensibles (banking, medical, private)
 
-### 🎨 F4 - Interface Utilisateur (Priorité 2)
-**Description** : Dashboard simple dans le popup de l'extension
+
+**Spécifications techniques :**
+```typescript
+interface Atom {
+  id: string;
+  type: 'knowledge' | 'interest' | 'action' | 'moment';
+  content: {
+    url: string;
+    title: string;
+    domain: string;
+    context: string; // AI-generated summary
+    embedding?: number[]; // semantic embedding
+  };
+  metadata: {
+    timestamp: number;
+    duration?: number;
+    category: string; // AI-classified
+    confidence: number;
+    isMemorableMoment: boolean;
+  };
+  privacy: 'private' | 'public' | 'shared';
+  blockchainHash?: string; // if anchored on-chain
+}
+
+interface KnowledgeGraph {
+  atoms: Atom[];
+  triplets: Array<{
+    subject: string; // atom ID
+    predicate: string; // relationship type
+    object: string; // atom ID or external entity
+    confidence: number;
+  }>;
+  settings: {
+    intelligenceEnabled: boolean;
+    excludedDomains: string[];
+    autoAnchorThreshold: number;
+  };
+}
+```
+
+### 🔗 F3 - Knowledge Graph & Blockchain Integration (Priorité 1)
+**Description** : Transformation des données en graphe de connaissance vérifiable via Intuition.systems
 
 **User Stories :**
-- En tant qu'utilisateur, je veux voir un résumé de mon activité
-- En tant qu'utilisateur, je veux accéder aux paramètres facilement
-- En tant qu'utilisateur, je veux une interface moderne et responsive
-- En tant qu'utilisateur, je veux qu'Eliza OS me fasse des recommandations par rapport à mes dernières activités
+- En tant qu'utilisateur, je veux que mes atoms forment un graphe de connaissance personnel
+- En tant qu'utilisateur, je veux pouvoir ancrer mes découvertes importantes on-chain
+- En tant qu'utilisateur, je veux explorer les connections entre mes différents centres d'intérêt
+- En tant qu'utilisateur, je veux avoir accès aux signaux et triplets d'autres utilisateurs
 
 **Critères d'acceptation :**
-- ✅ Popup 400x600px optimisé
-- ✅ Page d'options complète
-- ✅ Thème sombre/clair
-- ✅ Graphiques simples (sites les plus visités)
-- ✅ Status de connexion wallet visible
+- ✅ Stockage local (Chrome Storage) avec exposition API pour Agent1
+- ✅ Synchronisation sélective avec Intuition.systems
+- ✅ Visualisation du graphe personnel de connaissances
+- ✅ Interface pour créer et voter sur des triplets
+- ✅ Export/import des données avec métadonnées blockchain
+
+### 🎨 F4 - Interface Agent Personnel (Priorité 2)
+**Description** : Dashboard intelligent avec recommandations contextuelles et visualisation du knowledge graph
+
+**User Stories :**
+- En tant qu'utilisateur, je veux converser avec SOFIA pour explorer mes intérêts
+- En tant qu'utilisateur, je veux des recommandations intelligentes basées sur mes patterns
+- En tant qu'utilisateur, je veux visualiser mon graphe de connaissance personnel
+- En tant qu'utilisateur, je veux une interface moderne qui reflète ma personnalité numérique
+- En tant qu'utilisateur, je veux accéder facilement aux triplets et signaux pertinents
+
+**Critères d'acceptation :**
+- ✅ Interface conversationnelle avec SOFIA (chat intelligent)
+- ✅ Visualisation interactive du knowledge graph personnel
+- ✅ Recommandations contextuelles basées sur l'activité récente
+- ✅ Dashboard des atoms créés et signaux reçus
+- ✅ Contrôles de confidentialité granulaires (privé/public par atom)
+- ✅ Integration Google Maps pour les insights de géolocalisation
+
+### 🆕 F5 - Fonctionnalités Avancées (Roadmap)
+**Description** : Fonctionnalités d'intelligence et d'interaction avancées pour l'agent SOFIA
+
+**Fonctionnalités prévues :**
+- **Journal assisté** : Classification automatique et suggestions de tags
+- **Détection de moments mémorables** : IA qui identifie les découvertes importantes
+- **Planificateur intelligent** : Recommandations basées sur les patterns d'activité
+- **Integration Google Maps** : Insights géolocalisés de l'activité locale
+- **Système de voting** : Mécanisme de réaction sur les triplets via signals
+- **Interface Web3** : Staking ETH sur les signaux pour valoriser les connaissances
+- **Bookmarks décentralisés** : Sauvegarde cross-device via blockchain
+- **Onboarding personnalisé** : Setup de l'agent avec personnalité adaptée
 
 ---
 
@@ -259,7 +306,7 @@ interface HistoryData {
 
 ### Phase A : Local Processing (Sprints 1-2)
 ```
-Chrome Extension → Eliza OS (local) → SQLite → Dashboard
+Chrome Extension (Chrome Storage) ← Agent1 (fetch) → Dashboard
 ```
 
 ### Phase B : AI Processing (Sprints 3-4)
@@ -312,3 +359,18 @@ Une fonctionnalité est considérée comme terminée quand :
 - [ ] Équipe design (UX/UI)
 - [ ] Équipe légale (RGPD)
 - [ ] Beta testeurs (5 utilisateurs minimum)
+
+---
+
+## 🔗 Ressources Externes & Écosystème
+
+**Intégrations principales :**
+- [Intuition.systems](https://www.intuition.systems/) : Infrastructure blockchain pour atoms et triplets
+- [Eliza OS](https://github.com/elizaos/eliza) : Framework d'agent IA pour l'intelligence contextuelle
+- [Intuition Extension](https://chromewebstore.google.com/detail/intuition/example) : Extension Chrome existante
+- [MetaMask](https://metamask.io/) : Wallet pour l'authentification Web3
+
+**Documentation technique :**
+- [Intuition-ts SDK](https://github.com/intuition-systems/intuition-ts) : Librairie TypeScript
+- [Shadcn UI](https://ui.shadcn.com/) : Composants UI modernes
+- [Chrome Extension Manifest V3](https://developer.chrome.com/docs/extensions/mv3/) : Spécifications techniques

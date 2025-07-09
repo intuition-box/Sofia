@@ -10,7 +10,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_popup": "popup/index.html",
+    "default_popup": "src/popup/index.html",
     "default_title": "SOFIA Extension",
     "default_icon": {
       "16": "icons/icon16.png",
@@ -30,7 +30,7 @@
       "run_at": "document_end"
     }
   ],
-  "options_page": "options/index.html",
+  "options_page": "src/options/index.html",
   "permissions": [
     "storage",
     "history",
@@ -42,7 +42,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["icons/*", "popup/*", "options/*"],
+      "resources": ["icons/*", "src/popup/*", "src/options/*"],
       "matches": ["<all_urls>"]
     }
   ],
