@@ -58,7 +58,7 @@
 
 - [ ] 2.0 Implémentation authentification RainbowKit et identité numérique
   - [ ] 2.1 Configurer RainbowKit dans src/lib/rainbowkit-config.ts avec providers
-  - [ ] 2.2 Créer WalletState interface et types dans src/types/wallet.ts  
+  - [ ] 2.2 Créer WalletState interface et types dans src/types/wallet.ts
   - [ ] 2.3 Développer LandingPage.tsx avec bouton "Get Button" pour onboarding
   - [ ] 2.4 Développer composant RainbowKitConnect.tsx avec support multi-wallets
   - [ ] 2.5 Implémenter persistance session avec Chrome Storage API

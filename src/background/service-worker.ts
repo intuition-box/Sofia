@@ -284,7 +284,7 @@ chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
         
       default:
         console.log(`📨 Message standard reçu`)
-        sendResponse({ status: 'reçu' })
+  sendResponse({ status: 'reçu' })
     }
   } catch (error) {
     console.error('❌ Erreur message interne:', error)

@@ -7,8 +7,17 @@ import type { NavigationEntry, HistoryData, HistoryFilter } from '../types'
 export class ChromeHistoryManager {
   private static instance: ChromeHistoryManager
   private sensitiveDomainsPatterns = [
+    // Sites bancaires et financiers
     /.*\.bank.*/, /.*banking.*/, /.*\.credit.*/, 
-    /.*paypal.*/, /.*payment.*/, /.*private.*/
+    /.*paypal.*/, /.*payment.*/, /.*private.*/,
+    
+    // Sites pornographiques et contenu adulte
+    /.*porn.*/, /.*xxx.*/, /.*sex.*/, /.*adult.*/, 
+    /.*nude.*/, /.*erotic.*/, /.*xhamster.*/, /.*pornhub.*/, 
+    /.*redtube.*/, /.*xvideos.*/, /.*youporn.*/, /.*tube8.*/, 
+    /.*spankbang.*/, /.*cam4.*/, /.*chaturbate.*/, /.*livejasmin.*/, 
+    /.*stripchat.*/, /.*bongacams.*/, /.*onlyfans.*/, /.*playboy.*/, 
+    /.*penthouse.*/, /.*hustler.*/, /.*brazzers.*/, /.*naughtyamerica.*/
   ]
 
   static getInstance(): ChromeHistoryManager {
