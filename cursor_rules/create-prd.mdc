@@ -1,0 +1,82 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Cursor rule for generating a Hedera‑hackathon Product Requirements Document (PRD)
+globs:
+alwaysApply: false
+---
+# Rule: Generating a Hedera‑Ready Product Requirements Document (PRD)
+
+## Goal
+
+To guide an AI assistant in creating a detailed Product Requirements Document (PRD) in Markdown format, based on an initial user prompt. The PRD should be clear, actionable, and suitable for a junior developer to understand and implement the feature **while ensuring the project aligns with Hedera hackathon prize criteria**.
+
+## Process
+
+1. **Receive Initial Prompt:** The user provides a concise description or request for a new feature or functionality.
+2. **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the *what* and *why* of the feature (not necessarily the *how*). Provide options as lettered or numbered lists so the user can respond easily.
+3. **Generate PRD:** Based on the initial prompt and the user's answers, generate a PRD using the structure below.
+4. **Save PRD:** Save the generated document as `prd-[feature-name].md` inside the `/tasks` directory.
+
+## Clarifying Questions (Examples)
+
+The AI should adapt its questions to the prompt, but consider exploring the following areas:
+
+* **Problem / Goal:** "What problem does this feature solve for the user?" or "What is the main goal we want to achieve?"
+* **Target User:** "Who is the primary user of this feature?"
+* **Core Functionality:** "What key actions should the user be able to perform?"
+* **User Stories:** "Could you provide a few user stories? (e.g., As a \[user type], I want to \[action] so that \[benefit].)"
+* **Hedera Network Services:** "Which Hedera service(s) will the solution utilise (e.g., Smart Contracts (EVM), Token Service, Consensus Service, Scheduled Transactions, Mirror Node)?"
+* **AI / ML Components:** "Will the solution incorporate AI or ML? If so, which models, frameworks, or SDKs (e.g., Hedera Agent Kit, Eliza Plugin) and what role will they play?"
+* **Bridges / Oracles (Optional):** "Do you need cross‑chain messaging or real‑time data feeds? If so, which bridges (LayerZero, HashPort, Chainlink CCIP) or oracles (Chainlink, Pyth, Supra) do you plan to integrate?"
+* **SDK Language & Tooling:** "Which Hedera SDK language(s) will you use (JavaScript/TypeScript, Java, Go, etc.)?" or "Which Ethereum / JSON RPC Relay tooling will you use (ethers, hardhat, forge etc)?"
+* **Acceptance Criteria:** "How will we know the feature is successfully implemented? What are the key success checks?"
+* **Scope / Boundaries:** "Are there specific things this feature *should not* do (non‑goals)?"
+* **Data Requirements:** "What data must this feature display or manipulate?"
+* **Design / UI:** "Are there mockups or UI guidelines to follow, or should we describe the desired look and feel?"
+* **Edge Cases:** "What potential edge cases or error conditions should we consider?"
+
+## PRD Structure
+
+The generated PRD must include the following sections (use the same numbering):
+1. **Introduction / Overview** – Summarise the feature and the problem it solves.
+2. **Goals** – Specific, measurable objectives.
+3. **User Stories** – Narratives describing how users benefit.
+4. **Functional Requirements** – Numbered list of must‑have functionalities.
+5. **Hedera & AI Integration Plan**
+
+   * *Hedera Network Services:* Identify each service and describe its use.
+   * *AI / ML Components:* Detail models, frameworks, or SDKs and their role.
+   * *Bridges / Oracles (Optional):* Outline any cross‑chain or oracle integrations.
+   * *SDK / Tooling:* State the chosen SDK language and key libraries.
+6. **Non‑Goals (Out of Scope)** – Explicitly state what is *not* included.
+7. **Design Considerations (Optional)** – Links to mockups or UI/UX notes.
+8. **Technical Considerations (Optional)** – Known constraints, dependencies, or recommendations.
+9. **Acceptance Criteria & Hackathon Deliverables**
+
+   * Smart contracts (if any) are deployed and verified on **HashScan**.
+   * All source code is publicly available in a GitHub repo.
+   * A demo video (≤ 5 minutes) demonstrates functionality and setup.
+   * All functional requirements are met and automated tests pass.
+10. **Success Metrics** – How success will be measured (e.g., user adoption, performance benchmarks).
+11. **Optional / Stretch Goals** – Bonus‑point ideas such as using multiple Hedera services, integrating additional bridges/oracles, producing extra documentation, or native wallet flows (HashPack, Kabila, MetaMask Snap).
+12. **Open Questions** – Any unresolved issues or clarifications needed.
+
+## Target Audience
+
+Assume the primary reader is a **junior developer**. Keep language explicit, avoid unnecessary jargon, and provide enough detail for them to grasp the feature’s purpose, logic, and Hedera‑specific requirements.
+
+## Output
+
+* **Format:** Markdown (`.md`)
+* **Location:** `/tasks/`
+* **Filename:** `prd-[feature-name].md`
+
+## Final Instructions
+
+1. **Do NOT start implementing the PRD.** Only generate the document after the clarifying questions are answered.
+2. **Ask the user clarifying questions** before drafting the PRD.
+3. **Incorporate the user's answers** into the final PRD and improve it accordingly.
