@@ -41,8 +41,8 @@ Extension Chrome (Manifest V3)
 
 ### Stack technique
 - **Framework** : Vite + TypeScript
-- **UI** : Chakra UI / Shadcn UI
-- **Auth Web3** : RainbowKit + Wagmi
+- **UI** : Shadcn UI
+- **Auth Web3** : RainbowKit
 - **Storage** : Chrome Storage API
 - **APIs** : Chrome History API, Chrome Tabs API
 
@@ -198,7 +198,7 @@ interface HistoryData {
 ## Sprint 1 (Semaines 1-2) - Fondations & Connexion
 - Setup projet Vite + Chrome Extension (Manifest V3)
 - Intégration RainbowKit pour connexion wallet
-- Interface popup minimale avec Chakra UI
+- Interface popup minimale avec Shadcn 
 - **Setup infrastructure Eliza OS locale**
 - **Configuration agents de base (Agent1 + Agent2)**
 - Capture basique de l'historique Chrome (JSON local)

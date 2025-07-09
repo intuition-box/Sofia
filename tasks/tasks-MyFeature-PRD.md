@@ -15,7 +15,7 @@
 - `src/popup/App.test.tsx` - Tests unitaires pour composant principal
 - `src/lib/storage.test.ts` - Tests unitaires pour gestionnaire de stockage
 - `src/lib/history.test.ts` - Tests unitaires pour capture d'historique
-- `package.json` - Dépendances Vite, TypeScript, RainbowKit, Wagmi, Chakra UI
+- `package.json` - Dépendances Vite, TypeScript, RainbowKit, Shadcn
 - `vite.config.ts` - Configuration Vite pour build d'extension Chrome
 - `README.md` - Documentation d'installation et utilisation
 - `docs/integration-eliza.md` - Guide d'intégration avec Eliza OS
@@ -30,15 +30,15 @@
 - [ ] 1.0 Configuration projet et infrastructure Extension Chrome
   - [x] 1.1 Initialiser projet Vite avec template TypeScript (`npm create vite@latest sofia-extension --template vanilla-ts`)
   - [x] 1.2 Configurer Vite pour build d'extension Chrome (vite.config.ts avec support Manifest V3)
-  - [ ] 1.3 Créer manifest.json avec permissions storage, history, tabs, activeTab et host_permissions
-  - [ ] 1.4 Installer dépendances principales : RainbowKit, Wagmi, Chakra UI, Chrome Types
+  - [x] 1.3 Créer manifest.json avec permissions storage, history, tabs, activeTab et host_permissions
+  - [x] 1.4 Installer dépendances principales : RainbowKit, Shadcn, Chrome Types
   - [ ] 1.5 Configurer structure de dossiers src/ avec popup/, background/, content/, lib/, types/
   - [ ] 1.6 Configurer Jest pour tests unitaires et setup @testing-library/react
   - [ ] 1.7 Configurer ESLint et Prettier pour code quality
   - [ ] 1.8 Créer scripts package.json pour build, dev, test et lint
 
 - [ ] 2.0 Implémentation connexion Wallet avec RainbowKit
-  - [ ] 2.1 Configurer RainbowKit avec Wagmi dans src/lib/wallet-config.ts
+  - [ ] 2.1 Configurer RainbowKit dans src/lib/wallet-config.ts
   - [ ] 2.2 Créer WalletState interface et types dans src/types/wallet.ts
   - [ ] 2.3 Développer composant WalletConnect.tsx avec support MetaMask, WalletConnect, Coinbase
   - [ ] 2.4 Implémenter persistance session wallet avec Chrome Storage API
@@ -63,7 +63,7 @@
 
 - [ ] 4.0 Création interface utilisateur et dashboard
   - [ ] 4.1 Développer popup principal App.tsx avec layout 400x600px optimisé
-  - [ ] 4.2 Intégrer Chakra UI provider et thème sombre/clair
+  - [ ] 4.2 Intégrer Shadcn provider et thème sombre/clair
   - [ ] 4.3 Créer Dashboard.tsx avec stats de navigation et graphiques simples
   - [ ] 4.4 Développer page Options pour configuration avancée
   - [ ] 4.5 Afficher sites les plus visités avec durées et catégories
