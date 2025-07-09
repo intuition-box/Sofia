@@ -28,8 +28,8 @@
 ## Tasks
 
 - [ ] 1.0 Configuration projet et infrastructure Extension Chrome
-  - [ ] 1.1 Initialiser projet Vite avec template TypeScript (`npm create vite@latest sofia-extension --template vanilla-ts`)
-  - [ ] 1.2 Configurer Vite pour build d'extension Chrome (vite.config.ts avec support Manifest V3)
+  - [x] 1.1 Initialiser projet Vite avec template TypeScript (`npm create vite@latest sofia-extension --template vanilla-ts`)
+  - [x] 1.2 Configurer Vite pour build d'extension Chrome (vite.config.ts avec support Manifest V3)
   - [ ] 1.3 Créer manifest.json avec permissions storage, history, tabs, activeTab et host_permissions
   - [ ] 1.4 Installer dépendances principales : RainbowKit, Wagmi, Chakra UI, Chrome Types
   - [ ] 1.5 Configurer structure de dossiers src/ avec popup/, background/, content/, lib/, types/

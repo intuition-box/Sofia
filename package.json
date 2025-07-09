@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:extension": "npm run build && npm run copy:manifest",
+    "copy:manifest": "cp manifest.json dist/",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:extension": "vite build --watch"
   },
   "dependencies": {
     "react": "^19.1.0",
@@ -15,6 +18,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
+    "@types/chrome": "^0.0.332",
+    "@types/node": "^24.0.12",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
@@ -24,6 +29,7 @@
     "globals": "^16.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.3"
+    "vite": "^7.0.3",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
