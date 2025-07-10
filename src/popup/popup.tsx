@@ -27,58 +27,91 @@ function PopupApp() {
 
   // Charger les données au démarrage
   useEffect(() => {
+    console.log('🎭 POPUP: useEffect démarré - Chargement initial...')
     loadInitialData()
   }, [])
 
   const loadInitialData = async () => {
     try {
+      console.log('🎭 POPUP: loadInitialData démarré')
       setIsLoading(true)
-      
+
+      // Paralléliser les appels non dépendants
+      const [trackingResponse, historyResponse] = await Promise.all([
+        sendMessage({ type: 'GET_TRACKING_STATUS' }),
+        sendMessage({ type: 'GET_RECENT_HISTORY', limit: 20 })
+      ])
+
       // Obtenir l'ID de l'extension
       setExtensionId(chrome.runtime.id)
+      console.log('🎭 POPUP: Extension ID défini:', chrome.runtime.id)
 
-      // Charger le statut du tracking
-      const trackingResponse = await sendMessage({ type: 'GET_TRACKING_STATUS' })
-      if (trackingResponse.enabled !== undefined) {
+      // Traiter la réponse du statut de tracking
+      console.log('🎭 POPUP: Réponse tracking reçue:', trackingResponse)
+      if (trackingResponse && trackingResponse.enabled !== undefined) {
         setIsTrackingEnabled(trackingResponse.enabled)
+        console.log('🎭 POPUP: Statut tracking défini:', trackingResponse.enabled)
+      } else {
+        console.log('🎭 POPUP: Statut tracking non défini dans la réponse')
       }
 
-      // Charger l'historique récent
-      const historyResponse = await sendMessage({ type: 'GET_RECENT_HISTORY', limit: 20 })
-      if (historyResponse.data) {
+      // Traiter la réponse de l'historique
+      console.log('🎭 POPUP: Réponse historique reçue:', historyResponse)
+      if (historyResponse && historyResponse.data) {
+        console.log('🎭 POPUP: Entrées d\'historique trouvées:', historyResponse.data.length)
         setHistoryData(historyResponse.data)
+      } else {
+        console.log('🎭 POPUP: Aucune donnée d\'historique dans la réponse')
+        setHistoryData([])
       }
 
       // Charger les statistiques
       await loadStatistics()
 
     } catch (error) {
-      console.error('Erreur chargement données:', error)
+      console.error('🎭 POPUP: Erreur chargement données globale:', error)
     } finally {
       setIsLoading(false)
+      console.log('🎭 POPUP: Fin du chargement initial')
     }
   }
 
   const loadStatistics = async () => {
     try {
-      const response = await sendMessageExternal({ action: 'GET_STATISTICS' })
-      if (response.success && response.data) {
+      console.log('🎭 POPUP: Demande des statistiques...')
+      const response = await sendMessage({ type: 'GET_STATISTICS' })
+      console.log('🎭 POPUP: Réponse reçue:', response)
+      
+      if (response && response.data) {
+        console.log('🎭 POPUP: Données statistiques trouvées:')
+        console.log('   📊 Total visites:', response.data.totalVisits)
+        console.log('   📊 Visites aujourd\'hui:', response.data.dailyVisits)
+        console.log('   📊 Top domaines:', response.data.topDomains?.length || 0)
+        console.log('   📊 Catégories:', response.data.categoriesDistribution?.length || 0)
         setStats(response.data)
+      } else {
+        console.log('🎭 POPUP: Aucune donnée dans la réponse ou réponse invalide')
+        console.log('🎭 POPUP: Détails réponse:', { response })
+        setStats(null) // Réinitialiser les stats en cas d'erreur
       }
     } catch (error) {
-      console.error('Erreur chargement statistiques:', error)
+      console.error('🎭 POPUP: Erreur chargement statistiques:', error)
+      setStats(null) // Réinitialiser les stats en cas d'erreur
     }
   }
 
   const sendMessage = (message: any): Promise<any> => {
-    return new Promise((resolve) => {
-      chrome.runtime.sendMessage(message, resolve)
-    })
-  }
-
-  const sendMessageExternal = (message: any): Promise<any> => {
-    return new Promise((resolve) => {
-      chrome.runtime.sendMessage(chrome.runtime.id, message, resolve)
+    return new Promise((resolve, reject) => {
+      console.log('🎭 POPUP: Envoi message:', message)
+      chrome.runtime.sendMessage(message, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('🎭 POPUP: Erreur runtime:', chrome.runtime.lastError)
+          reject(chrome.runtime.lastError)
+        } else {
+          console.log('🎭 POPUP: Réponse reçue:', response)
+          resolve(response)
+        }
+      })
     })
   }
 
@@ -150,6 +183,12 @@ function PopupApp() {
       case 'entertainment': return 'outline'
       case 'productivity': return 'default'
       case 'news': return 'secondary'
+      case 'documentation': return 'default'
+      case 'shopping': return 'outline'
+      case 'finance': return 'default'
+      case 'blog': return 'secondary'
+      case 'education': return 'outline'
+      case 'search': return 'default'
       default: return 'secondary'
     }
   }
@@ -262,23 +301,25 @@ function PopupApp() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {stats?.topDomains.slice(0, 3).map((site) => (
-                  <div key={site.domain} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🌐</span>
-                      <div>
-                        <div className="font-medium text-sm">{site.domain}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {site.percentage.toFixed(1)}% du trafic
+                {stats && stats.topDomains && stats.topDomains.length > 0 ? (
+                  stats.topDomains.slice(0, 3).map((site) => (
+                    <div key={site.domain} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-2">
+                        <img src={`https://www.google.com/s2/favicons?domain=${site.domain}&sz=16`} alt="favicon" className="w-4 h-4" />
+                        <div>
+                          <div className="font-medium text-sm">{site.domain}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {site.percentage.toFixed(1)}% du trafic
+                          </div>
                         </div>
                       </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">{site.visits}</div>
+                        <div className="text-xs text-muted-foreground">visites</div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">{site.visits}</div>
-                      <div className="text-xs text-muted-foreground">visites</div>
-                    </div>
-                  </div>
-                )) || (
+                  ))
+                ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     Aucune donnée disponible
                   </p>
@@ -294,23 +335,25 @@ function PopupApp() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {stats?.categoriesDistribution.slice(0, 4).map((cat) => (
-                  <div key={cat.category} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span>{getCategoryIcon(cat.category)}</span>
-                      <span className="text-sm capitalize">{cat.category}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{cat.visits}</span>
-                      <div className="w-16 h-2 bg-muted rounded-full">
-                        <div 
-                          className="h-full bg-primary rounded-full" 
-                          style={{ width: `${cat.percentage}%` }}
-                        />
+                {stats && stats.categoriesDistribution && stats.categoriesDistribution.length > 0 ? (
+                  stats.categoriesDistribution.slice(0, 4).map((cat) => (
+                    <div key={cat.category} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span>{getCategoryIcon(cat.category)}</span>
+                        <span className="text-sm capitalize">{cat.category}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{cat.visits}</span>
+                        <div className="w-16 h-2 bg-muted rounded-full">
+                          <div 
+                            className="h-full bg-primary rounded-full" 
+                            style={{ width: `${cat.percentage}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )) || (
+                  ))
+                ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     Aucune donnée disponible
                   </p>
@@ -336,26 +379,39 @@ function PopupApp() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-2 max-h-96 overflow-y-auto">
-                {historyData.map((entry, index) => (
-                  <Card key={entry.id || index} className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{getCategoryIcon(entry.category || 'general')}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">{entry.title}</div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {entry.domain} • {formatDate(entry.timestamp)}
+                {historyData && historyData.length > 0 ? (
+                  historyData.map((entry, index) => (
+                    <Card key={entry.id || index} className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <img 
+                            src={`https://www.google.com/s2/favicons?domain=${entry.domain}&sz=16`} 
+                            alt="favicon" 
+                            className="w-4 h-4" 
+                          />
+                          <div className="flex-1 min-w-0">
+                            <a 
+                              href={entry.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="font-medium text-sm truncate hover:underline"
+                            >
+                              {entry.title}
+                            </a>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {entry.domain} • {formatDate(entry.timestamp)}
+                            </div>
+                            {entry.category && (
+                              <Badge variant={getCategoryVariant(entry.category)} className="text-xs mt-1">
+                                {entry.category}
+                              </Badge>
+                            )}
                           </div>
-                          {entry.category && (
-                            <Badge variant={getCategoryVariant(entry.category)} className="text-xs mt-1">
-                              {entry.category}
-                            </Badge>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                )) || (
+                    </Card>
+                  ))
+                ) : (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     Aucun historique disponible
                   </p>

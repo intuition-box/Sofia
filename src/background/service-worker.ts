@@ -88,6 +88,22 @@ async function captureNavigation(url: string, title: string, tabId?: number): Pr
       console.log(`   🆔 ID: ${entry.id}`)
       console.log(`   ⏰ Timestamp: ${new Date(entry.timestamp).toLocaleTimeString('fr-FR')}`)
       
+      // Vérifier que les données sont bien stockées
+      console.log(`🔍 Vérification du stockage...`)
+      const storageCheck = await chrome.storage.local.get(['historyData'])
+      const storedData = storageCheck.historyData
+      if (storedData && storedData.entries) {
+        console.log(`✅ Stockage confirmé: ${storedData.entries.length} entrées au total`)
+        const lastEntry = storedData.entries[storedData.entries.length - 1]
+        if (lastEntry && lastEntry.id === entry.id) {
+          console.log(`✅ Nouvelle entrée trouvée dans le storage: ${lastEntry.domain}`)
+        } else {
+          console.log(`⚠️ Nouvelle entrée non trouvée dans le storage!`)
+        }
+      } else {
+        console.log(`❌ Aucune donnée trouvée dans le storage!`)
+      }
+      
       // Afficher les stats en temps réel
       await displayRealTimeStats()
     } else {
@@ -239,92 +255,172 @@ chrome.runtime.onMessageExternal.addListener(
 )
 
 // Listener pour les messages internes (popup, content script)
-chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   console.log(`\n💬 === MESSAGE INTERNE ===`)
   console.log(`📨 Type: ${message.type}`)
   console.log(`📦 Données:`, message)
-  
-  try {
-    switch (message.type) {
-      case 'GET_TRACKING_STATUS':
-        console.log(`📊 Status tracking demandé: ${isTrackingEnabled ? 'ACTIF' : 'INACTIF'}`)
-        sendResponse({ enabled: isTrackingEnabled })
-        break
-        
-      case 'TOGGLE_TRACKING':
-        const oldStatus = isTrackingEnabled
-        isTrackingEnabled = !isTrackingEnabled
-        await chrome.storage.local.set({ isTrackingEnabled })
-        console.log(`🔄 Toggle tracking: ${oldStatus ? 'ON' : 'OFF'} → ${isTrackingEnabled ? 'ON' : 'OFF'}`)
-        sendResponse({ enabled: isTrackingEnabled })
-        break
-        
-      case 'GET_RECENT_HISTORY':
-        console.log(`📊 Historique récent demandé (${message.limit || 20} entrées)`)
-        const recent = await getRecentVisits(message.limit || 20)
-        console.log(`✅ ${recent.length} entrées récentes récupérées`)
-        sendResponse({ data: recent })
-        break
-        
-      case 'EXPORT_HISTORY':
-        console.log(`📄 Export JSON demandé...`)
-        const exportData = await getHistoryData()
-        const jsonExport = await historyManager.exportToJSON(exportData)
-        console.log(`✅ Export JSON généré (${Math.round(jsonExport.length / 1024)}KB)`)
-        sendResponse({ json: jsonExport })
-        break
-        
-      case 'RESET_HISTORY':
-        console.log(`🗑️ Reset de l'historique demandé...`)
-        await historyManager.resetData()
-        captureCount = 0
-        console.log(`✅ Historique effacé - Compteurs remis à zéro`)
-        sendResponse({ success: true })
-        break
-        
-      default:
-        console.log(`📨 Message standard reçu`)
-  sendResponse({ status: 'reçu' })
+
+  const handleAsync = async () => {
+    try {
+      switch (message.type) {
+        case 'GET_TRACKING_STATUS':
+          console.log(`📊 Status tracking demandé: ${isTrackingEnabled ? 'ACTIF' : 'INACTIF'}`)
+          return { enabled: isTrackingEnabled }
+          
+        case 'TOGGLE_TRACKING':
+          const oldStatus = isTrackingEnabled
+          isTrackingEnabled = !isTrackingEnabled
+          await chrome.storage.local.set({ isTrackingEnabled })
+          console.log(`🔄 Toggle tracking: ${oldStatus ? 'ON' : 'OFF'} → ${isTrackingEnabled ? 'ON' : 'OFF'}`)
+          return { enabled: isTrackingEnabled }
+          
+        case 'GET_RECENT_HISTORY':
+          console.log(`📊 Historique récent demandé (${message.limit || 20} entrées)`)
+          const recent = await getRecentVisits(message.limit || 20)
+          console.log(`✅ ${recent.length} entrées récentes récupérées`)
+          return { data: recent }
+          
+        case 'EXPORT_HISTORY':
+          console.log(`📄 Export JSON demandé...`)
+          const exportData = await getHistoryData()
+          const jsonExport = await historyManager.exportToJSON(exportData)
+          console.log(`✅ Export JSON généré (${Math.round(jsonExport.length / 1024)}KB)`)
+          return { json: jsonExport }
+          
+        case 'RESET_HISTORY':
+          console.log(`🗑️ Reset de l'historique demandé...`)
+          await historyManager.resetData()
+          captureCount = 0
+          console.log(`✅ Historique effacé - Compteurs remis à zéro`)
+          return { success: true }
+          
+        case 'GET_STATISTICS':
+          console.log(`📈 Calcul des statistiques (appel interne)...`)
+          const statistics = await getHistoryStatistics()
+          console.log(`✅ Statistiques calculées:`)
+          console.log(`   📊 Total: ${statistics.totalVisits}`)
+          console.log(`   📊 Aujourd'hui: ${statistics.dailyVisits}`)
+          console.log(`   📊 Cette semaine: ${statistics.weeklyVisits}`)
+          return { success: true, data: statistics }
+          
+        case 'PING':
+          console.log(`🏓 Ping reçu du popup`)
+          return { status: 'pong', timestamp: Date.now() }
+          
+        default:
+          console.log(`📨 Message standard reçu`)
+          return { status: 'reçu' }
+      }
+    } catch (error) {
+      console.error('❌ Erreur message interne:', error)
+      return { error: error instanceof Error ? error.message : 'Erreur inconnue' }
     }
-  } catch (error) {
-    console.error('❌ Erreur message interne:', error)
-    sendResponse({ error: error instanceof Error ? error.message : 'Erreur inconnue' })
   }
-  
-  console.log(`=== FIN MESSAGE INTERNE ===\n`)
+
+  handleAsync().then(response => {
+    console.log(`📤 Envoi réponse:`, response)
+    sendResponse(response)
+    console.log(`=== FIN MESSAGE INTERNE ===\n`)
+  }).catch(error => {
+    console.error('❌ Erreur async non gérée:', error)
+    sendResponse({ error: error.message || 'Erreur inconnue' })
+    console.log(`=== FIN MESSAGE INTERNE (ERREUR) ===\n`)
+  })
+
   return true
 })
 
 // Fonctions utilitaires pour l'API
 
 async function getHistoryData(filters?: any): Promise<HistoryData> {
-  const result = await chrome.storage.local.get(['historyData'])
-  let historyData: HistoryData = result.historyData || {
-    entries: [],
-    totalVisits: 0,
-    lastUpdated: Date.now(),
-    settings: {
-      isTrackingEnabled: true,
-      excludedDomains: [],
-      maxEntries: 10000,
-      retentionDays: 30,
-      includePrivateMode: false
-    },
-    statistics: {
-      topDomains: [],
-      dailyVisits: 0,
-      weeklyVisits: 0,
-      averageSessionTime: 0,
-      categoriesDistribution: []
+  try {
+    console.log(`🔍 === DÉBUT getHistoryData ===`)
+    console.log(`🔍 Lecture Chrome Storage...`)
+    
+    const result = await chrome.storage.local.get(['historyData'])
+    console.log(`🔍 Données brutes du storage:`, result)
+    
+    console.log(`🔍 Création de l'objet historyData par défaut...`)
+    let historyData: HistoryData = result.historyData || {
+      entries: [],
+      totalVisits: 0,
+      lastUpdated: Date.now(),
+      settings: {
+        isTrackingEnabled: true,
+        excludedDomains: [],
+        maxEntries: 10000,
+        retentionDays: 30,
+        includePrivateMode: false
+      },
+      statistics: {
+        topDomains: [],
+        dailyVisits: 0,
+        weeklyVisits: 0,
+        averageSessionTime: 0,
+        categoriesDistribution: []
+      }
+    }
+    
+    console.log(`🔍 Vérification de la structure des données...`)
+    if (!historyData.entries) {
+      console.log(`⚠️ entries manquants, initialisation à tableau vide`)
+      historyData.entries = []
+    }
+    
+    console.log(`🔍 Données après parsing:`)
+    console.log(`   📊 Entrées trouvées: ${historyData.entries.length}`)
+    console.log(`   📊 Total visites: ${historyData.totalVisits}`)
+    console.log(`   📊 Dernière MAJ: ${new Date(historyData.lastUpdated).toLocaleString('fr-FR')}`)
+    
+    if (historyData.entries.length > 0) {
+      console.log(`🔍 Exemple d'entrées:`)
+      try {
+        historyData.entries.slice(0, 3).forEach((entry, i) => {
+          console.log(`   ${i+1}. ${entry.domain} - ${entry.title} (${entry.category})`)
+        })
+      } catch (exampleError) {
+        console.error(`❌ Erreur lors de l'affichage des exemples:`, exampleError)
+      }
+    }
+    
+    // Appliquer les filtres si fournis
+    if (filters) {
+      console.log(`🔍 Application des filtres:`, filters)
+      try {
+        historyData.entries = await historyManager.filterHistory(historyData.entries, filters)
+        console.log(`🔍 Après filtrage: ${historyData.entries.length} entrées`)
+      } catch (filterError) {
+        console.error(`❌ Erreur lors du filtrage:`, filterError)
+        // Continuer avec les données non filtrées
+      }
+    }
+    
+    console.log(`🔍 === FIN getHistoryData ===`)
+    return historyData
+    
+  } catch (error) {
+    console.error(`❌ Erreur dans getHistoryData:`, error)
+    // Retourner un objet par défaut en cas d'erreur
+    return {
+      entries: [],
+      totalVisits: 0,
+      lastUpdated: Date.now(),
+      settings: {
+        isTrackingEnabled: true,
+        excludedDomains: [],
+        maxEntries: 10000,
+        retentionDays: 30,
+        includePrivateMode: false
+      },
+      statistics: {
+        topDomains: [],
+        dailyVisits: 0,
+        weeklyVisits: 0,
+        averageSessionTime: 0,
+        categoriesDistribution: []
+      }
     }
   }
-  
-  // Appliquer les filtres si fournis
-  if (filters) {
-    historyData.entries = await historyManager.filterHistory(historyData.entries, filters)
-  }
-  
-  return historyData
 }
 
 async function getRecentVisits(limit: number): Promise<NavigationEntry[]> {
@@ -369,7 +465,7 @@ async function getHistoryStatistics(): Promise<any> {
   // Distribution des catégories
   const categoryCounts: { [category: string]: number } = {}
   historyData.entries.forEach(entry => {
-    const category = entry.category || 'general'
+    const category = entry.category || 'general' 
     categoryCounts[category] = (categoryCounts[category] || 0) + 1
   })
   
