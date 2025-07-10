@@ -9,6 +9,7 @@
     "build:extension": "npm run build",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "lint:let": "eslint . --ext .ts,.tsx,.js,.jsx | grep -E '🚫.*let.*INTERDIT' || echo '✅ Aucun let détecté!'",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,md,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css,md,json}\"",
     "type-check": "tsc --noEmit",

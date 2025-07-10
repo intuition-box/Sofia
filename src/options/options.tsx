@@ -9,5 +9,8 @@ function OptionsApp() {
   );
 }
 
+// Export du composant pour Fast Refresh
+export { OptionsApp };
+
 const root = ReactDOM.createRoot(document.getElementById('options-root') as HTMLElement);
 root.render(<OptionsApp />);

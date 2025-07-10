@@ -3,7 +3,7 @@
  * Utilise chrome.runtime.sendMessage pour communication cross-extension
  */
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -16,6 +16,14 @@ export interface HistoryFilters {
   category?: string;
   minDuration?: number;
   searchQuery?: string;
+}
+
+export interface ExtensionMessage {
+  action: string;
+  filters?: HistoryFilters;
+  query?: string;
+  limit?: number;
+  enabled?: boolean;
 }
 
 export class ExtensionApiClient {
@@ -80,7 +88,7 @@ export class ExtensionApiClient {
   /**
    * Envoyer un message à l'extension Chrome
    */
-  private async sendMessage(message: any): Promise<ApiResponse> {
+  private async sendMessage(message: ExtensionMessage): Promise<ApiResponse> {
     return new Promise(resolve => {
       // Timeout pour éviter les blocages
       const timeoutId = setTimeout(() => {

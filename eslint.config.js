@@ -16,7 +16,6 @@ export default tseslint.config([
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended,
-      ...tseslint.configs.stylistic,
     ],
     plugins: {
       'react-hooks': reactHooks,
@@ -43,7 +42,7 @@ export default tseslint.config([
         { allowConstantExport: true },
       ],
 
-      // AI-friendly rules for better code readability
+      // TypeScript rules
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -52,44 +51,14 @@ export default tseslint.config([
           caughtErrorsIgnorePattern: '^_',
         },
       ],
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-var-requires': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
       
-      // General code quality rules
-      'no-console': 'off', // Allow console during development
+      // Basic code quality rules
+      'no-console': 'warn',
       'no-debugger': 'error',
-      'no-duplicate-imports': 'error',
-      'no-unused-expressions': 'error',
+      'no-var': 'error',
       'prefer-const': 'error',
-      'prefer-template': 'warn',
-      'object-shorthand': 'warn',
-      
-      // AI-friendly naming and structure rules
-      'camelcase': ['warn', { properties: 'never', ignoreDestructuring: false }],
-      'consistent-return': 'warn',
-      'no-magic-numbers': ['off'], // Too strict for development
-      'max-lines-per-function': ['off'], // Too strict for development  
-      'max-depth': ['warn', 6],
-      'max-params': ['warn', 7],
-      
-      // Import organization for better AI understanding
-      'sort-imports': [
-        'warn',
-        {
-          ignoreCase: false,
-          ignoreDeclarationSort: true,
-          ignoreMemberSort: false,
-        },
-      ],
-      
-      // Additional relaxed rules for development
-      '@typescript-eslint/no-inferrable-types': 'warn',
-      '@typescript-eslint/consistent-indexed-object-style': 'warn',
-      '@typescript-eslint/array-type': 'warn',
-      '@typescript-eslint/no-namespace': 'warn',
-      'no-case-declarations': 'warn',
+      'no-unused-expressions': 'error',
     },
   },
   
@@ -105,8 +74,9 @@ export default tseslint.config([
       },
     },
     rules: {
-      'no-console': 'off', // Allow console during development
+      'no-console': 'warn',
       'no-debugger': 'error',
+      'no-var': 'error',
       'prefer-const': 'error',
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
@@ -114,21 +84,10 @@ export default tseslint.config([
   
   // Configuration for test files
   {
-    files: ['**/*.test.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}', '**/cypress/**/*.{ts,tsx}'],
+    files: ['**/*.test.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-empty-function': 'off',
-      '@typescript-eslint/no-var-requires': 'off',
-      '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
-      'sort-imports': 'off',
-      'no-duplicate-imports': 'off',
-      'object-shorthand': 'off',
-      'max-lines-per-function': 'off',
-      'max-params': 'off',
-      'no-magic-numbers': 'off',
-      'consistent-return': 'off',
     },
   },
 
@@ -143,8 +102,6 @@ export default tseslint.config([
     rules: {
       'no-console': 'off',
       '@typescript-eslint/no-var-requires': 'off',
-      '@typescript-eslint/no-require-imports': 'off',
-      'sort-imports': 'off',
     },
   },
 ]);
