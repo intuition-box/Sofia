@@ -1,0 +1,31 @@
+{
+    "name": "SofIA1",
+    "username": "",
+    "bio": [],
+    "messageExamples": [],
+    "postExamples": [],
+    "topics": [],
+    "adjectives": [],
+    "knowledge": [],
+    "plugins": [
+        "@elizaos/plugin-sql",
+        "@elizaos/plugin-openai",
+        "@elizaos/plugin-bootstrap",
+        "@elizaos/plugin-mcp"
+    ],
+    "settings": {
+        "mcp": {
+            "servers": {
+                "intuition": {
+                    "type": "sse",
+                    "url": "http://localhost:3001/sse"
+                }
+            }
+        }
+    },
+    "style": {
+        "all": [],
+        "chat": [],
+        "post": []
+    }
+}
