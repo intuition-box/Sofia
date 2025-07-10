@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -273,44 +273,35 @@ function PopupApp() {
     <div className="w-[400px] h-[600px] bg-background text-foreground">
       {/* Header */}
       <div className="border-b p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center overflow-hidden">
-              <img 
-                src="/icons/icon48.png" 
-                alt="SOFIA Logo" 
-                className="w-8 h-8 object-contain"
-              />
-            </div>
-            <div>
-              <h1 className="font-semibold text-xl">SOFIA</h1>
-              <p className="text-sm text-muted-foreground">Smart History Tracker</p>
-            </div>
-          </div>
+        {/* Status en haut à droite */}
+        <div className="flex justify-end mb-2">
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${isTrackingEnabled ? 'bg-green-500' : 'bg-destructive'}`}
             />
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-foreground">
               {isTrackingEnabled ? 'Active' : 'Paused'}
             </span>
           </div>
         </div>
+        
+        {/* Logo et titre centrés */}
+        <div className="flex flex-col items-center justify-center mb-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center overflow-hidden mb-2">
+            <img 
+              src="/icons/icon.png" 
+              alt="SOFIA Logo" 
+              className="w-10 h-10 object-contain"
+            />
+          </div>
+          <div className="text-center">
+            <h1 className="font-semibold text-xl">SOFIA</h1>
+            <p className="text-sm text-foreground">Smart History Tracker</p>
+          </div>
+        </div>
 
         {/* API Status Card */}
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-sm font-medium">API Ready for Agent1</span>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                ID: {extensionId.slice(0, 8)}...
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
 
       {/* Navigation Tabs */}
@@ -324,10 +315,10 @@ function PopupApp() {
             key={tab.id}
             onClick={() => setCurrentTab(tab.id)}
             variant={currentTab === tab.id ? 'default' : 'ghost'}
-            className="flex-1 rounded-none border-0"
+            className="flex-1 rounded-none border-0 py-2"
             size="sm"
           >
-            <span className="mr-1">{tab.icon}</span>
+            <span className="mr-2">{tab.icon}</span>
             {tab.label}
           </Button>
         ))}
@@ -342,32 +333,32 @@ function PopupApp() {
               <Card>
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-primary">{stats?.dailyVisits || 0}</div>
-                  <div className="text-xs text-muted-foreground">Sites visités aujourd'hui</div>
+                  <div className="text-xs text-muted-foreground">Websites visited today</div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-green-600">{stats?.totalVisits || 0}</div>
-                  <div className="text-xs text-muted-foreground">Total des visites</div>
+                  <div className="text-xs text-muted-foreground">Total visits</div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Top Sites */}
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  🔥 Sites les plus visités
+              <CardHeader className="pb-2 px-4 pt-3">
+                <CardTitle className="text-base flex items-center justify-center gap-2">
+                  🔥 Most visited websites
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 px-4 pb-4">
                 {stats && stats.topDomains && stats.topDomains.length > 0 ? (
                   stats.topDomains.slice(0, 3).map(site => (
                     <div
                       key={site.domain}
-                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <img
                           src={`https://www.google.com/s2/favicons?domain=${site.domain}&sz=16`}
                           alt="favicon"
@@ -396,17 +387,17 @@ function PopupApp() {
 
             {/* Categories Distribution */}
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center justify-between">
-                  📂 Répartition par catégories
+              <CardHeader className="pb-2 px-4 pt-3">
+                <CardTitle className="text-sm flex items-center justify-center">
+                  📂 Categories distribution
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2 px-4 pb-4">
                 {stats &&
                 stats.categoriesDistribution &&
                 stats.categoriesDistribution.length > 0 ? (
                   stats.categoriesDistribution.slice(0, 4).map(cat => (
-                    <div key={cat.category} className="flex items-center justify-between">
+                    <div key={cat.category} className="flex items-center justify-between py-1">
                       <div className="flex items-center gap-2">
                         <span>{getCategoryIcon(cat.category)}</span>
                         <span className="text-sm capitalize">{cat.category}</span>
@@ -424,7 +415,7 @@ function PopupApp() {
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    Aucune donnée disponible
+                    No data available
                   </p>
                 )}
               </CardContent>
@@ -435,15 +426,15 @@ function PopupApp() {
         {currentTab === 'history' && (
           <div className="space-y-4">
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2 px-4 pt-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Historique récent</CardTitle>
+                  <CardTitle className="text-base">Recent history</CardTitle>
                   <Button variant="outline" size="sm" onClick={handleExportHistory}>
                     Export JSON
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2 max-h-96 overflow-y-auto">
+              <CardContent className="space-y-2 max-h-96 overflow-y-auto px-4 pb-4">
                 {historyData && historyData.length > 0 ? (
                   historyData.map((entry, index) => (
                     <Card key={entry.id || index} className="p-3">
@@ -459,17 +450,17 @@ function PopupApp() {
                               href={entry.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="font-medium text-sm truncate hover:underline"
+                              className="font-medium text-sm truncate hover:underline block mb-1"
                             >
                               {entry.title}
                             </a>
-                            <div className="text-xs text-muted-foreground truncate">
+                            <div className="text-xs text-muted-foreground truncate mb-1">
                               {entry.domain} • {formatDate(entry.timestamp)}
                             </div>
                             {entry.category && (
                               <Badge
                                 variant={getCategoryVariant(entry.category)}
-                                className="text-xs mt-1"
+                                className="text-xs"
                               >
                                 {entry.category}
                               </Badge>
@@ -481,7 +472,7 @@ function PopupApp() {
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-8">
-                    Aucun historique disponible
+                    No history available
                   </p>
                 )}
               </CardContent>
@@ -493,15 +484,15 @@ function PopupApp() {
           <div className="space-y-4">
             {/* Tracking Control */}
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Contrôles de tracking</CardTitle>
+              <CardHeader className="pb-2 px-4 pt-3">
+                <CardTitle className="text-base">Tracking controls</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+              <CardContent className="space-y-3 px-4 pb-4">
+                <div className="flex items-center justify-between py-1">
                   <div>
-                    <div className="font-medium text-sm">Suivi automatique</div>
+                    <div className="font-medium text-sm">Automatic tracking</div>
                     <div className="text-xs text-muted-foreground">
-                      Capturer automatiquement les navigations
+                      Automatically capture navigations
                     </div>
                   </div>
                   <Switch checked={isTrackingEnabled} onCheckedChange={handleTrackingToggle} />
@@ -511,26 +502,26 @@ function PopupApp() {
 
             {/* Data Management */}
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Gestion des données</CardTitle>
+              <CardHeader className="pb-2 px-4 pt-3">
+                <CardTitle className="text-base">Data management</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full" onClick={handleExportHistory}>
-                  📄 Exporter l'historique (JSON)
+              <CardContent className="space-y-3 px-4 pb-4">
+                <Button variant="outline" className="w-full text-foreground" onClick={handleExportHistory}>
+                  📄 History export (JSON)
                 </Button>
                 <Button variant="destructive" className="w-full" onClick={handleResetHistory}>
-                  🗑️ Effacer tout l'historique
+                  🗑️ Delete all history
                 </Button>
               </CardContent>
             </Card>
 
             {/* Extension Info */}
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2 px-4 pt-3">
                 <CardTitle className="text-base">Informations</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="text-sm">
+              <CardContent className="space-y-2 px-4 pb-4">
+                <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Extension ID:</span>
                     <span className="font-mono text-xs">{extensionId.slice(0, 16)}...</span>
@@ -540,7 +531,7 @@ function PopupApp() {
                     <span>1.0.0</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Dernière MAJ:</span>
+                    <span className="text-muted-foreground">Last Update:</span>
                     <span>{stats?.lastUpdated ? formatDate(stats.lastUpdated) : 'N/A'}</span>
                   </div>
                 </div>
@@ -548,20 +539,7 @@ function PopupApp() {
             </Card>
 
             {/* Agent1 Connection */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center justify-between">
-                  🤖 Connexion Agent1
-                  <div className="w-2 h-2 bg-green-500 rounded-full" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-xs">
-                  L'API est prête pour la communication avec Agent1. Utilisez l'ID d'extension
-                  ci-dessus pour les requêtes externes.
-                </CardDescription>
-              </CardContent>
-            </Card>
+
           </div>
         )}
       </div>
