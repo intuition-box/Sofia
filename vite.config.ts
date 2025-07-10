@@ -3,10 +3,33 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import { fileURLToPath, URL } from 'node:url'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import { copyFileSync, existsSync, mkdirSync } from 'fs'
+
+// Plugin personnalisé pour copier les icônes et manifest
+const copyStaticFiles = () => {
+  return {
+    name: 'copy-static-files',
+    writeBundle() {
+      // Copier le manifest
+      copyFileSync('manifest.json', 'dist/manifest.json')
+      
+      // Copier les icônes si elles existent
+      if (existsSync('icons')) {
+        if (!existsSync('dist/icons')) {
+          mkdirSync('dist/icons', { recursive: true })
+        }
+        if (existsSync('icons/icon16.png')) copyFileSync('icons/icon16.png', 'dist/icons/icon16.png')
+        if (existsSync('icons/icon32.png')) copyFileSync('icons/icon32.png', 'dist/icons/icon32.png')
+        if (existsSync('icons/icon48.png')) copyFileSync('icons/icon48.png', 'dist/icons/icon48.png')
+        if (existsSync('icons/icon128.png')) copyFileSync('icons/icon128.png', 'dist/icons/icon128.png')
+      }
+    }
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
+  plugins: [react(), tsconfigPaths(), copyStaticFiles()],
   optimizeDeps: {
     esbuildOptions: {
       tsconfigRaw: require('./tsconfig.app.json'), // assure l'utilisation de ta config
