@@ -1,5 +1,5 @@
-import type { WalletState } from './wallet';
 import type { HistoryData } from './history';
+import type { WalletState } from './wallet';
 
 export interface StorageData {
   wallet: WalletState;
@@ -18,13 +18,13 @@ export interface ExtensionSettings {
 
 export interface CacheData {
   lastSync: number;
-  tempData: Record<string, any>;
-  sessionData: Record<string, any>;
+  tempData: Record<string, unknown>;
+  sessionData: Record<string, unknown>;
 }
 
 export type StorageKey = keyof StorageData;
 
-export interface StorageChangeEvent<T = any> {
+export interface StorageChangeEvent<T = unknown> {
   key: StorageKey;
   oldValue?: T;
   newValue?: T;
