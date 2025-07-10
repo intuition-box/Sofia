@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
-import { fileURLToPath, URL } from 'node:url'
-import tsconfigPaths from 'vite-tsconfig-paths'
 import { copyFileSync, existsSync, mkdirSync } from 'fs'
+import { fileURLToPath, URL } from 'node:url'
+import { resolve } from 'path'
+import { defineConfig } from 'vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 // Plugin personnalisé pour copier les icônes et manifest
 const copyStaticFiles = () => {
@@ -18,10 +18,8 @@ const copyStaticFiles = () => {
         if (!existsSync('dist/icons')) {
           mkdirSync('dist/icons', { recursive: true })
         }
-        if (existsSync('icons/icon16.png')) copyFileSync('icons/icon16.png', 'dist/icons/icon16.png')
-        if (existsSync('icons/icon32.png')) copyFileSync('icons/icon32.png', 'dist/icons/icon32.png')
-        if (existsSync('icons/icon48.png')) copyFileSync('icons/icon48.png', 'dist/icons/icon48.png')
-        if (existsSync('icons/icon128.png')) copyFileSync('icons/icon128.png', 'dist/icons/icon128.png')
+        if (existsSync('icons/icon.png')) copyFileSync('icons/icon.png', 'dist/icons/icon.png')
+        if (existsSync('icons/icon-black.png')) copyFileSync('icons/icon-black.png', 'dist/icons/icon-black.png')
       }
     }
   }
