@@ -1,69 +1,77 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# 🚀 Eliza OS Agent Initialization
 
-Currently, two official plugins are available:
+This README guides you step-by-step to install, configure, and run your **Eliza OS** agent with the **Intuition MCP Server** and its plugin.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 📥 1️⃣ Download and Install Dependencies
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Clone and install **Intuition MCP Server**  
+   ```bash
+   git clone https://github.com/THP-Lab/intuition-mcp-server
+   cd intuition-mcp-server
+   pnpm install
+   ```
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## ⚙️ 2️⃣ Start the **Intuition MCP Server**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Inside the `intuition-mcp-server` directory:
+```bash
+SERVER_MODE=http pnpm run start:http
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🔌 3️⃣ Download and Install the **MCP Plugin** for **Eliza OS**
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+ https://github.com/elizaos-plugins/plugin-mcp
+   ```
+
+ Follow the installation instructions provided in the plugin repository.
+
+---
+
+## 🗝️ 4️⃣ Configure the **.env** File
+
+1. Place your `.env` file inside your `/my-agent` directory (where your Eliza OS agent is located).  
+   👉 **Do not share your OpenAI key publicly!**
+
+2. Create a `.gitignore` file in `/my-agent` and add:
+   ```
+   .env
+   ```
+
+   This ensures your OpenAI API key won’t be pushed to GitHub.
+
+---
+
+## 🚦 5️⃣ Start **Eliza OS**
+
+Inside the `/my-agent` directory:
+```bash
+eliza start
 ```
+
+---
+
+## 🤖 6️⃣ Start Your Agent **SofIA**
+
+Again inside `/my-agent`:
+```bash
+elizaos agent start --path SofIA.json
+```
+
+---
+
+## ✅ 7️⃣ Final Checks
+
+In your **SofIA1** settings:
+- Ensure the **OPENAI** key is correctly set.
+- Make sure the **MCP plugin** and **OpenAI plugin** are both enabled.
+
+---
+
+## 🗂️ Happy exploring with **Eliza OS**!
