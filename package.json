@@ -19,6 +19,9 @@
     "dev:extension": "vite build --watch"
   },
   "dependencies": {
+    "@elizaos/plugin-bootstrap": "1.1.0",
+    "@elizaos/plugin-local-ai": "1.0.8",
+    "@elizaos/plugin-mcp": "^1.0.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.5",
     "@rainbow-me/rainbowkit": "^2.2.8",

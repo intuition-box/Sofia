@@ -39,10 +39,10 @@ import { v4 as uuidv4 } from 'uuid';
 interface TestSuite {
   name: string;
   description: string;
-  tests: {
+  tests: Array<{
     name: string;
     fn: (runtime: any) => Promise<any>;
-  }[];
+  }>;
 }
 
 // Define minimal interfaces for the types we need

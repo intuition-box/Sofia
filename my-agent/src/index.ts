@@ -1,4 +1,4 @@
-import { type IAgentRuntime, type Project, type ProjectAgent, logger } from '@elizaos/core';
+import { logger, type IAgentRuntime, type Project, type ProjectAgent } from '@elizaos/core';
 import starterPlugin from './plugin.ts';
 import { character } from './character.ts';
 
