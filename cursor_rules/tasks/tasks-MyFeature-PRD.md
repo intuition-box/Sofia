@@ -52,7 +52,18 @@
 - ✅ **Capture de données optimisée** : Rectification complète pour capturer uniquement les données essentielles
 - ✅ **Interface simplifiée** : Popup épuré avec RainbowKit + Settings, logs console pour contrôle
 - ✅ **Calcul automatique durée** : Tracking intelligent des visites avec durée précise
-- 🔄 **Prochaines étapes** : Intégration RainbowKit, Agents Eliza OS, Gaianet et Intuition.systems
+
+### 🎯 NOUVELLE PRIORISATION (Chef de Projet)
+**🔥 PRIORITÉ 1** : Authentification RainbowKit (BASE DE TOUT)
+**🔥 PRIORITÉ 2** : Dashboard Web SOFIA (INTERFACE PRINCIPALE) 
+**🔥 PRIORITÉ 3** : Communication Agent1 (DONNÉES HISTORIQUE)
+**🔥 PRIORITÉ 4** : Fonctionnalités avancées (APRÈS MVP)
+**🔥 PRIORITÉ 5** : Interface utilisateur Extension Chrome (FINALISATION)
+**🔥 PRIORITÉ 6** : Fonctionnalités premium et intelligence (OPTIONNEL)
+**🔥 PRIORITÉ 7** : Tests, documentation et déploiement (FINAL)
+
+**MVP (Minimum Viable Product)** : Priorités 1-3 suffisent pour avoir un produit fonctionnel
+**Validation à chaque étape** : ✅ avant passage à la priorité suivante
 
 - [ ] 1.0 Configuration projet et infrastructure SOFIA Extension Chrome
   - [x] 1.1 Initialiser projet Vite avec template TypeScript (`npm create vite@latest sofia-extension --template vanilla-ts`)
@@ -98,85 +109,121 @@
     - [ ] 1.8.13 Tester pipeline complet: Extension → Service Worker → Agent Eliza OS
     - [ ] 1.8.14 Documenter format données et API dans docs/eliza-integration.md
 
-- [ ] 2.0 Implémentation authentification RainbowKit et identité numérique
+- [ ] 2.0 🔥 PRIORITÉ 1 : Authentification RainbowKit (BASE DE TOUT) 
   - [ ] 2.1 Configurer RainbowKit dans src/lib/rainbowkit-config.ts avec providers
   - [ ] 2.2 Créer WalletState interface et types dans src/types/wallet.ts
-  - [ ] 2.3 Développer LandingPage.tsx avec bouton "Get Button" pour onboarding
-  - [ ] 2.4 Développer composant RainbowKitConnect.tsx avec support multi-wallets
-  - [ ] 2.5 Implémenter persistance session avec Chrome Storage API
+  - [ ] 2.3 Développer composant RainbowKitConnect.tsx avec support multi-wallets
+  - [ ] 2.4 Implémenter persistance session avec Chrome Storage API
+  - [ ] 2.5 Intégrer authentification dans popup App.tsx (remplacer LandingPage)
   - [ ] 2.6 Ajouter gestion d'erreurs de connexion avec messages utilisateur clairs
   - [ ] 2.7 Afficher adresse wallet tronquée (0x1234...abcd) dans interface
   - [ ] 2.8 Implémenter déconnexion avec nettoyage storage
   - [ ] 2.9 Écrire tests unitaires pour RainbowKitConnect.test.tsx
-  - [ ] 2.10 Tester authentification sur différents wallets (MetaMask, WalletConnect, Coinbase)
+  - [ ] 2.10 ✅ VALIDATION : Tester authentification sur différents wallets avant passage PRIORITÉ 2
 
-- [ ] 3.0 Développement système de capture Chrome History et communication Eliza OS
-  - [ ] 3.1 Créer NavigationEntry et HistoryData interfaces dans src/types/history.ts
-  - [ ] 3.2 [Human] Configurer Agent1 (History Analysis) et Agent2 (Recommendations) dans my-agent/
-  - [ ] 3.3 Développer composant ChromeHistory.tsx pour affichage historique Chrome
-  - [ ] 3.4 Implémenter capture Chrome History API dans src/lib/chrome-history.ts
-  - [ ] 3.5 Créer API REST endpoint dans extension pour exposer données historique  
-  - [ ] 3.6 Implémenter Agent1 fetch vers API extension pour récupération données
-  - [ ] 3.7 Configurer CORS et authentification pour sécuriser communication Agent1 ↔ Extension
-  - [ ] 3.8 Ajouter système de filtrage pour sites sensibles avant exposition via API
-  - [ ] 3.9 Créer toggle ON/OFF capture historique avec indicateur visuel
-  - [ ] 3.10 Développer Dashboard.tsx pour affichage clusters de recherche d'Agent1
-  - [ ] 3.11 Implémenter communication Agent1 → Dashboard pour "show cluster of past research"
-  - [ ] 3.12 Écrire tests unitaires pour api-server.test.ts et eliza-agents.test.ts
-  - [ ] 3.13 [Human] Tester pipeline complet Extension API ← Agent1 (fetch) → Analyse
+- [ ] 3.0 🔥 PRIORITÉ 2 : Dashboard Web SOFIA (INTERFACE PRINCIPALE)
+  - [ ] 3.1 Configuration infrastructure dashboard web
+    - [ ] 3.1.1 Créer nouveau projet Vite React dans dashboard/ séparé de l'extension
+    - [ ] 3.1.2 Installer dépendances : React, TypeScript, Tailwind CSS, Framer Motion, Lucide React
+    - [ ] 3.1.3 Configurer Tailwind CSS avec configuration personnalisée SOFIA
+    - [ ] 3.1.4 Implémenter composant SofIADashboard basé sur dashboard.md fourni (avec données mockées)
+    - [ ] 3.1.5 Configurer serveur de développement local (port 3001)
+    - [ ] 3.1.6 Ajouter CORS pour communication avec extension Chrome
+  
+  - [ ] 3.2 Intégration bouton dashboard dans extension Chrome
+    - [ ] 3.2.1 Ajouter bouton "Open Dashboard" dans popup principal App.tsx
+    - [ ] 3.2.2 Implémenter fonction openDashboard() dans service-worker.ts
+    - [ ] 3.2.3 Configurer ouverture nouvel onglet vers dashboard web (http://localhost:3001)
+    - [ ] 3.2.4 Synchroniser état wallet entre extension et dashboard
+    - [ ] 3.2.5 Créer indicateur visuel statut dashboard (disponible/indisponible)
+    - [ ] 3.2.6 ✅ VALIDATION : Dashboard fonctionnel avec wallet sync avant passage PRIORITÉ 3
 
-- [ ] 4.0 Intégration Agent2 (Recommendations), Gaianet et Intuition.systems
-  - [ ] 4.1 [Human] Configurer Gaianet pour services LLM et obtenir clés API
-  - [ ] 4.2 Installer et configurer Gaianet SDK dans src/lib/gaianet-integration.ts
-  - [ ] 4.3 [Human] Configurer Agent2 (Recommendations) avec connexion Gaianet LLM
-  - [ ] 4.4 Implémenter communication Agent2 → Dashboard pour "Give Recommendations"
-  - [ ] 4.5 [Human] Configurer compte Intuition.systems et Smart Contract
-  - [ ] 4.6 Installer intuition-ts SDK et MCP client dans src/lib/mcp-client.ts
-  - [ ] 4.7 Développer communication MCP Agent2 → Indexer pour "request user graph"
-  - [ ] 4.8 Implémenter Agent1 → Smart Contract pour "invite to add data to knowledge graph"
-  - [ ] 4.9 Créer interface Smart Contract → Knowledge Graph pour "create read update"
-  - [ ] 4.10 Développer dashboard affichage recommandations contextuelles d'Agent2
-  - [ ] 4.11 Écrire tests unitaires pour gaianet-integration.test.ts et mcp-client.test.ts
-  - [ ] 4.12 [Human] Tester pipeline complet Agent2 ↔ Gaianet ↔ Indexer ↔ Knowledge Graph
+- [ ] 4.0 🔥 PRIORITÉ 3 : Communication Agent1 (DONNÉES HISTORIQUE)
+  - [ ] 4.1 [Human] Configurer Agent1 (History Analysis) dans my-agent/
+  - [ ] 4.2 Créer endpoint /api/navigation-data dans Agent1 Eliza OS
+  - [ ] 4.3 Implémenter envoi données depuis service-worker vers Agent1
+  - [ ] 4.4 Créer API REST endpoint dans dashboard pour recevoir données extension
+  - [ ] 4.5 Configurer authentification par token entre extension et dashboard
+  - [ ] 4.6 Remplacer données mockées par vraies données historique Chrome
+  - [ ] 4.7 Adapter métriques : Visites totales, durée moyenne, sites les plus visités
+  - [ ] 4.8 Implémenter graphique radial avec vraies catégories de sites web
+  - [ ] 4.9 Créer système de catégorisation automatique des sites (dev, social, news, etc.)
+  - [ ] 4.10 Adapter composant History avec vraies données Chrome History
+  - [ ] 4.11 Écrire tests unitaires pour communication Extension ↔ Agent1 ↔ Dashboard
+  - [ ] 4.12 ✅ VALIDATION : Pipeline complet Extension → Agent1 → Dashboard avec vraies données
 
-- [ ] 5.0 Interface utilisateur Extension Chrome
-  - [ ] 5.1 Développer popup principal App.tsx avec layout 400x600px optimisé
-  - [ ] 5.2 Intégrer Shadcn provider et thème cohérent SOFIA
-  - [ ] 5.3 Finaliser LandingPage.tsx avec onboarding et "Get Button"
-  - [ ] 5.4 Perfectionner Dashboard.tsx pour historique et recommandations
-  - [ ] 5.5 Optimiser ChromeHistory.tsx pour visualisation navigation
-  - [ ] 5.6 Intégrer RainbowKit dans interface avec état wallet visible
-  - [ ] 5.7 Implémenter affichage recommandations temps réel d'Agent2
-  - [ ] 5.8 Ajouter contrôles toggle pour capture historique
-  - [ ] 5.9 Créer page Options pour configuration agents et filtres
-  - [ ] 5.10 Développer indicateurs visuels connexion Eliza OS / Gaianet / Intuition
-  - [ ] 5.11 Optimiser interface responsive et UX pour extension Chrome
-  - [ ] 5.12 Écrire tests unitaires pour tous composants UI
-  - [ ] 5.13 [Human] Tester expérience utilisateur complète selon architecture
+- [ ] 5.0 🔥 PRIORITÉ 4 : Fonctionnalités avancées (APRÈS MVP)
+  - [ ] 5.1 Intégration Chatbot avec Agent2 (Recommendations)
+    - [ ] 5.1.1 [Human] Configurer Agent2 (Recommendations) dans my-agent/
+    - [ ] 5.1.2 Adapter composant ChatBot pour communication avec Agent2
+    - [ ] 5.1.3 Configurer endpoint WebSocket ou API REST vers Agent2
+    - [ ] 5.1.4 Implémenter queries chatbot : "Analyze my browsing patterns", "Give recommendations"
+    - [ ] 5.1.5 Créer interface pour afficher analyses d'Agent1 (clusters de recherche)
+    - [ ] 5.1.6 Ajouter commandes chatbot spéciales : /history, /categories, /recommendations
 
-- [ ] 6.0 Fonctionnalités avancées et intelligence
-  - [ ] 6.1 Développer journal assisté avec classification automatique
-  - [ ] 6.2 Implémenter planificateur intelligent basé sur patterns
-  - [ ] 6.3 Créer système de bookmarks décentralisés cross-device
-  - [ ] 6.4 Ajouter détection automatique moments mémorables via IA
-  - [ ] 6.5 Développer interface Web3 pour staking ETH sur signaux
-  - [ ] 6.6 Implémenter système de récompenses pour contribution knowledge graph
-  - [ ] 6.7 Créer filtres cognitifs personnalisés pour l'information
-  - [ ] 6.8 Ajouter suggestions de connexions avec autres utilisateurs SOFIA
-  - [ ] 6.9 [Human] Optimiser prompts IA et personnalité agent avec feedback utilisateurs
-  - [ ] 6.10 Écrire tests d'intégration pour fonctionnalités avancées
+  - [ ] 5.2 Intégration Gaianet LLM et services avancés
+    - [ ] 5.2.1 [Human] Configurer Gaianet pour services LLM et obtenir clés API
+    - [ ] 5.2.2 Installer et configurer Gaianet SDK dans src/lib/gaianet-integration.ts
+    - [ ] 5.2.3 [Human] Configurer Agent2 (Recommendations) avec connexion Gaianet LLM
+    - [ ] 5.2.4 Implémenter communication Agent2 → Dashboard pour "Give Recommendations"
+    - [ ] 5.2.5 Développer dashboard affichage recommandations contextuelles d'Agent2
 
-- [ ] 7.0 Tests, documentation et déploiement
-  - [ ] 7.1 Développer suite de tests d'intégration complète (Extension ↔ Agent1 ↔ Agent2 ↔ Gaianet ↔ Intuition)
-  - [ ] 7.2 Créer tests de performance et optimisation mémoire/CPU pour tous composants
-  - [ ] 7.3 [Human] Tester architecture complète sur différents environnements (Windows, Mac, Linux)
-  - [ ] 7.4 Rédiger documentation complète dans README.md avec diagramme architecture
-  - [ ] 7.5 Créer guide d'installation Agent1 et Agent2 Eliza OS dans docs/eliza-agents-setup.md
-  - [ ] 7.6 Documenter intégration Gaianet LLM dans docs/gaianet-integration.md
-  - [ ] 7.7 Documenter MCP et Intuition.systems dans docs/intuition-mcp-setup.md
-  - [ ] 7.8 Préparer assets et descriptions pour Chrome Web Store
-  - [ ] 7.9 Créer demo script montrant flux Extension → Agents → Intuition
-  - [ ] 7.10 [Human] Configurer environnement production (Hébergeur: Eliza OS + Agent1 + Agent2 + Gaianet + Intuition)
-  - [ ] 7.11 [Human] Déployer beta version et tests avec early adopters
-  - [ ] 7.12 [Human] Publier sur Chrome Web Store après validation complète architecture
-  - [ ] 7.13 [Human] Documenter métriques de succès et monitoring pipeline complet 
+  - [ ] 5.3 Intégration Intuition.systems Knowledge Graph
+    - [ ] 5.3.1 [Human] Configurer compte Intuition.systems et Smart Contract
+    - [ ] 5.3.2 Installer intuition-ts SDK et MCP client dans src/lib/mcp-client.ts
+    - [ ] 5.3.3 Développer communication MCP Agent2 → Indexer pour "request user graph"
+    - [ ] 5.3.4 Implémenter Agent1 → Smart Contract pour "invite to add data to knowledge graph"
+    - [ ] 5.3.5 Créer interface Smart Contract → Knowledge Graph pour "create read update"
+    - [ ] 5.3.6 Ajouter section "Digital Identity" avec données Intuition.systems
+    - [ ] 5.3.7 Implémenter visualisation Knowledge Graph personnel
+
+  - [ ] 5.4 Fonctionnalités dashboard avancées
+    - [ ] 5.4.1 Implémenter graphiques temporels d'activité (par heure/jour/semaine)
+    - [ ] 5.4.2 Créer heatmap de navigation par domaines et temps
+    - [ ] 5.4.3 Ajouter détection automatique habitudes et patterns
+    - [ ] 5.4.4 Implémenter alertes personnalisées (temps excessif sur certains sites)
+    - [ ] 5.4.5 Créer système de goals et tracking objectifs de navigation
+    - [ ] 5.4.6 Ajouter comparaisons période (cette semaine vs semaine précédente)
+    - [ ] 5.4.7 Implémenter mode dark/light avec persistance préférences
+    - [ ] 5.4.8 Ajouter filtres temporels : Aujourd'hui, Cette semaine, Ce mois
+    - [ ] 5.4.9 Implémenter recherche et filtrage dans historique
+
+  - [ ] 5.5 ✅ VALIDATION : Tests d'intégration pour fonctionnalités avancées
+
+- [ ] 6.0 🔥 PRIORITÉ 5 : Interface utilisateur Extension Chrome (FINALISATION)
+  - [ ] 6.1 Optimiser popup principal App.tsx avec layout 400x600px
+  - [ ] 6.2 Intégrer Shadcn provider et thème cohérent SOFIA
+  - [ ] 6.3 Ajouter contrôles toggle pour capture historique
+  - [ ] 6.4 Créer page Options pour configuration agents et filtres
+  - [ ] 6.5 Développer indicateurs visuels connexion Eliza OS / Gaianet / Intuition
+  - [ ] 6.6 Optimiser interface responsive et UX pour extension Chrome
+  - [ ] 6.7 Écrire tests unitaires pour tous composants UI
+  - [ ] 6.8 [Human] Tester expérience utilisateur complète selon architecture
+
+- [ ] 7.0 🔥 PRIORITÉ 6 : Fonctionnalités premium et intelligence (OPTIONNEL)
+  - [ ] 7.1 Développer journal assisté avec classification automatique
+  - [ ] 7.2 Implémenter planificateur intelligent basé sur patterns
+  - [ ] 7.3 Créer système de bookmarks décentralisés cross-device
+  - [ ] 7.4 Ajouter détection automatique moments mémorables via IA
+  - [ ] 7.5 Développer interface Web3 pour staking ETH sur signaux
+  - [ ] 7.6 Implémenter système de récompenses pour contribution knowledge graph
+  - [ ] 7.7 Créer filtres cognitifs personnalisés pour l'information
+  - [ ] 7.8 Ajouter suggestions de connexions avec autres utilisateurs SOFIA
+  - [ ] 7.9 [Human] Optimiser prompts IA et personnalité agent avec feedback utilisateurs
+  - [ ] 7.10 Écrire tests d'intégration pour fonctionnalités avancées
+
+- [ ] 8.0 🔥 PRIORITÉ 7 : Tests, documentation et déploiement (FINAL)
+  - [ ] 8.1 Développer suite de tests d'intégration complète (Extension ↔ Dashboard ↔ Agent1 ↔ Agent2 ↔ Gaianet ↔ Intuition)
+  - [ ] 8.2 Créer tests de performance et optimisation mémoire/CPU pour tous composants
+  - [ ] 8.3 [Human] Tester architecture complète sur différents environnements (Windows, Mac, Linux)
+  - [ ] 8.4 Rédiger documentation complète dans README.md avec diagramme architecture
+  - [ ] 8.5 Créer guide d'installation Agent1 et Agent2 Eliza OS dans docs/eliza-agents-setup.md
+  - [ ] 8.6 Documenter intégration Gaianet LLM dans docs/gaianet-integration.md
+  - [ ] 8.7 Documenter MCP et Intuition.systems dans docs/intuition-mcp-setup.md
+  - [ ] 8.8 Documenter architecture dashboard dans docs/dashboard-architecture.md
+  - [ ] 8.9 Préparer assets et descriptions pour Chrome Web Store
+  - [ ] 8.10 Créer demo script montrant flux Extension → Dashboard → Agents → Intuition
+  - [ ] 8.11 [Human] Configurer environnement production (Dashboard + Eliza OS + Agent1 + Agent2 + Gaianet + Intuition)
+  - [ ] 8.12 [Human] Déployer beta version et tests avec early adopters
+  - [ ] 8.13 [Human] Publier sur Chrome Web Store après validation complète architecture
+    - [ ] 8.14 [Human] Documenter métriques de succès et monitoring pipeline complet 
