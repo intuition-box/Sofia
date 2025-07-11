@@ -1,9 +1,10 @@
-import type { HistoryData } from './history';
+import type { CompleteVisitData, SimplifiedHistoryEntry } from './history';
 import type { WalletState } from './wallet';
 
 export interface StorageData {
   wallet: WalletState;
-  history: HistoryData;
+  historyEntries: SimplifiedHistoryEntry[];
+  completeVisits: CompleteVisitData[];
   settings: ExtensionSettings;
   cache: CacheData;
 }
@@ -14,6 +15,7 @@ export interface ExtensionSettings {
   notifications: boolean;
   autoBackup: boolean;
   debugMode: boolean;
+  isTrackingEnabled: boolean;
 }
 
 export interface CacheData {
