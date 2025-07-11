@@ -82,6 +82,21 @@
     - [x] 1.7.8 Garder uniquement l'interface d'authentification RainbowKit et les settings dans le popup
     - [x] 1.7.9 Rediriger toutes les données capturées vers les logs console pour visualisation
     - [x] 1.7.10 Tester la capture optimisée et vérifier les logs console
+  - [ ] 1.8 Intégration des logs de navigation avec Agent Eliza OS (PRIORITÉ)
+    - [ ] 1.8.1 Créer service de réception des données dans my-agent/src/services/navigation-receiver.ts
+    - [ ] 1.8.2 Définir endpoint API REST /api/navigation-data dans l'agent Eliza OS
+    - [ ] 1.8.3 Configurer schéma de données NavigationLog avec validation Zod
+    - [ ] 1.8.4 Modifier service-worker.ts pour ajouter fonction sendToEliza() 
+    - [ ] 1.8.5 Implémenter envoi HTTP POST vers agent local (http://localhost:3000/api/navigation-data)
+    - [ ] 1.8.6 Ajouter http://localhost:3000 aux permissions manifest.json
+    - [ ] 1.8.7 Configurer CORS dans l'agent pour accepter requêtes extension Chrome
+    - [ ] 1.8.8 Implémenter système de retry et gestion d'erreurs réseau
+    - [ ] 1.8.9 Ajouter toggle ON/OFF envoi vers Eliza dans les settings popup
+    - [ ] 1.8.10 Créer logs de debug pour traçage communication Extension ↔ Agent
+    - [ ] 1.8.11 Implémenter stockage local temporaire si agent indisponible
+    - [ ] 1.8.12 Ajouter indicateur visuel connexion agent dans popup (vert/rouge)
+    - [ ] 1.8.13 Tester pipeline complet: Extension → Service Worker → Agent Eliza OS
+    - [ ] 1.8.14 Documenter format données et API dans docs/eliza-integration.md
 
 - [ ] 2.0 Implémentation authentification RainbowKit et identité numérique
   - [ ] 2.1 Configurer RainbowKit dans src/lib/rainbowkit-config.ts avec providers
