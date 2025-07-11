@@ -1,58 +1,46 @@
-export interface NavigationEntry {
-  id: string;
-  url: string;
-  title: string;
-  domain: string;
-  timestamp: number;
-  visitDuration?: number;
-  category?: string;
-  isPrivate?: boolean;
-  referrer?: string;
-  tabId?: number;
+/**
+ * Types simplifiés pour les données d'historique SOFIA
+ * Capture uniquement les données essentielles selon spécifications
+ */
+
+// Données DOM capturées par le content script
+export interface DOMData {
+  title: string;              // document.title → Titre de la page
+  keywords: string;           // <meta name="keywords"> → Mots-clés SEO
+  description: string;        // <meta name="description"> → Description SEO
+  ogType: string;            // <meta property="og:type"> → Type de contenu
+  h1: string;                // <h1> → Titre principal visible
+  url: string;               // URL de la page
+  timestamp: number;         // Date/heure de capture
+  hasScrolled: boolean;      // Indique si l'utilisateur a scrollé sur la page
 }
 
-export interface HistoryData {
-  entries: NavigationEntry[];
-  totalVisits: number;
-  lastUpdated: number;
-  settings: HistorySettings;
-  statistics: HistoryStatistics;
+// Données d'historique Chrome simplifiées
+export interface SimplifiedHistoryEntry {
+  url: string;                // Adresse complète visitée
+  lastVisitTime: number;     // Dernière date de visite (depuis Chrome API)
+  visitCount: number;        // Nombre total de visites (depuis Chrome API)  
+  timestamp: number;         // Date/heure de l'événement au moment de la capture
+  duration?: number;         // Temps passé sur la page (calculé automatiquement)
 }
 
-export interface HistorySettings {
-  isTrackingEnabled: boolean;
-  excludedDomains: string[];
-  maxEntries: number;
-  retentionDays: number;
-  includePrivateMode: boolean;
+// Données combinées DOM + Historique pour une visite complète
+export interface CompleteVisitData {
+  domData: DOMData;
+  historyData: SimplifiedHistoryEntry;
+  capturedAt: number;        // Timestamp de capture combinée
 }
 
-export interface HistoryStatistics {
-  topDomains: DomainStat[];
-  dailyVisits: number;
-  weeklyVisits: number;
-  averageSessionTime: number;
-  categoriesDistribution: CategoryStat[];
+// Messages pour communication Chrome Runtime
+export interface ChromeMessage {
+  type: 'dom-data-captured' | 'visit-started' | 'visit-ended' | 'get-history' | 'clear-data';
+  data?: DOMData | SimplifiedHistoryEntry | CompleteVisitData;
+  url?: string;
 }
 
-export interface DomainStat {
-  domain: string;
-  visits: number;
-  totalTime: number;
-  percentage: number;
-}
-
-export interface CategoryStat {
-  category: string;
-  visits: number;
-  percentage: number;
-}
-
-export interface HistoryFilter {
-  startDate?: number;
-  endDate?: number;
-  domain?: string;
-  category?: string;
-  minDuration?: number;
-  searchQuery?: string;
+// Réponses Chrome Runtime
+export interface ChromeResponse {
+  success: boolean;
+  data?: SimplifiedHistoryEntry[] | CompleteVisitData[];
+  error?: string;
 }

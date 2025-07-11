@@ -49,18 +49,54 @@
 ### 📋 Résumé du Progrès Actuel
 - ✅ **Extension Chrome fonctionnelle** : Service worker, popup, capture d'historique
 - ✅ **Communication robuste** : Fix critique du "message port closed" entre service worker et popup 
-- ✅ **Interface utilisateur complète** : Dashboard, historique, statistiques avec favicons et liens
-- ✅ **API REST** : Exposition des données d'historique pour Agent1 (localhost)
+- ✅ **Capture de données optimisée** : Rectification complète pour capturer uniquement les données essentielles
+- ✅ **Interface simplifiée** : Popup épuré avec RainbowKit + Settings, logs console pour contrôle
+- ✅ **Calcul automatique durée** : Tracking intelligent des visites avec durée précise
 - 🔄 **Prochaines étapes** : Intégration RainbowKit, Agents Eliza OS, Gaianet et Intuition.systems
 
-- [x] 1.0 Configuration projet et infrastructure SOFIA Extension Chrome
+- [ ] 1.0 Configuration projet et infrastructure SOFIA Extension Chrome
   - [x] 1.1 Initialiser projet Vite avec template TypeScript (`npm create vite@latest sofia-extension --template vanilla-ts`)
   - [x] 1.2 Configurer Vite pour build d'extension Chrome (vite.config.ts avec support Manifest V3)
   - [x] 1.3 Créer manifest.json avec permissions storage, history, tabs, activeTab et host_permissions
   - [x] 1.4 Compléter installation dépendances : RainbowKit, Shadcn, Chrome Types déjà installés
   - [x] 1.5 Configurer structure de dossiers src/ avec popup/, background/, content/, lib/, types/
   - [x] 1.6 Configurer ESLint et Prettier pour code quality avec règles AI-friendly
-  - [ ] 1.7 Créer scripts package.json pour build, dev, test, lint et agent Eliza OS
+  - [x] 1.7 Rectifier le traitement des données pour capture optimisée
+    - [x] 1.7.1 Modifier content-script.ts pour capturer uniquement les données DOM requises :
+      - document.title (titre de la page)
+      - <meta name="keywords"> (mots-clés SEO)
+      - <meta name="description"> (description SEO)
+      - <meta property="og:type"> (type de contenu)
+      - <h1> (titre principal visible)
+    - [x] 1.7.2 Modifier chrome-history.ts pour capturer uniquement les données historique requises :
+      - url (adresse complète visitée)
+      - lastVisitTime (dernière date de visite)
+      - visitCount (nombre total de visites)
+      - timestamp (date/heure de l'événement au moment de la capture)
+      - duration (temps passé sur la page - calculé automatiquement)
+    - [x] 1.7.3 Mettre à jour les types dans src/types/history.ts pour refléter les nouvelles données
+    - [x] 1.7.4 Implémenter calcul automatique de la durée (duration) entre navigation et fermeture/changement d'onglet
+    - [x] 1.7.5 Ajouter système de logs console pour contrôle et debugging des données capturées
+    - [x] 1.7.6 Supprimer complètement les composants Dashboard.tsx et ChromeHistory.tsx de l'interface popup
+    - [x] 1.7.7 Simplifier App.tsx pour retirer les onglets dashboard et history
+    - [x] 1.7.8 Garder uniquement l'interface d'authentification RainbowKit et les settings dans le popup
+    - [x] 1.7.9 Rediriger toutes les données capturées vers les logs console pour visualisation
+    - [x] 1.7.10 Tester la capture optimisée et vérifier les logs console
+  - [ ] 1.8 Intégration des logs de navigation avec Agent Eliza OS (PRIORITÉ)
+    - [ ] 1.8.1 Créer service de réception des données dans my-agent/src/services/navigation-receiver.ts
+    - [ ] 1.8.2 Définir endpoint API REST /api/navigation-data dans l'agent Eliza OS
+    - [ ] 1.8.3 Configurer schéma de données NavigationLog avec validation Zod
+    - [ ] 1.8.4 Modifier service-worker.ts pour ajouter fonction sendToEliza() 
+    - [ ] 1.8.5 Implémenter envoi HTTP POST vers agent local (http://localhost:3000/api/navigation-data)
+    - [ ] 1.8.6 Ajouter http://localhost:3000 aux permissions manifest.json
+    - [ ] 1.8.7 Configurer CORS dans l'agent pour accepter requêtes extension Chrome
+    - [ ] 1.8.8 Implémenter système de retry et gestion d'erreurs réseau
+    - [ ] 1.8.9 Ajouter toggle ON/OFF envoi vers Eliza dans les settings popup
+    - [ ] 1.8.10 Créer logs de debug pour traçage communication Extension ↔ Agent
+    - [ ] 1.8.11 Implémenter stockage local temporaire si agent indisponible
+    - [ ] 1.8.12 Ajouter indicateur visuel connexion agent dans popup (vert/rouge)
+    - [ ] 1.8.13 Tester pipeline complet: Extension → Service Worker → Agent Eliza OS
+    - [ ] 1.8.14 Documenter format données et API dans docs/eliza-integration.md
 
 - [ ] 2.0 Implémentation authentification RainbowKit et identité numérique
   - [ ] 2.1 Configurer RainbowKit dans src/lib/rainbowkit-config.ts avec providers
