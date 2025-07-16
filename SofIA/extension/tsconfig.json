@@ -7,7 +7,7 @@
     ".plasmo/index.d.ts",
     "./**/*.ts",
     "./**/*.tsx",
-    "types.d.ts"
+    "../types.d.ts"
   ],
   "compilerOptions": {
     "paths": {
@@ -16,6 +16,10 @@
       ]
     },
     "baseUrl": ".",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
   }
 }

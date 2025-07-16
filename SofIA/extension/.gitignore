@@ -34,3 +34,5 @@ dist/
 
 .claude
 .env
+
+my-agent/.env

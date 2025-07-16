@@ -189,6 +189,45 @@ export class HistoryManager {
     }
   }
 
+  // Capturer une visite (pour l'intégration IA)
+  public async captureVisit(url: string, title: string, tabId?: number): Promise<{
+    id: string;
+    url: string;
+    title: string;
+    domain: string;
+    timestamp: number;
+    category?: string;
+  } | null> {
+    try {
+      const timestamp = Date.now();
+      const domain = new URL(url).hostname;
+      const id = `${domain}-${timestamp}`;
+      
+      // Utiliser la méthode existante pour enregistrer la visite
+      await this.recordPageVisit({
+        title,
+        keywords: '',
+        description: '',
+        ogType: '',
+        h1: '',
+        url,
+        timestamp
+      });
+      
+      return {
+        id,
+        url,
+        title,
+        domain,
+        timestamp,
+        category: 'general'
+      };
+    } catch (error) {
+      console.error('Erreur lors de la capture de visite:', error);
+      return null;
+    }
+  }
+
   // Obtenir des statistiques globales
   public getGlobalStats(): {
     totalUrls: number;

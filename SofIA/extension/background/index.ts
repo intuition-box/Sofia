@@ -3,12 +3,34 @@ import type { PlasmoMessage, ConsoleDisplayData } from "~types/messaging";
 import type { MetaMaskConnection } from "~types/wallet";
 import { HistoryManager } from "~lib/history";
 
+// Types pour l'agent IA
+type RawMessage = {
+  text: string;
+  thought?: string;
+  actions?: string[];
+};
+
+type AgentMessagePayload = {
+  channel_id: string;
+  server_id: string;
+  author_id: string;
+  content: string;
+  source_type: string;
+  raw_message: RawMessage;
+  metadata?: Record<string, any>;
+};
+
 // Instances pour le tracking
 const storage = new Storage();
 const historyManager = new HistoryManager();
 
 // Variables pour MetaMask
 let metamaskConnection: MetaMaskConnection | null = null;
+
+// Variables pour le tracking amélioré
+let captureCount = 0;
+const lastTabUpdate: Record<number, number> = {};
+let isTrackingEnabled = true;
 
 // Formater un timestamp en date lisible
 function formatTimestamp(timestamp: number): string {
@@ -72,6 +94,23 @@ function displayGlobalStats(): void {
   console.log('⏱️ Temps moyen par visite:', formatDuration(globalStats.averageTimePerVisit));
   console.log('🥇 URL la plus visitée:', globalStats.mostVisitedUrl || 'N/A');
   console.groupEnd();
+}
+
+// Fonction pour envoyer des messages à l'agent IA
+export async function sendAgentMessage(payload: AgentMessagePayload): Promise<void> {
+  try {
+    const response = await fetch("http://localhost:8080/relay", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      console.warn(`❌ Échec API (status ${response.status})`, result);
+    }
+  } catch (error) {
+    console.error("❌ Erreur lors de l'envoi via proxy :", error);
+  }
 }
 
 // Fonction pour connecter MetaMask (simplifié pour Plasmo)
@@ -180,6 +219,31 @@ async function handlePageData(pageData: any, _pageLoadTime: number): Promise<voi
     // Afficher dans la console
     displayConsoleData(displayData);
     
+    // Envoyer les données à l'agent IA (nouvelle fonctionnalité)
+    const formattedText = `[Sofia] Visite capturée:\n` +
+      `- 🌐 Domaine : ${new URL(pageData.url).hostname}\n` +
+      `- 📄 Titre : ${pageData.title}\n` +
+      `- 🔗 URL : ${pageData.url}\n` +
+      `- 🗂️ Catégorie : ${pageData.category || 'general'}\n` +
+      `- 🕓 Heure : ${formatTimestamp(pageData.timestamp)}\n` +
+      `- 📊 Nombre de visites : ${metrics.visitCount}`;
+
+    await sendAgentMessage({
+      channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
+      server_id: "00000000-0000-0000-0000-000000000000",
+      author_id: "92a90889-f91b-42cf-934a-6e3ff329c8cf",
+      content: formattedText,
+      source_type: "user_input",
+      raw_message: { text: formattedText },
+      metadata: {
+        agent_id: "582f4e58-1285-004d-8ef6-1e6301f3d646",
+        agentName: "SofIA1",
+        channelType: "DM",
+        isDm: true,
+        trigger: true
+      }
+    });
+    
     // Afficher les stats globales si c'est une nouvelle URL
     if (metrics.visitCount === 1) {
       setTimeout(() => displayGlobalStats(), 100);
@@ -225,18 +289,77 @@ function handleScrollData(scrollData: any): void {
   }
 }
 
-// Gérer l'activation des onglets silencieusement
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
+// Fonction pour capturer la navigation (améliorée avec l'IA)
+async function captureNavigation(url: string, title: string, tabId?: number): Promise<void> {
   try {
-    await chrome.tabs.get(activeInfo.tabId);
+    captureCount++;
+    const entry = await historyManager.captureVisit(url, title, tabId);
+    if (!entry) return;
+
+    const formattedText = `[Sofia] Visite capturée:\n` +
+      `- 🌐 Domaine : ${entry.domain}\n` +
+      `- 📄 Titre : ${entry.title}\n` +
+      `- 🔗 URL : ${entry.url}\n` +
+      `- 🗂️ Catégorie : ${entry.category || 'general'}\n` +
+      `- 🆔 ID : ${entry.id}\n` +
+      `- 🕓 Heure : ${new Date(entry.timestamp).toLocaleString('fr-FR')}\n` +
+      `- 🪟 Tab ID : ${tabId || 'inconnu'}`;
+
+    await sendAgentMessage({
+      channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
+      server_id: "00000000-0000-0000-0000-000000000000",
+      author_id: "92a90889-f91b-42cf-934a-6e3ff329c8cf",
+      content: formattedText,
+      source_type: "user_input",
+      raw_message: { text: formattedText },
+      metadata: {
+        agent_id: "582f4e58-1285-004d-8ef6-1e6301f3d646",
+        agentName: "SofIA1",
+        channelType: "DM",
+        isDm: true,
+        trigger: true
+      }
+    });
+
+    // Vérifier le storage
+    const storageCheck = await chrome.storage.local.get(['historyData']);
+    const storedData = storageCheck.historyData;
+    if (storedData?.entries?.length) {
+      const lastEntry = storedData.entries.at(-1);
+      if (lastEntry?.id === entry.id) {
+        console.log(`✅ Nouvelle entrée trouvée dans le storage: ${lastEntry.domain}`);
+      }
+    }
+    await displayGlobalStats();
   } catch (error) {
-    // Ignorer les erreurs
+    console.error('❌ Erreur capture navigation:', error);
+  }
+}
+
+// Gérer l'activation des onglets avec tracking amélioré
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  if (!isTrackingEnabled) return;
+  try {
+    const tab = await chrome.tabs.get(activeInfo.tabId);
+    if (tab.url && tab.title) {
+      await captureNavigation(tab.url, tab.title, tab.id);
+    }
+  } catch (error) {
+    console.error('❌ Erreur capture onglet actif:', error);
   }
 });
 
-// Gérer les mises à jour d'URL des onglets silencieusement
-chrome.tabs.onUpdated.addListener((_tabId, _changeInfo, _tab) => {
-  // Traitement silencieux
+// Gérer les mises à jour d'URL des onglets avec tracking amélioré
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (!isTrackingEnabled) return;
+  if (changeInfo.status === 'complete' && tab.url && tab.title) {
+    const now = Date.now();
+    const lastUpdate = lastTabUpdate[tabId] || 0;
+    if (now - lastUpdate > 1000) {
+      lastTabUpdate[tabId] = now;
+      await captureNavigation(tab.url, tab.title, tabId);
+    }
+  }
 });
 
 // Nettoyage périodique de l'historique (une fois par jour)
@@ -261,6 +384,12 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
     chrome.sidePanel.open({ tabId, windowId })
   }
+});
+
+// Messages d'initialisation
+chrome.runtime.onInstalled.addListener(() => {
+  console.log("✅ Tracking d'historique activé - Extension prête à capturer");
+  console.log('🔍 Pour voir les logs : chrome://extensions/ → Détails → Service Worker → Console');
 });
 
 // SOFIA Service Worker démarré

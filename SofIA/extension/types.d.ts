@@ -49,4 +49,14 @@ declare module "~src/components/ui/button" {
 declare module "~src/lib/metamask" {
   export const connectWallet: () => Promise<string>
   export const disconnectWallet: () => Promise<void>
+}
+
+declare module 'express' {
+  const express: any;
+  export default express;
+}
+
+declare module 'node-fetch' {
+  const fetch: any;
+  export default fetch;
 } 
