@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "metamask-extension-provider": "^5.0.0"
-  },
-  "devDependencies": {
-    "vite": "^7.0.4"
-  }
-}
