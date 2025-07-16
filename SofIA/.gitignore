@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Lock files (garder seulement ceux utilisés)
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# Build outputs
+build/
+dist/
+out/
+.plasmo/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+.tsbuildinfonode_modules/
