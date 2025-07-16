@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm:*)",
+      "Bash(npm:*)",
+      "Bash(npm run test:*)",
+      "Read(~/.zshrc)", 
+      "Bash(gh:*)",
+      "Bash(ls:*)",
+      "Bash(git:*)",
+      "mcp__context7"
+    ],
+    "defaultMode": "acceptEdits" 
+  }
+}
