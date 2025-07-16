@@ -1,11 +1,12 @@
 import React from "react"
 import { Button } from "~components/ui/button"
-import { connectWallet, disconnectWallet } from "./lib/metamask"
+import { connectWallet, disconnectWallet } from "../lib/metamask"
 import { useStorage } from "@plasmohq/storage/hook"
 import { PowerOff } from 'lucide-react';
 
 const WalletConnectionButton = () => {
   const [account, setAccount] = useStorage<string>("metamask-account")
+  const [isDisconnectHovered, setIsDisconnectHovered] = React.useState(false)
 
   const handleConnect = async () => {
     try {
@@ -21,6 +22,22 @@ const WalletConnectionButton = () => {
     disconnectWallet()
   }
 
+  const disconnectButtonStyle = {
+    padding: '4px',
+    color: '#6c757d',
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    transform: isDisconnectHovered ? 'scale(1.1)' : 'scale(1)'
+  }
+
+  const iconStyle = {
+    height: '16px',
+    width: '16px'
+  }
+
   return (
     <div>
       {!account ? (
@@ -30,9 +47,11 @@ const WalletConnectionButton = () => {
           <button
             title="Disconnect"
             onClick={handleDisconnect}
-            className="p-1 text-grey-400 transition-transform duration-200 transform hover:scale-110"
+            style={disconnectButtonStyle}
+            onMouseEnter={() => setIsDisconnectHovered(true)}
+            onMouseLeave={() => setIsDisconnectHovered(false)}
           >
-            <PowerOff className="h-4 w-4"/>
+            <PowerOff style={iconStyle}/>
           </button>
         </div>
       )}

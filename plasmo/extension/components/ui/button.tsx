@@ -3,27 +3,55 @@ import React from "react"
 interface ButtonProps {
   variant?: "default" | "successOutline"
   onClick?: () => void
-  children: React.ReactNode
-  className?: string
+  children: any
+  style?: any
 }
 
 export const Button: React.FC<ButtonProps> = ({ 
   variant = "default", 
   onClick, 
   children, 
-  className = "" 
+  style = {} 
 }) => {
-  const baseStyles = "px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+  const baseStyles = {
+    padding: '8px 16px',
+    borderRadius: '6px',
+    fontWeight: '500',
+    fontSize: '14px',
+    transition: 'all 0.2s ease',
+    cursor: 'pointer',
+    border: 'none',
+    outline: 'none',
+    ...style
+  }
   
   const variants = {
-    default: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-    successOutline: "border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white focus:ring-green-500"
+    default: {
+      backgroundColor: '#007bff',
+      color: 'white'
+    },
+    successOutline: {
+      backgroundColor: 'transparent',
+      border: '2px solid #28a745',
+      color: '#28a745'
+    }
+  }
+
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const buttonStyle = {
+    ...baseStyles,
+    ...variants[variant],
+    ...(isHovered && variant === 'default' && { backgroundColor: '#0056b3' }),
+    ...(isHovered && variant === 'successOutline' && { backgroundColor: '#28a745', color: 'white' })
   }
 
   return (
     <button
       onClick={onClick}
-      className={`${baseStyles} ${variants[variant]} ${className}`}
+      style={buttonStyle}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {children}
     </button>
