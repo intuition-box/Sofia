@@ -5,8 +5,8 @@
   "description": "Data tracking and wallet connexion",
   "author": "me",
   "scripts": {
-    "dev": "pnpm run dev",
-    "build": "pnpm run build",
+    "dev": "plasmo dev",
+    "build": "plasmo build",
     "package": "plasmo package",
     "proxy": "node sofia-proxy/server.ts"
   },
@@ -37,10 +37,15 @@
       "history",
       "tabs",
       "activeTab",
-      "alarms"
+      "alarms",
+      "sidePanel"
     ],
     "host_permissions": [
       "<all_urls>"
-    ]
+    ],
+    "side_panel": {
+      "default_path": "sidepanel.html"
+    },
+    "action": {}
   }
 }

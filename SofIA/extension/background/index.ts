@@ -386,11 +386,29 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   }
 });
 
-// Messages d'initialisation
-chrome.runtime.onInstalled.addListener(() => {
+// Ouvrir automatiquement le sidepanel quand l'extension est installée ou mise à jour
+chrome.runtime.onInstalled.addListener(async () => {
   console.log("✅ Tracking d'historique activé - Extension prête à capturer");
   console.log('🔍 Pour voir les logs : chrome://extensions/ → Détails → Service Worker → Console');
+  
+  // Ouvrir le sidepanel automatiquement
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tabs[0]?.id) {
+      await chrome.sidePanel.open({ tabId: tabs[0].id });
+    }
+  } catch (error) {
+    console.log('Impossible d\'ouvrir le sidepanel automatiquement:', error);
+  }
 });
+
+// Ouvrir le sidepanel quand l'utilisateur clique sur l'icône de l'extension
+chrome.action.onClicked.addListener(async (tab) => {
+  if (tab.id) {
+    await chrome.sidePanel.open({ tabId: tab.id });
+  }
+});
+
 
 // SOFIA Service Worker démarré
 console.log('🚀 SOFIA Extension - Service Worker prêt (Plasmo)');

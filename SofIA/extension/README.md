@@ -1,5 +1,14 @@
 This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
 
+## Structure du projet
+
+Ce projet contient deux `node_modules` distincts :
+
+1. **SofIA/ (racine)** : Projet parent avec des dépendances basiques (metamask-extension-provider et vite)
+2. **SofIA/extension/** : Sous-projet d'extension browser avec Plasmo, React et d'autres dépendances spécifiques
+
+Chaque `package.json` génère son propre `node_modules` lors de l'installation des dépendances. C'est normal dans une architecture avec plusieurs projets imbriqués.
+
 ## Getting Started
 
 First, run the development server:
