@@ -1,5 +1,5 @@
 import { Storage } from "@plasmohq/storage";
-import type { PlasmoMessage, ConsoleDisplayData } from "~types/messaging";
+import type { PlasmoMessage } from "~types/messaging";
 import type { MetaMaskConnection } from "~types/wallet";
 import { HistoryManager } from "~lib/history";
 
@@ -20,7 +20,13 @@ type AgentMessagePayload = {
   metadata?: Record<string, any>;
 };
 
-// Instances pour le tracking
+interface MessageData {
+  type: 'PAGE_DATA' | 'PAGE_DURATION' | 'SCROLL_DATA' | 'TEST_MESSAGE' | 'BEHAVIOR_DATA';
+  data: any;
+  pageLoadTime?: number;
+}
+
+// Instances
 const storage = new Storage();
 const historyManager = new HistoryManager();
 
@@ -31,69 +37,76 @@ let metamaskConnection: MetaMaskConnection | null = null;
 let captureCount = 0;
 const lastTabUpdate: Record<number, number> = {};
 let isTrackingEnabled = true;
+const behaviorCache: Record<string, any> = {};
+
+// Buffer navigation
+const navigationBuffer: string[] = [];
+const MAX_BUFFER_SIZE = 3;
+const SEND_INTERVAL_MS = 2 * 60 * 1000; // 2 min
 
 // Formater un timestamp en date lisible
-function formatTimestamp(timestamp: number): string {
-  return new Date(timestamp).toLocaleString('fr-FR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+function formatTimestamp(ts: number): string {
+  return new Date(ts).toLocaleString('fr-FR', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
   });
 }
 
 // Formater une durée en format lisible
-function formatDuration(durationMs: number): string {
-  if (durationMs < 1000) return `${durationMs}ms`;
-  
-  const seconds = Math.floor(durationMs / 1000);
-  if (seconds < 60) return `${seconds}s`;
-  
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
-  
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return `${hours}h ${remainingMinutes}m ${remainingSeconds}s`;
+function formatDuration(ms: number): string {
+  const sec = Math.floor(ms / 1000);
+  const min = Math.floor(sec / 60);
+  const remSec = sec % 60;
+  const hrs = Math.floor(min / 60);
+  const remMin = min % 60;
+  return hrs > 0 ? `${hrs}h ${remMin}m ${remSec}s` : `${min}m ${remSec}s`;
 }
 
-// Afficher les données dans la console avec un format joli
-function displayConsoleData(data: ConsoleDisplayData): void {
-  console.group('🚀 SOFIA - DONNÉES DE NAVIGATION CAPTURÉES');
-  console.log('');
-  console.log('📄 document.title (titre de la page):', data.title || '❌ VIDE');
-  console.log('🔍 <meta name="keywords"> (mots-clés SEO):', data.keywords || '❌ ABSENT');
-  console.log('📝 <meta name="description"> (description SEO):', data.description || '❌ ABSENT'); 
-  console.log('🏷️ <meta property="og:type"> (type de contenu):', data.ogType || '❌ ABSENT');
-  console.log('📰 <h1> (titre principal visible):', data.h1 || '❌ ABSENT');
-  console.log('🌐 url (adresse complète visitée):', data.url);
-  console.log('📅 lastVisitTime (dernière date de visite):', data.lastVisitTime);
-  console.log('🔢 visitCount (nombre total de visites):', data.visitCount);
-  console.log('⏰ timestamp (date/heure de l\'événement):', data.timestamp);
-  console.log('⏱️ duration (temps passé sur la page):', data.duration);
-  console.log('📜 scroll activity (événements de scroll):', data.scrollActivity);
-  console.log('');
+function trimNavigationBuffer(maxSize = 8): void {
+  if (navigationBuffer.length > maxSize) {
+    navigationBuffer.splice(0, navigationBuffer.length - maxSize);
+  }
+}
+
+function cleanOldBehaviors(maxAgeMs = 15 * 60 * 1000): void {
+  const now = Date.now();
+  for (const url in behaviorCache) {
+    if (now - behaviorCache[url]?.timestamp > maxAgeMs) {
+      delete behaviorCache[url];
+    }
+  }
+}
+
+async function flushNavigationBuffer(): Promise<void> {
+  if (navigationBuffer.length === 0) return;
+
+  const content = `[Sofia] Résumé de navigation récent (${navigationBuffer.length} visites)\n\n` +
+    navigationBuffer.join('\n' + '─'.repeat(60) + '\n');
+
+  console.group('📤 Envoi périodique des données à l\'agent');
+  console.log('📦 Nombre d\'éléments envoyés :', navigationBuffer.length);
+  console.log('🕓 Heure :', formatTimestamp(Date.now()));
+  console.log('📄 Contenu envoyé :\n\n' + content);
   console.groupEnd();
-  
-  // Ligne de séparation visuelle
   console.log('═'.repeat(100));
-  console.log('');
-}
 
-// Afficher les statistiques globales
-function displayGlobalStats(): void {
-  const globalStats = historyManager.getGlobalStats();
-  
-  console.group('📊 SOFIA - Statistiques Globales');
-  console.log('🌐 Total URLs visitées:', globalStats.totalUrls);
-  console.log('👁️ Total visites:', globalStats.totalVisits);
-  console.log('⏱️ Temps total passé:', formatDuration(globalStats.totalTimeSpent));
-  console.log('⏱️ Temps moyen par visite:', formatDuration(globalStats.averageTimePerVisit));
-  console.log('🥇 URL la plus visitée:', globalStats.mostVisitedUrl || 'N/A');
-  console.groupEnd();
+  await sendAgentMessage({
+    channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
+    server_id: "00000000-0000-0000-0000-000000000000",
+    author_id: "92a90889-f91b-42cf-934a-6e3ff329c8cf",
+    content,
+    source_type: "user_input",
+    raw_message: { text: content },
+    metadata: {
+      agent_id: "582f4e58-1285-004d-8ef6-1e6301f3d646",
+      agentName: "SofIA1",
+      channelType: "DM",
+      isDm: true,
+      trigger: true
+    }
+  });
+
+  navigationBuffer.length = 0;
 }
 
 // Fonction pour envoyer des messages à l'agent IA
@@ -105,9 +118,7 @@ export async function sendAgentMessage(payload: AgentMessagePayload): Promise<vo
       body: JSON.stringify(payload),
     });
     const result = await response.json();
-    if (!response.ok) {
-      console.warn(`❌ Échec API (status ${response.status})`, result);
-    }
+    if (!response.ok) console.warn(`❌ Échec API (status ${response.status})`, result);
   } catch (error) {
     console.error("❌ Erreur lors de l'envoi via proxy :", error);
   }
@@ -133,7 +144,7 @@ async function connectToMetamask(): Promise<MetaMaskConnection> {
 }
 
 // Gérer les messages du content script
-chrome.runtime.onMessage.addListener((message: PlasmoMessage, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sender, sendResponse) => {
   switch (message.type) {
     case 'TEST_MESSAGE':
       // Test de communication silencieux
@@ -148,7 +159,14 @@ chrome.runtime.onMessage.addListener((message: PlasmoMessage, _sender, sendRespo
       break;
     
     case 'SCROLL_DATA':
-      handleScrollData(message.data);
+      historyManager.recordScrollEvent(message.data.url);
+      break;
+    
+    case 'BEHAVIOR_DATA':
+      behaviorCache[message.data.url] = message.data;
+      if (typeof historyManager.recordBehavior === 'function') {
+        historyManager.recordBehavior(message.data);
+      }
       break;
     
     case 'CONNECT_TO_METAMASK':
@@ -196,183 +214,109 @@ chrome.runtime.onMessage.addListener((message: PlasmoMessage, _sender, sendRespo
 });
 
 // Traiter les données de page
-async function handlePageData(pageData: any, _pageLoadTime: number): Promise<void> {
-  try {
-    // Utiliser le HistoryManager pour enregistrer la visite
-    const metrics = await historyManager.recordPageVisit(pageData);
-    
-    // Préparer les données pour l'affichage
-    const displayData: ConsoleDisplayData = {
-      title: pageData.title,
-      keywords: pageData.keywords,
-      description: pageData.description,
-      ogType: pageData.ogType,
-      h1: pageData.h1,
-      url: pageData.url,
-      lastVisitTime: formatTimestamp(metrics.lastVisitTime),
-      visitCount: metrics.visitCount,
-      timestamp: formatTimestamp(pageData.timestamp),
-      duration: 'Session active - calcul en cours...',
-      scrollActivity: 'Session démarrée - suivi actif'
-    };
-    
-    // Afficher dans la console
-    displayConsoleData(displayData);
-    
-    // Envoyer les données à l'agent IA (nouvelle fonctionnalité)
-    const formattedText = `[Sofia] Visite capturée:\n` +
-      `- 🌐 Domaine : ${new URL(pageData.url).hostname}\n` +
-      `- 📄 Titre : ${pageData.title}\n` +
-      `- 🔗 URL : ${pageData.url}\n` +
-      `- 🗂️ Catégorie : ${pageData.category || 'general'}\n` +
-      `- 🕓 Heure : ${formatTimestamp(pageData.timestamp)}\n` +
-      `- 📊 Nombre de visites : ${metrics.visitCount}`;
+async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
+  const excluded = [
+    'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
+    'oauth', 'widget', 'chrome-extension://', 'sandbox', 'about:blank'
+  ];
+  if (excluded.some(str => data.url.includes(str))) return;
 
-    await sendAgentMessage({
-      channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
-      server_id: "00000000-0000-0000-0000-000000000000",
-      author_id: "92a90889-f91b-42cf-934a-6e3ff329c8cf",
-      content: formattedText,
-      source_type: "user_input",
-      raw_message: { text: formattedText },
-      metadata: {
-        agent_id: "582f4e58-1285-004d-8ef6-1e6301f3d646",
-        agentName: "SofIA1",
-        channelType: "DM",
-        isDm: true,
-        trigger: true
-      }
-    });
-    
-    // Afficher les stats globales si c'est une nouvelle URL
-    if (metrics.visitCount === 1) {
-      setTimeout(() => displayGlobalStats(), 100);
-    }
-    
-  } catch (error) {
-    console.error('Erreur lors du traitement des données de page:', error);
+  const stats = await historyManager.recordPageVisit(data);
+  const durationStats = historyManager.getUrlStats(data.url);
+  const durationText = durationStats ? formatDuration(durationStats.totalDuration) : 'non mesuré';
+  const scrollText = data.hasScrolled ? 'oui' : 'non';
+
+  let behaviorText = '';
+  const behavior = behaviorCache[data.url];
+  const now = Date.now();
+  if (behavior && now - behavior.timestamp < 10 * 60 * 1000) {
+    if (behavior.videoPlayed) behaviorText += `🎬 Vidéo regardée (${behavior.videoDuration?.toFixed(1)}s)\n`;
+    if (behavior.audioPlayed) behaviorText += `🎵 Audio écouté (${behavior.audioDuration?.toFixed(1)}s)\n`;
+    if (behavior.articleRead) behaviorText += `📖 Article lu : "${behavior.title}" (${(behavior.readTime / 1000).toFixed(1)}s)\n`;
   }
+
+  const message =
+    `[Sofia] Nouvelle visite enrichie\n\n` +
+    `🌐 URL : ${data.url}\n` +
+    `🕓 Heure : ${formatTimestamp(data.timestamp)}\n` +
+    `📄 Titre : ${data.title || 'Non défini'}\n` +
+    `🏷️ Mots-clés : ${data.keywords || 'Non défini'}\n` +
+    `📚 Type OpenGraph : ${data.ogType || 'Non défini'}\n` +
+    `🆔 H1 : ${data.h1 || 'Non défini'}\n` +
+    `🔁 Nombre de visites : ${stats.visitCount}\n` +
+    `⏱️ Temps total : ${durationText}\n` +
+    `📜 Scroll détecté : ${scrollText}` +
+    (behaviorText ? `\n🧠 Comportement :\n${behaviorText}` : '');
+
+  // Log console immédiat
+  console.group('🧠 Nouvelle page capturée');
+  console.log(message);
+  console.groupEnd();
+  console.log('═'.repeat(100));
+
+  trimNavigationBuffer(8);
+
+  navigationBuffer.push(message);
+  if (navigationBuffer.length >= MAX_BUFFER_SIZE) {
+    await flushNavigationBuffer();
+  }
+
+  if (behavior) delete behaviorCache[data.url];
 }
 
 // Traiter les données de durée
-async function handlePageDuration(durationData: any): Promise<void> {
-  try {
-    await historyManager.recordPageDuration(
-      durationData.url,
-      durationData.duration,
-      durationData.timestamp
-    );
-    
-    // Obtenir les stats mises à jour
-    const urlStats = historyManager.getUrlStats(durationData.url);
-    
-    if (urlStats) {
-      console.group('⏱️ SOFIA - Fin de Session');
-      console.log('🌐 URL:', durationData.url);
-      console.log('⏱️ Durée session:', formatDuration(durationData.duration));
-      console.log('⏱️ Temps total sur cette page:', formatDuration(urlStats.totalDuration));
-      console.log('📊 Nombre de sessions:', urlStats.sessions.length);
-      console.groupEnd();
-    }
-    
-  } catch (error) {
-    console.error('Erreur lors du traitement de la durée:', error);
-  }
+async function handlePageDuration(data: any) {
+  await historyManager.recordPageDuration(data.url, data.duration, data.timestamp);
 }
 
-// Traiter les données de scroll
-function handleScrollData(scrollData: any): void {
-  try {
-    historyManager.recordScrollEvent(scrollData.url);
-  } catch (error) {
-    console.error('Erreur lors du traitement du scroll:', error);
-  }
-}
+// Flush toutes les 2 minutes
+setInterval(() => {
+  flushNavigationBuffer();
+}, SEND_INTERVAL_MS);
 
-// Fonction pour capturer la navigation (améliorée avec l'IA)
-async function captureNavigation(url: string, title: string, tabId?: number): Promise<void> {
-  try {
-    captureCount++;
-    const entry = await historyManager.captureVisit(url, title, tabId);
-    if (!entry) return;
+// Fonction d'initialisation
+function init(): void {
+  cleanOldBehaviors();
+  flushNavigationBuffer();
 
-    const formattedText = `[Sofia] Visite capturée:\n` +
-      `- 🌐 Domaine : ${entry.domain}\n` +
-      `- 📄 Titre : ${entry.title}\n` +
-      `- 🔗 URL : ${entry.url}\n` +
-      `- 🗂️ Catégorie : ${entry.category || 'general'}\n` +
-      `- 🆔 ID : ${entry.id}\n` +
-      `- 🕓 Heure : ${new Date(entry.timestamp).toLocaleString('fr-FR')}\n` +
-      `- 🪟 Tab ID : ${tabId || 'inconnu'}`;
+  let socket: WebSocket | null = null;
 
-    await sendAgentMessage({
-      channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
-      server_id: "00000000-0000-0000-0000-000000000000",
-      author_id: "92a90889-f91b-42cf-934a-6e3ff329c8cf",
-      content: formattedText,
-      source_type: "user_input",
-      raw_message: { text: formattedText },
-      metadata: {
-        agent_id: "582f4e58-1285-004d-8ef6-1e6301f3d646",
-        agentName: "SofIA1",
-        channelType: "DM",
-        isDm: true,
-        trigger: true
+  function connectToElizaWebSocket() {
+    const socket = new WebSocket('ws://localhost:8080');
+
+    socket.onopen = () => {
+      console.log('✅ WebSocket connecté au proxy ElizaOS');
+    };
+
+    socket.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      if (msg.type === 'agent_response') {
+        console.log('💬 Réponse agent reçue :', msg.message);
+
+        // Transmettre au popup
+        chrome.runtime.sendMessage({
+          type: 'AGENT_RESPONSE',
+          data: msg.message
+        });
       }
-    });
+    };
 
-    // Vérifier le storage
-    const storageCheck = await chrome.storage.local.get(['historyData']);
-    const storedData = storageCheck.historyData;
-    if (storedData?.entries?.length) {
-      const lastEntry = storedData.entries.at(-1);
-      if (lastEntry?.id === entry.id) {
-        console.log(`✅ Nouvelle entrée trouvée dans le storage: ${lastEntry.domain}`);
-      }
-    }
-    await displayGlobalStats();
-  } catch (error) {
-    console.error('❌ Erreur capture navigation:', error);
+    socket.onclose = () => {
+      console.warn('🔌 WebSocket ElizaOS fermé. Reconnexion dans 5s...');
+      setTimeout(connectToElizaWebSocket, 5000);
+    };
+
+    socket.onerror = (err) => {
+      console.error('❌ WebSocket ElizaOS erreur :', err);
+    };
   }
+
+  // Lance la connexion au démarrage du service worker
+  connectToElizaWebSocket();
 }
 
-// Gérer l'activation des onglets avec tracking amélioré
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-  if (!isTrackingEnabled) return;
-  try {
-    const tab = await chrome.tabs.get(activeInfo.tabId);
-    if (tab.url && tab.title) {
-      await captureNavigation(tab.url, tab.title, tab.id);
-    }
-  } catch (error) {
-    console.error('❌ Erreur capture onglet actif:', error);
-  }
-});
-
-// Gérer les mises à jour d'URL des onglets avec tracking amélioré
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (!isTrackingEnabled) return;
-  if (changeInfo.status === 'complete' && tab.url && tab.title) {
-    const now = Date.now();
-    const lastUpdate = lastTabUpdate[tabId] || 0;
-    if (now - lastUpdate > 1000) {
-      lastTabUpdate[tabId] = now;
-      await captureNavigation(tab.url, tab.title, tabId);
-    }
-  }
-});
-
-// Nettoyage périodique de l'historique (une fois par jour)
-chrome.alarms.create('cleanHistory', { 
-  delayInMinutes: 60, // Premier nettoyage dans 1 heure
-  periodInMinutes: 24 * 60 // Puis toutes les 24 heures
-});
-
-chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === 'cleanHistory') {
-    historyManager.cleanOldHistory(30); // Garder 30 jours d'historique
-  }
-});
+// Lancer l'initialisation
+init();
 
 // Gérer les messages du sidepanel (préserver fonctionnalité existante)
 chrome.runtime.onMessage.addListener((message, sender) => {
@@ -388,8 +332,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
 // Ouvrir automatiquement le sidepanel quand l'extension est installée ou mise à jour
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log("✅ Tracking d'historique activé - Extension prête à capturer");
-  console.log('🔍 Pour voir les logs : chrome://extensions/ → Détails → Service Worker → Console');
+  console.log("✅ Tracking activé - Extension prête");
   
   // Ouvrir le sidepanel automatiquement
   try {
@@ -409,13 +352,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
-
 // SOFIA Service Worker démarré
 console.log('🚀 SOFIA Extension - Service Worker prêt (Plasmo)');
-
-// Afficher les stats au démarrage
-setTimeout(() => {
-  displayGlobalStats();
-}, 1000);
 
 export {};
