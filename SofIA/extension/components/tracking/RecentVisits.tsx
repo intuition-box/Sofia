@@ -80,20 +80,24 @@ const RecentVisits: React.FC<RecentVisitsProps> = ({ visits, maxItems = 5 }) => 
 const styles = {
   container: {
     padding: '16px',
-    backgroundColor: '#ffffff',
-    borderRadius: '8px',
-    border: '1px solid #e9ecef',
-    marginBottom: '16px'
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.125)',
+    marginBottom: '16px',
+    backdropFilter: 'blur(10px) saturate(100%)',
+    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    transition: 'all 0.3s ease'
   },
   header: {
     marginBottom: '12px',
-    borderBottom: '1px solid #e9ecef',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
     paddingBottom: '8px'
   },
   title: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#495057'
+    color: '#FBF7F5'
   },
   visitsList: {
     display: 'flex',
@@ -105,9 +109,14 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '8px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '6px',
-    gap: '8px'
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(5px) saturate(100%)',
+    WebkitBackdropFilter: 'blur(5px) saturate(100%)',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    gap: '8px',
+    transition: 'all 0.3s ease'
   },
   visitContent: {
     display: 'flex',
@@ -119,14 +128,14 @@ const styles = {
   visitTitle: {
     fontSize: '13px',
     fontWeight: '500',
-    color: '#212529',
+    color: '#FBF7F5',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const
   },
   visitUrl: {
     fontSize: '11px',
-    color: '#6c757d',
+    color: '#F2DED6',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const
@@ -140,12 +149,12 @@ const styles = {
   },
   visitCount: {
     fontSize: '11px',
-    color: '#198754',
+    color: '#C7866C',
     fontWeight: '600'
   },
   visitTime: {
     fontSize: '10px',
-    color: '#6c757d'
+    color: '#F2DED6'
   },
   emptyState: {
     textAlign: 'center' as const,
@@ -153,7 +162,7 @@ const styles = {
   },
   emptyText: {
     fontSize: '12px',
-    color: '#6c757d',
+    color: '#F2DED6',
     fontStyle: 'italic'
   }
 };

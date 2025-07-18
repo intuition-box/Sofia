@@ -48,6 +48,12 @@
     "side_panel": {
       "default_path": "sidepanel.html"
     },
-    "action": {}
+    "action": {},
+    "web_accessible_resources": [
+      {
+        "resources": ["public/spline-background.webm"],
+        "matches": ["<all_urls>"]
+      }
+    ]
   }
 }
