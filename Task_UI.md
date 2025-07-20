@@ -51,13 +51,13 @@ Cette task list détaille l'implémentation de l'extension Sofia Chrome basée s
 ## 🎨 Priorité MOYENNE - Nouvelles Pages
 
 ### 5. Page My Graph
-- [ ] Créer le système d'onglets (My Data / My Triplets)
+- [ ] Créer le système d'onglets (My Data / My triples)
 - [ ] Réutiliser les composants tracking existants pour My Data
-- [ ] Créer My Triplets avec boutons Vote/Remove/Send
+- [ ] Créer My triples avec boutons Vote/Remove/Send
 
 ### 6. Page Recommendations
 - [ ] Créer l'interface de recommandations IA
-- [ ] Connecter avec les données des Triplets
+- [ ] Connecter avec les données des triples
 - [ ] Système de descriptions sous chaque recommandation
 
 ### 7. Page Saved
@@ -104,7 +104,7 @@ Cette task list détaille l'implémentation de l'extension Sofia Chrome basée s
 - [ ] Connexion avec les données trackées
 
 ### 13. Interconnexions
-- [ ] Liens entre favoris/triplets/recommandations
+- [ ] Liens entre favoris/triples/recommandations
 - [ ] Navigation contextuelle
 - [ ] Boutons "retour page d'accueil" sur chaque page
 

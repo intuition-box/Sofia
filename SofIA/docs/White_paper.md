@@ -33,7 +33,7 @@ But it's more than just an assistant:
 | Auth             | MetaMask |
 | APIs             | Google Maps, Intuition.systems |
 | Extension        | Chrome |
-| Web3             | On-chain integration via signals/atoms/triplets |
+| Web3             | On-chain integration via signals/atoms/triples |
 | Language         | TypeScript    |
 
 ---
@@ -113,7 +113,7 @@ Accessibility and readability best practices
 TypeScript / Vite standards
 
 ##📌 TODO (Initial Roadmap)
- Full integration with Intuition.systems (atoms/triplets/signals)
+ Full integration with Intuition.systems (atoms/triples/signals)
 
  Interface to visualize interests
 
@@ -129,7 +129,7 @@ TypeScript / Vite standards
 
  Google Maps integration (local activity insights)
 
- Voting or reaction mechanism on triplets (signals)
+ Voting or reaction mechanism on triples (signals)
 
  Web3 interface / Wallet / ETH staking on signals
 

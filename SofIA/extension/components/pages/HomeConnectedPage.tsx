@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useTracking } from '../../hooks/useTracking'
 import { useRouter } from '../layout/RouterProvider'
 import logoIcon from '../../assets/iconcolored.png'
@@ -6,7 +6,7 @@ import thumbsUpIcon from '../ui/Thumbs up.png'
 import toggleTrue from '../ui/button=True.png'
 import toggleFalse from '../ui/button=False.png'
 
-const HomeConnectedPage: React.FC = () => {
+const HomeConnectedPage = () => {
   const [chatInput, setChatInput] = useState("")
   const { navigateTo } = useRouter()
   const { isTrackingEnabled, toggleTracking } = useTracking()

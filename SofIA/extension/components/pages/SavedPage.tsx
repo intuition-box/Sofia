@@ -1,7 +1,6 @@
-import React from 'react'
 import { useRouter } from '../layout/RouterProvider'
 
-const SavedPage: React.FC = () => {
+const SavedPage = () => {
   const { navigateTo } = useRouter()
 
   return (

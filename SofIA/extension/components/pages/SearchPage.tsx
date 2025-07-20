@@ -1,7 +1,6 @@
-import React from 'react'
 import { useRouter } from '../layout/RouterProvider'
 
-const SearchPage: React.FC = () => {
+const SearchPage = () => {
   const { navigateTo } = useRouter()
 
   return (

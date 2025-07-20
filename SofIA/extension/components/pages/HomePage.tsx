@@ -1,8 +1,7 @@
-import React from 'react'
 import WalletConnectionButton from '../THP_WalletConnectionButton'
 import logoIcon from '../../assets/iconcolored.png'
 
-const HomePage: React.FC = () => {
+const HomePage = () => {
   return (
     <div style={styles.homePage}>
       <div style={styles.logoContainer}>

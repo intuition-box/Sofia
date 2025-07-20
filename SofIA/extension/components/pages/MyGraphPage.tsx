@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
 import { TrackingStats, RecentVisits } from '../tracking'
 
-const MyGraphPage: React.FC = () => {
+const MyGraphPage = () => {
   const { navigateTo } = useRouter()
   const { stats } = useTracking()
-  const [activeGraphTab, setActiveGraphTab] = useState<'my-data' | 'my-triplets'>('my-data')
+  const [activeGraphTab, setActiveGraphTab] = useState<'my-data' | 'my-triples'>('my-data')
 
   return (
     <div style={styles.page}>
@@ -27,10 +27,10 @@ const MyGraphPage: React.FC = () => {
           My Data
         </button>
         <button 
-          onClick={() => setActiveGraphTab('my-triplets')}
-          style={activeGraphTab === 'my-triplets' ? styles.activeTab : styles.tab}
+          onClick={() => setActiveGraphTab('my-triples')}
+          style={activeGraphTab === 'my-triples' ? styles.activeTab : styles.tab}
         >
-          My Triplets
+          My triples
         </button>
       </div>
       
@@ -46,11 +46,11 @@ const MyGraphPage: React.FC = () => {
             <RecentVisits visits={stats.recentVisits} />
           </>
         ) : (
-          <div style={styles.tripletsContainer}>
-            <h3 style={styles.subsectionTitle}>My Triplets</h3>
+          <div style={styles.triplesContainer}>
+            <h3 style={styles.subsectionTitle}>My Triples</h3>
             <div style={styles.emptyState}>
-              <p>No triplets saved yet</p>
-              <p style={styles.emptySubtext}>Your saved data triplets will appear here</p>
+              <p>No triples saved yet</p>
+              <p style={styles.emptySubtext}>Your saved data triples will appear here</p>
             </div>
           </div>
         )}
@@ -133,7 +133,7 @@ const styles = {
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
     transition: 'all 0.3s ease'
   },
-  tripletsContainer: {
+  triplesContainer: {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '20px'
