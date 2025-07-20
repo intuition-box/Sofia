@@ -6,6 +6,16 @@ import SplineBackground from "./components/Splinebackground"
 import { useStorage } from "@plasmohq/storage/hook"
 import "./style.css"
 
+// Import direct des assets
+import logoIcon from "./assets/iconcolored.png"
+import graphIcon from "./assets/Icon=Graph.svg"
+import bookmarkIcon from "./assets/Icon=Bookmark.svg"
+import searchIcon from "./assets/Icon=Search.svg"
+import settingsIcon from "./assets/Icon=Settings.svg"
+import thumbsUpIcon from "./components/ui/Thumbs up.png"
+import toggleTrue from "./components/ui/button=True.png"
+import toggleFalse from "./components/ui/button=False.png"
+
 type Page = 'home' | 'settings' | 'home-connected' | 'my-graph' | 'recommendations' | 'saved' | 'search'
 
 function SidePanel() {
@@ -33,7 +43,7 @@ function SidePanel() {
   const HomePage = () => (
     <div style={styles.homePage}>
       <div style={styles.logoContainer}>
-        <img src={chrome.runtime.getURL("assets/iconcolored.png")} alt="Sofia" style={styles.logo} />
+        <img src={logoIcon} alt="Sofia" style={styles.logo} />
       </div>
       <h1 style={styles.welcomeTitle}>Welcome to Sofia</h1>
       <div style={styles.connectSection}>
@@ -46,36 +56,50 @@ function SidePanel() {
   const HomeConnectedPage = () => (
     <div style={styles.homeConnectedPage}>
       <div style={styles.chatSection}>
-        <h2 style={styles.sectionTitle}>Talk with Sophia</h2>
-        <input
-          type="text"
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          placeholder="Ask Sophia anything..."
-          style={styles.chatInput}
-        />
+        <div style={styles.chatInputContainer}>
+          <img 
+            src={logoIcon} 
+            alt="Sofia" 
+            style={styles.chatLogo} 
+          />
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            placeholder="Talk with Sofia..."
+            style={styles.chatInput}
+          />
+        </div>
       </div>
       
       <div style={styles.favoritesSection}>
         <h3 style={styles.subsectionTitle}>Favorites</h3>
-        <div style={styles.favoritesList}>
-          <div style={styles.emptyState}>No favorites yet</div>
-        </div>
+        <p style={styles.favoritesEmptyText}>No favorites yet</p>
       </div>
       
-      <div style={styles.sideActions}>
+      {/* Boutons flottants côté droit */}
+      <div style={styles.floatingButtons}>
+        <button 
+          onClick={toggleTracking}
+          style={styles.floatingButtonCheck}
+          title={isTrackingEnabled ? "Tracking enabled" : "Tracking disabled"}
+        >
+          <img 
+            src={isTrackingEnabled ? toggleTrue : toggleFalse} 
+            alt={isTrackingEnabled ? "Enabled" : "Disabled"} 
+            style={styles.toggleIcon}
+          />
+        </button>
         <button 
           onClick={() => setCurrentPage('recommendations')}
-          style={styles.actionButton}
+          style={styles.floatingButton}
         >
-          Recommendations
-        </button>
-        <div style={styles.trackingToggle}>
-          <TrackingStatus 
-            isEnabled={isTrackingEnabled}
-            onToggle={toggleTracking}
+          <img 
+            src={thumbsUpIcon} 
+            alt="Recommendations" 
+            style={styles.floatingIcon}
           />
-        </div>
+        </button>
       </div>
     </div>
   )
@@ -265,33 +289,47 @@ function SidePanel() {
       <div style={styles.bottomNav}>
         <button 
           onClick={() => setCurrentPage('my-graph')}
-          style={currentPage === 'my-graph' ? styles.activeNavButton : styles.navButton}
+          style={currentPage === 'my-graph' ? styles.activeNavButtonMyGraph : styles.activeNavButtonMyGraph}
         >
-          My Graph
+          <img 
+            src={graphIcon} 
+            alt="My Graph" 
+            style={styles.navIcon}
+          />
+          <span style={styles.navText}>My Graph</span>
         </button>
         <button 
           onClick={() => setCurrentPage('saved')}
           style={currentPage === 'saved' ? styles.activeNavButton : styles.navButton}
         >
-          Saved
+          <img 
+            src={bookmarkIcon} 
+            alt="Saved" 
+            style={styles.navIcon}
+          />
+          <span style={styles.navText}>Saved</span>
         </button>
         <button 
           onClick={() => setCurrentPage('search')}
           style={currentPage === 'search' ? styles.activeNavButton : styles.navButton}
         >
-          Search
+          <img 
+            src={searchIcon} 
+            alt="Search" 
+            style={styles.navIcon}
+          />
+          <span style={styles.navText}>Search</span>
         </button>
         <button 
           onClick={() => setCurrentPage('settings')}
           style={currentPage === 'settings' ? styles.activeNavButton : styles.navButton}
         >
-          Settings
-        </button>
-        <button 
-          onClick={() => setCurrentPage('home-connected')}
-          style={currentPage === 'home-connected' ? styles.activeNavButton : styles.navButton}
-        >
-          Home
+          <img 
+            src={settingsIcon} 
+            alt="Settings" 
+            style={styles.navIcon}
+          />
+          <span style={styles.navText}>Settings</span>
         </button>
       </div>
     )
@@ -300,7 +338,7 @@ function SidePanel() {
   return (
     <div style={styles.container}>
       <SplineBackground />
-      {account && (
+      {account && currentPage !== 'home-connected' && (
         <div style={styles.overlay} />
       )}
       
@@ -326,7 +364,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(14, 14, 14, 0.18)',
+    backgroundColor: 'rgba(14, 14, 14, 0.30)',
     zIndex: 1
   },
   content: {
@@ -380,6 +418,24 @@ const styles = {
   chatSection: {
     marginBottom: '30px'
   },
+  chatInputContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.125)',
+    backdropFilter: 'blur(10px) saturate(100%)',
+    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    transition: 'all 0.3s ease'
+  },
+  chatLogo: {
+    width: '24px',
+    height: '24px',
+    flexShrink: 0
+  },
   sectionTitle: {
     fontFamily: "'Gotu', cursive",
     fontSize: '24px',
@@ -388,21 +444,25 @@ const styles = {
     marginBottom: '15px'
   },
   chatInput: {
-    width: '100%',
-    padding: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.125)',
-    borderRadius: '12px',
+    flex: 1,
+    padding: '0',
+    border: 'none',
+    borderRadius: '0',
     fontSize: '16px',
-    backgroundColor: 'rgba(251, 247, 245, 0.9)',
-    color: '#372118',
+    backgroundColor: 'transparent',
+    color: '#F2DED6',
     outline: 'none',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    backdropFilter: 'blur(10px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
-    transition: 'all 0.3s ease'
+    fontFamily: "'Montserrat', sans-serif"
   },
   favoritesSection: {
     marginBottom: '30px'
+  },
+  favoritesEmptyText: {
+    color: '#F2DED6',
+    fontSize: '14px',
+    fontStyle: 'italic',
+    textAlign: 'center' as const,
+    marginTop: '10px'
   },
   subsectionTitle: {
     fontFamily: "'Gotu', cursive",
@@ -429,9 +489,9 @@ const styles = {
   },
   actionButton: {
     padding: '12px 24px',
-    backgroundColor: 'rgba(199, 134, 108, 0.8)',
+
     color: '#FBF7F5',
-    border: '1px solid rgba(199, 134, 108, 0.3)',
+
     borderRadius: '12px',
     fontSize: '16px',
     fontWeight: '600',
@@ -441,14 +501,52 @@ const styles = {
     WebkitBackdropFilter: 'blur(10px) saturate(100%)',
     transition: 'all 0.3s ease'
   },
-  trackingToggle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: '15px',
-    borderRadius: '12px',
-    backdropFilter: 'blur(10px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
-    border: '1px solid rgba(255, 255, 255, 0.125)',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+  floatingButtons: {
+    position: 'fixed' as const,
+    right: '20px',
+    top: '550px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'flex-end',
+    gap: '12px',
+    zIndex: 5
+  },
+  floatingButton: {
+    width: '80px',
+    height: '80px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    padding: '0',
+    margin: '0',
+    
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.3s ease'
+  },
+  floatingButtonCheck: {
+    width: '80px',
+    height: '60px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    padding: '0',
+    margin: '0',
+    marginBottom: '10px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'left',
+    justifyContent: 'left',
+    transition: 'all 0.3s ease'
+  },
+  floatingIcon: {
+    // width: '60px',
+    // height: '60px',
+    transition: 'all 0.3s ease'
+  },
+  toggleIcon: {
+    width: '80px',
+    height: '80px',
     transition: 'all 0.3s ease'
   },
   
@@ -468,7 +566,7 @@ const styles = {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     border: '1px solid rgba(255, 255, 255, 0.15)',
     color: '#F2DED6',
-    fontSize: '16px',
+    fontSize: '12px',
     cursor: 'pointer',
     marginBottom: '20px',
     padding: '8px 16px',
@@ -618,7 +716,6 @@ const styles = {
     left: 0,
     right: 0,
     height: '60px',
-    backgroundColor: 'rgba(55, 33, 24, 0.95)',
     backdropFilter: 'blur(20px) saturate(100%)',
     WebkitBackdropFilter: 'blur(20px) saturate(100%)',
     display: 'flex',
@@ -630,31 +727,61 @@ const styles = {
     transition: 'all 0.3s ease'
   },
   navButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'transparent',
+    border: 'none',
     color: '#F2DED6',
-    fontSize: '12px',
+    fontSize: '10px',
     cursor: 'pointer',
-    padding: '8px 12px',
+    padding: '8px 4px',
     borderRadius: '8px',
-    backdropFilter: 'blur(5px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(5px) saturate(100%)',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-    transition: 'all 0.3s ease'
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '4px',
+    transition: 'all 0.3s ease',
+    minWidth: '60px'
   },
   activeNavButton: {
-    backgroundColor: 'rgba(199, 134, 108, 0.8)',
-    border: '1px solid rgba(199, 134, 108, 0.3)',
+    backgroundColor: 'transparent',
+    border: 'none',
     color: '#FBF7F5',
-    fontSize: '12px',
+    fontSize: '10px',
     cursor: 'pointer',
-    padding: '8px 12px',
+    padding: '8px 4px',
     borderRadius: '8px',
     fontWeight: '600',
-    backdropFilter: 'blur(10px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
-    boxShadow: '0 4px 16px rgba(199, 134, 108, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    transition: 'all 0.3s ease'
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '4px',
+    transition: 'all 0.3s ease',
+    minWidth: '60px'
+  },
+  activeNavButtonMyGraph: {
+    background: 'linear-gradient(135deg, #DB6B3E 0%, #C7866C 100%)',
+    border: 'none',
+    color: '#FBF7F5',
+    fontSize: '10px',
+    cursor: 'pointer',
+    padding: '8px 4px',
+    borderRadius: '8px',
+    fontWeight: '600',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '4px',
+    transition: 'all 0.3s ease',
+    minWidth: '60px',
+    boxShadow: '0 4px 16px rgba(219, 107, 62, 0.3)'
+  },
+  navIcon: {
+    width: '20px',
+    height: '20px',
+    filter: 'brightness(0) saturate(100%) invert(91%) sepia(6%) saturate(346%) hue-rotate(314deg) brightness(97%) contrast(88%)'
+  },
+  navText: {
+    fontSize: '10px',
+    fontWeight: '500'
   }
 }
 

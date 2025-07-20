@@ -1,6 +1,6 @@
 {
-  "name": "extension",
-  "displayName": "extension",
+  "name": "sofia",
+  "displayName": "SofIA",
   "version": "0.0.1",
   "description": "Data tracking and wallet connexion",
   "author": "me",
@@ -51,7 +51,11 @@
     "action": {},
     "web_accessible_resources": [
       {
-        "resources": ["public/spline-background.webm"],
+        "resources": [
+          "public/spline-background.webm",
+          "assets/*",
+          "components/ui/*.png"
+        ],
         "matches": ["<all_urls>"]
       }
     ]
