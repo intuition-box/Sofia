@@ -42,7 +42,7 @@ const styles = {
     maxWidth: '50px !important',
     maxHeight: '25px !important',
     display: 'block',
-    objectFit: 'contain',
+    objectFit: 'contain' as const,
     transition: 'none'
   }
 };
