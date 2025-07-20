@@ -36,3 +36,5 @@ dist/
 .env
 
 my-agent/.env
+
+components/SplineBackground.tsx

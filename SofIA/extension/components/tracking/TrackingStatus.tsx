@@ -1,105 +1,49 @@
 import React from "react";
 import { useStorage } from "@plasmohq/storage/hook";
+import toggleTrue from "../ui/Toggle=true.png";
+import toggleFalse from "../ui/toggle=false.png";
 
 interface TrackingStatusProps {
   isEnabled: boolean;
   onToggle: () => void;
 }
 
-const TrackingStatus: React.FC<TrackingStatusProps> = ({ isEnabled, onToggle }) => {
+const TrackingStatus = ({ isEnabled, onToggle }: TrackingStatusProps) => {
   return (
-    <div style={styles.container}>
-      <div style={styles.statusRow}>
-        <div style={styles.statusInfo}>
-          <div style={styles.statusIcon}>
-            {isEnabled ? '🟢' : '🔴'}
-          </div>
-          <div style={styles.statusText}>
-            <span style={styles.statusLabel}>Tracking</span>
-            <span style={isEnabled ? styles.statusActiveValue : styles.statusInactiveValue}>
-              {isEnabled ? 'Activé' : 'Désactivé'}
-            </span>
-          </div>
-        </div>
-        <button
-          onClick={onToggle}
-          style={isEnabled ? styles.toggleButtonActive : styles.toggleButtonInactive}
-        >
-          {isEnabled ? 'Désactiver' : 'Activer'}
-        </button>
-      </div>
-    </div>
+    <button
+      onClick={onToggle}
+      style={styles.toggleButton}
+    >
+      <img 
+        src={isEnabled ? toggleTrue : toggleFalse}
+        alt={isEnabled ? "Enabled" : "Disabled"}
+        style={styles.toggleImage}
+      />
+    </button>
   );
 };
 
 const styles = {
-  container: {
-    padding: '12px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
-    border: '1px solid #e9ecef',
-    marginBottom: '16px'
-  },
-  statusRow: {
+  toggleButton: {
+    backgroundColor: 'transparent',
+    border: 'none',
+    padding: '0',
+    cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'center',
+    transition: 'all 0.3s ease'
   },
-  statusInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px'
-  },
-  statusIcon: {
-    fontSize: '16px'
-  },
-  statusText: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '2px'
-  },
-  statusLabel: {
-    fontSize: '12px',
-    color: '#6c757d',
-    fontWeight: '500'
-  },
-  statusActiveValue: {
-    fontSize: '14px',
-    color: '#198754',
-    fontWeight: '600'
-  },
-  statusInactiveValue: {
-    fontSize: '14px',
-    color: '#dc3545',
-    fontWeight: '600'
-  },
-  toggleButtonActive: {
-    padding: '6px 12px',
-    backgroundColor: '#dc3545',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '12px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    ':hover': {
-      backgroundColor: '#c82333'
-    }
-  },
-  toggleButtonInactive: {
-    padding: '6px 12px',
-    backgroundColor: '#198754',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '12px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    ':hover': {
-      backgroundColor: '#157347'
-    }
+  toggleImage: {
+    width: '50px !important',
+    height: '25px !important',
+    minWidth: '50px !important',
+    minHeight: '25px !important',
+    maxWidth: '50px !important',
+    maxHeight: '25px !important',
+    display: 'block',
+    objectFit: 'contain' as const,
+    transition: 'none'
   }
 };
 

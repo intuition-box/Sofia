@@ -80,20 +80,24 @@ const TrackingStats: React.FC<TrackingStatsProps> = ({
 const styles = {
   container: {
     padding: '16px',
-    backgroundColor: '#ffffff',
-    borderRadius: '8px',
-    border: '1px solid #e9ecef',
-    marginBottom: '16px'
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.125)',
+    marginBottom: '16px',
+    backdropFilter: 'blur(10px) saturate(100%)',
+    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    transition: 'all 0.3s ease'
   },
   header: {
     marginBottom: '12px',
-    borderBottom: '1px solid #e9ecef',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
     paddingBottom: '8px'
   },
   title: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#495057'
+    color: '#FBF7F5'
   },
   statsGrid: {
     display: 'grid',
@@ -105,8 +109,13 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '8px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '6px'
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(5px) saturate(100%)',
+    WebkitBackdropFilter: 'blur(5px) saturate(100%)',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    transition: 'all 0.3s ease'
   },
   statIcon: {
     fontSize: '16px',
@@ -122,14 +131,14 @@ const styles = {
   statValue: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#212529',
+    color: '#FBF7F5',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const
   },
   statLabel: {
     fontSize: '11px',
-    color: '#6c757d',
+    color: '#F2DED6',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const
