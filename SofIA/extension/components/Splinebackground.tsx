@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function SplineBackground() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   return (
     <div style={{
@@ -54,6 +55,7 @@ export default function SplineBackground() {
       
       {/* Vidéo Spline */}
       <video
+        ref={videoRef}
         autoPlay
         loop
         muted
@@ -76,6 +78,13 @@ export default function SplineBackground() {
           console.error('Video error:', e);
           setVideoError(true);
         }}
+        onEnded={() => {
+          console.log('Video ended, restarting...');
+          if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.play().catch(console.error);
+          }
+        }}
       >
         <source src={chrome.runtime.getURL('public/spline-background.webm')} type="video/webm" />
         <source src="/public/spline-background.webm" type="video/webm" />
@@ -94,7 +103,7 @@ export default function SplineBackground() {
           borderRadius: '4px',
           zIndex: 10
         }}>
-          {videoError ? 'Video Error' : videoLoaded ? 'Video Loaded' : 'Loading...'}
+          {videoError ? 'Video Error' : videoLoaded ? '_' : '_'}
         </div>
       )}
     </div>

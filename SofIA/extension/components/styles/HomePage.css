@@ -1,0 +1,118 @@
+.home-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.welcome-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.welcome-image {
+  max-width: 100%;
+  height: auto;
+  max-height: 120px;
+}
+
+.description-sections {
+  margin-bottom: 40px;
+  max-width: 320px;
+  text-align: center;
+}
+
+.description-paragraph {
+  color: #F2DED6;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  text-align: justify;
+}
+
+.connect-section {
+  margin-bottom: 30px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Override button styles to match design */
+.connect-section button {
+  background: linear-gradient(135deg, #D4A574 0%, #B8956A 100%) !important;
+  color: #2D1B0E !important;
+  border: none !important;
+  padding: 14px 40px !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  text-transform: none !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3) !important;
+  width: 280px !important;
+  max-width: 100% !important;
+}
+
+.connect-section button:hover {
+  background: linear-gradient(135deg, #FFB3C4 0%, #FFE078 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(212, 165, 116, 0.4) !important;
+}
+
+.connect-section button:disabled {
+  background: linear-gradient(135deg, #8A8A8A 0%, #6A6A6A 100%) !important;
+  color: #CCCCCC !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+.terms-section {
+  margin-top: 10px;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: #F2DED6;
+  font-size: 12px;
+}
+
+.terms-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #F2DED6;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.terms-checkbox input[type="checkbox"]:checked + .checkmark {
+  background-color: #C7866C;
+  border-color: #C7866C;
+}
+
+.terms-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  content: "✓";
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.terms-text {
+  flex: 1;
+  line-height: 1.4;
+}
