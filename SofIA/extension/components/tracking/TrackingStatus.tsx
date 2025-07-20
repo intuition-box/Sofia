@@ -1,7 +1,7 @@
 import React from "react";
 import { useStorage } from "@plasmohq/storage/hook";
 import toggleTrue from "../ui/Toggle=true.png";
-import toggleFalse from "../ui/toggle=false.png";
+import toggleFalse from "../ui/Toggle=false.png";
 
 interface TrackingStatusProps {
   isEnabled: boolean;

@@ -1,49 +1,53 @@
-import React from 'react'
+import { useState } from 'react'
 import WalletConnectionButton from '../THP_WalletConnectionButton'
-import logoIcon from '../../assets/iconcolored.png'
+import welcomeImage from '../ui/Welcome.png'
+import '../styles/HomePage.css'
 
-const HomePage: React.FC = () => {
+const HomePage = () => {
+  const [termsAccepted, setTermsAccepted] = useState(false)
+
   return (
-    <div style={styles.homePage}>
-      <div style={styles.logoContainer}>
-        <img src={logoIcon} alt="Sofia" style={styles.logo} />
+    <div className="home-page">
+      <div className="welcome-header">
+        <img src={welcomeImage} alt="Welcome on SofIA" className="welcome-image" />
       </div>
-      <h1 style={styles.welcomeTitle}>Welcome to Sofia</h1>
-      <div style={styles.connectSection}>
-        <WalletConnectionButton />
+
+      <div className="description-sections">
+        <p className="description-paragraph">
+          SofIA is a smart Chrome extension that helps you better use the internet every day of the week. The system helps you by tracking your browsing and creates a secure digital memory that you fully control.
+        </p>
+
+        <p className="description-paragraph">
+          SofIA allows you to generate smart content, stories and advice tailored to your tastes and graphic contexts, while respecting your privacy.
+        </p>
+
+        <p className="description-paragraph">
+          It's like a personal assistant connected to the web, helping with research, learning and projects, and discover what really matters to you.
+        </p>
+
+        <p className="description-paragraph">
+          By combining personal history and decentralized certification via Intuition Systems, SofIA Validation facts in the form of attested triplets, to provide reliable and verifiable recommendations.
+        </p>
+      </div>
+
+      <div className="connect-section">
+        <WalletConnectionButton disabled={!termsAccepted} />
+      </div>
+
+      <div className="terms-section">
+        <label className="terms-checkbox">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+          />
+          <span className="checkmark"></span>
+          <span className="terms-text">I have read and accept the Terms and Conditions.</span>
+        </label>
       </div>
     </div>
   )
 }
 
-const styles = {
-  homePage: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100vh',
-    padding: '20px',
-    textAlign: 'center' as const
-  },
-  logoContainer: {
-    marginBottom: '30px'
-  },
-  logo: {
-    width: '80px',
-    height: '80px'
-  },
-  welcomeTitle: {
-    fontFamily: "'Fraunces', serif",
-    fontSize: '32px',
-    fontWeight: '700',
-    color: '#FBF7F5',
-    marginBottom: '40px',
-    textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
-  },
-  connectSection: {
-    marginTop: '20px'
-  }
-}
 
 export default HomePage

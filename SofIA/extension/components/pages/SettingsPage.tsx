@@ -1,31 +1,112 @@
-import React from 'react'
+import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
 import { TrackingStatus } from '../tracking'
 import WalletConnectionButton from '../THP_WalletConnectionButton'
+import '../styles/SettingsPage.css'
 
-const SettingsPage: React.FC = () => {
+const SettingsPage = () => {
   const { navigateTo } = useRouter()
   const { isTrackingEnabled, toggleTracking } = useTracking()
+  const [isDataSharingEnabled, setIsDataSharingEnabled] = useState(false)
+  const [profilePhoto, setProfilePhoto] = useState(null)
+  const [bio, setBio] = useState("Passionate about technology, digital identity, and decentralized systems. I enjoy exploring the intersection of innovation and human connection online. Currently working on projects that leverage blockchain for social impact. Always open to collaboration and meaningful conversations.")
+  const [isEditingBio, setIsEditingBio] = useState(false)
+
+  const handlePhotoUpload = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setProfilePhoto(e.target.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleBioSave = () => {
+    setIsEditingBio(false)
+    // Ici on pourrait sauvegarder la bio dans le localStorage ou via une API
+  }
 
   return (
-    <div style={styles.settingsPage}>
+    <div className="settings-page">
       <button 
         onClick={() => navigateTo('home-connected')}
-        style={styles.backButton}
+        className="back-button"
       >
         ← Back to Home
       </button>
       
-      <h2 style={styles.sectionTitle}>Settings</h2>
+      <h2 className="section-title">Settings</h2>
       
-      <div style={styles.settingsSection}>
-        <button style={styles.settingsItem}>
-          <span>Edit Profile</span>
-          <span style={styles.settingsSubtext}>Bio & Photo</span>
-        </button>
+      {/* Profile Section */}
+      <div className="settings-section">
+        <div className="profile-header">
+          <div className="profile-photo-container">
+            <div className="profile-photo">
+              {profilePhoto ? (
+                <img src={profilePhoto} alt="Profile" className="profile-image" />
+              ) : (
+                <div className="profile-placeholder">
+                  <span>👤</span>
+                </div>
+              )}
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="photo-input"
+              id="photo-input"
+            />
+            <label htmlFor="photo-input" className="photo-upload-button">
+              Change Photo
+            </label>
+          </div>
+          
+          <div className="bio-section">
+            {isEditingBio ? (
+              <div className="bio-edit">
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  className="bio-textarea"
+                  placeholder="Tell us about yourself..."
+                />
+                <div className="bio-actions">
+                  <button onClick={handleBioSave} className="save-button">Save</button>
+                  <button onClick={() => setIsEditingBio(false)} className="cancel-button">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <div className="bio-display">
+                <p className="bio-text">{bio}</p>
+                <button onClick={() => setIsEditingBio(true)} className="edit-button">Edit</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* General Section */}
+      <div className="settings-section">
+        <h3 className="settings-section-title">General</h3>
         
-        <div style={styles.settingsItem}>
+        <div className="settings-item">
+          <span>Language</span>
+          <select className="select">
+            <option>English</option>
+            {/* <option>Français</option> */}
+          </select>
+        </div>
+      </div>
+
+      {/* Privacy Section */}
+      <div className="settings-section">
+        <h3 className="settings-section-title">Privacy</h3>
+        
+        <div className="settings-item">
           <span>Data Tracking</span>
           <TrackingStatus 
             isEnabled={isTrackingEnabled}
@@ -33,21 +114,21 @@ const SettingsPage: React.FC = () => {
           />
         </div>
         
-        <div style={styles.settingsItem}>
-          <span>Language</span>
-          <select style={styles.select}>
-            <option>English</option>
-            <option>Français</option>
-          </select>
-        </div>
-        
-        <div style={styles.settingsItem}>
+        <div className="settings-item">
           <span>Data Sharing</span>
-          <input type="checkbox" style={styles.checkbox} />
+          <TrackingStatus 
+            isEnabled={isDataSharingEnabled}
+            onToggle={() => setIsDataSharingEnabled(!isDataSharingEnabled)}
+          />
         </div>
+      </div>
+
+      {/* Blockchain Integration Section */}
+      <div className="settings-section">
+        <h3 className="settings-section-title">Blockchain Integration</h3>
         
-        <div style={styles.settingsItem}>
-          <span>Wallet</span>
+        <div className="settings-item">
+          <span>Wallet Connection</span>
           <WalletConnectionButton />
         </div>
       </div>
@@ -55,78 +136,5 @@ const SettingsPage: React.FC = () => {
   )
 }
 
-const styles = {
-  settingsPage: {
-    padding: '20px',
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
-    margin: '10px',
-    borderRadius: '20px',
-    backdropFilter: 'blur(5px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(5px) saturate(100%)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)',
-    transition: 'all 0.3s ease'
-  },
-  backButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    color: '#F2DED6',
-    fontSize: '12px',
-    cursor: 'pointer',
-    marginBottom: '20px',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    backdropFilter: 'blur(5px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(5px) saturate(100%)',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-    transition: 'all 0.3s ease'
-  },
-  sectionTitle: {
-    fontFamily: "'Gotu', cursive",
-    fontSize: '24px',
-    fontWeight: '600',
-    color: '#FBF7F5',
-    marginBottom: '15px'
-  },
-  settingsSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '15px'
-  },
-  settingsItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '15px',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: '12px',
-    backdropFilter: 'blur(10px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
-    border: '1px solid rgba(255, 255, 255, 0.125)',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    color: '#FBF7F5',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease'
-  },
-  settingsSubtext: {
-    fontSize: '14px',
-    color: '#F2DED6'
-  },
-  select: {
-    backgroundColor: 'rgba(251, 247, 245, 0.9)',
-    border: '1px solid rgba(255, 255, 255, 0.125)',
-    padding: '8px 12px',
-    borderRadius: '8px',
-    color: '#372118',
-    backdropFilter: 'blur(10px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    transition: 'all 0.3s ease'
-  },
-  checkbox: {
-    width: '20px',
-    height: '20px'
-  }
-}
 
 export default SettingsPage

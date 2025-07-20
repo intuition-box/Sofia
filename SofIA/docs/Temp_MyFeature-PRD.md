@@ -131,7 +131,7 @@ interface Atom {
 
 interface KnowledgeGraph {
   atoms: Atom[];
-  triplets: Array<{
+  triples: Array<{
     subject: string; // atom ID
     predicate: string; // relationship type
     object: string; // atom ID or external entity
@@ -152,13 +152,13 @@ interface KnowledgeGraph {
 - En tant qu'utilisateur, je veux que mes atoms forment un graphe de connaissance personnel
 - En tant qu'utilisateur, je veux pouvoir ancrer mes découvertes importantes on-chain
 - En tant qu'utilisateur, je veux explorer les connections entre mes différents centres d'intérêt
-- En tant qu'utilisateur, je veux avoir accès aux signaux et triplets d'autres utilisateurs
+- En tant qu'utilisateur, je veux avoir accès aux signaux et triples d'autres utilisateurs
 
 **Critères d'acceptation :**
 - ✅ Stockage local (Chrome Storage) avec exposition API pour Agent1
 - ✅ Synchronisation sélective avec Intuition.systems
 - ✅ Visualisation du graphe personnel de connaissances
-- ✅ Interface pour créer et voter sur des triplets
+- ✅ Interface pour créer et voter sur des triples
 - ✅ Export/import des données avec métadonnées blockchain
 
 ### 🎨 F4 - Interface Agent Personnel (Priorité 2)
@@ -169,7 +169,7 @@ interface KnowledgeGraph {
 - En tant qu'utilisateur, je veux des recommandations intelligentes basées sur mes patterns
 - En tant qu'utilisateur, je veux visualiser mon graphe de connaissance personnel
 - En tant qu'utilisateur, je veux une interface moderne qui reflète ma personnalité numérique
-- En tant qu'utilisateur, je veux accéder facilement aux triplets et signaux pertinents
+- En tant qu'utilisateur, je veux accéder facilement aux triples et signaux pertinents
 
 **Critères d'acceptation :**
 - ✅ Interface conversationnelle avec SOFIA (chat intelligent)
@@ -187,7 +187,7 @@ interface KnowledgeGraph {
 - **Détection de moments mémorables** : IA qui identifie les découvertes importantes
 - **Planificateur intelligent** : Recommandations basées sur les patterns d'activité
 - **Integration Google Maps** : Insights géolocalisés de l'activité locale
-- **Système de voting** : Mécanisme de réaction sur les triplets via signals
+- **Système de voting** : Mécanisme de réaction sur les triples via signals
 - **Interface Web3** : Staking ETH sur les signaux pour valoriser les connaissances
 - **Bookmarks décentralisés** : Sauvegarde cross-device via blockchain
 - **Onboarding personnalisé** : Setup de l'agent avec personnalité adaptée
@@ -281,7 +281,7 @@ interface KnowledgeGraph {
 
 ## Sprint 6 (Semaines 11-12) - Knowledge Graph
 - **Visualisation du Knowledge Graph personnel**
-- Interface pour explorer les triplets de connaissances
+- Interface pour explorer les triples de connaissances
 - **Système de signaux (voting) sur les atoms via Intuition**
 - Export/import du graphe personnel
 - **Synchronisation cross-device via blockchain**
@@ -365,7 +365,7 @@ Une fonctionnalité est considérée comme terminée quand :
 ## 🔗 Ressources Externes & Écosystème
 
 **Intégrations principales :**
-- [Intuition.systems](https://www.intuition.systems/) : Infrastructure blockchain pour atoms et triplets
+- [Intuition.systems](https://www.intuition.systems/) : Infrastructure blockchain pour atoms et triples
 - [Eliza OS](https://github.com/elizaos/eliza) : Framework d'agent IA pour l'intelligence contextuelle
 - [Intuition Extension](https://chromewebstore.google.com/detail/intuition/example) : Extension Chrome existante
 - [MetaMask](https://metamask.io/) : Wallet pour l'authentification Web3
