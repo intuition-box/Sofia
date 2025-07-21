@@ -4,6 +4,15 @@ import type { MetaMaskConnection } from "~types/wallet";
 import { HistoryManager } from "~lib/history";
 import { formatTimestamp, formatDuration } from "~lib/formatters";
 
+
+const SOFIA_IDS = {
+  CHANNEL_ID: "363009ce-6eda-48bf-80e1-c91abddba691",
+  SERVER_ID: "00000000-0000-0000-0000-000000000000",
+  AUTHOR_ID: "2914780f-8ccc-436a-b857-794d5d1b9aa7",
+  AGENT_ID: "582f4e58-1285-004d-8ef6-1e6301f3d646",
+  AGENT_NAME: "SofIA1"
+}
+
 // Types pour l'agent IA
 type RawMessage = {
   text: string;
@@ -22,126 +31,110 @@ type AgentMessagePayload = {
 };
 
 interface MessageData {
-  type: 'PAGE_DATA' | 'PAGE_DURATION' | 'SCROLL_DATA' | 'TEST_MESSAGE' | 'BEHAVIOR_DATA' |
-  'GET_TRACKING_STATS' | 'EXPORT_TRACKING_DATA' | 'CLEAR_TRACKING_DATA';
-  data: any;
-  pageLoadTime?: number;
+  type:
+    | "PAGE_DATA"
+    | "PAGE_DURATION"
+    | "SCROLL_DATA"
+    | "TEST_MESSAGE"
+    | "BEHAVIOR_DATA"
+    | "GET_TRACKING_STATS"
+    | "EXPORT_TRACKING_DATA"
+    | "CLEAR_TRACKING_DATA"
+  data: any
+  pageLoadTime?: number
 }
 
 // Instances
-const storage = new Storage({ area: "local" });
-const historyManager = new HistoryManager();
+const storage = new Storage({ area: "local" })
+const historyManager = new HistoryManager()
 
-// Variables pour MetaMask
-let metamaskConnection: MetaMaskConnection | null = null;
+let metamaskConnection: MetaMaskConnection | null = null
+let captureCount = 0
+const lastTabUpdate: Record<number, number> = {}
+let isTrackingEnabled = true
+const behaviorCache: Record<string, any> = {}
 
-// Variables pour le tracking amélioré
-let captureCount = 0;
-const lastTabUpdate: Record<number, number> = {};
-let isTrackingEnabled = true;
-const behaviorCache: Record<string, any> = {};
-
-// Buffer navigation avec optimisations
-const navigationBuffer = new Set<string>();
-const MAX_BUFFER_SIZE = 2; // Réduit de 3 à 2 pour moins d'envois
-const SEND_INTERVAL_MS = 5 * 60 * 1000; // Augmenté de 2min à 5min
-const MAX_MESSAGE_SIZE = 10 * 1024; // Limite de 10KB par message
-
+const navigationBuffer = new Set<string>()
+const MAX_BUFFER_SIZE = 2
+const SEND_INTERVAL_MS = 5 * 60 * 1000
+const MAX_MESSAGE_SIZE = 10 * 1024
 
 function trimNavigationBuffer(maxSize = 8): void {
-  if (navigationBuffer.size <= maxSize) return;
-
-  const all = Array.from(navigationBuffer);
-  const trimmed = all.slice(-maxSize);
-
-  navigationBuffer.clear();
-  trimmed.forEach(msg => navigationBuffer.add(msg));
+  if (navigationBuffer.size <= maxSize) return
+  const all = Array.from(navigationBuffer)
+  const trimmed = all.slice(-maxSize)
+  navigationBuffer.clear()
+  trimmed.forEach((msg) => navigationBuffer.add(msg))
 }
 
-
 function cleanOldBehaviors(maxAgeMs = 15 * 60 * 1000): void {
-  const now = Date.now();
+  const now = Date.now()
   for (const url in behaviorCache) {
     if (now - behaviorCache[url]?.timestamp > maxAgeMs) {
-      delete behaviorCache[url];
+      delete behaviorCache[url]
     }
   }
 }
 
-// Refactoring de flushNavigationBuffer : envoi un seul message résumé et payload détaillé
+const sentMessages = new Set<string>();
+
 async function flushNavigationBuffer(): Promise<void> {
-  if (navigationBuffer.size === 0) return;
-
-  // Construire un résumé de navigation
-  const allMessages = Array.from(navigationBuffer);
-  const total = allMessages.length;
-  const header = `Résumé de navigation : ${total} page(s) visitée(s)`;
-
-  // Construire le détail des pages
-  const pages = allMessages.map((msg) => {
-    const lines = msg.split("\n");
-    const urlLine = lines.find((l) => l.startsWith("URL: ")) || "";
-    const titleLine = lines.find((l) => l.startsWith("Titre: ")) || "";
-    const visitsLine = lines.find((l) => l.includes("Visites: ")) || "";
-    const timeLine = lines.find((l) => l.includes("Temps: ")) || "";
-    return {
-      url: urlLine.replace(/^URL: /, ""),
-      title: titleLine.replace(/^Titre: /, ""),
-      visits: visitsLine.replace(/.*Visites: /, ""),
-      time: timeLine.replace(/.*Temps: /, ""),
-    };
-  });
-
-  // Générer le contenu humain lisible
-  const list = pages
-    .map((p) => `• ${p.url} (titre: ${p.title}, visites: ${p.visits}, temps: ${p.time})`)
-    .join("\n");
-
-  const summary = `${header}\n\n${list}`;
-
-  // Envoi d'un unique payload résumé avec metadata détaillé
-  const payload: AgentMessagePayload = {
-    channel_id:  "a6e8ec5e-1eff-4b61-ac81-043aeef22825",
-    server_id:   "00000000-0000-0000-0000-000000000000",
-    author_id:   "2914780f-8ccc-436a-b857-794d5d1b9aa7",
-    content:     summary,
-    source_type: "user_input",
-    raw_message: { text: summary },
-    metadata: {
-      agent_id:   "582f4e58-1285-004d-8ef6-1e6301f3d646",
-      agentName:  "SofIA1",
-      channelType:"DM",
-      isDm:       true,
-      trigger:    true,
-      compressed: false,
-      timestamp:  new Date().toISOString(),
-      pages:      pages // détails structurés de chaque visite
-    }
-  };
-
-  await sendAgentMessage(payload);
-  navigationBuffer.clear();
+  if (navigationBuffer.size === 0) return
+  for (const msg of navigationBuffer) {
+    const trimmed = msg.trim()
+    if (!trimmed || sentMessages.has(trimmed)) continue
+    const payload = buildAgentPayload(trimmed)
+    await sendAgentMessage(payload)
+    sentMessages.add(trimmed)
+  }
+  navigationBuffer.clear()
 }
 
+function buildAgentPayload(msg: string): AgentMessagePayload {
+  const summary =
+    msg.split("\n").find((line) => line.startsWith("Titre:"))?.replace("Titre: ", "").trim() ||
+    msg.slice(0, 100) ||
+    "(no title)"
+
+  return {
+    channel_id: SOFIA_IDS.CHANNEL_ID,
+    server_id: SOFIA_IDS.SERVER_ID,
+    author_id: SOFIA_IDS.AUTHOR_ID,
+    content: summary,
+    source_type: "client_chat",
+    raw_message: { text: msg },
+    metadata: {
+      channelType: "DM",
+      isDm: true,
+      targetUserId: SOFIA_IDS.AGENT_ID,
+      agent_id: SOFIA_IDS.AGENT_ID,
+      agentName: SOFIA_IDS.AGENT_NAME
+    }
+  }
+}
 
 export async function sendAgentMessage(payload: AgentMessagePayload): Promise<void> {
-  console.debug("🧪 Envoi à l'agent :", payload);
+  console.debug("🧪 Envoi à l'agent :", payload)
   try {
     const response = await fetch("http://localhost:8080/relay", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const text = await response.text();
+      body: JSON.stringify(payload)
+    })
+
+    const text = await response.text()
     if (!response.ok) {
-      console.error(`❌ API relay error (${response.status}):`, text);
+      console.error(`❌ API relay error (${response.status}):`, text)
     } else {
-      console.debug("✅ Relay response:", text);
+      console.debug("✅ Relay response:", text)
     }
   } catch (err) {
-    console.error("❌ Erreur proxy relay :", err);
+    console.error("❌ Erreur proxy relay :", err)
   }
 }
+
+
+
 
 // Fonction pour connecter MetaMask (simplifié pour Plasmo)
 async function connectToMetamask(): Promise<MetaMaskConnection> {
@@ -338,7 +331,7 @@ function sanitizeUrl(url: string): string {
 function isSensitiveUrl(url: string): boolean {
   const sensitivePatterns = [
     'login', 'auth', 'signin', 'signup', 'register', 'password',
-    'bank', 'payment', 'checkout', 'secure', 'private', 'admin'
+    'bank', 'payment', 'checkout', 'secure', 'private', 'admin', "reCAPTCHA"
   ];
   return sensitivePatterns.some(pattern => url.toLowerCase().includes(pattern));
 }
@@ -350,7 +343,7 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
     'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
     'oauth', 'widget', 'chrome-extension://', 'sandbox', 'about:blank',
     'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
-    'bank', 'secure', 'login', 'auth', 'signin', 'signup'
+    'bank', 'secure', 'login', 'auth', 'signin', 'signup', "CAPTCHA"
   ];
   if (excluded.some(str => data.url.toLowerCase().includes(str))) return;
 
@@ -382,7 +375,6 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
   const shortH1 = data.h1 ? (data.h1.length > 80 ? data.h1.substring(0, 80) + '...' : data.h1) : '';
 
   const message =
-    `[Sofia] Visite\n` +
     `URL: ${sanitizedUrl}\n` +
     `Titre: ${shortTitle}\n` +
     (shortKeywords ? `Mots-clés: ${shortKeywords}\n` : '') +
