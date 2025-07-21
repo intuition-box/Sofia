@@ -139,6 +139,46 @@ async function connectToMetamask(): Promise<MetaMaskConnection> {
   }
 }
 
+function handleBehaviorData(data: any): void {
+  const { url, videoPlayed, videoDuration, audioPlayed, audioDuration, articleRead, title, readTime, timestamp } = data;
+
+  behaviorCache[url] = data;
+
+  const behaviorsToRecord = [];
+
+  if (videoPlayed) {
+    behaviorsToRecord.push({
+      type: 'video',
+      label: title,
+      duration: videoDuration,
+      timestamp
+    });
+  }
+
+  if (audioPlayed) {
+    behaviorsToRecord.push({
+      type: 'audio',
+      label: title,
+      duration: audioDuration,
+      timestamp
+    });
+  }
+
+  if (articleRead) {
+    behaviorsToRecord.push({
+      type: 'article',
+      label: title,
+      duration: readTime,
+      timestamp
+    });
+  }
+
+  for (const behavior of behaviorsToRecord) {
+    historyManager.recordBehavior(url, behavior);
+  }
+}
+
+
 // Gérer les messages du content script
 chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sender, sendResponse) => {
   switch (message.type) {
@@ -159,11 +199,9 @@ chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sen
       break;
     
     case 'BEHAVIOR_DATA':
-      behaviorCache[message.data.url] = message.data;
-      if (typeof historyManager.recordBehavior === 'function') {
-        historyManager.recordBehavior(message.data);
-      }
+      handleBehaviorData(message.data);
       break;
+
     
     case 'CONNECT_TO_METAMASK':
       connectToMetamask()
@@ -350,6 +388,7 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
 async function handlePageDuration(data: any) {
   await historyManager.recordPageDuration(data.url, data.duration, data.timestamp);
 }
+
 
 // Flush toutes les 2 minutes
 setInterval(() => {

@@ -15,6 +15,7 @@
         "./*"
       ]
     },
+    "types": ["chrome" , "react"],
     "baseUrl": ".",
     "jsx": "react-jsx",
     "esModuleInterop": true,
