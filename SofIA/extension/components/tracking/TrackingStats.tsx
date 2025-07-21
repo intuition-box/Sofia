@@ -1,4 +1,6 @@
 
+import { formatDuration, formatUrl } from '~lib/formatters';
+
 interface TrackingStatsProps {
   totalPages: number;
   totalVisits: number;
@@ -12,29 +14,9 @@ const TrackingStats = ({
   totalTime,
   mostVisitedUrl
 }: TrackingStatsProps) => {
-  const formatDuration = (ms: number): string => {
-    if (ms < 1000) return `${ms}ms`;
-    
-    const seconds = Math.floor(ms / 1000);
-    if (seconds < 60) return `${seconds}s`;
-    
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
-    
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
-  };
-
-  const formatUrl = (url: string | null): string => {
+  const formatMostVisitedUrl = (url: string | null): string => {
     if (!url) return 'N/A';
-    try {
-      const domain = new URL(url).hostname;
-      return domain.length > 25 ? `${domain.slice(0, 25)}...` : domain;
-    } catch {
-      return url.length > 25 ? `${url.slice(0, 25)}...` : url;
-    }
+    return formatUrl(url, 25);
   };
 
   return (
@@ -67,7 +49,7 @@ const TrackingStats = ({
         <div style={styles.statItem}>
           <div style={styles.statIcon}>🥇</div>
           <div style={styles.statContent}>
-            <div style={styles.statValue}>{formatUrl(mostVisitedUrl)}</div>
+            <div style={styles.statValue}>{formatMostVisitedUrl(mostVisitedUrl)}</div>
             <div style={styles.statLabel}>Plus visitée</div>
           </div>
         </div>

@@ -14,6 +14,7 @@ import MyGraphPage from "./components/pages/MyGraphPage"
 import RecommendationsPage from "./components/pages/RecommendationsPage"
 import SavedPage from "./components/pages/SavedPage"
 import SearchPage from "./components/pages/SearchPage"
+import ChatPage from "./components/pages/ChatPage"
 
 const SidePanelContent = () => {
   const [account] = useStorage<string>("metamask-account")
@@ -45,6 +46,8 @@ const SidePanelContent = () => {
         return <SavedPage />
       case 'search':
         return <SearchPage />
+      case 'chat':
+        return <ChatPage />
       default:
         return <HomeConnectedPage />
     }

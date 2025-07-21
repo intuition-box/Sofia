@@ -2,6 +2,7 @@ import { Storage } from "@plasmohq/storage";
 import type { PlasmoMessage } from "~types/messaging";
 import type { MetaMaskConnection } from "~types/wallet";
 import { HistoryManager } from "~lib/history";
+import { formatTimestamp, formatDuration } from "~lib/formatters";
 
 // Types pour l'agent IA
 type RawMessage = {
@@ -21,7 +22,8 @@ type AgentMessagePayload = {
 };
 
 interface MessageData {
-  type: 'PAGE_DATA' | 'PAGE_DURATION' | 'SCROLL_DATA' | 'TEST_MESSAGE' | 'BEHAVIOR_DATA';
+  type: 'PAGE_DATA' | 'PAGE_DURATION' | 'SCROLL_DATA' | 'TEST_MESSAGE' | 'BEHAVIOR_DATA' | 
+        'GET_TRACKING_STATS' | 'EXPORT_TRACKING_DATA' | 'CLEAR_TRACKING_DATA';
   data: any;
   pageLoadTime?: number;
 }
@@ -39,28 +41,12 @@ const lastTabUpdate: Record<number, number> = {};
 let isTrackingEnabled = true;
 const behaviorCache: Record<string, any> = {};
 
-// Buffer navigation
+// Buffer navigation avec optimisations
 const navigationBuffer: string[] = [];
-const MAX_BUFFER_SIZE = 3;
-const SEND_INTERVAL_MS = 2 * 60 * 1000; // 2 min
+const MAX_BUFFER_SIZE = 2; // Réduit de 3 à 2 pour moins d'envois
+const SEND_INTERVAL_MS = 5 * 60 * 1000; // Augmenté de 2min à 5min
+const MAX_MESSAGE_SIZE = 10 * 1024; // Limite de 10KB par message
 
-// Formater un timestamp en date lisible
-function formatTimestamp(ts: number): string {
-  return new Date(ts).toLocaleString('fr-FR', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-  });
-}
-
-// Formater une durée en format lisible
-function formatDuration(ms: number): string {
-  const sec = Math.floor(ms / 1000);
-  const min = Math.floor(sec / 60);
-  const remSec = sec % 60;
-  const hrs = Math.floor(min / 60);
-  const remMin = min % 60;
-  return hrs > 0 ? `${hrs}h ${remMin}m ${remSec}s` : `${min}m ${remSec}s`;
-}
 
 function trimNavigationBuffer(maxSize = 8): void {
   if (navigationBuffer.length > maxSize) {
@@ -80,15 +66,24 @@ function cleanOldBehaviors(maxAgeMs = 15 * 60 * 1000): void {
 async function flushNavigationBuffer(): Promise<void> {
   if (navigationBuffer.length === 0) return;
 
-  const content = `[Sofia] Résumé de navigation récent (${navigationBuffer.length} visites)\n\n` +
-    navigationBuffer.join('\n' + '─'.repeat(60) + '\n');
+  let content = `[Sofia] Navigation (${navigationBuffer.length} visites)\n\n` +
+    navigationBuffer.join('\n' + '─'.repeat(40) + '\n');
 
-  console.group('📤 Envoi périodique des données à l\'agent');
-  console.log('📦 Nombre d\'éléments envoyés :', navigationBuffer.length);
-  console.log('🕓 Heure :', formatTimestamp(Date.now()));
-  console.log('📄 Contenu envoyé :\n\n' + content);
+  // Vérifier la taille et compresser si nécessaire
+  if (content.length > MAX_MESSAGE_SIZE) {
+    console.warn('⚠️ Message trop volumineux, compression...');
+    // Prendre seulement les éléments les plus récents
+    const maxItems = Math.floor(MAX_MESSAGE_SIZE / (content.length / navigationBuffer.length));
+    const recentItems = navigationBuffer.slice(-maxItems);
+    content = `[Sofia] Navigation (${recentItems.length}/${navigationBuffer.length} récentes)\n\n` +
+      recentItems.join('\n' + '─'.repeat(30) + '\n');
+  }
+
+  console.group('📤 Envoi optimisé à l\'agent');
+  console.log('📦 Éléments:', navigationBuffer.length);
+  console.log('📏 Taille:', (content.length / 1024).toFixed(1) + 'KB');
+  console.log('🕓 Heure:', formatTimestamp(Date.now()));
   console.groupEnd();
-  console.log('═'.repeat(100));
 
   await sendAgentMessage({
     channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
@@ -102,7 +97,8 @@ async function flushNavigationBuffer(): Promise<void> {
       agentName: "SofIA1",
       channelType: "DM",
       isDm: true,
-      trigger: true
+      trigger: true,
+      compressed: content.length > MAX_MESSAGE_SIZE
     }
   });
 
@@ -207,19 +203,101 @@ chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sen
         });
       }
       break;
+    
+    case 'GET_TRACKING_STATS':
+      try {
+        const globalStats = historyManager.getGlobalStats();
+        const recentVisits = historyManager.getRecentVisits(5);
+        
+        sendResponse({
+          success: true,
+          data: {
+            totalPages: globalStats.totalUrls,
+            totalVisits: globalStats.totalVisits,
+            totalTime: globalStats.totalTimeSpent,
+            mostVisitedUrl: globalStats.mostVisitedUrl,
+            recentVisits
+          }
+        });
+      } catch (error) {
+        sendResponse({
+          success: false,
+          error: 'Erreur lors du chargement des statistiques'
+        });
+      }
+      break;
+    
+    case 'EXPORT_TRACKING_DATA':
+      try {
+        const data = historyManager.exportHistory();
+        sendResponse({
+          success: true,
+          data
+        });
+      } catch (error) {
+        sendResponse({
+          success: false,
+          error: 'Erreur lors de l\'export'
+        });
+      }
+      break;
+    
+    case 'CLEAR_TRACKING_DATA':
+      historyManager.clearAll().then(() => {
+        sendResponse({
+          success: true
+        });
+      }).catch((error) => {
+        sendResponse({
+          success: false,
+          error: 'Erreur lors du nettoyage'
+        });
+      });
+      return true; // Permet la réponse async
   }
   
   sendResponse({ success: true });
   return true;
 });
 
+// Fonction pour nettoyer les URLs sensibles
+function sanitizeUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    // Supprimer les paramètres sensibles
+    const sensitiveParams = ['token', 'session', 'auth', 'key', 'password', 'secret', 'api_key'];
+    sensitiveParams.forEach(param => urlObj.searchParams.delete(param));
+    return urlObj.toString();
+  } catch {
+    return url;
+  }
+}
+
+// Vérifier si l'URL contient des données sensibles
+function isSensitiveUrl(url: string): boolean {
+  const sensitivePatterns = [
+    'login', 'auth', 'signin', 'signup', 'register', 'password',
+    'bank', 'payment', 'checkout', 'secure', 'private', 'admin'
+  ];
+  return sensitivePatterns.some(pattern => url.toLowerCase().includes(pattern));
+}
+
 // Traiter les données de page
 async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
+  // Filtres étendus pour exclure plus de domaines
   const excluded = [
     'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
-    'oauth', 'widget', 'chrome-extension://', 'sandbox', 'about:blank'
+    'oauth', 'widget', 'chrome-extension://', 'sandbox', 'about:blank',
+    'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
+    'bank', 'secure', 'login', 'auth', 'signin', 'signup'
   ];
-  if (excluded.some(str => data.url.includes(str))) return;
+  if (excluded.some(str => data.url.toLowerCase().includes(str))) return;
+  
+  // Ignorer les URLs sensibles
+  if (isSensitiveUrl(data.url)) {
+    console.log('🔒 URL sensible ignorée:', data.url);
+    return;
+  }
 
   const stats = await historyManager.recordPageVisit(data);
   const durationStats = historyManager.getUrlStats(data.url);
@@ -235,18 +313,22 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
     if (behavior.articleRead) behaviorText += `📖 Article lu : "${behavior.title}" (${(behavior.readTime / 1000).toFixed(1)}s)\n`;
   }
 
+  // Compresser et limiter les données
+  const sanitizedUrl = sanitizeUrl(data.url);
+  const shortTitle = data.title ? (data.title.length > 100 ? data.title.substring(0, 100) + '...' : data.title) : 'Non défini';
+  const shortKeywords = data.keywords ? (data.keywords.length > 50 ? data.keywords.substring(0, 50) + '...' : data.keywords) : '';
+  const shortDescription = data.description ? (data.description.length > 150 ? data.description.substring(0, 150) + '...' : data.description) : '';
+  const shortH1 = data.h1 ? (data.h1.length > 80 ? data.h1.substring(0, 80) + '...' : data.h1) : '';
+  
   const message =
-    `[Sofia] Nouvelle visite enrichie\n\n` +
-    `🌐 URL : ${data.url}\n` +
-    `🕓 Heure : ${formatTimestamp(data.timestamp)}\n` +
-    `📄 Titre : ${data.title || 'Non défini'}\n` +
-    `🏷️ Mots-clés : ${data.keywords || 'Non défini'}\n` +
-    `📚 Type OpenGraph : ${data.ogType || 'Non défini'}\n` +
-    `🆔 H1 : ${data.h1 || 'Non défini'}\n` +
-    `🔁 Nombre de visites : ${stats.visitCount}\n` +
-    `⏱️ Temps total : ${durationText}\n` +
-    `📜 Scroll détecté : ${scrollText}` +
-    (behaviorText ? `\n🧠 Comportement :\n${behaviorText}` : '');
+    `[Sofia] Visite\n` +
+    `URL: ${sanitizedUrl}\n` +
+    `Titre: ${shortTitle}\n` +
+    (shortKeywords ? `Mots-clés: ${shortKeywords}\n` : '') +
+    (shortDescription ? `Description: ${shortDescription}\n` : '') +
+    (shortH1 ? `H1: ${shortH1}\n` : '') +
+    `Visites: ${stats.visitCount} | Temps: ${durationText}` +
+    (behaviorText ? `\nComportement:\n${behaviorText}` : '');
 
   // Log console immédiat
   console.group('🧠 Nouvelle page capturée');

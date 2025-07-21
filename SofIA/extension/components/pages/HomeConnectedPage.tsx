@@ -20,6 +20,8 @@ const HomeConnectedPage = () => {
             src={logoIcon} 
             alt="Sofia" 
             className="chat-logo" 
+            onClick={() => navigateTo('chat')}
+            style={{ cursor: 'pointer' }}
           />
           <input
             type="text"

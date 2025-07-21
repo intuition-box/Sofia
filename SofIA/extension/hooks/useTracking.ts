@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useStorage } from '@plasmohq/storage/hook';
-import { HistoryManager } from '~lib/history';
 import type { VisitData } from '~types/history';
 
 interface TrackingStats {
@@ -22,21 +21,22 @@ export const useTracking = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  const historyManager = new HistoryManager();
-
+  // Communication avec le background script pour obtenir les stats
   const loadStats = async () => {
     try {
       setIsLoading(true);
-      const globalStats = historyManager.getGlobalStats();
-      const recentVisits = historyManager.getRecentVisits(5);
       
-      setStats({
-        totalPages: globalStats.totalUrls,
-        totalVisits: globalStats.totalVisits,
-        totalTime: globalStats.totalTimeSpent,
-        mostVisitedUrl: globalStats.mostVisitedUrl,
-        recentVisits
+      // Demander les stats au background script
+      const response = await new Promise<any>((resolve) => {
+        chrome.runtime.sendMessage(
+          { type: 'GET_TRACKING_STATS' },
+          (response) => resolve(response)
+        );
       });
+      
+      if (response && response.success) {
+        setStats(response.data);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des statistiques:', error);
     } finally {
@@ -50,16 +50,24 @@ export const useTracking = () => {
 
   const exportData = async () => {
     try {
-      const data = historyManager.exportHistory();
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `sofia-tracking-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const response = await new Promise<any>((resolve) => {
+        chrome.runtime.sendMessage(
+          { type: 'EXPORT_TRACKING_DATA' },
+          (response) => resolve(response)
+        );
+      });
+      
+      if (response && response.success) {
+        const blob = new Blob([response.data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sofia-tracking-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error('Erreur lors de l\'export:', error);
     }
@@ -68,8 +76,16 @@ export const useTracking = () => {
   const clearData = async () => {
     if (confirm('Êtes-vous sûr de vouloir effacer toutes les données de tracking ?')) {
       try {
-        await historyManager.clearAll();
-        await loadStats();
+        const response = await new Promise<any>((resolve) => {
+          chrome.runtime.sendMessage(
+            { type: 'CLEAR_TRACKING_DATA' },
+            (response) => resolve(response)
+          );
+        });
+        
+        if (response && response.success) {
+          await loadStats();
+        }
       } catch (error) {
         console.error('Erreur lors du nettoyage:', error);
       }

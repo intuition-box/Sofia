@@ -1,4 +1,5 @@
 import type { VisitData } from "~types/history";
+import { formatUrl } from "~lib/formatters";
 
 interface RecentVisitsProps {
   visits: VisitData[];
@@ -25,12 +26,12 @@ const RecentVisits = ({ visits, maxItems = 5 }: RecentVisitsProps) => {
     });
   };
 
-  const formatUrl = (url: string): string => {
+  const formatDomainUrl = (url: string): string => {
     try {
       const domain = new URL(url).hostname;
       return domain.replace('www.', '');
     } catch {
-      return url;
+      return formatUrl(url, 30);
     }
   };
 
@@ -63,7 +64,7 @@ const RecentVisits = ({ visits, maxItems = 5 }: RecentVisitsProps) => {
           <div key={`${visit.url}-${index}`} style={styles.visitItem}>
             <div style={styles.visitContent}>
               <div style={styles.visitTitle}>{formatTitle(visit.title)}</div>
-              <div style={styles.visitUrl}>{formatUrl(visit.url)}</div>
+              <div style={styles.visitUrl}>{formatDomainUrl(visit.url)}</div>
             </div>
             <div style={styles.visitMeta}>
               <div style={styles.visitCount}>{visit.visitCount}x</div>

@@ -7,7 +7,9 @@
         "@elizaos/cli": "latest",
         "@elizaos/core": "latest",
         "@elizaos/plugin-bootstrap": "latest",
+
         "@elizaos/plugin-mcp": "1.0.7",
+
         "@elizaos/plugin-sql": "latest",
         "@tanstack/react-query": "^5.29.0",
         "clsx": "^2.1.1",
