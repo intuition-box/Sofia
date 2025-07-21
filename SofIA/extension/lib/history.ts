@@ -121,6 +121,34 @@ export class HistoryManager {
     }
   }
 
+  public async recordBehavior(url: string, behavior: { type: string; label?: string; duration?: number; timestamp?: number }): Promise<void> {
+  const visitData = this.history.get(url);
+  const currentSession = this.currentSessions.get(url);
+
+  if (!visitData || !currentSession) {
+    console.warn(`Impossible d'enregistrer le comportement : session ou historique introuvable pour ${url}`);
+    return;
+  }
+
+  const behaviorEntry = {
+    type: behavior.type,
+    label: behavior.label || '',
+    duration: behavior.duration || 0,
+    timestamp: behavior.timestamp || Date.now()
+  };
+
+  // Ajout dans la session actuelle
+  if (!visitData.behaviors) {
+    (visitData as any).behaviors = [];
+  }
+
+  (visitData as any).behaviors.push(behaviorEntry);
+
+  this.history.set(url, visitData);
+  await this.saveHistory();
+}
+
+
   // Enregistrer un événement de scroll
   public recordScrollEvent(url: string): void {
     const currentSession = this.currentSessions.get(url);

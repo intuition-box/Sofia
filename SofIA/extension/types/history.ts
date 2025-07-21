@@ -51,6 +51,12 @@ export interface VisitData {
   firstVisitTime: number;
   totalDuration: number;
   sessions: SessionData[];
+  behaviors?: {
+    type: string;
+    label?: string;
+    duration?: number;
+    timestamp: number;
+  }[];
 }
 
 // Page metrics for analytics
