@@ -41,9 +41,11 @@
       "activeTab",
       "alarms",
       "sidePanel"
+
     ],
     "host_permissions": [
-      "<all_urls>"
+      "<all_urls>",
+      "http://127.0.0.1:8080/*"
     ],
     "side_panel": {
       "default_path": "sidepanel.html"

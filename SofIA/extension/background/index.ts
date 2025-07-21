@@ -29,7 +29,7 @@ interface MessageData {
 }
 
 // Instances
-const storage = new Storage();
+const storage = new Storage({ area: "local" });
 const historyManager = new HistoryManager();
 
 // Variables pour MetaMask
@@ -68,78 +68,78 @@ function cleanOldBehaviors(maxAgeMs = 15 * 60 * 1000): void {
   }
 }
 
+// Refactoring de flushNavigationBuffer : envoi un seul message résumé et payload détaillé
 async function flushNavigationBuffer(): Promise<void> {
   if (navigationBuffer.size === 0) return;
 
+  // Construire un résumé de navigation
   const allMessages = Array.from(navigationBuffer);
-  const CHUNK_SIZE = 10;
+  const total = allMessages.length;
+  const header = `Résumé de navigation : ${total} page(s) visitée(s)`;
 
-  console.group('📤 Envoi multi-chunk à l\'agent');
-  console.log('📦 Total éléments:', allMessages.length);
-  console.log('📏 Taille totale estimée:', (allMessages.join('\n').length / 1024).toFixed(1) + 'KB');
-  console.groupEnd();
+  // Construire le détail des pages
+  const pages = allMessages.map((msg) => {
+    const lines = msg.split("\n");
+    const urlLine = lines.find((l) => l.startsWith("URL: ")) || "";
+    const titleLine = lines.find((l) => l.startsWith("Titre: ")) || "";
+    const visitsLine = lines.find((l) => l.includes("Visites: ")) || "";
+    const timeLine = lines.find((l) => l.includes("Temps: ")) || "";
+    return {
+      url: urlLine.replace(/^URL: /, ""),
+      title: titleLine.replace(/^Titre: /, ""),
+      visits: visitsLine.replace(/.*Visites: /, ""),
+      time: timeLine.replace(/.*Temps: /, ""),
+    };
+  });
 
-  for (let i = 0; i < allMessages.length; i += CHUNK_SIZE) {
-    const chunk = allMessages.slice(i, i + CHUNK_SIZE);
-    let chunkContent = `[Sofia] Visites ${i + 1}-${i + chunk.length} / ${allMessages.length}\n\n` +
-      chunk.join('\n' + '─'.repeat(30) + '\n');
+  // Générer le contenu humain lisible
+  const list = pages
+    .map((p) => `• ${p.url} (titre: ${p.title}, visites: ${p.visits}, temps: ${p.time})`)
+    .join("\n");
 
-    const rawVisits = chunk.map(msg => {
-      const urlMatch = msg.match(/^URL: (.+)$/m);
-      const titleMatch = msg.match(/^Titre: (.+)$/m);
-      const timeMatch = msg.match(/Temps: ([^\n]+)/);
+  const summary = `${header}\n\n${list}`;
 
-      return {
-        url: urlMatch?.[1] || null,
-        title: titleMatch?.[1] || null,
-        duration: timeMatch?.[1] || null,
-        raw: msg
-      };
-    });
-
-    // Compression si trop gros
-    const compressed = chunkContent.length > MAX_MESSAGE_SIZE;
-    if (compressed) {
-      console.warn(`⚠️ Chunk ${i} trop gros (${chunkContent.length} caractères), compression automatique`);
-      chunkContent = chunkContent.slice(0, MAX_MESSAGE_SIZE) + `\n[...tronqué]`;
+  // Envoi d'un unique payload résumé avec metadata détaillé
+  const payload: AgentMessagePayload = {
+    channel_id:  "a6e8ec5e-1eff-4b61-ac81-043aeef22825",
+    server_id:   "00000000-0000-0000-0000-000000000000",
+    author_id:   "2914780f-8ccc-436a-b857-794d5d1b9aa7",
+    content:     summary,
+    source_type: "user_input",
+    raw_message: { text: summary },
+    metadata: {
+      agent_id:   "582f4e58-1285-004d-8ef6-1e6301f3d646",
+      agentName:  "SofIA1",
+      channelType:"DM",
+      isDm:       true,
+      trigger:    true,
+      compressed: false,
+      timestamp:  new Date().toISOString(),
+      pages:      pages // détails structurés de chaque visite
     }
+  };
 
-    await sendAgentMessage({
-      channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
-      server_id: "00000000-0000-0000-0000-000000000000",
-      author_id: "92a90889-f91b-42cf-934a-6e3ff329c8cf",
-      content: chunkContent,
-      source_type: "user_input",
-      raw_message: { text: chunkContent },
-      metadata: {
-        agent_id: "582f4e58-1285-004d-8ef6-1e6301f3d646",
-        agentName: "SofIA1",
-        channelType: "DM",
-        isDm: true,
-        trigger: true,
-        compressed,
-        visits: rawVisits
-      }
-    });
-  }
-
+  await sendAgentMessage(payload);
   navigationBuffer.clear();
 }
 
 
-
-// Fonction pour envoyer des messages à l'agent IA
 export async function sendAgentMessage(payload: AgentMessagePayload): Promise<void> {
+  console.debug("🧪 Envoi à l'agent :", payload);
   try {
     const response = await fetch("http://localhost:8080/relay", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const result = await response.json();
-    if (!response.ok) console.warn(`❌ Échec API (status ${response.status})`, result);
-  } catch (error) {
-    console.error("❌ Erreur lors de l'envoi via proxy :", error);
+    const text = await response.text();
+    if (!response.ok) {
+      console.error(`❌ API relay error (${response.status}):`, text);
+    } else {
+      console.debug("✅ Relay response:", text);
+    }
+  } catch (err) {
+    console.error("❌ Erreur proxy relay :", err);
   }
 }
 
@@ -477,16 +477,6 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 // Ouvrir automatiquement le sidepanel quand l'extension est installée ou mise à jour
 chrome.runtime.onInstalled.addListener(async () => {
   console.log("✅ Tracking activé - Extension prête");
-
-  // Ouvrir le sidepanel automatiquement
-  try {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tabs[0]?.id) {
-      await chrome.sidePanel.open({ tabId: tabs[0].id });
-    }
-  } catch (error) {
-    console.log('Impossible d\'ouvrir le sidepanel automatiquement:', error);
-  }
 });
 
 // Ouvrir le sidepanel quand l'utilisateur clique sur l'icône de l'extension
