@@ -1,4 +1,3 @@
-import React from "react";
 import type { VisitData } from "~types/history";
 
 interface RecentVisitsProps {
@@ -6,7 +5,7 @@ interface RecentVisitsProps {
   maxItems?: number;
 }
 
-const RecentVisits: React.FC<RecentVisitsProps> = ({ visits, maxItems = 5 }) => {
+const RecentVisits = ({ visits, maxItems = 5 }: RecentVisitsProps) => {
   const formatTimestamp = (timestamp: number): string => {
     const date = new Date(timestamp);
     const now = new Date();

@@ -1,4 +1,3 @@
-import React from "react";
 
 interface TrackingStatsProps {
   totalPages: number;
@@ -7,12 +6,12 @@ interface TrackingStatsProps {
   mostVisitedUrl: string | null;
 }
 
-const TrackingStats: React.FC<TrackingStatsProps> = ({
+const TrackingStats = ({
   totalPages,
   totalVisits,
   totalTime,
   mostVisitedUrl
-}) => {
+}: TrackingStatsProps) => {
   const formatDuration = (ms: number): string => {
     if (ms < 1000) return `${ms}ms`;
     
