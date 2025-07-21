@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useAgentMessages } from '../../hooks/useAgentMessages'
+import LiquidGlass from '../ui/LiquidGlass'
 import '../styles/MyGraphPage.css'
 
 const MyGraphPage = () => {
@@ -39,11 +40,16 @@ const MyGraphPage = () => {
           <div className="agent-data-section">
             <h3 className="subsection-title">Agent Messages</h3>
             {rawMessages.length > 0 ? (
-              <ul className="agent-message-list">
+              <div className="agent-message-list">
                 {rawMessages.map((msg, idx) => (
-                  <li key={idx} className="agent-message">{msg}</li>
+                  <div key={idx}>
+                    <div className="agent-message">{msg}</div>
+                    {idx < rawMessages.length - 1 && (
+                      <LiquidGlass height="3px" className="response-separator" />
+                    )}
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
               <div className="empty-state">
                 <p>No messages received yet</p>
@@ -55,11 +61,16 @@ const MyGraphPage = () => {
           <div className="triples-container">
             <h3 className="subsection-title">My Triples</h3>
             {triplets.length > 0 ? (
-              <ul className="triples-list">
+              <div className="triples-list">
                 {triplets.map((t, i) => (
-                  <li key={i} className="triple-item">{t}</li>
+                  <div key={i}>
+                    <div className="triple-item">{t}</div>
+                    {i < triplets.length - 1 && (
+                      <LiquidGlass height="2px" className="triple-separator" />
+                    )}
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
               <div className="empty-state">
                 <p>No triples saved yet</p>
