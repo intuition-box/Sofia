@@ -22,8 +22,8 @@ type AgentMessagePayload = {
 };
 
 interface MessageData {
-  type: 'PAGE_DATA' | 'PAGE_DURATION' | 'SCROLL_DATA' | 'TEST_MESSAGE' | 'BEHAVIOR_DATA' | 
-        'GET_TRACKING_STATS' | 'EXPORT_TRACKING_DATA' | 'CLEAR_TRACKING_DATA';
+  type: 'PAGE_DATA' | 'PAGE_DURATION' | 'SCROLL_DATA' | 'TEST_MESSAGE' | 'BEHAVIOR_DATA' |
+  'GET_TRACKING_STATS' | 'EXPORT_TRACKING_DATA' | 'CLEAR_TRACKING_DATA';
   data: any;
   pageLoadTime?: number;
 }
@@ -42,17 +42,22 @@ let isTrackingEnabled = true;
 const behaviorCache: Record<string, any> = {};
 
 // Buffer navigation avec optimisations
-const navigationBuffer: string[] = [];
+const navigationBuffer = new Set<string>();
 const MAX_BUFFER_SIZE = 2; // Réduit de 3 à 2 pour moins d'envois
 const SEND_INTERVAL_MS = 5 * 60 * 1000; // Augmenté de 2min à 5min
 const MAX_MESSAGE_SIZE = 10 * 1024; // Limite de 10KB par message
 
 
 function trimNavigationBuffer(maxSize = 8): void {
-  if (navigationBuffer.length > maxSize) {
-    navigationBuffer.splice(0, navigationBuffer.length - maxSize);
-  }
+  if (navigationBuffer.size <= maxSize) return;
+
+  const all = Array.from(navigationBuffer);
+  const trimmed = all.slice(-maxSize);
+
+  navigationBuffer.clear();
+  trimmed.forEach(msg => navigationBuffer.add(msg));
 }
+
 
 function cleanOldBehaviors(maxAgeMs = 15 * 60 * 1000): void {
   const now = Date.now();
@@ -64,46 +69,64 @@ function cleanOldBehaviors(maxAgeMs = 15 * 60 * 1000): void {
 }
 
 async function flushNavigationBuffer(): Promise<void> {
-  if (navigationBuffer.length === 0) return;
+  if (navigationBuffer.size === 0) return;
 
-  let content = `[Sofia] Navigation (${navigationBuffer.length} visites)\n\n` +
-    navigationBuffer.join('\n' + '─'.repeat(40) + '\n');
+  const allMessages = Array.from(navigationBuffer);
+  const CHUNK_SIZE = 10;
 
-  // Vérifier la taille et compresser si nécessaire
-  if (content.length > MAX_MESSAGE_SIZE) {
-    console.warn('⚠️ Message trop volumineux, compression...');
-    // Prendre seulement les éléments les plus récents
-    const maxItems = Math.floor(MAX_MESSAGE_SIZE / (content.length / navigationBuffer.length));
-    const recentItems = navigationBuffer.slice(-maxItems);
-    content = `[Sofia] Navigation (${recentItems.length}/${navigationBuffer.length} récentes)\n\n` +
-      recentItems.join('\n' + '─'.repeat(30) + '\n');
-  }
-
-  console.group('📤 Envoi optimisé à l\'agent');
-  console.log('📦 Éléments:', navigationBuffer.length);
-  console.log('📏 Taille:', (content.length / 1024).toFixed(1) + 'KB');
-  console.log('🕓 Heure:', formatTimestamp(Date.now()));
+  console.group('📤 Envoi multi-chunk à l\'agent');
+  console.log('📦 Total éléments:', allMessages.length);
+  console.log('📏 Taille totale estimée:', (allMessages.join('\n').length / 1024).toFixed(1) + 'KB');
   console.groupEnd();
 
-  await sendAgentMessage({
-    channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
-    server_id: "00000000-0000-0000-0000-000000000000",
-    author_id: "92a90889-f91b-42cf-934a-6e3ff329c8cf",
-    content,
-    source_type: "user_input",
-    raw_message: { text: content },
-    metadata: {
-      agent_id: "582f4e58-1285-004d-8ef6-1e6301f3d646",
-      agentName: "SofIA1",
-      channelType: "DM",
-      isDm: true,
-      trigger: true,
-      compressed: content.length > MAX_MESSAGE_SIZE
-    }
-  });
+  for (let i = 0; i < allMessages.length; i += CHUNK_SIZE) {
+    const chunk = allMessages.slice(i, i + CHUNK_SIZE);
+    let chunkContent = `[Sofia] Visites ${i + 1}-${i + chunk.length} / ${allMessages.length}\n\n` +
+      chunk.join('\n' + '─'.repeat(30) + '\n');
 
-  navigationBuffer.length = 0;
+    const rawVisits = chunk.map(msg => {
+      const urlMatch = msg.match(/^URL: (.+)$/m);
+      const titleMatch = msg.match(/^Titre: (.+)$/m);
+      const timeMatch = msg.match(/Temps: ([^\n]+)/);
+
+      return {
+        url: urlMatch?.[1] || null,
+        title: titleMatch?.[1] || null,
+        duration: timeMatch?.[1] || null,
+        raw: msg
+      };
+    });
+
+    // Compression si trop gros
+    const compressed = chunkContent.length > MAX_MESSAGE_SIZE;
+    if (compressed) {
+      console.warn(`⚠️ Chunk ${i} trop gros (${chunkContent.length} caractères), compression automatique`);
+      chunkContent = chunkContent.slice(0, MAX_MESSAGE_SIZE) + `\n[...tronqué]`;
+    }
+
+    await sendAgentMessage({
+      channel_id: "0e3ad1fe-7c1c-4ec3-9fc7-bce6bbcc768c",
+      server_id: "00000000-0000-0000-0000-000000000000",
+      author_id: "92a90889-f91b-42cf-934a-6e3ff329c8cf",
+      content: chunkContent,
+      source_type: "user_input",
+      raw_message: { text: chunkContent },
+      metadata: {
+        agent_id: "582f4e58-1285-004d-8ef6-1e6301f3d646",
+        agentName: "SofIA1",
+        channelType: "DM",
+        isDm: true,
+        trigger: true,
+        compressed,
+        visits: rawVisits
+      }
+    });
+  }
+
+  navigationBuffer.clear();
 }
+
+
 
 // Fonction pour envoyer des messages à l'agent IA
 export async function sendAgentMessage(payload: AgentMessagePayload): Promise<void> {
@@ -128,11 +151,11 @@ async function connectToMetamask(): Promise<MetaMaskConnection> {
       console.log('Background: Connexion MetaMask existante trouvée');
       return metamaskConnection;
     }
-    
+
     // Dans Plasmo, on va déléguer la connexion au composant UI
     // Pour le moment, on retourne une connexion par défaut
     throw new Error('Connexion MetaMask doit être gérée par le composant UI');
-    
+
   } catch (error) {
     console.error('Background: Erreur lors de la connexion MetaMask:', error);
     throw error;
@@ -185,24 +208,24 @@ chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sen
     case 'TEST_MESSAGE':
       // Test de communication silencieux
       break;
-      
+
     case 'PAGE_DATA':
       handlePageData(message.data, message.pageLoadTime || Date.now());
       break;
-    
+
     case 'PAGE_DURATION':
       handlePageDuration(message.data);
       break;
-    
+
     case 'SCROLL_DATA':
       historyManager.recordScrollEvent(message.data.url);
       break;
-    
+
     case 'BEHAVIOR_DATA':
       handleBehaviorData(message.data);
       break;
 
-    
+
     case 'CONNECT_TO_METAMASK':
       connectToMetamask()
         .then(result => {
@@ -226,7 +249,7 @@ chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sen
           });
         });
       break;
-    
+
     case 'GET_METAMASK_ACCOUNT':
       if (metamaskConnection?.account) {
         sendResponse({
@@ -241,12 +264,12 @@ chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sen
         });
       }
       break;
-    
+
     case 'GET_TRACKING_STATS':
       try {
         const globalStats = historyManager.getGlobalStats();
         const recentVisits = historyManager.getRecentVisits(5);
-        
+
         sendResponse({
           success: true,
           data: {
@@ -264,7 +287,7 @@ chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sen
         });
       }
       break;
-    
+
     case 'EXPORT_TRACKING_DATA':
       try {
         const data = historyManager.exportHistory();
@@ -279,7 +302,7 @@ chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sen
         });
       }
       break;
-    
+
     case 'CLEAR_TRACKING_DATA':
       historyManager.clearAll().then(() => {
         sendResponse({
@@ -293,7 +316,7 @@ chrome.runtime.onMessage.addListener((message: MessageData | PlasmoMessage, _sen
       });
       return true; // Permet la réponse async
   }
-  
+
   sendResponse({ success: true });
   return true;
 });
@@ -330,7 +353,7 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
     'bank', 'secure', 'login', 'auth', 'signin', 'signup'
   ];
   if (excluded.some(str => data.url.toLowerCase().includes(str))) return;
-  
+
   // Ignorer les URLs sensibles
   if (isSensitiveUrl(data.url)) {
     console.log('🔒 URL sensible ignorée:', data.url);
@@ -357,7 +380,7 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
   const shortKeywords = data.keywords ? (data.keywords.length > 50 ? data.keywords.substring(0, 50) + '...' : data.keywords) : '';
   const shortDescription = data.description ? (data.description.length > 150 ? data.description.substring(0, 150) + '...' : data.description) : '';
   const shortH1 = data.h1 ? (data.h1.length > 80 ? data.h1.substring(0, 80) + '...' : data.h1) : '';
-  
+
   const message =
     `[Sofia] Visite\n` +
     `URL: ${sanitizedUrl}\n` +
@@ -376,8 +399,8 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
 
   trimNavigationBuffer(8);
 
-  navigationBuffer.push(message);
-  if (navigationBuffer.length >= MAX_BUFFER_SIZE) {
+  navigationBuffer.add(message);
+  if (navigationBuffer.size >= MAX_BUFFER_SIZE) {
     await flushNavigationBuffer();
   }
 
@@ -454,7 +477,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 // Ouvrir automatiquement le sidepanel quand l'extension est installée ou mise à jour
 chrome.runtime.onInstalled.addListener(async () => {
   console.log("✅ Tracking activé - Extension prête");
-  
+
   // Ouvrir le sidepanel automatiquement
   try {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -476,4 +499,4 @@ chrome.action.onClicked.addListener(async (tab) => {
 // SOFIA Service Worker démarré
 console.log('🚀 SOFIA Extension - Service Worker prêt (Plasmo)');
 
-export {};
+export { };
