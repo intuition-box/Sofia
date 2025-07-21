@@ -1,183 +1,73 @@
-import { useState } from "react"
-import WalletConnectionButton from "./components/THP_WalletConnectionButton"
-import { TrackingStatus, TrackingStats, TrackingActions, RecentVisits } from "./components/tracking"
-import { useTracking } from "./hooks/useTracking"
+import { useEffect } from "react"
+import { useStorage } from "@plasmohq/storage/hook"
+import "./style.css"
 
-function SidePanel() {
-  const [data, setData] = useState("")
-  const [activeTab, setActiveTab] = useState<'wallet' | 'tracking'>('wallet')
-  
-  const {
-    isTrackingEnabled,
-    stats,
-    isLoading,
-    toggleTracking,
-    exportData,
-    clearData,
-    viewConsole
-  } = useTracking()
+import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
+import AppLayout from "./components/layout/AppLayout"
+import BottomNavigation from "./components/layout/BottomNavigation"
+
+// Pages
+import HomePage from "./components/pages/HomePage"
+import HomeConnectedPage from "./components/pages/HomeConnectedPage"
+import SettingsPage from "./components/pages/SettingsPage"
+import MyGraphPage from "./components/pages/MyGraphPage"
+import RecommendationsPage from "./components/pages/RecommendationsPage"
+import SavedPage from "./components/pages/SavedPage"
+import SearchPage from "./components/pages/SearchPage"
+import ChatPage from "./components/pages/ChatPage"
+
+const SidePanelContent = () => {
+  const [account] = useStorage<string>("metamask-account")
+  const { currentPage, navigateTo } = useRouter()
+
+  // Gestion automatique de la page selon l'état de connexion
+  useEffect(() => {
+    if (account && currentPage === 'home') {
+      navigateTo('home-connected')
+    } else if (!account && currentPage !== 'home') {
+      navigateTo('home')
+    }
+  }, [account, currentPage, navigateTo])
+
+  const renderCurrentPage = () => {
+    if (!account) return <HomePage />
+    
+    switch (currentPage) {
+      case 'home':
+      case 'home-connected':
+        return <HomeConnectedPage />
+      case 'settings':
+        return <SettingsPage />
+      case 'my-graph':
+        return <MyGraphPage />
+      case 'recommendations':
+        return <RecommendationsPage />
+      case 'saved':
+        return <SavedPage />
+      case 'search':
+        return <SearchPage />
+      case 'chat':
+        return <ChatPage />
+      default:
+        return <HomeConnectedPage />
+    }
+  }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>🚀 SOFIA Extension</h2>
-        <div style={styles.tabs}>
-          <button 
-            onClick={() => setActiveTab('wallet')}
-            style={activeTab === 'wallet' ? styles.activeTab : styles.tab}
-          >
-            💰 Wallet
-          </button>
-          <button 
-            onClick={() => setActiveTab('tracking')}
-            style={activeTab === 'tracking' ? styles.activeTab : styles.tab}
-          >
-            📊 Tracking
-          </button>
-        </div>
-      </div>
-
-      {activeTab === 'wallet' && (
-        <div style={styles.tabContent}>
-          <WalletConnectionButton />
-          
-          <div style={styles.separator} />
-          
-          <div style={styles.inputSection}>
-            <input 
-              onChange={(e) => setData(e.target.value)} 
-              value={data} 
-              placeholder="Test input..."
-              style={styles.input}
-            />
-            <a href="https://docs.plasmo.com" target="_blank" style={styles.link}>
-              View Plasmo Docs
-            </a>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'tracking' && (
-        <div style={styles.tabContent}>
-          {isLoading ? (
-            <div style={styles.loadingContainer}>
-              <div style={styles.loadingText}>Chargement des données...</div>
-            </div>
-          ) : (
-            <>
-              <TrackingStatus 
-                isEnabled={isTrackingEnabled}
-                onToggle={toggleTracking}
-              />
-              
-              <TrackingStats 
-                totalPages={stats.totalPages}
-                totalVisits={stats.totalVisits}
-                totalTime={stats.totalTime}
-                mostVisitedUrl={stats.mostVisitedUrl}
-              />
-              
-              <RecentVisits visits={stats.recentVisits} />
-              
-              <TrackingActions 
-                onExportData={exportData}
-                onClearData={clearData}
-                onViewConsole={viewConsole}
-              />
-            </>
-          )}
-        </div>
-      )}
-    </div>
+    <AppLayout>
+      {renderCurrentPage()}
+      <BottomNavigation />
+    </AppLayout>
   )
 }
 
-const styles = {
-  container: {
-    width: '100%',
-    minHeight: '100vh',
-    backgroundColor: '#ffffff',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-  },
-  header: {
-    padding: '16px',
-    borderBottom: '1px solid #e9ecef',
-    backgroundColor: '#f8f9fa'
-  },
-  title: {
-    margin: '0 0 12px 0',
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#212529'
-  },
-  tabs: {
-    display: 'flex',
-    gap: '4px'
-  },
-  tab: {
-    flex: '1',
-    padding: '8px 12px',
-    backgroundColor: 'transparent',
-    border: '1px solid #dee2e6',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#6c757d',
-    transition: 'all 0.2s'
-  },
-  activeTab: {
-    flex: '1',
-    padding: '8px 12px',
-    backgroundColor: '#007bff',
-    border: '1px solid #007bff',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#ffffff',
-    transition: 'all 0.2s'
-  },
-  tabContent: {
-    padding: '16px',
-    maxHeight: 'calc(100vh - 100px)',
-    overflowY: 'auto' as const
-  },
-  separator: {
-    height: '1px',
-    backgroundColor: '#e9ecef',
-    margin: '16px 0'
-  },
-  inputSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '8px'
-  },
-  input: {
-    padding: '8px 12px',
-    border: '1px solid #dee2e6',
-    borderRadius: '6px',
-    fontSize: '14px',
-    outline: 'none',
-    transition: 'border-color 0.2s'
-  },
-  link: {
-    color: '#007bff',
-    textDecoration: 'none',
-    fontSize: '13px',
-    fontWeight: '500'
-  },
-  loadingContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '200px'
-  },
-  loadingText: {
-    fontSize: '14px',
-    color: '#6c757d',
-    fontStyle: 'italic'
-  }
+function SidePanel() {
+  return (
+    <RouterProvider initialPage="home">
+      <SidePanelContent />
+    </RouterProvider>
+  )
 }
+
 
 export default SidePanel

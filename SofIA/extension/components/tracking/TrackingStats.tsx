@@ -1,4 +1,5 @@
-import React from "react";
+
+import { formatDuration, formatUrl } from '~lib/formatters';
 
 interface TrackingStatsProps {
   totalPages: number;
@@ -7,35 +8,15 @@ interface TrackingStatsProps {
   mostVisitedUrl: string | null;
 }
 
-const TrackingStats: React.FC<TrackingStatsProps> = ({
+const TrackingStats = ({
   totalPages,
   totalVisits,
   totalTime,
   mostVisitedUrl
-}) => {
-  const formatDuration = (ms: number): string => {
-    if (ms < 1000) return `${ms}ms`;
-    
-    const seconds = Math.floor(ms / 1000);
-    if (seconds < 60) return `${seconds}s`;
-    
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
-    
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
-  };
-
-  const formatUrl = (url: string | null): string => {
+}: TrackingStatsProps) => {
+  const formatMostVisitedUrl = (url: string | null): string => {
     if (!url) return 'N/A';
-    try {
-      const domain = new URL(url).hostname;
-      return domain.length > 25 ? `${domain.slice(0, 25)}...` : domain;
-    } catch {
-      return url.length > 25 ? `${url.slice(0, 25)}...` : url;
-    }
+    return formatUrl(url, 25);
   };
 
   return (
@@ -68,7 +49,7 @@ const TrackingStats: React.FC<TrackingStatsProps> = ({
         <div style={styles.statItem}>
           <div style={styles.statIcon}>🥇</div>
           <div style={styles.statContent}>
-            <div style={styles.statValue}>{formatUrl(mostVisitedUrl)}</div>
+            <div style={styles.statValue}>{formatMostVisitedUrl(mostVisitedUrl)}</div>
             <div style={styles.statLabel}>Plus visitée</div>
           </div>
         </div>
@@ -80,20 +61,24 @@ const TrackingStats: React.FC<TrackingStatsProps> = ({
 const styles = {
   container: {
     padding: '16px',
-    backgroundColor: '#ffffff',
-    borderRadius: '8px',
-    border: '1px solid #e9ecef',
-    marginBottom: '16px'
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.125)',
+    marginBottom: '16px',
+    backdropFilter: 'blur(10px) saturate(100%)',
+    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    transition: 'all 0.3s ease'
   },
   header: {
     marginBottom: '12px',
-    borderBottom: '1px solid #e9ecef',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
     paddingBottom: '8px'
   },
   title: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#495057'
+    color: '#FBF7F5'
   },
   statsGrid: {
     display: 'grid',
@@ -105,8 +90,13 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '8px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '6px'
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(5px) saturate(100%)',
+    WebkitBackdropFilter: 'blur(5px) saturate(100%)',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    transition: 'all 0.3s ease'
   },
   statIcon: {
     fontSize: '16px',
@@ -122,14 +112,14 @@ const styles = {
   statValue: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#212529',
+    color: '#FBF7F5',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const
   },
   statLabel: {
     fontSize: '11px',
-    color: '#6c757d',
+    color: '#F2DED6',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const

@@ -7,12 +7,12 @@ interface ButtonProps {
   style?: any
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
+export const Button = ({ 
   variant = "default", 
   onClick, 
   children, 
   style = {} 
-}) => {
+}: ButtonProps) => {
   const baseStyles = {
     padding: '8px 16px',
     borderRadius: '6px',
