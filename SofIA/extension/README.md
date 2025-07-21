@@ -109,7 +109,7 @@ elizaos agent start --path SofIA.json
 ---
 ## 🤖 7️⃣ Start the proxy server 
     
-    pnpm run build 
+    pnpm run proxy
 
 ## ✅  Final Checks
 
