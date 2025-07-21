@@ -4,14 +4,13 @@ import type { MetaMaskConnection } from "~types/wallet";
 import { HistoryManager } from "~lib/history";
 import { formatTimestamp, formatDuration } from "~lib/formatters";
 
-
 const SOFIA_IDS = {
   CHANNEL_ID: "363009ce-6eda-48bf-80e1-c91abddba691",
   SERVER_ID: "00000000-0000-0000-0000-000000000000",
   AUTHOR_ID: "2914780f-8ccc-436a-b857-794d5d1b9aa7",
   AGENT_ID: "582f4e58-1285-004d-8ef6-1e6301f3d646",
   AGENT_NAME: "SofIA1"
-}
+};
 
 // Types pour l'agent IA
 type RawMessage = {
@@ -32,46 +31,47 @@ type AgentMessagePayload = {
 
 interface MessageData {
   type:
-    | "PAGE_DATA"
-    | "PAGE_DURATION"
-    | "SCROLL_DATA"
-    | "TEST_MESSAGE"
-    | "BEHAVIOR_DATA"
-    | "GET_TRACKING_STATS"
-    | "EXPORT_TRACKING_DATA"
-    | "CLEAR_TRACKING_DATA"
-  data: any
-  pageLoadTime?: number
+  | "PAGE_DATA"
+  | "PAGE_DURATION"
+  | "SCROLL_DATA"
+  | "TEST_MESSAGE"
+  | "BEHAVIOR_DATA"
+  | "GET_TRACKING_STATS"
+  | "EXPORT_TRACKING_DATA"
+  | "CLEAR_TRACKING_DATA";
+  data: any;
+  pageLoadTime?: number;
 }
 
-// Instances
-const storage = new Storage({ area: "local" })
-const historyManager = new HistoryManager()
+const storage = new Storage({ area: "local" });
+const historyManager = new HistoryManager({ batchWrites: true });
 
-let metamaskConnection: MetaMaskConnection | null = null
-let captureCount = 0
-const lastTabUpdate: Record<number, number> = {}
-let isTrackingEnabled = true
-const behaviorCache: Record<string, any> = {}
+let metamaskConnection: MetaMaskConnection | null = null;
+let captureCount = 0;
+const lastTabUpdate: Record<number, number> = {};
+let isTrackingEnabled = true;
+const behaviorCache: Record<string, any> = {};
 
-const navigationBuffer = new Set<string>()
-const MAX_BUFFER_SIZE = 2
-const SEND_INTERVAL_MS = 5 * 60 * 1000
-const MAX_MESSAGE_SIZE = 10 * 1024
+const navigationBuffer = new Set<string>();
+const MAX_BUFFER_SIZE = 2;
+const SEND_INTERVAL_MS = 5 * 60 * 1000;
+const MAX_MESSAGE_SIZE = 10 * 1024;
+const WRITE_DELAY_MS = 200;
+let lastWriteTimestamp = 0;
 
 function trimNavigationBuffer(maxSize = 8): void {
-  if (navigationBuffer.size <= maxSize) return
-  const all = Array.from(navigationBuffer)
-  const trimmed = all.slice(-maxSize)
-  navigationBuffer.clear()
-  trimmed.forEach((msg) => navigationBuffer.add(msg))
+  if (navigationBuffer.size <= maxSize) return;
+  const all = Array.from(navigationBuffer);
+  const trimmed = all.slice(-maxSize);
+  navigationBuffer.clear();
+  trimmed.forEach((msg) => navigationBuffer.add(msg));
 }
 
 function cleanOldBehaviors(maxAgeMs = 15 * 60 * 1000): void {
-  const now = Date.now()
+  const now = Date.now();
   for (const url in behaviorCache) {
     if (now - behaviorCache[url]?.timestamp > maxAgeMs) {
-      delete behaviorCache[url]
+      delete behaviorCache[url];
     }
   }
 }
@@ -79,22 +79,22 @@ function cleanOldBehaviors(maxAgeMs = 15 * 60 * 1000): void {
 const sentMessages = new Set<string>();
 
 async function flushNavigationBuffer(): Promise<void> {
-  if (navigationBuffer.size === 0) return
+  if (navigationBuffer.size === 0) return;
   for (const msg of navigationBuffer) {
-    const trimmed = msg.trim()
-    if (!trimmed || sentMessages.has(trimmed)) continue
-    const payload = buildAgentPayload(trimmed)
-    await sendAgentMessage(payload)
-    sentMessages.add(trimmed)
+    const trimmed = msg.trim();
+    if (!trimmed || sentMessages.has(trimmed)) continue;
+    const payload = buildAgentPayload(trimmed);
+    await sendAgentMessage(payload);
+    sentMessages.add(trimmed);
   }
-  navigationBuffer.clear()
+  navigationBuffer.clear();
 }
 
 function buildAgentPayload(msg: string): AgentMessagePayload {
   const summary =
     msg.split("\n").find((line) => line.startsWith("Titre:"))?.replace("Titre: ", "").trim() ||
     msg.slice(0, 100) ||
-    "(no title)"
+    "(no title)";
 
   return {
     channel_id: SOFIA_IDS.CHANNEL_ID,
@@ -110,31 +110,36 @@ function buildAgentPayload(msg: string): AgentMessagePayload {
       agent_id: SOFIA_IDS.AGENT_ID,
       agentName: SOFIA_IDS.AGENT_NAME
     }
-  }
+  };
 }
 
 export async function sendAgentMessage(payload: AgentMessagePayload): Promise<void> {
-  console.debug("🧪 Envoi à l'agent :", payload)
+  console.debug("🧪 Envoi à l'agent :", payload);
   try {
     const response = await fetch("http://localhost:8080/relay", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    })
+    });
 
-    const text = await response.text()
+    const text = await response.text();
     if (!response.ok) {
-      console.error(`❌ API relay error (${response.status}):`, text)
+      console.error(`❌ API relay error (${response.status}):`, text);
     } else {
-      console.debug("✅ Relay response:", text)
+      console.debug("✅ Relay response:", text);
     }
   } catch (err) {
-    console.error("❌ Erreur proxy relay :", err)
+    console.error("❌ Erreur proxy relay :", err);
   }
 }
 
-
-
+export async function delayedWrite<T>(fn: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const wait = Math.max(0, WRITE_DELAY_MS - (now - lastWriteTimestamp));
+  if (wait > 0) await new Promise((res) => setTimeout(res, wait));
+  lastWriteTimestamp = Date.now();
+  return await fn();
+}
 
 // Fonction pour connecter MetaMask (simplifié pour Plasmo)
 async function connectToMetamask(): Promise<MetaMaskConnection> {
@@ -159,6 +164,8 @@ function handleBehaviorData(data: any): void {
   const { url, videoPlayed, videoDuration, audioPlayed, audioDuration, articleRead, title, readTime, timestamp } = data;
 
   behaviorCache[url] = data;
+
+  delayedWrite(() => historyManager.recordBehavior(url, data));
 
   const behaviorsToRecord = [];
 
@@ -338,28 +345,36 @@ function isSensitiveUrl(url: string): boolean {
 
 // Traiter les données de page
 async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
-  // Filtres étendus pour exclure plus de domaines
+  let parsedData = data;
+  try {
+    if (typeof data === "string") {
+      parsedData = JSON.parse(data);
+    }
+  } catch (err) {
+    console.error("❌ Impossible de parser les données PAGE_DATA :", err, data);
+    return;
+  }
+
   const excluded = [
     'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
     'oauth', 'widget', 'chrome-extension://', 'sandbox', 'about:blank',
     'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
     'bank', 'secure', 'login', 'auth', 'signin', 'signup', "CAPTCHA"
   ];
-  if (excluded.some(str => data.url.toLowerCase().includes(str))) return;
+  if (excluded.some(str => parsedData.url.toLowerCase().includes(str))) return;
 
-  // Ignorer les URLs sensibles
-  if (isSensitiveUrl(data.url)) {
-    console.log('🔒 URL sensible ignorée:', data.url);
+  if (isSensitiveUrl(parsedData.url)) {
+    console.log('🔒 URL sensible ignorée:', parsedData.url);
     return;
   }
-
-  const stats = await historyManager.recordPageVisit(data);
-  const durationStats = historyManager.getUrlStats(data.url);
+  await delayedWrite(() => historyManager.recordPageVisit(parsedData));
+  const stats = await historyManager.recordPageVisit(parsedData);
+  const durationStats = historyManager.getUrlStats(parsedData.url);
   const durationText = durationStats ? formatDuration(durationStats.totalDuration) : 'non mesuré';
-  const scrollText = data.hasScrolled ? 'oui' : 'non';
+  const scrollText = parsedData.hasScrolled ? 'oui' : 'non';
 
   let behaviorText = '';
-  const behavior = behaviorCache[data.url];
+  const behavior = behaviorCache[parsedData.url];
   const now = Date.now();
   if (behavior && now - behavior.timestamp < 10 * 60 * 1000) {
     if (behavior.videoPlayed) behaviorText += `🎬 Vidéo regardée (${behavior.videoDuration?.toFixed(1)}s)\n`;
@@ -367,12 +382,11 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
     if (behavior.articleRead) behaviorText += `📖 Article lu : "${behavior.title}" (${(behavior.readTime / 1000).toFixed(1)}s)\n`;
   }
 
-  // Compresser et limiter les données
-  const sanitizedUrl = sanitizeUrl(data.url);
-  const shortTitle = data.title ? (data.title.length > 100 ? data.title.substring(0, 100) + '...' : data.title) : 'Non défini';
-  const shortKeywords = data.keywords ? (data.keywords.length > 50 ? data.keywords.substring(0, 50) + '...' : data.keywords) : '';
-  const shortDescription = data.description ? (data.description.length > 150 ? data.description.substring(0, 150) + '...' : data.description) : '';
-  const shortH1 = data.h1 ? (data.h1.length > 80 ? data.h1.substring(0, 80) + '...' : data.h1) : '';
+  const sanitizedUrl = sanitizeUrl(parsedData.url);
+  const shortTitle = parsedData.title ? (parsedData.title.length > 100 ? parsedData.title.substring(0, 100) + '...' : parsedData.title) : 'Non défini';
+  const shortKeywords = parsedData.keywords ? (parsedData.keywords.length > 50 ? parsedData.keywords.substring(0, 50) + '...' : parsedData.keywords) : '';
+  const shortDescription = parsedData.description ? (parsedData.description.length > 150 ? parsedData.description.substring(0, 150) + '...' : parsedData.description) : '';
+  const shortH1 = parsedData.h1 ? (parsedData.h1.length > 80 ? parsedData.h1.substring(0, 80) + '...' : parsedData.h1) : '';
 
   const message =
     `URL: ${sanitizedUrl}\n` +
@@ -383,7 +397,6 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
     `Visites: ${stats.visitCount} | Temps: ${durationText}` +
     (behaviorText ? `\nComportement:\n${behaviorText}` : '');
 
-  // Log console immédiat
   console.group('🧠 Nouvelle page capturée');
   console.log(message);
   console.groupEnd();
@@ -396,12 +409,13 @@ async function handlePageData(data: any, pageLoadTime: number): Promise<void> {
     await flushNavigationBuffer();
   }
 
-  if (behavior) delete behaviorCache[data.url];
+  if (behavior) delete behaviorCache[parsedData.url];
 }
+
 
 // Traiter les données de durée
 async function handlePageDuration(data: any) {
-  await historyManager.recordPageDuration(data.url, data.duration, data.timestamp);
+  await delayedWrite(() => historyManager.recordPageDuration(data.url, data.duration, data.timestamp));
 }
 
 

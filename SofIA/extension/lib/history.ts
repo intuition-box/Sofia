@@ -7,11 +7,15 @@ export class HistoryManager {
   private history: Map<string, VisitData> = new Map();
   private currentSessions: Map<string, { startTime: number; scrollEvents: number }> = new Map();
 
+   batchWrites: boolean;
+  
+  constructor(config?: { batchWrites?: boolean }) {
 
-  constructor() {
+    this.batchWrites = config?.batchWrites ?? false;
     this.storage = new Storage();
     this.loadHistory();
   }
+
 
   // Charger l'historique depuis le stockage
 private async loadHistory(): Promise<void> {

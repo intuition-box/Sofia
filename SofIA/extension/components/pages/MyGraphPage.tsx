@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { useTracking } from '../../hooks/useTracking'
-import { TrackingStats, RecentVisits } from '../tracking'
+import { useAgentMessages } from '../../hooks/useAgentMessages'
 import '../styles/MyGraphPage.css'
 
 const MyGraphPage = () => {
   const { navigateTo } = useRouter()
-  const { stats } = useTracking()
+  const { rawMessages, triplets } = useAgentMessages()
   const [activeGraphTab, setActiveGraphTab] = useState<'my-data' | 'my-triples'>('my-data')
 
   return (
@@ -31,34 +30,47 @@ const MyGraphPage = () => {
           onClick={() => setActiveGraphTab('my-triples')}
           className={`tab ${activeGraphTab === 'my-triples' ? 'active' : ''}`}
         >
-          My triples
+          My Triples
         </button>
       </div>
       
       <div className="page-content">
         {activeGraphTab === 'my-data' ? (
-          <>
-            <TrackingStats 
-              totalPages={stats.totalPages}
-              totalVisits={stats.totalVisits}
-              totalTime={stats.totalTime}
-              mostVisitedUrl={stats.mostVisitedUrl}
-            />
-            <RecentVisits visits={stats.recentVisits} />
-          </>
+          <div className="agent-data-section">
+            <h3 className="subsection-title">Agent Messages</h3>
+            {rawMessages.length > 0 ? (
+              <ul className="agent-message-list">
+                {rawMessages.map((msg, idx) => (
+                  <li key={idx} className="agent-message">{msg}</li>
+                ))}
+              </ul>
+            ) : (
+              <div className="empty-state">
+                <p>No messages received yet</p>
+                <p className="empty-subtext">Agent messages will appear here when available</p>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="triples-container">
             <h3 className="subsection-title">My Triples</h3>
-            <div className="empty-state">
-              <p>No triples saved yet</p>
-              <p className="empty-subtext">Your saved data triples will appear here</p>
-            </div>
+            {triplets.length > 0 ? (
+              <ul className="triples-list">
+                {triplets.map((t, i) => (
+                  <li key={i} className="triple-item">{t}</li>
+                ))}
+              </ul>
+            ) : (
+              <div className="empty-state">
+                <p>No triples saved yet</p>
+                <p className="empty-subtext">Your saved data triples will appear here</p>
+              </div>
+            )}
           </div>
         )}
       </div>
     </div>
   )
 }
-
 
 export default MyGraphPage
