@@ -6,7 +6,7 @@ export class HistoryManager {
   private storage: Storage;
   private history: Map<string, VisitData> = new Map();
   private currentSessions: Map<string, { startTime: number; scrollEvents: number }> = new Map();
-  recordBehavior: any;
+
 
   constructor() {
     this.storage = new Storage();
