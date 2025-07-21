@@ -86,8 +86,7 @@ export default function SplineBackground() {
           }
         }}
       >
-        <source src={chrome.runtime.getURL('public/spline-background.webm')} type="video/webm" />
-        <source src="/public/spline-background.webm" type="video/webm" />
+        <source src="./public/spline-background.webm" type="video/webm" />
       </video>
       
       {/* Indicateur de statut (temporaire pour debug) */}
