@@ -1,0 +1,218 @@
+.settings-page {
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.02);
+  margin: 10px;
+  border-radius: 20px;
+  backdrop-filter: blur(5px) saturate(100%);
+  -webkit-backdrop-filter: blur(5px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.back-button {
+  background-color: transparent;
+  border: none;
+  color: #F2DED6;
+  font-size: 12px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.section-title {
+  font-family: 'Gotu', cursive;
+  font-size: 24px;
+  font-weight: 600;
+  color: #FBF7F5;
+  margin-bottom: 15px;
+}
+
+.settings-section {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px) saturate(100%);
+  -webkit-backdrop-filter: blur(10px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  margin-bottom: 20px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.settings-section-title {
+  font-family: 'Gotu', cursive;
+  font-size: 18px;
+  font-weight: 500;
+  color: #FBF7F5;
+  margin-bottom: 15px;
+  margin-top: 0;
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  color: #FBF7F5;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-subtext {
+  font-size: 14px;
+  color: #F2DED6;
+}
+
+.select {
+  background-color: rgba(251, 247, 245, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #FBF7F5;
+  backdrop-filter: blur(10px) saturate(100%);
+  -webkit-backdrop-filter: blur(10px) saturate(100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+}
+
+/* Profile Section Styles */
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-photo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.profile-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-placeholder {
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.photo-input {
+  display: none;
+}
+
+.photo-upload-button {
+  background-color: rgba(199, 134, 108, 0.8);
+  color: #FBF7F5;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.photo-upload-button:hover {
+  background-color: rgba(199, 134, 108, 1);
+}
+
+.bio-section {
+  width: 100%;
+  max-width: 400px;
+}
+
+.bio-display {
+  text-align: center;
+}
+
+.bio-text {
+  color: #F2DED6;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.bio-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.bio-textarea {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  color: #F2DED6;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.bio-textarea:focus {
+  outline: none;
+  border-color: rgba(199, 134, 108, 0.5);
+}
+
+.bio-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.edit-button,
+.save-button,
+.cancel-button {
+  background-color: rgba(199, 134, 108, 0.8);
+  color: #FBF7F5;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-button {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.edit-button:hover,
+.save-button:hover {
+  background-color: rgba(199, 134, 108, 1);
+}
+
+.cancel-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}

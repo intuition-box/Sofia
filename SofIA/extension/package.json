@@ -1,6 +1,6 @@
 {
-  "name": "extension",
-  "displayName": "extension",
+  "name": "sofia",
+  "displayName": "SofIA",
   "version": "0.0.1",
   "description": "Data tracking and wallet connexion",
   "author": "me",
@@ -8,7 +8,7 @@
     "dev": "plasmo dev",
     "build": "plasmo build",
     "package": "plasmo package",
-    "proxy": "node sofia-proxy/server.ts"
+    "proxy": "bun sofia-proxy/server.ts"
   },
   "dependencies": {
     "@plasmohq/storage": "^1.15.0",
@@ -41,13 +41,25 @@
       "activeTab",
       "alarms",
       "sidePanel"
+
     ],
     "host_permissions": [
-      "<all_urls>"
+      "<all_urls>",
+      "http://127.0.0.1:8080/*"
     ],
     "side_panel": {
       "default_path": "sidepanel.html"
     },
-    "action": {}
+    "action": {},
+    "web_accessible_resources": [
+      {
+        "resources": [
+          "public/spline-background.webm",
+          "assets/*",
+          "components/ui/*.png"
+        ],
+        "matches": ["<all_urls>"]
+      }
+    ]
   }
 }

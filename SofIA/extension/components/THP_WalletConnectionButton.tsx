@@ -4,11 +4,17 @@ import { connectWallet, disconnectWallet } from "../lib/metamask"
 import { useStorage } from "@plasmohq/storage/hook"
 import { PowerOff } from 'lucide-react';
 
-const WalletConnectionButton = () => {
+interface WalletConnectionButtonProps {
+  disabled?: boolean;
+}
+
+const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProps) => {
   const [account, setAccount] = useStorage<string>("metamask-account")
   const [isDisconnectHovered, setIsDisconnectHovered] = React.useState(false)
 
   const handleConnect = async () => {
+    if (disabled) return;
+    
     try {
       const accountAddress = await connectWallet()
       setAccount(accountAddress)
@@ -41,7 +47,13 @@ const WalletConnectionButton = () => {
   return (
     <div>
       {!account ? (
-        <Button variant="successOutline" onClick={handleConnect}>Connect to Metamask</Button>
+        <Button 
+          variant="successOutline" 
+          onClick={handleConnect}
+          disabled={disabled}
+        >
+          Connect your Wallet
+        </Button>
       ) : (
         <div>
           <button

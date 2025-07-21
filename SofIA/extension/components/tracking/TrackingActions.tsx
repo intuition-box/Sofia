@@ -1,4 +1,3 @@
-import React from "react";
 
 interface TrackingActionsProps {
   onExportData: () => void;
@@ -6,11 +5,11 @@ interface TrackingActionsProps {
   onViewConsole: () => void;
 }
 
-const TrackingActions: React.FC<TrackingActionsProps> = ({
+const TrackingActions = ({
   onExportData,
   onClearData,
   onViewConsole
-}) => {
+}: TrackingActionsProps) => {
   return (
     <div style={styles.container}>
       <div style={styles.header}>

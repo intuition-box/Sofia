@@ -36,3 +36,5 @@ yarn-error.log*
 *.tmp
 *.temp
 .tsbuildinfonode_modules/
+
+components/SplineBackground.tsx

@@ -7,33 +7,44 @@ export class HistoryManager {
   private history: Map<string, VisitData> = new Map();
   private currentSessions: Map<string, { startTime: number; scrollEvents: number }> = new Map();
 
-  constructor() {
+   batchWrites: boolean;
+  
+  constructor(config?: { batchWrites?: boolean }) {
+
+    this.batchWrites = config?.batchWrites ?? false;
     this.storage = new Storage();
     this.loadHistory();
   }
 
-  // Charger l'historique depuis le stockage
-  private async loadHistory(): Promise<void> {
-    try {
-      const historyData = await this.storage.get(this.STORAGE_KEY);
-      if (historyData) {
-        const parsedData = typeof historyData === 'string' ? JSON.parse(historyData) : historyData;
-        this.history = new Map(Object.entries(parsedData));
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'historique:', error);
-    }
-  }
 
-  // Sauvegarder l'historique dans le stockage
-  private async saveHistory(): Promise<void> {
-    try {
-      const historyObject = Object.fromEntries(this.history);
-      await this.storage.set(this.STORAGE_KEY, JSON.stringify(historyObject));
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde de l\'historique:', error);
+  // Charger l'historique depuis le stockage
+private async loadHistory(): Promise<void> {
+  try {
+    const all = await this.storage.getAll()
+    for (const [key, value] of Object.entries(all)) {
+      if (!key.startsWith(this.STORAGE_PREFIX)) continue
+      const url = decodeURIComponent(key.replace(this.STORAGE_PREFIX, ''))
+      const parsed = typeof value === 'string' ? JSON.parse(value) : value
+      this.history.set(url, parsed)
     }
+  } catch (error) {
+    console.error("❌ Erreur chargement historique :", error)
   }
+}
+
+private readonly STORAGE_PREFIX = 'history'
+  // Sauvegarder l'historique dans le stockage
+private async saveHistory(): Promise<void> {
+  for (const [url, data] of this.history.entries()) {
+    const key = this.STORAGE_PREFIX + encodeURIComponent(url)
+    const json = JSON.stringify(data)
+    const size = new Blob([json]).size
+    if (size > 8000) {
+      console.warn("⚠️ Trop gros pour chrome.storage.local : ", size, url)
+    }
+    await this.storage.set(key, json)
+  }
+}
 
   // Enregistrer une nouvelle visite de page
   public async recordPageVisit(pageData: {
@@ -120,6 +131,34 @@ export class HistoryManager {
       await this.saveHistory();
     }
   }
+
+  public async recordBehavior(url: string, behavior: { type: string; label?: string; duration?: number; timestamp?: number }): Promise<void> {
+  const visitData = this.history.get(url);
+  const currentSession = this.currentSessions.get(url);
+
+  if (!visitData || !currentSession) {
+    console.warn(`Impossible d'enregistrer le comportement : session ou historique introuvable pour ${url}`);
+    return;
+  }
+
+  const behaviorEntry = {
+    type: behavior.type,
+    label: behavior.label || '',
+    duration: behavior.duration || 0,
+    timestamp: behavior.timestamp || Date.now()
+  };
+
+  // Ajout dans la session actuelle
+  if (!visitData.behaviors) {
+    (visitData as any).behaviors = [];
+  }
+
+  (visitData as any).behaviors.push(behaviorEntry);
+
+  this.history.set(url, visitData);
+  await this.saveHistory();
+}
+
 
   // Enregistrer un événement de scroll
   public recordScrollEvent(url: string): void {

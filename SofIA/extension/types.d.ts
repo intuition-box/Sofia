@@ -59,4 +59,15 @@ declare module 'express' {
 declare module 'node-fetch' {
   const fetch: any;
   export default fetch;
+}
+
+// Déclarations pour les assets
+declare module "*.svg" {
+  const content: string;
+  export default content;
+}
+
+declare module "*.png" {
+  const content: string;
+  export default content;
 } 
