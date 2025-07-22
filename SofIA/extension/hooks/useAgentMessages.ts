@@ -1,50 +1,68 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
 type AgentResponse = {
-    text: string
-    thought?: string
-    actions?: string[]
+    text: string;
+    thought?: string;
+    actions?: string[];
+};
+
+function extractTripletsFromText(text: string): string[] {
+    const tripletSection = text.split("🧩 Triplets :")[1]?.split("🧠 Session")[0] || "";
+    return tripletSection
+        .split("\n")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
 }
 
-// ❗️On extrait uniquement les triplets entre backticks `...`
-function formatTriplets(message: AgentResponse): string[] {
-    if (!message?.text) return []
+function extractSession(text: string): string | null {
+    const match = text.match(/🧠 Session\s*:\s*(.+)/);
+    return match ? match[1].trim() : null;
+}
 
-    // Match tout ce qui est entre `backticks`
-    const matches = message.text.match(/`([^`]+)`/g)
-    if (!matches) return []
-
-    // Supprime les backticks autour et nettoie l'espace
-    return matches.map((m) => m.replace(/`/g, "").trim())
+function extractIntention(text: string): string | null {
+    const match = text.match(/🎯 Intention\s*:\s*(.+)/);
+    return match ? match[1].trim() : null;
 }
 
 export function useAgentMessages() {
-    const [rawMessages, setRawMessages] = useState<string[]>([])
-    const [triplets, setTriplets] = useState<string[]>([])
-    
+    const [triplets, setTriplets] = useState<string[]>([]);
+    const [session, setSession] = useState<string | null>(null);
+    const [intention, setIntention] = useState<string | null>(null);
 
     useEffect(() => {
-        const socket = new WebSocket("ws://localhost:8080")
+        const socket = new WebSocket("ws://localhost:8080");
 
-        socket.onopen = () => console.log("✅ WebSocket ready (MyGraphPage)")
+        socket.onopen = () => console.log("✅ WebSocket connecté");
+
         socket.onmessage = (event) => {
-            try {
-                const { type, message } = JSON.parse(event.data)
+            const parsed = JSON.parse(event.data) as { type: string; message: AgentResponse };
 
-                if (type === "agent_response" && message?.text) {
-                    const formatted = formatTriplets(message)
-                    if (formatted.length > 0) {
-                        setTriplets((prev) => [...prev, ...formatted])
-                    }
-                    setRawMessages((prev) => [...prev, message.text])
-                }
-            } catch (err) {
-                console.warn("⚠️ WebSocket message parse failed:", event.data, err)
+            if (parsed.type === "agent_response" && parsed.message?.text) {
+                const { text } = parsed.message;
+
+                // Extraction des triplets
+                const newTriplets = extractTripletsFromText(text);
+                setTriplets((prev) => [...prev, ...newTriplets]);
+
+                // Extraction de la session et de l'intention
+                const sess = extractSession(text);
+                if (sess) setSession(sess);
+
+                const intent = extractIntention(text);
+                if (intent) setIntention(intent);
             }
-        }
+        };
 
-        return () => socket.close()
-    }, [])
+        socket.onerror = (err) => {
+            console.error("❌ Erreur WebSocket :", err);
+        };
 
-    return { rawMessages, triplets }
+        socket.onclose = () => {
+            console.warn("🔌 WebSocket fermé.");
+        };
+
+        return () => socket.close();
+    }, []);
+
+    return { triplets, session, intention };
 }

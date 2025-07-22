@@ -1,11 +1,11 @@
 import express from 'express';
-import cors from 'cors';              // ← nouveau
+import cors from 'cors';
 import fetch from 'node-fetch';
 import { createServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 
 const app = express();
-app.use(cors({ origin: '*' }));      // ← autorise toutes origines (y compris chrome-extension://...)
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 // Serveur HTTP partagé pour Express + WebSocket
@@ -14,7 +14,47 @@ const wss = new WebSocketServer({ server });
 
 let latestAgentMessage: any = null;
 
-// Relay vers l'agent
+// Connexion au MessageBus de l'agent (via WebSocket) sur le port 3000
+const agentWs = new WebSocket('ws://localhost:3000/message-bus'); // URL du WebSocket de l'agent
+
+// Lors de la réception d'un message de l'agent via WebSocket (MessageBus)
+agentWs.on('open', () => {
+    console.log('✅ Connexion établie avec le MessageBus de l\'agent');
+});
+
+agentWs.on('message', (message) => {
+    console.log('📩 Message reçu du MessageBus de l\'agent :', message);
+
+    try {
+        const parsedMessage = JSON.parse(message.toString());
+        const agentResponse = parsedMessage?.raw_message?.text ?? 'Message sans texte';
+
+        if (agentResponse === 'Message sans texte') {
+            console.warn('⚠️ Aucune réponse texte dans le message de l\'agent');
+        }
+
+        // Sauvegarde de la réponse de l'agent pour l'envoyer plus tard si nécessaire
+        latestAgentMessage = agentResponse;
+        console.log('🧠 Message extrait de l\'agent :', agentResponse);
+
+        // Diffusion du message à tous les clients connectés via WebSocket
+        wss.clients.forEach((client: WebSocket) => {
+            if (client.readyState === WebSocket.OPEN) {
+                console.log('📤 Envoi de la réponse de l\'agent au client WebSocket');
+                client.send(JSON.stringify({
+                    type: 'agent_response',
+                    message: agentResponse
+                }));
+            } else {
+                console.warn('⚠️ WebSocket client déconnecté ou non prêt');
+            }
+        });
+    } catch (err) {
+        console.error('❌ Erreur lors du traitement du message de l\'agent :', err);
+    }
+});
+
+// Endpoint pour relayer les messages vers l'agent
 app.post('/relay', async (req, res) => {
     console.log("📥 Payload reçu :", JSON.stringify(req.body, null, 2));
     try {
@@ -24,6 +64,7 @@ app.post('/relay', async (req, res) => {
             body: JSON.stringify(req.body),
         });
         const data = await response.json();
+        console.log('✅ Message envoyé à l\'agent :', data);
         res.status(response.status).json(data);
     } catch (err) {
         console.error('❌ Proxy error:', err);
@@ -31,34 +72,47 @@ app.post('/relay', async (req, res) => {
     }
 });
 
-// Endpoint pour recevoir la réponse de l’agent
+// Endpoint pour recevoir la réponse de l’agent et la transmettre aux clients
 app.post('/agent-response', (req, res) => {
-    latestAgentMessage = req.body?.message ?? 'Réponse agent reçue (vide)';
-    console.log('📥 Réponse agent reçue :', latestAgentMessage);
+    const agentMessage = req.body?.raw_message ?? { text: 'Réponse vide' };
+    console.log('📥 Réponse brute de l\'agent reçue :', agentMessage);
 
+    const formattedMessage = {
+        type: 'agent_response',
+        message: agentMessage.text,
+        thought: req.body?.raw_message?.thought ?? 'No thought available',
+        actions: req.body?.raw_message?.actions ?? []
+    };
+
+    // Diffusion du message aux clients connectés via WebSocket
     wss.clients.forEach((client: WebSocket) => {
-        if (client.readyState === client.OPEN) {
-            client.send(JSON.stringify({
-                type: 'agent_response',
-                message: latestAgentMessage
-            }));
+        if (client.readyState === WebSocket.OPEN) {
+            console.log('📤 Envoi de la réponse de l\'agent au WebSocket client');
+            client.send(JSON.stringify(formattedMessage));
+        } else {
+            console.warn('⚠️ WebSocket client déconnecté ou non prêt');
         }
     });
 
     res.status(200).json({ success: true });
 });
 
+// Gérer les connexions WebSocket avec les extensions (clients)
 wss.on('connection', (ws: WebSocket) => {
-    console.log('🔌 WebSocket connecté');
+    console.log('🔌 WebSocket client connecté');
+    
     if (latestAgentMessage) {
+        console.log('📤 Envoi du dernier message de l\'agent au nouveau client WebSocket');
         ws.send(JSON.stringify({
             type: 'agent_response',
             message: latestAgentMessage
         }));
     }
-    ws.on('close', () => console.log('❎ WebSocket déconnecté'));
+
+    ws.on('close', () => console.log('❎ WebSocket client déconnecté'));
 });
 
+// Écoute sur le port 8080
 server.listen(8080, () => {
     console.log('✅ Proxy + WebSocket actif → http://127.0.0.1:8080');
 });

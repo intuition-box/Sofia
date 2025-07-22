@@ -17,7 +17,7 @@ export const EXCLUDED_URL_PATTERNS = [
   'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
   'oauth', 'widget', 'chrome-extension://', 'sandbox', 'about:blank',
   'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
-  'bank', 'secure', 'login', 'auth', 'signin', 'signup', "CAPTCHA"
+  'bank', 'secure', 'login', 'auth', 'signin', 'signup', "CAPTCHA","CookieSync Page"
 ];
 
 export const SENSITIVE_URL_PATTERNS = [
