@@ -1,4 +1,4 @@
-import { sendAgentMessage } from "../agent";
+import { sendAgentMessage, buildAgentPayload } from "../agent";
 
 const navigationBuffer = new Set<string>();
 const sentMessages = new Set<string>();
@@ -17,8 +17,6 @@ export function trimNavigationBuffer(maxSize = 8): void {
 
 export async function flushNavigationBuffer(): Promise<void> {
   if (navigationBuffer.size === 0) return;
-  
-  const { buildAgentPayload } = await import("../agent");
   
   for (const msg of navigationBuffer) {
     const trimmed = msg.trim();

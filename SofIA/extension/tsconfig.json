@@ -1,26 +1,34 @@
 {
   "extends": "./node_modules/plasmo/templates/tsconfig.base.json",
-  "exclude": [
-    "node_modules"
-  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~*": [
+        "./*"
+      ]
+    },
+    "types": [
+      "chrome",
+      "react"
+    ],
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ]
+  },
   "include": [
     ".plasmo/index.d.ts",
     "./**/*.ts",
     "./**/*.tsx",
     "../types.d.ts"
   ],
-  "compilerOptions": {
-    "paths": {
-      "~*": [
-        "./*"
-      ]
-    },
-    "types": ["chrome" , "react"],
-    "baseUrl": ".",
-    "jsx": "react-jsx",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true
-  }
+  "exclude": [
+    "node_modules"
+  ]
 }
