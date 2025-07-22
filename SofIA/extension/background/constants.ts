@@ -6,7 +6,7 @@ export const SOFIA_IDS = {
   AGENT_NAME: "SofIA1"
 };
 
-export const MAX_BUFFER_SIZE = 5;
+export const MAX_BUFFER_SIZE = 2;
 export const SEND_INTERVAL_MS = 5 * 60 * 1000;
 export const MAX_MESSAGE_SIZE = 10 * 1024;
 export const WRITE_DELAY_MS = 2000;

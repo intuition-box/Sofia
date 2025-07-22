@@ -1,37 +1,59 @@
+import { io, Socket } from "socket.io-client"
+import { SOFIA_IDS } from "./constants"
+
+let socket: Socket | null = null
+
 export function initializeWebSocket(): void {
-  function connectToElizaWebSocket() {
-    const socket = new WebSocket("ws://localhost:8080")
+  if (socket && socket.connected) {
+    console.log("🔁 Socket déjà connecté.")
+    return
+  }
 
-    socket.onopen = () => {
-      console.log("✅ WebSocket connecté au proxy ElizaOS")
-    }
+  socket = io("http://localhost:3000", {
+    transports: ["websocket"],
+    upgrade: false
+  })
 
-    socket.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data)
+  socket.on("connect", () => {
+    console.log("✅ Socket connecté :", socket!.id)
 
-        if (msg.type === "agent_response") {
-          console.log("💬 Réponse agent reçue :", msg.message)
+    socket!.emit("join", {
+      roomId: SOFIA_IDS.CHANNEL_ID,
+      agentId: SOFIA_IDS.AGENT_ID,
+    })
+  })
 
-          chrome.runtime.sendMessage({
-            type: "AGENT_RESPONSE",
-            data: msg.message
-          })
-        }
-      } catch (err) {
-        console.error("❌ Erreur de parsing WebSocket :", err)
-      }
-    }
+  socket.on("messageBroadcast", (data) => {
+    console.log("📩 Nouveau message eb :", data)
+  })
 
-    socket.onclose = () => {
-      console.warn("🔌 WebSocket ElizaOS fermé. Reconnexion dans 5s...")
-      setTimeout(connectToElizaWebSocket, 5000)
-    }
 
-    socket.onerror = (err) => {
-      console.error("❌ WebSocket ElizaOS erreur :", err)
+  socket.on("disconnect", () => {
+    console.warn("❌ Socket déconnecté")
+    socket = null
+  })
+
+  socket.on("connect_error", (err) => {
+    console.error("❌ Erreur de connexion :", err.message)
+  })
+}
+
+export function sendMessageToAgent(text: string): void {
+  if (!socket || !socket.connected) {
+    console.warn("⚠️ Socket non connecté, message non envoyé.")
+    return
+  }
+
+  const messagePayload = {
+    type: 2, // SEND_MESSAGE
+    payload: {
+      channelId: SOFIA_IDS.CHANNEL_ID,
+      serverId: SOFIA_IDS.SERVER_ID,
+      senderId: SOFIA_IDS.AUTHOR_ID,
+      message: text
     }
   }
 
-  connectToElizaWebSocket()
+  console.log("📨 Envoi via socket.io (SEND_MESSAGE):", messagePayload)
+  socket.emit("message", messagePayload)
 }

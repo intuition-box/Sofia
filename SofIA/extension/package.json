@@ -20,6 +20,7 @@
     "plasmo": "0.90.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "socket.io-client": "^4.8.1",
     "ws": "^8.18.3"
   },
   "devDependencies": {
@@ -41,7 +42,6 @@
       "activeTab",
       "alarms",
       "sidePanel"
-
     ],
     "host_permissions": [
       "<all_urls>",
@@ -50,7 +50,6 @@
     "side_panel": {
       "default_path": "sidepanel.html"
     },
-    "action": {},
     "web_accessible_resources": [
       {
         "resources": [
@@ -58,7 +57,9 @@
           "assets/*",
           "components/ui/*.png"
         ],
-        "matches": ["<all_urls>"]
+        "matches": [
+          "<all_urls>"
+        ]
       }
     ]
   }

@@ -1,17 +1,12 @@
 import { HistoryManager } from "~lib/history";
 import { delayedWrite } from "./utils/delay";
-import { MAX_BEHAVIOR_AGE_MS } from "./constants";
 import type { BehaviorData, BehaviorRecord } from "./types";
 
 const behaviorCache: Record<string, BehaviorData> = {};
 
-export function cleanOldBehaviors(maxAgeMs = MAX_BEHAVIOR_AGE_MS): void {
-  const now = Date.now();
-  for (const url in behaviorCache) {
-    if (now - behaviorCache[url]?.timestamp > maxAgeMs) {
-      delete behaviorCache[url];
-    }
-  }
+export function cleanOldBehaviors(): void {
+  // Cette fonction ne supprime plus les comportements basés sur le temps
+  // Elle ne fait rien maintenant, car il n'y a plus de limite de temps
 }
 
 export function handleBehaviorData(data: BehaviorData, historyManager: HistoryManager): void {
