@@ -1,49 +1,62 @@
-let websocketConnection: WebSocket | null = null;
+import { io, Socket } from "socket.io-client"
+import {SOFIA_IDS} from "./constants"
+
+let socket: Socket
 
 export function initializeWebSocket(): void {
+
   function connectToElizaWebSocket() {
-    const socket = new WebSocket("ws://localhost:8080")
-    websocketConnection = socket;
 
-    socket.onopen = () => {
-      console.log("✅ WebSocket connecté au proxy ElizaOS")
-    }
+    socket = io("http://localhost:3000",{
+      transports : ["websocket"],
+      path: "/socket.io"
+    })
+      socket.emit("join", {
+      roomId: "c28a5ffd-32c3-4c6d-882c-b81006ed45ad",
+      agentId: "ca67c98b-89c1-0b65-bb3e-1625531dc540"
+    })
+  
 
-    socket.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data)
+    socket.on("connect", () => {
+      console.log("✅ WebSocket connecté aElizaOS")
+    })
 
-        if (msg.type === "agent_response") {
-          console.log("💬 Réponse agent reçue :", msg.message)
+    socket.on("agent_response", (msg) => {
+      console.log("💬 Réponse agent reçue :", msg)
 
-          import("~lib/MessageBus").then(({ messageBus }) => {
-            messageBus.sendAgentResponse(msg.message);
-          });
-        }
-      } catch (err) {
-        console.error("❌ Erreur de parsing WebSocket :", err)
-      }
-    }
+      import("~lib/MessageBus").then(({ messageBus }) => {
+        messageBus.sendAgentResponse(msg.message)
+      })
+    })
 
-    socket.onclose = () => {
+    socket.on("disconnect", () => {
       console.warn("🔌 WebSocket ElizaOS fermé. Reconnexion dans 5s...")
-      websocketConnection = null;
       setTimeout(connectToElizaWebSocket, 5000)
-    }
+    })
 
-    socket.onerror = (err) => {
+    socket.on("connect_error", (err) => {
       console.error("❌ WebSocket ElizaOS erreur :", err)
-    }
+    })
   }
 
   connectToElizaWebSocket()
 }
 
-export function sendViaWebSocket(payload: any): void {
-  if (websocketConnection && websocketConnection.readyState === WebSocket.OPEN) {
-    websocketConnection.send(JSON.stringify(payload));
-    console.debug("✅ Message envoyé via WebSocket:", payload);
-  } else {
-    console.warn("⚠️ WebSocket non connecté, message ignoré:", payload);
+
+export function sendAgentMessage(text: string): void {
+  if (!socket?.connected) {
+    console.warn("⚠️ Socket non connecté")
+    return
   }
+
+  const messagePayload = {
+    text, // string brut seulement
+    roomId: SOFIA_IDS.CHANNEL_ID,
+    userId: SOFIA_IDS.AUTHOR_ID,
+    name: "user"
+  }
+
+  socket.emit("message", messagePayload)
+  
+  console.debug("✅ Message envoyé:", messagePayload)
 }

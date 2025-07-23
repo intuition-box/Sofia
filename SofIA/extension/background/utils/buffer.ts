@@ -1,4 +1,5 @@
-import { sendAgentMessage, buildAgentPayload } from "../agent";
+import { buildAgentPayload } from "../agent";
+import {sendAgentMessage} from "../websocket"
 
 const sentMessages = new Set<string>();
 
@@ -7,9 +8,9 @@ export function sendToAgent(message: string): void {
   const trimmed = message.trim();
   if (!trimmed || sentMessages.has(trimmed)) return;
   
-  const payload = buildAgentPayload(trimmed);
-  sendAgentMessage(payload);
-  sentMessages.add(trimmed);
+  const payload = buildAgentPayload(trimmed)
+  sendAgentMessage(payload.content) // 👉 on n'envoie que le `content` (string)
+  sentMessages.add(trimmed)
 }
 
 // Nettoyer les messages anciens pour éviter l'accumulation

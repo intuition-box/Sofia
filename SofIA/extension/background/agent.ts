@@ -70,13 +70,3 @@ export function buildAgentPayload(msg: string): AgentMessagePayload {
 }
 
 
-export function sendAgentMessage(payload: AgentMessagePayload): void {
-  console.debug("🧪 Envoi à l'agent :", payload);
-  
-  // Import dynamique pour éviter les dépendances circulaires
-  import("./websocket").then(({ sendViaWebSocket }) => {
-    sendViaWebSocket(payload);
-  }).catch((err) => {
-    console.error("❌ Erreur import WebSocket :", err);
-  });
-}
