@@ -1,33 +1,20 @@
 import { sendAgentMessage, buildAgentPayload } from "../agent";
 
-const navigationBuffer = new Set<string>();
 const sentMessages = new Set<string>();
 
-export function addToNavigationBuffer(message: string): void {
-  navigationBuffer.add(message);
-}
-
-export function trimNavigationBuffer(maxSize = 8): void {
-  if (navigationBuffer.size <= maxSize) return;
-  const all = Array.from(navigationBuffer);
-  const trimmed = all.slice(-maxSize);
-  navigationBuffer.clear();
-  trimmed.forEach((msg) => navigationBuffer.add(msg));
-}
-
-export async function flushNavigationBuffer(): Promise<void> {
-  if (navigationBuffer.size === 0) return;
+// Fonction simplifiée pour envoyer directement à l'agent
+export function sendToAgent(message: string): void {
+  const trimmed = message.trim();
+  if (!trimmed || sentMessages.has(trimmed)) return;
   
-  for (const msg of navigationBuffer) {
-    const trimmed = msg.trim();
-    if (!trimmed || sentMessages.has(trimmed)) continue;
-    const payload = buildAgentPayload(trimmed);
-    await sendAgentMessage(payload);
-    sentMessages.add(trimmed);
-  }
-  navigationBuffer.clear();
+  const payload = buildAgentPayload(trimmed);
+  sendAgentMessage(payload);
+  sentMessages.add(trimmed);
 }
 
-export function getNavigationBufferSize(): number {
-  return navigationBuffer.size;
+// Nettoyer les messages anciens pour éviter l'accumulation
+export function clearOldSentMessages(): void {
+  if (sentMessages.size > 100) {
+    sentMessages.clear();
+  }
 }

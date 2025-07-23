@@ -1,5 +1,4 @@
 import { HistoryManager } from "~lib/history";
-import { delayedWrite } from "./utils/delay";
 import { MAX_BEHAVIOR_AGE_MS } from "./constants";
 import type { BehaviorData, BehaviorRecord } from "./types";
 
@@ -49,7 +48,7 @@ export function handleBehaviorData(data: BehaviorData, historyManager: HistoryMa
   }
 
   for (const behavior of behaviorsToRecord) {
-    delayedWrite(() => historyManager.recordBehavior(url, behavior));
+    historyManager.recordBehavior(url, behavior);
   }
 }
 

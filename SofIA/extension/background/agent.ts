@@ -70,22 +70,13 @@ export function buildAgentPayload(msg: string): AgentMessagePayload {
 }
 
 
-export async function sendAgentMessage(payload: AgentMessagePayload): Promise<void> {
+export function sendAgentMessage(payload: AgentMessagePayload): void {
   console.debug("🧪 Envoi à l'agent :", payload);
-  try {
-    const response = await fetch("http://localhost:8080/relay", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const text = await response.text();
-    if (!response.ok) {
-      console.error(`❌ API relay error (${response.status}):`, text);
-    } else {
-      console.debug("✅ Relay response:", text);
-    }
-  } catch (err) {
-    console.error("❌ Erreur proxy relay :", err);
-  }
+  
+  // Import dynamique pour éviter les dépendances circulaires
+  import("./websocket").then(({ sendViaWebSocket }) => {
+    sendViaWebSocket(payload);
+  }).catch((err) => {
+    console.error("❌ Erreur import WebSocket :", err);
+  });
 }

@@ -3,9 +3,13 @@ import type { VisitData, SessionData, PageMetrics } from "~types/history";
 
 export class HistoryManager {
   private readonly STORAGE_KEY = 'sofia_history';
+  private readonly STORAGE_PREFIX = 'history';
+  private readonly BATCH_SAVE_INTERVAL = 30000; // 30 seconds
   private storage: Storage;
   private history: Map<string, VisitData> = new Map();
   private currentSessions: Map<string, { startTime: number; scrollEvents: number }> = new Map();
+  private saveTimer: NodeJS.Timeout | null = null;
+  private pendingSave: boolean = false;
 
    batchWrites: boolean;
   
@@ -32,19 +36,43 @@ private async loadHistory(): Promise<void> {
   }
 }
 
-private readonly STORAGE_PREFIX = 'history'
-  // Sauvegarder l'historique dans le stockage
-private async saveHistory(): Promise<void> {
-  for (const [url, data] of this.history.entries()) {
-    const key = this.STORAGE_PREFIX + encodeURIComponent(url)
-    const json = JSON.stringify(data)
-    const size = new Blob([json]).size
-    if (size > 8000) {
-      console.warn("⚠️ Trop gros pour chrome.storage.local : ", size, url)
+  // Planifier une sauvegarde différée (batching)
+  private scheduleSave(): void {
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
     }
-    await this.storage.set(key, json)
+    
+    this.pendingSave = true;
+    this.saveTimer = setTimeout(() => {
+      this.saveHistory();
+    }, this.BATCH_SAVE_INTERVAL);
   }
-}
+
+  // Sauvegarder immédiatement (pour les cas critiques)
+  private async saveHistoryImmediate(): Promise<void> {
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = null;
+    }
+    this.pendingSave = false;
+    this.scheduleSave();
+  }
+
+  // Sauvegarder l'historique dans le stockage
+  private async saveHistory(): Promise<void> {
+    this.pendingSave = false;
+    this.saveTimer = null;
+    
+    for (const [url, data] of this.history.entries()) {
+      const key = this.STORAGE_PREFIX + encodeURIComponent(url)
+      const json = JSON.stringify(data)
+      const size = new Blob([json]).size
+      if (size > 8000) {
+        console.warn("⚠️ Trop gros pour chrome.storage.local : ", size, url)
+      }
+      await this.storage.set(key, json)
+    }
+  }
 
   // Enregistrer une nouvelle visite de page
   public async recordPageVisit(pageData: {
@@ -94,7 +122,7 @@ private async saveHistory(): Promise<void> {
       scrollEvents: 0
     });
 
-    await this.saveHistory();
+    this.scheduleSave();
 
     return {
       url,
@@ -128,7 +156,7 @@ private async saveHistory(): Promise<void> {
       this.history.set(url, visitData);
       this.currentSessions.delete(url);
       
-      await this.saveHistory();
+      this.scheduleSave();
     }
   }
 
@@ -206,7 +234,7 @@ private async saveHistory(): Promise<void> {
     }
 
     if (removedCount > 0) {
-      await this.saveHistory();
+      this.scheduleSave();
     }
   }
 
@@ -221,51 +249,13 @@ private async saveHistory(): Promise<void> {
     try {
       const historyObject = JSON.parse(jsonData);
       this.history = new Map(Object.entries(historyObject));
-      await this.saveHistory();
+      await this.saveHistoryImmediate();
     } catch (error) {
       console.error('Erreur lors de l\'import de l\'historique:', error);
       throw error;
     }
   }
 
-  // Capturer une visite (pour l'intégration IA)
-  public async captureVisit(url: string, title: string, tabId?: number): Promise<{
-    id: string;
-    url: string;
-    title: string;
-    domain: string;
-    timestamp: number;
-    category?: string;
-  } | null> {
-    try {
-      const timestamp = Date.now();
-      const domain = new URL(url).hostname;
-      const id = `${domain}-${timestamp}`;
-      
-      // Utiliser la méthode existante pour enregistrer la visite
-      await this.recordPageVisit({
-        title,
-        keywords: '',
-        description: '',
-        ogType: '',
-        h1: '',
-        url,
-        timestamp
-      });
-      
-      return {
-        id,
-        url,
-        title,
-        domain,
-        timestamp,
-        category: 'general'
-      };
-    } catch (error) {
-      console.error('Erreur lors de la capture de visite:', error);
-      return null;
-    }
-  }
 
   // Obtenir des statistiques globales
   public getGlobalStats(): {
@@ -327,7 +317,7 @@ private async saveHistory(): Promise<void> {
     if (this.history.has(url)) {
       this.history.delete(url);
       this.currentSessions.delete(url);
-      await this.saveHistory();
+      this.scheduleSave();
     }
   }
 
@@ -335,6 +325,21 @@ private async saveHistory(): Promise<void> {
   public async clearAll(): Promise<void> {
     this.history.clear();
     this.currentSessions.clear();
+    
+    // Annuler toute sauvegarde en attente
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = null;
+    }
+    this.pendingSave = false;
+    
     await this.storage.remove(this.STORAGE_KEY);
+  }
+
+  // Forcer la sauvegarde si des données sont en attente
+  public async flushPendingSave(): Promise<void> {
+    if (this.pendingSave) {
+      await this.saveHistoryImmediate();
+    }
   }
 }

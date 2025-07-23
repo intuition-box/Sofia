@@ -13,16 +13,22 @@ export const WRITE_DELAY_MS = 2000;
 export const MAX_BEHAVIOR_AGE_MS = 15 * 60 * 1000;
 export const BEHAVIOR_CACHE_TIMEOUT_MS = 10 * 60 * 1000;
 
-export const EXCLUDED_URL_PATTERNS = [
-  'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
-  'oauth', 'widget', 'chrome-extension://', 'sandbox', 'about:blank',
-  'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
-  'bank', 'secure', 'login', 'auth', 'signin', 'signup', "CAPTCHA","CookieSync Page"
-];
-
+// Patterns sensibles consolidés (utilisés pour filtrage et sécurité)
 export const SENSITIVE_URL_PATTERNS = [
   'login', 'auth', 'signin', 'signup', 'register', 'password',
-  'bank', 'payment', 'checkout', 'secure', 'private', 'admin', "reCAPTCHA"
+  'bank', 'payment', 'checkout', 'secure', 'private', 'admin', 
+  'oauth', 'token', 'session', 'CAPTCHA', 'reCAPTCHA'
+];
+
+// Patterns d'exclusion spécifiques (technique + sensible)
+export const EXCLUDED_URL_PATTERNS = [
+  // Sites techniques
+  'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
+  'widget', 'chrome-extension://', 'sandbox', 'about:blank', 'CookieSync Page',
+  // Services de mail
+  'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
+  // Patterns sensibles (référence aux patterns sensibles)
+  ...SENSITIVE_URL_PATTERNS
 ];
 
 export const SENSITIVE_URL_PARAMS = [

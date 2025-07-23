@@ -7,7 +7,7 @@ interface RecentVisitsProps {
 }
 
 const RecentVisits = ({ visits, maxItems = 5 }: RecentVisitsProps) => {
-  const formatTimestamp = (timestamp: number): string => {
+  const formatRelativeTime = (timestamp: number): string => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -68,7 +68,7 @@ const RecentVisits = ({ visits, maxItems = 5 }: RecentVisitsProps) => {
             </div>
             <div style={styles.visitMeta}>
               <div style={styles.visitCount}>{visit.visitCount}x</div>
-              <div style={styles.visitTime}>{formatTimestamp(visit.lastVisitTime)}</div>
+              <div style={styles.visitTime}>{formatRelativeTime(visit.lastVisitTime)}</div>
             </div>
           </div>
         ))}
