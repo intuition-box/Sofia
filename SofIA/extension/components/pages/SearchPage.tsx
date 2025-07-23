@@ -1,16 +1,14 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { useMCPClient } from '../../hooks/useMCPClient'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
 const SearchPage = () => {
   const { navigateTo } = useRouter()
-  const { isReady, isLoading, error } = useMCPClient()
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleSearch = () => {
-    if (searchQuery.trim() && isReady) {
+    if (searchQuery.trim()) {
       localStorage.setItem('searchQuery', searchQuery.trim())
       navigateTo('search-result')
     }
@@ -43,16 +41,11 @@ const SearchPage = () => {
         <button 
           onClick={handleSearch}
           className="search-button"
-          disabled={!searchQuery.trim() || !isReady}
+          disabled={!searchQuery.trim()}
         >
-          {isLoading ? 'Initializing...' : 'Search in Intuition'}
+          Search in Intuition
         </button>
         
-        {error && (
-          <div className="error-state">
-            Connection error: {error}
-          </div>
-        )}
         
       </div>
     </div>
