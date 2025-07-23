@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useAgentMessages } from '../../hooks/useAgentMessages'
 import LiquidGlass from '../ui/LiquidGlass'
+import '../styles/Global.css'
 import '../styles/MyGraphPage.css'
 
 const MyGraphPage = () => {

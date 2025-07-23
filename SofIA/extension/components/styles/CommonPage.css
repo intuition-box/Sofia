@@ -1,73 +1,56 @@
-/* Styles communs pour RecommendationsPage, SavedPage, SearchPage */
-.page {
-  padding: 20px;
-  background-color: rgba(255, 255, 255, 0.02);
-  margin: 10px;
-  border-radius: 20px;
-  backdrop-filter: blur(5px) saturate(100%);
-  -webkit-backdrop-filter: blur(5px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-}
-
-.back-button {
-  background-color: rgba(255, 255, 255, 0);
-  color: #F2DED6;
-  font-size: 12px;
-  cursor: pointer;
-  margin-bottom: 20px;
-  padding: 8px 16px;
-  transition: all 0.3s ease;
-}
-
-.section-title {
-  font-family: 'Gotu', cursive;
-  font-size: 24px;
-  font-weight: 600;
-  color: #FBF7F5;
-  margin-bottom: 15px;
-}
-
-.page-content {
-  margin-top: 20px;
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  border-radius: 16px;
-  backdrop-filter: blur(10px) saturate(100%);
-  -webkit-backdrop-filter: blur(10px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.empty-state {
-  text-align: center;
-  color: #F2DED6;
-  font-style: italic;
-  padding: 30px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  backdrop-filter: blur(5px) saturate(100%);
-  -webkit-backdrop-filter: blur(5px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
+/* Styles spécifiques pour RecommendationsPage, SavedPage, SearchPage */
 
 /* Style spécifique pour SearchPage */
 .search-input {
   width: 100%;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.125);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   font-size: 16px;
-  background-color: rgba(251, 247, 245, 0.9);
+  background-color: rgba(251, 247, 245, 0.95);
   color: #372118;
   outline: none;
   margin-bottom: 20px;
-  backdrop-filter: blur(10px) saturate(100%);
-  -webkit-backdrop-filter: blur(10px) saturate(100%);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 20px rgba(242, 222, 214, 0.4);
+}
+
+.search-button {
+  width: 100%;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #D4A574 0%, #B8956A 100%) !important;
+  color: #372118;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.search-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #FFB3C4 0%, #FFE078 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(212, 165, 116, 0.4) !important;
+  color: #2D1B0E !important;
+}
+
+.search-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-state {
+  text-align: center;
+  color: #ef4444;
+  font-style: italic;
+  padding: 20px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }

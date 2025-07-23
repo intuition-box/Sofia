@@ -1,0 +1,59 @@
+/* Styles globaux et communs à toute l'application */
+
+/* Container principal pour les pages */
+.page {
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.02);
+  margin: 10px;
+  border-radius: 20px;
+  backdrop-filter: blur(5px) saturate(100%);
+  -webkit-backdrop-filter: blur(5px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Bouton retour standard */
+.back-button {
+  background-color: transparent;
+  border: none;
+  color: #F2DED6;
+  font-size: 12px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+/* Titre de section */
+.section-title {
+  font-family: 'Gotu', cursive;
+  font-size: 24px;
+  font-weight: 600;
+  color: #050505;
+  margin-bottom: 15px;
+}
+
+/* Contenu de page */
+.page-content {
+  margin-top: 20px;
+}
+
+/* État vide */
+.empty-state {
+  text-align: center;
+  color: #F2DED6;
+  font-style: italic;
+  padding: 30px;
+}
+
+/* État d'erreur */
+.error-state {
+  text-align: center;
+  color: #ef4444;
+  font-style: italic;
+  padding: 20px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
