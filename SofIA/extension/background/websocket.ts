@@ -20,8 +20,23 @@ export function initializeWebSocket(): void {
       })
     })
 
+    socket.on("messageBroadcast", (msg) => {
+      console.log("💬 Message broadcast reçu :", msg)
+      import("~lib/MessageBus").then(({ messageBus }) => {
+        messageBus.sendAgentResponse(msg.text)
+      })
+    })
+
+    socket.on("messageComplete", (msg) => {
+      console.log("✅ Message complete :", msg)
+    })
+
+    socket.on("error", (error) => {
+      console.error("❌ Erreur WebSocket :", error)
+    })
+
     socket.on("agent_response", (msg) => {
-      console.log("💬 Réponse agent reçue :", msg)
+      console.log("💬 Réponse agent reçue (legacy) :", msg)
       import("~lib/MessageBus").then(({ messageBus }) => {
         messageBus.sendAgentResponse(msg.message)
       })
@@ -46,13 +61,15 @@ export function sendAgentMessage(text: string): void {
     return
   }
 
-  socket.emit("message", {
-  text: "Hello world",
-  roomId: "df201162-5f77-450a-aced-84e060f400c3",
-  userId: "ffbe5bee-a32c-4615-be7e-6a18cfd5703d",
-  name: "user"
-})
+  const messagePayload = {
+    text: text,
+    roomId: SOFIA_IDS.CHANNEL_ID,
+    userId: SOFIA_IDS.AUTHOR_ID,
+    name: "user"
+  }
 
+  console.log("📤 Envoi du message:", messagePayload)
+  socket.emit("message", messagePayload)
   console.debug("✅ Message envoyé:", text)
 }
 
