@@ -1,8 +1,4 @@
-import { HistoryManager } from "~lib/history";
-import { handlePageDuration } from "./history";
-import { handleBehaviorData } from "./behavior";
 import { connectToMetamask, getMetamaskConnection } from "./metamask";
-import { formatDuration } from "~lib/formatters";
 import { sanitizeUrl, isSensitiveUrl } from "./utils/url";
 import { sendToAgent, clearOldSentMessages } from "./utils/buffer";
 import { getBehaviorFromCache, removeBehaviorFromCache } from "./behavior";
@@ -10,7 +6,7 @@ import { EXCLUDED_URL_PATTERNS, BEHAVIOR_CACHE_TIMEOUT_MS } from "./constants";
 import { messageBus } from "~lib/MessageBus";
 import type { ChromeMessage, PageData } from "./types";
 
-async function handlePageDataInline(data: any, pageLoadTime: number, historyManager: HistoryManager): Promise<void> {
+async function handlePageDataInline(data: any, pageLoadTime: number): Promise<void> {
   let parsedData: PageData;
   try {
     if (typeof data === "string") {
@@ -49,19 +45,7 @@ async function handlePageDataInline(data: any, pageLoadTime: number, historyMana
     return;
   }
 
-  const pageVisitData = {
-    title: parsedData.title || 'Non défini',
-    keywords: parsedData.keywords || '',
-    description: parsedData.description || '',
-    ogType: parsedData.ogType || 'website',
-    h1: parsedData.h1 || '',
-    url: parsedData.url,
-    timestamp: parsedData.timestamp
-  };
-
-  const stats = await historyManager.recordPageVisit(pageVisitData);
-  const durationStats = historyManager.getUrlStats(parsedData.url);
-  const durationText = durationStats ? formatDuration(durationStats.totalDuration) : 'non mesuré';
+  // Plus de stockage - données envoyées directement à l'agent
 
   let behaviorText = '';
   const behavior = getBehaviorFromCache(parsedData.url);
@@ -84,7 +68,7 @@ async function handlePageDataInline(data: any, pageLoadTime: number, historyMana
     (shortKeywords ? `Mots-clés: ${shortKeywords}\n` : '') +
     (shortDescription ? `Description: ${shortDescription}\n` : '') +
     (shortH1 ? `H1: ${shortH1}\n` : '') +
-    `Visites: ${stats.visitCount} | Temps: ${durationText}` +
+    `Timestamp: ${new Date(parsedData.timestamp).toLocaleString('fr-FR')}` +
     (behaviorText ? `\nComportement:\n${behaviorText}` : '');
 
   console.group('🧠 Nouvelle page capturée');
@@ -99,26 +83,29 @@ async function handlePageDataInline(data: any, pageLoadTime: number, historyMana
   if (behavior) removeBehaviorFromCache(parsedData.url);
 }
 
-export function setupMessageHandlers(historyManager: HistoryManager): void {
+export function setupMessageHandlers(): void {
   chrome.runtime.onMessage.addListener((message: ChromeMessage, _sender, sendResponse) => {
     switch (message.type) {
       case 'TEST_MESSAGE':
         break;
 
       case 'PAGE_DATA':
-        handlePageDataInline(message.data, message.pageLoadTime || Date.now(), historyManager);
+        handlePageDataInline(message.data, message.pageLoadTime || Date.now());
         break;
 
       case 'PAGE_DURATION':
-        handlePageDuration(message.data, historyManager);
+        // Durée de page envoyée directement via console.log
+        console.log(`⏱️ Durée page: ${message.data.url} - ${message.data.duration}ms`);
         break;
 
       case 'SCROLL_DATA':
-        historyManager.recordScrollEvent(message.data.url);
+        // Données de scroll envoyées directement via console.log
+        console.log(`📜 Scroll: ${message.data.url}`);
         break;
 
       case 'BEHAVIOR_DATA':
-        handleBehaviorData(message.data, historyManager);
+        // Comportement affiché directement dans la console (déjà géré par le cache)
+        console.log(`🎯 Comportement: ${JSON.stringify(message.data)}`);
         break;
 
       case 'CONNECT_TO_METAMASK':
@@ -152,55 +139,30 @@ export function setupMessageHandlers(historyManager: HistoryManager): void {
         break;
 
       case 'GET_TRACKING_STATS':
-        try {
-          const globalStats = historyManager.getGlobalStats();
-          const recentVisits = historyManager.getRecentVisits(5);
-
-          sendResponse({
-            success: true,
-            data: {
-              totalPages: globalStats.totalUrls,
-              totalVisits: globalStats.totalVisits,
-              totalTime: globalStats.totalTimeSpent,
-              mostVisitedUrl: globalStats.mostVisitedUrl,
-              recentVisits
-            }
-          });
-        } catch (error) {
-          sendResponse({
-            success: false,
-            error: 'Erreur lors du chargement des statistiques'
-          });
-        }
+        // Plus de stockage local - tout est envoyé à l'agent
+        sendResponse({
+          success: true,
+          data: {
+            message: 'Données envoyées directement à l\'agent - pas de stockage local'
+          }
+        });
         break;
 
       case 'EXPORT_TRACKING_DATA':
-        try {
-          const data = historyManager.exportHistory();
-          sendResponse({
-            success: true,
-            data
-          });
-        } catch (error) {
-          sendResponse({
-            success: false,
-            error: 'Erreur lors de l\'export'
-          });
-        }
+        // Plus d'export possible - données non stockées
+        sendResponse({
+          success: false,
+          error: 'Export non disponible - données envoyées directement à l\'agent'
+        });
         break;
 
       case 'CLEAR_TRACKING_DATA':
-        historyManager.clearAll().then(() => {
-          sendResponse({
-            success: true
-          });
-        }).catch((error) => {
-          sendResponse({
-            success: false,
-            error: 'Erreur lors du nettoyage'
-          });
+        // Rien à effacer - pas de stockage local
+        sendResponse({
+          success: true,
+          message: 'Aucune donnée stockée localement à effacer'
         });
-        return true;
+        break;
     }
 
     sendResponse({ success: true });

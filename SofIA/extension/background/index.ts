@@ -1,14 +1,11 @@
-import { HistoryManager } from "~lib/history";
 import { cleanOldBehaviors } from "./behavior";
 import { initializeWebSocket } from "./websocket";
 import { setupMessageHandlers } from "./messages";
 
-const historyManager = new HistoryManager({ batchWrites: true });
-
 function init(): void {
   cleanOldBehaviors();
   initializeWebSocket();
-  setupMessageHandlers(historyManager);
+  setupMessageHandlers();
 }
 
 chrome.runtime.onMessage.addListener((message, sender) => {
