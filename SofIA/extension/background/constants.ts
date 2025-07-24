@@ -1,10 +1,18 @@
 export const SOFIA_IDS = {
-  CHANNEL_ID: "df201162-5f77-450a-aced-84e060f400c3",
+  CHANNEL_ID: "76ac09b0-ae4c-4b99-912c-9cf4afc753f1",
   SERVER_ID: "00000000-0000-0000-0000-000000000000",
+  ROOM_ID : "76ac09b0-ae4c-4b99-912c-9cf4afc753f1",
   AUTHOR_ID: "ffbe5bee-a32c-4615-be7e-6a18cfd5703d",
   AGENT_ID: "582f4e58-1285-004d-8ef6-1e6301f3d646",
   AGENT_NAME: "SofIA1"
 };
+
+// --- Constants ---
+export const USER_NAME = "User";
+
+// Source identifier for this Next.js application
+export const CHAT_SOURCE = "API";
+
 
 export const MAX_BUFFER_SIZE = 5;
 export const SEND_INTERVAL_MS = 5 * 60 * 1000;

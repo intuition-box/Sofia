@@ -6,6 +6,7 @@ function init(): void {
   cleanOldBehaviors();
   initializeWebSocket();
   setupMessageHandlers();
+
 }
 
 chrome.runtime.onMessage.addListener((message, sender) => {
