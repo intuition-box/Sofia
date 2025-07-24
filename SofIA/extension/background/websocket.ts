@@ -9,10 +9,10 @@ function generateUUID(): string {
   return crypto.randomUUID
     ? crypto.randomUUID()
     : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-        const r = (Math.random() * 16) | 0
-        const v = c === "x" ? r : (r & 0x3) | 0x8
-        return v.toString(16)
-      })
+      const r = (Math.random() * 16) | 0
+      const v = c === "x" ? r : (r & 0x3) | 0x8
+      return v.toString(16)
+    })
 }
 
 export async function initializeWebSocket(): Promise<void> {
@@ -31,46 +31,50 @@ export async function initializeWebSocket(): Promise<void> {
   socket.on("connect", () => {
     console.log("✅ Connected to Eliza, socket ID:", socket.id)
 
-    // JOIN ROOM
+    // 1. JOIN ROOM (ROOM_JOINING)
     socket.emit("message", {
       type: 1,
       payload: {
-        roomId,
-        entityId
+        roomId: roomId,
+        entityId: entityId
       }
     })
-
     console.log("📨 Sent room join for room:", roomId)
 
+    // 2. Optionnel : envoie d’un message test après connexion
     setTimeout(() => {
       sendAgentMessage("Connexion établie depuis l'extension.")
     }, 1000)
   })
 
-  socket.on("messageBroadcast", async (data) => {
+  // 3. Listen to incoming broadcasts
+  socket.on("messageBroadcast", (data) => {
     console.log("📩 Received broadcast:", data)
+    
+    if ((data.roomId === roomId || data.channelId === roomId) && data.senderId === SOFIA_IDS.AGENT_ID) {
 
-    if (data.roomId === roomId || data.channelId === roomId) {
       console.log("✅ Message is for our room!")
       console.log("Sender:", data.senderName)
       console.log("Text:", data.text)
-
-      const raw = await storage.get("sofiaMessages")
-      const messages = raw ? JSON.parse(raw) : []
+      
+      const messages = JSON.parse(localStorage.getItem("sofiaMessages") || "[]")
 
       const newMessage = {
         role: "sofia",
         content: { text: data.text },
         created_at: Date.now()
       }
+      messages.push(newMessage)
 
-      await storage.set("sofiaMessages", JSON.stringify([...messages, newMessage]))
-      console.log("✅ Message enregistré dans storage:", newMessage)
+      console.log("✅ Message enregistré dans localStorage", newMessage)
+
     } else {
       console.warn("❌ Message is for a different room:", data.roomId || data.channelId)
     }
+    const messages = JSON.parse(localStorage.getItem("sofiaMessages") || "[]")
   })
 
+  // 4. Other events
   socket.on("messageComplete", (data) => {
     console.log("✅ Message complete:", data)
   })
@@ -92,11 +96,15 @@ export async function initializeWebSocket(): Promise<void> {
     console.error("❌ Connection error:", error)
   })
 
+  // Optional: log all events
   socket.onAny((event, ...args) => {
     console.log("📥 [WS EVENT]", event, args)
   })
 }
 
+/**
+ * Envoi d’un message à l’agent Eliza
+ */
 export function sendAgentMessage(text: string): void {
   if (!socket?.connected) {
     console.warn("⚠️ Socket non connecté")
@@ -104,7 +112,7 @@ export function sendAgentMessage(text: string): void {
   }
 
   const payload = {
-    type: 2,
+    type: 2, // SEND_MESSAGE
     payload: {
       senderId: SOFIA_IDS.AUTHOR_ID,
       senderName: "Extension User",

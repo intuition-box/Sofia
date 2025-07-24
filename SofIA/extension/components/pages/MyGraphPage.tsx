@@ -24,13 +24,9 @@ interface ParsedSofiaMessage {
 function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage {
   console.log("🔍 Parsing message text:", text)
 
-  // 1. Nettoyer les retours à la ligne
-  const cleaned = text.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
-
-  // 2. Extraire avec des regex "inline"
-  const atomsMatch = cleaned.match(/✅ Atoms\s*:\s*((?:- .*?)(?=🧩|🧠|🎯|$))/)
-  const tripletsMatch = cleaned.match(/🧩 Triplets\s*:\s*((?:- .*?)(?=🧠|🎯|$))/)
-  const intentionMatch = cleaned.match(/🎯 Intention\s*:\s*(.*)/)
+  const atomsMatch = text.match(/✅ Atoms\s*:\s*((?:- .*?)(?=🧩|🧠|🎯|$))/)
+  const tripletsMatch = text.match(/🧩 Triplets\s*:\s*((?:- .*?)(?=🧠|🎯|$))/)
+  const intentionMatch = text.match(/🎯 Intention\s*:\s*(.*)/)
 
   const extractList = (block: string | undefined) =>
     block?.split(/- /)
@@ -47,7 +43,6 @@ function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage
 
   return { atoms, triplets, intention, created_at }
 }
-
 
 
 
