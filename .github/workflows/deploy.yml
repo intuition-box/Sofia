@@ -1,0 +1,62 @@
+name: Create Release
+
+on:
+  # Trigger on any push to main branch (including PR merges)
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    environment:
+      name: umami
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Get version from package.json
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Build Chrome extension
+        run: pnpm build
+
+      - name: Zip Chrome artifact
+        run: cd build/chrome-mv3-prod && zip -r ../SofIA-Extension-v${{ steps.package-version.outputs.version }}.zip *
+
+      - name: Build Firefox extension
+        run: pnpm build:firefox
+        env:
+          PLASMO_PUBLIC_UMAMI_API_KEY: ${{ secrets.PLASMO_PUBLIC_UMAMI_API_KEY }}
+          PLASMO_PUBLIC_UMAMI_WEBSITE_ID: ${{ vars.PLASMO_PUBLIC_UMAMI_WEBSITE_ID }}
+          PLASMO_PUBLIC_UMAMI_ORIGIN: ${{ vars.PLASMO_PUBLIC_UMAMI_ORIGIN }}
+
+      - name: Zip Firefox artifact
+        run: cd build/firefox-mv2-prod && zip -r ../SofIA-Extension-firefox-v${{ steps.package-version.outputs.version }}.zip *
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: Release v${{ steps.package-version.outputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            build/SofIA-Extension-chrome-v${{ steps.package-version.outputs.version }}.zip
+            build/SofIA-Extension-firefox-v${{ steps.package-version.outputs.version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
