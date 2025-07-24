@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client"
 import { SOFIA_IDS } from "./constants"
 
 let socket: Socket
-
+// initialisation 
 export function initializeWebSocket(): void {
   function connectToElizaWebSocket() {
     socket = io("http://localhost:3000", {
@@ -13,33 +13,26 @@ export function initializeWebSocket(): void {
     socket.on("connect", () => {
       console.log("✅ WebSocket connecté à ElizaOS")
 
-      // ✅ Émet l'événement de connexion à la room
       socket.emit("join", {
         roomId: SOFIA_IDS.CHANNEL_ID,
         agentId: SOFIA_IDS.AGENT_ID
       })
     })
 
-    socket.on("messageBroadcast", (msg) => {
-      console.log("💬 Message broadcast reçu :", msg)
-      import("~lib/MessageBus").then(({ messageBus }) => {
-        messageBus.sendAgentResponse(msg.text)
-      })
+   // Filtrer les réponses venant de l'agent 
+
+    socket.on("messageBroadcast", (data) => {
+      console.log(data)
     })
 
+    //Message send 
     socket.on("messageComplete", (msg) => {
       console.log("✅ Message complete :", msg)
     })
 
+    //Error
     socket.on("error", (error) => {
       console.error("❌ Erreur WebSocket :", error)
-    })
-
-    socket.on("agent_response", (msg) => {
-      console.log("💬 Réponse agent reçue (legacy) :", msg)
-      import("~lib/MessageBus").then(({ messageBus }) => {
-        messageBus.sendAgentResponse(msg.message)
-      })
     })
 
     socket.on("disconnect", () => {
@@ -55,21 +48,27 @@ export function initializeWebSocket(): void {
   connectToElizaWebSocket()
 }
 
+
+//Send message to agent 
+
 export function sendAgentMessage(text: string): void {
   if (!socket?.connected) {
     console.warn("⚠️ Socket non connecté")
     return
   }
 
-  const messagePayload = {
-    text: text,
-    roomId: SOFIA_IDS.CHANNEL_ID,
-    userId: SOFIA_IDS.AUTHOR_ID,
-    name: "user"
+  const payload = {
+    type: 2,
+    payload: {
+      senderId: SOFIA_IDS.AUTHOR_ID,
+      senderName: "user",
+      message: text,
+      channelId: SOFIA_IDS.CHANNEL_ID,
+      roomId: SOFIA_IDS.CHANNEL_ID,
+      serverId: SOFIA_IDS.SERVER_ID,
+      source: "client_chat"
+    }
   }
 
-  console.log("📤 Envoi du message:", messagePayload)
-  socket.emit("message", messagePayload)
-  console.debug("✅ Message envoyé:", text)
+  socket.emit("message", payload)
 }
-
