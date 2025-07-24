@@ -1,66 +1,143 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useAgentMessages } from '../../hooks/useAgentMessages'
+import { Storage } from '@plasmohq/storage'
 import LiquidGlass from '../ui/LiquidGlass'
 import '../styles/Global.css'
 import '../styles/MyGraphPage.css'
 
+const storage = new Storage()
+
+interface Message {
+  role: 'user' | 'sofia'
+  content: { text: string }
+  created_at: number
+}
+
+interface ParsedSofiaMessage {
+  atoms: string[]
+  triplets: string[]
+  intention: string
+  created_at: number
+}
+
+function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage {
+  console.log("🔍 Parsing message text:", text)
+
+  // 1. Nettoyer les retours à la ligne
+  const cleaned = text.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
+
+  // 2. Extraire avec des regex "inline"
+  const atomsMatch = cleaned.match(/✅ Atoms\s*:\s*((?:- .*?)(?=🧩|🧠|🎯|$))/)
+  const tripletsMatch = cleaned.match(/🧩 Triplets\s*:\s*((?:- .*?)(?=🧠|🎯|$))/)
+  const intentionMatch = cleaned.match(/🎯 Intention\s*:\s*(.*)/)
+
+  const extractList = (block: string | undefined) =>
+    block?.split(/- /)
+      .map((line) => line.trim())
+      .filter((line) => !!line) || []
+
+  const atoms = extractList(atomsMatch?.[1])
+  const triplets = extractList(tripletsMatch?.[1])
+  const intention = intentionMatch?.[1]?.trim() || ''
+
+  console.log("🧠 Extracted Atoms:", atoms)
+  console.log("📎 Extracted Triplets:", triplets)
+  console.log("🎯 Extracted Intention:", intention)
+
+  return { atoms, triplets, intention, created_at }
+}
+
+
+
+
 const MyGraphPage = () => {
   const { navigateTo } = useRouter()
-  const { triplets, session, intention } = useAgentMessages()
-  const [activeGraphTab, setActiveGraphTab] = useState<'my-data' | 'my-triples' | 'my-summary'>('my-data')
+  const { triplets } = useAgentMessages()
+  const [activeGraphTab, setActiveGraphTab] = useState<'my-data' | 'my-triples'>('my-data')
+  const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
+
+  useEffect(() => {
+    async function loadMessages() {
+      try {
+        const raw = await storage.get("sofiaMessages")
+        if (!raw) return
+
+        const messages: Message[] = JSON.parse(raw)
+        const parsed = messages
+          .filter((m) => m.role === 'sofia')
+          .map((m) => parseSofiaMessage(m.content.text, m.created_at))
+
+        setParsedMessages(parsed)
+      } catch (e) {
+        console.error('❌ Failed to load sofiaMessages from storage:', e)
+      }
+    }
+
+    loadMessages()
+  }, [])
 
   return (
     <div className="page">
-      <button 
-        onClick={() => navigateTo('home-connected')}
-        className="back-button"
-      >
+      <button onClick={() => navigateTo('home-connected')} className="back-button">
         ← Back to Home
       </button>
-      
+
       <h2 className="section-title">My Graph</h2>
-      
+
       <div className="tabs">
-        <button 
+        <button
           onClick={() => setActiveGraphTab('my-data')}
           className={`tab ${activeGraphTab === 'my-data' ? 'active' : ''}`}
         >
           My Data
         </button>
-        <button 
+        <button
           onClick={() => setActiveGraphTab('my-triples')}
           className={`tab ${activeGraphTab === 'my-triples' ? 'active' : ''}`}
         >
           My Triples
         </button>
-        <button 
-          onClick={() => setActiveGraphTab('my-summary')}
-          className={`tab ${activeGraphTab === 'my-summary' ? 'active' : ''}`}
-        >
-          Summary
-        </button>
       </div>
-      
+
       <div className="page-content">
         {activeGraphTab === 'my-data' && (
           <div className="triples-container">
             <h3 className="subsection-title">Extracted Triplets</h3>
-            {triplets.length > 0 ? (
-              <div className="triples-list">
-                {triplets.map((t, i) => (
-                  <div key={i}>
-                    <div className="triple-item">{t}</div>
-                    {i < triplets.length - 1 && (
-                      <LiquidGlass height="2px" className="triple-separator" />
-                    )}
-                  </div>
-                ))}
-              </div>
+            {parsedMessages.length > 0 ? (
+              parsedMessages.map((entry, index) => (
+                <div key={index} className="triplet-block">
+                  <p className="timestamp">
+                    <strong>Timestamp :</strong>{" "}
+                    {new Date(entry.created_at).toLocaleString("fr-FR")}
+                  </p>
+
+                  <h4>Atoms</h4>
+                  {entry.atoms.length > 0 ? (
+                    <ul>{entry.atoms.map((a, i) => <li key={i}>{a}</li>)}</ul>
+                  ) : (
+                    <p><em>(aucun atom trouvé)</em></p>
+                  )}
+
+                  <h4>Triplets</h4>
+                  {entry.triplets.length > 0 ? (
+                    <ul>{entry.triplets.map((t, i) => <li key={i}>{t}</li>)}</ul>
+                  ) : (
+                    <p><em>(aucun triplet trouvé)</em></p>
+                  )}
+
+                  <h4>Intention</h4>
+                  <p>{entry.intention || <em>(pas d'intention détectée)</em>}</p>
+
+                  {index < parsedMessages.length - 1 && (
+                    <LiquidGlass height="2px" className="triple-separator" />
+                  )}
+                </div>
+              ))
             ) : (
               <div className="empty-state">
-                <p>No triplets extracted yet</p>
-                <p className="empty-subtext">Agent triplets will appear here</p>
+                <p>No SofIA messages received yet</p>
+                <p className="empty-subtext">They will appear automatically when received</p>
               </div>
             )}
           </div>
@@ -71,25 +148,10 @@ const MyGraphPage = () => {
             <h3 className="subsection-title">Blockchain Triplets</h3>
             <div className="empty-state">
               <p>No triples registered yet</p>
-              <p className="empty-subtext">Your validated triplets will appear here once stored on-chain</p>
+              <p className="empty-subtext">
+                Your validated triplets will appear here once stored on-chain
+              </p>
             </div>
-          </div>
-        )}
-
-        {activeGraphTab === 'my-summary' && (
-          <div className="summary-section">
-            <h3 className="subsection-title">🧠 Session Summary</h3>
-            {session ? (
-              <p><strong>Session:</strong> {session}</p>
-            ) : (
-              <p className="empty-state">No session detected yet</p>
-            )}
-
-            {intention ? (
-              <p><strong>Intention:</strong> {intention}</p>
-            ) : (
-              <p className="empty-state">No intention detected yet</p>
-            )}
           </div>
         )}
       </div>
