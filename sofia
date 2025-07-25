@@ -1,0 +1,81 @@
+#!/bin/bash
+
+cat << "EOF"
+_____/\\\\\\\\\\\________________________/\\\\\______________________________
+____/\\\/////////\\\____________________/\\\///______________________________
+____\//\\\______\///____________________/\\\_______/\\\______________________
+______\////\\\_____________/\\\\\_____/\\\\\\\\\___\///___/\\\\\\\\\_________
+__________\////\\\________/\\\///\\\__\////\\\//_____/\\\_\////////\\\_______
+______________\////\\\____/\\\__\//\\\____\/\\\______\/\\\___/\\\\\\\\\\_____
+________/\\\______\//\\\__\//\\\__/\\\_____\/\\\______\/\\\__/\\\/////\\\____
+________\///\\\\\\\\\\\/____\///\\\\\/______\/\\\______\/\\\_\//\\\\\\\\/\\__
+___________\///////////________\/////________\///_______\///___\////////\//__
+EOF
+
+
+# Fonction pour lancer une application avec des logs simplifiés
+launch_app() {
+    local app_name="$1"
+    local directory="$2"
+    local command="$3"
+    local log_icon="$4"
+    local current_dir=$(pwd)
+    
+    echo "${log_icon} Lancement de ${app_name}..."
+    cd "${directory}" || { echo "❌ Erreur: Dossier ${directory} introuvable"; return 1; }
+    
+    # Lancer l'application en arrière-plan sans afficher tous les logs
+    eval "${command}" > /dev/null 2>&1 &
+    local pid=$!
+    
+    # Revenir au dossier initial
+    cd "${current_dir}"
+    
+    # Vérifier si le processus démarre correctement
+    sleep 1
+    if kill -0 "$pid" 2>/dev/null; then
+        echo "✅ ${app_name} démarré avec succès (PID: $pid)"
+    else
+        echo "❌ ${app_name} a échoué au démarrage"
+    fi
+}
+
+# Vérifier si l'argument "start" est fourni
+if [ "$1" = "start" ]; then
+    echo "🚀 Démarrage de SofIA..."
+    echo ""
+    
+    # Vérifier et tuer les processus sur le port 3001
+    echo "🔍 Vérification du port 3001..."
+    if lsof -ti:3001 > /dev/null 2>&1; then
+        echo "⚠️  Port 3001 occupé, arrêt des processus..."
+        pkill -f "PORT=3001" || true
+        sleep 2
+    fi
+    
+    # Lancer le serveur MCP (depuis core)
+    launch_app "MCP Server" "../intuition-mcp-server" "pnpm run start:http" "🛜"
+    
+    # Attendre un peu avant de lancer le suivant
+    sleep 2
+    
+    # Lancer ElizaOS (depuis core)
+    launch_app "ElizaOS" "SofIA/agent1" "elizaos start"
+    
+    # Attendre un peu avant de lancer le suivant
+    sleep 2
+    
+    # Lancer l'extension (depuis core)
+    launch_app "Extension" "SofIA/extension" "npm run build" "📱"
+    
+    echo ""
+    echo "✅ Toutes les applications ont été lancées!"
+    echo "📝 Pour arrêter toutes les applications, utilisez Ctrl+C"
+    echo ""
+    
+    # Attendre que toutes les tâches de fond se terminent
+    wait
+else
+    echo "Usage: ./sofia start"
+    echo "Ce script lance toutes les applications SofIA en parallèle."
+fi
