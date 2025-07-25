@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 # Dégradé de rouge (code 196) à jaune (code 226)
 colors=(196 202 208 214 220 226 226 226 226)
 
