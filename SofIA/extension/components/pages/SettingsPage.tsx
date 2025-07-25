@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
 import { TrackingStatus } from '../tracking'
 import WalletConnectionButton from '../THP_WalletConnectionButton'
+import { Storage } from '@plasmohq/storage'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
 
@@ -13,6 +14,9 @@ const SettingsPage = () => {
   const [profilePhoto, setProfilePhoto] = useState(null)
   const [bio, setBio] = useState("Passionate about technology, digital identity, and decentralized systems. I enjoy exploring the intersection of innovation and human connection online. Currently working on projects that leverage blockchain for social impact. Always open to collaboration and meaningful conversations.")
   const [isEditingBio, setIsEditingBio] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
+  
+  const storage = new Storage()
 
   const handlePhotoUpload = (event) => {
     const file = event.target.files[0]
@@ -28,6 +32,24 @@ const SettingsPage = () => {
   const handleBioSave = () => {
     setIsEditingBio(false)
     // Ici on pourrait sauvegarder la bio dans le localStorage ou via une API
+  }
+
+  const handleClearStorage = async () => {
+    if (!confirm('Are you sure you want to clear all stored data? This action cannot be undone.')) {
+      return
+    }
+    
+    setIsClearing(true)
+    try {
+      await storage.clear()
+      console.log("🧹 Plasmo Storage cleared successfully")
+      alert('Storage cleared successfully!')
+    } catch (error) {
+      console.error('❌ Failed to clear storage:', error)
+      alert('Failed to clear storage. Please try again.')
+    } finally {
+      setIsClearing(false)
+    }
   }
 
   return (
@@ -121,6 +143,28 @@ const SettingsPage = () => {
             isEnabled={isDataSharingEnabled}
             onToggle={() => setIsDataSharingEnabled(!isDataSharingEnabled)}
           />
+        </div>
+        
+        <div className="settings-item">
+          <span>Clear All Data</span>
+          <button 
+            onClick={handleClearStorage}
+            disabled={isClearing}
+            className="clear-storage-button"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: isClearing ? 'not-allowed' : 'pointer',
+              opacity: isClearing ? 0.6 : 1,
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            {isClearing ? 'Clearing...' : 'Clear Storage'}
+          </button>
         </div>
       </div>
 
