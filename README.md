@@ -8,7 +8,7 @@ This README guides you step-by-step to install, configure, and run your **Eliza 
 
 ## 📥 1️⃣ Download and Install Dependencies
 
-1. Clone and install **Intuition MCP Server**  
+1. Clone and install **Intuition MCP Server** On the same folder as core 
    ```bash
    git clone https://github.com/THP-Lab/intuition-mcp-server
    
@@ -83,5 +83,23 @@ In your **SofIA1** settings:
 - Make sure the **MCP plugin** and **OpenAI plugin** are both enabled.
 
 ## 🗂️ Happy exploring with **Eliza OS**!
+
+---
+
+## 🚀 How to Launch SofIA
+
+To start the complete SofIA application, simply run from core:
+
+```bash
+./sofia start
+```
+
+This script will automatically launch all components in the correct order:
+
+1. **🛜 MCP Server** - Starts the Intuition MCP server for external integrations
+2. **💁 ElizaOS** - Launches the core ElizaOS runtime
+3. **🤖 Agent Activation** - Activates the SofIA agent with its configuration
+4. **📱 Extension Build** - Builds the browser extension (visible progress)
+
 
 

@@ -1,6 +1,12 @@
 #!/bin/bash
 
-cat << "EOF"
+#!/bin/bash
+
+# Dégradé de rouge (code 196) à jaune (code 226)
+colors=(196 202 208 214 220 226 226 226 226)
+
+# Lire le logo depuis un here document
+mapfile -t ascii_art << 'EOF'
 _____/\\\\\\\\\\\________________________/\\\\\______________________________
 ____/\\\/////////\\\____________________/\\\///______________________________
 ____\//\\\______\///____________________/\\\_______/\\\______________________
@@ -11,6 +17,12 @@ ________/\\\______\//\\\__\//\\\__/\\\_____\/\\\______\/\\\__/\\\/////\\\____
 ________\///\\\\\\\\\\\/____\///\\\\\/______\/\\\______\/\\\_\//\\\\\\\\/\\__
 ___________\///////////________\/////________\///_______\///___\////////\//__
 EOF
+
+# Appliquer le gradient ligne par ligne
+for i in "${!ascii_art[@]}"; do
+    color=${colors[i % ${#colors[@]}]}
+    printf "\e[38;5;%sm%s\e[0m\n" "$color" "${ascii_art[$i]}"
+done
 
 
 # Fonction pour lancer une application avec des logs simplifiés
@@ -60,13 +72,30 @@ if [ "$1" = "start" ]; then
     sleep 2
     
     # Lancer ElizaOS (depuis core)
-    launch_app "ElizaOS" "SofIA/agent1" "elizaos start"
+    launch_app "ElizaOS" "SofIA/agent1" "elizaos start" "💁"
     
     # Attendre un peu avant de lancer le suivant
     sleep 2
     
-    # Lancer l'extension (depuis core)
-    launch_app "Extension" "SofIA/extension" "npm run build" "📱"
+    # Activer l'agent (depuis core)
+    launch_app "Agent Activation" "SofIA/agent1" "elizaos agent start --path SofIA.json" "🤖"
+    
+    # Attendre un peu avant de lancer le suivant
+    sleep 2
+    
+    # Lancer le build de l'extension (depuis core) - en mode visible
+    echo "📱 Lancement du build de l'extension..."
+    cd "SofIA/extension" || { echo "❌ Erreur: Dossier SofIA/extension introuvable"; exit 1; }
+    
+    # Lancer le build en mode visible pour voir le progrès
+    if npm run build; then
+        echo "✅ Extension build terminé avec succès"
+    else
+        echo "❌ Extension build a échoué"
+    fi
+    
+    # Revenir au dossier initial
+    cd "../../"
     
     echo ""
     echo "✅ Toutes les applications ont été lancées!"
