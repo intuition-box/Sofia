@@ -125,3 +125,42 @@
 .chat-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
+
+.triplet-text.clickable {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.triplet-text.clickable:hover {
+  color: var(--primary-color);
+}
+
+.triplet-details {
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  animation: fadeIn 0.3s ease-out;
+  font-size: 0.85rem;
+}
+
+.triplet-details p {
+  margin: 0.2rem 0;
+}
+
+.triplet-details a {
+  font-size: 0.8rem;
+  color: #87cefa;
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
