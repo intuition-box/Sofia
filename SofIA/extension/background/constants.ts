@@ -1,7 +1,7 @@
 export const SOFIA_IDS = {
-  CHANNEL_ID: "76ac09b0-ae4c-4b99-912c-9cf4afc753f1",
+  CHANNEL_ID: "8662b344-f045-4f8e-ad38-aabae151bccd",
   SERVER_ID: "00000000-0000-0000-0000-000000000000",
-  ROOM_ID : "76ac09b0-ae4c-4b99-912c-9cf4afc753f1",
+  ROOM_ID : "8662b344-f045-4f8e-ad38-aabae151bccd",
   AUTHOR_ID: "ffbe5bee-a32c-4615-be7e-6a18cfd5703d",
   AGENT_ID: "582f4e58-1285-004d-8ef6-1e6301f3d646",
   AGENT_NAME: "SofIA1"

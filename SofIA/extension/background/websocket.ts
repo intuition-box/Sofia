@@ -2,23 +2,23 @@ import { io, Socket } from "socket.io-client"
 import { SOFIA_IDS } from "./constants"
 import { Storage } from "@plasmohq/storage"
 
-const storage = new Storage()
 let socket: Socket
+const storage = new Storage()
 
 function generateUUID(): string {
   return crypto.randomUUID
-    ? crypto.randomUUID()
-    : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-      const r = (Math.random() * 16) | 0
-      const v = c === "x" ? r : (r & 0x3) | 0x8
-      return v.toString(16)
-    })
+  ? crypto.randomUUID()
+  : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0
+    const v = c === "x" ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
 
 export async function initializeWebSocket(): Promise<void> {
   const roomId = SOFIA_IDS.ROOM_ID
   const entityId = SOFIA_IDS.AUTHOR_ID
-
+  
   socket = io("http://localhost:3000", {
     transports: ["websocket"],
     path: "/socket.io",
@@ -48,7 +48,7 @@ export async function initializeWebSocket(): Promise<void> {
   })
 
   // 3. Listen to incoming broadcasts
-  socket.on("messageBroadcast", (data) => {
+  socket.on("messageBroadcast",  async (data) => {
     console.log("📩 Received broadcast:", data)
     
     if ((data.roomId === roomId || data.channelId === roomId) && data.senderId === SOFIA_IDS.AGENT_ID) {
@@ -57,21 +57,25 @@ export async function initializeWebSocket(): Promise<void> {
       console.log("Sender:", data.senderName)
       console.log("Text:", data.text)
       
-      const messages = JSON.parse(localStorage.getItem("sofiaMessages") || "[]")
+      let messages = await storage.get("sofiaMessages") || []
 
+        if (!Array.isArray(messages)) {
+        messages = []
+      }
+      
       const newMessage = {
-        role: "sofia",
         content: { text: data.text },
         created_at: Date.now()
       }
       messages.push(newMessage)
 
-      console.log("✅ Message enregistré dans localStorage", newMessage)
+      await storage.set("sofiaMessages", messages)
 
+      console.log("✅ Message enregistré dans plasmo.storage", newMessage)
     } else {
-      console.warn("❌ Message is for a different room:", data.roomId || data.channelId)
+      console.warn("❌ Message is for a different room:", data.roomId || data.channelId && data.message)
     }
-    const messages = JSON.parse(localStorage.getItem("sofiaMessages") || "[]")
+
   })
 
   // 4. Other events
