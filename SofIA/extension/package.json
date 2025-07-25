@@ -59,7 +59,8 @@
         "resources": [
           "public/spline-background.webm",
           "assets/*",
-          "components/ui/*.png"
+          "components/ui/*.png",
+          "components/ui/quick_action/*.svg"
         ],
         "matches": [
           "<all_urls>"

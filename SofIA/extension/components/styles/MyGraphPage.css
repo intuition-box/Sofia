@@ -1,46 +1,60 @@
 /* Styles spécifiques pour MyGraphPage */
 
+.page {
+  text-align: center;
+}
+
+.section-title {
+  text-align: center;
+  margin: 30px 0 20px 0;
+  font-family: 'Gotu', cursive;
+  font-size: 24px;
+  font-weight: 500;
+  color: #F2DED6;
+}
+
 .tabs {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 40px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
 }
 
 .tab {
-  padding: 10px 20px;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #FBF7F5;
-  border: 1px solid rgba(255, 255, 255, 0.125);
-  border-radius: 8px;
+  padding: 10px 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  border: none;
   cursor: pointer;
-  backdrop-filter: blur(10px) saturate(100%);
-  -webkit-backdrop-filter: blur(10px) saturate(100%);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  font-size: 16px;
+  font-weight: 400;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .tab.active {
-  padding: 10px 20px;
-  background-color: rgba(199, 134, 108, 0.8);
-  color: #FBF7F5;
-  border: 1px solid rgba(199, 134, 108, 0.3);
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  backdrop-filter: blur(10px) saturate(100%);
-  -webkit-backdrop-filter: blur(10px) saturate(100%);
-  box-shadow: 0 8px 32px rgba(199, 134, 108, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  color: #F2DED6;
+  font-weight: 500;
+  font-family: 'Fraunces', serif;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #C7866C;
 }
 
 /* Utilise .page-content de Global.css avec override spécifique */
 .page-content {
-  background-color: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  backdrop-filter: blur(10px) saturate(100%);
+  backdrop-filter: blur(30px) saturate(100%);
   -webkit-backdrop-filter: blur(10px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -114,4 +128,104 @@
 .response-separator,
 .triple-separator {
   margin: 8px 0;
+}
+
+.triples-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.echo-card {
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(30px) saturate(100%);
+  -webkit-backdrop-filter: blur(30px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.echo-card:hover {
+  background-color: rgba(31, 31, 31, 0.8);
+  border-color: rgba(199, 134, 108, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.triplet-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.triplet-text {
+  color: #F2DED6;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.triplet-text .subject {
+  font-weight: 600;
+  color: #C7866C;
+}
+
+.triplet-text .action {
+  margin: 0 8px;
+  font-style: italic;
+  color: #A6AF6B;
+}
+
+.triplet-text .object {
+  font-weight: 500;
+  color: #F2DED6;
+}
+
+.add-button {
+  background-color: rgba(199, 134, 108, 0.2);
+  color: #F2DED6;
+  border: 1px solid rgba(199, 134, 108, 0.3);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.add-button:hover {
+  background-color: rgba(199, 134, 108, 0.4);
+  border-color: rgba(199, 134, 108, 0.5);
+  transform: scale(1.05);
+}
+
+.quick-action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.quick-action-button:hover,
+.quick-action-button.hovered {
+  transform: scale(1.05);
+}
+
+.quick-action-icon {
+  width: 54px;
+  height: 18px;
+  display: block;
 }

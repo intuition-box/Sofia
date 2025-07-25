@@ -1,68 +1,93 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { useAgentMessages } from '../../hooks/useAgentMessages'
 import { Storage } from '@plasmohq/storage'
 import LiquidGlass from '../ui/LiquidGlass'
+import QuickActionButton from '../ui/QuickActionButton'
 import '../styles/Global.css'
 import '../styles/MyGraphPage.css'
 
 const storage = new Storage()
 
 interface Message {
-  role: 'user' | 'sofia'
   content: { text: string }
   created_at: number
 }
 
+interface Triplet {
+  subject: string
+  action: string
+  object: string
+}
+
 interface ParsedSofiaMessage {
-  atoms: string[]
-  triplets: string[]
+  triplets: Triplet[]
   intention: string
   created_at: number
 }
 
-function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage {
+function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   console.log("🔍 Parsing message text:", text)
 
-  const atomsMatch = text.match(/✅ Atoms\s*:\s*((?:- .*?)(?=🧩|🧠|🎯|$))/)
-  const tripletsMatch = text.match(/🧩 Triplets\s*:\s*((?:- .*?)(?=🧠|🎯|$))/)
-  const intentionMatch = text.match(/🎯 Intention\s*:\s*(.*)/)
-
-  const extractList = (block: string | undefined) =>
-    block?.split(/- /)
-      .map((line) => line.trim())
-      .filter((line) => !!line) || []
-
-  const atoms = extractList(atomsMatch?.[1])
-  const triplets = extractList(tripletsMatch?.[1])
-  const intention = intentionMatch?.[1]?.trim() || ''
-
-  console.log("🧠 Extracted Atoms:", atoms)
-  console.log("📎 Extracted Triplets:", triplets)
-  console.log("🎯 Extracted Intention:", intention)
-
-  return { atoms, triplets, intention, created_at }
+  // Essayer d'abord de parser en JSON
+  try {
+    const jsonData = JSON.parse(text)
+    
+    return {
+      triplets: jsonData.triplets || [],
+      intention: jsonData.intention || '',
+      created_at
+    }
+  } catch (error) {
+    console.warn("❌ Failed to parse JSON, treating as text message:", error)
+    
+    // Si ce n'est pas du JSON, traiter comme un message texte simple
+    if (text && typeof text === 'string' && text.trim().length > 0) {
+      return {
+        triplets: [],
+        intention: text.trim(),
+        created_at
+      }
+    }
+    
+    console.warn("📄 Raw text:", text)
+    return null
+  }
 }
-
-
 
 const MyGraphPage = () => {
   const { navigateTo } = useRouter()
-  const { triplets } = useAgentMessages()
-  const [activeGraphTab, setActiveGraphTab] = useState<'my-echos' | 'my-triples'>('my-echos')
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Resonance'>('Echoes')
   const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
 
   useEffect(() => {
     async function loadMessages() {
       try {
         const raw = await storage.get("sofiaMessages")
-        if (!raw) return
+        console.log("🔍 Raw data from storage:", raw)
+        
+        if (!raw) {
+          console.log("📭 No sofiaMessages found in storage")
+          return
+        }
 
-        const messages: Message[] = JSON.parse(raw)
+        // Vérifier si c'est déjà un objet ou une chaîne
+        let messages: Message[]
+        if (typeof raw === 'string') {
+          messages = JSON.parse(raw)
+        } else if (Array.isArray(raw)) {
+          messages = raw
+        } else {
+          console.error("❌ Unexpected data format:", typeof raw, raw)
+          return
+        }
+
+        console.log("📝 Parsed messages:", messages)
+        
         const parsed = messages
-          .filter((m) => m.role === 'sofia')
           .map((m) => parseSofiaMessage(m.content.text, m.created_at))
+          .filter(msg => msg !== null)
 
+        console.log("✅ Final parsed messages:", parsed)
         setParsedMessages(parsed)
       } catch (e) {
         console.error('❌ Failed to load sofiaMessages from storage:', e)
@@ -82,47 +107,55 @@ const MyGraphPage = () => {
 
       <div className="tabs">
         <button
-          onClick={() => setActiveGraphTab('my-echos')}
-          className={`tab ${activeGraphTab === 'my-echos' ? 'active' : ''}`}
+          onClick={() => setActiveGraphTab('Echoes')}
+          className={`tab ${activeGraphTab === 'Echoes' ? 'active' : ''}`}
         >
-          My Echo's
+          Echoes
         </button>
         <button
-          onClick={() => setActiveGraphTab('my-triples')}
-          className={`tab ${activeGraphTab === 'my-triples' ? 'active' : ''}`}
+          onClick={() => setActiveGraphTab('Signals')}
+          className={`tab ${activeGraphTab === 'Signals' ? 'active' : ''}`}
         >
-          My Triples
+          Signals
+        </button>
+        <button
+          onClick={() => setActiveGraphTab('Resonance')}
+          className={`tab ${activeGraphTab === 'Resonance' ? 'active' : ''}`}
+        >
+          Resonance
         </button>
       </div>
 
       <div className="page-content">
-        {activeGraphTab === 'my-echos' && (
+        {activeGraphTab === 'Echoes' && (
           <div className="triples-container">
-            <h3 className="subsection-title">My Echo's</h3>
             {parsedMessages.length > 0 ? (
               parsedMessages.map((entry, index) => (
-                <div key={index} className="triplet-block">
-                  <p className="timestamp">
-                    <strong>Timestamp :</strong>{" "}
-                    {new Date(entry.created_at).toLocaleString("fr-FR")}
-                  </p>
-
-                  <h4>Atoms</h4>
-                  {entry.atoms.length > 0 ? (
-                    <ul>{entry.atoms.map((a, i) => <li key={i}>{a}</li>)}</ul>
+                <div key={index} className="echo-card">
+                  {/* Afficher les triplets s'il y en a */}
+                  {entry.triplets && entry.triplets.length > 0 ? (
+                    entry.triplets.map((triplet, tripletIndex) => (
+                      <div key={tripletIndex} className="triplet-item">
+                        <p className="triplet-text">
+                          <span className="subject">{triplet.subject}</span>
+                          <span className="action">{triplet.action}</span>
+                          <span className="object">{triplet.object}</span>
+                        </p>
+                        <QuickActionButton 
+                          action="add"
+                          onClick={() => console.log('Add clicked for triplet:', triplet)}
+                        />
+                      </div>
+                    ))
                   ) : (
-                    <p><em>(aucun atom trouvé)</em></p>
+                    <div className="triplet-item">
+                      <p className="triplet-text">{entry.intention}</p>
+                      <QuickActionButton 
+                        action="add"
+                        onClick={() => console.log('Add clicked for:', entry.intention)}
+                      />
+                    </div>
                   )}
-
-                  <h4>Triplets</h4>
-                  {entry.triplets.length > 0 ? (
-                    <ul>{entry.triplets.map((t, i) => <li key={i}>{t}</li>)}</ul>
-                  ) : (
-                    <p><em>(aucun triplet trouvé)</em></p>
-                  )}
-
-                  <h4>Intention</h4>
-                  <p>{entry.intention || <em>(pas d'intention détectée)</em>}</p>
 
                   {index < parsedMessages.length - 1 && (
                     <LiquidGlass height="2px" className="triple-separator" />
@@ -138,13 +171,23 @@ const MyGraphPage = () => {
           </div>
         )}
 
-        {activeGraphTab === 'my-triples' && (
+        {activeGraphTab === 'Signals' && (
           <div className="triples-container">
-            <h3 className="subsection-title">Blockchain Triplets</h3>
             <div className="empty-state">
               <p>No triples registered yet</p>
               <p className="empty-subtext">
                 Your validated triplets will appear here once stored on-chain
+              </p>
+            </div>
+          </div>
+        )}
+
+        {activeGraphTab === 'Resonance' && (
+          <div className="triples-container">
+            <div className="empty-state">
+              <p>No resonance data available</p>
+              <p className="empty-subtext">
+                Resonance patterns will appear here when detected
               </p>
             </div>
           </div>

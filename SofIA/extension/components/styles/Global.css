@@ -23,6 +23,9 @@
   margin-bottom: 20px;
   padding: 8px 16px;
   transition: all 0.3s ease;
+  display: flex;
+  justify-content: flex-start;
+  
 }
 
 /* Titre de section */
