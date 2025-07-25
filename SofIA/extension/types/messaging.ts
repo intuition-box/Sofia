@@ -21,7 +21,7 @@ export interface ChromeResponse {
 
 // Extended message types for plasmo environment
 export interface PlasmoMessage {
-  type: 'PAGE_DATA' | 'PAGE_DURATION' | 'SCROLL_DATA' | 'TEST_MESSAGE' | 'CONNECT_TO_METAMASK' | 'GET_METAMASK_ACCOUNT';
+  type: 'GET_TAB_ID' | 'PAGE_DATA' | 'PAGE_DURATION' | 'SCROLL_DATA' | 'TEST_MESSAGE' | 'CONNECT_TO_METAMASK' | 'GET_METAMASK_ACCOUNT';
   data: {
     title?: string;
     keywords?: string;

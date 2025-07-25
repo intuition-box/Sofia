@@ -73,7 +73,7 @@ export async function initializeWebSocket(): Promise<void> {
 
       console.log("✅ Message enregistré dans plasmo.storage", newMessage)
     } else {
-      console.warn("❌ Message is for a different room:", data.roomId || data.channelId && data.message)
+      console.warn("❌ Message is from user:",data.senderId)
     }
 
   })
