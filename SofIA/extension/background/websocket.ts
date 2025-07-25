@@ -15,7 +15,17 @@ function generateUUID(): string {
   })
 }
 
+// async function logStoredMessages() {
+//   const messages = await storage.get("sofiaMessages")
+//   console.log("📦 Contenu actuel de Plasmo Storage (sofiaMessages):", messages)
+// }
+
 export async function initializeWebSocket(): Promise<void> {
+
+  // logStoredMessages
+  await storage.clear()
+  console.log("🧹 Plasmo Storage vidé avant démarrage.")
+
   const roomId = SOFIA_IDS.ROOM_ID
   const entityId = SOFIA_IDS.AUTHOR_ID
   
@@ -42,9 +52,9 @@ export async function initializeWebSocket(): Promise<void> {
     console.log("📨 Sent room join for room:", roomId)
 
     // 2. Optionnel : envoie d’un message test après connexion
-    setTimeout(() => {
-      sendAgentMessage("Connexion établie depuis l'extension.")
-    }, 1000)
+    // setTimeout(() => {
+    //   sendAgentMessage("Connexion établie depuis l'extension.")
+    // }, 1000)
   })
 
   // 3. Listen to incoming broadcasts
