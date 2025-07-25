@@ -14,7 +14,7 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
     } else {
       parsedData = data;
     }
-    
+
     if (!parsedData.timestamp) {
       parsedData.timestamp = pageLoadTime;
     }
