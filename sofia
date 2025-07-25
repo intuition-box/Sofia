@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Dégradé de rouge (code 196) à jaune (code 226)
+# Gradient from red (code 196) to yellow (code 226)
 colors=(196 202 208 214 220 226 226 226 226)
 
-# Lire le logo depuis un here document
+# Read ASCII logo from here document
 mapfile -t ascii_art << 'EOF'
 _____/\\\\\\\\\\\________________________/\\\\\______________________________
 ____/\\\/////////\\\____________________/\\\///______________________________
@@ -16,93 +16,115 @@ ________\///\\\\\\\\\\\/____\///\\\\\/______\/\\\______\/\\\_\//\\\\\\\\/\\__
 ___________\///////////________\/////________\///_______\///___\////////\//__
 EOF
 
-# Appliquer le gradient ligne par ligne
+# Apply color gradient line by line
 for i in "${!ascii_art[@]}"; do
     color=${colors[i % ${#colors[@]}]}
     printf "\e[38;5;%sm%s\e[0m\n" "$color" "${ascii_art[$i]}"
 done
 
+# Function to wait for a port to become available
+wait_for_port() {
+  local port=$1
+  local retries=${2:-30}   # 30 retries max
+  local delay=1            # 1s between retries
 
-# Fonction pour lancer une application avec des logs simplifiés
+  echo "⏳ Waiting for port $port to become available..."
+
+  for ((i=1; i<=retries; i++)); do
+    if lsof -i :$port >/dev/null 2>&1; then
+      echo "✅ Port $port is now active."
+      return 0
+    fi
+    sleep "$delay"
+  done
+
+  echo "❌ Timeout: Port $port did not become active after $((retries * delay)) seconds."
+  return 1
+}
+
+# Function to launch an app with simplified logs
 launch_app() {
     local app_name="$1"
     local directory="$2"
     local command="$3"
     local log_icon="$4"
     local current_dir=$(pwd)
-    
-    echo "${log_icon} Lancement de ${app_name}..."
-    cd "${directory}" || { echo "❌ Erreur: Dossier ${directory} introuvable"; return 1; }
-    
-    # Lancer l'application en arrière-plan sans afficher tous les logs
+
+    echo "${log_icon} Launching ${app_name}..."
+    cd "${directory}" || { echo "❌ Error: Folder ${directory} not found"; return 1; }
+
+    # Run the app in background without logs
     eval "${command}" > /dev/null 2>&1 &
     local pid=$!
-    
-    # Revenir au dossier initial
+
+    # Return to original directory
     cd "${current_dir}"
-    
-    # Vérifier si le processus démarre correctement
+
+    # Check if process started successfully
     sleep 1
     if kill -0 "$pid" 2>/dev/null; then
-        echo "✅ ${app_name} démarré avec succès (PID: $pid)"
+        echo "✅ ${app_name} started successfully (PID: $pid)"
     else
-        echo "❌ ${app_name} a échoué au démarrage"
+        echo "❌ ${app_name} failed to start"
     fi
 }
 
-# Vérifier si l'argument "start" est fourni
+# Check if "start" argument is provided
 if [ "$1" = "start" ]; then
-    echo "🚀 Démarrage de SofIA..."
+    echo "🚀 Starting SofIA..."
     echo ""
-    
-    # Vérifier et tuer les processus sur le port 3001
-    echo "🔍 Vérification du port 3001..."
+
+    # Check and free port 3001
+    echo "🔍 Checking port 3001..."
     if lsof -ti:3001 > /dev/null 2>&1; then
-        echo "⚠️  Port 3001 occupé, arrêt des processus..."
+        echo "⚠️  Port 3001 is busy, killing processes..."
         pkill -f "PORT=3001" || true
         sleep 2
     fi
-    
-    # Lancer le serveur MCP (depuis core)
+
+    # Launch MCP Server (from core)
     launch_app "MCP Server" "../intuition-mcp-server" "pnpm run start:http" "🛜"
-    
-    # Attendre un peu avant de lancer le suivant
+
     sleep 2
-    
-    # Lancer ElizaOS (depuis core)
+
+    # Launch ElizaOS (from core)
     launch_app "ElizaOS" "SofIA/agent1" "elizaos start" "💁"
-    
-    # Attendre un peu avant de lancer le suivant
-    sleep 2
-    
-    # Activer l'agent (depuis core)
-    launch_app "Agent Activation" "SofIA/agent1" "elizaos agent start --path SofIA.json" "🤖"
-    
-    # Attendre un peu avant de lancer le suivant
-    sleep 2
-    
-    # Lancer le build de l'extension (depuis core) - en mode visible
-    echo "📱 Lancement du build de l'extension..."
-    cd "SofIA/extension" || { echo "❌ Erreur: Dossier SofIA/extension introuvable"; exit 1; }
-    
-    # Lancer le build en mode visible pour voir le progrès
-    if npm run build; then
-        echo "✅ Extension build terminé avec succès"
+
+    # Wait for port 3000 to be available before continuing
+    if wait_for_port 3000; then
+        echo "✅ ElizaOS is available at: http://localhost:3000"
     else
-        echo "❌ Extension build a échoué"
+        echo "❌ ElizaOS failed to start on port 3000"
     fi
-    
-    # Revenir au dossier initial
+
+    sleep 2
+
+    # Activate agent (from core)
+    launch_app "Agent Activation" "SofIA/agent1" "elizaos agent start --path SofIA.json" "🤖"
+
+    sleep 2
+
+    # Build extension (from core) - visible mode
+    echo "📱 Starting extension build..."
+    cd "SofIA/extension" || { echo "❌ Error: Folder SofIA/extension not found"; exit 1; }
+
+    # Run build in visible mode to show progress
+    if npm run build; then
+        echo "✅ Extension build completed successfully"
+    else
+        echo "❌ Extension build failed"
+    fi
+
+    # Return to root
     cd "../../"
-    
+
     echo ""
-    echo "✅ Toutes les applications ont été lancées!"
-    echo "📝 Pour arrêter toutes les applications, utilisez Ctrl+C"
+    echo "✅ All applications have been launched!"
+    echo "📝 To stop all apps, use Ctrl+C"
     echo ""
-    
-    # Attendre que toutes les tâches de fond se terminent
+
     wait
 else
     echo "Usage: ./sofia start"
-    echo "Ce script lance toutes les applications SofIA en parallèle."
+    echo "This script launches all SofIA apps in parallel."
 fi
