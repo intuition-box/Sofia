@@ -28,14 +28,18 @@ interface ParsedSofiaMessage {
 function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   console.log("🔍 Parsing message text:", text)
 
-      // Corrige les guillemets typographiques
-    const sanitizedText = text
-      .replace(/[“”]/g, '"') // Guillemets doubles
-      .replace(/[‘’]/g, "'") // Guillemets simples (utile aussi)
-
-
   try {
-    const jsonData = JSON.parse(sanitizedText)
+    // 🧼 Nettoyage avancé pour rendre le JSON valide
+    let sanitized = text
+      .replace(/[“”]/g, '"')              // guillemets doubles typographiques
+      .replace(/[‘’]/g, "'")              // guillemets simples typographiques
+      .replace(/([{,])\s*'([^']+?)'\s*:/g, '$1"$2":')    // 'clé': => "clé":
+      .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // clé: => "clé":
+      .replace(/:\s*'([^']*?)'/g, ': "$1"')               // 'valeur' => "valeur"
+
+    console.log("🧼 Sanitized JSON string:", sanitized)
+
+    const jsonData = JSON.parse(sanitized)
 
     const parsedTriplets: Triplet[] = (jsonData.triplets || []).map((t) => ({
       subject: {
@@ -74,10 +78,12 @@ function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage
   }
 }
 
+
 const MyGraphPage = () => {
   const { navigateTo } = useRouter()
   const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Resonance'>('Echoes')
   const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
+  const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
 
   useEffect(() => {
     async function loadMessages() {
@@ -125,57 +131,92 @@ const MyGraphPage = () => {
       <h2 className="section-title">My Graph</h2>
 
       <div className="tabs">
-        <button
-          onClick={() => setActiveGraphTab('Echoes')}
-          className={`tab ${activeGraphTab === 'Echoes' ? 'active' : ''}`}
-        >
-          Echoes
-        </button>
-        <button
-          onClick={() => setActiveGraphTab('Signals')}
-          className={`tab ${activeGraphTab === 'Signals' ? 'active' : ''}`}
-        >
-          Signals
-        </button>
-        <button
-          onClick={() => setActiveGraphTab('Resonance')}
-          className={`tab ${activeGraphTab === 'Resonance' ? 'active' : ''}`}
-        >
-          Resonance
-        </button>
+        {['Echoes', 'Signals', 'Resonance'].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveGraphTab(tab as any)}
+            className={`tab ${activeGraphTab === tab ? 'active' : ''}`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       <div className="page-content">
         {activeGraphTab === 'Echoes' && (
           <div className="triples-container">
             {parsedMessages.length > 0 ? (
-              parsedMessages.map((entry, index) => (
-                <div key={index} className="echo-card">
-                  {entry.triplets && entry.triplets.length > 0 ? (
-                    entry.triplets.map((triplet, tripletIndex) => (
-                      <div key={tripletIndex} className="triplet-item">
-                        <p className="triplet-text">
-                          <span className="subject">{triplet.subject.name}</span>{' '}
-                          <span className="action">{triplet.predicate.name}</span>{' '}
-                          <span className="object">{triplet.object.name}</span>
-                        </p>
-                        <QuickActionButton 
-                          action="add"
-                          onClick={() => console.log('Add clicked for triplet:', triplet)}
-                        />
-                      </div>
-                    ))
+              parsedMessages.map((entry, msgIndex) => (
+                <div key={msgIndex} className="echo-card">
+                  {entry.triplets.length > 0 ? (
+                    entry.triplets.map((triplet, tripletIndex) => {
+                      const isExpanded =
+                        expandedTriplet?.msgIndex === msgIndex &&
+                        expandedTriplet?.tripletIndex === tripletIndex
+
+                      return (
+                        <div key={tripletIndex} className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
+                          <p
+                            className="triplet-text clickable"
+                            onClick={() =>
+                              setExpandedTriplet(isExpanded ? null : { msgIndex, tripletIndex })
+                            }
+                          >
+                            <span className="subject">{triplet.subject.name}</span>{' '}
+                            <span className="action">{triplet.predicate.name}</span>{' '}
+                            <span className="object">{triplet.object.name}</span>
+                          </p>
+
+                          <QuickActionButton
+                            action="add"
+                            onClick={() => console.log('Add clicked for triplet:', triplet)}
+                          />
+
+                          {isExpanded && (
+                            <div className="triplet-details">
+                              <div>
+                                <strong>🧍 Subject</strong>
+                                <p>{triplet.subject.name}</p>
+                                <p>{triplet.subject.description}</p>
+                                {triplet.subject.url && (
+                                  <a href={triplet.subject.url} target="_blank" rel="noopener noreferrer">
+                                    {triplet.subject.url}
+                                  </a>
+                                )}
+                              </div>
+
+                              <div>
+                                <strong>🔗 Predicate</strong>
+                                <p>{triplet.predicate.name}</p>
+                                <p>{triplet.predicate.description}</p>
+                              </div>
+
+                              <div>
+                                <strong>📄 Object</strong>
+                                <p>{triplet.object.name}</p>
+                                <p>{triplet.object.description}</p>
+                                {triplet.object.url && (
+                                  <a href={triplet.object.url} target="_blank" rel="noopener noreferrer">
+                                    {triplet.object.url}
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
                   ) : (
                     <div className="triplet-item">
                       <p className="triplet-text">{entry.intention}</p>
-                      <QuickActionButton 
+                      <QuickActionButton
                         action="add"
                         onClick={() => console.log('Add clicked for:', entry.intention)}
                       />
                     </div>
                   )}
 
-                  {index < parsedMessages.length - 1 && (
+                  {msgIndex < parsedMessages.length - 1 && (
                     <LiquidGlass height="2px" className="triple-separator" />
                   )}
                 </div>
