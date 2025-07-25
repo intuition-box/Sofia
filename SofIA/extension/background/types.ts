@@ -1,5 +1,14 @@
 import type { PlasmoMessage } from "~types/messaging";
 
+export interface ScrollStats {
+  count: number
+  avgDelta: number
+  maxDelta: number
+  minDelta: number
+  scrollAttentionScore: number
+}
+
+
 export type RawMessage = {
   text: string;
   thought?: string;
@@ -32,6 +41,7 @@ export interface MessageData {
   | "AGENT_RESPONSE";
   data: any;
   pageLoadTime?: number;
+  tabId?: number;
 }
 
 export interface BehaviorData {
@@ -62,6 +72,9 @@ export interface PageData {
   h1?: string;
   hasScrolled?: boolean;
   timestamp: number;
+  duration?: number; 
+  tabId?: number;
+  attentionScore? :number
 }
 
 export interface PageStats {
