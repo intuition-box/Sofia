@@ -38,3 +38,5 @@ yarn-error.log*
 .tsbuildinfonode_modules/
 
 components/SplineBackground.tsx
+
+.eliza

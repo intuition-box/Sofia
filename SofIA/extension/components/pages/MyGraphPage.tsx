@@ -28,8 +28,14 @@ interface ParsedSofiaMessage {
 function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   console.log("🔍 Parsing message text:", text)
 
+      // Corrige les guillemets typographiques
+    const sanitizedText = text
+      .replace(/[“”]/g, '"') // Guillemets doubles
+      .replace(/[‘’]/g, "'") // Guillemets simples (utile aussi)
+
+
   try {
-    const jsonData = JSON.parse(text)
+    const jsonData = JSON.parse(sanitizedText)
 
     const parsedTriplets: Triplet[] = (jsonData.triplets || []).map((t) => ({
       subject: {
