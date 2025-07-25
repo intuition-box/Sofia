@@ -21,7 +21,7 @@
   z-index: 100;
 }
 
-.back-button {
+.chat-back-button {
   background: none;
   border: none;
   color: white;
@@ -32,7 +32,7 @@
   transition: background-color 0.2s;
 }
 
-.back-button:hover {
+.chat-back-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 

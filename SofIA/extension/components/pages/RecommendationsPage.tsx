@@ -1,4 +1,5 @@
 import { useRouter } from '../layout/RouterProvider'
+import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
 const RecommendationsPage = () => {

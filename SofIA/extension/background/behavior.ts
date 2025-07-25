@@ -1,5 +1,3 @@
-import { HistoryManager } from "~lib/history";
-import { delayedWrite } from "./utils/delay";
 import { MAX_BEHAVIOR_AGE_MS } from "./constants";
 import type { BehaviorData, BehaviorRecord } from "./types";
 
@@ -14,7 +12,7 @@ export function cleanOldBehaviors(maxAgeMs = MAX_BEHAVIOR_AGE_MS): void {
   }
 }
 
-export function handleBehaviorData(data: BehaviorData, historyManager: HistoryManager): void {
+export function handleBehaviorData(data: BehaviorData,): void {
   const { url, videoPlayed, videoDuration, audioPlayed, audioDuration, articleRead, title, readTime, timestamp } = data;
 
   behaviorCache[url] = data;
@@ -46,10 +44,6 @@ export function handleBehaviorData(data: BehaviorData, historyManager: HistoryMa
       duration: readTime || 0,
       timestamp
     });
-  }
-
-  for (const behavior of behaviorsToRecord) {
-    delayedWrite(() => historyManager.recordBehavior(url, behavior));
   }
 }
 

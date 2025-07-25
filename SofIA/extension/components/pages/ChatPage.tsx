@@ -68,7 +68,7 @@ const ChatPage = () => {
   return (
     <div className="chat-page">
       <div className="chat-header">
-        <button onClick={goBack} className="back-button">
+        <button onClick={goBack} className="chat-back-button">
           ←
         </button>
       </div>

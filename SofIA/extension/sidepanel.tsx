@@ -14,6 +14,7 @@ import MyGraphPage from "./components/pages/MyGraphPage"
 import RecommendationsPage from "./components/pages/RecommendationsPage"
 import SavedPage from "./components/pages/SavedPage"
 import SearchPage from "./components/pages/SearchPage"
+import SearchResultPage from "./components/pages/SearchResultPage"
 import ChatPage from "./components/pages/ChatPage"
 
 const SidePanelContent = () => {
@@ -46,6 +47,8 @@ const SidePanelContent = () => {
         return <SavedPage />
       case 'search':
         return <SearchPage />
+      case 'search-result':
+        return <SearchResultPage />
       case 'chat':
         return <ChatPage />
       default:

@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
 import { TrackingStatus } from '../tracking'
 import WalletConnectionButton from '../THP_WalletConnectionButton'
+import '../styles/Global.css'
 import '../styles/SettingsPage.css'
 
 const SettingsPage = () => {
@@ -30,7 +31,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="settings-page">
+    <div className="page settings-page">
       <button 
         onClick={() => navigateTo('home-connected')}
         className="back-button"

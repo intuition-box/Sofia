@@ -4,8 +4,7 @@
   left: 0;
   right: 0;
   height: 60px;
-  backdrop-filter: blur(20px) saturate(100%);
-  -webkit-backdrop-filter: blur(20px) saturate(100%);
+  backdrop-filter: blur(10px);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -73,6 +72,6 @@
 }
 
 .nav-text {
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 500;
 }
