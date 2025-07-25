@@ -49,7 +49,7 @@ function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage
 const MyGraphPage = () => {
   const { navigateTo } = useRouter()
   const { triplets } = useAgentMessages()
-  const [activeGraphTab, setActiveGraphTab] = useState<'my-data' | 'my-triples'>('my-data')
+  const [activeGraphTab, setActiveGraphTab] = useState<'my-echos' | 'my-triples'>('my-echos')
   const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
 
   useEffect(() => {
@@ -82,10 +82,10 @@ const MyGraphPage = () => {
 
       <div className="tabs">
         <button
-          onClick={() => setActiveGraphTab('my-data')}
-          className={`tab ${activeGraphTab === 'my-data' ? 'active' : ''}`}
+          onClick={() => setActiveGraphTab('my-echos')}
+          className={`tab ${activeGraphTab === 'my-echos' ? 'active' : ''}`}
         >
-          My Data
+          My Echo's
         </button>
         <button
           onClick={() => setActiveGraphTab('my-triples')}
@@ -96,9 +96,9 @@ const MyGraphPage = () => {
       </div>
 
       <div className="page-content">
-        {activeGraphTab === 'my-data' && (
+        {activeGraphTab === 'my-echos' && (
           <div className="triples-container">
-            <h3 className="subsection-title">Extracted Triplets</h3>
+            <h3 className="subsection-title">My Echo's</h3>
             {parsedMessages.length > 0 ? (
               parsedMessages.map((entry, index) => (
                 <div key={index} className="triplet-block">
