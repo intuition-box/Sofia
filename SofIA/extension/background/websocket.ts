@@ -23,8 +23,8 @@ function generateUUID(): string {
 export async function initializeWebSocket(): Promise<void> {
 
   // logStoredMessages
-  await storage.clear()
-  console.log("🧹 Plasmo Storage vidé avant démarrage.")
+  // await storage.clear()
+  // console.log("🧹 Plasmo Storage vidé avant démarrage.")
 
   const roomId = SOFIA_IDS.ROOM_ID
   const entityId = SOFIA_IDS.AUTHOR_ID

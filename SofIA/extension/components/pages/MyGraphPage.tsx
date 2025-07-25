@@ -14,9 +14,9 @@ interface Message {
 }
 
 interface Triplet {
-  subject: string
-  action: string
-  object: string
+  subject: { name: string; description?: string; url?: string }
+  predicate: { name: string; description?: string }
+  object: { name: string; description?: string; url: string }
 }
 
 interface ParsedSofiaMessage {
@@ -28,19 +28,34 @@ interface ParsedSofiaMessage {
 function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   console.log("🔍 Parsing message text:", text)
 
-  // Essayer d'abord de parser en JSON
   try {
     const jsonData = JSON.parse(text)
-    
+
+    const parsedTriplets: Triplet[] = (jsonData.triplets || []).map((t) => ({
+      subject: {
+        name: t.subject?.name || 'Unknown',
+        description: t.subject?.description,
+        url: t.subject?.url
+      },
+      predicate: {
+        name: t.predicate?.name || 'did something',
+        description: t.predicate?.description
+      },
+      object: {
+        name: t.object?.name || 'Unknown',
+        description: t.object?.description,
+        url: t.object?.url || '#'
+      }
+    }))
+
     return {
-      triplets: jsonData.triplets || [],
+      triplets: parsedTriplets,
       intention: jsonData.intention || '',
       created_at
     }
   } catch (error) {
     console.warn("❌ Failed to parse JSON, treating as text message:", error)
-    
-    // Si ce n'est pas du JSON, traiter comme un message texte simple
+
     if (text && typeof text === 'string' && text.trim().length > 0) {
       return {
         triplets: [],
@@ -48,8 +63,7 @@ function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage
         created_at
       }
     }
-    
-    console.warn("📄 Raw text:", text)
+
     return null
   }
 }
@@ -64,13 +78,12 @@ const MyGraphPage = () => {
       try {
         const raw = await storage.get("sofiaMessages")
         console.log("🔍 Raw data from storage:", raw)
-        
+
         if (!raw) {
           console.log("📭 No sofiaMessages found in storage")
           return
         }
 
-        // Vérifier si c'est déjà un objet ou une chaîne
         let messages: Message[]
         if (typeof raw === 'string') {
           messages = JSON.parse(raw)
@@ -82,10 +95,10 @@ const MyGraphPage = () => {
         }
 
         console.log("📝 Parsed messages:", messages)
-        
+
         const parsed = messages
           .map((m) => parseSofiaMessage(m.content.text, m.created_at))
-          .filter(msg => msg !== null)
+          .filter(msg => msg !== null) as ParsedSofiaMessage[]
 
         console.log("✅ Final parsed messages:", parsed)
         setParsedMessages(parsed)
@@ -132,14 +145,13 @@ const MyGraphPage = () => {
             {parsedMessages.length > 0 ? (
               parsedMessages.map((entry, index) => (
                 <div key={index} className="echo-card">
-                  {/* Afficher les triplets s'il y en a */}
                   {entry.triplets && entry.triplets.length > 0 ? (
                     entry.triplets.map((triplet, tripletIndex) => (
                       <div key={tripletIndex} className="triplet-item">
                         <p className="triplet-text">
-                          <span className="subject">{triplet.subject}</span>
-                          <span className="action">{triplet.action}</span>
-                          <span className="object">{triplet.object}</span>
+                          <span className="subject">{triplet.subject.name}</span>{' '}
+                          <span className="action">{triplet.predicate.name}</span>{' '}
+                          <span className="object">{triplet.object.name}</span>
                         </p>
                         <QuickActionButton 
                           action="add"
