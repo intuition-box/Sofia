@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CURRENT_ENV } from '../const/general'
+import { CURRENT_ENV, MULTIVAULT_CONTRACT_ADDRESS } from '../const/general'
 import { useStorage } from "@plasmohq/storage/hook"
 import { getClients } from '../lib/viemClients'
 import { getChainEnvConfig } from '../lib/environment'
@@ -32,11 +32,11 @@ export const useCreateAtom = () => {
       const { walletClient, publicClient } = await getClients()
       
       console.log('Using direct viem clients for transaction')
-      console.log('Contract address:', chainConfig.contractAddress)
+      console.log('Contract address:', MULTIVAULT_CONTRACT_ADDRESS)
       console.log('Account:', metamaskAccount)
       
       const hash = await walletClient.writeContract({
-        address: chainConfig.contractAddress,
+        address: MULTIVAULT_CONTRACT_ADDRESS as `0x${string}`,
         abi: multivaultAbi,
         functionName: 'createAtom',
         args: args.args

@@ -62,8 +62,8 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
         url: url.trim() || undefined
       }
 
-      // Convert to JSON then to bytes
-      const atomUri = new TextEncoder().encode(JSON.stringify(atomMetadata))
+      // Convert to JSON string (Viem handles bytes conversion)
+      const atomUri = JSON.stringify(atomMetadata)
 
       // Call the atom creation hook
       await writeContractAsync({
