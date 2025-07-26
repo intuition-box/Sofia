@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useCreateAtom } from '../../hooks/useCreateAtom'
-import type { Triplet } from '../pages/graph-tabs/types'
 
 interface AtomCreationModalProps {
   isOpen: boolean
   onClose: () => void
-  objectData: Triplet['object']
+  objectData: {name: string; description?: string; url: string} | null
 }
 
 const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalProps) => {

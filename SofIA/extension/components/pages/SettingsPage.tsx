@@ -4,6 +4,8 @@ import { useTracking } from '../../hooks/useTracking'
 import { TrackingStatus } from '../tracking'
 import WalletConnectionButton from '../THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
+import { disconnectWallet } from '../../lib/metamask'
+import { useStorage } from '@plasmohq/storage/hook'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
 
@@ -17,6 +19,7 @@ const SettingsPage = () => {
   const [isClearing, setIsClearing] = useState(false)
   
   const storage = new Storage()
+  const [account, setAccount] = useStorage<string>("metamask-account")
 
   const handlePhotoUpload = (event) => {
     const file = event.target.files[0]
@@ -41,9 +44,17 @@ const SettingsPage = () => {
     
     setIsClearing(true)
     try {
+      // Disconnect MetaMask wallet first
+      if (account) {
+        setAccount("")
+        disconnectWallet()
+        console.log("🔌 MetaMask wallet disconnected")
+      }
+      
+      // Clear all storage
       await storage.clear()
       console.log("🧹 Plasmo Storage cleared successfully")
-      alert('Storage cleared successfully!')
+      alert('Storage cleared and wallet disconnected successfully!')
     } catch (error) {
       console.error('❌ Failed to clear storage:', error)
       alert('Failed to clear storage. Please try again.')

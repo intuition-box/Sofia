@@ -13,6 +13,11 @@ export const connectWallet = async () => {
       method: "eth_requestAccounts"
     })
     console.log("accounts", accounts)
+    
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No accounts found")
+    }
+    
     return accounts[0]
   } catch (error) {
     console.error("Error connecting to wallet", error)
@@ -24,13 +29,14 @@ export const disconnectWallet = async () => {
   try {
     const provider = await getMetaProvider()
     console.log(provider)
-    const accounts = await provider.request({
+    await provider.request({
       method: "wallet_revokePermissions",
       params: [{ eth_accounts: {} }]
     })
-    return accounts[0]
+    console.log("🔌 Wallet permissions revoked")
+    return true
   } catch (error) {
-    console.error("Error connecting to wallet", error)
+    console.error("Error disconnecting wallet", error)
     throw error
   }
 }

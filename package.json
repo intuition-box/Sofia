@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@elizaos/plugin-bootstrap": "1.3.0",
-    "@elizaos/plugin-ollama": "1.2.1",
-    "@elizaos/server": "^1.3.0"
-  }
-}

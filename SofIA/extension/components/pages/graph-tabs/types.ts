@@ -4,9 +4,9 @@ export interface Message {
 }
 
 export interface Triplet {
-  subject: { name: string; description?: string; url?: string }
-  predicate: { name: string; description?: string }
-  object: { name: string; description?: string; url: string }
+  subject: string
+  predicate: string
+  object: string
 }
 
 export interface ParsedSofiaMessage {
@@ -17,67 +17,20 @@ export interface ParsedSofiaMessage {
 
 export function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   console.log("🔍 Parsing message text:", text)
-
-  console.log("📊 Text length:", text.length)
-  console.log("📝 Text type:", typeof text)
   
-  // Log des premiers et derniers caractères pour diagnostiquer
-  if (text.length > 0) {
-    console.log("🎯 First 100 chars:", text.substring(0, 100))
-    console.log("🎯 Last 100 chars:", text.substring(Math.max(0, text.length - 100)))
-    
-    // Log autour de la position 577 si le texte est assez long
-    if (text.length > 577) {
-      console.log("🔍 Around position 577 (±50 chars):", text.substring(527, 627))
-    }
+  if (!text || typeof text !== 'string' || text.trim().length === 0) {
+    console.log("❌ Empty or invalid text")
+    return null
   }
 
-  let sanitized = ""
   try {
-    // 🧼 Nettoyage avancé pour rendre le JSON valide
-    sanitized = text
-
-      .replace(/[""]/g, '"')              // guillemets doubles typographiques
-      .replace(/['']/g, "'")              // guillemets simples typographiques
-      .replace(/([{,])\s*'([^']+?)'\s*:/g, '$1"$2":')    // 'clé': => "clé":
-      .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // clé: => "clé":
-      .replace(/:\s*'([^']*?)'/g, ': "$1"')               // 'valeur' => "valeur"
-      // Corriger les guillemets doubles répétés
-      .replace(/"{2,}/g, '"')             // """" => "
-      .replace(/""+/g, '"')               // "" => "
-      // Corriger les valeurs vides avec guillemets multiples
-      .replace(/:\s*""\s*"/g, ': ""')     // : "" " => : ""
-      // Nouveau: corriger les valeurs non-quotées
-      .replace(/:\s*([^",\[\]{}]+?)(\s*[,}\]])/g, (match, value, suffix) => {
-        // Ne pas quoter si déjà quoté, si c'est un nombre, null, true, false, ou commence par un crochet/accolade
-        if (value.trim().match(/^".*"$|^[\d.-]+$|^(null|true|false)$|^[\[{]/)) {
-          return match
-        }
-        return `: "${value.trim()}"${suffix}`
-      })
-
-    console.log("🧼 Sanitized JSON string:", sanitized)
-
-    console.log("📊 Sanitized length:", sanitized.length)
-
-
-    const jsonData = JSON.parse(sanitized)
-
+    // Try direct parsing first
+    let jsonData = JSON.parse(text)
+    
     const parsedTriplets: Triplet[] = (jsonData.triplets || []).map((t: any) => ({
-      subject: {
-        name: t.subject?.name || 'Unknown',
-        description: t.subject?.description,
-        url: t.subject?.url
-      },
-      predicate: {
-        name: t.predicate?.name || 'did something',
-        description: t.predicate?.description
-      },
-      object: {
-        name: t.object?.name || 'Unknown',
-        description: t.object?.description,
-        url: t.object?.url || '#'
-      }
+      subject: typeof t.subject === 'string' ? t.subject : (t.subject?.name || 'Unknown'),
+      predicate: typeof t.predicate === 'string' ? t.predicate : (t.predicate?.name || 'did something'), 
+      object: typeof t.object === 'string' ? t.object : (t.object?.name || 'Unknown')
     }))
 
     return {
@@ -86,29 +39,47 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       created_at
     }
   } catch (error) {
+    // Try to fix common JSON issues from Eliza
+    try {
+      let sanitized = text
+        // Fix the specific pattern from the logs: \"name\": \"value\" -> "name": "value"
+        .replace(/\\"/g, '"')
+        // Fix broken JSON structure patterns from the logs
+        .replace(/]\s*,\s*\n\s*,\s*"/g, '],"')  // Fix "], \n," pattern
+        .replace(/}\s*\n\s*,\s*"/g, '},"')      // Fix "} \n," pattern  
+        .replace(/,\s*\n\s*,/g, ',')            // Fix ", \n," double comma
+        // Fix trailing comma issues
+        .replace(/,\s*\n\s*}/g, '}')
+        .replace(/,\s*\n\s*]/g, ']')
+        // Fix empty URL field specifically
+        .replace(/"url":\s*""\s*}/g, '"url":""}')
+        // Clean up whitespace and newlines
+        .replace(/\n\s+/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim()
 
-    console.error("❌ Failed to parse JSON, treating as text message:", error)
-    console.error("🔍 Original text that failed:", text)
-    console.error("🧼 Sanitized text that failed:", sanitized)
-    
-    // Log détaillé de l'erreur de parsing
-    if (error instanceof SyntaxError) {
-      console.error("📍 Syntax error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      })
-    }
+      console.log("🧼 Trying to sanitize JSON:", sanitized)
+      
+      const jsonData = JSON.parse(sanitized)
+      
+      const parsedTriplets: Triplet[] = (jsonData.triplets || []).map((t: any) => ({
+        subject: typeof t.subject === 'string' ? t.subject : (t.subject?.name || 'Unknown'),
+        predicate: typeof t.predicate === 'string' ? t.predicate : (t.predicate?.name || 'did something'), 
+        object: typeof t.object === 'string' ? t.object : (t.object?.name || 'Unknown')
+      }))
 
-    if (text && typeof text === 'string' && text.trim().length > 0) {
-      console.log("✅ Returning as plain text intention")
+      return {
+        triplets: parsedTriplets,
+        intention: jsonData.intention || '',
+        created_at
+      }
+    } catch (secondError) {
+      console.log("✅ Both parsing attempts failed, treating as plain text intention")
       return {
         triplets: [],
         intention: text.trim(),
         created_at
       }
     }
-    console.log("❌ Returning null - empty or invalid text")
-    return null
   }
 }

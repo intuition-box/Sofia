@@ -16,7 +16,7 @@ interface EchoesTabProps {
 const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedObjectData, setSelectedObjectData] = useState<Triplet['object'] | null>(null)
+  const [selectedObjectData, setSelectedObjectData] = useState<{name: string; description?: string; url: string} | null>(null)
 
   useEffect(() => {
     async function loadMessages() {
@@ -70,7 +70,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   }, [])
 
   const handleCreateAtom = (triplet: Triplet) => {
-    setSelectedObjectData(triplet.object)
+    setSelectedObjectData({
+      name: triplet.object,
+      description: undefined,
+      url: ''
+    })
     setIsModalOpen(true)
   }
 
@@ -108,9 +112,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         setExpandedTriplet(isExpanded ? null : { msgIndex, tripletIndex })
                       }
                     >
-                      <span className="subject">{triplet.subject.name}</span>{' '}
-                      <span className="action">{triplet.predicate.name}</span>{' '}
-                      <span className="object">{triplet.object.name}</span>
+                      <span className="subject">{triplet.subject}</span>{' '}
+                      <span className="action">{triplet.predicate}</span>{' '}
+                      <span className="object">{triplet.object}</span>
                     </p>
 
                     <QuickActionButton
@@ -122,46 +126,17 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                       <div className="triplet-details">
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">🧍 Subject</h4>
-                          <p className="triplet-detail-name">{triplet.subject.name}</p>
-                          {triplet.subject.description && (
-                            <p className="triplet-detail-description">{triplet.subject.description}</p>
-                          )}
-                          {triplet.subject.url && (
-                            <a 
-                              href={triplet.subject.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="triplet-detail-url"
-                            >
-                              {triplet.subject.url}
-                            </a>
-                          )}
+                          <p className="triplet-detail-name">{triplet.subject}</p>
                         </div>
 
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">🔗 Predicate</h4>
-                          <p className="triplet-detail-name">{triplet.predicate.name}</p>
-                          {triplet.predicate.description && (
-                            <p className="triplet-detail-description">{triplet.predicate.description}</p>
-                          )}
+                          <p className="triplet-detail-name">{triplet.predicate}</p>
                         </div>
 
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">📄 Object</h4>
-                          <p className="triplet-detail-name">{triplet.object.name}</p>
-                          {triplet.object.description && (
-                            <p className="triplet-detail-description">{triplet.object.description}</p>
-                          )}
-                          {triplet.object.url && (
-                            <a 
-                              href={triplet.object.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="triplet-detail-url"
-                            >
-                              {triplet.object.url}
-                            </a>
-                          )}
+                          <p className="triplet-detail-name">{triplet.object}</p>
                         </div>
                       </div>
                     )}
