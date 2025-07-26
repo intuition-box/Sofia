@@ -36,6 +36,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         }
 
         console.log("📝 Parsed messages:", messages)
+
         
         // Log chaque message individuellement pour diagnostiquer
         messages.forEach((m, index) => {
