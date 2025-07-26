@@ -1,8 +1,27 @@
 import createMetaMaskProvider from "metamask-extension-provider"
 
+let cachedProvider: any = null
+
 export const getMetaProvider = async () => {
-  const provider = createMetaMaskProvider()
-  return provider
+  if (!cachedProvider) {
+    cachedProvider = createMetaMaskProvider()
+  }
+  return cachedProvider
+}
+
+export const cleanupProvider = () => {
+  if (cachedProvider) {
+    try {
+      // Nettoyer les listeners si possible
+      if (cachedProvider.removeAllListeners) {
+        cachedProvider.removeAllListeners()
+      }
+      cachedProvider = null
+      console.log('🧹 MetaMask provider cleaned up')
+    } catch (error) {
+      console.error('Error cleaning up provider:', error)
+    }
+  }
 }
 
 export const connectWallet = async () => {
@@ -13,6 +32,11 @@ export const connectWallet = async () => {
       method: "eth_requestAccounts"
     })
     console.log("accounts", accounts)
+    
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No accounts found")
+    }
+    
     return accounts[0]
   } catch (error) {
     console.error("Error connecting to wallet", error)
@@ -24,13 +48,20 @@ export const disconnectWallet = async () => {
   try {
     const provider = await getMetaProvider()
     console.log(provider)
-    const accounts = await provider.request({
+    await provider.request({
       method: "wallet_revokePermissions",
       params: [{ eth_accounts: {} }]
     })
-    return accounts[0]
+    console.log("🔌 Wallet permissions revoked")
+    
+    // Nettoyer le provider après déconnexion
+    cleanupProvider()
+    
+    return true
   } catch (error) {
-    console.error("Error connecting to wallet", error)
+    console.error("Error disconnecting wallet", error)
+    // Nettoyer même en cas d'erreur
+    cleanupProvider()
     throw error
   }
 }

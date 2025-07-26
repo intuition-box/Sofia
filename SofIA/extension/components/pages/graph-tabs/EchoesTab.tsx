@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Storage } from '@plasmohq/storage'
 import QuickActionButton from '../../ui/QuickActionButton'
-import type { Message, ParsedSofiaMessage } from './types'
+import AtomCreationModal from '../../ui/AtomCreationModal'
+import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
+import '../../ui/AtomCreationModal.css'
 
 const storage = new Storage()
 
@@ -13,6 +15,8 @@ interface EchoesTabProps {
 
 const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedObjectData, setSelectedObjectData] = useState<{name: string; description?: string; url: string} | null>(null)
 
   useEffect(() => {
     async function loadMessages() {
@@ -65,6 +69,30 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     loadMessages()
   }, [])
 
+  const handleCreateAtom = (triplet: Triplet, message: ParsedSofiaMessage) => {
+    setSelectedObjectData({
+      name: triplet.object,
+      description: message.rawObjectDescription || undefined,
+      url: message.rawObjectUrl || ''
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleCreateAtomFromIntention = (intention: string) => {
+    // Pour les intentions, on crée un object avec le texte de l'intention
+    setSelectedObjectData({
+      name: intention,
+      description: undefined,
+      url: ''
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedObjectData(null)
+  }
+
   return (
     <div className="triples-container">
       {parsedMessages.length > 0 ? (
@@ -84,60 +112,31 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         setExpandedTriplet(isExpanded ? null : { msgIndex, tripletIndex })
                       }
                     >
-                      <span className="subject">{triplet.subject.name}</span>{' '}
-                      <span className="action">{triplet.predicate.name}</span>{' '}
-                      <span className="object">{triplet.object.name}</span>
+                      <span className="subject">{triplet.subject}</span>{' '}
+                      <span className="action">{triplet.predicate}</span>{' '}
+                      <span className="object">{triplet.object}</span>
                     </p>
 
                     <QuickActionButton
                       action="add"
-                      onClick={() => console.log('Add clicked for triplet:', triplet)}
+                      onClick={() => handleCreateAtom(triplet, entry)}
                     />
 
                     {isExpanded && (
                       <div className="triplet-details">
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">🧍 Subject</h4>
-                          <p className="triplet-detail-name">{triplet.subject.name}</p>
-                          {triplet.subject.description && (
-                            <p className="triplet-detail-description">{triplet.subject.description}</p>
-                          )}
-                          {triplet.subject.url && (
-                            <a 
-                              href={triplet.subject.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="triplet-detail-url"
-                            >
-                              {triplet.subject.url}
-                            </a>
-                          )}
+                          <p className="triplet-detail-name">{triplet.subject}</p>
                         </div>
 
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">🔗 Predicate</h4>
-                          <p className="triplet-detail-name">{triplet.predicate.name}</p>
-                          {triplet.predicate.description && (
-                            <p className="triplet-detail-description">{triplet.predicate.description}</p>
-                          )}
+                          <p className="triplet-detail-name">{triplet.predicate}</p>
                         </div>
 
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">📄 Object</h4>
-                          <p className="triplet-detail-name">{triplet.object.name}</p>
-                          {triplet.object.description && (
-                            <p className="triplet-detail-description">{triplet.object.description}</p>
-                          )}
-                          {triplet.object.url && (
-                            <a 
-                              href={triplet.object.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="triplet-detail-url"
-                            >
-                              {triplet.object.url}
-                            </a>
-                          )}
+                          <p className="triplet-detail-name">{triplet.object}</p>
                         </div>
                       </div>
                     )}
@@ -149,7 +148,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 <p className="triplet-text">{entry.intention}</p>
                 <QuickActionButton
                   action="add"
-                  onClick={() => console.log('Add clicked for:', entry.intention)}
+                  onClick={() => handleCreateAtomFromIntention(entry.intention)}
                 />
               </div>
             )}
@@ -160,6 +159,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           <p>No SofIA messages received yet</p>
           <p className="empty-subtext">They will appear automatically when received</p>
         </div>
+      )}
+
+      {/* Modal de création d'atom */}
+      {selectedObjectData && (
+        <AtomCreationModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          objectData={selectedObjectData}
+        />
       )}
     </div>
   )

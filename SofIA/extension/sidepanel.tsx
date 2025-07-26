@@ -1,10 +1,14 @@
 import { useEffect } from "react"
 import { useStorage } from "@plasmohq/storage/hook"
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import "./style.css"
 
+import { wagmiConfig } from "./lib/utils/wagmi"
 import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
 import AppLayout from "./components/layout/AppLayout"
 import BottomNavigation from "./components/layout/BottomNavigation"
+import { useWalletSync } from "./hooks/useWalletSync"
 
 // Pages
 import HomePage from "./components/pages/HomePage"
@@ -20,6 +24,9 @@ import ChatPage from "./components/pages/ChatPage"
 const SidePanelContent = () => {
   const [account] = useStorage<string>("metamask-account")
   const { currentPage, navigateTo } = useRouter()
+  
+  // Synchronize wallet connections
+  useWalletSync()
 
   // Gestion automatique de la page selon l'état de connexion
   useEffect(() => {
@@ -64,11 +71,24 @@ const SidePanelContent = () => {
   )
 }
 
+// Client de requête pour React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+})
+
 function SidePanel() {
   return (
-    <RouterProvider initialPage="home">
-      <SidePanelContent />
-    </RouterProvider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider initialPage="home">
+          <SidePanelContent />
+        </RouterProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   )
 }
 

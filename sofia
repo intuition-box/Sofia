@@ -88,7 +88,7 @@ if [ "$1" = "start" ]; then
     sleep 2
 
     # Launch ElizaOS (from core)
-    launch_app "ElizaOS" "SofIA/agent1" "elizaos start" "💁"
+    launch_app "ElizaOS" "SofIA/agent" "elizaos start" "💁"
 
     # Wait for port 3000 to be available before continuing
     if wait_for_port 3000; then
@@ -100,8 +100,8 @@ if [ "$1" = "start" ]; then
     sleep 2
 
     # Activate agent (from core)
-    launch_app "Agent Activation" "SofIA/agent1" "elizaos agent start --path SofIA.json" "🤖"
-    launch_app "ChatBot Activation" "SofIA/agent1" "elizaos agent start --path ChatBot.json" "🤖"
+    launch_app "Agent Activation" "SofIA/agent" "elizaos agent start --path SofIA.json" "🤖"
+    launch_app "ChatBot Activation" "SofIA/agent" "elizaos agent start --path ChatBot.json" "🤖"
 
     sleep 2
 

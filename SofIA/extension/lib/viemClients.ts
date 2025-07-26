@@ -1,18 +1,12 @@
-import createMetaMaskProvider from 'metamask-extension-provider'
 import { createWalletClient, custom, createPublicClient } from 'viem'
 import { SELECTED_CHAIN } from './config'
+import { getMetaProvider } from './metamask'
 
 export const getClients = async () => {
-    const provider = await createMetaMaskProvider()
+    const provider = await getMetaProvider()
 
-
-    const accounts = await provider.request({
-        method: 'eth_requestAccounts',
-    })
-    const address = accounts[0]
-
+    // Ne pas demander les comptes ici, on utilisera celui de Sofia
     const walletClient = createWalletClient({
-        account: address,
         chain: SELECTED_CHAIN,
         transport: custom(provider),
     })

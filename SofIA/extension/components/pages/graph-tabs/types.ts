@@ -4,98 +4,101 @@ export interface Message {
 }
 
 export interface Triplet {
-  subject: { name: string; description?: string; url?: string }
-  predicate: { name: string; description?: string }
-  object: { name: string; description?: string; url: string }
+  subject: string
+  predicate: string
+  object: string
 }
 
 export interface ParsedSofiaMessage {
   triplets: Triplet[]
   intention: string
   created_at: number
+  rawObjectUrl?: string  // Keep the original URL for atom creation
+  rawObjectDescription?: string  // Keep the original description for atom creation
 }
 
 export function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   console.log("🔍 Parsing message text:", text)
-
-  console.log("📊 Text length:", text.length)
-  console.log("📝 Text type:", typeof text)
   
-  // Log des premiers et derniers caractères pour diagnostiquer
-  if (text.length > 0) {
-    console.log("🎯 First 100 chars:", text.substring(0, 100))
-    console.log("🎯 Last 100 chars:", text.substring(Math.max(0, text.length - 100)))
-    
-    // Log autour de la position 577 si le texte est assez long
-    if (text.length > 577) {
-      console.log("🔍 Around position 577 (±50 chars):", text.substring(527, 627))
-    }
+  if (!text || typeof text !== 'string' || text.trim().length === 0) {
+    console.log("❌ Empty or invalid text")
+    return null
   }
 
-  let sanitized = ""
   try {
-    // 🧼 Nettoyage avancé pour rendre le JSON valide
-    sanitized = text
-
-      .replace(/[""]/g, '"')              // guillemets doubles typographiques
-      .replace(/['']/g, "'")              // guillemets simples typographiques
-      .replace(/([{,])\s*'([^']+?)'\s*:/g, '$1"$2":')    // 'clé': => "clé":
-      .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // clé: => "clé":
-      .replace(/:\s*'([^']*?)'/g, ': "$1"')               // 'valeur' => "valeur"
-
-    console.log("🧼 Sanitized JSON string:", sanitized)
-
-    console.log("📊 Sanitized length:", sanitized.length)
-
-
-    const jsonData = JSON.parse(sanitized)
-
+    // Try direct parsing first
+    let jsonData = JSON.parse(text)
+    
     const parsedTriplets: Triplet[] = (jsonData.triplets || []).map((t: any) => ({
-      subject: {
-        name: t.subject?.name || 'Unknown',
-        description: t.subject?.description,
-        url: t.subject?.url
-      },
-      predicate: {
-        name: t.predicate?.name || 'did something',
-        description: t.predicate?.description
-      },
-      object: {
-        name: t.object?.name || 'Unknown',
-        description: t.object?.description,
-        url: t.object?.url || '#'
-      }
+      subject: typeof t.subject === 'string' ? t.subject : (t.subject?.name || 'Unknown'),
+      predicate: typeof t.predicate === 'string' ? t.predicate : (t.predicate?.name || 'did something'), 
+      object: typeof t.object === 'string' ? t.object : (t.object?.name || 'Unknown')
     }))
+
+    // Extract URL and description from first triplet object for atom creation
+    const firstTriplet = jsonData.triplets?.[0]
+    const rawObjectUrl = firstTriplet?.object?.url || ''
+    const rawObjectDescription = firstTriplet?.object?.description || ''
 
     return {
       triplets: parsedTriplets,
       intention: jsonData.intention || '',
-      created_at
+      created_at,
+      rawObjectUrl,
+      rawObjectDescription
     }
   } catch (error) {
-
-    console.error("❌ Failed to parse JSON, treating as text message:", error)
-    console.error("🔍 Original text that failed:", text)
-    console.error("🧼 Sanitized text that failed:", sanitized)
-    
-    // Log détaillé de l'erreur de parsing
-    if (error instanceof SyntaxError) {
-      console.error("📍 Syntax error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      })
-    }
-
-    if (text && typeof text === 'string' && text.trim().length > 0) {
-      console.log("✅ Returning as plain text intention")
+    // Try to extract JSON structure manually from broken Eliza output
+    try {
+      console.log("🔧 Attempting manual JSON extraction...")
+      
+      // Extract triplets section
+      const tripletMatch = text.match(/"triplets"\s*:\s*\[(.*?)\]/s)
+      const intentionMatch = text.match(/"intention"\s*:\s*"([^"]*)"/)
+      
+      let parsedTriplets: Triplet[] = []
+      let rawObjectUrl = ''
+      let rawObjectDescription = ''
+      
+      if (tripletMatch) {
+        const tripletText = tripletMatch[1]
+        // Look for subject/predicate/object patterns
+        const subjectMatch = tripletText.match(/"subject"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]*)"/)
+        const predicateMatch = tripletText.match(/"predicate"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]*)"/)
+        const objectMatch = tripletText.match(/"object"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]*)"/)
+        
+        // Extract URL and description from object
+        const urlMatch = tripletText.match(/"object"\s*:\s*\{[^}]*"url"\s*:\s*"([^"]*)"/)
+        const descriptionMatch = tripletText.match(/"object"\s*:\s*\{[^}]*"description"\s*:\s*"([^"]*)"/)
+        rawObjectUrl = urlMatch ? urlMatch[1] : ''
+        rawObjectDescription = descriptionMatch ? descriptionMatch[1] : ''
+        
+        if (subjectMatch && predicateMatch && objectMatch) {
+          parsedTriplets = [{
+            subject: subjectMatch[1],
+            predicate: predicateMatch[1],
+            object: objectMatch[1]
+          }]
+        }
+      }
+      
+      console.log("🎯 Extracted triplets:", parsedTriplets)
+      console.log("🔗 Extracted URL:", rawObjectUrl)
+      
+      return {
+        triplets: parsedTriplets,
+        intention: intentionMatch ? intentionMatch[1] : '',
+        created_at,
+        rawObjectUrl,
+        rawObjectDescription
+      }
+    } catch (extractError) {
+      console.log("✅ Manual extraction failed, treating as plain text intention")
       return {
         triplets: [],
         intention: text.trim(),
         created_at
       }
     }
-    console.log("❌ Returning null - empty or invalid text")
-    return null
   }
 }
