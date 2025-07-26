@@ -42,7 +42,9 @@ export const useCreateAtom = () => {
         address: MULTIVAULT_CONTRACT_ADDRESS as `0x${string}`,
         abi: multivaultAbi,
         functionName: 'createAtom',
-        args: args.args
+        args: args.args,
+        value: BigInt("1000000000000000"), // 0.001 ETH pour les frais de création d'atom
+        gas: BigInt("200000") // Limite de gas appropriée
       } as any)
 
       console.log('Transaction hash:', hash)

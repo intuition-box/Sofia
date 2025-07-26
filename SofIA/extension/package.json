@@ -38,6 +38,8 @@
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "4.1.1",
+    "@parcel/config-default": "^2.15.4",
+    "@parcel/packager-css": "^2.15.4",
     "@types/chrome": "0.0.258",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",

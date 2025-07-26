@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { stringToHex } from 'viem'
 import { useCreateAtom } from '../../hooks/useCreateAtom'
 
 interface AtomCreationModalProps {
@@ -62,8 +63,9 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
         url: url.trim() || undefined
       }
 
-      // Convert to JSON string (Viem handles bytes conversion)
-      const atomUri = JSON.stringify(atomMetadata)
+      // Convert to JSON string then to bytes using Viem
+      const jsonString = JSON.stringify(atomMetadata)
+      const atomUri = stringToHex(jsonString)
 
       // Call the atom creation hook
       await writeContractAsync({
