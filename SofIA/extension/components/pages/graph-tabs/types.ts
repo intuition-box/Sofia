@@ -13,6 +13,8 @@ export interface ParsedSofiaMessage {
   triplets: Triplet[]
   intention: string
   created_at: number
+  rawObjectUrl?: string  // Keep the original URL for atom creation
+  rawObjectDescription?: string  // Keep the original description for atom creation
 }
 
 export function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
@@ -33,48 +35,65 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       object: typeof t.object === 'string' ? t.object : (t.object?.name || 'Unknown')
     }))
 
+    // Extract URL and description from first triplet object for atom creation
+    const firstTriplet = jsonData.triplets?.[0]
+    const rawObjectUrl = firstTriplet?.object?.url || ''
+    const rawObjectDescription = firstTriplet?.object?.description || ''
+
     return {
       triplets: parsedTriplets,
       intention: jsonData.intention || '',
-      created_at
+      created_at,
+      rawObjectUrl,
+      rawObjectDescription
     }
   } catch (error) {
-    // Try to fix common JSON issues from Eliza
+    // Try to extract JSON structure manually from broken Eliza output
     try {
-      let sanitized = text
-        // Fix the specific pattern from the logs: \"name\": \"value\" -> "name": "value"
-        .replace(/\\"/g, '"')
-        // Fix broken JSON structure patterns from the logs
-        .replace(/]\s*,\s*\n\s*,\s*"/g, '],"')  // Fix "], \n," pattern
-        .replace(/}\s*\n\s*,\s*"/g, '},"')      // Fix "} \n," pattern  
-        .replace(/,\s*\n\s*,/g, ',')            // Fix ", \n," double comma
-        // Fix trailing comma issues
-        .replace(/,\s*\n\s*}/g, '}')
-        .replace(/,\s*\n\s*]/g, ']')
-        // Fix empty URL field specifically
-        .replace(/"url":\s*""\s*}/g, '"url":""}')
-        // Clean up whitespace and newlines
-        .replace(/\n\s+/g, ' ')
-        .replace(/\s{2,}/g, ' ')
-        .trim()
-
-      console.log("🧼 Trying to sanitize JSON:", sanitized)
+      console.log("🔧 Attempting manual JSON extraction...")
       
-      const jsonData = JSON.parse(sanitized)
+      // Extract triplets section
+      const tripletMatch = text.match(/"triplets"\s*:\s*\[(.*?)\]/s)
+      const intentionMatch = text.match(/"intention"\s*:\s*"([^"]*)"/)
       
-      const parsedTriplets: Triplet[] = (jsonData.triplets || []).map((t: any) => ({
-        subject: typeof t.subject === 'string' ? t.subject : (t.subject?.name || 'Unknown'),
-        predicate: typeof t.predicate === 'string' ? t.predicate : (t.predicate?.name || 'did something'), 
-        object: typeof t.object === 'string' ? t.object : (t.object?.name || 'Unknown')
-      }))
-
+      let parsedTriplets: Triplet[] = []
+      let rawObjectUrl = ''
+      let rawObjectDescription = ''
+      
+      if (tripletMatch) {
+        const tripletText = tripletMatch[1]
+        // Look for subject/predicate/object patterns
+        const subjectMatch = tripletText.match(/"subject"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]*)"/)
+        const predicateMatch = tripletText.match(/"predicate"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]*)"/)
+        const objectMatch = tripletText.match(/"object"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]*)"/)
+        
+        // Extract URL and description from object
+        const urlMatch = tripletText.match(/"object"\s*:\s*\{[^}]*"url"\s*:\s*"([^"]*)"/)
+        const descriptionMatch = tripletText.match(/"object"\s*:\s*\{[^}]*"description"\s*:\s*"([^"]*)"/)
+        rawObjectUrl = urlMatch ? urlMatch[1] : ''
+        rawObjectDescription = descriptionMatch ? descriptionMatch[1] : ''
+        
+        if (subjectMatch && predicateMatch && objectMatch) {
+          parsedTriplets = [{
+            subject: subjectMatch[1],
+            predicate: predicateMatch[1],
+            object: objectMatch[1]
+          }]
+        }
+      }
+      
+      console.log("🎯 Extracted triplets:", parsedTriplets)
+      console.log("🔗 Extracted URL:", rawObjectUrl)
+      
       return {
         triplets: parsedTriplets,
-        intention: jsonData.intention || '',
-        created_at
+        intention: intentionMatch ? intentionMatch[1] : '',
+        created_at,
+        rawObjectUrl,
+        rawObjectDescription
       }
-    } catch (secondError) {
-      console.log("✅ Both parsing attempts failed, treating as plain text intention")
+    } catch (extractError) {
+      console.log("✅ Manual extraction failed, treating as plain text intention")
       return {
         triplets: [],
         intention: text.trim(),

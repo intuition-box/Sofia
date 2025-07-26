@@ -69,11 +69,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     loadMessages()
   }, [])
 
-  const handleCreateAtom = (triplet: Triplet) => {
+  const handleCreateAtom = (triplet: Triplet, message: ParsedSofiaMessage) => {
     setSelectedObjectData({
       name: triplet.object,
-      description: undefined,
-      url: ''
+      description: message.rawObjectDescription || undefined,
+      url: message.rawObjectUrl || ''
     })
     setIsModalOpen(true)
   }
@@ -119,7 +119,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
                     <QuickActionButton
                       action="add"
-                      onClick={() => handleCreateAtom(triplet)}
+                      onClick={() => handleCreateAtom(triplet, entry)}
                     />
 
                     {isExpanded && (
