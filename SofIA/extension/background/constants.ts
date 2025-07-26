@@ -2,10 +2,19 @@ export const SOFIA_IDS = {
   CHANNEL_ID: "8662b344-f045-4f8e-ad38-aabae151bccd",
   SERVER_ID: "00000000-0000-0000-0000-000000000000",
   ROOM_ID : "8662b344-f045-4f8e-ad38-aabae151bccd",
-  AUTHOR_ID: "ffbe5bee-a32c-4615-be7e-6a18cfd5703d",
-  AGENT_ID: "582f4e58-1285-004d-8ef6-1e6301f3d646",
+  AUTHOR_ID: "ffbe5bee-a32c-4615-be7e-6a18cfd5703d",// user
+  AGENT_ID: "582f4e58-1285-004d-8ef6-1e6301f3d646",//agent
   AGENT_NAME: "SofIA1"
 };
+
+export const CHATBOT_IDS = {
+  AGENT_ID: "79c0c83b-2bd2-042f-a534-952c58a1024d", // l’agent chatbot
+  AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab", // user
+  CHANNEL_ID: "e04d96d2-9750-434e-b2d9-d833c7e34881",
+  ROOM_ID: "e04d96d2-9750-434e-b2d9-d833c7e34881", // même valeur si DM
+  SERVER_ID: "00000000-0000-0000-0000-000000000000"
+}
+
 
 // --- Constants ---
 export const USER_NAME = "User";

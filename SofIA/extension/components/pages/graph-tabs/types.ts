@@ -18,9 +18,25 @@ export interface ParsedSofiaMessage {
 export function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   console.log("🔍 Parsing message text:", text)
 
+  console.log("📊 Text length:", text.length)
+  console.log("📝 Text type:", typeof text)
+  
+  // Log des premiers et derniers caractères pour diagnostiquer
+  if (text.length > 0) {
+    console.log("🎯 First 100 chars:", text.substring(0, 100))
+    console.log("🎯 Last 100 chars:", text.substring(Math.max(0, text.length - 100)))
+    
+    // Log autour de la position 577 si le texte est assez long
+    if (text.length > 577) {
+      console.log("🔍 Around position 577 (±50 chars):", text.substring(527, 627))
+    }
+  }
+
+  let sanitized = ""
   try {
     // 🧼 Nettoyage avancé pour rendre le JSON valide
-    let sanitized = text
+    sanitized = text
+
       .replace(/[""]/g, '"')              // guillemets doubles typographiques
       .replace(/['']/g, "'")              // guillemets simples typographiques
       .replace(/([{,])\s*'([^']+?)'\s*:/g, '$1"$2":')    // 'clé': => "clé":
@@ -28,6 +44,9 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       .replace(/:\s*'([^']*?)'/g, ': "$1"')               // 'valeur' => "valeur"
 
     console.log("🧼 Sanitized JSON string:", sanitized)
+
+    console.log("📊 Sanitized length:", sanitized.length)
+
 
     const jsonData = JSON.parse(sanitized)
 
@@ -54,16 +73,29 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       created_at
     }
   } catch (error) {
-    console.warn("❌ Failed to parse JSON, treating as text message:", error)
+
+    console.error("❌ Failed to parse JSON, treating as text message:", error)
+    console.error("🔍 Original text that failed:", text)
+    console.error("🧼 Sanitized text that failed:", sanitized)
+    
+    // Log détaillé de l'erreur de parsing
+    if (error instanceof SyntaxError) {
+      console.error("📍 Syntax error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      })
+    }
 
     if (text && typeof text === 'string' && text.trim().length > 0) {
+      console.log("✅ Returning as plain text intention")
       return {
         triplets: [],
         intention: text.trim(),
         created_at
       }
     }
-
+    console.log("❌ Returning null - empty or invalid text")
     return null
   }
 }

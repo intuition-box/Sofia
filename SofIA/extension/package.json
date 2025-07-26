@@ -11,7 +11,10 @@
     "proxy": "bun sofia-proxy/server.ts"
   },
   "dependencies": {
+    "@0xintuition/1ui": "^0.4.1",
+    "@0xintuition/protocol": "1.0.0-alpha.2",
     "@plasmohq/storage": "^1.15.0",
+    "@privy-io/react-auth": "^2.20.0",
     "@types/ws": "^8.18.1",
     "ai": "^4.3.19",
     "cors": "^2.8.5",
@@ -22,8 +25,11 @@
     "plasmo": "0.90.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-router-dom": "^7.7.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
+    "viem": "^2.33.1",
+    "wagmi": "^2.16.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {
@@ -34,6 +40,7 @@
     "@types/node": "20.11.5",
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",
+    "@types/react-router-dom": "^5.3.3",
     "prettier": "3.2.4",
     "typescript": "5.3.3"
   },

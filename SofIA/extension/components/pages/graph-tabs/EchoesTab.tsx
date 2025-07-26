@@ -37,8 +37,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
         console.log("📝 Parsed messages:", messages)
 
+        
+        // Log chaque message individuellement pour diagnostiquer
+        messages.forEach((m, index) => {
+          console.log(`📄 Message ${index}:`, {
+            text: m.content.text,
+            textType: typeof m.content.text,
+            textLength: m.content.text?.length || 0,
+            created_at: m.created_at
+          })
+        })
+
         const parsed = messages
-          .map((m) => parseSofiaMessage(m.content.text, m.created_at))
+          .map((m, index) => {
+            console.log(`🔄 Processing message ${index}`)
+            return parseSofiaMessage(m.content.text, m.created_at)
+          })
           .filter(msg => msg !== null) as ParsedSofiaMessage[]
 
         console.log("✅ Final parsed messages:", parsed)
