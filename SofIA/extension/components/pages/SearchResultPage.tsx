@@ -10,10 +10,13 @@ import VoteIconSvg from '../../assets/Icon=vote.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/SearchResultPage.css'
+import { Storage } from '@plasmohq/storage'
+
 
 interface SearchResultPageProps {
   searchQuery?: string
 }
+const storage = new Storage()
 
 const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => {
   const { navigateTo } = useRouter()
@@ -25,6 +28,8 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
   const [voteHovered, setVoteHovered] = useState(false)
   const [isEditingSearch, setIsEditingSearch] = useState(false)
   const [editedQuery, setEditedQuery] = useState('')
+  const [favorites, setFavorites] = useState<SearchResult[]>([])
+
 
   const formatNumber = (num: number) => {
     if (num >= 1000000000) {
@@ -37,6 +42,32 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
       return (num / 1000).toFixed(1) + 'K'
     }
     return num.toLocaleString()
+  }
+
+
+  useEffect(() => {
+    const loadFavorites = async () => {
+      const raw = await storage.get("favoriteAtoms")
+      try {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw
+        setFavorites(parsed || [])
+      } catch {
+        setFavorites([])
+      }
+    }
+    loadFavorites()
+  }, [])
+
+  const handleAddToFavorites = async (atom: SearchResult) => {
+    const updated = [...favorites, atom]
+    await storage.set("favoriteAtoms", JSON.stringify(updated))
+    setFavorites(updated)
+  }
+
+  const handleRemoveFromFavorites = async (atom: SearchResult) => {
+    const updated = favorites.filter((a) => a.id !== atom.id && a.url !== atom.url)
+    await storage.set("favoriteAtoms", JSON.stringify(updated))
+    setFavorites(updated)
   }
 
   const getTripleMetrics = (result: SearchResult) => {
@@ -52,7 +83,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
       totalPositions += positions
 
       const label = triple.predicate?.label?.toLowerCase() || ''
-      
+
       // Catégoriser selon le prédicat
       if (label.includes('against') || label.includes('disagree') || label.includes('oppose') || label.includes('dislike')) {
         againstCount += positions
@@ -68,7 +99,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
       const baseCount = Math.max(result.attestations, 100)
       return {
         against: Math.floor(baseCount * 0.15),
-        opinion: Math.floor(baseCount * 0.70), 
+        opinion: Math.floor(baseCount * 0.70),
         forCount: Math.floor(baseCount * 0.15)
       }
     }
@@ -126,6 +157,8 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
     performSearch(query)
   }, [propQuery, searchAtoms])
 
+
+
   return (
     <div className="page search-result-page">
       {/* Header avec recherche et close */}
@@ -153,13 +186,14 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
               <button onClick={handleSearchEdit} className="edit-search-btn">✏️</button>
             </div>
           )}
-          <button 
+          <button
             onClick={() => navigateTo('search')}
             className="close-button"
           >
             ✕
           </button>
         </div>
+
       </div>
 
       <div className="search-result-content">
@@ -167,19 +201,19 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
         <div className="main-title-section">
           <h1 className="main-title">{results[0]?.label || searchQuery}</h1>
           <div className="action-buttons">
-            <button 
+            <button
               onMouseEnter={() => setSendHovered(true)}
               onMouseLeave={() => setSendHovered(false)}
-              style={{background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100px', height: 'auto'}}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100px', height: 'auto' }}
             >
-              <img src={sendHovered ? SendHoverIcon : SendIcon} alt="Send" style={{width: '100%', height: 'auto'}} />
+              <img src={sendHovered ? SendHoverIcon : SendIcon} alt="Send" style={{ width: '100%', height: 'auto' }} />
             </button>
-            <button 
+            <button
               onMouseEnter={() => setVoteHovered(true)}
               onMouseLeave={() => setVoteHovered(false)}
-              style={{background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100px', height: 'auto'}}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100px', height: 'auto' }}
             >
-              <img src={voteHovered ? VoteHoverIcon : VoteIcon} alt="Vote" style={{width: '100%', height: 'auto'}} />
+              <img src={voteHovered ? VoteHoverIcon : VoteIcon} alt="Vote" style={{ width: '100%', height: 'auto' }} />
             </button>
           </div>
         </div>
@@ -203,94 +237,103 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
         {/* Liste des résultats */}
         {!isLoading && !error && activeTab !== 'more' && (
           <div className="results-list">
-            {topResults.map((result, index) => (
-              <div key={result.id || index} className="result-card">
-                <div className="result-header">
-                  <span className="attestations-count">{formatNumber(result.attestations)} attestations</span>
-                  <span className="stake-amount">💎 {formatNumber(result.stake)}</span>
-                  <span className="status-badge true">True</span>
-                </div>
-                
-                <div className="result-body">
-                  {result.description && (
-                    <div className="result-description">
-                      <p>{result.description}</p>
-                    </div>
-                  )}
-                  
-                  {result.url && (
-                    <div className="result-url">
-                      <span className="url-icon">🔗</span>
-                      <a href={result.url} target="_blank" rel="noopener noreferrer" className="url-link">
-                        {result.url}
-                      </a>
-                    </div>
-                  )}
-                  
-                  {result.email && (
-                    <div className="result-email">
-                      <span className="email-icon">📧</span>
-                      <span>{result.email}</span>
-                    </div>
-                  )}
-                  
-                  <div className="auditor-section">
-                    <div className="auditor-info">
-                    <div className="audit-details">
-                      <span>audited by</span>
-                      <img src={PersonIcon} alt="Person" className="auditor-icon" />
-                      <span className="auditor-name">{result.auditedBy || 'Expert_Luvr'}</span>
-                    </div>
-                    </div>
-                  </div>
-                  {result.consensys && (
-                    <div className="consensys-badge">
-                      <span className="consensys-icon">C</span>
-                      <span>{result.consensys}</span>
-                    </div>
-                  )}
-                </div>
+            {topResults.map((result, index) => {
+              const isFavorited = favorites.some((a) => a.id === result.id || a.url === result.url)
+              const metrics = getTripleMetrics(result)
 
-                <div className="result-footer">
-                  <div className="metrics">
-                    {(() => {
-                      const metrics = getTripleMetrics(result)
-                      return (
-                        <>
-                          <span className="metric red">●Against: {formatNumber(metrics.against)}</span>
-                          <span className="metric">OPINION: {formatNumber(metrics.opinion)}</span>
-                          <span className="metric green">●For: {formatNumber(metrics.forCount)}</span>
-                        </>
-                      )
-                    })()}
+              return (
+                <div key={result.id || index} className="result-card">
+                  <div className="result-header">
+                    <span className="attestations-count">{formatNumber(result.attestations)} attestations</span>
+                    <span className="stake-amount">💎 {formatNumber(result.stake)}</span>
+                    <span className="status-badge true">True</span>
+                  </div>
+
+                  <div className="result-body">
+                    {result.description && (
+                      <div className="result-description">
+                        <p>{result.description}</p>
+                      </div>
+                    )}
+
+                    {result.url && (
+                      <div className="result-url">
+                        <span className="url-icon">🔗</span>
+                        <a href={result.url} target="_blank" rel="noopener noreferrer" className="url-link">
+                          {result.url}
+                        </a>
+                      </div>
+                    )}
+
+                    {result.email && (
+                      <div className="result-email">
+                        <span className="email-icon">📧</span>
+                        <span>{result.email}</span>
+                      </div>
+                    )}
+
+                    <div className="auditor-section">
+                      <div className="auditor-info">
+                        <div className="audit-details">
+                          <span>audited by</span>
+                          <img src={PersonIcon} alt="Person" className="auditor-icon" />
+                          <span className="auditor-name">{result.auditedBy || 'Expert_Luvr'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {result.consensys && (
+                      <div className="consensys-badge">
+                        <span className="consensys-icon">C</span>
+                        <span>{result.consensys}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="result-footer">
+                    <div className="metrics">
+                      <span className="metric red">●Against: {formatNumber(metrics.against)}</span>
+                      <span className="metric">OPINION: {formatNumber(metrics.opinion)}</span>
+                      <span className="metric green">●For: {formatNumber(metrics.forCount)}</span>
+                      <button
+                        className="favorite-button"
+                        onClick={() =>
+                          isFavorited ? handleRemoveFromFavorites(result) : handleAddToFavorites(result)
+                        }
+                        title={isFavorited ? "Retirer des favoris" : "Ajouter aux favoris"}
+                      >
+                        {isFavorited ? "👁️‍🗨️" : "👁️"}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
+
         {/* Navigation tabs */}
         <div className="tab-navigation">
-          <button 
+          <button
             className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
           >
             Overview
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === 'related' ? 'active' : ''}`}
             onClick={() => setActiveTab('related')}
           >
             Related to
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === 'about' ? 'active' : ''}`}
             onClick={() => setActiveTab('about')}
           >
             About
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === 'more' ? 'active' : ''}`}
             onClick={() => setActiveTab('more')}
           >
@@ -312,21 +355,21 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
                       </a>
                     </div>
                   )}
-                  
+
                   {topResults[0].description && (
                     <div className="info-item">
                       <span className="info-icon">📝</span>
                       <span className="info-text">{topResults[0].description}</span>
                     </div>
                   )}
-                  
+
                   {topResults[0].email && (
                     <div className="info-item">
                       <span className="info-icon">📧</span>
                       <span className="info-text">{topResults[0].email}</span>
                     </div>
                   )}
-                  
+
                   <div className="info-item">
                     <img src={VoteIconSvg} alt="Vote" className="info-icon" />
                     <span className="info-text">Vote on this signal</span>
@@ -340,6 +383,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
           )}
           {activeTab === 'related' && (
             <div className="related-content">
+
               {topResults.length > 0 && topResults[0].relatedTriples.length > 0 ? (
                 <div className="related-triples">
                   <h3>Related connections:</h3>
@@ -371,35 +415,35 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
               {topResults.length > 0 && (
                 <div className="about-details">
                   <h3>About {topResults[0].name || topResults[0].label}</h3>
-                  
+
                   <div className="about-info">
                     <div className="info-row">
                       <span className="info-label">Type:</span>
                       <span className="info-value">{topResults[0].type}</span>
                     </div>
-                    
+
                     <div className="info-row">
                       <span className="info-label">ID:</span>
                       <span className="info-value">{topResults[0].id}</span>
                     </div>
-                    
+
                     {topResults[0].identifier && (
                       <div className="info-row">
                         <span className="info-label">Identifier:</span>
                         <span className="info-value">{topResults[0].identifier}</span>
                       </div>
                     )}
-                    
+
                     <div className="info-row">
                       <span className="info-label">Attestations:</span>
                       <span className="info-value">{formatNumber(topResults[0].attestations)}</span>
                     </div>
-                    
+
                     <div className="info-row">
                       <span className="info-label">Stake:</span>
                       <span className="info-value">{formatNumber(topResults[0].stake)}</span>
                     </div>
-                    
+
                     {topResults[0].auditedBy && (
                       <div className="info-row">
                         <span className="info-label">Audited by:</span>
@@ -421,14 +465,14 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
                       <span className="stake-amount">💎 {formatNumber(result.stake)}</span>
                       <span className="status-badge true">True</span>
                     </div>
-                    
+
                     <div className="result-body">
                       {result.description && (
                         <div className="result-description">
                           <p>{result.description}</p>
                         </div>
                       )}
-                      
+
                       {result.url && (
                         <div className="result-url">
                           <span className="url-icon">🔗</span>
@@ -437,14 +481,14 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
                           </a>
                         </div>
                       )}
-                      
+
                       {result.email && (
                         <div className="result-email">
                           <span className="email-icon">📧</span>
                           <span>{result.email}</span>
                         </div>
                       )}
-                      
+
                       <div className="auditor-section">
                         <div className="auditor-info">
                           <img src={PersonIcon} alt="Person" className="auditor-icon" />
