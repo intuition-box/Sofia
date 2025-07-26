@@ -233,7 +233,11 @@ const TripleForm = forwardRef<TripleFormRef, {}>((_, ref) => {
         className="triple-form"
         onSubmit={(e) => e.preventDefault()}
       >
-        <div className="form-buttons">
+        <AtomAutocompleteInput label="Subject" onSelect={setSubject} selected={subject} />
+        <AtomAutocompleteInput label="Predicate" onSelect={setPredicate} selected={predicate} />
+        <AtomAutocompleteInput label="Object" onSelect={setObject} selected={object} />
+
+        <div className="flex gap-8 justify-center">
           <button
             type="button"
             onClick={handleAddTriple}

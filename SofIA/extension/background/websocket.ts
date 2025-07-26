@@ -1,35 +1,26 @@
 import { io, Socket } from "socket.io-client"
-import { SOFIA_IDS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS } from "./constants"
 import { Storage } from "@plasmohq/storage"
 
-let socket: Socket
+
+let socketSofia: Socket
+let socketBot: Socket
+
 const storage = new Storage()
 
 function generateUUID(): string {
   return crypto.randomUUID
-  ? crypto.randomUUID()
-  : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0
-    const v = c === "x" ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
+    ? crypto.randomUUID()
+    : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0
+      const v = c === "x" ? r : (r & 0x3) | 0x8
+      return v.toString(16)
+    })
 }
 
-// async function logStoredMessages() {
-//   const messages = await storage.get("sofiaMessages")
-//   console.log("📦 Contenu actuel de Plasmo Storage (sofiaMessages):", messages)
-// }
-
-export async function initializeWebSocket(): Promise<void> {
-
-  // logStoredMessages
-  // await storage.clear()
-  // console.log("🧹 Plasmo Storage vidé avant démarrage.")
-
-  const roomId = SOFIA_IDS.ROOM_ID
-  const entityId = SOFIA_IDS.AUTHOR_ID
-  
-  socket = io("http://localhost:3000", {
+// === 1. Initialiser WebSocket pour SofIA ===
+export async function initializeSofiaSocket(): Promise<void> {
+  socketSofia = io("http://localhost:3000", {
     transports: ["websocket"],
     path: "/socket.io",
     reconnection: true,
@@ -38,95 +29,100 @@ export async function initializeWebSocket(): Promise<void> {
     timeout: 20000
   })
 
-  socket.on("connect", () => {
-    console.log("✅ Connected to Eliza, socket ID:", socket.id)
+  socketSofia.on("connect", () => {
+    console.log("✅ Connected to Eliza (SofIA), socket ID:", socketSofia.id)
 
-    // 1. JOIN ROOM (ROOM_JOINING)
-    socket.emit("message", {
+    socketSofia.emit("message", {
       type: 1,
       payload: {
-        roomId: roomId,
-        entityId: entityId
+        roomId: SOFIA_IDS.ROOM_ID,
+        entityId: SOFIA_IDS.AUTHOR_ID
       }
     })
-    console.log("📨 Sent room join for room:", roomId)
 
-    // 2. Optionnel : envoie d’un message test après connexion
-    // setTimeout(() => {
-    //   sendAgentMessage("Connexion établie depuis l'extension.")
-    // }, 1000)
+    console.log("📨 Sent room join for SofIA:", SOFIA_IDS.ROOM_ID)
   })
 
-  // 3. Listen to incoming broadcasts
-  socket.on("messageBroadcast",  async (data) => {
-    console.log("📩 Received broadcast:", data)
-    
-    if ((data.roomId === roomId || data.channelId === roomId) && data.senderId === SOFIA_IDS.AGENT_ID) {
+  socketSofia.on("messageBroadcast", async (data) => {
+    if ((data.roomId === SOFIA_IDS.ROOM_ID || data.channelId === SOFIA_IDS.CHANNEL_ID) && data.senderId === SOFIA_IDS.AGENT_ID) {
+      console.log("📩 Message SofIA:", data)
 
-      console.log("✅ Message is for our room!")
-      console.log("Sender:", data.senderName)
-      console.log("Text:", data.text)
-      
       let messages = await storage.get("sofiaMessages") || []
+      if (!Array.isArray(messages)) messages = []
 
-        if (!Array.isArray(messages)) {
-        messages = []
-      }
-      
       const newMessage = {
         content: { text: data.text },
         created_at: Date.now()
       }
-      messages.push(newMessage)
 
+      messages.push(newMessage)
       await storage.set("sofiaMessages", messages)
 
-      console.log("✅ Message enregistré dans plasmo.storage", newMessage)
-    } else {
-      console.warn("❌ Message is from user:",data.senderId)
+      console.log("✅ Message enregistré (SofIA)", newMessage)
     }
-
   })
 
-  // 4. Other events
-  socket.on("messageComplete", (data) => {
-    console.log("✅ Message complete:", data)
-  })
-
-  socket.on("connection_established", (data) => {
-    console.log("🔗 connection_established:", data)
-  })
-
-  socket.on("error", (err) => {
-    console.error("❌ WebSocket error:", err)
-  })
-
-  socket.on("disconnect", (reason) => {
-    console.warn("🔌 Disconnected:", reason)
-    setTimeout(initializeWebSocket, 5000)
-  })
-
-  socket.on("connect_error", (error) => {
-    console.error("❌ Connection error:", error)
-  })
-
-  // Optional: log all events
-  socket.onAny((event, ...args) => {
-    console.log("📥 [WS EVENT]", event, args)
+  socketSofia.on("disconnect", (reason) => {
+    console.warn("🔌 SofIA socket disconnected:", reason)
+    setTimeout(initializeSofiaSocket, 5000)
   })
 }
 
-/**
- * Envoi d’un message à l’agent Eliza
- */
-export function sendAgentMessage(text: string): void {
-  if (!socket?.connected) {
-    console.warn("⚠️ Socket non connecté")
+// === 2. Initialiser WebSocket pour Chatbot ===
+export async function initializeChatbotSocket(onReady?: () => void): Promise<void> {
+  socketBot = io("http://localhost:3000", {
+    transports: ["websocket"],
+    path: "/socket.io"
+  })
+
+  socketBot.on("connect", () => {
+    console.log("🤖 Connected to Chatbot, socket ID:", socketBot.id)
+
+    // Envoie du "room join"
+    socketBot.emit("message", {
+      type: 1,
+      payload: {
+        roomId: CHATBOT_IDS.ROOM_ID,
+        entityId: CHATBOT_IDS.AUTHOR_ID
+      }
+    })
+
+    console.log("📨 Sent room join for Chatbot:", CHATBOT_IDS.ROOM_ID)
+
+    // ✅ Notification que la socket est prête
+    if (typeof onReady === "function") {
+      onReady()
+    }
+  })
+
+  socketBot.on("messageBroadcast", (data) => {
+    if (
+      (data.roomId === CHATBOT_IDS.ROOM_ID || data.channelId === CHATBOT_IDS.CHANNEL_ID) &&
+      data.senderId === CHATBOT_IDS.AGENT_ID
+    ) {
+      chrome.runtime.sendMessage({
+        type: "CHATBOT_RESPONSE",
+        text: data.text
+      })
+    }
+  })
+
+  socketBot.on("disconnect", (reason) => {
+    console.warn("🔌 Chatbot socket disconnected:", reason)
+    setTimeout(() => initializeChatbotSocket(onReady), 5000) // Reconnexion avec le même callback
+  })
+}
+
+
+// === 3. Envoi de message à SofIA ===
+export function sendMessageToSofia(text: string): void {
+  if (!socketSofia?.connected) {
+    console.warn("⚠️ SofIA socket non connecté")
     return
   }
 
   const payload = {
-    type: 2, // SEND_MESSAGE
+    type: 2,
     payload: {
       senderId: SOFIA_IDS.AUTHOR_ID,
       senderName: "Extension User",
@@ -145,6 +141,37 @@ export function sendAgentMessage(text: string): void {
     }
   }
 
-  console.log("📤 Sending message:", payload)
-  socket.emit("message", payload)
+  console.log("📤 Message à SofIA :", payload)
+  socketSofia.emit("message", payload)
+}
+
+// === 4. Envoi de message au Chatbot ===
+export function sendMessageToChatbot(text: string): void {
+  if (!socketBot?.connected) {
+    console.warn("⚠️ Chatbot socket non connecté")
+    return
+  }
+
+  const payload = {
+    type: 2,
+    payload: {
+      senderId: CHATBOT_IDS.AUTHOR_ID,
+      senderName: "Chat User",
+      message: text,
+      messageId: generateUUID(),
+      roomId: CHATBOT_IDS.ROOM_ID,
+      channelId: CHATBOT_IDS.CHANNEL_ID,
+      serverId: CHATBOT_IDS.SERVER_ID,
+      source: "Chat",
+      attachments: [],
+      metadata: {
+        channelType: "DM",
+        isDm: true,
+        targetUserId: CHATBOT_IDS.AGENT_ID
+      }
+    }
+  }
+
+  console.log("📤 Message au Chatbot :", payload)
+  socketBot.emit("message", payload)
 }

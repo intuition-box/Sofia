@@ -17,6 +17,7 @@ export interface ParsedSofiaMessage {
 
 export function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   console.log("🔍 Parsing message text:", text)
+
   console.log("📊 Text length:", text.length)
   console.log("📝 Text type:", typeof text)
   
@@ -35,6 +36,7 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
   try {
     // 🧼 Nettoyage avancé pour rendre le JSON valide
     sanitized = text
+
       .replace(/[""]/g, '"')              // guillemets doubles typographiques
       .replace(/['']/g, "'")              // guillemets simples typographiques
       .replace(/([{,])\s*'([^']+?)'\s*:/g, '$1"$2":')    // 'clé': => "clé":
@@ -55,7 +57,9 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       })
 
     console.log("🧼 Sanitized JSON string:", sanitized)
+
     console.log("📊 Sanitized length:", sanitized.length)
+
 
     const jsonData = JSON.parse(sanitized)
 
@@ -82,6 +86,7 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       created_at
     }
   } catch (error) {
+
     console.error("❌ Failed to parse JSON, treating as text message:", error)
     console.error("🔍 Original text that failed:", text)
     console.error("🧼 Sanitized text that failed:", sanitized)
@@ -103,7 +108,6 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
         created_at
       }
     }
-
     console.log("❌ Returning null - empty or invalid text")
     return null
   }
