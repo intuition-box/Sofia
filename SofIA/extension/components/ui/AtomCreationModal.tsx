@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useCreateAtom } from '../../hooks/useCreateAtom'
 import type { Triplet } from '../pages/graph-tabs/types'
 
@@ -25,7 +25,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
     reset
   } = useCreateAtom()
 
-  // Pré-remplir les champs quand le modal s'ouvre
+  // Pre-fill fields when modal opens
   useEffect(() => {
     if (isOpen && objectData) {
       setName(objectData.name || '')
@@ -35,44 +35,44 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
     }
   }, [isOpen, objectData, reset])
 
-  // Fermer le modal après succès
+  // Close modal after success
   useEffect(() => {
     if (isSuccess && receipt) {
       setTimeout(() => {
         onClose()
         setIsCreating(false)
-      }, 3000) // Afficher le succès pendant 3 secondes
+      }, 3000) // Show success for 3 seconds
     }
   }, [isSuccess, receipt, onClose])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault()
     
     if (!name.trim()) {
-      alert('Le nom est requis')
+      alert('Name is required')
       return
     }
 
     setIsCreating(true)
 
     try {
-      // Créer l'objet de métadonnées de l'atom
+      // Create the atom metadata object
       const atomMetadata = {
         name: name.trim(),
         description: description.trim() || undefined,
         url: url.trim() || undefined
       }
 
-      // Convertir en JSON puis en bytes
+      // Convert to JSON then to bytes
       const atomUri = new TextEncoder().encode(JSON.stringify(atomMetadata))
 
-      // Appeler le hook de création d'atom
+      // Call the atom creation hook
       await writeContractAsync({
         args: [atomUri]
-      })
+      } as any)
 
     } catch (error) {
-      console.error('Erreur lors de la création de l\'atom:', error)
+      console.error('Error creating atom:', error)
       setIsCreating(false)
     }
   }
@@ -91,7 +91,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content liquid-glass" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Créer un atom</h2>
+          <h2 className="modal-title">Create atom</h2>
           <button 
             className="modal-close"
             onClick={handleClose}
@@ -105,13 +105,13 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
           {!isSuccess ? (
             <form onSubmit={handleSubmit} className="atom-form">
               <div className="form-group">
-                <label htmlFor="name">Nom *</label>
+                <label htmlFor="name">Name *</label>
                 <input
                   id="name"
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="Nom de l'atom"
+                  placeholder="atom name"
                   required
                   disabled={isCreating}
                   className="form-input"
@@ -124,7 +124,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
                   id="description"
                   value={description}
                   onChange={e => setDescription(e.target.value)}
-                  placeholder="Description optionnelle"
+                  placeholder="Optional description"
                   disabled={isCreating}
                   className="form-textarea"
                   rows={3}
@@ -151,7 +151,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
                   disabled={awaitingWalletConfirmation || awaitingOnChainConfirmation}
                   className="btn-secondary"
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button
                   type="submit"
@@ -160,25 +160,25 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
                 >
                   {awaitingWalletConfirmation && 'Confirmation wallet...'}
                   {awaitingOnChainConfirmation && 'Confirmation blockchain...'}
-                  {isIdle && 'Créer l\'atom'}
+                  {isIdle && 'Create atom'}
                 </button>
               </div>
 
               {isError && (
                 <div className="error-message">
-                  Erreur lors de la création de l'atom. Veuillez réessayer.
+                  Error creating atom. Please try again.
                 </div>
               )}
             </form>
           ) : (
             <div className="success-message">
-              <h3>✅ Atom créé avec succès !</h3>
+              <h3>✅ Atom created successfully!</h3>
               {receipt && (
                 <p className="tx-hash">
                   Transaction: <code>{receipt.transactionHash}</code>
                 </p>
               )}
-              <p className="success-note">Ce modal se fermera automatiquement...</p>
+              <p className="success-note">This modal will close automatically...</p>
             </div>
           )}
         </div>
