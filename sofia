@@ -101,6 +101,7 @@ if [ "$1" = "start" ]; then
 
     # Activate agent (from core)
     launch_app "Agent Activation" "SofIA/agent1" "elizaos agent start --path SofIA.json" "🤖"
+    launch_app "ChatBot Activation" "SofIA/agent1" "elizaos agent start --path ChatBot.json" "🤖"
 
     sleep 2
 

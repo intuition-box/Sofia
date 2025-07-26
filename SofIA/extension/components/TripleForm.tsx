@@ -215,9 +215,6 @@ const TripleForm: ForwardRefRenderFunction<TripleFormRef, {}> = (_, ref) => {
         className="space-y-4 p-4 bg-background rounded"
         onSubmit={(e) => e.preventDefault()}
       >
-        <AtomAutocompleteInput label="Subject" onSelect={setSubject} selected={subject} />
-        <AtomAutocompleteInput label="Predicate" onSelect={setPredicate} selected={predicate} />
-        <AtomAutocompleteInput label="Object" onSelect={setObject} selected={object} />
 
         <div className="flex gap-8 justify-center">
           <button
