@@ -21,34 +21,35 @@ const ChatPage = () => {
   const { goBack } = useRouter()
   const [pendingMessage, setPendingMessage] = useState<string | null>(null)
   const [isSocketReady, setSocketReady] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     const container = document.querySelector('.chat-messages')
     if (container) container.scrollTop = container.scrollHeight
   }, [messages])
 
-useEffect(() => {
-  initializeChatbotSocket(() => setSocketReady(true))
-}, [])
+  useEffect(() => {
+    initializeChatbotSocket(() => setSocketReady(true))
+  }, [])
 
-useEffect(() => {
-  const fetch = async () => {
-    const saved = await storage.get("pendingChatInput")
-    if (saved && typeof saved === "string" && saved.trim() !== "") {
-      await storage.remove("pendingChatInput")
-      setPendingMessage(saved)
-      setChatInput(saved) // si tu veux qu’il s'affiche aussi
+  useEffect(() => {
+    const fetch = async () => {
+      const saved = await storage.get("pendingChatInput")
+      if (saved && typeof saved === "string" && saved.trim() !== "") {
+        await storage.remove("pendingChatInput")
+        setPendingMessage(saved)
+        setChatInput(saved) // si tu veux qu’il s'affiche aussi
+      }
     }
-  }
-  fetch()
-}, [])
+    fetch()
+  }, [])
 
-useEffect(() => {
-  if (isSocketReady && pendingMessage) {
-    handleSendMessage(pendingMessage)
-    setPendingMessage(null)
-  }
-}, [isSocketReady, pendingMessage])
+  useEffect(() => {
+    if (isSocketReady && pendingMessage) {
+      handleSendMessage(pendingMessage)
+      setPendingMessage(null)
+    }
+  }, [isSocketReady, pendingMessage])
 
 
   const handleSendMessage = (content?: string) => {
@@ -69,20 +70,26 @@ useEffect(() => {
     setChatInput("")
   }
 
-  useEffect(() => {
-    storage.set("chatMessages", messages)
-  }, [messages])
-
-
-  useEffect(() => {
-    const loadMessages = async () => {
-      const saved = await storage.get("chatMessages")
-      if (Array.isArray(saved)) {
-        setMessages(saved)
+    useEffect(() => {
+      const loadMessages = async () => {
+        const saved = await storage.get("chatMessages")
+        if (Array.isArray(saved)) {
+          const restored = saved.map((msg) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }))
+          setMessages(restored)
+        }
+        setIsLoaded(true)
       }
-    }
-    loadMessages()
-  }, [])
+      loadMessages()
+    }, [])
+
+    useEffect(() => {
+      if (isLoaded) {
+        storage.set("chatMessages", messages)
+      }
+    }, [messages, isLoaded])
 
 
   useEffect(() => {
@@ -118,9 +125,9 @@ useEffect(() => {
             <div className="message-content">
               {message.content}
             </div>
-              <small className="message-timestamp">
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </small>
+            <small className="message-timestamp">
+              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </small>
           </div>
         ))}
       </div>
