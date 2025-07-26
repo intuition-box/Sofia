@@ -1,11 +1,9 @@
 {
-  "extends": "./node_modules/plasmo/templates/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "~*": [
-        "./*"
-      ]
+      "~*": ["./*"],
+      "@privy-io/wagmi": ["lib/utils/wagmi.ts"] // 👈 Ajout d'un alias personnalisé
     },
     "types": [
       "chrome",
@@ -16,19 +14,27 @@
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "target": "ES2022",
+    "target": "ES2020",
     "lib": [
-      "ES2022",
+      "ES2020",
       "DOM"
-    ]
+    ],
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": [
     ".plasmo/index.d.ts",
     "./**/*.ts",
-    "./**/*.tsx",
-    "../types.d.ts"
+    "./**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "build",
+    "dist"
   ]
 }

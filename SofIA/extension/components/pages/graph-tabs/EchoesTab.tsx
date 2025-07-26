@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Storage } from '@plasmohq/storage'
 import QuickActionButton from '../../ui/QuickActionButton'
-import type { Message, ParsedSofiaMessage } from './types'
+import AtomCreationModal from '../../ui/AtomCreationModal'
+import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
+import '../../ui/AtomCreationModal.css'
 
 const storage = new Storage()
 
@@ -13,6 +15,8 @@ interface EchoesTabProps {
 
 const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedObjectData, setSelectedObjectData] = useState<Triplet['object'] | null>(null)
 
   useEffect(() => {
     async function loadMessages() {
@@ -64,6 +68,26 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     loadMessages()
   }, [])
 
+  const handleCreateAtom = (triplet: Triplet) => {
+    setSelectedObjectData(triplet.object)
+    setIsModalOpen(true)
+  }
+
+  const handleCreateAtomFromIntention = (intention: string) => {
+    // Pour les intentions, on crée un object avec le texte de l'intention
+    setSelectedObjectData({
+      name: intention,
+      description: undefined,
+      url: ''
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedObjectData(null)
+  }
+
   return (
     <div className="triples-container">
       {parsedMessages.length > 0 ? (
@@ -90,7 +114,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
                     <QuickActionButton
                       action="add"
-                      onClick={() => console.log('Add clicked for triplet:', triplet)}
+                      onClick={() => handleCreateAtom(triplet)}
                     />
 
                     {isExpanded && (
@@ -148,7 +172,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 <p className="triplet-text">{entry.intention}</p>
                 <QuickActionButton
                   action="add"
-                  onClick={() => console.log('Add clicked for:', entry.intention)}
+                  onClick={() => handleCreateAtomFromIntention(entry.intention)}
                 />
               </div>
             )}
@@ -159,6 +183,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           <p>No SofIA messages received yet</p>
           <p className="empty-subtext">They will appear automatically when received</p>
         </div>
+      )}
+
+      {/* Modal de création d'atom */}
+      {selectedObjectData && (
+        <AtomCreationModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          objectData={selectedObjectData}
+        />
       )}
     </div>
   )
