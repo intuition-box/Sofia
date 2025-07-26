@@ -34,8 +34,11 @@ export const useCreateAtom = () => {
       console.log('Using direct viem clients for transaction')
       console.log('Contract address:', MULTIVAULT_CONTRACT_ADDRESS)
       console.log('Account:', metamaskAccount)
+      console.log('WalletClient account:', walletClient.account)
       
+      // Force l'utilisation du bon account
       const hash = await walletClient.writeContract({
+        account: metamaskAccount as `0x${string}`,
         address: MULTIVAULT_CONTRACT_ADDRESS as `0x${string}`,
         abi: multivaultAbi,
         functionName: 'createAtom',

@@ -4,7 +4,7 @@ import { useTracking } from '../../hooks/useTracking'
 import { TrackingStatus } from '../tracking'
 import WalletConnectionButton from '../THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
-import { disconnectWallet } from '../../lib/metamask'
+import { disconnectWallet, cleanupProvider } from '../../lib/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
@@ -47,9 +47,13 @@ const SettingsPage = () => {
       // Disconnect MetaMask wallet first
       if (account) {
         setAccount("")
-        disconnectWallet()
+        await disconnectWallet()
         console.log("🔌 MetaMask wallet disconnected")
       }
+      
+      // Cleanup provider streams
+      cleanupProvider()
+      console.log("🧹 MetaMask provider streams cleaned")
       
       // Clear all storage
       await storage.clear()
