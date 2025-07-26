@@ -40,6 +40,19 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       .replace(/([{,])\s*'([^']+?)'\s*:/g, '$1"$2":')    // 'clé': => "clé":
       .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // clé: => "clé":
       .replace(/:\s*'([^']*?)'/g, ': "$1"')               // 'valeur' => "valeur"
+      // Corriger les guillemets doubles répétés
+      .replace(/"{2,}/g, '"')             // """" => "
+      .replace(/""+/g, '"')               // "" => "
+      // Corriger les valeurs vides avec guillemets multiples
+      .replace(/:\s*""\s*"/g, ': ""')     // : "" " => : ""
+      // Nouveau: corriger les valeurs non-quotées
+      .replace(/:\s*([^",\[\]{}]+?)(\s*[,}\]])/g, (match, value, suffix) => {
+        // Ne pas quoter si déjà quoté, si c'est un nombre, null, true, false, ou commence par un crochet/accolade
+        if (value.trim().match(/^".*"$|^[\d.-]+$|^(null|true|false)$|^[\[{]/)) {
+          return match
+        }
+        return `: "${value.trim()}"${suffix}`
+      })
 
     console.log("🧼 Sanitized JSON string:", sanitized)
     console.log("📊 Sanitized length:", sanitized.length)

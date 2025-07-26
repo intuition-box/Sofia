@@ -9,13 +9,25 @@ export const useWalletSync = () => {
   const { disconnect } = useDisconnect()
 
   useEffect(() => {
-    const injectedConnector = connectors.find(connector => connector.type === 'injected')
+    const injectedConnector = connectors.find(connector => 
+      connector.type === 'injected' || connector.id === 'injected'
+    )
+    
+    console.log('Available connectors:', connectors.map(c => ({ id: c.id, type: c.type, name: c.name })))
+    console.log('MetaMask account:', metamaskAccount)
+    console.log('Wagmi connected:', isConnected)
+    console.log('Found injected connector:', injectedConnector)
     
     if (metamaskAccount && !isConnected && injectedConnector) {
-      // Sofia has a connected account but wagmi doesn't - connect wagmi
-      connect({ connector: injectedConnector })
+      console.log('Connecting wagmi to match Sofia...')
+      try {
+        connect({ connector: injectedConnector })
+        console.log('Wagmi connection initiated')
+      } catch (error) {
+        console.error('Wagmi connection failed:', error)
+      }
     } else if (!metamaskAccount && isConnected) {
-      // Sofia doesn't have an account but wagmi is connected - disconnect wagmi
+      console.log('Disconnecting wagmi to match Sofia...')
       disconnect()
     }
   }, [metamaskAccount, isConnected, connect, disconnect, connectors])
