@@ -4,12 +4,12 @@
   align-items: center;
   justify-content: flex-start;
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: var(--spacing-4xl) var(--spacing-xl);
   text-align: center;
 }
 
 .welcome-header {
-  margin-bottom: 40px;
+  margin-bottom: var(--spacing-4xl);
   text-align: center;
 }
 
@@ -20,21 +20,21 @@
 }
 
 .description-sections {
-  margin-bottom: 40px;
+  margin-bottom: var(--spacing-4xl);
   max-width: 320px;
   text-align: center;
 }
 
 .description-paragraph {
-  color: #F2DED6;
+  color: var(--color-text-primary);
   font-size: 13px;
   line-height: 1.5;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-lg);
   text-align: justify;
 }
 
 .connect-section {
-  margin-bottom: 30px;
+  margin-bottom: var(--spacing-3xl);
   width: 100%;
   display: flex;
   justify-content: center;
@@ -42,26 +42,26 @@
 
 /* Override button styles to match design */
 .connect-section button {
-  background: linear-gradient(135deg, #D4A574 0%, #B8956A 100%) !important;
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary-dark) 100%) !important;
   color: #2D1B0E !important;
   border: none !important;
-  padding: 14px 40px !important;
-  border-radius: 8px !important;
-  font-size: 16px !important;
+  padding: var(--spacing-base) var(--spacing-4xl) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--font-size-lg) !important;
   font-weight: 600 !important;
   cursor: pointer !important;
-  transition: all 0.3s ease !important;
+  transition: var(--transition-normal) !important;
   text-transform: none !important;
   letter-spacing: 0.5px !important;
-  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3) !important;
+  box-shadow: var(--shadow-button) !important;
   width: 280px !important;
   max-width: 100% !important;
 }
 
 .connect-section button:hover {
-  background: linear-gradient(135deg, #FFB3C4 0%, #FFE078 100%) !important;
+  background: linear-gradient(135deg, var(--color-hover) 0%, var(--color-hover-light) 100%) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 16px rgba(212, 165, 116, 0.4) !important;
+  box-shadow: var(--shadow-button-hover) !important;
 }
 
 .connect-section button:disabled {
@@ -69,20 +69,20 @@
   color: #CCCCCC !important;
   cursor: not-allowed !important;
   transform: none !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: var(--shadow-light) !important;
 }
 
 .terms-section {
-  margin-top: 10px;
+  margin-top: var(--spacing-sm);
 }
 
 .terms-checkbox {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--spacing-sm);
   cursor: pointer;
-  color: #F2DED6;
-  font-size: 12px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
 }
 
 .terms-checkbox input[type="checkbox"] {
@@ -92,23 +92,23 @@
 .checkmark {
   width: 18px;
   height: 18px;
-  border: 2px solid #F2DED6;
+  border: 2px solid var(--color-text-primary);
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: var(--transition-normal);
 }
 
 .terms-checkbox input[type="checkbox"]:checked + .checkmark {
-  background-color: #C7866C;
-  border-color: #C7866C;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .terms-checkbox input[type="checkbox"]:checked + .checkmark::after {
   content: "✓";
   color: white;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: bold;
 }
 

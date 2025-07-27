@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useTracking } from '../../hooks/useTracking'
 import { useRouter } from '../layout/RouterProvider'
 import logoIcon from '../../assets/iconcolored.png'
-import thumbsUpIcon from '../ui/Thumbs up.png'
-import toggleTrue from '../ui/button=True.png'
-import toggleFalse from '../ui/button=False.png'
+import thumbsUpIcon from '../ui/icons/Thumbs up.png'
+import toggleTrue from '../ui/icons/button=True.png'
+import toggleFalse from '../ui/icons/button=False.png'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
 
