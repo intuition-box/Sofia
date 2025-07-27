@@ -15,6 +15,8 @@ export interface ParsedSofiaMessage {
   created_at: number
   rawObjectUrl?: string  // Keep the original URL for atom creation
   rawObjectDescription?: string  // Keep the original description for atom creation
+  extractedAt?: number  // Timestamp when triplets were extracted and stored
+  sourceMessageId?: string  // ID of the source message
 }
 
 export function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
