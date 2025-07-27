@@ -263,6 +263,9 @@
   border-radius: 8px;
   border: 1px solid rgba(242, 222, 214, 0.1); /* 200 avec transparence */
   transition: all 0.3s ease;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .triplet-detail-section:hover {
@@ -289,6 +292,9 @@
   color: #FBF7F5; /* 50 */
   margin: 0 0 8px 0;
   line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .triplet-detail-description {

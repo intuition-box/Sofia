@@ -25,7 +25,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
   
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
-  const [showImportSection, setShowImportSection] = useState(false)
 
   // Filtrer uniquement les triplets non publiés (atom-only)
   const unpublishedTriplets = triplets.filter(t => t.tripleStatus === 'atom-only')
@@ -396,13 +395,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       {availableTripletsCount > 0 && (
         <div className="import-section">
           <div className="import-header">
-            <h3> Echoe's incoming ({availableTripletsCount})</h3>
+            <h3> Echoes ({availableTripletsCount})</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
                 className="btn-secondary"
-                onClick={() => setShowImportSection(!showImportSection)}
+                onClick={importAllAvailableTriplets}
+                disabled={isCreating}
+                style={{ fontSize: '12px', padding: '8px 12px' }}
               >
-                {showImportSection ? 'Hide' : 'Show'}
+                Listen
               </button>
               <button 
                 className="btn-secondary"
@@ -410,23 +411,10 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 title="Clean old messages to free up space"
                 style={{ fontSize: '12px', padding: '8px 12px' }}
               >
-                🧹 Clean
+                Ignore
               </button>
             </div>
           </div>
-          
-          {showImportSection && (
-            <div className="import-content">
-              <p>You have {availableTripletsCount} new triplets from your SofIA messages.</p>
-              <button 
-                className="btn-primary"
-                onClick={importAllAvailableTriplets}
-                disabled={isCreating}
-              >
-                Import all triplets
-              </button>
-            </div>
-          )}
         </div>
       )}
 
