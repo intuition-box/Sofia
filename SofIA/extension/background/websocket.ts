@@ -47,18 +47,42 @@ export async function initializeSofiaSocket(): Promise<void> {
     if ((data.roomId === SOFIA_IDS.ROOM_ID || data.channelId === SOFIA_IDS.CHANNEL_ID) && data.senderId === SOFIA_IDS.AGENT_ID) {
       console.log("📩 Message SofIA:", data)
 
-      let messages = await storage.get("sofiaMessages") || []
-      if (!Array.isArray(messages)) messages = []
+      try {
+        // Use temporary buffer for raw messages
+        let messageBuffer = await storage.get("sofiaMessagesBuffer") || []
+        if (!Array.isArray(messageBuffer)) messageBuffer = []
 
-      const newMessage = {
-        content: { text: data.text },
-        created_at: Date.now()
+        const newMessage = {
+          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Unique ID for tracking
+          content: { text: data.text },
+          created_at: Date.now(),
+          processed: false // Flag to track parsing status
+        }
+
+        messageBuffer.push(newMessage)
+
+        // Strict buffer limit: keep only 25 most recent messages
+        if (messageBuffer.length > 25) {
+          console.log("🧹 Buffer limit reached, keeping 25 most recent messages")
+          messageBuffer = messageBuffer
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, 25)
+        }
+
+        await storage.set("sofiaMessagesBuffer", messageBuffer)
+        console.log("✅ Message added to buffer (SofIA)", { id: newMessage.id, length: messageBuffer.length })
+      } catch (error) {
+        console.error("❌ Failed to store message in buffer:", error)
+        if (error instanceof Error && error.message.includes('quota')) {
+          console.log("🚨 Storage quota exceeded, clearing buffer...")
+          try {
+            await storage.set("sofiaMessagesBuffer", [])
+            console.log("✅ Buffer cleared due to quota error")
+          } catch (clearError) {
+            console.error("❌ Failed to clear buffer:", clearError)
+          }
+        }
       }
-
-      messages.push(newMessage)
-      await storage.set("sofiaMessages", messages)
-
-      console.log("✅ Message enregistré (SofIA)", newMessage)
     }
   })
 
