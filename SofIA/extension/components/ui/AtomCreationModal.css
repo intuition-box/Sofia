@@ -48,9 +48,119 @@
 .modal-title {
   font-family: 'Gotu', sans-serif;
   font-size: 24px;
+}
+
+/* === SIGNALS TAB STYLES === */
+
+/* Stats Header */
+.signals-stats {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(251, 247, 245, 0.8);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 24px;
   font-weight: 600;
-  color: var(--sofia-950, #372118);
-  margin: 0;
+  font-family: 'Gotu', sans-serif;
+  color: var(--sofia-800, #372118);
+}
+
+.stat-number.stat-created {
+  color: #059669; /* Green for created */
+}
+
+.stat-number.stat-existing {
+  color: #2563eb; /* Blue for existing */
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--sofia-600, #945941);
+  margin-top: 4px;
+}
+
+/* Signal Cards */
+.signal-card {
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(135deg, 
+    rgba(251, 247, 245, 0.95) 0%,
+    rgba(242, 222, 214, 0.9) 100%
+  );
+  margin-bottom: 12px;
+}
+
+.signal-card.border-green {
+  background: linear-gradient(135deg, 
+    rgba(5, 150, 105, 0.1) 0%,
+    rgba(251, 247, 245, 0.95) 20%,
+    rgba(242, 222, 214, 0.9) 80%,
+    rgba(5, 150, 105, 0.1) 100%
+  );
+  border: 1px solid rgba(5, 150, 105, 0.3);
+}
+
+.signal-card.border-blue {
+  background: linear-gradient(135deg, 
+    rgba(37, 99, 235, 0.1) 0%,
+    rgba(251, 247, 245, 0.95) 20%,
+    rgba(242, 222, 214, 0.9) 80%,
+    rgba(37, 99, 235, 0.1) 100%
+  );
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+/* Source Badges */
+.source-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+
+.source-badge.badge-created {
+  background: rgba(5, 150, 105, 0.15);
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.3);
+}
+
+.source-badge.badge-existing {
+  background: rgba(37, 99, 235, 0.15);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+/* Signal Actions */
+.signal-actions {
+  position: absolute;
+  top: 12px;
+  right: 80px;
+  display: flex;
+  gap: 8px;
+}
+
+/* Timestamp styling */
+.triplet-detail-timestamp {
+  font-size: 11px;
+  color: var(--sofia-500, #A3845A);
+  margin-top: 4px;
+  font-style: italic;
 }
 
 .modal-close {

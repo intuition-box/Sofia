@@ -1,23 +1,39 @@
 import { useState, useEffect } from 'react'
-import { useCreateAtom } from '../../hooks/useCreateAtom'
+import { useCheckExistingAtom } from '../../hooks/useCheckExistingAtom'
+import { useOnChainTriplets } from '../../hooks/useOnChainTriplets'
 
 interface AtomCreationModalProps {
   isOpen: boolean
   onClose: () => void
   objectData: {name: string; description?: string; url: string} | null
+  tripletData?: {
+    subject: string
+    predicate: string 
+    object: string
+  }
+  originalMessage?: {
+    rawObjectDescription?: string
+    rawObjectUrl?: string
+  }
 }
 
-const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalProps) => {
+const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalMessage }: AtomCreationModalProps) => {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [url, setUrl] = useState('')
   const [isCreating, setIsCreating] = useState(false)
-  const [currentStep, setCurrentStep] = useState<'idle' | 'pinning' | 'blockchain' | 'success' | 'error'>('idle')
+  const [currentStep, setCurrentStep] = useState<'idle' | 'checking' | 'existing' | 'creating' | 'success' | 'error'>('idle')
   const [progressMessage, setProgressMessage] = useState('')
 
-  const { createAtomWithMultivault, isLoading, error } = useCreateAtom()
+  const { checkAndCreateAtom, isChecking, error } = useCheckExistingAtom()
+  const { addTriplet } = useOnChainTriplets()
 
-  const [receipt, setReceipt] = useState(null)
+  const [receipt, setReceipt] = useState<{
+    transactionHash?: string
+    vaultId: string
+    source: 'created' | 'existing'
+    ipfsUri: string
+  } | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
 
   // Pre-fill fields when modal opens
@@ -50,14 +66,14 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
     }
 
     // Prévenir les double-soumissions
-    if (isCreating || isLoading) {
+    if (isCreating || isChecking) {
       console.warn('Transaction already in progress')
       return
     }
 
     setIsCreating(true)
-    setCurrentStep('pinning')
-    setProgressMessage('📌 Creating atom...')
+    setCurrentStep('checking')
+    setProgressMessage('🔍 Checking if atom exists...')
 
     try {
       const atomMetadata = {
@@ -67,15 +83,52 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
         image: ''
       }
       
-      const result = await createAtomWithMultivault(atomMetadata)
+      console.log('🚀 Starting atom check/creation process...')
+      
+      // Use the new unified workflow
+      const result = await checkAndCreateAtom(atomMetadata)
+      
+      // Update UI based on result
+      if (result.exists) {
+        setCurrentStep('existing')
+        setProgressMessage('🔗 Atom found on-chain!')
+      } else {
+        setCurrentStep('creating')
+        setProgressMessage('🆕 New atom created!')
+      }
+      
+      // Save to receipt
+      setReceipt({
+        transactionHash: result.txHash,
+        vaultId: result.vaultId,
+        source: result.source,
+        ipfsUri: result.ipfsUri
+      })
+
+      // Add triplet to on-chain storage if tripletData is provided
+      if (tripletData) {
+        await addTriplet({
+          triplet: tripletData,
+          atomVaultId: result.vaultId,
+          txHash: result.txHash,
+          source: result.source,
+          url: url.trim(),
+          ipfsUri: result.ipfsUri,
+          originalMessage
+        })
+        console.log('✅ Triplet added to on-chain storage')
+      }
       
       setCurrentStep('success')
-      setProgressMessage('✅ Atom created successfully!')
+      setProgressMessage(
+        result.exists 
+          ? '✅ Existing atom retrieved and triplet saved!' 
+          : '✅ New atom created and triplet saved!'
+      )
       setIsSuccess(true)
-      setReceipt({ transactionHash: result.txHash, vaultId: result.vaultId })
 
     } catch (error) {
-      console.error('Error creating atom:', error)
+      console.error('Error in atom workflow:', error)
       setCurrentStep('error')
       if (error instanceof Error) {
         setProgressMessage(`❌ Error: ${error.message}`)
@@ -87,7 +140,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
   }
 
   const handleClose = () => {
-    if (!isLoading) {
+    if (!isChecking && !isCreating) {
       onClose()
       setIsCreating(false)
     }

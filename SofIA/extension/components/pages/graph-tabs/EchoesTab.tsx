@@ -17,6 +17,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedObjectData, setSelectedObjectData] = useState<{name: string; description?: string; url: string} | null>(null)
+  const [selectedTripletData, setSelectedTripletData] = useState<{subject: string; predicate: string; object: string} | null>(null)
+  const [selectedOriginalMessage, setSelectedOriginalMessage] = useState<{rawObjectDescription?: string; rawObjectUrl?: string} | null>(null)
 
   useEffect(() => {
     async function loadMessages() {
@@ -75,6 +77,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       description: message.rawObjectDescription || undefined,
       url: message.rawObjectUrl || ''
     })
+    setSelectedTripletData({
+      subject: triplet.subject,
+      predicate: triplet.predicate,
+      object: triplet.object
+    })
+    setSelectedOriginalMessage({
+      rawObjectDescription: message.rawObjectDescription,
+      rawObjectUrl: message.rawObjectUrl
+    })
     setIsModalOpen(true)
   }
 
@@ -85,12 +96,16 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       description: undefined,
       url: ''
     })
+    setSelectedTripletData(null) // Pas de triplet pour les intentions
+    setSelectedOriginalMessage(null)
     setIsModalOpen(true)
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setSelectedObjectData(null)
+    setSelectedTripletData(null)
+    setSelectedOriginalMessage(null)
   }
 
   return (
@@ -167,6 +182,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           objectData={selectedObjectData}
+          tripletData={selectedTripletData}
+          originalMessage={selectedOriginalMessage}
         />
       )}
     </div>
