@@ -13,6 +13,7 @@ const MyGraphPage = () => {
   const { navigateTo } = useRouter()
   const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Resonance'>('Echoes')
   const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
+  const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
 
   return (
     <div className="page">
@@ -42,7 +43,12 @@ const MyGraphPage = () => {
               setExpandedTriplet={setExpandedTriplet}
             />
           )}
-          {activeGraphTab === 'Signals' && <SignalsTab />}
+          {activeGraphTab === 'Signals' && (
+            <SignalsTab 
+              expandedTriplet={expandedSignalTriplet}
+              setExpandedTriplet={setExpandedSignalTriplet}
+            />
+          )}
           {activeGraphTab === 'Resonance' && <ResonanceTab />}
         </Suspense>
       </div>

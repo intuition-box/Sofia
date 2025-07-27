@@ -11,15 +11,17 @@ import VoteIcon from './quick_action/Selected=vote.svg'
 import VoteHoverIcon from './quick_action/Selected=vote hover.svg'
 
 interface QuickActionButtonProps {
-  action: 'add' | 'remove' | 'send' | 'view' | 'vote'
+  action: 'add' | 'remove' | 'send' | 'view' | 'vote' | 'scan'
   onClick?: () => void
   className?: string
+  disabled?: boolean
 }
 
 const QuickActionButton = ({ 
   action, 
   onClick, 
-  className 
+  className,
+  disabled = false
 }: QuickActionButtonProps) => {
   const [isHovered, setIsHovered] = useState(false)
 
@@ -29,23 +31,25 @@ const QuickActionButton = ({
       remove: { normal: RemoveIcon, hover: RemoveHoverIcon },
       send: { normal: SendIcon, hover: SendHoverIcon },
       view: { normal: ViewIcon, hover: ViewHoverIcon },
-      vote: { normal: VoteIcon, hover: VoteHoverIcon }
+      vote: { normal: VoteIcon, hover: VoteHoverIcon },
+      scan: { normal: ViewIcon, hover: ViewHoverIcon } // Utilise les mêmes icônes que view
     }
 
-    return isHovered ? iconMap[action].hover : iconMap[action].normal
+    return isHovered && !disabled ? iconMap[action].hover : iconMap[action].normal
   }
 
   return (
     <button
-      className={`quick-action-button ${isHovered ? 'hovered' : ''} ${className || ''}`}
+      className={`quick-action-button ${isHovered ? 'hovered' : ''} ${disabled ? 'disabled' : ''} ${className || ''}`}
       data-action={action}
-      onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
+      onClick={disabled ? undefined : onClick}
+      onMouseEnter={() => !disabled && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      disabled={disabled}
     >
       <img 
         src={getIcon()}
-        alt={`${action} action`}
+        alt={`${action === 'scan' ? 'scan' : action} action`}
         className="quick-action-icon"
       />
     </button>

@@ -1,23 +1,39 @@
 import { useState, useEffect } from 'react'
-import { useCreateAtom } from '../../hooks/useCreateAtom'
+import { useCheckExistingAtom } from '../../hooks/useCheckExistingAtom'
+import { useOnChainTriplets } from '../../hooks/useOnChainTriplets'
 
 interface AtomCreationModalProps {
   isOpen: boolean
   onClose: () => void
   objectData: {name: string; description?: string; url: string} | null
+  tripletData?: {
+    subject: string
+    predicate: string 
+    object: string
+  }
+  originalMessage?: {
+    rawObjectDescription?: string
+    rawObjectUrl?: string
+  }
 }
 
-const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalProps) => {
+const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalMessage }: AtomCreationModalProps) => {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [url, setUrl] = useState('')
   const [isCreating, setIsCreating] = useState(false)
-  const [currentStep, setCurrentStep] = useState<'idle' | 'pinning' | 'blockchain' | 'success' | 'error'>('idle')
+  const [currentStep, setCurrentStep] = useState<'idle' | 'checking' | 'existing' | 'creating' | 'success' | 'error'>('idle')
   const [progressMessage, setProgressMessage] = useState('')
 
-  const { createAtomWithMultivault, isLoading, error } = useCreateAtom()
+  const { checkAndCreateAtom, isChecking, error } = useCheckExistingAtom()
+  const { addTriplet } = useOnChainTriplets()
 
-  const [receipt, setReceipt] = useState(null)
+  const [receipt, setReceipt] = useState<{
+    transactionHash?: string
+    vaultId: string
+    source: 'created' | 'existing'
+    ipfsUri: string
+  } | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
 
   // Pre-fill fields when modal opens
@@ -50,14 +66,14 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
     }
 
     // Prévenir les double-soumissions
-    if (isCreating || isLoading) {
+    if (isCreating || isChecking) {
       console.warn('Transaction already in progress')
       return
     }
 
     setIsCreating(true)
-    setCurrentStep('pinning')
-    setProgressMessage('📌 Creating atom...')
+    setCurrentStep('checking')
+    setProgressMessage('🔍 Checking if atom exists...')
 
     try {
       const atomMetadata = {
@@ -67,15 +83,53 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
         image: ''
       }
       
-      const result = await createAtomWithMultivault(atomMetadata)
+      console.log('🚀 Starting atom check/creation process...')
+      
+      // Use the new unified workflow
+      const result = await checkAndCreateAtom(atomMetadata)
+      
+      // Update UI based on result
+      if (result.exists) {
+        setCurrentStep('existing')
+        setProgressMessage('🔗')
+      } else {
+        setCurrentStep('creating')
+        setProgressMessage('🆕')
+      }
+      
+      // Save to receipt
+      setReceipt({
+        transactionHash: result.txHash,
+        vaultId: result.vaultId,
+        source: result.source,
+        ipfsUri: result.ipfsUri
+      })
+
+      // Add triplet to on-chain storage if tripletData is provided
+      if (tripletData) {
+        await addTriplet({
+          triplet: tripletData,
+          atomVaultId: result.vaultId,
+          txHash: result.txHash,
+          source: result.source,
+          url: url.trim(),
+          ipfsUri: result.ipfsUri,
+          originalMessage,
+          tripleStatus: 'atom-only' // Juste l'atom Object créé, pas encore le triplet complet
+        })
+        console.log('✅ Triplet added to on-chain storage (atom-only status)')
+      }
       
       setCurrentStep('success')
-      setProgressMessage('✅ Atom created successfully!')
+      if (result.exists) {
+        setProgressMessage(`🔗 Atom déjà existant récupéré !\nIPFS: ${result.ipfsUri}\nVaultID: ${result.vaultId}`)
+      } else {
+        setProgressMessage(`🆕 Nouvel atom créé !\nIPFS: ${result.ipfsUri}\nVaultID: ${result.vaultId}`)
+      }
       setIsSuccess(true)
-      setReceipt({ transactionHash: result.txHash, vaultId: result.vaultId })
 
     } catch (error) {
-      console.error('Error creating atom:', error)
+      console.error('Error in atom workflow:', error)
       setCurrentStep('error')
       if (error instanceof Error) {
         setProgressMessage(`❌ Error: ${error.message}`)
@@ -87,7 +141,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
   }
 
   const handleClose = () => {
-    if (!isLoading) {
+    if (!isChecking && !isCreating) {
       onClose()
       setIsCreating(false)
     }
@@ -103,7 +157,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
           <button 
             className="modal-close"
             onClick={handleClose}
-            disabled={isLoading}
+            disabled={isChecking || isCreating}
           >
             ✕
           </button>
@@ -156,7 +210,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
                 <button
                   type="button"
                   onClick={handleClose}
-                  disabled={isLoading}
+                  disabled={isChecking || isCreating}
                   className="btn-secondary"
                 >
                   Cancel
@@ -186,13 +240,32 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
             </form>
           ) : (
             <div className="success-message">
-              <h3>✅ Atom created successfully!</h3>
+              <h3>
+                {receipt?.source === 'existing' 
+                  ? '🔗 Atom déjà existant récupéré !' 
+                  : '🆕 Nouvel atom créé !'}
+              </h3>
               {receipt && (
-                <p className="tx-hash">
-                  Transaction: <code>{receipt.transactionHash}</code>
-                </p>
+                <div className="receipt-details">
+                  <p className="detail-line">
+                    <strong>VaultID:</strong> <code>{receipt.vaultId}</code>
+                  </p>
+                  <p className="detail-line">
+                    <strong>IPFS:</strong> <code>{receipt.ipfsUri}</code>
+                  </p>
+                  {receipt.transactionHash && (
+                    <p className="detail-line">
+                      <strong>Transaction:</strong> <code>{receipt.transactionHash}</code>
+                    </p>
+                  )}
+                  <p className="detail-line">
+                    <strong>Source:</strong> <span className={`source-${receipt.source}`}>
+                      {receipt.source === 'existing' ? 'Existant' : 'Créé'}
+                    </span>
+                  </p>
+                </div>
               )}
-              <p className="success-note">This modal will close automatically...</p>
+              <p className="success-note">Ce modal se fermera automatiquement...</p>
             </div>
           )}
         </div>

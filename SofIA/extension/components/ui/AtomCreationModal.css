@@ -48,9 +48,303 @@
 .modal-title {
   font-family: 'Gotu', sans-serif;
   font-size: 24px;
+}
+
+/* === SIGNALS TAB STYLES === */
+
+/* Stats Header */
+.signals-stats {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(5px) saturate(100%);
+  -webkit-backdrop-filter: blur(5px) saturate(100%);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 24px;
   font-weight: 600;
-  color: var(--sofia-950, #372118);
+  font-family: 'Gotu', cursive;
+  color: #F2DED6;
+}
+
+.stat-number.stat-created {
+  color: #C7866C; /* Sofia orange for created */
+}
+
+.stat-number.stat-existing {
+  color: #D4A574; /* Sofia gold for existing */
+}
+
+.stat-number.stat-atom-only {
+  color: rgba(255, 255, 255, 0.7); /* Neutral for atom-only */
+}
+
+.stat-number.stat-on-chain {
+  color: #82C341; /* Green for full on-chain triplets */
+}
+
+.stat-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Echo Cards (utilisée pour SignalsTab et EchoesTab) */
+.echo-card {
+  border-radius: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(5px) saturate(100%);
+  -webkit-backdrop-filter: blur(5px) saturate(100%);
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  min-height: 120px;
+  position: relative;
+}
+
+.echo-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.echo-card.border-green {
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: linear-gradient(135deg, 
+    rgba(199, 134, 108, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(199, 134, 108, 0.05) 100%
+  );
+}
+
+.echo-card.border-blue {
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  background: linear-gradient(135deg, 
+    rgba(212, 165, 116, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(212, 165, 116, 0.05) 100%
+  );
+}
+
+/* Header du triplet avec badges et actions */
+.triplet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+/* Triplet text clickable */
+.triplet-text.clickable {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.triplet-text.clickable:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Import Section */
+.import-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: rgba(199, 134, 108, 0.1);
+  border: 1px solid rgba(199, 134, 108, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.import-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.import-header h3 {
   margin: 0;
+  font-family: 'Gotu', sans-serif;
+  color: #C7866C;
+  font-size: 18px;
+}
+
+.import-content {
+  text-align: center;
+}
+
+.import-content p {
+  margin: 8px 0 16px 0;
+  font-family: 'Montserrat', sans-serif;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.dashboard-header h2 {
+  margin: 0 0 8px 0;
+  font-family: 'Gotu', sans-serif;
+  color: #82C341;
+  font-size: 24px;
+}
+
+.dashboard-header p {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+/* Badges Container */
+.badges-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Source Badges */
+.source-badge {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  backdrop-filter: blur(8px);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  backdrop-filter: blur(8px);
+}
+
+.source-badge.badge-created {
+  background: rgba(199, 134, 108, 0.2);
+  color: #C7866C;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+}
+
+.source-badge.badge-existing {
+  background: rgba(212, 165, 116, 0.2);
+  color: #D4A574;
+  border: 1px solid rgba(212, 165, 116, 0.4);
+}
+
+.status-badge.badge-atom-only {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-badge.badge-on-chain {
+  background: rgba(130, 195, 65, 0.2);
+  color: #82C341;
+  border: 1px solid rgba(130, 195, 65, 0.4);
+}
+
+/* Signal Actions */
+.signal-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Processing Message */
+.processing-message {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Montserrat', sans-serif;
+  backdrop-filter: blur(8px);
+  animation: pulse 1.5s infinite;
+  text-align: center;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Timestamp styling */
+.triplet-detail-timestamp {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+  font-style: italic;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Success message improvements */
+.receipt-details {
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  backdrop-filter: blur(5px);
+}
+
+.detail-line {
+  margin: 8px 0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: var(--sofia-600, #945941);
+}
+
+.detail-line strong {
+  color: var(--sofia-800, #372118);
+  margin-right: 8px;
+}
+
+.detail-line code {
+  background: rgba(55, 33, 24, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  color: var(--sofia-700, #6B4423);
+  word-break: break-all;
+}
+
+.source-existing {
+  color: #D4A574;
+  font-weight: 600;
+}
+
+.source-created {
+  color: #C7866C;
+  font-weight: 600;
 }
 
 .modal-close {
