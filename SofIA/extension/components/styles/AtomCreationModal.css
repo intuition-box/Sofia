@@ -206,7 +206,7 @@
 .dashboard-header h2 {
   margin: 0 0 8px 0;
   font-family: 'Gotu', sans-serif;
-  color: #82C341;
+  color: var(--color-accent);
   font-size: 24px;
 }
 

@@ -543,16 +543,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             <div key={tripletItem.id} className={`echo-card ${getBorderStyle(tripletItem.source)}`}>
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
                 
-                {/* Header avec badges et actions */}
-                <div className="triplet-header">
-                  <div className="signal-actions">
-                    <QuickActionButton
-                      action="add"
-                      onClick={() => handleCreateTripleOnChain(tripletItem)}
-                      disabled={processingTripletId === tripletItem.id || isCreating}
-                    />
-                  </div>
-                </div>
 
                 {/* Texte du triplet */}
                 <p
@@ -571,6 +561,16 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                   <span className="object">{tripletItem.triplet.object}</span>
                 </p>
 
+                {/* Header avec badges et actions */}
+                <div className="triplet-header">
+                  <div className="signal-actions">
+                    <QuickActionButton
+                      action="add"
+                      onClick={() => handleCreateTripleOnChain(tripletItem)}
+                      disabled={processingTripletId === tripletItem.id || isCreating}
+                    />
+                  </div>
+                </div>
                 {/* Message de progression */}
                 {processingTripletId === tripletItem.id && (
                   <div className="processing-message">
