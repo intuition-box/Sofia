@@ -5,8 +5,13 @@ import { getMetaProvider } from './metamask'
 export const getClients = async () => {
     const provider = await getMetaProvider()
 
-    // Ne pas demander les comptes ici, on utilisera celui de Sofia
+    const accounts = await provider.request({
+        method: 'eth_requestAccounts',
+    })
+    const address = accounts[0]
+
     const walletClient = createWalletClient({
+        account: address,
         chain: SELECTED_CHAIN,
         transport: custom(provider),
     })
