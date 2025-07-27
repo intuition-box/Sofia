@@ -3,13 +3,23 @@
 :root {
   /* Couleurs principales */
   --color-primary: #C7866C;
-  --color-primary-dark: #B8956A;
-  --color-primary-light: #D4A574;
-  --color-secondary: #DB6B3E;
+  --color-primary-dark: #372118;
+  --color-primary-light: #F2DED6;
+  --color-secondary: #945941;
   --color-accent: #A6AF6B;
   --color-hover: #FFB3C4;
   --color-hover-light: #FFE078;
   
+
+.figma-colors{
+color : #372118, 50;
+color : #945941, 700;
+color : #C7866C, 500;
+color : #F2DED6, 200;
+color : #FBF7F5, 50;
+color : #0E0E0E;
+  }
+
   /* Couleurs de texte */
   --color-text-primary: #F2DED6;
   --color-text-secondary: #FBF7F5;
@@ -19,7 +29,7 @@
   --color-text-placeholder: rgba(255, 255, 255, 0.5);
   
   /* Couleurs de fond */
-  --color-bg-glass: rgba(255, 255, 255, 0.02);
+  --color-bg-glass: rgba(0, 0, 0, 0.8);
   --color-bg-glass-light: rgba(255, 255, 255, 0.05);
   --color-bg-glass-lighter: rgba(255, 255, 255, 0.1);
   --color-bg-dark: rgba(14, 14, 14, 0.30);
@@ -70,6 +80,7 @@
   --spacing-2xl: 24px;
   --spacing-3xl: 30px;
   --spacing-4xl: 40px;
+  --spacing-6xl: 60px;
   
   /* Border radius */
   --radius-sm: 4px;

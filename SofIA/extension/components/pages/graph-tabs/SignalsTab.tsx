@@ -57,7 +57,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     <div className="triples-container">
       {/* Dashboard header */}
       <div className="dashboard-header">
-        <h2>⛓️ Published On-Chain Triplets</h2>
+        <h2>⛓️ Published On-Chain Triples</h2>
         <p>Dashboard of your triplets already published on blockchain</p>
       </div>
 
@@ -89,24 +89,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 
                 {/* Header avec badges et actions */}
                 <div className="triplet-header">
-                  {/* Badge source à gauche */}
-                  <div className="badges-container">
-                    <div className={`source-badge ${getBadgeStyle(tripletItem.source)}`}>
-                      {tripletItem.source === 'created' ? '🆕 CREATED' : '🔗 EXISTING'}
-                    </div>
-                    <div className="status-badge badge-on-chain">
-                      ⛓️ PUBLISHED
-                    </div>
-                  </div>
-
-                  {/* Actions à droite - uniquement scan/view */}
-                  <div className="signal-actions">
-                    <QuickActionButton
-                      action="scan"
-                      onClick={() => handleViewOnExplorer(tripletItem.txHash, tripletItem.tripleVaultId)}
-                    />
-                  </div>
-                </div>
+                  
 
                 {/* Texte du triplet */}
                 <p
@@ -120,6 +103,14 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   <span className="object">{tripletItem.triplet.object}</span>
                 </p>
 
+                </div>
+                  {/* Actions à droite - uniquement scan/view */}
+                  <div className="signal-actions">
+                    <QuickActionButton
+                      action="scan"
+                      onClick={() => handleViewOnExplorer(tripletItem.txHash, tripletItem.tripleVaultId)}
+                    />
+                  </div>
                 {isExpanded && (
                   <div className="triplet-details">
                     <div className="triplet-detail-section">
@@ -173,7 +164,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 )}
               </div>
             </div>
-          )
+          );
         })
       ) : (
         <div className="empty-state">

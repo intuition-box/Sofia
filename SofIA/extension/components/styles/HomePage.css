@@ -45,7 +45,7 @@
   background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary-dark) 100%) !important;
   color: #2D1B0E !important;
   border: none !important;
-  padding: var(--spacing-base) var(--spacing-4xl) !important;
+  padding: var(--spacing-xl) var(--spacing-6xl) !important;
   border-radius: var(--radius-md) !important;
   font-size: var(--font-size-lg) !important;
   font-weight: 600 !important;
@@ -54,7 +54,7 @@
   text-transform: none !important;
   letter-spacing: 0.5px !important;
   box-shadow: var(--shadow-button) !important;
-  width: 280px !important;
+  width: 290px !important;
   max-width: 100% !important;
 }
 

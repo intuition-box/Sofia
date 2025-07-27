@@ -542,28 +542,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           return (
             <div key={tripletItem.id} className={`echo-card ${getBorderStyle(tripletItem.source)}`}>
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
-                
-                {/* Header avec badges et actions */}
-                <div className="triplet-header">
-                  {/* Badge source et status à gauche */}
-                  <div className="badges-container">
-                    <div className={`source-badge ${getBadgeStyle(tripletItem.source)}`}>
-                      {tripletItem.source === 'created' ? '🆕 NEW' : '🔗 FOUND'}
-                    </div>
-                    <div className="status-badge badge-atom-only">
-                      🔗 PENDING
-                    </div>
-                  </div>
-
-                  {/* Actions à droite - Uniquement bouton publier */}
-                  <div className="signal-actions">
-                    <QuickActionButton
-                      action="add"
-                      onClick={() => handleCreateTripleOnChain(tripletItem)}
-                      disabled={processingTripletId === tripletItem.id || isCreating}
-                    />
-                  </div>
-                </div>
+          
 
                 {/* Texte du triplet */}
                 <p
@@ -582,6 +561,16 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                   <span className="object">{tripletItem.triplet.object}</span>
                 </p>
 
+                {/* Header avec badges et actions */}
+                <div className="triplet-header">
+                  <div className="signal-actions">
+                    <QuickActionButton
+                      action="add"
+                      onClick={() => handleCreateTripleOnChain(tripletItem)}
+                      disabled={processingTripletId === tripletItem.id || isCreating}
+                    />
+                  </div>
+                </div>
                 {/* Message de progression */}
                 {processingTripletId === tripletItem.id && (
                   <div className="processing-message">
