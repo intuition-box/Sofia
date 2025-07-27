@@ -1,5 +1,5 @@
-import toggleTrue from "../ui/Toggle=true.png";
-import toggleFalse from "../ui/Toggle=false.png";
+import toggleTrue from "../ui/icons/Toggle=true.png";
+import toggleFalse from "../ui/icons/Toggle=false.png";
 
 interface TrackingStatusProps {
   isEnabled: boolean;

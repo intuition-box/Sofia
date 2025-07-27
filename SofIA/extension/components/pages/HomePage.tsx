@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import WalletConnectionButton from '../THP_WalletConnectionButton'
-import welcomeImage from '../ui/Welcome.png'
+import welcomeImage from '../ui/icons/Welcome.png'
 import '../styles/HomePage.css'
 
 const HomePage = () => {

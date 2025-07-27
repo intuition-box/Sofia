@@ -1,5 +1,5 @@
 import React from 'react'
-import './LiquidGlass.css'
+import '../styles/LiquidGlass.css'
 
 interface LiquidGlassProps {
   className?: string

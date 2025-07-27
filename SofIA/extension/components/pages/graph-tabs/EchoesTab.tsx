@@ -5,7 +5,7 @@ import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
-import '../../ui/AtomCreationModal.css'
+import '../../styles/AtomCreationModal.css'
 import '../../styles/MyGraphPage.css'
 
 const storage = new Storage()

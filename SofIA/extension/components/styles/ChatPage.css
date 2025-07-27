@@ -12,13 +12,13 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: var(--size-nav-height);
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  background: rgba(26, 26, 26, 0.95);
-  backdrop-filter: blur(10px);
-  z-index: 100;
+  padding: 0 var(--spacing-xl);
+  background: var(--color-bg-overlay);
+  backdrop-filter: var(--backdrop-blur);
+  z-index: var(--z-header);
 }
 
 .chat-back-button {
