@@ -542,7 +542,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           return (
             <div key={tripletItem.id} className={`echo-card ${getBorderStyle(tripletItem.source)}`}>
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
-                
+          
 
                 {/* Texte du triplet */}
                 <p

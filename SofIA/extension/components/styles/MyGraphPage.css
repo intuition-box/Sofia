@@ -244,6 +244,18 @@
   width: 72px;
   height: 24px;
   display: block;
+  object-fit: contain;
+}
+
+/* Ajustements spécifiques pour les nouveaux boutons */
+.quick-action-button[data-action="amplify"] .quick-action-icon {
+  width: 82px;
+  height: 18px;
+}
+
+.quick-action-button[data-action="scan"] .quick-action-icon {
+  width: 65px;
+  height: 18px;
 }
 
 /* Triplet Details Section - SofIA Design System */
