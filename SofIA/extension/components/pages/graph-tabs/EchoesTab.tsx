@@ -113,7 +113,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
   // Hooks pour la gestion des triplets on-chain
-  const { triplets, isLoading, getTripletsCount, updateTripletToOnChain, addTriplet } = useOnChainTriplets()
+  const { triplets, isLoading, getTripletsCount, updateTripletToOnChain, addTriplet, removeTriplet } = useOnChainTriplets()
   const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
   
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
@@ -326,6 +326,21 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     } catch (error) {
       console.error("❌ Failed to import triplet:", error)
       throw error
+    }
+  }
+
+  // Fonction pour supprimer un triplet avec confirmation
+  const handleRemoveTriplet = async (triplet: OnChainTriplet) => {
+    const shouldRemove = confirm(`Are you sure you want to delete this triplet?\n\n"${triplet.triplet.subject} ${triplet.triplet.predicate} ${triplet.triplet.object}"\n\nThis action cannot be undone.`)
+    
+    if (shouldRemove) {
+      try {
+        await removeTriplet(triplet.id)
+        console.log('✅ Triplet removed successfully:', triplet.id)
+      } catch (error) {
+        console.error('❌ Failed to remove triplet:', error)
+        alert(`Error removing triplet: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
     }
   }
 
@@ -571,6 +586,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                     <QuickActionButton
                       action="amplify"
                       onClick={() => handleCreateTripleOnChain(tripletItem)}
+                      disabled={processingTripletId === tripletItem.id || isCreating}
+                    />
+                    <QuickActionButton
+                      action="remove"
+                      onClick={() => handleRemoveTriplet(tripletItem)}
                       disabled={processingTripletId === tripletItem.id || isCreating}
                     />
                   </div>
