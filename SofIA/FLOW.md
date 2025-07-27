@@ -1,129 +1,260 @@
-# Flow de Données - Système SofIA
+# 🔄 SofIA Data Flow Map
 
-## 📊 Vue d'ensemble du flux complet
-
-Ce document décrit le parcours des données dans l'écosystème SofIA, de la navigation utilisateur jusqu'à la blockchain et le stockage IPFS.
+## 📊 Overview
+Cette flow map décrit le nouveau système de gestion des données SofIA avec stockage séparé pour optimiser la mémoire et éviter les erreurs de quota.
 
 ---
 
-## 🔄 Flow Complet - Étapes du Processus
+## 🌊 Main Data Flow
 
-### 1. **Background Service** 
-📍 `SofIA/extension/background/index.ts`
+```mermaid
+graph TD
+    A[WebSocket SofIA Server] --> B[background/websocket.ts]
+    B --> C[sofiaMessagesBuffer Storage]
+    C --> D[EchoesTab.tsx]
+    D --> E[extractedTriplets Storage]
+    E --> F[onChainTriplets Storage]
+    F --> G[SignalsTab.tsx]
+    
+    H[User Actions] --> I[QuickActionButton.tsx]
+    I --> J[useCreateTripleOnChain.ts]
+    J --> K[Blockchain]
+    K --> F
+```
 
-- **Rôle** : Point d'entrée du service worker
-- **Actions** :
-  - Initialise les connexions WebSocket (SofIA + Chatbot)
-  - Configure les handlers de messages
-  - Gère l'ouverture du sidepanel
+---
 
-### 2. **WebSocket Connection**
-📍 `SofIA/extension/background/websocket.ts`
+## 📋 Detailed Flow Steps
 
-- **Connexions multiples** :
-  - `socketSofia` → `http://localhost:3000` (Agent SofIA)
-  - `socketBot` → `http://localhost:3000` (Chatbot)
-- **Communication bidirectionnelle** :
-  - **→ Envoi** : Données de navigation via `sendMessageToSofia()`
-  - **← Réception** : JSON parsé avec triplets sémantiques
-- **Storage** : Messages stockés via `@plasmohq/storage`
+### 1. 📨 Message Reception
+**File:** `background/websocket.ts`
+```
+WebSocket Server → messageBroadcast event
+├─ Create message with unique ID
+├─ Add to sofiaMessagesBuffer (max 10)
+├─ Auto-cleanup if buffer full
+└─ Error handling for quota exceeded
+```
 
-### 3. **Agent SofIA** 
-📍 `SofIA/agent/SofIA.json`
-
-- **Traitement IA** :
-  - Analyse les données de navigation reçues
-  - Génère des triplets sémantiques (sujet, prédicat, objet)
-  - Produit du JSON strictement valide
-- **Format de sortie** :
+**Storage:** `sofiaMessagesBuffer`
 ```json
-{
-  "atoms": [{"name": "...", "description": "..."}],
-  "triplets": [{"subject": "...", "predicate": "...", "object": "..."}]
-}
+[
+  {
+    "id": "msg_1234567890_abc123",
+    "content": { "text": "..." },
+    "created_at": 1234567890,
+    "processed": false
+  }
+]
 ```
 
-### 4. **Socket Response → App**
-📍 `SofIA/extension/background/websocket.ts:46-63`
+### 2. 🔄 Message Processing 
+**File:** `components/pages/graph-tabs/EchoesTab.tsx`
+```
+processMessageBuffer()
+├─ Load sofiaMessagesBuffer
+├─ Parse each unprocessed message
+├─ Extract triplets using parseSofiaMessage()
+├─ Save to extractedTriplets storage
+└─ Remove processed messages from buffer
+```
 
-- **Réception** : Agent répond via `messageBroadcast`
-- **Stockage** : Messages sauvés dans le storage extension
-- **Propagation** : Données disponibles pour l'interface utilisateur
+**Storage:** `extractedTriplets`
+```json
+[
+  {
+    "triplets": [...],
+    "rawObjectUrl": "...",
+    "rawObjectDescription": "...",
+    "sourceMessageId": "msg_1234567890_abc123",
+    "extractedAt": 1234567890
+  }
+]
+```
 
-### 5. **Extension App Interface**
-📍 `SofIA/extension/components/ui/AtomCreationModal.tsx`
+### 3. 📥 Triplet Import
+**File:** `components/pages/graph-tabs/EchoesTab.tsx`
+```
+importTripletFromSofia()
+├─ Check if triplet already exists
+├─ Create OnChainTriplet object
+├─ Set tripleStatus: 'atom-only'
+└─ Add to onChainTriplets storage
+```
 
-- **Affichage** : Triplets parsés dans l'interface
-- **Interaction** : Utilisateur peut créer des atoms
-- **Validation** : Vérification des données avant blockchain
+**Storage:** `onChainTriplets`
+```json
+[
+  {
+    "id": "triplet_unique_id",
+    "triplet": {
+      "subject": "User",
+      "predicate": "has visited", 
+      "object": "Page Title"
+    },
+    "tripleStatus": "atom-only",
+    "source": "created",
+    "atomVaultId": "pending"
+  }
+]
+```
 
-### 6. **IPFS Pinning**
-📍 `SofIA/extension/hooks/useCreateAtom.ts:29-42`
+### 4. ⛓️ Blockchain Publication
+**File:** `hooks/useCreateTripleOnChain.ts`
+```
+createTripleOnChain()
+├─ Create/retrieve User atom
+├─ Create/retrieve Predicate atom  
+├─ Create Object atom
+├─ Create Triple on blockchain
+└─ Return VaultIDs + txHash
+```
 
-- **Service** : `@0xintuition/graphql` - `usePinThingMutation`
-- **Données épinglées** :
-  - `name` : Nom de l'atom
-  - `description` : Description générée
-  - `url` : URL de la page visitée
-  - `image` : Image associée (optionnel)
-- **Résultat** : URI IPFS généré
+**File:** `hooks/useOnChainTriplets.ts`
+```
+updateTripletToOnChain()
+├─ Update tripleStatus: 'on-chain'
+├─ Add blockchain VaultIDs
+├─ Add transaction hash
+└─ Save to onChainTriplets storage
+```
 
-### 7. **Smart Contract Interaction**
-📍 `SofIA/extension/hooks/useCreateAtom.ts:44-51`
+### 5. 📊 Display & Dashboard
+**File:** `components/pages/graph-tabs/EchoesTab.tsx`
+- Filters: `tripleStatus === 'atom-only'`
+- Shows pending triplets for publication
 
-- **SDK** : `@0xintuition/protocol` - Multivault SDK
-- **Réseau** : Base Sepolia (testnet - Chain ID: 84532)
-- **Contrat** : `0x1A6950807E33d5bC9975067e6D6b5Ea4cD661665`
-- **Transaction** :
-  - Calcul du coût via `getAtomCost()`
-  - Création atom via `createAtom({ uri, initialDeposit })`
-  - Attente de confirmation avec `wait: true`
-
-### 8. **Blockchain Finalization**
-📍 `SofIA/extension/lib/config.ts`
-
-- **Réseau** : Base Sepolia (84532)
-- **Résultat** :
-  - `vaultId` : ID unique de l'atom sur la blockchain
-  - `txHash` : Hash de transaction pour traçabilité
-- **Stockage** : Données atom liées au vault ID sur la chain
+**File:** `components/pages/graph-tabs/SignalsTab.tsx`  
+- Filters: `tripleStatus === 'on-chain'`
+- Shows published triplets dashboard
 
 ---
 
-## 🌊 Schéma de Flow Visuel
+## 🗂️ Storage Architecture
 
+### Temporary Storage (Auto-cleaned)
 ```
-[Navigation] → [Background Service] → [WebSocket] → [Agent SofIA]
-                                                         ↓
-[Interface App] ← [Storage Extension] ← [Socket Response] ←
-         ↓
-[Atom Creation Modal] → [IPFS Pinning] → [Smart Contract] → [Blockchain]
-                            ↓               ↓                   ↓
-                       [URI Stocké]    [Transaction]      [VaultID Final]
+sofiaMessagesBuffer (max 25 messages)
+├─ Raw WebSocket messages
+├─ Processing flags
+└─ Unique message IDs
+```
+
+### Permanent Storage (Managed limits)
+```
+extractedTriplets (max 100 entries)
+├─ Parsed SofIA messages
+├─ Extracted triplet data
+└─ Source tracking
+
+onChainTriplets (unlimited)
+├─ Local triplet management
+├─ Blockchain sync status
+└─ Publication workflow
 ```
 
 ---
 
-## 🎯 Points Clés du Système
+## 🔄 Cleanup & Migration
 
-### **Données Transitant**
-- **Input** : URL + métadonnées de navigation
-- **Traitement** : Triplets sémantiques + métadonnées atom
-- **Output** : VaultID blockchain + URI IPFS
+### Automatic Cleanup
+**File:** `background/websocket.ts`
+- Buffer limit: 25 messages
+- Quota error: Clear buffer completely
 
-### **Technologies Utilisées**
-- **Communication** : Socket.IO (WebSocket)
-- **Storage** : Plasmohq Storage + IPFS
-- **Blockchain** : Viem + Multivault SDK
-- **Réseau** : Base Sepolia (testnet)
+**File:** `components/pages/graph-tabs/EchoesTab.tsx`
+- Triplets limit: 100 entries
+- Sort by extractedAt timestamp
 
-### **Sécurité & Validation**
-- JSON strictement validé côté agent
-- Données encodées en bytes hexadécimales
-- Transactions avec gas limit et valeur ETH
-- Confirmation blockchain obligatoire
+### Manual Cleanup
+**File:** `components/pages/graph-tabs/EchoesTab.tsx`
+```
+clearOldMessages()
+├─ Clear sofiaMessagesBuffer
+├─ Keep 20 most recent extractedTriplets
+├─ Remove legacy sofiaMessages
+└─ Reload UI data
+```
+
+### Legacy Migration
+**File:** `components/pages/graph-tabs/EchoesTab.tsx`
+```
+migrateLegacyStorage()
+├─ Check for old sofiaMessages
+├─ Parse and extract triplets
+├─ Move to extractedTriplets
+└─ Remove legacy storage
+```
+
+---
+
+## 🛡️ Error Handling
+
+### Quota Exceeded Errors
+1. **WebSocket level:** Clear buffer, continue receiving
+2. **Processing level:** Clear buffer, retry processing
+3. **Manual level:** User-triggered cleanup with confirmation
+
+### Parse Failures
+- Keep message in buffer for retry
+- Don't mark as processed
+- Log error for debugging
+
+### Blockchain Failures  
+- Keep triplet in 'atom-only' status
+- Allow retry from UI
+- Preserve local data
+
+---
+
+## 📁 File Dependencies
+
+### Core Files
+- `background/websocket.ts` - Message reception & buffering
+- `components/pages/graph-tabs/EchoesTab.tsx` - Processing & workflow
+- `components/pages/graph-tabs/SignalsTab.tsx` - Dashboard display
+- `hooks/useOnChainTriplets.ts` - Local storage management
+- `hooks/useCreateTripleOnChain.ts` - Blockchain interactions
+
+### Supporting Files
+- `components/ui/QuickActionButton.tsx` - User actions
+- `components/pages/graph-tabs/types.ts` - Data parsing logic
+- `components/styles/AtomCreationModal.css` - UI styling
+
+---
+
+## 🎯 Benefits of New Architecture
+
+✅ **Memory Optimization:** Limited buffer sizes prevent storage bloat
+✅ **Data Safety:** Parse before delete ensures no data loss  
+✅ **Error Recovery:** Automatic cleanup and retry mechanisms
+✅ **User Experience:** Seamless migration from old system
+✅ **Scalability:** Separate concerns for better maintainability
+
+---
+
+## 🔍 Monitoring & Debug
+
+### Console Logs to Watch
+- `📩 Message SofIA:` - WebSocket reception
+- `🔄 Processing X messages from buffer` - Batch processing  
+- `✅ Extracted X triplets from message` - Successful parsing
+- `🧹 Removed X processed messages from buffer` - Cleanup
+- `🚨 Storage quota exceeded` - Error conditions
+
+### Storage Keys to Monitor
+- `sofiaMessagesBuffer` - Should stay ≤ 25 items
+- `extractedTriplets` - Should stay ≤ 100 items  
+- `onChainTriplets` - Grows with user activity
+- `sofiaMessages` - Should be removed after migration
+
+### New UI Features
+- **Triplet Preview**: Select which triplets to import with checkboxes
+- **Selective Import**: Import only chosen triplets instead of all
+- **Selective Delete**: Choose which pending triplets to remove
+- **Buffer Increased**: 25 messages instead of 10 for better UX
 
 ---
 
 **Date** : 2025-07-27  
-**Statut** : ✅ Système opérationnel et fonctionnel
+**Statut** : ✅ Nouveau système opérationnel avec gestion mémoire optimisée
