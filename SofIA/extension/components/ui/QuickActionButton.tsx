@@ -9,9 +9,13 @@ import ViewIcon from './icons/quick_action/Selected=view.svg'
 import ViewHoverIcon from './icons/quick_action/Selected=view hover.svg'
 import VoteIcon from './icons/quick_action/Selected=vote.svg'
 import VoteHoverIcon from './icons/quick_action/Selected=vote hover.svg'
+import AmplifyIcon from './icons/quick_action/Selected=amplify.svg'
+import AmplifyHoverIcon from './icons/quick_action/Selected=amplify hover.svg'
+import ScanIcon from './icons/quick_action/Selected= scan.svg'
+import ScanHoverIcon from './icons/quick_action/Selected=scan hover.svg'
 
 interface QuickActionButtonProps {
-  action: 'add' | 'remove' | 'send' | 'view' | 'vote' | 'scan'
+  action: 'add' | 'remove' | 'send' | 'view' | 'vote' | 'scan' | 'amplify'
   onClick?: () => void
   className?: string
   disabled?: boolean
@@ -32,7 +36,8 @@ const QuickActionButton = ({
       send: { normal: SendIcon, hover: SendHoverIcon },
       view: { normal: ViewIcon, hover: ViewHoverIcon },
       vote: { normal: VoteIcon, hover: VoteHoverIcon },
-      scan: { normal: ViewIcon, hover: ViewHoverIcon } // Utilise les mêmes icônes que view
+      scan: { normal: ScanIcon, hover: ScanHoverIcon }, // Utilise les nouveaux SVG Scan avec hover
+      amplify: { normal: AmplifyIcon, hover: AmplifyHoverIcon } // Utilise les nouveaux SVG Amplify avec hover
     }
 
     return isHovered && !disabled ? iconMap[action].hover : iconMap[action].normal
@@ -49,7 +54,7 @@ const QuickActionButton = ({
     >
       <img 
         src={getIcon()}
-        alt={`${action === 'scan' ? 'scan' : action} action`}
+        alt={`${action === 'scan' ? 'scan' : action === 'amplify' ? 'amplify' : action} action`}
         className="quick-action-icon"
       />
     </button>

@@ -558,7 +558,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                   {/* Actions à droite - Uniquement bouton publier */}
                   <div className="signal-actions">
                     <QuickActionButton
-                      action="add"
+                      action="amplify"
                       onClick={() => handleCreateTripleOnChain(tripletItem)}
                       disabled={processingTripletId === tripletItem.id || isCreating}
                     />
