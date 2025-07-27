@@ -66,6 +66,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
       console.log("📝 Processing SofIA messages:", messages.length)
 
+      // Nettoyer automatiquement si trop de messages (garde les 50 plus récents)
+      if (messages.length > 50) {
+        console.log("🧹 Too many messages, keeping only the 50 most recent")
+        messages = messages
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 50)
+        
+        // Sauvegarder les messages nettoyés
+        try {
+          await storage.set("sofiaMessages", messages)
+          console.log("✅ Messages cleaned and saved")
+        } catch (cleanError) {
+          console.error("❌ Failed to save cleaned messages:", cleanError)
+        }
+      }
+
       const parsed = messages
         .map((m, index) => {
           console.log(`🔄 Processing message ${index}`)
@@ -77,7 +93,20 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       setParsedMessages(parsed)
     } catch (error) {
       console.error('❌ Failed to load sofiaMessages from storage:', error)
-      setParsedMessages([])
+      
+      // Si erreur de quota, essayer de vider le storage et recommencer
+      if (error instanceof Error && error.message.includes('quota')) {
+        console.log("🚨 Storage quota exceeded, clearing messages...")
+        try {
+          await storage.set("sofiaMessages", [])
+          console.log("✅ Storage cleared")
+          setParsedMessages([])
+        } catch (clearError) {
+          console.error("❌ Failed to clear storage:", clearError)
+        }
+      } else {
+        setParsedMessages([])
+      }
     } finally {
       setIsLoadingMessages(false)
     }
@@ -202,7 +231,40 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       }
     } catch (error) {
       console.error('❌ Failed to import triplets:', error)
-      alert(`Erreur lors de l'import: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+      
+      // Si erreur de quota, suggérer le nettoyage
+      if (error instanceof Error && error.message.includes('quota')) {
+        const shouldClean = confirm("Erreur de quota de stockage ! Voulez-vous nettoyer les anciens messages pour libérer de l'espace ?")
+        if (shouldClean) {
+          await clearOldMessages()
+          // Retry l'import après nettoyage
+          await importAllAvailableTriplets()
+        }
+      } else {
+        alert(`Erreur lors de l'import: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+      }
+    }
+  }
+
+  // Fonction pour nettoyer les anciens messages manuellement
+  const clearOldMessages = async () => {
+    try {
+      console.log("🧹 Clearing old messages...")
+      // Garder seulement les 20 messages les plus récents
+      const raw = await storage.get("sofiaMessages")
+      if (raw && Array.isArray(raw)) {
+        const recentMessages = raw
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 20)
+        
+        await storage.set("sofiaMessages", recentMessages)
+        console.log(`✅ Cleaned messages: kept ${recentMessages.length} most recent`)
+        
+        // Recharger les messages après nettoyage
+        await loadSofiaMessages()
+      }
+    } catch (error) {
+      console.error('❌ Failed to clean messages:', error)
     }
   }
 
@@ -246,12 +308,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         <div className="import-section">
           <div className="import-header">
             <h3>📥 Nouveaux triplets SofIA ({availableTripletsCount})</h3>
-            <button 
-              className="btn-secondary"
-              onClick={() => setShowImportSection(!showImportSection)}
-            >
-              {showImportSection ? 'Masquer' : 'Afficher'}
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                className="btn-secondary"
+                onClick={() => setShowImportSection(!showImportSection)}
+              >
+                {showImportSection ? 'Masquer' : 'Afficher'}
+              </button>
+              <button 
+                className="btn-secondary"
+                onClick={clearOldMessages}
+                title="Nettoyer les anciens messages pour libérer l'espace"
+                style={{ fontSize: '12px', padding: '8px 12px' }}
+              >
+                🧹 Nettoyer
+              </button>
+            </div>
           </div>
           
           {showImportSection && (
@@ -418,6 +490,13 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           <p className="empty-subtext">
             Vos triplets apparaîtront automatiquement quand vous recevrez des messages
           </p>
+          <button 
+            className="btn-secondary"
+            onClick={clearOldMessages}
+            style={{ marginTop: '16px' }}
+          >
+            🧹 Nettoyer le stockage
+          </button>
         </div>
       )}
     </div>
