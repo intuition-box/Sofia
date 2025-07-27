@@ -1,0 +1,14 @@
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@reown/appkit'
+  - '@swc/core'
+  - bufferutil
+  - esbuild
+  - keccak
+  - lmdb
+  - msgpackr-extract
+  - prisma
+  - sharp
+  - utf-8-validate

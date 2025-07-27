@@ -1,0 +1,131 @@
+#!/bin/bash
+
+# Gradient from red (code 196) to yellow (code 226)
+colors=(196 202 208 214 220 226 226 226 226)
+
+# Read ASCII logo from here document
+mapfile -t ascii_art << 'EOF'
+_____/\\\\\\\\\\\________________________/\\\\\______________________________
+____/\\\/////////\\\____________________/\\\///______________________________
+____\//\\\______\///____________________/\\\_______/\\\______________________
+______\////\\\_____________/\\\\\_____/\\\\\\\\\___\///___/\\\\\\\\\_________
+__________\////\\\________/\\\///\\\__\////\\\//_____/\\\_\////////\\\_______
+______________\////\\\____/\\\__\//\\\____\/\\\______\/\\\___/\\\\\\\\\\_____
+________/\\\______\//\\\__\//\\\__/\\\_____\/\\\______\/\\\__/\\\/////\\\____
+________\///\\\\\\\\\\\/____\///\\\\\/______\/\\\______\/\\\_\//\\\\\\\\/\\__
+___________\///////////________\/////________\///_______\///___\////////\//__
+EOF
+
+# Apply color gradient line by line
+for i in "${!ascii_art[@]}"; do
+    color=${colors[i % ${#colors[@]}]}
+    printf "\e[38;5;%sm%s\e[0m\n" "$color" "${ascii_art[$i]}"
+done
+
+# Function to wait for a port to become available
+wait_for_port() {
+  local port=$1
+  local retries=${2:-30}   # 30 retries max
+  local delay=1            # 1s between retries
+
+  echo "⏳ Waiting for port $port to become available..."
+
+  for ((i=1; i<=retries; i++)); do
+    if lsof -i :$port >/dev/null 2>&1; then
+      echo "✅ Port $port is now active."
+      return 0
+    fi
+    sleep "$delay"
+  done
+
+  echo "❌ Timeout: Port $port did not become active after $((retries * delay)) seconds."
+  return 1
+}
+
+# Function to launch an app with simplified logs
+launch_app() {
+    local app_name="$1"
+    local directory="$2"
+    local command="$3"
+    local log_icon="$4"
+    local current_dir=$(pwd)
+
+    echo "${log_icon} Launching ${app_name}..."
+    cd "${directory}" || { echo "❌ Error: Folder ${directory} not found"; return 1; }
+
+    # Run the app in background without logs
+    eval "${command}" > /dev/null 2>&1 &
+    local pid=$!
+
+    # Return to original directory
+    cd "${current_dir}"
+
+    # Check if process started successfully
+    sleep 1
+    if kill -0 "$pid" 2>/dev/null; then
+        echo "✅ ${app_name} started successfully (PID: $pid)"
+    else
+        echo "❌ ${app_name} failed to start"
+    fi
+}
+
+# Check if "start" argument is provided
+if [ "$1" = "start" ]; then
+    echo "🚀 Starting SofIA..."
+    echo ""
+
+    # Check and free port 3001
+    echo "🔍 Checking port 3001..."
+    if lsof -ti:3001 > /dev/null 2>&1; then
+        echo "⚠️  Port 3001 is busy, killing processes..."
+        pkill -f "PORT=3001" || true
+        sleep 2
+    fi
+
+    # Launch MCP Server (from core)
+    launch_app "MCP Server" "../intuition-mcp-server" "pnpm run start:http" "🛜"
+
+    sleep 2
+
+    # Launch ElizaOS (from core)
+    launch_app "ElizaOS" "SofIA/agent" "elizaos start" "💁"
+
+    # Wait for port 3000 to be available before continuing
+    if wait_for_port 3000; then
+        echo "✅ ElizaOS is available at: http://localhost:3000"
+    else
+        echo "❌ ElizaOS failed to start on port 3000"
+    fi
+
+    sleep 2
+
+    # Activate agent (from core)
+    launch_app "Agent Activation" "SofIA/agent" "elizaos agent start --path SofIA.json" "🤖"
+    launch_app "ChatBot Activation" "SofIA/agent" "elizaos agent start --path ChatBot.json" "🤖"
+
+    sleep 2
+
+    # Build extension (from core) - visible mode
+    echo "📱 Starting extension build..."
+    cd "SofIA/extension" || { echo "❌ Error: Folder SofIA/extension not found"; exit 1; }
+
+    # Run build in visible mode to show progress
+    if npm run build; then
+        echo "✅ Extension build completed successfully"
+    else
+        echo "❌ Extension build failed"
+    fi
+
+    # Return to root
+    cd "../../"
+
+    echo ""
+    echo "✅ All applications have been launched!"
+    echo "📝 To stop all apps, use Ctrl+C"
+    echo ""
+
+    wait
+else
+    echo "Usage: ./sofia start"
+    echo "This script launches all SofIA apps in parallel."
+fi

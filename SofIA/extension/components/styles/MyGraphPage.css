@@ -1,82 +1,77 @@
-.page {
-  padding: 20px;
-  background-color: rgba(255, 255, 255, 0.02);
-  margin: 10px;
-  border-radius: 20px;
-  backdrop-filter: blur(5px) saturate(100%);
-  -webkit-backdrop-filter: blur(5px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-}
+/* Styles spécifiques pour MyGraphPage */
 
-.back-button {
-  background-color: rgba(255, 255, 255, 0);
-  color: #F2DED6;
-  font-size: 12px;
-  cursor: pointer;
-  margin-bottom: 20px;
-  padding: 8px 16px;
-  transition: all 0.3s ease;
+.page {
+  text-align: center;
+  overflow-x: hidden;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .section-title {
+  text-align: center;
+  margin: 30px 0 20px 0;
   font-family: 'Gotu', cursive;
   font-size: 24px;
-  font-weight: 600;
-  color: #FBF7F5;
-  margin-bottom: 15px;
+  font-weight: 500;
+  color: #F2DED6;
 }
 
 .tabs {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 40px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
 }
 
 .tab {
-  padding: 10px 20px;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #FBF7F5;
-  border: 1px solid rgba(255, 255, 255, 0.125);
-  border-radius: 8px;
+  padding: 10px 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  border: none;
   cursor: pointer;
-  backdrop-filter: blur(10px) saturate(100%);
-  -webkit-backdrop-filter: blur(10px) saturate(100%);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Gotu', cursive;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .tab.active {
-  padding: 10px 20px;
-  background-color: rgba(199, 134, 108, 0.8);
-  color: #FBF7F5;
-  border: 1px solid rgba(199, 134, 108, 0.3);
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  backdrop-filter: blur(10px) saturate(100%);
-  -webkit-backdrop-filter: blur(10px) saturate(100%);
-  box-shadow: 0 8px 32px rgba(199, 134, 108, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  color: #F2DED6;
+  font-weight: 500;
+  font-family: 'Fraunces', serif;
 }
 
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #C7866C;
+}
+
+/* Utilise .page-content de Global.css avec override spécifique */
 .page-content {
-  margin-top: 20px;
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 20px;
   border-radius: 16px;
-  backdrop-filter: blur(10px) saturate(100%);
+  backdrop-filter: blur(30px) saturate(100%);
   -webkit-backdrop-filter: blur(10px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
 
 .triples-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
+  max-width: min(600px, 100%);
+  margin: 0 auto;
+  text-align: left;
+  padding: 0 16px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .subsection-title {
@@ -87,11 +82,22 @@
   margin-bottom: 10px;
 }
 
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  color: #C7866C;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(5px) saturate(100%);
+  -webkit-backdrop-filter: blur(5px) saturate(100%);
+}
+
+/* Utilise .empty-state de Global.css avec override spécifique */
 .empty-state {
-  text-align: center;
-  color: #F2DED6;
-  font-style: italic;
-  padding: 30px;
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   backdrop-filter: blur(5px) saturate(100%);
@@ -124,7 +130,9 @@
 .agent-message,
 .triple-item {
   padding: 12px 16px;
+  margin-bottom: 4px;
   background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
   border-radius: 8px;
   color: #f4f4f4;
   font-size: 13px;
@@ -144,4 +152,188 @@
 .response-separator,
 .triple-separator {
   margin: 8px 0;
+}
+
+
+.echo-card {
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(50px) saturate(100%);
+  -webkit-backdrop-filter: blur(50px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.echo-card:hover {
+  background-color: rgba(31, 31, 31, 0.8);
+  border-color: rgba(199, 134, 108, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.triplet-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.triplet-text {
+  color: #F2DED6;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.triplet-text .subject {
+  font-weight: 600;
+  color: #C7866C;
+}
+
+.triplet-text .action {
+  margin: 0 8px;
+  font-style: italic;
+  color: #A6AF6B;
+}
+
+.triplet-text .object {
+  font-weight: 500;
+  color: #F2DED6;
+}
+
+.add-button {
+  background-color: rgba(199, 134, 108, 0.2);
+  color: #F2DED6;
+  border: 1px solid rgba(199, 134, 108, 0.3);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.add-button:hover {
+  background-color: rgba(199, 134, 108, 0.4);
+  border-color: rgba(199, 134, 108, 0.5);
+  transform: scale(1.02);
+}
+
+.quick-action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.quick-action-button:hover,
+.quick-action-button.hovered {
+  transform: scale(1.02);
+}
+
+.quick-action-icon {
+  width: 72px;
+  height: 24px;
+  display: block;
+  object-fit: contain;
+}
+
+/* Ajustements spécifiques pour les nouveaux boutons */
+.quick-action-button[data-action="amplify"] .quick-action-icon {
+  width: 82px;
+  height: 18px;
+}
+
+.quick-action-button[data-action="scan"] .quick-action-icon {
+  width: 65px;
+  height: 18px;
+}
+
+/* Triplet Details Section - SofIA Design System */
+.triplet-details {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  backdrop-filter: blur(10px) saturate(100%);
+  -webkit-backdrop-filter: blur(10px) saturate(100%);
+  transition: all 0.3s ease;
+}
+
+.triplet-detail-section {
+  padding: 16px;
+  background-color: rgba(251, 247, 245, 0.05); /* 50 avec transparence */
+  border-radius: 8px;
+  border: 1px solid rgba(242, 222, 214, 0.1); /* 200 avec transparence */
+  transition: all 0.3s ease;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.triplet-detail-section:hover {
+  background-color: rgba(251, 247, 245, 0.08);
+  border-color: rgba(199, 134, 108, 0.3); /* 500 avec transparence */
+  transform: translateY(-1px);
+}
+
+.triplet-detail-title {
+  font-family: 'Gotu', cursive; /* Titres selon design system */
+  font-size: 16px;
+  font-weight: 600;
+  color: #C7866C; /* 500 */
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.triplet-detail-name {
+  font-family: 'Montserrat', sans-serif; /* Texte selon design system */
+  font-size: 14px;
+  font-weight: 600;
+  color: #FBF7F5; /* 50 */
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+.triplet-detail-description {
+  font-family: 'Montserrat', sans-serif; /* Texte selon design system */
+  font-size: 13px;
+  font-weight: 400;
+  color: #F2DED6; /* 200 */
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.triplet-detail-url {
+  font-family: 'Montserrat', sans-serif; /* Texte selon design system */
+  font-size: 12px;
+  color: #F2DED6; /* 200 */
+  text-decoration: underline;
+  transition: all 0.3s ease;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  display: inline-block;
+  margin-top: 4px;
+  max-width: 100%;
+}
+
+.triplet-detail-url:hover {
+  color: #C7866C; /* 500 */
+  text-decoration: none;
+  transform: translateX(2px);
 }

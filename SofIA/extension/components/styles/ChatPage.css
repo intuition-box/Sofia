@@ -12,16 +12,16 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: var(--size-nav-height);
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  background: rgba(26, 26, 26, 0.95);
-  backdrop-filter: blur(10px);
-  z-index: 100;
+  padding: 0 var(--spacing-xl);
+  background: var(--color-bg-overlay);
+  backdrop-filter: var(--backdrop-blur);
+  z-index: var(--z-header);
 }
 
-.back-button {
+.chat-back-button {
   background: none;
   border: none;
   color: white;
@@ -32,17 +32,18 @@
   transition: background-color 0.2s;
 }
 
-.back-button:hover {
+.chat-back-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
 .chat-messages {
   flex: 1;
-  padding: 80px 20px 100px;
+  padding: 80px 20px 120px; /* 🟡 AUGMENTÉ pour éviter que l’input le cache */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  box-sizing: border-box;
 }
 
 .message {
@@ -80,15 +81,15 @@
 
 .chat-input-section {
   position: fixed;
-  bottom: 0;
+  bottom: env(safe-area-inset-bottom, 0); /* ← adaptation mobile/extension */
   left: 0;
   right: 0;
   background: rgba(26, 26, 26, 0.95);
   backdrop-filter: blur(10px);
   padding: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 999;
 }
-
 .chat-input-container {
   display: flex;
   align-items: center;
@@ -124,4 +125,14 @@
 
 .chat-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
+}
+
+
+.chat-input,
+.chat-send-button,
+.chat-input-container,
+.chat-input-section {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  position: relative !important;
 }

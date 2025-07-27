@@ -1,124 +1,183 @@
-import { HistoryManager } from "~lib/history";
-import { handlePageData, handlePageDuration } from "./history";
-import { handleBehaviorData } from "./behavior";
-import { connectToMetamask, getMetamaskConnection } from "./metamask";
-import type { ChromeMessage } from "./types";
 
-export function setupMessageHandlers(historyManager: HistoryManager): void {
+import { connectToMetamask, getMetamaskConnection } from "./metamask"
+import { sanitizeUrl, isSensitiveUrl } from "./utils/url"
+import { sendToAgent, clearOldSentMessages } from "./utils/buffer"
+import { getBehaviorFromCache, removeBehaviorFromCache } from "./behavior"
+import { EXCLUDED_URL_PATTERNS, BEHAVIOR_CACHE_TIMEOUT_MS } from "./constants"
+import { messageBus } from "~lib/MessageBus"
+import type { ChromeMessage, PageData } from "./types"
+import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
+
+
+// Buffer temporaire de pageData par tabId
+const pageDataBufferByTabId = new Map<number, { data: PageData; loadTime: number }>()
+
+async function handlePageDataInline(data: any, pageLoadTime: number): Promise<void> {
+
+  let parsedData: PageData
+  let attentionText = ""
+
+  try {
+    parsedData = typeof data === "string" ? JSON.parse(data) : data
+
+    if (typeof parsedData.attentionScore === "number") {
+      attentionText = `Attention: ${parsedData.attentionScore.toFixed(2)}`
+    }
+    parsedData.timestamp ??= pageLoadTime
+    parsedData.ogType ??= "website"
+    parsedData.title ??= "Non défini"
+    parsedData.keywords ??= ""
+    parsedData.description ??= ""
+    parsedData.h1 ??= ""
+  } catch (err) {
+    console.error("❌ Impossible de parser les données PAGE_DATA :", err, data)
+    return
+  }
+
+  if (EXCLUDED_URL_PATTERNS.some(str => parsedData.url.toLowerCase().includes(str))) return
+  if (isSensitiveUrl(parsedData.url)) {
+    console.log("🔒 URL sensible ignorée:", parsedData.url)
+    return
+  }
+
+  let behaviorText = ""
+  const behavior = getBehaviorFromCache(parsedData.url)
+  const now = Date.now()
+
+  if (parsedData.duration && parsedData.duration > 5000) {
+    behaviorText += ` Temps passé sur la page : ${(parsedData.duration / 1000).toFixed(1)}s
+`
+  }
+
+  if (behavior && now - behavior.timestamp < BEHAVIOR_CACHE_TIMEOUT_MS) {
+    if (behavior.videoPlayed) behaviorText += `Vidéo regardée (${behavior.videoDuration?.toFixed(1)}s)
+`
+    if (behavior.audioPlayed) behaviorText += `🎵 Audio écouté (${behavior.audioDuration?.toFixed(1)}s)
+`
+    if (behavior.articleRead) behaviorText += `Article lu : "${behavior.title}" (${(behavior.readTime! / 1000).toFixed(1)}s)
+`
+  }
+  const scrollStats = getScrollStats(parsedData.url)
+  if (scrollStats && scrollStats.scrollAttentionScore != undefined) {
+    behaviorText += `Scrolls: ${scrollStats.count}, Δmoy: ${scrollStats.avgDelta}ms\n`
+    behaviorText += `Attention Score: ${scrollStats.scrollAttentionScore.toFixed(2)}\n`
+  }
+
+  const message =
+    `URL: ${sanitizeUrl(parsedData.url)}
+` +
+    `Titre: ${parsedData.title.slice(0, 100)}
+` +
+    (parsedData.keywords ? `Mots-clés: ${parsedData.keywords.slice(0, 50)}
+` : "") +
+    (parsedData.description ? `Description: ${parsedData.description.slice(0, 150)}
+` : "") +
+    (parsedData.h1 ? `H1: ${parsedData.h1.slice(0, 80)}
+` : "") +
+    `Timestamp: ${new Date(parsedData.timestamp).toLocaleString("fr-FR")}` +
+    (attentionText ? `
+${attentionText}` : "") +
+    (behaviorText ? `
+Comportement:
+${behaviorText}` : "")
+
+  console.group("🧠 Nouvelle page capturée")
+  console.log(message)
+  console.groupEnd()
+  console.log("═".repeat(100))
+
+  clearScrolls(parsedData.url)
+  sendToAgent(message)
+  clearOldSentMessages()
+  if (behavior) removeBehaviorFromCache(parsedData.url)
+}
+
+export function setupMessageHandlers(): void {
   chrome.runtime.onMessage.addListener((message: ChromeMessage, _sender, sendResponse) => {
     switch (message.type) {
-      case 'TEST_MESSAGE':
-        break;
+      case "GET_TAB_ID":
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          const activeTab = tabs[0]
+          sendResponse({ tabId: activeTab?.id })
+        })
+        return true
 
-      case 'PAGE_DATA':
-        handlePageData(message.data, message.pageLoadTime || Date.now(), historyManager);
-        break;
+      case "PAGE_DATA": {
+        const tabId = "tabId" in message && typeof message.tabId === "number" ? message.tabId : -1
+        if (tabId === -1) {
+          console.warn("❗ PAGE_DATA sans tabId")
+          break
+        }
+        const loadTime = message.pageLoadTime || Date.now()
+        pageDataBufferByTabId.set(tabId, { data: message.data, loadTime })
+        console.log(`📥 PAGE_DATA bufferisé pour tabId ${tabId}`)
+        break
+      }
 
-      case 'PAGE_DURATION':
-        handlePageDuration(message.data, historyManager);
-        break;
+      case "PAGE_DURATION": {
+        const tabId = "tabId" in message && typeof message.tabId === "number" ? message.tabId : -1
+        const duration = message.data.duration
+        if (tabId === -1 || !pageDataBufferByTabId.has(tabId)) {
+          console.warn("⚠️ PAGE_DURATION sans PAGE_DATA associé ou tabId manquant")
+          break
+        }
+        const buffered = pageDataBufferByTabId.get(tabId)!
+        buffered.data.duration = duration
+        console.log(`📤 Fusion PAGE_DATA + PAGE_DURATION pour tabId ${tabId}`)
+        handlePageDataInline(buffered.data, buffered.loadTime)
+        pageDataBufferByTabId.delete(tabId)
+        break
+      }
 
-      case 'SCROLL_DATA':
-        historyManager.recordScrollEvent(message.data.url);
-        break;
+      case "SCROLL_DATA":
+        recordScroll(message.data.url, message.data.timestamp, message.data.deltaT)
+        console.log(`Scroll enregistré pour ${message.data.url}`)
 
-      case 'BEHAVIOR_DATA':
-        handleBehaviorData(message.data, historyManager);
-        break;
+        break
 
-      case 'CONNECT_TO_METAMASK':
+      case "BEHAVIOR_DATA":
+        console.log(`Comportement: ${JSON.stringify(message.data)}`)
+        break
+
+      case "CONNECT_TO_METAMASK":
         connectToMetamask()
-          .then(result => {
-            chrome.runtime.sendMessage({
-              type: 'METAMASK_RESULT',
-              data: result
-            }).catch(() => {
-              console.log('Background: Impossible d\'envoyer le résultat MetaMask');
-            });
-          })
+          .then(result => messageBus.sendMetamaskResult(result))
           .catch(error => {
-            console.error('Background: Erreur de connexion MetaMask:', error);
-            chrome.runtime.sendMessage({
-              type: 'METAMASK_RESULT',
-              data: {
-                success: false,
-                error: error.message
-              }
-            }).catch(() => {
-              console.log('Background: Impossible d\'envoyer l\'erreur MetaMask');
-            });
-          });
-        break;
+            console.error("MetaMask error:", error)
+            messageBus.sendMetamaskResult({ success: false, error: error.message })
+          })
+        break
 
-      case 'GET_METAMASK_ACCOUNT':
-        const connection = getMetamaskConnection();
-        if (connection?.account) {
-          sendResponse({
-            success: true,
-            account: connection.account,
-            chainId: connection.chainId
-          });
-        } else {
-          sendResponse({
-            success: false,
-            error: 'Aucune connexion MetaMask trouvée'
-          });
-        }
-        break;
+      case "GET_METAMASK_ACCOUNT": {
+        const connection = getMetamaskConnection()
+        sendResponse(
+          connection?.account
+            ? { success: true, account: connection.account, chainId: connection.chainId }
+            : { success: false, error: "Aucune connexion MetaMask trouvée" }
+        )
+        break
+      }
 
-      case 'GET_TRACKING_STATS':
-        try {
-          const globalStats = historyManager.getGlobalStats();
-          const recentVisits = historyManager.getRecentVisits(5);
+      case "GET_TRACKING_STATS":
+        sendResponse({
+          success: true,
+          data: { message: "Données envoyées directement à l'agent - pas de stockage local" }
+        })
+        break
 
-          sendResponse({
-            success: true,
-            data: {
-              totalPages: globalStats.totalUrls,
-              totalVisits: globalStats.totalVisits,
-              totalTime: globalStats.totalTimeSpent,
-              mostVisitedUrl: globalStats.mostVisitedUrl,
-              recentVisits
-            }
-          });
-        } catch (error) {
-          sendResponse({
-            success: false,
-            error: 'Erreur lors du chargement des statistiques'
-          });
-        }
-        break;
+      case "EXPORT_TRACKING_DATA":
+        sendResponse({
+          success: false,
+          error: "Export non disponible - données envoyées directement à l'agent"
+        })
+        break
 
-      case 'EXPORT_TRACKING_DATA':
-        try {
-          const data = historyManager.exportHistory();
-          sendResponse({
-            success: true,
-            data
-          });
-        } catch (error) {
-          sendResponse({
-            success: false,
-            error: 'Erreur lors de l\'export'
-          });
-        }
-        break;
-
-      case 'CLEAR_TRACKING_DATA':
-        historyManager.clearAll().then(() => {
-          sendResponse({
-            success: true
-          });
-        }).catch((error) => {
-          sendResponse({
-            success: false,
-            error: 'Erreur lors du nettoyage'
-          });
-        });
-        return true;
+      case "CLEAR_TRACKING_DATA":
+        sendResponse({ success: true, message: "Aucune donnée stockée localement à effacer" })
+        break
     }
 
-    sendResponse({ success: true });
-    return true;
-  });
+    sendResponse({ success: true })
+    return true
+  })
 }
