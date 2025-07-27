@@ -396,7 +396,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       {availableTripletsCount > 0 && (
         <div className="import-section">
           <div className="import-header">
-            <h3>📥 New SofIA triplets ({availableTripletsCount})</h3>
+            <h3> Echoe's incoming ({availableTripletsCount})</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
                 className="btn-secondary"
