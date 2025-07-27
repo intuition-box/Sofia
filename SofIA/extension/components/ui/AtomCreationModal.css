@@ -86,6 +86,14 @@
   color: #D4A574; /* Sofia gold for existing */
 }
 
+.stat-number.stat-atom-only {
+  color: rgba(255, 255, 255, 0.7); /* Neutral for atom-only */
+}
+
+.stat-number.stat-on-chain {
+  color: #82C341; /* Green for full on-chain triplets */
+}
+
 .stat-label {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
@@ -93,23 +101,25 @@
   font-family: 'Montserrat', sans-serif;
 }
 
-/* Signal Cards */
-.signal-card {
+/* Echo Cards (utilisée pour SignalsTab et EchoesTab) */
+.echo-card {
   border-radius: 12px;
-  padding: 2px;
+  padding: 16px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(5px) saturate(100%);
   -webkit-backdrop-filter: blur(5px) saturate(100%);
   margin-bottom: 12px;
   transition: all 0.3s ease;
+  min-height: 120px;
+  position: relative;
 }
 
-.signal-card:hover {
+.echo-card:hover {
   background: rgba(255, 255, 255, 0.08);
   transform: translateY(-1px);
 }
 
-.signal-card.border-green {
+.echo-card.border-green {
   border: 1px solid rgba(199, 134, 108, 0.4);
   background: linear-gradient(135deg, 
     rgba(199, 134, 108, 0.1) 0%,
@@ -118,7 +128,7 @@
   );
 }
 
-.signal-card.border-blue {
+.echo-card.border-blue {
   border: 1px solid rgba(212, 165, 116, 0.4);
   background: linear-gradient(135deg, 
     rgba(212, 165, 116, 0.1) 0%,
@@ -127,11 +137,48 @@
   );
 }
 
+/* Header du triplet avec badges et actions */
+.triplet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+/* Triplet text clickable */
+.triplet-text.clickable {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.triplet-text.clickable:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Badges Container */
+.badges-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 /* Source Badges */
 .source-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  backdrop-filter: blur(8px);
+}
+
+/* Status Badges */
+.status-badge {
   padding: 4px 8px;
   border-radius: 8px;
   font-size: 10px;
@@ -152,13 +199,43 @@
   border: 1px solid rgba(212, 165, 116, 0.4);
 }
 
+.status-badge.badge-atom-only {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-badge.badge-on-chain {
+  background: rgba(130, 195, 65, 0.2);
+  color: #82C341;
+  border: 1px solid rgba(130, 195, 65, 0.4);
+}
+
 /* Signal Actions */
 .signal-actions {
-  position: absolute;
-  top: 12px;
-  right: 80px;
   display: flex;
   gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Processing Message */
+.processing-message {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Montserrat', sans-serif;
+  backdrop-filter: blur(8px);
+  animation: pulse 1.5s infinite;
+  text-align: center;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 }
 
 /* Timestamp styling */

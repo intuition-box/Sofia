@@ -114,9 +114,10 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
           source: result.source,
           url: url.trim(),
           ipfsUri: result.ipfsUri,
-          originalMessage
+          originalMessage,
+          tripleStatus: 'atom-only' // Juste l'atom Object créé, pas encore le triplet complet
         })
-        console.log('✅ Triplet added to on-chain storage')
+        console.log('✅ Triplet added to on-chain storage (atom-only status)')
       }
       
       setCurrentStep('success')

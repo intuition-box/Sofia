@@ -8,7 +8,7 @@ export interface OnChainTriplet {
     predicate: string
     object: string
   }
-  atomVaultId: string
+  atomVaultId: string // VaultID de l'atom Object
   txHash?: string
   timestamp: number
   source: 'created' | 'existing'
@@ -18,6 +18,11 @@ export interface OnChainTriplet {
     rawObjectDescription?: string
     rawObjectUrl?: string
   }
+  // Nouvelles propriétés pour les triplets on-chain
+  tripleVaultId?: string // VaultID du triplet complet si créé on-chain
+  tripleStatus: 'atom-only' | 'on-chain' // État du triplet
+  subjectVaultId?: string // VaultID de l'atom User
+  predicateVaultId?: string // VaultID de l'atom Predicate
 }
 
 const storage = new Storage()
@@ -54,7 +59,8 @@ export const useOnChainTriplets = () => {
       const tripletWithId: OnChainTriplet = {
         ...newTriplet,
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        tripleStatus: newTriplet.tripleStatus || 'atom-only' // Par défaut atom-only
       }
 
       const updatedTriplets = [...triplets, tripletWithId]
@@ -104,7 +110,42 @@ export const useOnChainTriplets = () => {
     return {
       total: triplets.length,
       created: triplets.filter(t => t.source === 'created').length,
-      existing: triplets.filter(t => t.source === 'existing').length
+      existing: triplets.filter(t => t.source === 'existing').length,
+      atomOnly: triplets.filter(t => t.tripleStatus === 'atom-only').length,
+      onChain: triplets.filter(t => t.tripleStatus === 'on-chain').length
+    }
+  }
+
+  // Nouvelle fonction pour mettre à jour un triplet vers le statut on-chain
+  const updateTripletToOnChain = async (
+    tripletId: string,
+    tripleVaultId: string,
+    subjectVaultId: string,
+    predicateVaultId: string,
+    tripleTxHash?: string
+  ) => {
+    try {
+      const updatedTriplets = triplets.map(t => 
+        t.id === tripletId 
+          ? {
+              ...t,
+              tripleVaultId,
+              subjectVaultId,
+              predicateVaultId,
+              tripleStatus: 'on-chain' as const,
+              txHash: tripleTxHash || t.txHash
+            }
+          : t
+      )
+      
+      setTriplets(updatedTriplets)
+      await storage.set(STORAGE_KEY, updatedTriplets)
+      
+      console.log('✅ Updated triplet to on-chain status:', tripletId)
+    } catch (err) {
+      console.error('❌ Failed to update triplet to on-chain:', err)
+      setError(err instanceof Error ? err : new Error('Unknown error'))
+      throw err
     }
   }
 
@@ -117,6 +158,7 @@ export const useOnChainTriplets = () => {
     clearAllTriplets,
     getTripletsBySource,
     getTripletsCount,
+    updateTripletToOnChain,
     refreshTriplets: loadTriplets
   }
 }
