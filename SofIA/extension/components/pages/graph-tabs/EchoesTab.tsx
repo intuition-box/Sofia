@@ -10,6 +10,98 @@ import '../../styles/MyGraphPage.css'
 
 const storage = new Storage()
 
+// Configuration pour le stockage fractionné des extractedTriplets
+const EXTRACTED_TRIPLETS_KEY = 'extractedTriplets'
+const EXTRACTED_INDEX_KEY = 'extractedTriplets_index'
+const EXTRACTED_CHUNK_SIZE = 5 // Taille réduite car les messages SofIA sont plus volumineux
+
+interface ExtractedTripletsIndex {
+  chunks: string[]
+  totalCount: number
+  lastChunk: string | null
+}
+
+// Fonctions utilitaires pour le stockage fractionné des extractedTriplets
+const getExtractedTripletsIndex = async (): Promise<ExtractedTripletsIndex> => {
+  const index = await storage.get(EXTRACTED_INDEX_KEY)
+  return index || { chunks: [], totalCount: 0, lastChunk: null }
+}
+
+const saveExtractedTripletsIndex = async (index: ExtractedTripletsIndex) => {
+  await storage.set(EXTRACTED_INDEX_KEY, index)
+}
+
+const getExtractedChunkKey = (chunkNumber: number): string => {
+  return `${EXTRACTED_TRIPLETS_KEY}_${chunkNumber}`
+}
+
+const getNextExtractedChunkNumber = (chunks: string[]): number => {
+  if (chunks.length === 0) return 1
+  const numbers = chunks.map(chunk => parseInt(chunk.split('_').pop() || '0'))
+  return Math.max(...numbers) + 1
+}
+
+// Charger tous les extractedTriplets depuis les chunks
+const loadAllExtractedTriplets = async (): Promise<ParsedSofiaMessage[]> => {
+  try {
+    const index = await getExtractedTripletsIndex()
+    let allExtractedTriplets: ParsedSofiaMessage[] = []
+
+    for (const chunkKey of index.chunks) {
+      try {
+        const chunkData = await storage.get(chunkKey)
+        if (chunkData && Array.isArray(chunkData)) {
+          allExtractedTriplets.push(...chunkData)
+        }
+      } catch (chunkErr) {
+        console.error(`❌ Failed to load extracted chunk ${chunkKey}:`, chunkErr)
+      }
+    }
+
+    console.log('📱 Loaded extracted triplets from chunks:', allExtractedTriplets.length, 'from', index.chunks.length, 'chunks')
+    return allExtractedTriplets
+  } catch (err) {
+    console.error('❌ Failed to load extracted triplets from chunks:', err)
+    return []
+  }
+}
+
+// Sauvegarder extractedTriplets dans le système fractionné
+const saveExtractedTripletsToChunks = async (allExtractedTriplets: ParsedSofiaMessage[]) => {
+  try {
+    // Supprimer les anciens chunks
+    const oldIndex = await getExtractedTripletsIndex()
+    for (const chunkKey of oldIndex.chunks) {
+      await storage.remove(chunkKey)
+    }
+
+    // Créer nouveaux chunks
+    const newChunks: string[] = []
+    
+    for (let i = 0; i < allExtractedTriplets.length; i += EXTRACTED_CHUNK_SIZE) {
+      const chunkNumber = Math.floor(i / EXTRACTED_CHUNK_SIZE) + 1
+      const chunkKey = getExtractedChunkKey(chunkNumber)
+      const chunkData = allExtractedTriplets.slice(i, i + EXTRACTED_CHUNK_SIZE)
+      
+      await storage.set(chunkKey, chunkData)
+      newChunks.push(chunkKey)
+    }
+
+    // Mettre à jour l'index
+    const newIndex: ExtractedTripletsIndex = {
+      chunks: newChunks,
+      totalCount: allExtractedTriplets.length,
+      lastChunk: newChunks.length > 0 ? newChunks[newChunks.length - 1] : null
+    }
+    
+    await saveExtractedTripletsIndex(newIndex)
+    console.log('💾 Saved extracted triplets to chunks:', newChunks.length, 'chunks for', allExtractedTriplets.length, 'triplets')
+  } catch (err) {
+    console.error('❌ Failed to save extracted triplets to chunks:', err)
+    throw err
+  }
+}
+
 interface EchoesTabProps {
   expandedTriplet: { msgIndex: number; tripletIndex: number } | null
   setExpandedTriplet: (value: { msgIndex: number; tripletIndex: number } | null) => void
@@ -46,13 +138,12 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Migration function for users with old storage format
   const migrateLegacyStorage = async () => {
     try {
+      // Migrate legacy sofiaMessages
       const legacyMessages = await storage.get("sofiaMessages")
       if (legacyMessages && Array.isArray(legacyMessages) && legacyMessages.length > 0) {
-        console.log("🔄 Migrating legacy sofiaMessages to new system...")
+        console.log("🔄 Migrating legacy sofiaMessages to chunked system...")
         
-        // Process legacy messages and extract triplets
-        let extractedTriplets = await storage.get("extractedTriplets") || []
-        if (!Array.isArray(extractedTriplets)) extractedTriplets = []
+        let extractedTriplets = await loadAllExtractedTriplets()
         
         let migratedCount = 0
         for (const message of legacyMessages) {
@@ -73,13 +164,23 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         }
         
         if (migratedCount > 0) {
-          await storage.set("extractedTriplets", extractedTriplets)
-          console.log(`✅ Migrated ${migratedCount} legacy triplets`)
+          await saveExtractedTripletsToChunks(extractedTriplets)
+          console.log(`✅ Migrated ${migratedCount} legacy triplets to chunks`)
         }
         
         // Remove legacy storage after successful migration
         await storage.remove("sofiaMessages")
-        console.log("✅ Legacy storage cleaned up")
+        console.log("✅ Legacy sofiaMessages cleaned up")
+      }
+
+      // Migrate old extractedTriplets to chunked system
+      const oldExtractedTriplets = await storage.get("extractedTriplets")
+      if (oldExtractedTriplets && Array.isArray(oldExtractedTriplets) && oldExtractedTriplets.length > 0) {
+        console.log("🔄 Migrating old extractedTriplets to chunked system...")
+        
+        await saveExtractedTripletsToChunks(oldExtractedTriplets)
+        await storage.remove("extractedTriplets")
+        console.log(`✅ Migrated ${oldExtractedTriplets.length} extracted triplets to chunked system`)
       }
     } catch (error) {
       console.error("❌ Migration failed:", error)
@@ -92,14 +193,10 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       // First, try to process any pending messages from buffer
       await processMessageBuffer()
       
-      // Then load already parsed triplets from permanent storage
-      const extractedTriplets = await storage.get("extractedTriplets") || []
-      if (Array.isArray(extractedTriplets)) {
-        setParsedMessages(extractedTriplets)
-        console.log("✅ Loaded extracted triplets:", extractedTriplets.length)
-      } else {
-        setParsedMessages([])
-      }
+      // Then load already parsed triplets from chunked storage
+      const extractedTriplets = await loadAllExtractedTriplets()
+      setParsedMessages(extractedTriplets)
+      console.log("✅ Loaded extracted triplets from chunks:", extractedTriplets.length)
     } catch (error) {
       console.error('❌ Failed to load SofIA messages:', error)
       setParsedMessages([])
@@ -119,9 +216,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
       console.log(`🔄 Processing ${messageBuffer.length} messages from buffer`)
       
-      // Get existing extracted triplets
-      let extractedTriplets = await storage.get("extractedTriplets") || []
-      if (!Array.isArray(extractedTriplets)) extractedTriplets = []
+      // Get existing extracted triplets from chunks
+      let extractedTriplets = await loadAllExtractedTriplets()
 
       const processedMessageIds: string[] = []
       let newTripletsCount = 0
@@ -162,8 +258,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             .slice(0, 100)
         }
         
-        await storage.set("extractedTriplets", extractedTriplets)
-        console.log(`✅ Saved ${newTripletsCount} new triplets to permanent storage`)
+        await saveExtractedTripletsToChunks(extractedTriplets)
+        console.log(`✅ Saved ${newTripletsCount} new triplets to chunked storage`)
       }
 
       // SAFELY remove processed messages from buffer
@@ -330,21 +426,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       await storage.set("sofiaMessagesBuffer", [])
       console.log("✅ Cleared message buffer")
       
-      // Keep only the 20 most recent extracted triplets
-      const extractedTriplets = await storage.get("extractedTriplets") || []
-      if (Array.isArray(extractedTriplets) && extractedTriplets.length > 0) {
+      // Keep only the 10 most recent extracted triplets (reduced for chunked system)
+      const extractedTriplets = await loadAllExtractedTriplets()
+      if (extractedTriplets.length > 0) {
         const recentTriplets = extractedTriplets
           .sort((a, b) => b.extractedAt - a.extractedAt)
-          .slice(0, 20)
+          .slice(0, 10)
         
-        await storage.set("extractedTriplets", recentTriplets)
-        console.log(`✅ Cleaned triplets: kept ${recentTriplets.length} most recent`)
+        await saveExtractedTripletsToChunks(recentTriplets)
+        console.log(`✅ Cleaned triplets: kept ${recentTriplets.length} most recent in chunks`)
       }
       
-      // Clear old sofiaMessages storage if it still exists (migration cleanup)
+      // Clear old storage formats if they still exist (migration cleanup)
       try {
         await storage.remove("sofiaMessages")
-        console.log("✅ Removed legacy sofiaMessages storage")
+        await storage.remove("extractedTriplets")
+        console.log("✅ Removed legacy storage keys")
       } catch (removeError) {
         // Ignore if already removed
       }
