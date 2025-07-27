@@ -156,7 +156,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
           <button 
             className="modal-close"
             onClick={handleClose}
-            disabled={isLoading}
+            disabled={isChecking || isCreating}
           >
             ✕
           </button>
@@ -209,7 +209,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
                 <button
                   type="button"
                   onClick={handleClose}
-                  disabled={isLoading}
+                  disabled={isChecking || isCreating}
                   className="btn-secondary"
                 >
                   Cancel
