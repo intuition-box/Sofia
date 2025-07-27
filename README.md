@@ -62,7 +62,7 @@ SERVER_MODE=http pnpm run start:http
 
 ## 🚦 5️⃣ Start **Eliza OS**
 
-Inside the `/agent1` directory:
+Inside the `/agent` directory:
 ```bash
 elizaos start
 ```
@@ -72,7 +72,7 @@ elizaos start
 
 ## 🤖 6️⃣ Start Your Agent **SofIA**
 
-Again inside `/agent1`:
+Again inside `/agent`:
 ```bash
 elizaos agent start --path SofIA/agent1/SofIA.json
 ```
@@ -96,7 +96,7 @@ In your **SofIA1** settings:
 
 ## 🚀 How to Launch SofIA
 
-To start the complete SofIA application, simply run from core:
+Once everything is installed, start the complete SofIA application, simply run from core:
 
 ```bash
 ./sofia start
