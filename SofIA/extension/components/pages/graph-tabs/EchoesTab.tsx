@@ -38,79 +38,155 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   // Charger les messages SofIA depuis le storage
   useEffect(() => {
-    loadSofiaMessages()
+    // First run migration if needed, then load messages
+    migrateLegacyStorage().then(() => {
+      loadSofiaMessages()
+    })
   }, [])
+
+  // Migration function for users with old storage format
+  const migrateLegacyStorage = async () => {
+    try {
+      const legacyMessages = await storage.get("sofiaMessages")
+      if (legacyMessages && Array.isArray(legacyMessages) && legacyMessages.length > 0) {
+        console.log("🔄 Migrating legacy sofiaMessages to new system...")
+        
+        // Process legacy messages and extract triplets
+        let extractedTriplets = await storage.get("extractedTriplets") || []
+        if (!Array.isArray(extractedTriplets)) extractedTriplets = []
+        
+        let migratedCount = 0
+        for (const message of legacyMessages) {
+          try {
+            const parsed = parseSofiaMessage(message.content.text, message.created_at)
+            if (parsed && parsed.triplets.length > 0) {
+              const tripletWithSource = {
+                ...parsed,
+                sourceMessageId: `legacy_${message.created_at}`,
+                extractedAt: Date.now()
+              }
+              extractedTriplets.push(tripletWithSource)
+              migratedCount++
+            }
+          } catch (parseError) {
+            console.error("❌ Failed to migrate legacy message:", parseError)
+          }
+        }
+        
+        if (migratedCount > 0) {
+          await storage.set("extractedTriplets", extractedTriplets)
+          console.log(`✅ Migrated ${migratedCount} legacy triplets`)
+        }
+        
+        // Remove legacy storage after successful migration
+        await storage.remove("sofiaMessages")
+        console.log("✅ Legacy storage cleaned up")
+      }
+    } catch (error) {
+      console.error("❌ Migration failed:", error)
+    }
+  }
 
   const loadSofiaMessages = async () => {
     setIsLoadingMessages(true)
     try {
-      const raw = await storage.get("sofiaMessages")
-      console.log("🔍 Raw data from storage:", raw)
-
-      if (!raw) {
-        console.log("📭 No sofiaMessages found in storage")
-        setParsedMessages([])
-        return
-      }
-
-      let messages: Message[]
-      if (typeof raw === 'string') {
-        messages = JSON.parse(raw)
-      } else if (Array.isArray(raw)) {
-        messages = raw
-      } else {
-        console.error("❌ Unexpected data format:", typeof raw, raw)
-        setParsedMessages([])
-        return
-      }
-
-      console.log("📝 Processing SofIA messages:", messages.length)
-
-      // Nettoyer automatiquement si trop de messages (garde les 50 plus récents)
-      if (messages.length > 50) {
-        console.log("🧹 Too many messages, keeping only the 50 most recent")
-        messages = messages
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 50)
-        
-        // Sauvegarder les messages nettoyés
-        try {
-          await storage.set("sofiaMessages", messages)
-          console.log("✅ Messages cleaned and saved")
-        } catch (cleanError) {
-          console.error("❌ Failed to save cleaned messages:", cleanError)
-        }
-      }
-
-      const parsed = messages
-        .map((m, index) => {
-          console.log(`🔄 Processing message ${index}`)
-          return parseSofiaMessage(m.content.text, m.created_at)
-        })
-        .filter(msg => msg !== null) as ParsedSofiaMessage[]
-
-      console.log("✅ Final parsed messages:", parsed)
-      setParsedMessages(parsed)
-    } catch (error) {
-      console.error('❌ Failed to load sofiaMessages from storage:', error)
+      // First, try to process any pending messages from buffer
+      await processMessageBuffer()
       
-      // Si erreur de quota, essayer de vider le storage et recommencer
-      if (error instanceof Error && error.message.includes('quota')) {
-        console.log("🚨 Storage quota exceeded, clearing messages...")
-        try {
-          await storage.set("sofiaMessages", [])
-          console.log("✅ Storage cleared")
-          setParsedMessages([])
-        } catch (clearError) {
-          console.error("❌ Failed to clear storage:", clearError)
-        }
+      // Then load already parsed triplets from permanent storage
+      const extractedTriplets = await storage.get("extractedTriplets") || []
+      if (Array.isArray(extractedTriplets)) {
+        setParsedMessages(extractedTriplets)
+        console.log("✅ Loaded extracted triplets:", extractedTriplets.length)
       } else {
         setParsedMessages([])
       }
+    } catch (error) {
+      console.error('❌ Failed to load SofIA messages:', error)
+      setParsedMessages([])
     } finally {
       setIsLoadingMessages(false)
     }
   }
+
+  // NEW: Process messages from buffer and extract triplets safely
+  const processMessageBuffer = async () => {
+    try {
+      const messageBuffer = await storage.get("sofiaMessagesBuffer") || []
+      if (!Array.isArray(messageBuffer) || messageBuffer.length === 0) {
+        console.log("📭 No messages in buffer to process")
+        return
+      }
+
+      console.log(`🔄 Processing ${messageBuffer.length} messages from buffer`)
+      
+      // Get existing extracted triplets
+      let extractedTriplets = await storage.get("extractedTriplets") || []
+      if (!Array.isArray(extractedTriplets)) extractedTriplets = []
+
+      const processedMessageIds: string[] = []
+      let newTripletsCount = 0
+
+      for (const message of messageBuffer) {
+        if (message.processed) continue // Skip already processed messages
+
+        try {
+          console.log(`🔄 Processing message ${message.id}`)
+          const parsed = parseSofiaMessage(message.content.text, message.created_at)
+          
+          if (parsed && parsed.triplets.length > 0) {
+            // Add to extracted triplets with source tracking
+            const tripletWithSource = {
+              ...parsed,
+              sourceMessageId: message.id,
+              extractedAt: Date.now()
+            }
+            extractedTriplets.push(tripletWithSource)
+            newTripletsCount++
+            console.log(`✅ Extracted ${parsed.triplets.length} triplets from message ${message.id}`)
+          }
+          
+          // Mark message as processed
+          processedMessageIds.push(message.id)
+        } catch (parseError) {
+          console.error(`❌ Failed to parse message ${message.id}:`, parseError)
+          // Don't mark as processed if parsing failed - retry next time
+        }
+      }
+
+      // Save extracted triplets if we have new ones
+      if (newTripletsCount > 0) {
+        // Keep only the 100 most recent triplets to prevent storage bloat
+        if (extractedTriplets.length > 100) {
+          extractedTriplets = extractedTriplets
+            .sort((a, b) => b.extractedAt - a.extractedAt)
+            .slice(0, 100)
+        }
+        
+        await storage.set("extractedTriplets", extractedTriplets)
+        console.log(`✅ Saved ${newTripletsCount} new triplets to permanent storage`)
+      }
+
+      // SAFELY remove processed messages from buffer
+      if (processedMessageIds.length > 0) {
+        const updatedBuffer = messageBuffer.filter(msg => !processedMessageIds.includes(msg.id))
+        await storage.set("sofiaMessagesBuffer", updatedBuffer)
+        console.log(`🧹 Removed ${processedMessageIds.length} processed messages from buffer`)
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to process message buffer:', error)
+      if (error instanceof Error && error.message.includes('quota')) {
+        console.log("🚨 Storage quota exceeded during processing, clearing buffer...")
+        try {
+          await storage.set("sofiaMessagesBuffer", [])
+        } catch (clearError) {
+          console.error("❌ Failed to clear buffer:", clearError)
+        }
+      }
+    }
+  }
+
 
   // Fonction pour importer un triplet SofIA vers les triplets on-chain
   const importTripletFromSofia = async (
@@ -249,20 +325,33 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Fonction pour nettoyer les anciens messages manuellement
   const clearOldMessages = async () => {
     try {
-      console.log("🧹 Clearing old messages...")
-      // Garder seulement les 20 messages les plus récents
-      const raw = await storage.get("sofiaMessages")
-      if (raw && Array.isArray(raw)) {
-        const recentMessages = raw
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      console.log("🧹 Manual cleanup initiated...")
+      
+      // Clear buffer completely
+      await storage.set("sofiaMessagesBuffer", [])
+      console.log("✅ Cleared message buffer")
+      
+      // Keep only the 20 most recent extracted triplets
+      const extractedTriplets = await storage.get("extractedTriplets") || []
+      if (Array.isArray(extractedTriplets) && extractedTriplets.length > 0) {
+        const recentTriplets = extractedTriplets
+          .sort((a, b) => b.extractedAt - a.extractedAt)
           .slice(0, 20)
         
-        await storage.set("sofiaMessages", recentMessages)
-        console.log(`✅ Cleaned messages: kept ${recentMessages.length} most recent`)
-        
-        // Recharger les messages après nettoyage
-        await loadSofiaMessages()
+        await storage.set("extractedTriplets", recentTriplets)
+        console.log(`✅ Cleaned triplets: kept ${recentTriplets.length} most recent`)
       }
+      
+      // Clear old sofiaMessages storage if it still exists (migration cleanup)
+      try {
+        await storage.remove("sofiaMessages")
+        console.log("✅ Removed legacy sofiaMessages storage")
+      } catch (removeError) {
+        // Ignore if already removed
+      }
+      
+      // Reload messages after cleanup
+      await loadSofiaMessages()
     } catch (error) {
       console.error('❌ Failed to clean messages:', error)
     }
