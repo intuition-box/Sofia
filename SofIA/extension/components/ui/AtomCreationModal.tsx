@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { stringToHex } from 'viem'
 import { useCreateAtom } from '../../hooks/useCreateAtom'
 
 interface AtomCreationModalProps {
@@ -13,17 +12,13 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
   const [description, setDescription] = useState('')
   const [url, setUrl] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const [currentStep, setCurrentStep] = useState<'idle' | 'pinning' | 'blockchain' | 'success' | 'error'>('idle')
+  const [progressMessage, setProgressMessage] = useState('')
 
-  const {
-    writeContractAsync,
-    isIdle,
-    awaitingWalletConfirmation,
-    awaitingOnChainConfirmation,
-    isError,
-    isSuccess,
-    receipt,
-    reset
-  } = useCreateAtom()
+  const { createAtomWithMultivault, isLoading, error } = useCreateAtom()
+
+  const [receipt, setReceipt] = useState(null)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   // Pre-fill fields when modal opens
   useEffect(() => {
@@ -31,9 +26,10 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
       setName(objectData.name || '')
       setDescription(objectData.description || '')
       setUrl(objectData.url || '')
-      reset() // Reset transaction state
+      setIsSuccess(false)
+      setReceipt(null)
     }
-  }, [isOpen, objectData, reset])
+  }, [isOpen, objectData])
 
   // Close modal after success
   useEffect(() => {
@@ -53,36 +49,47 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
       return
     }
 
+    // Prévenir les double-soumissions
+    if (isCreating || isLoading) {
+      console.warn('Transaction already in progress')
+      return
+    }
+
     setIsCreating(true)
+    setCurrentStep('pinning')
+    setProgressMessage('📌 Creating atom...')
 
     try {
-      // Create the atom metadata object
       const atomMetadata = {
         name: name.trim(),
-        description: description.trim() || undefined,
-        url: url.trim() || undefined
+        description: description.trim() || "Contenu visité par l'utilisateur.",
+        url: url.trim(),
+        image: ''
       }
-
-      // Convert to JSON string then to bytes using Viem
-      const jsonString = JSON.stringify(atomMetadata)
-      const atomUri = stringToHex(jsonString)
-
-      // Call the atom creation hook
-      await writeContractAsync({
-        args: [atomUri]
-      } as any)
+      
+      const result = await createAtomWithMultivault(atomMetadata)
+      
+      setCurrentStep('success')
+      setProgressMessage('✅ Atom created successfully!')
+      setIsSuccess(true)
+      setReceipt({ transactionHash: result.txHash, vaultId: result.vaultId })
 
     } catch (error) {
       console.error('Error creating atom:', error)
+      setCurrentStep('error')
+      if (error instanceof Error) {
+        setProgressMessage(`❌ Error: ${error.message}`)
+      } else {
+        setProgressMessage('❌ Unknown error occurred')
+      }
       setIsCreating(false)
     }
   }
 
   const handleClose = () => {
-    if (!awaitingWalletConfirmation && !awaitingOnChainConfirmation) {
+    if (!isLoading) {
       onClose()
       setIsCreating(false)
-      reset()
     }
   }
 
@@ -96,7 +103,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
           <button 
             className="modal-close"
             onClick={handleClose}
-            disabled={awaitingWalletConfirmation || awaitingOnChainConfirmation}
+            disabled={isLoading}
           >
             ✕
           </button>
@@ -149,7 +156,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
                 <button
                   type="button"
                   onClick={handleClose}
-                  disabled={awaitingWalletConfirmation || awaitingOnChainConfirmation}
+                  disabled={isLoading}
                   className="btn-secondary"
                 >
                   Cancel
@@ -159,13 +166,19 @@ const AtomCreationModal = ({ isOpen, onClose, objectData }: AtomCreationModalPro
                   disabled={!name.trim() || isCreating}
                   className="btn-primary"
                 >
-                  {awaitingWalletConfirmation && 'Confirmation wallet...'}
-                  {awaitingOnChainConfirmation && 'Confirmation blockchain...'}
-                  {isIdle && 'Create atom'}
+                  {currentStep === 'pinning' && '📌 Pinning to IPFS...'}
+                  {currentStep === 'blockchain' && '💳 Creating atom...'}
+                  {currentStep === 'idle' && 'Create atom'}
                 </button>
               </div>
 
-              {isError && (
+              {progressMessage && currentStep !== 'idle' && (
+                <div className={`progress-message ${currentStep === 'error' ? 'error-message' : 'info-message'}`}>
+                  {progressMessage}
+                </div>
+              )}
+
+              {error && !progressMessage && (
                 <div className="error-message">
                   Error creating atom. Please try again.
                 </div>

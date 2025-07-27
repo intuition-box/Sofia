@@ -21,6 +21,7 @@ import SearchPage from "./components/pages/SearchPage"
 import SearchResultPage from "./components/pages/SearchResultPage"
 import ChatPage from "./components/pages/ChatPage"
 
+
 const SidePanelContent = () => {
   const [account] = useStorage<string>("metamask-account")
   const { currentPage, navigateTo } = useRouter()
