@@ -191,6 +191,104 @@ pnpm build
 
 ---
 
-**Date :** 2025-01-26  
-**Statut :** ✅ Système opérationnel  
-**Prochaines étapes :** Monitoring des transactions et optimisations UX
+## 🛠️ Session de Correction Multivault - 27/07/2025
+
+### 📋 Problèmes Identifiés
+
+**Contexte :** Erreurs dans les logs et approches multiples contradictoires pour la création d'atoms.
+
+### 1. **Erreur awaitingWalletConfirmation**
+
+**Symptômes :**
+```javascript
+ReferenceError: awaitingWalletConfirmation is not defined
+at AtomCreationModal.jsx:90
+```
+
+**Cause :** Le modal utilisait `useCreateAtom` depuis `useIPFSPin.ts` mais référençait des variables de l'ancien `useCreateAtom.tsx`.
+
+**Solution :**
+```typescript
+// AtomCreationModal.tsx - Lignes 90, 107, 160, 171-173
+// AVANT
+disabled={awaitingWalletConfirmation || awaitingOnChainConfirmation}
+{awaitingWalletConfirmation && '💳 Wallet confirmation...'}
+{awaitingOnChainConfirmation && '⛓️ Blockchain confirmation...'}
+
+// APRÈS  
+disabled={isLoading}
+{currentStep === 'blockchain' && '💳 Creating atom...'}
+```
+
+### 2. **Conflit entre Deux Implémentations useCreateAtom**
+
+**Problème :** Deux hooks différents avec le même nom :
+- `useCreateAtom.tsx` - Approche manuelle avec `writeContract` + ABI
+- `useIPFSPin.ts` - Approche SDK Multivault (correcte)
+
+**Solution :**
+```bash
+# Unification des hooks
+mv useIPFSPin.ts useCreateAtom.ts
+rm useCreateAtom.tsx
+
+# Mise à jour import
+// AtomCreationModal.tsx
+import { useCreateAtom } from '../../hooks/useCreateAtom'
+```
+
+### 3. **viemClients sans Account**
+
+**Problème :** Le `walletClient` n'avait pas d'`account` défini, incompatible avec SDK Multivault.
+
+**Solution :**
+```typescript
+// SofIA/extension/lib/viemClients.ts
+export const getClients = async () => {
+    const provider = await getMetaProvider()
+    
+    // AJOUTÉ: Récupération du compte MetaMask
+    const accounts = await provider.request({
+        method: 'eth_requestAccounts',
+    })
+    const address = accounts[0]
+
+    const walletClient = createWalletClient({
+        account: address, // AJOUTÉ: Account pour compatibilité SDK
+        chain: SELECTED_CHAIN,
+        transport: custom(provider),
+    })
+}
+```
+
+### 4. **Différences entre viemClients**
+
+**Extension actuelle :**
+- Pas d'`account` dans `walletClient`
+- Pas de `eth_requestAccounts`
+- Dépendant du storage Sofia
+
+**Version de référence (inspirée) :**
+- `account` défini directement
+- `eth_requestAccounts` pour autonomie
+- Compatible SDK Multivault
+
+### ✅ Résultats des Corrections
+
+1. **Erreur JavaScript** → ✅ Corrigée dans `AtomCreationModal.tsx`
+2. **Hooks conflictuels** → ✅ Unifiés sur l'approche SDK Multivault
+3. **viemClients** → ✅ Compatible SDK avec `account` 
+4. **Imports** → ✅ Références mises à jour
+
+### 🎯 État Final Multivault
+
+- **✅ Un seul hook** : `useCreateAtom` avec SDK Multivault
+- **✅ viemClients** compatible avec `account` automatique
+- **✅ Modal** utilise les bonnes variables d'état
+- **✅ Approche unifiée** : IPFS pinning + SDK Multivault
+
+---
+
+**Date :** 2025-01-26 → **Mise à jour :** 2025-07-27  
+**Statut :** ✅ Système opérationnel + Multivault harmonisé  
+**Prochaines étapes :** Test complet de la création d'atoms avec le SDK unifié
