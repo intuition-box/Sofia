@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useOnChainTriplets, type OnChainTriplet } from '../../../hooks/useOnChainTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
-import '../../ui/AtomCreationModal.css'
+import '../../styles/AtomCreationModal.css'
 import '../../styles/MyGraphPage.css'
 
 interface SignalsTabProps {

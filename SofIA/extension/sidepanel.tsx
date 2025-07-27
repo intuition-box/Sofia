@@ -14,6 +14,7 @@ import { useWalletSync } from "./hooks/useWalletSync"
 import HomePage from "./components/pages/HomePage"
 import HomeConnectedPage from "./components/pages/HomeConnectedPage"
 import SettingsPage from "./components/pages/SettingsPage"
+import ProfilePage from "./components/pages/ProfilePage"
 import MyGraphPage from "./components/pages/MyGraphPage"
 import RecommendationsPage from "./components/pages/RecommendationsPage"
 import SavedPage from "./components/pages/SavedPage"
@@ -47,6 +48,8 @@ const SidePanelContent = () => {
         return <HomeConnectedPage />
       case 'settings':
         return <SettingsPage />
+      case 'profile':
+        return <ProfilePage />
       case 'my-graph':
         return <MyGraphPage />
       case 'recommendations':
