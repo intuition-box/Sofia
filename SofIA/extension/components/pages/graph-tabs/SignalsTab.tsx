@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useOnChainTriplets, type OnChainTriplet } from '../../../hooks/useOnChainTriplets'
-import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import '../../ui/AtomCreationModal.css'
 import '../../styles/MyGraphPage.css'
@@ -11,11 +10,16 @@ interface SignalsTabProps {
 }
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
-  const { triplets, isLoading, getTripletsCount, updateTripletToOnChain } = useOnChainTriplets()
-  const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
-  const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
-
-  const counts = getTripletsCount()
+  const { triplets, isLoading } = useOnChainTriplets()
+  
+  // Filtrer uniquement les triplets publiés on-chain
+  const publishedTriplets = triplets.filter(t => t.tripleStatus === 'on-chain')
+  
+  const publishedCounts = {
+    total: publishedTriplets.length,
+    created: publishedTriplets.filter(t => t.source === 'created').length,
+    existing: publishedTriplets.filter(t => t.source === 'existing').length,
+  }
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
     if (txHash) {
@@ -24,44 +28,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     } else if (vaultId) {
       console.log('🔍 View vault:', vaultId)
       // TODO: Lien vers explorateur de vaults
-    }
-  }
-
-  const handleCreateTripleOnChain = async (triplet: OnChainTriplet) => {
-    if (isCreating || processingTripletId) {
-      console.warn('Triple creation already in progress')
-      return
-    }
-
-    setProcessingTripletId(triplet.id)
-    
-    try {
-      console.log('🔗 Creating triple on-chain for:', triplet.triplet)
-      
-      const result = await createTripleOnChain(
-        triplet.triplet.predicate,
-        {
-          name: triplet.triplet.object,
-          description: triplet.originalMessage?.rawObjectDescription || "Contenu visité par l'utilisateur.",
-          url: triplet.url
-        }
-      )
-
-      // Mettre à jour le triplet dans le storage
-      await updateTripletToOnChain(
-        triplet.id,
-        result.tripleVaultId,
-        result.subjectVaultId,
-        result.predicateVaultId,
-        result.txHash
-      )
-
-      console.log('✅ Triple successfully created on-chain!', result)
-    } catch (error) {
-      console.error('❌ Failed to create triple on-chain:', error)
-      alert(`Erreur lors de la création du triplet: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
-    } finally {
-      setProcessingTripletId(null)
     }
   }
 
@@ -81,7 +47,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>Loading on-chain triplets...</p>
+          <p>Chargement des triplets publiés...</p>
         </div>
       </div>
     )
@@ -89,36 +55,33 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
   return (
     <div className="triples-container">
+      {/* Dashboard header */}
+      <div className="dashboard-header">
+        <h2>⛓️ Triplets Publiés On-Chain</h2>
+        <p>Dashboard de vos triplets déjà publiés sur la blockchain</p>
+      </div>
+
       {/* Stats header */}
-      {counts.total > 0 && (
+      {publishedCounts.total > 0 && (
         <div className="signals-stats">
           <div className="stat-item">
-            <span className="stat-number">{counts.total}</span>
-            <span className="stat-label">Total</span>
+            <span className="stat-number stat-on-chain">{publishedCounts.total}</span>
+            <span className="stat-label">Total Publiés</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number stat-created">{counts.created}</span>
-            <span className="stat-label">Created</span>
+            <span className="stat-number stat-created">{publishedCounts.created}</span>
+            <span className="stat-label">Créés</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number stat-existing">{counts.existing}</span>
-            <span className="stat-label">Found</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number stat-atom-only">{counts.atomOnly}</span>
-            <span className="stat-label">Atom Only</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number stat-on-chain">{counts.onChain}</span>
-            <span className="stat-label">On-Chain</span>
+            <span className="stat-number stat-existing">{publishedCounts.existing}</span>
+            <span className="stat-label">Existants</span>
           </div>
         </div>
       )}
 
-      {triplets.length > 0 ? (
-        triplets.map((tripletItem) => {
+      {publishedTriplets.length > 0 ? (
+        publishedTriplets.map((tripletItem) => {
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
-          console.log('🔍 Render triplet:', tripletItem.id, 'expandedTriplet:', expandedTriplet, 'isExpanded:', isExpanded)
 
           return (
             <div key={tripletItem.id} className={`echo-card ${getBorderStyle(tripletItem.source)}`}>
@@ -126,30 +89,22 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 
                 {/* Header avec badges et actions */}
                 <div className="triplet-header">
-                  {/* Badge source et status à gauche */}
+                  {/* Badge source à gauche */}
                   <div className="badges-container">
                     <div className={`source-badge ${getBadgeStyle(tripletItem.source)}`}>
-                      {tripletItem.source === 'created' ? '🆕 NEW' : '🔗 FOUND'}
+                      {tripletItem.source === 'created' ? '🆕 CRÉÉ' : '🔗 EXISTANT'}
                     </div>
-                    <div className={`status-badge ${tripletItem.tripleStatus === 'on-chain' ? 'badge-on-chain' : 'badge-atom-only'}`}>
-                      {tripletItem.tripleStatus === 'on-chain' ? '⛓️ TRIPLET' : '🔗 ATOM'}
+                    <div className="status-badge badge-on-chain">
+                      ⛓️ PUBLIÉ
                     </div>
                   </div>
 
-                  {/* Actions à droite */}
+                  {/* Actions à droite - uniquement scan/view */}
                   <div className="signal-actions">
-                    {tripletItem.tripleStatus === 'atom-only' ? (
-                      <QuickActionButton
-                        action="add"
-                        onClick={() => handleCreateTripleOnChain(tripletItem)}
-                        disabled={processingTripletId === tripletItem.id || isCreating}
-                      />
-                    ) : (
-                      <QuickActionButton
-                        action="scan"
-                        onClick={() => handleViewOnExplorer(tripletItem.txHash, tripletItem.tripleVaultId)}
-                      />
-                    )}
+                    <QuickActionButton
+                      action="scan"
+                      onClick={() => handleViewOnExplorer(tripletItem.txHash, tripletItem.tripleVaultId)}
+                    />
                   </div>
                 </div>
 
@@ -157,7 +112,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 <p
                   className="triplet-text clickable"
                   onClick={() => {
-                    console.log('🔍 Click on triplet:', tripletItem.id, 'Current expanded:', expandedTriplet?.tripletId, 'Will expand:', !isExpanded)
                     setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
                   }}
                 >
@@ -165,13 +119,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   <span className="action">{tripletItem.triplet.predicate}</span>{' '}
                   <span className="object">{tripletItem.triplet.object}</span>
                 </p>
-
-                {/* Message de progression */}
-                {processingTripletId === tripletItem.id && (
-                  <div className="processing-message">
-                    {currentStep || '⚙️ Création du triplet...'}
-                  </div>
-                )}
 
                 {isExpanded && (
                   <div className="triplet-details">
@@ -230,9 +177,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         })
       ) : (
         <div className="empty-state">
-          <p>No on-chain triplets yet</p>
+          <p>Aucun triplet publié pour le moment</p>
           <p className="empty-subtext">
-            Your atoms will appear here once created or found on-chain
+            Allez dans l'onglet Echoes pour publier vos premiers triplets on-chain
           </p>
         </div>
       )}

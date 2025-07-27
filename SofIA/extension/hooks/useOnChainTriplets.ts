@@ -122,6 +122,7 @@ export const useOnChainTriplets = () => {
     tripleVaultId: string,
     subjectVaultId: string,
     predicateVaultId: string,
+    objectVaultId: string,
     tripleTxHash?: string
   ) => {
     try {
@@ -132,8 +133,11 @@ export const useOnChainTriplets = () => {
               tripleVaultId,
               subjectVaultId,
               predicateVaultId,
+              atomVaultId: objectVaultId, // Update object vault ID
               tripleStatus: 'on-chain' as const,
-              txHash: tripleTxHash || t.txHash
+              txHash: tripleTxHash || t.txHash,
+              // Si l'ipfsUri était en attente, on peut le mettre à jour ici si nécessaire
+              ipfsUri: t.ipfsUri === 'pending' ? 'updated' : t.ipfsUri
             }
           : t
       )

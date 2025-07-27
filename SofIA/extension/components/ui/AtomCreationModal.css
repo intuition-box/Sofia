@@ -158,6 +158,65 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Import Section */
+.import-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: rgba(199, 134, 108, 0.1);
+  border: 1px solid rgba(199, 134, 108, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.import-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.import-header h3 {
+  margin: 0;
+  font-family: 'Gotu', sans-serif;
+  color: #C7866C;
+  font-size: 18px;
+}
+
+.import-content {
+  text-align: center;
+}
+
+.import-content p {
+  margin: 8px 0 16px 0;
+  font-family: 'Montserrat', sans-serif;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.dashboard-header h2 {
+  margin: 0 0 8px 0;
+  font-family: 'Gotu', sans-serif;
+  color: #82C341;
+  font-size: 24px;
+}
+
+.dashboard-header p {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
 /* Badges Container */
 .badges-container {
   display: flex;
