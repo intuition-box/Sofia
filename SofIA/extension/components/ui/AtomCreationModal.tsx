@@ -91,10 +91,10 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
       // Update UI based on result
       if (result.exists) {
         setCurrentStep('existing')
-        setProgressMessage('🔗 Atom found on-chain!')
+        setProgressMessage('🔗')
       } else {
         setCurrentStep('creating')
-        setProgressMessage('🆕 New atom created!')
+        setProgressMessage('🆕')
       }
       
       // Save to receipt
@@ -120,11 +120,11 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
       }
       
       setCurrentStep('success')
-      setProgressMessage(
-        result.exists 
-          ? '✅ Existing atom retrieved and triplet saved!' 
-          : '✅ New atom created and triplet saved!'
-      )
+      if (result.exists) {
+        setProgressMessage(`🔗 Atom déjà existant récupéré !\nIPFS: ${result.ipfsUri}\nVaultID: ${result.vaultId}`)
+      } else {
+        setProgressMessage(`🆕 Nouvel atom créé !\nIPFS: ${result.ipfsUri}\nVaultID: ${result.vaultId}`)
+      }
       setIsSuccess(true)
 
     } catch (error) {
@@ -239,13 +239,32 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
             </form>
           ) : (
             <div className="success-message">
-              <h3>✅ Atom created successfully!</h3>
+              <h3>
+                {receipt?.source === 'existing' 
+                  ? '🔗 Atom déjà existant récupéré !' 
+                  : '🆕 Nouvel atom créé !'}
+              </h3>
               {receipt && (
-                <p className="tx-hash">
-                  Transaction: <code>{receipt.transactionHash}</code>
-                </p>
+                <div className="receipt-details">
+                  <p className="detail-line">
+                    <strong>VaultID:</strong> <code>{receipt.vaultId}</code>
+                  </p>
+                  <p className="detail-line">
+                    <strong>IPFS:</strong> <code>{receipt.ipfsUri}</code>
+                  </p>
+                  {receipt.transactionHash && (
+                    <p className="detail-line">
+                      <strong>Transaction:</strong> <code>{receipt.transactionHash}</code>
+                    </p>
+                  )}
+                  <p className="detail-line">
+                    <strong>Source:</strong> <span className={`source-${receipt.source}`}>
+                      {receipt.source === 'existing' ? 'Existant' : 'Créé'}
+                    </span>
+                  </p>
+                </div>
               )}
-              <p className="success-note">This modal will close automatically...</p>
+              <p className="success-note">Ce modal se fermera automatiquement...</p>
             </div>
           )}
         </div>

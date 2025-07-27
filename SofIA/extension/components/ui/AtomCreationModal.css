@@ -57,10 +57,11 @@
   display: flex;
   gap: 16px;
   padding: 16px;
-  background: rgba(251, 247, 245, 0.8);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   margin-bottom: 16px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(5px) saturate(100%);
+  -webkit-backdrop-filter: blur(5px) saturate(100%);
 }
 
 .stat-item {
@@ -73,53 +74,57 @@
 .stat-number {
   font-size: 24px;
   font-weight: 600;
-  font-family: 'Gotu', sans-serif;
-  color: var(--sofia-800, #372118);
+  font-family: 'Gotu', cursive;
+  color: #F2DED6;
 }
 
 .stat-number.stat-created {
-  color: #059669; /* Green for created */
+  color: #C7866C; /* Sofia orange for created */
 }
 
 .stat-number.stat-existing {
-  color: #2563eb; /* Blue for existing */
+  color: #D4A574; /* Sofia gold for existing */
 }
 
 .stat-label {
   font-size: 12px;
-  color: var(--sofia-600, #945941);
+  color: rgba(255, 255, 255, 0.6);
   margin-top: 4px;
+  font-family: 'Montserrat', sans-serif;
 }
 
 /* Signal Cards */
 .signal-card {
   border-radius: 12px;
   padding: 2px;
-  background: linear-gradient(135deg, 
-    rgba(251, 247, 245, 0.95) 0%,
-    rgba(242, 222, 214, 0.9) 100%
-  );
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(5px) saturate(100%);
+  -webkit-backdrop-filter: blur(5px) saturate(100%);
   margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.signal-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
 }
 
 .signal-card.border-green {
+  border: 1px solid rgba(199, 134, 108, 0.4);
   background: linear-gradient(135deg, 
-    rgba(5, 150, 105, 0.1) 0%,
-    rgba(251, 247, 245, 0.95) 20%,
-    rgba(242, 222, 214, 0.9) 80%,
-    rgba(5, 150, 105, 0.1) 100%
+    rgba(199, 134, 108, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(199, 134, 108, 0.05) 100%
   );
-  border: 1px solid rgba(5, 150, 105, 0.3);
 }
 
 .signal-card.border-blue {
+  border: 1px solid rgba(212, 165, 116, 0.4);
   background: linear-gradient(135deg, 
-    rgba(37, 99, 235, 0.1) 0%,
-    rgba(251, 247, 245, 0.95) 20%,
-    rgba(242, 222, 214, 0.9) 80%,
-    rgba(37, 99, 235, 0.1) 100%
+    rgba(212, 165, 116, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(212, 165, 116, 0.05) 100%
   );
-  border: 1px solid rgba(37, 99, 235, 0.3);
 }
 
 /* Source Badges */
@@ -131,19 +136,20 @@
   border-radius: 8px;
   font-size: 10px;
   font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
   backdrop-filter: blur(8px);
 }
 
 .source-badge.badge-created {
-  background: rgba(5, 150, 105, 0.15);
-  color: #059669;
-  border: 1px solid rgba(5, 150, 105, 0.3);
+  background: rgba(199, 134, 108, 0.2);
+  color: #C7866C;
+  border: 1px solid rgba(199, 134, 108, 0.4);
 }
 
 .source-badge.badge-existing {
-  background: rgba(37, 99, 235, 0.15);
-  color: #2563eb;
-  border: 1px solid rgba(37, 99, 235, 0.3);
+  background: rgba(212, 165, 116, 0.2);
+  color: #D4A574;
+  border: 1px solid rgba(212, 165, 116, 0.4);
 }
 
 /* Signal Actions */
@@ -158,9 +164,51 @@
 /* Timestamp styling */
 .triplet-detail-timestamp {
   font-size: 11px;
-  color: var(--sofia-500, #A3845A);
+  color: rgba(255, 255, 255, 0.5);
   margin-top: 4px;
   font-style: italic;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Success message improvements */
+.receipt-details {
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  backdrop-filter: blur(5px);
+}
+
+.detail-line {
+  margin: 8px 0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: var(--sofia-600, #945941);
+}
+
+.detail-line strong {
+  color: var(--sofia-800, #372118);
+  margin-right: 8px;
+}
+
+.detail-line code {
+  background: rgba(55, 33, 24, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  color: var(--sofia-700, #6B4423);
+  word-break: break-all;
+}
+
+.source-existing {
+  color: #D4A574;
+  font-weight: 600;
+}
+
+.source-created {
+  color: #C7866C;
+  font-weight: 600;
 }
 
 .modal-close {
