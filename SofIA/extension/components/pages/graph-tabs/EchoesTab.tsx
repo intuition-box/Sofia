@@ -118,8 +118,10 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
 
-  // Filtrer uniquement les triplets non publiés (atom-only)
-  const unpublishedTriplets = triplets.filter(t => t.tripleStatus === 'atom-only')
+  // Filtrer et trier les triplets non publiés (atom-only) - plus récent en premier
+  const unpublishedTriplets = triplets
+    .filter(t => t.tripleStatus === 'atom-only')
+    .sort((a, b) => b.timestamp - a.timestamp)
   
   const unpublishedCounts = {
     total: unpublishedTriplets.length,
@@ -253,8 +255,10 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       if (newTripletsCount > 0) {
         // Keep only the 100 most recent triplets to prevent storage bloat
         if (extractedTriplets.length > 100) {
+
+          
           extractedTriplets = extractedTriplets
-            .sort((a, b) => b.extractedAt - a.extractedAt)
+            .sort((a, b) => (b.extractedAt || b.created_at) - (a.extractedAt || a.created_at))
             .slice(0, 100)
         }
         
@@ -430,7 +434,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       const extractedTriplets = await loadAllExtractedTriplets()
       if (extractedTriplets.length > 0) {
         const recentTriplets = extractedTriplets
-          .sort((a, b) => b.extractedAt - a.extractedAt)
+          .sort((a, b) => (b.extractedAt || b.created_at) - (a.extractedAt || a.created_at))
           .slice(0, 10)
         
         await saveExtractedTripletsToChunks(recentTriplets)

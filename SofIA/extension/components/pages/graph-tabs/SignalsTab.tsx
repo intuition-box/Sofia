@@ -12,8 +12,10 @@ interface SignalsTabProps {
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
   const { triplets, isLoading } = useOnChainTriplets()
   
-  // Filtrer uniquement les triplets publiés on-chain
-  const publishedTriplets = triplets.filter(t => t.tripleStatus === 'on-chain')
+  // Filtrer et trier les triplets publiés on-chain - plus récent en premier
+  const publishedTriplets = triplets
+    .filter(t => t.tripleStatus === 'on-chain')
+    .sort((a, b) => b.timestamp - a.timestamp)
   
   const publishedCounts = {
     total: publishedTriplets.length,
