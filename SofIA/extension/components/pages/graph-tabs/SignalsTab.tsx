@@ -47,7 +47,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>Chargement des triplets publiés...</p>
+          <p>Loading published triplets...</p>
         </div>
       </div>
     )
@@ -57,8 +57,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     <div className="triples-container">
       {/* Dashboard header */}
       <div className="dashboard-header">
-        <h2>⛓️ Triplets Publiés On-Chain</h2>
-        <p>Dashboard de vos triplets déjà publiés sur la blockchain</p>
+        <h2>⛓️ Published On-Chain Triplets</h2>
+        <p>Dashboard of your triplets already published on blockchain</p>
       </div>
 
       {/* Stats header */}
@@ -66,15 +66,15 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         <div className="signals-stats">
           <div className="stat-item">
             <span className="stat-number stat-on-chain">{publishedCounts.total}</span>
-            <span className="stat-label">Total Publiés</span>
+            <span className="stat-label">Total Published</span>
           </div>
           <div className="stat-item">
             <span className="stat-number stat-created">{publishedCounts.created}</span>
-            <span className="stat-label">Créés</span>
+            <span className="stat-label">Created</span>
           </div>
           <div className="stat-item">
             <span className="stat-number stat-existing">{publishedCounts.existing}</span>
-            <span className="stat-label">Existants</span>
+            <span className="stat-label">Existing</span>
           </div>
         </div>
       )}
@@ -92,10 +92,10 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   {/* Badge source à gauche */}
                   <div className="badges-container">
                     <div className={`source-badge ${getBadgeStyle(tripletItem.source)}`}>
-                      {tripletItem.source === 'created' ? '🆕 CRÉÉ' : '🔗 EXISTANT'}
+                      {tripletItem.source === 'created' ? '🆕 CREATED' : '🔗 EXISTING'}
                     </div>
                     <div className="status-badge badge-on-chain">
-                      ⛓️ PUBLIÉ
+                      ⛓️ PUBLISHED
                     </div>
                   </div>
 
@@ -177,9 +177,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         })
       ) : (
         <div className="empty-state">
-          <p>Aucun triplet publié pour le moment</p>
+          <p>No published triplets yet</p>
           <p className="empty-subtext">
-            Allez dans l'onglet Echoes pour publier vos premiers triplets on-chain
+            Go to the Echoes tab to publish your first on-chain triplets
           </p>
         </div>
       )}

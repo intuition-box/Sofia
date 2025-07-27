@@ -36,7 +36,7 @@ const MyGraphPage = () => {
       </div>
 
       <div className="page-content">
-        <Suspense fallback={<div className="loading-state">Chargement...</div>}>
+        <Suspense fallback={<div className="loading-state">Loading...</div>}>
           {activeGraphTab === 'Echoes' && (
             <EchoesTab 
               expandedTriplet={expandedTriplet}

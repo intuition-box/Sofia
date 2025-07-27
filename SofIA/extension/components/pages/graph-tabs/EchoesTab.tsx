@@ -170,7 +170,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         triplet.triplet.predicate,
         {
           name: triplet.triplet.object,
-          description: triplet.originalMessage?.rawObjectDescription || "Contenu visité par l'utilisateur.",
+          description: triplet.originalMessage?.rawObjectDescription || "Content visited by the user.",
           url: triplet.url
         }
       )
@@ -188,7 +188,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       console.log('✅ Triple successfully created on-chain!', result)
     } catch (error) {
       console.error('❌ Failed to create triple on-chain:', error)
-      alert(`Erreur lors de la création du triplet: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+      alert(`Error creating triplet: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setProcessingTripletId(null)
     }
@@ -227,21 +227,21 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
       console.log(`✅ Imported ${importCount} new triplets!`)
       if (importCount === 0) {
-        alert("Tous les triplets sont déjà importés !")
+        alert("All triplets are already imported!")
       }
     } catch (error) {
       console.error('❌ Failed to import triplets:', error)
       
       // Si erreur de quota, suggérer le nettoyage
       if (error instanceof Error && error.message.includes('quota')) {
-        const shouldClean = confirm("Erreur de quota de stockage ! Voulez-vous nettoyer les anciens messages pour libérer de l'espace ?")
+        const shouldClean = confirm("Storage quota error! Do you want to clean old messages to free up space?")
         if (shouldClean) {
           await clearOldMessages()
           // Retry l'import après nettoyage
           await importAllAvailableTriplets()
         }
       } else {
-        alert(`Erreur lors de l'import: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+        alert(`Import error: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
   }
@@ -307,34 +307,34 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       {availableTripletsCount > 0 && (
         <div className="import-section">
           <div className="import-header">
-            <h3>📥 Nouveaux triplets SofIA ({availableTripletsCount})</h3>
+            <h3>📥 New SofIA triplets ({availableTripletsCount})</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
                 className="btn-secondary"
                 onClick={() => setShowImportSection(!showImportSection)}
               >
-                {showImportSection ? 'Masquer' : 'Afficher'}
+                {showImportSection ? 'Hide' : 'Show'}
               </button>
               <button 
                 className="btn-secondary"
                 onClick={clearOldMessages}
-                title="Nettoyer les anciens messages pour libérer l'espace"
+                title="Clean old messages to free up space"
                 style={{ fontSize: '12px', padding: '8px 12px' }}
               >
-                🧹 Nettoyer
+                🧹 Clean
               </button>
             </div>
           </div>
           
           {showImportSection && (
             <div className="import-content">
-              <p>Vous avez {availableTripletsCount} nouveaux triplets depuis vos messages SofIA.</p>
+              <p>You have {availableTripletsCount} new triplets from your SofIA messages.</p>
               <button 
                 className="btn-primary"
                 onClick={importAllAvailableTriplets}
                 disabled={isCreating}
               >
-                Importer tous les triplets
+                Import all triplets
               </button>
             </div>
           )}
@@ -346,15 +346,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         <div className="signals-stats">
           <div className="stat-item">
             <span className="stat-number stat-atom-only">{unpublishedCounts.total}</span>
-            <span className="stat-label">En Attente</span>
+            <span className="stat-label">Pending</span>
           </div>
           <div className="stat-item">
             <span className="stat-number stat-created">{unpublishedCounts.created}</span>
-            <span className="stat-label">Créés</span>
+            <span className="stat-label">Created</span>
           </div>
           <div className="stat-item">
             <span className="stat-number stat-existing">{unpublishedCounts.existing}</span>
-            <span className="stat-label">Existants</span>
+            <span className="stat-label">Existing</span>
           </div>
         </div>
       )}
@@ -377,7 +377,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                       {tripletItem.source === 'created' ? '🆕 NEW' : '🔗 FOUND'}
                     </div>
                     <div className="status-badge badge-atom-only">
-                      🔗 EN ATTENTE
+                      🔗 PENDING
                     </div>
                   </div>
 
@@ -411,7 +411,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 {/* Message de progression */}
                 {processingTripletId === tripletItem.id && (
                   <div className="processing-message">
-                    {currentStep || '⚙️ Création du triplet...'}
+                    {currentStep || '⚙️ Creating triplet...'}
                   </div>
                 )}
 
@@ -453,7 +453,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         📦 IPFS: {tripletItem.ipfsUri.slice(0, 20)}...
                       </p>
                       <p className="triplet-detail-name">
-                        Status: 🔗 En attente de publication
+                        Status: 🔗 Pending publication
                       </p>
                     </div>
 
@@ -472,30 +472,30 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         })
       ) : availableTripletsCount > 0 ? (
         <div className="empty-state">
-          <p>Aucun triplet en attente</p>
+          <p>No pending triplets</p>
           <p className="empty-subtext">
-            Cliquez sur "Importer tous les triplets" ci-dessus pour commencer
+            Click "Import all triplets" above to get started
           </p>
         </div>
       ) : parsedMessages.length > 0 ? (
         <div className="empty-state">
-          <p>Tous vos triplets sont déjà publiés !</p>
+          <p>All your triplets are already published!</p>
           <p className="empty-subtext">
-            Consultez l'onglet Signals pour voir vos triplets publiés
+            Check the Signals tab to view your published triplets
           </p>
         </div>
       ) : (
         <div className="empty-state">
-          <p>Aucun message SofIA trouvé</p>
+          <p>No SofIA messages found</p>
           <p className="empty-subtext">
-            Vos triplets apparaîtront automatiquement quand vous recevrez des messages
+            Your triplets will appear automatically when you receive messages
           </p>
           <button 
             className="btn-secondary"
             onClick={clearOldMessages}
             style={{ marginTop: '16px' }}
           >
-            🧹 Nettoyer le stockage
+            🧹 Clean storage
           </button>
         </div>
       )}
