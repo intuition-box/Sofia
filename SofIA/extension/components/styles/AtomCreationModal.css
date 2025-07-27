@@ -206,7 +206,7 @@
 .dashboard-header h2 {
   margin: 0 0 8px 0;
   font-family: 'Gotu', sans-serif;
-  color: #82C341;
+  color: var(--color-accent);
   font-size: 24px;
 }
 
@@ -475,13 +475,13 @@
 /* Bouton Secondaire */
 .btn-secondary {
   background: transparent;
-  color: var(--sofia-700, #945941);
+  color: var(--sofia-700, #c47556);
   border: 2px solid rgba(148, 89, 65, 0.3);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: rgba(148, 89, 65, 0.1);
-  border-color: var(--sofia-700, #945941);
+  border-color: var(--sofia-700, #ffbea4);
 }
 
 .btn-secondary:disabled {
