@@ -90,13 +90,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 {/* Header avec badges et actions */}
                 <div className="triplet-header">
                   {/* Badge source à gauche */}
-                  <div className="badges-container">
-                    <div className={`source-badge ${getBadgeStyle(tripletItem.source)}`}>
-                      {tripletItem.source === 'created' ? '🆕 CREATED' : '🔗 EXISTING'}
-                    </div>
-                    <div className="status-badge badge-on-chain">
-                      ⛓️ PUBLISHED
-                    </div>
+                  
+                    
+                    
                   </div>
 
                   {/* Actions à droite - uniquement scan/view */}

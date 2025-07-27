@@ -545,17 +545,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 
                 {/* Header avec badges et actions */}
                 <div className="triplet-header">
-                  {/* Badge source et status à gauche */}
-                  <div className="badges-container">
-                    <div className={`source-badge ${getBadgeStyle(tripletItem.source)}`}>
-                      {tripletItem.source === 'created' ? '🆕 NEW' : '🔗 FOUND'}
-                    </div>
-                    <div className="status-badge badge-atom-only">
-                      🔗 PENDING
-                    </div>
-                  </div>
-
-                  {/* Actions à droite - Uniquement bouton publier */}
                   <div className="signal-actions">
                     <QuickActionButton
                       action="add"
