@@ -77,7 +77,7 @@ elizaos start
 
 Again inside `/agent`:
 ```bash
-elizaos agent start --path SofIA/agent1/SofIA.json
+elizaos agent start --path SofIA/agent/SofIA.json
 ```
 
 ---
