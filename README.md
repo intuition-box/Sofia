@@ -5,10 +5,16 @@ This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with
 This README guides you step-by-step to install, configure, and run your **Eliza OS** agent with the **Intuition MCP Server** and its plugin.
 
 Figma : [Mockup](https://www.figma.com/design/UnJdCYeVVmA4WVzFVRb5x6/SofIA-final?m=auto&t=HaHvGlczPhbXmKwU-6)
-Spline : [Animation](https://app.spline.design/file/36ec7513-df36-4e36-854b-56f87834778e)
-Whimsical : [BrainStroming](https://whimsical.com/mockup-SURS8uWMVKKPDyG3YpDyXM)
-Excalidraw : [Architecture Diagram](https://excalidraw.com/#json=tG7xgP3exjVuxdaJa7LIc,0JtKsBw_ULTjjwv_ORmaCA)
+
 Website : [SofIA](https://sofia.intuition.box)
+
+Spline : [Animation](https://app.spline.design/file/36ec7513-df36-4e36-854b-56f87834778e)
+
+Whimsical : [BrainStroming](https://whimsical.com/mockup-SURS8uWMVKKPDyG3YpDyXM)
+
+Excalidraw : [Architecture Diagram](https://excalidraw.com/#json=tG7xgP3exjVuxdaJa7LIc,0JtKsBw_ULTjjwv_ORmaCA)
+
+
 ---
 
 ## 📥 1️⃣ Download and Install Dependencies
