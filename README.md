@@ -12,6 +12,7 @@ Whimsical : [BrainStroming](https://whimsical.com/mockup-SURS8uWMVKKPDyG3YpDyXM)
 
 Excalidraw : [Architecture Diagram](https://excalidraw.com/#json=tG7xgP3exjVuxdaJa7LIc,0JtKsBw_ULTjjwv_ORmaCA)
 
+Website : [SofIA](sofia.intuition.box)
 ---
 
 ## 📥 1️⃣ Download and Install Dependencies
