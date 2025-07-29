@@ -17,23 +17,24 @@ Excalidraw : [Architecture Diagram](https://excalidraw.com/#json=tG7xgP3exjVuxda
 
 ---
 
+# 🧠 SofIA Installation Guide
+
 ## 📥 1️⃣ Download and Install Dependencies
 
-1. Clone and install **Intuition MCP Server** On the same folder as core 
+1. Clone and install **Intuition MCP Server** in the same folder as `core`:
    ```bash
    git clone https://github.com/THP-Lab/intuition-mcp-server
-   
-   cd intuition-mcp-server
-   
-   pnpm install
 
+   cd intuition-mcp-server
+
+   pnpm install
    ```
 
 ---
 
 ## ⚙️ 2️⃣ Start the **Intuition MCP Server**
 
-Inside the `intuition-mcp-server` directory:
+Inside the `intuition-mcp-server` directory, run:
 ```bash
 SERVER_MODE=http pnpm run start:http
 ```
@@ -42,64 +43,34 @@ SERVER_MODE=http pnpm run start:http
 
 ## 🔌 3️⃣ Download and Install the **MCP Plugin** for **Eliza OS**
 
- https://github.com/elizaos-plugins/plugin-mcp
-   ```
+👉 Plugin repository: [plugin-mcp](https://github.com/elizaos-plugins/plugin-mcp)
 
- Follow the installation instructions provided in the plugin repository.
+Follow the installation instructions provided in the repository.
 
 ---
 
 ## 🗝️ 4️⃣ Configure the **.env** File
 
-1. Place your `.env` file inside your `/my-agent` directory (where your Eliza OS agent is located).  
-   👉 **Do not share your OpenAI key publicly!**
+Place your `.env` file inside your `/my-agent` directory (where your Eliza OS agent is located).  
+Ensure the following:
 
-2. Create a `.gitignore` file in `/my-agent` and add:
-   ```
-   .env
-   ```
-
-   This ensures your OpenAI API key won’t be pushed to GitHub.
+- Your **OpenAI API key** is correctly set  
+- 👉 **Never share your OpenAI key publicly!**
 
 ---
 
-## 🚦 5️⃣ Start **Eliza OS**
+## ✅ Final Checks
 
-Inside the `/agent` directory:
-```bash
-elizaos start
-```
-<<<<<<< HEAD
+In your **SofIA1** agent settings:
 
----
-
-## 🤖 6️⃣ Start Your Agent **SofIA**
-
-Again inside `/agent`:
-```bash
-elizaos agent start --path SofIA/agent/SofIA.json
-```
-
----
-## 🤖 7️⃣ Start the proxy server 
-
-    inside /extension 
-    
-    pnpm run proxy
-
-## ✅  Final Checks
-
-In your **SofIA1** settings:
-- Ensure the **OPENAI** key is correctly set.
-- Make sure the **MCP plugin** and **OpenAI plugin** are both enabled.
-
-## 🗂️ Happy exploring with **Eliza OS**!
+- ✅ Ensure the **OPENAI** key is correctly configured  
+- ✅ Make sure both **MCP plugin** and **OpenAI plugin** are enabled  
 
 ---
 
 ## 🚀 How to Launch SofIA
 
-Once everything is installed, start the complete SofIA application, simply run from core:
+Once everything is installed, start the full SofIA application from the `core` directory:
 
 ```bash
 ./sofia start
@@ -107,10 +78,12 @@ Once everything is installed, start the complete SofIA application, simply run f
 
 This script will automatically launch all components in the correct order:
 
-1. **🛜 MCP Server** - Starts the Intuition MCP server for external integrations
-2. **💁 ElizaOS** - Launches the core ElizaOS runtime
-3. **🤖 Agent Activation** - Activates the SofIA agent with its configuration
-4. **📱 Extension Build** - Builds the browser extension (visible progress)
+1. 🛜 **MCP Server** – Starts the Intuition MCP server for external integrations  
+2. 💁 **ElizaOS** – Launches the core ElizaOS runtime  
+3. 🤖 **Agent Activation** – Activates the SofIA agent with its configuration  
+4. 📱 **Extension Build** – Builds the browser extension (with visible progress)
+
+---
 
 
 
