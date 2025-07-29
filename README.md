@@ -16,7 +16,6 @@ Excalidraw : [Architecture Diagram](https://excalidraw.com/#json=tG7xgP3exjVuxda
 
 
 ---
-
 # 🧠 SofIA Installation Guide
 
 ## 📥 1️⃣ Download and Install Dependencies
@@ -84,6 +83,9 @@ This script will automatically launch all components in the correct order:
 4. 📱 **Extension Build** – Builds the browser extension (with visible progress)
 
 ---
+
+## 🗂️ Happy exploring with **Eliza OS**!
+
 
 
 
