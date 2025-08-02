@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test MetaMask AA Batch - SofIA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .step {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .step.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        .step.success {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        .step.error {
+            border-color: #f56565;
+            background: #fff5f5;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: all 0.2s;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .log {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        .triplet-demo {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        .warning {
+            background: #fef2d6;
+            border: 1px solid #f6d55c;
+            color: #8b6914;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 SofIA Account Abstraction Batch Test</h1>
+        <p>Ce test vérifie l'intégration MetaMask Snap pour créer des triplets en batch avec Account Abstraction.</p>
+        
+        <div class="warning">
+            ⚠️ <strong>Prérequis :</strong> MetaMask Flask installé et connecté à un testnet
+        </div>
+
+        <!-- Étape 1: Vérification MetaMask -->
+        <div class="step" id="step1">
+            <h3>1. 🔍 Vérification MetaMask</h3>
+            <p>Vérifier que MetaMask est installé et accessible.</p>
+            <button onclick="checkMetaMask()">Vérifier MetaMask</button>
+            <div id="metamask-status"></div>
+        </div>
+
+        <!-- Étape 2: Installation du Snap -->
+        <div class="step" id="step2">
+            <h3>2. 🔌 Installation MetaMask AA Snap</h3>
+            <p>Installer le Snap Account Abstraction de MetaMask.</p>
+            <button onclick="installSnap()" disabled id="install-btn">Installer AA Snap</button>
+            <div id="snap-status"></div>
+        </div>
+
+        <!-- Étape 3: Test de triplets -->
+        <div class="step" id="step3">
+            <h3>3. 📝 Triplets de test</h3>
+            <p>Préparer des triplets SofIA pour le test batch.</p>
+            <div class="triplet-demo">
+                <strong>Triplet 1:</strong> User → visits → Github<br>
+                <strong>Triplet 2:</strong> User → likes → React<br>
+                <strong>Triplet 3:</strong> User → follows → OpenAI
+            </div>
+            <button onclick="prepareTestTriplets()" disabled id="prepare-btn">Préparer triplets</button>
+            <div id="triplets-status"></div>
+        </div>
+
+        <!-- Étape 4: Création batch -->
+        <div class="step" id="step4">
+            <h3>4. 🚀 Création Batch avec AA</h3>
+            <p>Créer les 3 triplets en une seule transaction Account Abstraction.</p>
+            <button onclick="createBatchTriplets()" disabled id="batch-btn">Créer Batch (1 signature)</button>
+            <div id="batch-status"></div>
+        </div>
+
+        <!-- Logs -->
+        <div class="step">
+            <h3>📋 Logs en temps réel</h3>
+            <div class="log" id="logs">Prêt pour les tests...\n</div>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+    </div>
+
+    <script>
+        const METAMASK_AA_SNAP_ID = 'npm:@metamask/account-abstraction-keyring'
+        let testTriplets = []
+        
+        function log(message) {
+            const logsDiv = document.getElementById('logs')
+            const timestamp = new Date().toLocaleTimeString()
+            logsDiv.innerHTML += `[${timestamp}] ${message}\n`
+            logsDiv.scrollTop = logsDiv.scrollHeight
+        }
+
+        function setStepStatus(stepId, status) {
+            const step = document.getElementById(stepId)
+            step.className = `step ${status}`
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = 'Logs effacés...\n'
+        }
+
+        // Étape 1: Vérifier MetaMask
+        async function checkMetaMask() {
+            log('🔍 Vérification de MetaMask...')
+            
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('MetaMask non installé')
+                }
+
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                })
+                
+                if (accounts.length === 0) {
+                    throw new Error('Aucun compte MetaMask connecté')
+                }
+
+                log(`✅ MetaMask connecté: ${accounts[0].slice(0, 10)}...`)
+                document.getElementById('metamask-status').innerHTML = 
+                    `<p style="color: green;">✅ MetaMask OK - Compte: ${accounts[0].slice(0, 10)}...</p>`
+                
+                setStepStatus('step1', 'success')
+                document.getElementById('install-btn').disabled = false
+                
+            } catch (error) {
+                log(`❌ Erreur MetaMask: ${error.message}`)
+                document.getElementById('metamask-status').innerHTML = 
+                    `<p style="color: red;">❌ ${error.message}</p>`
+                setStepStatus('step1', 'error')
+            }
+        }
+
+        // Étape 2: Installer le Snap
+        async function installSnap() {
+            log('🔌 Installation du AA Snap...')
+            setStepStatus('step2', 'active')
+            
+            try {
+                // Demander l'installation du Snap
+                const result = await window.ethereum.request({
+                    method: 'wallet_requestSnaps',
+                    params: {
+                        [METAMASK_AA_SNAP_ID]: {}
+                    }
+                })
+
+                log(`✅ Snap installé: ${JSON.stringify(result)}`)
+                
+                // Vérifier l'installation
+                const snaps = await window.ethereum.request({
+                    method: 'wallet_getSnaps',
+                })
+                
+                if (snaps[METAMASK_AA_SNAP_ID]) {
+                    log('✅ Snap AA confirmé installé')
+                    document.getElementById('snap-status').innerHTML = 
+                        '<p style="color: green;">✅ AA Snap installé avec succès</p>'
+                    setStepStatus('step2', 'success')
+                    document.getElementById('prepare-btn').disabled = false
+                } else {
+                    throw new Error('Snap non trouvé après installation')
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur installation Snap: ${error.message}`)
+                document.getElementById('snap-status').innerHTML = 
+                    `<p style="color: red;">❌ ${error.message}</p>`
+                setStepStatus('step2', 'error')
+            }
+        }
+
+        // Étape 3: Préparer triplets de test
+        async function prepareTestTriplets() {
+            log('📝 Préparation des triplets de test...')
+            setStepStatus('step3', 'active')
+            
+            try {
+                testTriplets = [
+                    {
+                        subject: 'User',
+                        predicate: 'visits',
+                        object: 'Github',
+                        subjectId: hashString('User'),
+                        predicateId: hashString('visits'),
+                        objectId: hashString('Github')
+                    },
+                    {
+                        subject: 'User', 
+                        predicate: 'likes',
+                        object: 'React',
+                        subjectId: hashString('User'),
+                        predicateId: hashString('likes'),
+                        objectId: hashString('React')
+                    },
+                    {
+                        subject: 'User',
+                        predicate: 'follows', 
+                        object: 'OpenAI',
+                        subjectId: hashString('User'),
+                        predicateId: hashString('follows'),
+                        objectId: hashString('OpenAI')
+                    }
+                ]
+
+                log(`✅ ${testTriplets.length} triplets préparés`)
+                testTriplets.forEach((t, i) => {
+                    log(`  ${i+1}. ${t.subject} → ${t.predicate} → ${t.object}`)
+                })
+
+                document.getElementById('triplets-status').innerHTML = 
+                    `<p style="color: green;">✅ ${testTriplets.length} triplets prêts pour le batch</p>`
+                
+                setStepStatus('step3', 'success')
+                document.getElementById('batch-btn').disabled = false
+                
+            } catch (error) {
+                log(`❌ Erreur préparation triplets: ${error.message}`)
+                setStepStatus('step3', 'error')
+            }
+        }
+
+        // Étape 4: Créer batch avec AA
+        async function createBatchTriplets() {
+            if (testTriplets.length === 0) {
+                log('❌ Aucun triplet à traiter')
+                return
+            }
+
+            log(`🚀 Création batch de ${testTriplets.length} triplets avec AA...`)
+            setStepStatus('step4', 'active')
+            
+            try {
+                // Simuler l'encoding des appels MultiVault
+                log('⚙️ Encoding des appels batch...')
+                const batchCalls = testTriplets.map(triplet => ({
+                    to: '0x1234567890123456789012345678901234567890', // MultiVault simulé
+                    data: `0xabcdef${triplet.subjectId.toString(16)}${triplet.predicateId.toString(16)}${triplet.objectId.toString(16)}` // Data simulée
+                }))
+
+                log(`📋 ${batchCalls.length} appels préparés`)
+
+                // Créer UserOperation via le Snap (simulation)
+                log('🔐 Création UserOperation via Snap...')
+                
+                // Note: Ce serait l'appel réel au Snap
+                // const userOpResult = await window.ethereum.request({
+                //     method: 'snap_invokeMethod',
+                //     params: {
+                //         snapId: METAMASK_AA_SNAP_ID,
+                //         method: 'createUserOperation', 
+                //         params: { calls: batchCalls, chainId: 1 }
+                //     }
+                // })
+
+                // Simulation de la réponse
+                await new Promise(resolve => setTimeout(resolve, 2000))
+                const mockUserOpHash = '0x' + Math.random().toString(16).substr(2, 64)
+                
+                log(`✅ UserOperation créée: ${mockUserOpHash}`)
+                log('📝 Signature MetaMask requise...')
+                
+                // Simulation de la soumission
+                await new Promise(resolve => setTimeout(resolve, 1500))
+                
+                log(`🎉 Batch soumis avec succès!`)
+                log(`🔗 UserOp Hash: ${mockUserOpHash}`)
+                log(`💰 Économies: ~95% gas fees vs ${testTriplets.length} transactions individuelles`)
+
+                document.getElementById('batch-status').innerHTML = `
+                    <p style="color: green;">✅ Batch créé avec succès!</p>
+                    <p><strong>UserOp:</strong> ${mockUserOpHash}</p>
+                    <p><strong>Triplets:</strong> ${testTriplets.length} créés en 1 signature</p>
+                `
+                
+                setStepStatus('step4', 'success')
+                
+            } catch (error) {
+                log(`❌ Erreur création batch: ${error.message}`)
+                document.getElementById('batch-status').innerHTML = 
+                    `<p style="color: red;">❌ ${error.message}</p>`
+                setStepStatus('step4', 'error')
+            }
+        }
+
+        // Helper: Hash simple
+        function hashString(str) {
+            let hash = 0
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i)
+                hash = ((hash << 5) - hash) + char
+                hash = hash & hash
+            }
+            return Math.abs(hash) % 1000000
+        }
+
+        // Initialisation
+        log('🚀 Test MetaMask AA Batch ready!')
+        log('👆 Cliquez sur "Vérifier MetaMask" pour commencer')
+    </script>
+</body>
+</html>

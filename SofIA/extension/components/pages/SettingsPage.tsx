@@ -126,6 +126,31 @@ const SettingsPage = () => {
           <WalletConnectionButton />
         </div>
       </div>
+
+      {/* Developer Tools Section */}
+      <div className="settings-section">
+        <h3 className="settings-section-title">Developer Tools</h3>
+        
+        <div className="settings-item">
+          <span>Data Seeder</span>
+          <button 
+            onClick={() => navigateTo('seed')}
+            className="seed-button"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#667eea',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            🌱 Seed Test Data
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { Storage } from '@plasmohq/storage'
 import { useOnChainTriplets, type OnChainTriplet } from '../../../hooks/useOnChainTriplets'
 import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
+import { useMetaMaskAA } from '../../../hooks/useMetaMaskAA_Pure'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
 import '../../styles/AtomCreationModal.css'
 import '../../styles/MyGraphPage.css'
+import '../../styles/BatchSelection.css'
 
 const storage = new Storage()
 
@@ -113,10 +115,24 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
   // Hooks pour la gestion des triplets on-chain
-  const { triplets, isLoading, getTripletsCount, updateTripletToOnChain, addTriplet } = useOnChainTriplets()
+  const { triplets, isLoading, getTripletsCount, updateTripletToOnChain, addTriplet, refreshTriplets } = useOnChainTriplets()
   const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
   
+  // Hook MetaMask Account Abstraction
+  const { 
+    isSnapInstalled, 
+    isConnecting, 
+    isBatchProcessing, 
+    batchError,
+    connectSnap, 
+    createBatchTriplets 
+  } = useMetaMaskAA()
+  
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
+
+  // État pour la sélection batch
+  const [selectedTriplets, setSelectedTriplets] = useState<Set<string>>(new Set())
+  const [batchMode, setBatchMode] = useState(false)
 
   // Filtrer et trier les triplets non publiés (atom-only) - plus récent en premier
   const unpublishedTriplets = triplets
@@ -377,6 +393,184 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     }
   }
 
+  // Fonctions pour la sélection batch
+  const toggleTripletSelection = (tripletId: string) => {
+    const newSelected = new Set(selectedTriplets)
+    if (newSelected.has(tripletId)) {
+      newSelected.delete(tripletId)
+    } else {
+      newSelected.add(tripletId)
+    }
+    setSelectedTriplets(newSelected)
+  }
+
+  const selectAllPendingTriplets = () => {
+    const allPendingIds = new Set(unpublishedTriplets.map(t => t.id))
+    setSelectedTriplets(allPendingIds)
+  }
+
+  const clearSelection = () => {
+    setSelectedTriplets(new Set())
+  }
+
+  // Fonction batch avec MetaMask AA
+  const handleBatchCreate = async () => {
+    if (selectedTriplets.size === 0) return
+
+    console.log(`🚀🚀🚀 DÉBUT BATCH CRÉATION 🚀🚀🚀`)
+    console.log(`📊 État initial:`)
+    console.log(`  - selectedTriplets.size: ${selectedTriplets.size}`)
+    console.log(`  - unpublishedTriplets.length: ${unpublishedTriplets.length}`)
+    console.log(`  - selectedTriplets IDs:`, Array.from(selectedTriplets))
+    console.log(`  - unpublishedTriplets IDs:`, unpublishedTriplets.map(t => t.id))
+
+    try {
+      // Vérifier si le Snap est installé
+      if (!isSnapInstalled) {
+        const connected = await connectSnap()
+        if (!connected) return
+      }
+
+      // Préparer les triplets sélectionnés
+      console.log(`🔍 ÉTAPE 1: Filtrage des triplets sélectionnés`)
+      const selectedTripletsData = unpublishedTriplets
+        .filter(t => {
+          const isSelected = selectedTriplets.has(t.id)
+          console.log(`  - Triplet ${t.id} (${t.triplet.subject}): ${isSelected ? 'SÉLECTIONNÉ' : 'non sélectionné'}`)
+          return isSelected
+        })
+        .map(t => ({
+          subject: t.triplet.subject,
+          predicate: t.triplet.predicate,
+          object: t.triplet.object,
+          subjectId: 0, // Sera calculé dans le hook
+          predicateId: 0,
+          objectId: 0
+        }))
+
+      console.log(`✅ ÉTAPE 1 TERMINÉE: ${selectedTripletsData.length} triplets filtrés`)
+      console.log(`📋 Triplets data:`, selectedTripletsData.map(t => `${t.subject} → ${t.predicate} → ${t.object}`))
+
+      if (selectedTripletsData.length === 0) {
+        console.error(`❌ ERREUR: Aucun triplet trouvé après filtrage !`)
+        console.error(`❌ selectedTriplets:`, Array.from(selectedTriplets))
+        console.error(`❌ unpublishedTriplets:`, unpublishedTriplets.map(t => `${t.id}: ${t.triplet.subject}`))
+        return
+      }
+
+      // Créer le batch via MetaMask Snap
+      console.log(`🔥 ÉTAPE 2: Appel createBatchTriplets avec ${selectedTripletsData.length} triplets`)
+      const result = await createBatchTriplets(selectedTripletsData)
+
+      console.log(`🎯 ÉTAPE 2 TERMINÉE: result.success = ${result.success}`)
+      if (result.success) {
+        console.log(`✅ Batch créé avec succès! UserOp: ${result.userOpHash}`)
+        
+        // Marquer TOUS les triplets sélectionnés comme créés
+        console.log(`🔄 ÉTAPE 3: DÉBUT mise à jour de ${selectedTriplets.size} triplets dans le storage`)
+        console.log(`🔄 IDs à traiter:`, Array.from(selectedTriplets))
+        
+        // COPIE IMMÉDIATE de selectedTriplets pour éviter les modifications concurrentes
+        const tripletsToProcess = Array.from(selectedTriplets)
+        console.log(`🔄 Copie des IDs à traiter:`, tripletsToProcess)
+        
+        let processedCount = 0
+        console.log(`🔥 BOUCLE COMMENCE - ${tripletsToProcess.length} triplets à traiter`)
+        
+        for (let i = 0; i < tripletsToProcess.length; i++) {
+          const tripletId = tripletsToProcess[i]
+          console.log(`🔄 [${i + 1}/${tripletsToProcess.length}] ===== DÉBUT TRAITEMENT triplet ID: ${tripletId} =====`)
+          
+          // VÉRIFIER si unpublishedTriplets a changé pendant la boucle
+          console.log(`🔄 [${i + 1}/${tripletsToProcess.length}] unpublishedTriplets.length actuel: ${unpublishedTriplets.length}`)
+          
+          const triplet = unpublishedTriplets.find(t => t.id === tripletId)
+          if (triplet) {
+            console.log(`  ✅ [${i + 1}/${tripletsToProcess.length}] TROUVÉ - Triplet: ${triplet.triplet.subject} → ${triplet.triplet.predicate} → ${triplet.triplet.object}`)
+            console.log(`  🔄 [${i + 1}/${tripletsToProcess.length}] État avant updateTripletToOnChain: tripleStatus = ${triplet.tripleStatus}`)
+            
+            try {
+              console.log(`  🚀 [${i + 1}/${tripletsToProcess.length}] APPEL updateTripletToOnChain pour ${triplet.id}`)
+              console.log(`  🚀 [${i + 1}/${tripletsToProcess.length}] Paramètres: userOpHash=${result.userOpHash}`)
+              
+              await updateTripletToOnChain(
+                triplet.id,
+                result.userOpHash, // Utiliser userOpHash comme tripleVaultId temporaire
+                'batch-created',
+                'batch-created', 
+                'batch-created',
+                result.userOpHash
+              )
+              processedCount++
+              console.log(`  ✅ [${i + 1}/${tripletsToProcess.length}] SUCCÈS - Triplet ${triplet.id} marqué comme créé (total: ${processedCount})`)
+              
+              // Vérifier l'état après la mise à jour
+              const updatedTriplet = unpublishedTriplets.find(t => t.id === tripletId)
+              if (updatedTriplet) {
+                console.log(`  📊 [${i + 1}/${tripletsToProcess.length}] État après update: tripleStatus = ${updatedTriplet.tripleStatus}`)
+              } else {
+                console.log(`  📊 [${i + 1}/${tripletsToProcess.length}] Triplet introuvable après update (normal si maintenant on-chain)`)
+              }
+              
+            } catch (updateError) {
+              console.error(`  ❌ [${i + 1}/${tripletsToProcess.length}] ERREUR mise à jour triplet ${triplet.id}:`, updateError)
+              console.error(`  ❌ [${i + 1}/${tripletsToProcess.length}] Stack trace:`, updateError.stack)
+              // CONTINUER la boucle même en cas d'erreur
+            }
+          } else {
+            console.warn(`  ⚠️ [${i + 1}/${tripletsToProcess.length}] NON TROUVÉ - Triplet ID: ${tripletId}`)
+            console.warn(`  📋 [${i + 1}/${tripletsToProcess.length}] unpublishedTriplets actuels:`, unpublishedTriplets.map(t => `${t.id}: ${t.triplet.subject} (${t.tripleStatus})`))
+          }
+          
+          console.log(`🔄 [${i + 1}/${tripletsToProcess.length}] ===== FIN TRAITEMENT triplet ${tripletId} =====`)
+        }
+        
+        console.log(`🔥 BOUCLE TERMINÉE - ${processedCount}/${tripletsToProcess.length} triplets traités`)
+        
+        console.log(`🎉 ÉTAPE 3 TERMINÉE: ${processedCount}/${tripletsToProcess.length} triplets traités avec succès!`)
+
+        // Forcer rafraîchissement des triplets
+        console.log(`🔄 ÉTAPE 4: Rafraîchissement forcé des triplets`)
+        await refreshTriplets()
+        
+        // Attendre un peu pour que React mette à jour l'état
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        console.log(`✅ ÉTAPE 4 TERMINÉE: Triplets rafraîchis`)
+        
+        // Force un re-render en attendant que l'état React se mette à jour
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
+        console.log(`📊 État final des triplets traités (après délai):`)
+        for (const tripletId of tripletsToProcess) {
+          const finalTriplet = triplets.find(t => t.id === tripletId)
+          if (finalTriplet) {
+            console.log(`  - ${tripletId}: ${finalTriplet.tripleStatus} (${finalTriplet.triplet.subject})`)
+          } else {
+            console.log(`  - ${tripletId}: NON TROUVÉ`)
+          }
+        }
+        
+        // Vérifier combien de triplets restent unpublished après le batch
+        const remainingUnpublished = triplets.filter(t => t.tripleStatus === 'atom-only')
+        console.log(`📊 Triplets unpublished restants: ${remainingUnpublished.length}`)
+        console.log(`📊 Triplets on-chain: ${triplets.filter(t => t.tripleStatus === 'on-chain').length}`)
+
+        // Nettoyer la sélection
+        console.log(`🧹 ÉTAPE 5: Nettoyage sélection et batch mode`)
+        setSelectedTriplets(new Set())
+        setBatchMode(false)
+        console.log(`✅ ÉTAPE 5 TERMINÉE: Sélection nettoyée`)
+      } else {
+        console.error(`❌ Batch failed:`, result.error)
+      }
+    } catch (error) {
+      console.error('❌ ERREUR GÉNÉRALE batch creation:', error)
+    }
+    
+    console.log(`🏁🏁🏁 FIN BATCH CRÉATION 🏁🏁🏁`)
+  }
+
   // Fonction pour importer tous les triplets disponibles
   const importAllAvailableTriplets = async () => {
     try {
@@ -457,11 +651,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     }
   }
 
-  const getBadgeStyle = (source: 'created' | 'existing') => {
-    return source === 'created' 
-      ? 'badge-created' 
-      : 'badge-existing'
-  }
 
   const getBorderStyle = (source: 'created' | 'existing') => {
     return source === 'created' 
@@ -519,6 +708,79 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         </div>
       )}
 
+      {/* Batch Selection Interface */}
+      {unpublishedCounts.total > 0 && (
+        <div className="batch-selection-section">
+          <div className="batch-header">
+            <div className="batch-toggle">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={batchMode}
+                  onChange={(e) => setBatchMode(e.target.checked)}
+                />
+                <span>🚀 Batch Mode (Account Abstraction)</span>
+              </label>
+            </div>
+            
+            {batchMode && (
+              <div className="batch-controls">
+                <button 
+                  className="btn-secondary"
+                  onClick={selectAllPendingTriplets}
+                  disabled={unpublishedCounts.total === 0}
+                >
+                  Select All ({unpublishedCounts.total})
+                </button>
+                <button 
+                  className="btn-secondary"
+                  onClick={clearSelection}
+                  disabled={selectedTriplets.size === 0}
+                >
+                  Clear
+                </button>
+                
+                {!isSnapInstalled && (
+                  <button 
+                    className="btn-primary"
+                    onClick={connectSnap}
+                    disabled={isConnecting}
+                  >
+                    {isConnecting ? 'Installing...' : '🔌 Install MetaMask Snap'}
+                  </button>
+                )}
+                
+                {isSnapInstalled && (
+                  <button 
+                    className="btn-primary batch-create-btn"
+                    onClick={handleBatchCreate}
+                    disabled={selectedTriplets.size === 0 || isBatchProcessing}
+                  >
+                    {isBatchProcessing ? (
+                      <>⏳ Creating {selectedTriplets.size} triplets...</>
+                    ) : (
+                      <>🚀 Create {selectedTriplets.size} triplets (1 signature)</>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+            
+            {batchMode && selectedTriplets.size > 0 && (
+              <div className="batch-stats">
+                ✅ {selectedTriplets.size} triplets selected for batch creation
+              </div>
+            )}
+            
+            {batchError && (
+              <div className="batch-error">
+                ❌ {batchError}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Stats header */}
       {unpublishedCounts.total > 0 && (
         <div className="signals-stats">
@@ -542,10 +804,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         unpublishedTriplets.map((tripletItem, tripletItemIndex) => {
           // Pour le moment, on utilise l'index du triplet comme identifiant
           const isExpanded = expandedTriplet?.msgIndex === 0 && expandedTriplet?.tripletIndex === tripletItemIndex
+          const isSelected = selectedTriplets.has(tripletItem.id)
 
           return (
-            <div key={tripletItem.id} className={`echo-card ${getBorderStyle(tripletItem.source)}`}>
+            <div key={tripletItem.id} className={`echo-card ${getBorderStyle(tripletItem.source)} ${isSelected ? 'selected' : ''}`}>
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
+                
+                {/* Checkbox pour sélection batch */}
+                {batchMode && (
+                  <div className="triplet-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleTripletSelection(tripletItem.id)}
+                    />
+                  </div>
+                )}
           
 
                 {/* Texte du triplet */}
@@ -568,11 +842,13 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 {/* Header avec badges et actions */}
                 <div className="triplet-header">
                   <div className="signal-actions">
-                    <QuickActionButton
-                      action="amplify"
-                      onClick={() => handleCreateTripleOnChain(tripletItem)}
-                      disabled={processingTripletId === tripletItem.id || isCreating}
-                    />
+                    {!batchMode && (
+                      <QuickActionButton
+                        action="amplify"
+                        onClick={() => handleCreateTripleOnChain(tripletItem)}
+                        disabled={processingTripletId === tripletItem.id || isCreating}
+                      />
+                    )}
                   </div>
                 </div>
                 {/* Message de progression */}

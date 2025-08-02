@@ -21,6 +21,7 @@ import SavedPage from "./components/pages/SavedPage"
 import SearchPage from "./components/pages/SearchPage"
 import SearchResultPage from "./components/pages/SearchResultPage"
 import ChatPage from "./components/pages/ChatPage"
+import SeedPage from "./components/pages/SeedPage"
 
 
 const SidePanelContent = () => {
@@ -62,6 +63,8 @@ const SidePanelContent = () => {
         return <SearchResultPage />
       case 'chat':
         return <ChatPage />
+      case 'seed':
+        return <SeedPage />
       default:
         return <HomeConnectedPage />
     }

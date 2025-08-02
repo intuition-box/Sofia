@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SofIA Storage Seeder</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin: 25px 0;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+        .section.success {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 8px 4px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .log {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        .triplet-preview {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+        }
+        .warning {
+            background: #fef2d6;
+            border: 1px solid #f6d55c;
+            color: #8b6914;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 SofIA Storage Seeder</h1>
+        <p style="text-align: center; color: #718096;">
+            Seed votre storage Plasmo avec des données de test pour Account Abstraction
+        </p>
+        
+        <div class="warning">
+            ⚠️ <strong>Note :</strong> Ce seeder fonctionne uniquement dans le contexte de l'extension Chrome. 
+            Ouvrez cette page via l'extension SofIA pour accéder au storage Plasmo.
+        </div>
+
+        <!-- Section Messages -->
+        <div class="section" id="messages-section">
+            <h3>📬 Messages SofIA</h3>
+            <p>Ajouter des messages simulés dans le buffer pour tester l'extraction de triplets.</p>
+            
+            <div class="triplet-preview">
+                <strong>Exemple de messages à seeder :</strong><br>
+                • "User visits Github" → "User explores Ethereum"<br>
+                • "User learns React" → "User builds Web3-Apps"<br>
+                • "User uses MetaMask" → "User deploys Smart-Contracts"
+            </div>
+            
+            <button onclick="seedMessages()">🌱 Seed Messages (5 messages)</button>
+            <button onclick="showMessageStats()">📊 Status Messages</button>
+        </div>
+
+        <!-- Section Triplets -->
+        <div class="section" id="triplets-section">
+            <h3>🎯 Triplets Pending</h3>
+            <p>Créer des triplets en attente pour tester le mode batch Account Abstraction.</p>
+            
+            <div class="triplet-preview">
+                <strong>Triplets de test :</strong><br>
+                • User → builds → React-Apps<br>
+                • User → learns → TypeScript<br>
+                • User → deploys → Smart-Contracts<br>
+                • User → uses → MetaMask<br>
+                • User → explores → Account-Abstraction
+            </div>
+            
+            <button onclick="seedTriplets()">🎯 Seed Triplets (5 triplets)</button>
+            <button onclick="showTripletStats()">📊 Status Triplets</button>
+        </div>
+
+        <!-- Section Actions -->
+        <div class="section">
+            <h3>⚡ Actions rapides</h3>
+            <button onclick="seedAll()">🚀 Seed All (Messages + Triplets)</button>
+            <button onclick="showAllStats()">📊 Status Complet</button>
+            <button onclick="clearAll()" style="background: #f56565;">🧹 Clear All</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats" id="stats-container" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="messages-count">0</div>
+                <div class="stat-label">Messages</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="triplets-count">0</div>
+                <div class="stat-label">Triplets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="created-count">0</div>
+                <div class="stat-label">Created</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="existing-count">0</div>
+                <div class="stat-label">Existing</div>
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="section">
+            <h3>📋 Logs</h3>
+            <div class="log" id="logs">🚀 SofIA Seeder ready...\n</div>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+    </div>
+
+    <script>
+        // Import dynamique de Plasmo Storage (sera disponible dans l'extension)
+        let storage = null;
+        
+        function log(message) {
+            const logsDiv = document.getElementById('logs')
+            const timestamp = new Date().toLocaleTimeString()
+            logsDiv.textContent += `[${timestamp}] ${message}\n`
+            logsDiv.scrollTop = logsDiv.scrollHeight
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').textContent = 'Logs cleared...\n'
+        }
+
+        // Initialiser le storage
+        async function initStorage() {
+            try {
+                // Dans une extension Chrome, Plasmo Storage sera disponible
+                if (typeof chrome !== 'undefined' && chrome.storage) {
+                    log('✅ Chrome storage disponible')
+                    return {
+                        get: (key) => new Promise(resolve => {
+                            chrome.storage.local.get([key], result => resolve(result[key]))
+                        }),
+                        set: (key, value) => new Promise(resolve => {
+                            chrome.storage.local.set({[key]: value}, resolve)
+                        }),
+                        remove: (key) => new Promise(resolve => {
+                            chrome.storage.local.remove([key], resolve)
+                        })
+                    }
+                } else {
+                    // Fallback localStorage pour le test
+                    log('⚠️ Utilisation localStorage (test uniquement)')
+                    return {
+                        get: (key) => Promise.resolve(JSON.parse(localStorage.getItem(key) || 'null')),
+                        set: (key, value) => Promise.resolve(localStorage.setItem(key, JSON.stringify(value))),
+                        remove: (key) => Promise.resolve(localStorage.removeItem(key))
+                    }
+                }
+            } catch (error) {
+                log(`❌ Erreur init storage: ${error.message}`)
+                return null
+            }
+        }
+
+        // Messages de test
+        const mockMessages = [
+            {
+                id: `test_${Date.now()}_1`,
+                content: {
+                    text: `Analyse: L'utilisateur explore des projets blockchain.
+                    
+Triplets extraits:
+- User visits Github
+- User explores Ethereum  
+- User researches DeFi
+- User studies Smart-Contracts`
+                },
+                created_at: Date.now() - 3600000,
+                processed: false
+            },
+            {
+                id: `test_${Date.now()}_2`,
+                content: {
+                    text: `Observation: L'utilisateur développe en React.
+                    
+Triplets détectés:
+- User codes React-Applications
+- User uses TypeScript
+- User deploys Vercel
+- User manages Github-Repositories`
+                },
+                created_at: Date.now() - 7200000,
+                processed: false
+            },
+            {
+                id: `test_${Date.now()}_3`,
+                content: {
+                    text: `Comportement: L'utilisateur utilise MetaMask.
+                    
+Relations identifiées:
+- User uses MetaMask
+- User deploys Smart-Contracts
+- User tests Sepolia-Testnet
+- User integrates Web3`
+                },
+                created_at: Date.now() - 10800000,
+                processed: false
+            }
+        ]
+
+        // Triplets de test - Format correct pour useOnChainTriplets
+        const mockTriplets = [
+            {
+                id: `triplet_${Date.now()}_1`,
+                triplet: { subject: "User", predicate: "builds", object: "React-Apps" },
+                atomVaultId: "pending",
+                source: "created",
+                url: "https://react.dev",
+                ipfsUri: "pending",
+                tripleStatus: "atom-only",
+                timestamp: Date.now() - 60000,
+                originalMessage: {
+                    rawObjectDescription: "Modern React application development",
+                    rawObjectUrl: "https://react.dev"
+                }
+            },
+            {
+                id: `triplet_${Date.now()}_2`, 
+                triplet: { subject: "User", predicate: "learns", object: "TypeScript" },
+                atomVaultId: "pending",
+                source: "created",
+                url: "https://typescriptlang.org",
+                ipfsUri: "pending",
+                tripleStatus: "atom-only", 
+                timestamp: Date.now() - 120000,
+                originalMessage: {
+                    rawObjectDescription: "TypeScript programming language",
+                    rawObjectUrl: "https://typescriptlang.org"
+                }
+            },
+            {
+                id: `triplet_${Date.now()}_3`,
+                triplet: { subject: "User", predicate: "uses", object: "MetaMask" },
+                atomVaultId: "pending",
+                source: "existing",
+                url: "https://metamask.io", 
+                ipfsUri: "pending",
+                tripleStatus: "atom-only",
+                timestamp: Date.now() - 180000,
+                originalMessage: {
+                    rawObjectDescription: "MetaMask wallet for Web3",
+                    rawObjectUrl: "https://metamask.io"
+                }
+            },
+            {
+                id: `triplet_${Date.now()}_4`,
+                triplet: { subject: "User", predicate: "deploys", object: "Smart-Contracts" },
+                atomVaultId: "pending",
+                source: "created",
+                url: "https://ethereum.org",
+                ipfsUri: "pending",
+                tripleStatus: "atom-only",
+                timestamp: Date.now() - 240000,
+                originalMessage: {
+                    rawObjectDescription: "Ethereum smart contract deployment",
+                    rawObjectUrl: "https://ethereum.org"
+                }
+            },
+            {
+                id: `triplet_${Date.now()}_5`,
+                triplet: { subject: "User", predicate: "explores", object: "Account-Abstraction" },
+                atomVaultId: "pending",
+                source: "created",
+                url: "https://eips.ethereum.org/EIPS/eip-4337",
+                ipfsUri: "pending",
+                tripleStatus: "atom-only",
+                timestamp: Date.now() - 300000,
+                originalMessage: {
+                    rawObjectDescription: "ERC-4337 Account Abstraction standard",
+                    rawObjectUrl: "https://eips.ethereum.org/EIPS/eip-4337"
+                }
+            }
+        ]
+
+        // Fonctions de seeding
+        async function seedMessages() {
+            if (!storage) storage = await initStorage()
+            if (!storage) return
+            
+            try {
+                log('🌱 Seeding messages...')
+                
+                const existing = await storage.get("sofiaMessagesBuffer") || []
+                const newBuffer = [...existing, ...mockMessages]
+                await storage.set("sofiaMessagesBuffer", newBuffer)
+                
+                log(`✅ ${mockMessages.length} messages ajoutés`)
+                document.getElementById('messages-section').classList.add('success')
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`)
+            }
+        }
+
+        async function seedTriplets() {
+            if (!storage) storage = await initStorage()
+            if (!storage) return
+            
+            try {
+                log('🎯 Seeding triplets avec système chunks...')
+                
+                // Récupérer l'index existant
+                const index = await storage.get("onChainTriplets_index") || { chunks: [], totalCount: 0, lastChunk: null }
+                log(`📦 Index existant: ${index.chunks.length} chunks, ${index.totalCount} triplets`)
+                
+                // Charger tous les triplets existants depuis les chunks
+                let allTriplets = []
+                for (const chunkKey of index.chunks) {
+                    const chunkData = await storage.get(chunkKey) || []
+                    allTriplets.push(...chunkData)
+                }
+                
+                // Ajouter les nouveaux triplets
+                const newTriplets = [...allTriplets, ...mockTriplets]
+                log(`📊 Total après ajout: ${newTriplets.length} triplets`)
+                
+                // Recréer les chunks (8 triplets par chunk)
+                const CHUNK_SIZE = 8
+                const newChunks = []
+                
+                // Supprimer les anciens chunks
+                for (const chunkKey of index.chunks) {
+                    await storage.remove(chunkKey)
+                }
+                
+                // Créer les nouveaux chunks
+                for (let i = 0; i < newTriplets.length; i += CHUNK_SIZE) {
+                    const chunkNumber = Math.floor(i / CHUNK_SIZE) + 1
+                    const chunkKey = `onChainTriplets_${chunkNumber}`
+                    const chunkData = newTriplets.slice(i, i + CHUNK_SIZE)
+                    
+                    await storage.set(chunkKey, chunkData)
+                    newChunks.push(chunkKey)
+                    log(`💾 Chunk ${chunkNumber}: ${chunkData.length} triplets`)
+                }
+                
+                // Mettre à jour l'index
+                const newIndex = {
+                    chunks: newChunks,
+                    totalCount: newTriplets.length,
+                    lastChunk: newChunks.length > 0 ? newChunks[newChunks.length - 1] : null
+                }
+                await storage.set("onChainTriplets_index", newIndex)
+                
+                log(`✅ ${mockTriplets.length} triplets ajoutés (système chunks)`)
+                log(`📊 ${newChunks.length} chunks créés`)
+                document.getElementById('triplets-section').classList.add('success')
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`)
+            }
+        }
+
+        async function seedAll() {
+            log('🚀 Seeding all data...')
+            await seedMessages()
+            await seedTriplets()
+            await showAllStats()
+            log('🎉 Seeding terminé!')
+        }
+
+        async function showAllStats() {
+            if (!storage) storage = await initStorage()
+            if (!storage) return
+            
+            try {
+                const messages = await storage.get("sofiaMessagesBuffer") || []
+                
+                // Lire les triplets depuis le système de chunks
+                const index = await storage.get("onChainTriplets_index") || { chunks: [], totalCount: 0 }
+                let triplets = []
+                
+                for (const chunkKey of index.chunks) {
+                    const chunkData = await storage.get(chunkKey) || []
+                    triplets.push(...chunkData)
+                }
+                
+                const created = triplets.filter(t => t.source === 'created').length
+                const existing = triplets.filter(t => t.source === 'existing').length
+                
+                document.getElementById('messages-count').textContent = messages.length
+                document.getElementById('triplets-count').textContent = triplets.length  
+                document.getElementById('created-count').textContent = created
+                document.getElementById('existing-count').textContent = existing
+                
+                document.getElementById('stats-container').style.display = 'grid'
+                
+                log(`📊 Stats: ${messages.length} messages, ${triplets.length} triplets`)
+                log(`📦 Chunks: ${index.chunks.length} chunks, index total: ${index.totalCount}`)
+                
+            } catch (error) {
+                log(`❌ Erreur stats: ${error.message}`)
+            }
+        }
+
+        async function clearAll() {
+            if (!storage) storage = await initStorage()
+            if (!storage) return
+            
+            if (!confirm('⚠️ Effacer toutes les données ?')) return
+            
+            try {
+                log('🧹 Clearing all data...')
+                
+                // Clear messages
+                await storage.remove("sofiaMessagesBuffer")
+                await storage.remove("extractedTriplets_index")
+                
+                // Clear triplets chunks
+                const index = await storage.get("onChainTriplets_index") || { chunks: [] }
+                for (const chunkKey of index.chunks) {
+                    await storage.remove(chunkKey)
+                    log(`🗑️ Removed chunk: ${chunkKey}`)
+                }
+                await storage.remove("onChainTriplets_index")
+                
+                // Clear extracted triplets chunks aussi
+                for (let i = 1; i <= 20; i++) {
+                    await storage.remove(`extractedTriplets_${i}`)
+                }
+                
+                log('✅ Toutes les données effacées')
+                document.getElementById('stats-container').style.display = 'none'
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`)
+            }
+        }
+
+        // Initialisation
+        window.onload = async () => {
+            log('🚀 SofIA Seeder initialized')
+            log('💡 Tip: Utilisez cette page dans l\'extension pour accéder au vrai storage')
+            
+            storage = await initStorage()
+            if (storage) {
+                await showAllStats()
+            }
+        }
+    </script>
+</body>
+</html>

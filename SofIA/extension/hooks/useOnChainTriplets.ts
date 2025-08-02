@@ -250,7 +250,35 @@ export const useOnChainTriplets = () => {
     tripleTxHash?: string
   ) => {
     try {
-      const updatedTriplets = triplets.map(t => 
+      console.log(`🔄 updateTripletToOnChain DÉBUT - tripletId: ${tripletId}`)
+      
+      // RECHARGEMENT FORCÉ depuis le storage pour avoir l'état le plus récent
+      console.log(`🔄 Rechargement forcé depuis storage...`)
+      const index = await getStorageIndex()
+      let freshTriplets: OnChainTriplet[] = []
+
+      for (const chunkKey of index.chunks) {
+        try {
+          const chunkData = await storage.get(chunkKey)
+          if (chunkData && Array.isArray(chunkData)) {
+            freshTriplets.push(...chunkData)
+          }
+        } catch (chunkErr) {
+          console.error(`❌ Failed to load chunk ${chunkKey}:`, chunkErr)
+        }
+      }
+      
+      console.log(`🔄 Triplets rechargés depuis storage (${freshTriplets.length}):`, freshTriplets.map(t => `${t.id}: ${t.tripleStatus}`))
+      
+      const tripletToUpdate = freshTriplets.find(t => t.id === tripletId)
+      if (!tripletToUpdate) {
+        console.error(`❌ Triplet ${tripletId} non trouvé dans storage`)
+        throw new Error(`Triplet ${tripletId} not found`)
+      }
+      
+      console.log(`🔄 Triplet trouvé: ${tripletToUpdate.triplet.subject} (statut: ${tripletToUpdate.tripleStatus})`)
+      
+      const updatedTriplets = freshTriplets.map(t => 
         t.id === tripletId 
           ? {
               ...t,
@@ -266,8 +294,21 @@ export const useOnChainTriplets = () => {
           : t
       )
       
-      setTriplets(updatedTriplets)
+      const updatedTriplet = updatedTriplets.find(t => t.id === tripletId)
+      console.log(`🔄 Après map - nouveau statut: ${updatedTriplet?.tripleStatus}`)
+      console.log(`🔄 Nombre triplets on-chain après update: ${updatedTriplets.filter(t => t.tripleStatus === 'on-chain').length}`)
+      
+      console.log(`🔄 Sauvegarde dans storage...`)
       await saveTripletsToChunks(updatedTriplets)
+      
+      console.log(`🔄 Appel setTriplets avec ${updatedTriplets.length} triplets`)
+      setTriplets(updatedTriplets)
+      
+      // Force un refresh immédiat pour s'assurer que l'état est synchronisé
+      console.log(`🔄 Vérification post-setTriplets...`)
+      setTimeout(() => {
+        console.log(`🔄 État triplets après setTriplets: ${triplets.filter(t => t.tripleStatus === 'on-chain').length} on-chain`)
+      }, 50)
       
       console.log('✅ Updated triplet to on-chain status:', tripletId)
     } catch (err) {

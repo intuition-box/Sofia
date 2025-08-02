@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React from 'react'
 import { useOnChainTriplets, type OnChainTriplet } from '../../../hooks/useOnChainTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
 import '../../styles/AtomCreationModal.css'
@@ -14,8 +14,18 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   
   // Filtrer et trier les triplets publiés on-chain - plus récent en premier
   const publishedTriplets = triplets
-    .filter(t => t.tripleStatus === 'on-chain')
+    .filter(t => {
+      const isOnChain = t.tripleStatus === 'on-chain'
+      if (isOnChain) {
+        console.log(`📊 SignalsTab - Triplet on-chain trouvé: ${t.triplet.subject} → ${t.triplet.predicate} → ${t.triplet.object} [${t.id}]`)
+      }
+      return isOnChain
+    })
     .sort((a, b) => b.timestamp - a.timestamp)
+  
+  // Debug log
+  console.log(`📊 SignalsTab - Total triplets: ${triplets.length}, On-chain: ${publishedTriplets.length}`)
+  console.log(`📊 SignalsTab - Triplets statuses:`, triplets.map(t => `${t.id}: ${t.tripleStatus}`))
   
   const publishedCounts = {
     total: publishedTriplets.length,
@@ -33,11 +43,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     }
   }
 
-  const getBadgeStyle = (source: 'created' | 'existing') => {
-    return source === 'created' 
-      ? 'badge-created' 
-      : 'badge-existing'
-  }
 
   const getBorderStyle = (source: 'created' | 'existing') => {
     return source === 'created' 
