@@ -59,8 +59,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     <div className="triples-container">
       {/* Dashboard header */}
       <div className="dashboard-header">
-        <h2>⛓️ Published On-Chain Triples</h2>
-        <p>Dashboard of your triplets already published on blockchain</p>
+        <h2>Published On-Chain Signals</h2>
+        <p>Dashboard of your Signals already published on blockchain</p>
       </div>
 
       {/* Stats header */}

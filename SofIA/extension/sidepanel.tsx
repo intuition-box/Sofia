@@ -50,7 +50,7 @@ const SidePanelContent = () => {
         return <SettingsPage />
       case 'profile':
         return <ProfilePage />
-      case 'my-graph':
+      case 'my-data':
         return <MyGraphPage />
       case 'recommendations':
         return <RecommendationsPage />

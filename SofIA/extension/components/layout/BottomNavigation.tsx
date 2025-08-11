@@ -16,15 +16,15 @@ const BottomNavigation = () => {
   return (
     <div className="bottom-nav">
       <button 
-        onClick={() => navigateTo('my-graph')}
-        className="nav-button my-graph"
+        onClick={() => navigateTo('my-data')}
+        className="nav-button my-data"
       >
         <img 
           src={graphIcon} 
           alt="My Graph" 
           className="nav-icon"
         />
-        <span className="nav-text">My Graph</span>
+        <span className="nav-text">My Data</span>
       </button>
       <button 
         onClick={() => navigateTo('saved')}
