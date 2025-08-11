@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useMCPClient, type SearchResult } from '../../hooks/useMCPClient'
+import { useCurrentSearch } from '../../hooks/useSearchHistory'
 import SendIcon from '../ui/icons/quick_action/Selected=send.svg'
 import SendHoverIcon from '../ui/icons/quick_action/Selected=send hover.svg'
 import VoteIcon from '../ui/icons/quick_action/Selected=vote.svg'
@@ -18,6 +19,7 @@ interface SearchResultPageProps {
 const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => {
   const { navigateTo } = useRouter()
   const { searchAtoms, isLoading, error } = useMCPClient()
+  const { currentQuery, setCurrentQuery, submitSearch } = useCurrentSearch()
   const [activeTab, setActiveTab] = useState<'overview' | 'related' | 'about' | 'more'>('overview')
   const [searchQuery, setSearchQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -98,10 +100,11 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
     setIsEditingSearch(true)
   }
 
-  const handleSearchSave = () => {
+  const handleSearchSave = async () => {
     if (editedQuery.trim() && editedQuery.trim() !== searchQuery) {
       setSearchQuery(editedQuery.trim())
-      localStorage.setItem('searchQuery', editedQuery.trim())
+      setCurrentQuery(editedQuery.trim())
+      await submitSearch(editedQuery.trim())
       performSearch(editedQuery.trim())
     }
     setIsEditingSearch(false)
@@ -121,10 +124,10 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
   }
 
   useEffect(() => {
-    const query = propQuery || localStorage.getItem('searchQuery') || 'Intuition Systems'
+    const query = propQuery || currentQuery || 'Intuition Systems'
     setSearchQuery(query)
     performSearch(query)
-  }, [propQuery, searchAtoms])
+  }, [propQuery, currentQuery, searchAtoms])
 
   return (
     <div className="page search-result-page">

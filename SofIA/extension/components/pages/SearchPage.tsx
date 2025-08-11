@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import React from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useMCPClient } from '../../hooks/useMCPClient'
+import { useCurrentSearch } from '../../hooks/useSearchHistory'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
 const SearchPage = () => {
   const { navigateTo } = useRouter()
   const { isReady, isLoading, error } = useMCPClient()
-  const [searchQuery, setSearchQuery] = useState('')
+  const { currentQuery: searchQuery, setCurrentQuery: setSearchQuery, submitSearch } = useCurrentSearch()
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (searchQuery.trim() && isReady) {
-      localStorage.setItem('searchQuery', searchQuery.trim())
+      await submitSearch(searchQuery.trim())
       navigateTo('search-result')
     }
   }

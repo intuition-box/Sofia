@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useOnChainTriplets, type OnChainTriplet } from '../../../hooks/useOnChainTriplets'
+import { useIntuitionTriplets, type IntuitionTriplet } from '../../../hooks/useIntuitionTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
 import '../../styles/AtomCreationModal.css'
 import '../../styles/MyGraphPage.css'
@@ -10,17 +10,17 @@ interface SignalsTabProps {
 }
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
-  const { triplets, isLoading } = useOnChainTriplets()
+  const { triplets, isLoading } = useIntuitionTriplets()
   
-  // Filtrer et trier les triplets publiés on-chain - plus récent en premier
+  // Afficher tous les triplets (maintenant via API Intuition) - plus récent en premier
   const publishedTriplets = triplets
-    .filter(t => t.tripleStatus === 'on-chain')
     .sort((a, b) => b.timestamp - a.timestamp)
   
   const publishedCounts = {
     total: publishedTriplets.length,
-    created: publishedTriplets.filter(t => t.source === 'created').length,
-    existing: publishedTriplets.filter(t => t.source === 'existing').length,
+    eliza: publishedTriplets.filter(t => t.source === 'eliza').length,
+    intuition: publishedTriplets.filter(t => t.source === 'intuition_api').length,
+    user: publishedTriplets.filter(t => t.source === 'user_created').length,
   }
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {

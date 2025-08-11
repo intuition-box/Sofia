@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useCheckExistingAtom } from '../../hooks/useCheckExistingAtom'
-import { useOnChainTriplets } from '../../hooks/useOnChainTriplets'
+import { useIntuitionTriplets } from '../../hooks/useIntuitionTriplets'
 
 interface AtomCreationModalProps {
   isOpen: boolean
@@ -26,7 +26,7 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
   const [progressMessage, setProgressMessage] = useState('')
 
   const { checkAndCreateAtom, isChecking, error } = useCheckExistingAtom()
-  const { addTriplet } = useOnChainTriplets()
+  const { addTriplet } = useIntuitionTriplets()
 
   const [receipt, setReceipt] = useState<{
     transactionHash?: string

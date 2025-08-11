@@ -1,40 +1,86 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { Storage } from '@plasmohq/storage'
 import { useStorage } from '@plasmohq/storage/hook'
+import { useUserProfile } from '../../hooks/useUserProfile'
 import '../styles/Global.css'
 import '../styles/ProfilePage.css'
 
 const ProfilePage = () => {
   const { navigateTo } = useRouter()
-  const [profilePhoto, setProfilePhoto] = useState(null)
-  const [bio, setBio] = useState("Passionate about technology, digital identity, and decentralized systems. I enjoy exploring the intersection of innovation and human connection online. Currently working on projects that leverage blockchain for social impact. Always open to collaboration and meaningful conversations.")
-  const [profileUrl, setProfileUrl] = useState("https://sofia.network/profile/username")
+  const [account] = useStorage<string>("metamask-account")
+  const {
+    profilePhoto,
+    bio,
+    profileUrl,
+    isLoading,
+    error,
+    updateProfilePhoto,
+    updateBio,
+    updateProfileUrl,
+    getProfileCompletionPercentage
+  } = useUserProfile()
+  
   const [isEditingBio, setIsEditingBio] = useState(false)
   const [isEditingUrl, setIsEditingUrl] = useState(false)
-  
-  const storage = new Storage()
-  const [account] = useStorage<string>("metamask-account")
+  const [tempBio, setTempBio] = useState('')
+  const [tempUrl, setTempUrl] = useState('')
 
-  const handlePhotoUpload = (event) => {
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files[0]
     if (file) {
       const reader = new FileReader()
-      reader.onload = (e) => {
-        setProfilePhoto(e.target.result)
+      reader.onload = async (e) => {
+        try {
+          await updateProfilePhoto(e.target.result as string)
+        } catch (error) {
+          console.error('Failed to update profile photo:', error)
+        }
       }
       reader.readAsDataURL(file)
     }
   }
 
-  const handleBioSave = () => {
-    setIsEditingBio(false)
-    // Ici on pourrait sauvegarder la bio dans le localStorage ou via une API
+  const handleBioSave = async () => {
+    try {
+      await updateBio(tempBio)
+      setIsEditingBio(false)
+    } catch (error) {
+      console.error('Failed to save bio:', error)
+    }
   }
 
-  const handleUrlSave = () => {
+  const handleUrlSave = async () => {
+    try {
+      await updateProfileUrl(tempUrl)
+      setIsEditingUrl(false)
+    } catch (error) {
+      console.error('Failed to save URL:', error)
+    }
+  }
+
+  const startEditingBio = () => {
+    setTempBio(bio || '')
+    setIsEditingBio(true)
+  }
+
+  const startEditingUrl = () => {
+    setTempUrl(profileUrl || '')
+    setIsEditingUrl(true)
+  }
+
+  const cancelEditing = () => {
+    setIsEditingBio(false)
     setIsEditingUrl(false)
-    // Ici on pourrait sauvegarder l'URL dans le localStorage ou via une API
+    setTempBio('')
+    setTempUrl('')
+  }
+
+  if (isLoading) {
+    return (
+      <div className="page profile-page">
+        <div className="loading-state">Loading profile...</div>
+      </div>
+    )
   }
 
   return (
@@ -47,6 +93,16 @@ const ProfilePage = () => {
       </button>
       
       <h2 className="section-title">Profile</h2>
+      
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+      
+      <div className="completion-info">
+        Profile completion: {getProfileCompletionPercentage()}%
+      </div>
       
       {/* Profile Section */}
       <div className="profile-section">
@@ -93,14 +149,14 @@ const ProfilePage = () => {
             <div className="field-edit">
               <input
                 type="url"
-                value={profileUrl}
-                onChange={(e) => setProfileUrl(e.target.value)}
+                value={tempUrl}
+                onChange={(e) => setTempUrl(e.target.value)}
                 className="url-input"
                 placeholder="https://sofia.network/profile/username"
               />
               <div className="field-actions">
                 <button onClick={handleUrlSave} className="save-button">Save</button>
-                <button onClick={() => setIsEditingUrl(false)} className="cancel-button">Cancel</button>
+                <button onClick={cancelEditing} className="cancel-button">Cancel</button>
               </div>
             </div>
           ) : (
@@ -108,7 +164,7 @@ const ProfilePage = () => {
               <a href={profileUrl} target="_blank" rel="noopener noreferrer" className="url-link">
                 {profileUrl}
               </a>
-              <button onClick={() => setIsEditingUrl(true)} className="edit-button">Edit</button>
+              <button onClick={startEditingUrl} className="edit-button">Edit</button>
             </div>
           )}
         </div>
@@ -119,20 +175,20 @@ const ProfilePage = () => {
           {isEditingBio ? (
             <div className="field-edit">
               <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                value={tempBio}
+                onChange={(e) => setTempBio(e.target.value)}
                 className="bio-textarea"
                 placeholder="Tell us about yourself..."
               />
               <div className="field-actions">
                 <button onClick={handleBioSave} className="save-button">Save</button>
-                <button onClick={() => setIsEditingBio(false)} className="cancel-button">Cancel</button>
+                <button onClick={cancelEditing} className="cancel-button">Cancel</button>
               </div>
             </div>
           ) : (
             <div className="field-display">
               <p className="bio-text">{bio}</p>
-              <button onClick={() => setIsEditingBio(true)} className="edit-button">Edit</button>
+              <button onClick={startEditingBio} className="edit-button">Edit</button>
             </div>
           )}
         </div>

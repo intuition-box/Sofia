@@ -21,3 +21,14 @@
   min-height: calc(100vh - var(--size-nav-height));
   padding-bottom: var(--size-nav-height);
 }
+
+/* Migration indicator positioning */
+.app-migration-indicator {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}

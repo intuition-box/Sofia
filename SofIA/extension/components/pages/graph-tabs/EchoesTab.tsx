@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Storage } from '@plasmohq/storage'
-import { useOnChainTriplets, type OnChainTriplet } from '../../../hooks/useOnChainTriplets'
+import { useIntuitionTriplets, type IntuitionTriplet } from '../../../hooks/useIntuitionTriplets'
 import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
@@ -112,8 +112,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [parsedMessages, setParsedMessages] = useState<ParsedSofiaMessage[]>([])
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
-  // Hooks pour la gestion des triplets on-chain
-  const { triplets, isLoading, getTripletsCount, updateTripletToOnChain, addTriplet } = useOnChainTriplets()
+  // Hooks pour la gestion des triplets via Intuition API
+  const { triplets, isLoading, getTripletsCount, updateTripletToOnChain, addTriplet } = useIntuitionTriplets()
   const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
   
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
@@ -330,7 +330,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   }
 
   // Fonction pour créer un triplet complet on-chain
-  const handleCreateTripleOnChain = async (triplet: OnChainTriplet) => {
+  const handleCreateTripleOnChain = async (triplet: IntuitionTriplet) => {
     if (isCreating || processingTripletId) {
       console.warn('Triple creation already in progress')
       return
