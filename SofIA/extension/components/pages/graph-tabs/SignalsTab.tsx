@@ -100,9 +100,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
                   }}
                 >
-                  <span className="subject">{tripletItem.triplet.subject}</span>{' '}
-                  <span className="action">{tripletItem.triplet.predicate}</span>{' '}
-                  <span className="object">{tripletItem.triplet.object}</span>
+                  <span className="subject">{tripletItem.subject}</span>{' '}
+                  <span className="action">{tripletItem.predicate}</span>{' '}
+                  <span className="object">{tripletItem.object}</span>
                 </p>
 
                 </div>
@@ -117,17 +117,17 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   <div className="triplet-details">
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">🧍 Subject</h4>
-                      <p className="triplet-detail-name">{tripletItem.triplet.subject}</p>
+                      <p className="triplet-detail-name">{tripletItem.subject}</p>
                     </div>
 
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">🔗 Predicate</h4>
-                      <p className="triplet-detail-name">{tripletItem.triplet.predicate}</p>
+                      <p className="triplet-detail-name">{tripletItem.predicate}</p>
                     </div>
 
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">📄 Object</h4>
-                      <p className="triplet-detail-name">{tripletItem.triplet.object}</p>
+                      <p className="triplet-detail-name">{tripletItem.object}</p>
                     </div>
 
                     <div className="triplet-detail-section">

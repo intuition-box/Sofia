@@ -6,7 +6,6 @@ import WalletConnectionButton from '../THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
 import { disconnectWallet, cleanupProvider } from '../../lib/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
-import { MigrationStatus, MigrationIndicator } from '../ui/MigrationStatus'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
 
@@ -61,15 +60,6 @@ const SettingsPage = () => {
       
       <h2 className="section-title">Settings</h2>
       
-      {/* Migration Status Section */}
-      <div className="settings-section">
-        <h3 className="settings-section-title">Database Migration</h3>
-        <MigrationStatus 
-          showDetails={true}
-          allowManualControl={true}
-          className="migration-section"
-        />
-      </div>
 
       {/* General Section */}
       <div className="settings-section">

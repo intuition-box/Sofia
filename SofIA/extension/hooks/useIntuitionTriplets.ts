@@ -10,14 +10,24 @@ import type { ParsedSofiaMessage } from '~components/pages/graph-tabs/types'
 
 export interface IntuitionTriplet {
   id: string
-  subject: string
-  predicate: string  
-  object: string
+  triplet: {
+    subject: string
+    predicate: string  
+    object: string
+  }
   url?: string
   description?: string
   timestamp: number
-  source: 'eliza' | 'intuition_api' | 'user_created'
+  source: 'eliza' | 'intuition_api' | 'user_created' | 'created' | 'existing'
   confidence?: number
+  // Blockchain fields (for future on-chain storage)
+  txHash?: string
+  atomVaultId?: string
+  tripleVaultId?: string
+  subjectVaultId?: string
+  predicateVaultId?: string
+  ipfsUri?: string
+  tripleStatus?: 'on-chain' | 'pending' | 'atom-only'
 }
 
 interface UseIntuitionTripletsResult {
@@ -67,14 +77,19 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
         parsed.triplets.forEach((triplet, tripletIndex) => {
           triplets.push({
             id: `eliza_${record.id || index}_${tripletIndex}`,
-            subject: triplet.subject,
-            predicate: triplet.predicate,
-            object: triplet.object,
+            triplet: {
+              subject: triplet.subject,
+              predicate: triplet.predicate,
+              object: triplet.object
+            },
             url: parsed.rawObjectUrl,
             description: parsed.rawObjectDescription || parsed.intention,
             timestamp: record.timestamp,
             source: 'eliza',
-            confidence: 0.9 // High confidence for Eliza-generated triplets
+            confidence: 0.9,
+            // Placeholder blockchain data
+            ipfsUri: `ipfs://placeholder_${Date.now()}`,
+            tripleStatus: 'pending'
           })
         })
       }
@@ -160,9 +175,9 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     
     const lowerQuery = query.toLowerCase()
     return triplets.filter(triplet =>
-      triplet.subject.toLowerCase().includes(lowerQuery) ||
-      triplet.predicate.toLowerCase().includes(lowerQuery) ||
-      triplet.object.toLowerCase().includes(lowerQuery) ||
+      triplet.triplet.subject.toLowerCase().includes(lowerQuery) ||
+      triplet.triplet.predicate.toLowerCase().includes(lowerQuery) ||
+      triplet.triplet.object.toLowerCase().includes(lowerQuery) ||
       (triplet.description && triplet.description.toLowerCase().includes(lowerQuery))
     )
   }, [triplets])
@@ -172,7 +187,7 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
    */
   const getTripletsBySubject = useCallback((subject: string): IntuitionTriplet[] => {
     return triplets.filter(triplet => 
-      triplet.subject.toLowerCase() === subject.toLowerCase()
+      triplet.triplet.subject.toLowerCase() === subject.toLowerCase()
     )
   }, [triplets])
 
@@ -188,14 +203,18 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     // Convert to new format and add to local state for compatibility
     const newTriplet: IntuitionTriplet = {
       id: `legacy_${Date.now()}`,
-      subject: triplet.triplet?.subject || triplet.subject || 'Unknown',
-      predicate: triplet.triplet?.predicate || triplet.predicate || 'relates to',
-      object: triplet.triplet?.object || triplet.object || 'Unknown',
+      triplet: {
+        subject: triplet.triplet?.subject || triplet.subject || 'Unknown',
+        predicate: triplet.triplet?.predicate || triplet.predicate || 'relates to',
+        object: triplet.triplet?.object || triplet.object || 'Unknown'
+      },
       url: triplet.url || '',
       description: triplet.originalMessage?.rawObjectDescription || '',
       timestamp: triplet.timestamp || Date.now(),
       source: 'user_created',
-      confidence: 0.7
+      confidence: 0.7,
+      ipfsUri: triplet.ipfsUri || `ipfs://legacy_${Date.now()}`,
+      tripleStatus: 'pending'
     }
     
     setTriplets(prev => [...prev, newTriplet])
