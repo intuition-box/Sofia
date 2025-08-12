@@ -9,6 +9,7 @@ import { type Character } from '@elizaos/core';
 export const character: Character = {
   name: 'Eliza',
   plugins: [
+    
     // Core plugins first
     '@elizaos/plugin-sql',
 
@@ -17,7 +18,7 @@ export const character: Character = {
     ...(process.env.OPENROUTER_API_KEY?.trim() ? ['@elizaos/plugin-openrouter'] : []),
 
     // Embedding-capable plugins (optional, based on available credentials)
-    ...(process.env.OPENAI_API_KEY?.trim() ? ['@elizaos/plugin-openai'] : []),
+    ...(process.env.ENABLE_OPENAI_PLUGIN === '1' ? ['@elizaos/plugin-openai'] : []),
     ...(process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() ? ['@elizaos/plugin-google-genai'] : []),
 
     // Ollama as fallback (only if no main LLM providers are configured)

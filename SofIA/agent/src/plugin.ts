@@ -15,6 +15,8 @@ import {
   logger,
 } from '@elizaos/core';
 import { z } from 'zod';
+import 'dotenv/config';
+
 
 /**
  * Define the configuration schema for the plugin with the following properties:
