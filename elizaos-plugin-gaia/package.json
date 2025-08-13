@@ -1,0 +1,57 @@
+{
+  "name": "@elizaos/plugin-gaia",
+  "version": "1.0.0",
+  "description": "ElizaOS plugin for Gaia Network integration with OpenAI-compatible API",
+  "main": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "prettier --write ./src",
+    "clean": "rm -rf dist .turbo node_modules .turbo-tsconfig.json tsconfig.tsbuildinfo",
+    "format": "prettier --write ./src",
+    "format:check": "prettier --check ./src",
+    "test": "npx elizaos test",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
+    }
+  },
+  "keywords": [
+    "elizaos",
+    "plugin",
+    "gaia",
+    "ai",
+    "llm",
+    "blockchain"
+  ],
+  "author": "Sofia Core",
+  "license": "MIT",
+  "dependencies": {
+    "@elizaos/core": "^1.0.0",
+    "tsup": "8.5.0",
+    "undici": "^7.10.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "prettier": "^3.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SofIA-extension/core.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
