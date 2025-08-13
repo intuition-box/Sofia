@@ -1,6 +1,6 @@
 // src/index.ts
 import { type IAgentRuntime, type Project, type ProjectAgent, logger } from '@elizaos/core';
-import { character } from './character.ts';
+import { character } from './character';
 
 import dotenv from 'dotenv';
 import { resolve, dirname } from 'node:path';
@@ -69,5 +69,5 @@ const project: Project = {
 };
 
 export { testSuites } from './__tests__/e2e';
-export { character } from './character.ts';
+export { character } from './character';
 export default project;
