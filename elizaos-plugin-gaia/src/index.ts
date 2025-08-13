@@ -68,10 +68,10 @@ async function validateGaiaNode() {
 }
 
 const modelFromEnv = () =>
-  process.env.GAIA_MODEL || process.env.OPENAI_MODEL || 'Qwen3-235B-A22B-Q4_K_M';
+  process.env.GAIA_MODEL || 'Qwen3-235B-A22B-Q4_K_M';
 const baseUrlFromEnv = () =>
-  process.env.GAIA_API_BASE || process.env.OPENAI_API_BASE || process.env.OPENAI_BASE_URL || '';
-const apiKeyFromEnv = () => process.env.GAIA_API_KEY || process.env.OPENAI_API_KEY || '';
+  process.env.GAIA_API_BASE || '';
+const apiKeyFromEnv = () => process.env.GAIA_API_KEY || '';
 
 async function callGaia(
   messages: ChatMessage[], 
@@ -132,11 +132,6 @@ async function callGaia(
 
   try {
     // Add timeout and retry logic
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      logger.error('[GAIA] 15-second timeout reached, aborting request');
-      controller.abort();
-    }, 15000); // Reduced to 15s for faster testing
 
     logger.log('[GAIA] Starting fetch request...');
     const startTime = Date.now();
@@ -149,21 +144,18 @@ async function callGaia(
         'User-Agent': 'ElizaOS-Gaia-Plugin/1.0.5',
       },
       body: JSON.stringify(requestBody),
-      signal: controller.signal,
     });
     
     const fetchTime = Date.now() - startTime;
     logger.log(`[GAIA] Fetch completed in ${fetchTime}ms`);
-    clearTimeout(timeoutId);
+
 
     logger.log(`[GAIA] API response status: ${r.status} ${r.statusText}`);
-    logger.log(`[GAIA] Response headers:`, Object.fromEntries(r.headers.entries()));
 
     const textStartTime = Date.now();
     const raw = await r.text();
     const textTime = Date.now() - textStartTime;
     logger.log(`[GAIA] Response text read in ${textTime}ms, length: ${raw.length}`);
-    clearTimeout(timeoutId);
     let data: any;
     
     try {
@@ -265,8 +257,6 @@ function messagesToPrompt(msgs: { role: string; content: any }[]) {
     })
     .join('\n');
 }
-
-/** Core generation function (compat fallback) — returns PLAIN TEXT */
 /** Universal handler expected by runtime.registerModel — returns PLAIN TEXT */
 const gaiaGenerate = async (
   runtime: IAgentRuntime,
