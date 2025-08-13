@@ -10,34 +10,37 @@ importers:
     dependencies:
       '@elizaos/cli':
         specifier: latest
-        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       '@elizaos/core':
         specifier: latest
-        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       '@elizaos/plugin-bootstrap':
         specifier: latest
-        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))(whatwg-url@7.1.0)
+        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))(whatwg-url@7.1.0)
       '@elizaos/plugin-gaia':
-        specifier: file:elizaos-plugin-gaia-1.0.8.tgz
-        version: file:elizaos-plugin-gaia-1.0.8.tgz(@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))
+        specifier: file:elizaos-plugin-gaia-1.0.2.tgz
+        version: file:elizaos-plugin-gaia-1.0.2.tgz(@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2)))
       '@elizaos/plugin-mcp':
         specifier: 1.0.7
-        version: 1.0.7(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+        version: 1.0.7(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       '@elizaos/plugin-ollama':
         specifier: 1.2.4
-        version: 1.2.4(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))(postcss@8.5.6)(react@18.3.1)(typescript@5.9.2)(yaml@2.8.1)(zod@3.24.2)
+        version: 1.2.4(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))(postcss@8.5.6)(react@18.3.1)(typescript@5.9.2)(yaml@2.8.1)(zod@3.24.2)
       '@elizaos/plugin-openai':
         specifier: ^1.0.8
-        version: 1.0.10(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))(postcss@8.5.6)(react@18.3.1)(typescript@5.9.2)(yaml@2.8.1)(zod@3.24.2)
+        version: 1.0.10(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))(postcss@8.5.6)(react@18.3.1)(typescript@5.9.2)(yaml@2.8.1)(zod@3.24.2)
       '@elizaos/plugin-sql':
         specifier: latest
-        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       '@elizaos/server':
         specifier: latest
-        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+        version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       '@tanstack/react-query':
         specifier: ^5.29.0
         version: 5.85.0(react@18.3.1)
+      axios:
+        specifier: ^1.11.0
+        version: 1.11.0
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -251,9 +254,9 @@ packages:
     peerDependencies:
       whatwg-url: 7.1.0
 
-  '@elizaos/plugin-gaia@file:elizaos-plugin-gaia-1.0.8.tgz':
-    resolution: {integrity: sha512-ZSUKq/F4dH79aziZCLOFof/xYN58x5r/pYG1IJMjN5E1IB15sKGEbXaUdYdeeF73f+vlFxEIxdZsgTiWI4f5MQ==, tarball: file:elizaos-plugin-gaia-1.0.8.tgz}
-    version: 1.0.7
+  '@elizaos/plugin-gaia@file:elizaos-plugin-gaia-1.0.2.tgz':
+    resolution: {integrity: sha512-8l/PRl+loovlz3e5H5wUjGl+K3+P7eXO1CO7TnKXRicxjaH4tRWN6Yd75xnypV80oU0viLD5QbAlL18t4a/fWA==, tarball: file:elizaos-plugin-gaia-1.0.2.tgz}
+    version: 1.0.2
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@elizaos/core': '>=1.4.0'
@@ -1111,6 +1114,9 @@ packages:
   asn1.js@4.10.1:
     resolution: {integrity: sha512-p32cOF5q0Zqs9uBiONKYLm6BClCoBCM5O9JfeUSlnQLBTxYdTK+pW+nXflm8UkKd2UYlEbYz5qEi0JuZR9ckSw==}
 
+  asynckit@0.4.0:
+    resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
+
   atomic-sleep@1.0.0:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
@@ -1118,6 +1124,9 @@ packages:
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
+
+  axios@1.11.0:
+    resolution: {integrity: sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -1261,6 +1270,10 @@ packages:
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
 
+  combined-stream@1.0.8:
+    resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
+    engines: {node: '>= 0.8'}
+
   commander@14.0.0:
     resolution: {integrity: sha512-2uM9rYjPvyq39NwLRqaiLtWHyDC1FvryJDa2ATTVims5YAS4PupsEQsDvP14FqhFr0P49CYDugi59xaxJlTXRA==}
     engines: {node: '>=20'}
@@ -1360,6 +1373,10 @@ packages:
   define-data-property@1.1.4:
     resolution: {integrity: sha512-rBMvIzlpA8v6E+SJZoo++HAYqsLrkg7MSfIinMPFhmkorw7X+dOXVJQs+QT69zGkzMyfDnIMN2Wid1+NbL3T+A==}
     engines: {node: '>= 0.4'}
+
+  delayed-stream@1.0.0:
+    resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
+    engines: {node: '>=0.4.0'}
 
   depd@2.0.0:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
@@ -1546,6 +1563,10 @@ packages:
     resolution: {integrity: sha512-FGgH2h8zKNim9ljj7dankFPcICIK9Cp5bm+c2gQSYePhpaG5+esrLODihIorn+Pe6FGJzWhXQotPv73jTaldXA==}
     engines: {node: '>= 0.4'}
 
+  es-set-tostringtag@2.1.0:
+    resolution: {integrity: sha512-j6vWzfrGVfyXxge+O0x5sh6cvxAog0a/4Rdd2K36zCMV5eJ+/+tOAngRO8cODMNWbVRdVlmGZQL2YS3yR8bIUA==}
+    engines: {node: '>= 0.4'}
+
   esbuild-register@3.6.0:
     resolution: {integrity: sha512-H2/S7Pm8a9CL1uhp9OvjwrBh5Pvx0H8qVOxNu8Wed9Y7qv56MPtq+GGM8RJpq6glYJn9Wspr8uw7l55uyinNeg==}
     peerDependencies:
@@ -1645,6 +1666,15 @@ packages:
   fix-dts-default-cjs-exports@1.0.1:
     resolution: {integrity: sha512-pVIECanWFC61Hzl2+oOCtoJ3F17kglZC/6N94eRWycFgBH35hHx0Li604ZIzhseh97mf2p0cv7vVrOZGoqhlEg==}
 
+  follow-redirects@1.15.11:
+    resolution: {integrity: sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+
   for-each@0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
     engines: {node: '>= 0.4'}
@@ -1652,6 +1682,10 @@ packages:
   foreground-child@3.3.1:
     resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
     engines: {node: '>=14'}
+
+  form-data@4.0.4:
+    resolution: {integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow==}
+    engines: {node: '>= 6'}
 
   forwarded@0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
@@ -2349,6 +2383,9 @@ packages:
   proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
+
+  proxy-from-env@1.1.0:
+    resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
 
   public-encrypt@4.0.3:
     resolution: {integrity: sha512-zVpa8oKZSz5bTMTFClc1fQOnyyEzpl5ozpi1B5YcvBrdohMjH2rfsBtyXcuNuwjsDIXmBYlF2N5FlJYhR29t8Q==}
@@ -3118,9 +3155,9 @@ snapshots:
 
   '@electric-sql/pglite@0.3.7': {}
 
-  '@elizaos/api-client@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))':
+  '@elizaos/api-client@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))':
     dependencies:
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
     transitivePeerDependencies:
       - '@langchain/anthropic'
       - '@langchain/aws'
@@ -3145,15 +3182,15 @@ snapshots:
       - typeorm
       - ws
 
-  '@elizaos/cli@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))':
+  '@elizaos/cli@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))':
     dependencies:
       '@anthropic-ai/claude-code': 1.0.77
       '@anthropic-ai/sdk': 0.54.0
       '@clack/prompts': 0.11.0
-      '@elizaos/api-client': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
-      '@elizaos/plugin-sql': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
-      '@elizaos/server': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/api-client': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/plugin-sql': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/server': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       bun: 1.2.20
       chalk: 5.5.0
       chokidar: 4.0.3
@@ -3225,7 +3262,7 @@ snapshots:
       - utf-8-validate
       - ws
 
-  '@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))':
+  '@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))':
     dependencies:
       '@sentry/browser': 9.45.0
       buffer: 6.0.3
@@ -3235,7 +3272,7 @@ snapshots:
       glob: 11.0.3
       handlebars: 4.7.8
       js-sha1: 0.7.0
-      langchain: 0.3.30(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(handlebars@4.7.8)(openai@5.12.2(zod@3.24.2))
+      langchain: 0.3.30(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(handlebars@4.7.8)(openai@5.12.2(zod@3.24.2))
       pdfjs-dist: 5.4.54
       pino: 9.9.0
       pino-pretty: 13.1.1
@@ -3267,10 +3304,10 @@ snapshots:
       - typeorm
       - ws
 
-  '@elizaos/plugin-bootstrap@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))(whatwg-url@7.1.0)':
+  '@elizaos/plugin-bootstrap@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))(whatwg-url@7.1.0)':
     dependencies:
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
-      '@elizaos/plugin-sql': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/plugin-sql': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       bun: 1.2.20
       whatwg-url: 7.1.0
     transitivePeerDependencies:
@@ -3325,14 +3362,17 @@ snapshots:
       - typeorm
       - ws
 
-  '@elizaos/plugin-gaia@file:elizaos-plugin-gaia-1.0.8.tgz(@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))':
+  '@elizaos/plugin-gaia@file:elizaos-plugin-gaia-1.0.2.tgz(@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2)))':
     dependencies:
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
+      axios: 1.11.0
       undici: 7.13.0
+    transitivePeerDependencies:
+      - debug
 
-  '@elizaos/plugin-mcp@1.0.7(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))':
+  '@elizaos/plugin-mcp@1.0.7(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))':
     dependencies:
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       '@modelcontextprotocol/sdk': 1.17.2
       ajv: 8.17.1
       json5: 2.2.3
@@ -3361,10 +3401,10 @@ snapshots:
       - typeorm
       - ws
 
-  '@elizaos/plugin-ollama@1.2.4(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))(postcss@8.5.6)(react@18.3.1)(typescript@5.9.2)(yaml@2.8.1)(zod@3.24.2)':
+  '@elizaos/plugin-ollama@1.2.4(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))(postcss@8.5.6)(react@18.3.1)(typescript@5.9.2)(yaml@2.8.1)(zod@3.24.2)':
     dependencies:
       '@ai-sdk/ui-utils': 1.2.11(zod@3.24.2)
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       ai: 4.3.19(react@18.3.1)(zod@3.24.2)
       js-tiktoken: 1.0.21
       ollama-ai-provider: 1.2.0(zod@3.24.2)
@@ -3403,10 +3443,10 @@ snapshots:
       - yaml
       - zod
 
-  '@elizaos/plugin-openai@1.0.10(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))(postcss@8.5.6)(react@18.3.1)(typescript@5.9.2)(yaml@2.8.1)(zod@3.24.2)':
+  '@elizaos/plugin-openai@1.0.10(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))(postcss@8.5.6)(react@18.3.1)(typescript@5.9.2)(yaml@2.8.1)(zod@3.24.2)':
     dependencies:
       '@ai-sdk/openai': 1.3.24(zod@3.24.2)
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       ai: 4.3.19(react@18.3.1)(zod@3.24.2)
       js-tiktoken: 1.0.21
       tsup: 8.5.0(postcss@8.5.6)(typescript@5.9.2)(yaml@2.8.1)
@@ -3445,10 +3485,10 @@ snapshots:
       - yaml
       - zod
 
-  '@elizaos/plugin-sql@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))':
+  '@elizaos/plugin-sql@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))':
     dependencies:
       '@electric-sql/pglite': 0.3.7
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       dotenv: 16.6.1
       drizzle-kit: 0.31.4
       drizzle-orm: 0.44.4(@electric-sql/pglite@0.3.7)(@opentelemetry/api@1.9.0)(pg@8.16.3)
@@ -3505,10 +3545,10 @@ snapshots:
       - typeorm
       - ws
 
-  '@elizaos/server@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))':
+  '@elizaos/server@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))':
     dependencies:
-      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
-      '@elizaos/plugin-sql': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
+      '@elizaos/plugin-sql': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(openai@5.12.2(zod@3.24.2))
       '@types/express': 5.0.3
       '@types/helmet': 4.0.0
       '@types/multer': 1.4.13
@@ -4226,11 +4266,21 @@ snapshots:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
 
+  asynckit@0.4.0: {}
+
   atomic-sleep@1.0.0: {}
 
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
+
+  axios@1.11.0:
+    dependencies:
+      follow-redirects: 1.15.11
+      form-data: 4.0.4
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
 
   balanced-match@1.0.2: {}
 
@@ -4403,6 +4453,10 @@ snapshots:
 
   colorette@2.0.20: {}
 
+  combined-stream@1.0.8:
+    dependencies:
+      delayed-stream: 1.0.0
+
   commander@14.0.0: {}
 
   commander@4.1.1: {}
@@ -4510,6 +4564,8 @@ snapshots:
       es-define-property: 1.0.1
       es-errors: 1.3.0
       gopd: 1.2.0
+
+  delayed-stream@1.0.0: {}
 
   depd@2.0.0: {}
 
@@ -4619,6 +4675,13 @@ snapshots:
   es-object-atoms@1.1.1:
     dependencies:
       es-errors: 1.3.0
+
+  es-set-tostringtag@2.1.0:
+    dependencies:
+      es-errors: 1.3.0
+      get-intrinsic: 1.3.0
+      has-tostringtag: 1.0.2
+      hasown: 2.0.2
 
   esbuild-register@3.6.0(esbuild@0.25.9):
     dependencies:
@@ -4787,6 +4850,8 @@ snapshots:
       mlly: 1.7.4
       rollup: 4.46.2
 
+  follow-redirects@1.15.11: {}
+
   for-each@0.3.5:
     dependencies:
       is-callable: 1.2.7
@@ -4795,6 +4860,14 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
+
+  form-data@4.0.4:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
+      mime-types: 2.1.35
 
   forwarded@0.2.0: {}
 
@@ -5026,7 +5099,7 @@ snapshots:
 
   jsonpointer@5.0.1: {}
 
-  langchain@0.3.30(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(handlebars@4.7.8)(openai@5.12.2(zod@3.24.2)):
+  langchain@0.3.30(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(axios@1.11.0)(handlebars@4.7.8)(openai@5.12.2(zod@3.24.2)):
     dependencies:
       '@langchain/core': 0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
       '@langchain/openai': 0.6.7(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))
@@ -5041,6 +5114,7 @@ snapshots:
       yaml: 2.8.1
       zod: 3.25.76
     optionalDependencies:
+      axios: 1.11.0
       handlebars: 4.7.8
     transitivePeerDependencies:
       - '@opentelemetry/api'
@@ -5421,6 +5495,8 @@ snapshots:
     dependencies:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
+
+  proxy-from-env@1.1.0: {}
 
   public-encrypt@4.0.3:
     dependencies:
