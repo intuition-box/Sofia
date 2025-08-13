@@ -9,11 +9,8 @@ importers:
   .:
     dependencies:
       '@elizaos/core':
-        specifier: ^1.0.0
+        specifier: '>=1.4.0'
         version: 1.4.2(@langchain/core@0.3.70(openai@5.12.2(zod@3.25.76)))(openai@5.12.2(zod@3.25.76))
-      tsup:
-        specifier: 8.5.0
-        version: 8.5.0(typescript@5.9.2)(yaml@2.8.1)
       undici:
         specifier: ^7.10.0
         version: 7.13.0
@@ -24,6 +21,9 @@ importers:
       prettier:
         specifier: ^3.0.0
         version: 3.6.2
+      tsup:
+        specifier: 8.5.0
+        version: 8.5.0(typescript@5.9.2)(yaml@2.8.1)
       typescript:
         specifier: ^5.0.0
         version: 5.9.2
@@ -1884,7 +1884,7 @@ snapshots:
     dependencies:
       cipher-base: 1.0.6
       inherits: 2.0.4
-      ripemd160: 2.0.1
+      ripemd160: 2.0.2
       sha.js: 2.4.12
 
   create-hash@1.2.0:

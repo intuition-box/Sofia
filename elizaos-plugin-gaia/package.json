@@ -1,11 +1,14 @@
 {
   "name": "@elizaos/plugin-gaia",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "ElizaOS plugin for Gaia Network integration with OpenAI-compatible API",
-  "main": "dist/index.mjs",
-  "types": "dist/index.d.mts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js", 
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "README.md"],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup src/index.ts --dts --format esm --sourcemap --out-dir dist --clean",
     "dev": "tsup --watch",
     "lint": "prettier --write ./src",
     "clean": "rm -rf dist .turbo node_modules .turbo-tsconfig.json tsconfig.tsbuildinfo",
@@ -14,44 +17,24 @@
     "test": "npx elizaos test",
     "prepublishOnly": "npm run clean && npm run build"
   },
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      }
-    }
-  },
-  "keywords": [
-    "elizaos",
-    "plugin",
-    "gaia",
-    "ai",
-    "llm",
-    "blockchain"
-  ],
+  "keywords": ["elizaos", "plugin", "gaia", "ai", "llm", "blockchain"],
   "author": "Sofia Core",
   "license": "MIT",
-  "dependencies": {
-    "@elizaos/core": "^1.0.0",
-    "tsup": "8.5.0",
-    "undici": "^7.10.0"
+  "peerDependencies": {
+    "@elizaos/core": ">=1.4.0"
   },
   "devDependencies": {
+    "tsup": "8.5.0",
     "typescript": "^5.0.0",
     "@types/node": "^20.0.0",
     "prettier": "^3.0.0"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "dependencies": {
+    "undici": "^7.10.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/SofIA-extension/core.git"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "engines": { "node": ">=18.0.0" }
 }
