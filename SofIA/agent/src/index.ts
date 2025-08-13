@@ -1,6 +1,5 @@
 // src/index.ts
 import { type IAgentRuntime, type Project, type ProjectAgent, logger } from '@elizaos/core';
-import gaiaPlugin from './plugin.gaia.ts';
 import { character } from './character.ts';
 
 import dotenv from 'dotenv';
@@ -16,18 +15,19 @@ dotenv.config({ path: envPath });
 
 console.log('[ENV] CWD =', process.cwd());
 console.log('[ENV] .env path =', envPath, 'exists =', fs.existsSync(envPath));
-console.log('[ENV] OPENAI_BASE_URL =', process.env.OPENAI_BASE_URL);
-console.log('[ENV] OPENAI_API_BASE =', process.env.OPENAI_API_BASE);
-console.log('[ENV] OPENAI_API_KEY length =', (process.env.OPENAI_API_KEY || '').length);
+console.log('[ENV] GAIA_API_BASE =', process.env.GAIA_API_BASE);
+console.log('[ENV] GAIA_API_KEY length =', (process.env.GAIA_API_KEY || '').length);
+console.log('[ENV] GAIA_MODEL =', process.env.GAIA_MODEL);
+console.log('[ENV] DISABLE_EMBEDDINGS =', process.env.DISABLE_EMBEDDINGS);
 
 // -------------------- HEALTHCHECK GAIA --------------------
 async function gaiaHealthcheck() {
-  const key = process.env.OPENAI_API_KEY ?? '';
-  const base = process.env.OPENAI_API_BASE ?? process.env.OPENAI_BASE_URL ?? '';
-  console.log('[HC] KEY LEN =', key.length, 'BASE =', base);
+  const key = process.env.GAIA_API_KEY ?? process.env.OPENAI_API_KEY ?? '';
+  const base = process.env.GAIA_API_BASE ?? process.env.OPENAI_API_BASE ?? process.env.OPENAI_BASE_URL ?? '';
+  console.log('[HC] GAIA KEY LEN =', key.length, 'BASE =', base);
 
   if (!key || !base) {
-    console.warn('[HC] Missing OPENAI_API_KEY or BASE URL');
+    console.warn('[HC] Missing GAIA_API_KEY/OPENAI_API_KEY or BASE URL');
     return;
   }
 
@@ -39,8 +39,10 @@ async function gaiaHealthcheck() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL ?? 'qwen72b',
+        model: process.env.GAIA_MODEL ?? process.env.OPENAI_MODEL ?? 'Qwen3-235B-A22B-Q4_K_M',
         messages: [{ role: 'user', content: 'ping' }],
+        temperature: 1.0,
+        max_tokens: 100,
       }),
     });
     const text = await r.text();
@@ -60,8 +62,6 @@ const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
 export const projectAgent: ProjectAgent = {
   character,
   init: async (runtime: IAgentRuntime) => await initCharacter({ runtime }),
-  // connect the GAIA plugin here
-  plugins: [gaiaPlugin],
 };
 
 const project: Project = {
