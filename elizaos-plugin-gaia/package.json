@@ -1,6 +1,6 @@
 {
   "name": "@elizaos/plugin-gaia",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "ElizaOS plugin for Gaia Network integration with OpenAI-compatible API",
   "type": "module",
   "main": "./dist/index.js",

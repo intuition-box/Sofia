@@ -273,6 +273,7 @@ const gaiaGenerate = async (
   context?: any,
   _modelConfig?: any
 ): Promise<string> => {
+  console.log('[GAIA] 🔥 gaiaGenerate FUNCTION CALLED!');
   logger.log(
     {
       runtimeKeys: runtime ? Object.keys(runtime).slice(0, 8) : [],
@@ -461,6 +462,10 @@ const gaiaPlugin: Plugin = {
     logger.log(
       `[GAIA] Initializing plugin with config: ${Object.keys(config).join(', ')}`
     );
+    
+    console.log('[GAIA] DEBUG: Config received:', config);
+    console.log('[GAIA] DEBUG: Runtime type:', typeof runtime);
+    console.log('[GAIA] DEBUG: Runtime has registerModel:', typeof runtime?.registerModel);
 
     // Validate environment variables
     const base = baseUrlFromEnv();
@@ -498,8 +503,11 @@ const gaiaPlugin: Plugin = {
     await validateGaiaNode();
 
     // Register text generation models with high priority
+    console.log('[GAIA] DEBUG: Registering TEXT_LARGE model...');
     runtime.registerModel(ModelType.TEXT_LARGE, gaiaGenerate, 'gaia', 100);
+    console.log('[GAIA] DEBUG: Registering TEXT_SMALL model...');
     runtime.registerModel(ModelType.TEXT_SMALL, gaiaGenerate, 'gaia', 100);
+    console.log('[GAIA] DEBUG: Models registered successfully!');
 
     // Register embedding model only if not disabled
     if (!embeddingsDisabled) {
@@ -523,6 +531,7 @@ const gaiaPlugin: Plugin = {
       );
     }
 
+    console.log('[GAIA] 🚀 Gaia Network plugin ready!');
     logger.log('[GAIA] 🚀 Gaia Network plugin ready!');
   },
 };

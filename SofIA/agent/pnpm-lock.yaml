@@ -18,8 +18,8 @@ importers:
         specifier: latest
         version: 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))(whatwg-url@7.1.0)
       '@elizaos/plugin-gaia':
-        specifier: file:elizaos-plugin-gaia-1.0.6.tgz
-        version: file:elizaos-plugin-gaia-1.0.6.tgz(@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))
+        specifier: file:elizaos-plugin-gaia-1.0.7.tgz
+        version: file:elizaos-plugin-gaia-1.0.7.tgz(@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))
       '@elizaos/plugin-mcp':
         specifier: 1.0.7
         version: 1.0.7(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
@@ -251,9 +251,9 @@ packages:
     peerDependencies:
       whatwg-url: 7.1.0
 
-  '@elizaos/plugin-gaia@file:elizaos-plugin-gaia-1.0.6.tgz':
-    resolution: {integrity: sha512-RJhYy0PyKrLHOKGdqwemiM0mNGH605ycSfnlagsI20wmGGeoUlFiNmczEHVGTaaF8WtiW5vEt43X4Vh2WnBKmg==, tarball: file:elizaos-plugin-gaia-1.0.6.tgz}
-    version: 1.0.6
+  '@elizaos/plugin-gaia@file:elizaos-plugin-gaia-1.0.7.tgz':
+    resolution: {integrity: sha512-TnPBg3tw8lDh/4An7xBxfyF7jQS4twK97kPJVmpNF1u0cfZnsFPEgeRJYy5paVZz/N/kQnbvdhsVj2PX9eWNGg==, tarball: file:elizaos-plugin-gaia-1.0.7.tgz}
+    version: 1.0.7
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@elizaos/core': '>=1.4.0'
@@ -3325,7 +3325,7 @@ snapshots:
       - typeorm
       - ws
 
-  '@elizaos/plugin-gaia@file:elizaos-plugin-gaia-1.0.6.tgz(@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))':
+  '@elizaos/plugin-gaia@file:elizaos-plugin-gaia-1.0.7.tgz(@elizaos/core@1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))':
     dependencies:
       '@elizaos/core': 1.4.2(@langchain/core@0.3.70(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2)))(@opentelemetry/api@1.9.0)(openai@5.12.2(zod@3.24.2))
       undici: 7.13.0
