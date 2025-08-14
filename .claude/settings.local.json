@@ -5,6 +5,7 @@
       "WebFetch(domain:docs.gaianet.ai)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "defaultMode": "acceptEdits"
   }
 }

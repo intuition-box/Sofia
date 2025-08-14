@@ -58,7 +58,7 @@
     "knowledge": [],
     "plugins": [
         "@elizaos/plugin-sql",
-        "@elizaos/plugin-openai",
+        "@elizaos/plugin-gaianet",
         "@elizaos/plugin-bootstrap",
         "@elizaos/plugin-mcp"
     ],
