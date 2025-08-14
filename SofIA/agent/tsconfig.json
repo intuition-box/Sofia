@@ -1,34 +1,33 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
-    "lib": ["ESNext", "DOM"],
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "jsx": "react-jsx",
+    "rootDir": ".",
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "strictFunctionTypes": false,
     "useUnknownInCatchVariables": false,
+    "allowImportingTsExtensions": true,
     "declaration": true,
-    "declarationMap": true,
+    "emitDeclarationOnly": true,
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
     "noEmitOnError": false,
     "moduleDetection": "force",
+    "allowArbitraryExtensions": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "@elizaos/core": ["../../core/src"],
+      "@elizaos/core/*": ["../../core/src/*"]
     }
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "dist",
     "node_modules",

@@ -1,6 +1,0 @@
-{
-  "model": "qwen72b",
-  "messages": [
-    { "role": "user", "content": "ping" }
-  ]
-}

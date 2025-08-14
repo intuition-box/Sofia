@@ -1,0 +1,77 @@
+{
+  "name": "@elizaos/plugin-gaianet",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint . --fix",
+    "test": "bun test",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@elizaos/core": "^1.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "8.19.0",
+    "@typescript-eslint/parser": "8.19.0",
+    "eslint": "^9.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3"
+  },
+  "agentConfig": {
+    "pluginType": "elizaos:plugin:1.0.0",
+    "pluginParameters": {
+      "GAIANET_API_KEY": {
+        "type": "string",
+        "description": "API key for GaiaNet",
+        "required": false,
+        "sensitive": true
+      },
+      "GAIANET_NODE_URL": {
+        "type": "string",
+        "description": "GaiaNet node URL (e.g., https://node_id.gaia.domains)",
+        "required": false,
+        "sensitive": false
+      },
+      "GAIANET_TEXT_MODEL_SMALL": {
+        "type": "string",
+        "description": "Model name for small text generation",
+        "required": false,
+        "sensitive": false
+      },
+      "GAIANET_TEXT_MODEL_LARGE": {
+        "type": "string",
+        "description": "Model name for large text generation",
+        "required": false,
+        "sensitive": false
+      },
+      "GAIANET_EMBEDDINGS_MODEL": {
+        "type": "string",
+        "description": "Model name for embeddings",
+        "required": false,
+        "sensitive": false
+      }
+    }
+  }
+}
