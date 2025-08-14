@@ -88,6 +88,44 @@ export class ElizaDataService {
   }
 
   /**
+   * Store triplet states for EchoesTab persistence
+   */
+  static async storeTripletStates(tripletStates: any[]): Promise<number> {
+    // Remove existing triplet states first
+    const existing = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_triplet_states')
+    for (const record of existing) {
+      if (record.id) {
+        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+      }
+    }
+    
+    // Store new triplet states
+    const record: ElizaRecord = {
+      messageId: 'echoesTab_triplet_states',
+      content: tripletStates as any,
+      timestamp: Date.now(),
+      type: 'triplet'
+    }
+    
+    const result = await sofiaDB.add(STORES.ELIZA_DATA, record)
+    console.log('💾 EchoesTab triplet states persisted:', tripletStates.length)
+    return result as number
+  }
+
+  /**
+   * Load triplet states for EchoesTab
+   */
+  static async loadTripletStates(): Promise<any[]> {
+    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_triplet_states')
+    if (records.length > 0 && records[0].content) {
+      console.log('💾 EchoesTab triplet states loaded:', (records[0].content as any[]).length)
+      return records[0].content as any[]
+    }
+    console.log('💾 No saved triplet states found')
+    return []
+  }
+
+  /**
    * Clear all Eliza data
    */
   static async clearAll(): Promise<void> {

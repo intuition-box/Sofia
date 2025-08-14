@@ -1,12 +1,9 @@
 import { io, Socket } from "socket.io-client"
 import { SOFIA_IDS, CHATBOT_IDS } from "./constants"
-import { Storage } from "@plasmohq/storage"
-
+import { elizaDataService } from "../lib/indexedDB-methods"
 
 let socketSofia: Socket
 let socketBot: Socket
-
-const storage = new Storage()
 
 function generateUUID(): string {
   return crypto.randomUUID
@@ -48,40 +45,27 @@ export async function initializeSofiaSocket(): Promise<void> {
       console.log("📩 Message SofIA:", data)
 
       try {
-        // Use temporary buffer for raw messages
-        let messageBuffer = await storage.get("sofiaMessagesBuffer") || []
-        if (!Array.isArray(messageBuffer)) messageBuffer = []
-
+        // Create message in the exact same format as before
         const newMessage = {
-          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Unique ID for tracking
+          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           content: { text: data.text },
           created_at: Date.now(),
-          processed: false // Flag to track parsing status
+          processed: false
         }
 
-        messageBuffer.push(newMessage)
+        // Store directly in IndexedDB instead of buffer
+        await elizaDataService.storeMessage(newMessage, newMessage.id)
+        console.log("✅ Message stored directly in IndexedDB (SofIA)", { id: newMessage.id })
 
-        // Strict buffer limit: keep only 25 most recent messages
-        if (messageBuffer.length > 25) {
-          console.log("🧹 Buffer limit reached, keeping 25 most recent messages")
-          messageBuffer = messageBuffer
-            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-            .slice(0, 25)
+        // Clean old messages periodically (keep last 50)
+        const allMessages = await elizaDataService.getAllMessages()
+        if (allMessages.length > 50) {
+          console.log("🧹 Cleaning old messages, keeping 50 most recent")
+          await elizaDataService.deleteOldMessages(30) // Keep last 30 days
         }
 
-        await storage.set("sofiaMessagesBuffer", messageBuffer)
-        console.log("✅ Message added to buffer (SofIA)", { id: newMessage.id, length: messageBuffer.length })
       } catch (error) {
-        console.error("❌ Failed to store message in buffer:", error)
-        if (error instanceof Error && error.message.includes('quota')) {
-          console.log("🚨 Storage quota exceeded, clearing buffer...")
-          try {
-            await storage.set("sofiaMessagesBuffer", [])
-            console.log("✅ Buffer cleared due to quota error")
-          } catch (clearError) {
-            console.error("❌ Failed to clear buffer:", clearError)
-          }
-        }
+        console.error("❌ Failed to store message in IndexedDB:", error)
       }
     }
   })
