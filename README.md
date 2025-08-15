@@ -145,8 +145,6 @@ GAIANET_EMBEDDINGS_MODEL=nomic-embed-text-v1.5
 
 ## 🚀 Running the System
 
-### Development Mode (Recommended for first-time setup)
-
 #### 1. Start the ElizaOS Agent
 ```bash
 # Terminal 1: Start agent in development mode
@@ -322,34 +320,6 @@ Triplets → IPFS upload → On-chain attestation → Knowledge graph update
 ### 4. User Interface
 ```
 Data retrieval → React components → Real-time updates → User interaction
-```
-
-## 🧪 Testing
-
-### Agent Testing
-```bash
-cd agent/
-bun run test              # Run all tests
-bun run test:coverage     # Coverage report
-elizaos test             # ElizaOS built-in tests
-```
-
-### Extension Testing  
-```bash
-cd extension/
-pnpm run build           # Build test
-# Manual testing in Chrome DevTools
-```
-
-### Integration Testing
-```bash
-# Start both systems
-cd agent/ && bun run dev &
-cd extension/ && pnpm run dev
-
-# Test WebSocket connection
-# Test data flow
-# Test blockchain interactions
 ```
 
 ## 🐛 Troubleshooting
