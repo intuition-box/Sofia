@@ -45,7 +45,7 @@ code --install-extension esbenp.prettier-vscode
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/sofia-core.git
+git clone https://github.com/intuition-box/Sofia.git
 ```
 
 ### 2. Install Dependencies
