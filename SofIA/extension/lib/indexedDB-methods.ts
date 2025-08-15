@@ -270,47 +270,6 @@ export class UserProfileService {
     await this.saveProfile(undefined, undefined, url)
     console.log('🔗 Profile URL updated')
   }
-
-  /**
-   * Store wallet account information
-   */
-  static async storeWalletAccount(account: string): Promise<number> {
-    const existing = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'wallet_account')
-    
-    // Clear existing wallet records
-    for (const record of existing) {
-      if (record.id) {
-        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
-      }
-    }
-
-    const record: ElizaRecord = {
-      messageId: 'wallet_account',
-      content: account as any,
-      timestamp: Date.now(),
-      type: 'wallet'
-    }
-    
-    const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
-    console.log('💾 Wallet account stored:', account)
-    return result as number
-  }
-
-  /**
-   * Get stored wallet account
-   */
-  static async getWalletAccount(): Promise<string | null> {
-    try {
-      const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'wallet_account')
-      if (records.length > 0) {
-        return records[0].content as string
-      }
-      return null
-    } catch (error) {
-      console.error('❌ Failed to get wallet account:', error)
-      return null
-    }
-  }
 }
 
 /**
