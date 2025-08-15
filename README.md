@@ -136,8 +136,8 @@ GAIANET_NODE_URL=https://node_id.gaia.domains
 # ================================
 # OPTIONAL: Gaianet Integration  
 # ================================
-GAIANET_TEXT_MODEL_SMALL=llama-3.2-3b-instruct
-GAIANET_TEXT_MODEL_LARGE=llama-3.2-70b-instruct
+GAIANET_TEXT_MODEL_SMALL=llama
+GAIANET_TEXT_MODEL_LARGE=llama
 GAIANET_EMBEDDINGS_MODEL=nomic-embed-text-v1.5
 ```
 
