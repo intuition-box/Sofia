@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "..",
     "lib": ["ESNext"],
     "target": "ESNext",
     "module": "Preserve",
@@ -27,13 +27,16 @@
       "@elizaos/core/*": ["../../core/src/*"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../plugins/**/*.ts"],
   "exclude": [
     "dist",
     "node_modules",
     "src/__tests__/**/*",
     "src/**/cypress/**/*",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "../plugins/**/tsup.config.ts",
+    "../plugins/**/vite.config.ts",
+    "../plugins/**/webpack.config.ts"
   ]
 }

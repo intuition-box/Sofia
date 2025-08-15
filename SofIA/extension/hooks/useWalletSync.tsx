@@ -1,12 +1,25 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useConnect, useAccount, useDisconnect } from 'wagmi'
-import { useStorage } from "@plasmohq/storage/hook"
+import { elizaDataService } from '../lib/indexedDB-methods'
 
 export const useWalletSync = () => {
-  const [metamaskAccount] = useStorage<string>("metamask-account")
+  const [metamaskAccount, setMetamaskAccount] = useState<string | null>(null)
   const { address, isConnected } = useAccount()
   const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
+
+  // Load metamask account from IndexedDB on mount
+  useEffect(() => {
+    const loadAccount = async () => {
+      try {
+        const account = await elizaDataService.getWalletAccount()
+        setMetamaskAccount(account)
+      } catch (error) {
+        console.error('Failed to load wallet account:', error)
+      }
+    }
+    loadAccount()
+  }, [])
 
   useEffect(() => {
     const injectedConnector = connectors.find(connector => 

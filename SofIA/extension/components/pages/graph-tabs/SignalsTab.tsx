@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useOnChainTriplets, type OnChainTriplet } from '../../../hooks/useOnChainTriplets'
+import { useIntuitionTriplets, type IntuitionTriplet } from '../../../hooks/useIntuitionTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
 import '../../styles/AtomCreationModal.css'
 import '../../styles/MyGraphPage.css'
@@ -10,17 +10,16 @@ interface SignalsTabProps {
 }
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
-  const { triplets, isLoading } = useOnChainTriplets()
+  const { triplets, isLoading } = useIntuitionTriplets()
   
-  // Filtrer et trier les triplets publiés on-chain - plus récent en premier
-  const publishedTriplets = triplets
-    .filter(t => t.tripleStatus === 'on-chain')
-    .sort((a, b) => b.timestamp - a.timestamp)
+  // Afficher tous les triplets (quand API Intuition sera disponible)
+  const publishedTriplets = triplets.sort((a, b) => b.timestamp - a.timestamp)
   
   const publishedCounts = {
     total: publishedTriplets.length,
     created: publishedTriplets.filter(t => t.source === 'created').length,
     existing: publishedTriplets.filter(t => t.source === 'existing').length,
+    intuition: publishedTriplets.filter(t => t.source === 'intuition_api').length,
   }
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
@@ -59,8 +58,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     <div className="triples-container">
       {/* Dashboard header */}
       <div className="dashboard-header">
-        <h2>⛓️ Published On-Chain Triples</h2>
-        <p>Dashboard of your triplets already published on blockchain</p>
+        <h2>Published On-Chain Signals</h2>
+        <p>Dashboard of your Signals already published on blockchain</p>
       </div>
 
       {/* Stats header */}
@@ -170,9 +169,10 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         })
       ) : (
         <div className="empty-state">
-          <p>No published triplets yet</p>
+          <p>🔄 Waiting for Intuition API</p>
           <p className="empty-subtext">
-            Go to the Echoes tab to publish your first on-chain triplets
+            This tab will display triplets from the Intuition blockchain when the API becomes available.<br/>
+            For now, use the Echoes tab to work with your local triplets.
           </p>
         </div>
       )}
