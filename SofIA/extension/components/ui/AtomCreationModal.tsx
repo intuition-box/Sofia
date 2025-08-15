@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useCheckExistingAtom } from '../../hooks/useCheckExistingAtom'
-import { useOnChainTriplets } from '../../hooks/useOnChainTriplets'
 
 interface AtomCreationModalProps {
   isOpen: boolean
@@ -26,7 +25,6 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
   const [progressMessage, setProgressMessage] = useState('')
 
   const { checkAndCreateAtom, isChecking, error } = useCheckExistingAtom()
-  const { addTriplet } = useOnChainTriplets()
 
   const [receipt, setReceipt] = useState<{
     transactionHash?: string
@@ -105,19 +103,9 @@ const AtomCreationModal = ({ isOpen, onClose, objectData, tripletData, originalM
         ipfsUri: result.ipfsUri
       })
 
-      // Add triplet to on-chain storage if tripletData is provided
+      // Note: Triplet data is handled by EchoesTab for full workflow
       if (tripletData) {
-        await addTriplet({
-          triplet: tripletData,
-          atomVaultId: result.vaultId,
-          txHash: result.txHash,
-          source: result.source,
-          url: url.trim(),
-          ipfsUri: result.ipfsUri,
-          originalMessage,
-          tripleStatus: 'atom-only' // Juste l'atom Object créé, pas encore le triplet complet
-        })
-        console.log('✅ Triplet added to on-chain storage (atom-only status)')
+        console.log('💡 Atom created - triplet workflow handled by EchoesTab')
       }
       
       setCurrentStep('success')
