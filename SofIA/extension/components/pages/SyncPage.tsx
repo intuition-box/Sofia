@@ -1,8 +1,9 @@
 import { useRouter } from '../layout/RouterProvider'
+import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
-const SavedPage = () => {
+const SyncPage = () => {
   const { navigateTo } = useRouter()
 
   return (
@@ -11,16 +12,16 @@ const SavedPage = () => {
         onClick={() => navigateTo('home-connected')}
         className="back-button"
       >
-        ← Back to Home
+        <img src={homeIcon} alt="Home" className="home-icon" />
       </button>
       
-      <h2 className="section-title">Saved</h2>
+      <h2 className="section-title">Sync</h2>
       <div className="page-content">
-        <div className="empty-state">Your saved items will appear here</div>
+        <div className="empty-state">Your synced items will appear here</div>
       </div>
     </div>
   )
 }
 
 
-export default SavedPage
+export default SyncPage

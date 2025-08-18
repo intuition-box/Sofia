@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useMCPClient } from '../../hooks/useMCPClient'
+import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
@@ -28,7 +29,7 @@ const SearchPage = () => {
         onClick={() => navigateTo('home-connected')}
         className="back-button"
       >
-        ← Back to Home
+        <img src={homeIcon} alt="Home" className="home-icon" />
       </button>
     
       <div className="page-content">

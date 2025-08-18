@@ -9,7 +9,7 @@ import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
 import '../../styles/AtomCreationModal.css'
-import '../../styles/MyGraphPage.css'
+import '../../styles/CorePage.css'
 
 interface EchoesTabProps {
   expandedTriplet: { msgIndex: number; tripletIndex: number } | null

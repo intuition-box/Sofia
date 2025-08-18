@@ -12,6 +12,7 @@
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "module": "ES2020",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "target": "ES2020",

@@ -1,7 +1,8 @@
 import { useStorage } from "@plasmohq/storage/hook"
 import { useRouter } from './RouterProvider'
 import graphIcon from '../../assets/Icon=Graph.svg'
-import bookmarkIcon from '../../assets/Icon=Bookmark.svg'
+import coreIcon from '../../assets/Icon=access-point.svg'
+import syncIcon from '../../assets/Icon=Sync.svg'
 import searchIcon from '../../assets/Icon=Search.svg'
 import personIcon from '../../assets/Icon=person.svg'
 import settingsIcon from '../../assets/Icon=Settings.svg'
@@ -16,26 +17,26 @@ const BottomNavigation = () => {
   return (
     <div className="bottom-nav">
       <button 
-        onClick={() => navigateTo('my-data')}
-        className="nav-button my-data"
+        onClick={() => navigateTo('core')}
+        className="nav-button core"
       >
         <img 
-          src={graphIcon} 
-          alt="My Graph" 
+          src={coreIcon} 
+          alt="Core" 
           className="nav-icon"
         />
-        <span className="nav-text">My Data</span>
+        <span className="nav-text">Core</span>
       </button>
       <button 
-        onClick={() => navigateTo('saved')}
-        className={`nav-button ${currentPage === 'saved' ? 'active' : ''}`}
+        onClick={() => navigateTo('sync')}
+        className={`nav-button ${currentPage === 'sync' ? 'active' : ''}`}
       >
         <img 
-          src={bookmarkIcon} 
-          alt="Saved" 
+          src={syncIcon} 
+          alt="Sync" 
           className="nav-icon"
         />
-        <span className="nav-text">Saved</span>
+        <span className="nav-text">Sync</span>
       </button>
       <button 
         onClick={() => navigateTo('search')}

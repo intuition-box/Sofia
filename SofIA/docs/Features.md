@@ -9,6 +9,7 @@ A user profile page: bio, photo, connected wallet, badge
 A settings page:
 
 - Disconnect Wallet
+- Remaining Credits
 - Language
 - Clear data
 

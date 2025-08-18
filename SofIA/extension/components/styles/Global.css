@@ -141,6 +141,15 @@
   transition: var(--transition-normal);
   display: flex;
   justify-content: flex-start;
+  align-items: center;
+}
+
+.back-button .home-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  filter: brightness(0) invert(1);
+  opacity: 1;
 }
 
 /* Titre de section */

@@ -15,9 +15,9 @@ import HomePage from "./components/pages/HomePage"
 import HomeConnectedPage from "./components/pages/HomeConnectedPage"
 import SettingsPage from "./components/pages/SettingsPage"
 import ProfilePage from "./components/pages/ProfilePage"
-import MyGraphPage from "./components/pages/MyGraphPage"
+import CorePage from "./components/pages/CorePage"
 import RecommendationsPage from "./components/pages/RecommendationsPage"
-import SavedPage from "./components/pages/SavedPage"
+import SyncPage from "./components/pages/SyncPage"
 import SearchPage from "./components/pages/SearchPage"
 import SearchResultPage from "./components/pages/SearchResultPage"
 import ChatPage from "./components/pages/ChatPage"
@@ -50,12 +50,12 @@ const SidePanelContent = () => {
         return <SettingsPage />
       case 'profile':
         return <ProfilePage />
-      case 'my-data':
-        return <MyGraphPage />
+      case 'core':
+        return <CorePage />
       case 'recommendations':
         return <RecommendationsPage />
-      case 'saved':
-        return <SavedPage />
+      case 'sync':
+        return <SyncPage />
       case 'search':
         return <SearchPage />
       case 'search-result':

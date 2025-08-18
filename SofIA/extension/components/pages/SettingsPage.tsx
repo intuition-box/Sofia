@@ -6,6 +6,7 @@ import WalletConnectionButton from '../THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
 import { disconnectWallet, cleanupProvider } from '../../lib/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
+import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
 
@@ -55,7 +56,7 @@ const SettingsPage = () => {
         onClick={() => navigateTo('home-connected')}
         className="back-button"
       >
-        ← Back to Home
+        <img src={homeIcon} alt="Home" className="home-icon" />
       </button>
       
       <h2 className="section-title">Settings</h2>

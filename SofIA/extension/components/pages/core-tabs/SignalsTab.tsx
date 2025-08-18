@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useIntuitionTriplets, type IntuitionTriplet } from '../../../hooks/useIntuitionTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
 import '../../styles/AtomCreationModal.css'
-import '../../styles/MyGraphPage.css'
+import '../../styles/CorePage.css'
 
 interface SignalsTabProps {
   expandedTriplet: { tripletId: string } | null

@@ -1,15 +1,16 @@
 import { useState, Suspense, lazy } from 'react'
 import { useRouter } from '../layout/RouterProvider'
+import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
-import '../styles/MyGraphPage.css'
+import '../styles/CorePage.css'
 
 // Lazy loading des composants d'onglets
-const EchoesTab = lazy(() => import('./graph-tabs/EchoesTab'))
-const SignalsTab = lazy(() => import('./graph-tabs/SignalsTab'))
-const ResonanceTab = lazy(() => import('./graph-tabs/ResonanceTab'))
+const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
+const SignalsTab = lazy(() => import('./core-tabs/SignalsTab'))
+const ResonanceTab = lazy(() => import('./core-tabs/ResonanceTab'))
 
 
-const MyGraphPage = () => {
+const CorePage = () => {
   const { navigateTo } = useRouter()
   const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Resonance'>('Echoes')
   const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
@@ -18,11 +19,8 @@ const MyGraphPage = () => {
   return (
     <div className="page">
       <button onClick={() => navigateTo('home-connected')} className="back-button">
-        ← Back to Home
+        <img src={homeIcon} alt="Home" className="home-icon" />
       </button>
-
-      <h2 className="section-title">My Graph</h2>
-
       <div className="tabs">
         {['Echoes', 'Signals', 'Resonance'].map(tab => (
           <button
@@ -56,4 +54,4 @@ const MyGraphPage = () => {
   )
 }
 
-export default MyGraphPage
+export default CorePage

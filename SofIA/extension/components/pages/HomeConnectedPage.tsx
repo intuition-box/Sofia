@@ -49,10 +49,6 @@ const HomeConnectedPage = () => {
         </div>
       </div>
 
-      <div className="favorites-section">
-        <h3 className="subsection-title">Favorites</h3>
-        <p className="favorites-empty-text">No favorites yet</p>
-      </div>
 
       <div className="floating-buttons">
         <button
