@@ -6,3 +6,4 @@
 
 - [Features](./SofIA/docs/Features.md)
 - [Technical Documentation](./SofIA/docs/Technical-Documentation.md)
+- [Architecture Diagram](./SofIA/docs/Architecture_Diagram.excalidraw)
