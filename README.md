@@ -50,6 +50,19 @@ git clone https://github.com/intuition-box/Sofia.git
 
 ### 2. Install Dependencies
 
+#### 🔌 Plugins Setup
+```bash
+# Navigate to plugins directory
+cd ../plugins/gaianet/
+
+# The Gaianet plugin is already packaged
+# Archive: elizaos-plugin-gaianet-0.1.0.tgz contains the built plugin
+
+# If you need to rebuild (optional):
+bun install
+bun run build
+```
+
 #### 🤖 ElizaOS Agent Setup
 ```bash
 # Navigate to agent directory
@@ -65,6 +78,8 @@ bun run build
 elizaos --version
 ```
 
+
+
 #### 🌐 Browser Extension Setup
 ```bash
 # Navigate to extension directory
@@ -79,18 +94,7 @@ pnpm run dev
 pnpm run build
 ```
 
-#### 🔌 Plugins Setup
-```bash
-# Navigate to plugins directory
-cd ../plugins/gaianet/
 
-# The Gaianet plugin is already packaged
-# Archive: elizaos-plugin-gaianet-0.1.0.tgz contains the built plugin
-
-# If you need to rebuild (optional):
-bun install
-bun run build
-```
 
 ### 3. MCP Server Setup (Required for Intuition integration)
 
