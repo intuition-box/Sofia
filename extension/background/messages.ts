@@ -197,6 +197,26 @@ export function setupMessageHandlers(): void {
             sendResponse({ success: false, error: error.message })
           })
         return true
+
+      case "STORE_BOOKMARK_TRIPLETS":
+        console.log('💾 [messages.ts] STORE_BOOKMARK_TRIPLETS request received')
+        try {
+          // Stocker le JSON de triplets dans IndexedDB
+          const newMessage = {
+            id: `bookmark_${message.timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+            content: { text: message.text },
+            created_at: message.timestamp,
+            processed: false
+          }
+          
+          sendToAgent(message.text) // Utilise la méthode existante
+          console.log('✅ [messages.ts] Bookmark triplets stored:', { id: newMessage.id })
+          sendResponse({ success: true, id: newMessage.id })
+        } catch (error) {
+          console.error("❌ [messages.ts] Failed to store bookmark triplets:", error)
+          sendResponse({ success: false, error: error.message })
+        }
+        return true
     }
 
     sendResponse({ success: true })

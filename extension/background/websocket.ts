@@ -109,10 +109,18 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
       (data.roomId === CHATBOT_IDS.ROOM_ID || data.channelId === CHATBOT_IDS.CHANNEL_ID) &&
       data.senderId === CHATBOT_IDS.AGENT_ID
     ) {
-      chrome.runtime.sendMessage({
-        type: "CHATBOT_RESPONSE",
-        text: data.text
-      })
+      try {
+        chrome.runtime.sendMessage({
+          type: "CHATBOT_RESPONSE",
+          text: data.text
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.warn("⚠️ [websocket.ts] Failed to send CHATBOT_RESPONSE:", chrome.runtime.lastError.message)
+          }
+        })
+      } catch (error) {
+        console.warn("⚠️ [websocket.ts] Error sending CHATBOT_RESPONSE:", error)
+      }
     }
   })
 
@@ -214,17 +222,78 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
     console.log("✅ [websocket.ts] Room join sent for BookMarkAgent")
   })
 
-  socketBookmarkAgent.on("messageBroadcast", (data) => {
-    console.log("📩 [websocket.ts] Received messageBroadcast:", data)
+  socketBookmarkAgent.on("messageBroadcast", async (data) => {
+    console.log("📩 [websocket.ts] Received messageBroadcast:", {
+      senderId: data.senderId,
+      expectedAgentId: BOOKMARKAGENT_IDS.AGENT_ID,
+      roomId: data.roomId,
+      expectedRoomId: BOOKMARKAGENT_IDS.ROOM_ID,
+      channelId: data.channelId,
+      expectedChannelId: BOOKMARKAGENT_IDS.CHANNEL_ID
+    })
     
     if ((data.roomId === BOOKMARKAGENT_IDS.ROOM_ID || data.channelId === BOOKMARKAGENT_IDS.CHANNEL_ID) && 
         data.senderId === BOOKMARKAGENT_IDS.AGENT_ID) {
-      console.log("✅ [websocket.ts] Message is from BookMarkAgent, forwarding to extension")
+      console.log("✅ [websocket.ts] Message is from BookMarkAgent, processing response")
       
-      chrome.runtime.sendMessage({
-        type: "BOOKMARK_AGENT_RESPONSE",
-        text: data.text
-      })
+      try {
+        // Utiliser le système de messages interne pour stocker
+        chrome.runtime.sendMessage({
+          type: "STORE_BOOKMARK_TRIPLETS",
+          text: data.text,
+          timestamp: Date.now()
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.warn("⚠️ [websocket.ts] Failed to store via messages:", chrome.runtime.lastError.message)
+          } else {
+            console.log("✅ [websocket.ts] BookMarkAgent response stored via messages")
+          }
+        })
+        
+        // Débloquer pour le lot suivant
+        if (responseTimeout) {
+          clearTimeout(responseTimeout)
+          responseTimeout = null
+        }
+        isWaitingForBookmarkResponse = false
+        
+        // Appeler le callback pour continuer avec le lot suivant
+        if (currentBatchCallback) {
+          currentBatchCallback()
+          currentBatchCallback = null
+        }
+        
+        console.log("🔓 [websocket.ts] Unlocked for next bookmark batch")
+        
+      } catch (error) {
+        console.error("❌ [websocket.ts] Failed to process BookMarkAgent response:", error)
+        // Débloquer quand même en cas d'erreur
+        if (responseTimeout) {
+          clearTimeout(responseTimeout)
+          responseTimeout = null
+        }
+        isWaitingForBookmarkResponse = false
+        
+        // Appeler le callback même en cas d'erreur
+        if (currentBatchCallback) {
+          currentBatchCallback()
+          currentBatchCallback = null
+        }
+      }
+
+      // Continuer à envoyer le message à l'extension pour compatibilité
+      try {
+        chrome.runtime.sendMessage({
+          type: "BOOKMARK_AGENT_RESPONSE",
+          text: data.text
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.warn("⚠️ [websocket.ts] Failed to send BOOKMARK_AGENT_RESPONSE:", chrome.runtime.lastError.message)
+          }
+        })
+      } catch (error) {
+        console.warn("⚠️ [websocket.ts] Error sending BOOKMARK_AGENT_RESPONSE:", error)
+      }
     } else {
       console.log("⏭️ [websocket.ts] Message not for BookMarkAgent, ignoring")
     }
@@ -265,8 +334,75 @@ export function sendBookmarksToAgent(urls: string[]): void {
     return
   }
 
-  const message = `Import de ${urls.length} favoris:\n${urls.slice(0, 10).join('\n')}${urls.length > 10 ? '\n...' : ''}`
-  console.log('📚 [websocket.ts] Constructed message for agent:', message.substring(0, 100) + '...')
+  // Découper en lots de 10 et envoyer séquentiellement
+  const batchSize = 10
+  const totalBatches = Math.ceil(urls.length / batchSize)
+  
+  console.log(`📚 [websocket.ts] Splitting ${urls.length} bookmarks into ${totalBatches} batches of ${batchSize}`)
+
+  sendBookmarkBatchesSequentially(urls, batchSize, 0, totalBatches)
+}
+
+// === 6b. Variables pour la gestion séquentielle ===
+let isWaitingForBookmarkResponse = false
+let pendingBatches: Array<{urls: string[], batchNumber: number, totalBatches: number}> = []
+let responseTimeout: NodeJS.Timeout | null = null
+
+// === 6c. Envoi séquentiel des lots de bookmarks ===
+function sendBookmarkBatchesSequentially(allUrls: string[], batchSize: number, currentIndex: number, totalBatches: number): void {
+  if (currentIndex >= allUrls.length) {
+    console.log(`✅ [websocket.ts] All ${totalBatches} batches processed`)
+    return
+  }
+
+  const batch = allUrls.slice(currentIndex, currentIndex + batchSize)
+  const batchNumber = Math.floor(currentIndex / batchSize) + 1
+  
+  const onComplete = () => {
+    // Callback appelé quand on reçoit la réponse ou timeout
+    setTimeout(() => {
+      sendBookmarkBatchesSequentially(allUrls, batchSize, currentIndex + batchSize, totalBatches)
+    }, 1000) // 1 seconde entre les lots
+  }
+  
+  sendBookmarkBatch(batch, batchNumber, totalBatches, onComplete)
+}
+
+// === 6d. Variable pour stocker le callback en cours ===
+let currentBatchCallback: (() => void) | null = null
+
+// === 6e. Envoi d'un lot de bookmarks avec attente de réponse ===
+function sendBookmarkBatch(urls: string[], batchNumber: number, totalBatches: number, onComplete: () => void): void {
+  if (!socketBookmarkAgent?.connected) {
+    console.error("❌ [websocket.ts] BookMarkAgent socket disconnected during batch send")
+    onComplete()
+    return
+  }
+
+  if (isWaitingForBookmarkResponse) {
+    console.warn("⚠️ [websocket.ts] Already waiting for bookmark response, queueing batch")
+    pendingBatches.push({urls, batchNumber, totalBatches})
+    return
+  }
+
+  const message = urls.join('\n')
+  console.log(`📚 [websocket.ts] Sending batch ${batchNumber}/${totalBatches} with ${urls.length} URLs`)
+
+  const messageId = generateUUID()
+  
+  // Marquer comme en attente de réponse et stocker le callback
+  isWaitingForBookmarkResponse = true
+  currentBatchCallback = onComplete
+  
+  // Timeout de 30 secondes pour la réponse
+  responseTimeout = setTimeout(() => {
+    console.warn(`⏰ [websocket.ts] Timeout waiting for response to batch ${batchNumber}`)
+    isWaitingForBookmarkResponse = false
+    if (currentBatchCallback) {
+      currentBatchCallback()
+      currentBatchCallback = null
+    }
+  }, 30000)
 
   const payload = {
     type: 2,
@@ -274,7 +410,7 @@ export function sendBookmarksToAgent(urls: string[]): void {
       senderId: BOOKMARKAGENT_IDS.AUTHOR_ID,
       senderName: "Bookmark Importer",
       message,
-      messageId: generateUUID(),
+      messageId,
       roomId: BOOKMARKAGENT_IDS.ROOM_ID,
       channelId: BOOKMARKAGENT_IDS.CHANNEL_ID,
       serverId: BOOKMARKAGENT_IDS.SERVER_ID,
@@ -284,14 +420,19 @@ export function sendBookmarksToAgent(urls: string[]): void {
         channelType: "DM",
         isDm: true,
         targetUserId: BOOKMARKAGENT_IDS.AGENT_ID,
-        bookmarkUrls: urls
+        bookmarkUrls: urls,
+        batchInfo: {
+          batchNumber,
+          totalBatches,
+          batchSize: urls.length
+        }
       }
     }
   }
 
-  console.log("📤 [websocket.ts] Sending payload to BookMarkAgent:", payload)
+  console.log(`📤 [websocket.ts] Sending batch ${batchNumber}/${totalBatches} to BookMarkAgent`)
   socketBookmarkAgent.emit("message", payload)
-  console.log("✅ [websocket.ts] Message emitted to BookMarkAgent")
+  console.log(`✅ [websocket.ts] Batch ${batchNumber}/${totalBatches} sent, waiting for response...`)
 }
 
 // === 7. Fonctions utilitaires pour les bookmarks ===
