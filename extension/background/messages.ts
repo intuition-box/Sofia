@@ -7,6 +7,7 @@ import { EXCLUDED_URL_PATTERNS, BEHAVIOR_CACHE_TIMEOUT_MS } from "./constants"
 import { messageBus } from "~lib/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
+import { getAllBookmarks, sendBookmarksToAgent } from "./websocket"
 
 
 // Buffer temporaire de pageData par tabId
@@ -175,6 +176,22 @@ export function setupMessageHandlers(): void {
       case "CLEAR_TRACKING_DATA":
         sendResponse({ success: true, message: "Aucune donnée stockée localement à effacer" })
         break
+
+      case "GET_BOOKMARKS":
+        getAllBookmarks()
+          .then(result => {
+            if (result.success && result.urls) {
+              sendBookmarksToAgent(result.urls)
+              sendResponse({ success: true, count: result.urls.length })
+            } else {
+              sendResponse({ success: false, error: result.error })
+            }
+          })
+          .catch(error => {
+            console.error("❌ Error getting bookmarks:", error)
+            sendResponse({ success: false, error: error.message })
+          })
+        return true
     }
 
     sendResponse({ success: true })

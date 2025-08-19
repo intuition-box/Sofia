@@ -15,6 +15,7 @@ const SettingsPage = () => {
   const { isTrackingEnabled, toggleTracking } = useTracking()
   const [isDataSharingEnabled, setIsDataSharingEnabled] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
+  const [isImportingBookmarks, setIsImportingBookmarks] = useState(false)
   
   const storage = new Storage()
   const [account, setAccount] = useStorage<string>("metamask-account")
@@ -47,6 +48,28 @@ const SettingsPage = () => {
       alert('Failed to clear storage. Please try again.')
     } finally {
       setIsClearing(false)
+    }
+  }
+
+  const handleImportBookmarks = async () => {
+    if (!confirm('Import all your browser bookmarks to BookMarkAgent?')) {
+      return
+    }
+    
+    setIsImportingBookmarks(true)
+    try {
+      const response = await chrome.runtime.sendMessage({ type: "GET_BOOKMARKS" })
+      
+      if (response.success) {
+        alert(`Successfully imported ${response.count} bookmarks to BookMarkAgent!`)
+      } else {
+        alert(`Failed to import bookmarks: ${response.error}`)
+      }
+    } catch (error) {
+      console.error('❌ Failed to import bookmarks:', error)
+      alert('Failed to import bookmarks. Please try again.')
+    } finally {
+      setIsImportingBookmarks(false)
     }
   }
 
@@ -93,6 +116,29 @@ const SettingsPage = () => {
             isEnabled={isDataSharingEnabled}
             onToggle={() => setIsDataSharingEnabled(!isDataSharingEnabled)}
           />
+        </div>
+        
+        <div className="settings-item">
+          <span>Import Bookmarks</span>
+          <button 
+            onClick={handleImportBookmarks}
+            disabled={isImportingBookmarks}
+            className="import-bookmarks-button"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: isImportingBookmarks ? 'not-allowed' : 'pointer',
+              opacity: isImportingBookmarks ? 0.6 : 1,
+              fontSize: '14px',
+              fontWeight: '500',
+              marginRight: '8px'
+            }}
+          >
+            {isImportingBookmarks ? 'Importing...' : 'Import to BookMarkAgent'}
+          </button>
         </div>
         
         <div className="settings-item">

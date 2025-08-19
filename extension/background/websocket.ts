@@ -1,9 +1,10 @@
 import { io, Socket } from "socket.io-client"
-import { SOFIA_IDS, CHATBOT_IDS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS, BOOKMARKAGENT_IDS } from "./constants"
 import { elizaDataService } from "../lib/indexedDB-methods"
 
 let socketSofia: Socket
 let socketBot: Socket
+let socketBookmarkAgent: Socket
 
 function generateUUID(): string {
   return crypto.randomUUID
@@ -182,4 +183,112 @@ export function sendMessageToChatbot(text: string): void {
 
   console.log("📤 Message au Chatbot :", payload)
   socketBot.emit("message", payload)
+}
+
+// === 5. Initialiser WebSocket pour BookMarkAgent ===
+export async function initializeBookmarkAgentSocket(): Promise<void> {
+  socketBookmarkAgent = io("http://localhost:3000", {
+    transports: ["websocket"],
+    path: "/socket.io",
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionAttempts: 5,
+    timeout: 20000
+  })
+
+  socketBookmarkAgent.on("connect", () => {
+    console.log("📚 Connected to BookMarkAgent, socket ID:", socketBookmarkAgent.id)
+
+    socketBookmarkAgent.emit("message", {
+      type: 1,
+      payload: {
+        roomId: BOOKMARKAGENT_IDS.ROOM_ID,
+        entityId: BOOKMARKAGENT_IDS.AUTHOR_ID
+      }
+    })
+
+    console.log("📨 Sent room join for BookMarkAgent:", BOOKMARKAGENT_IDS.ROOM_ID)
+  })
+
+  socketBookmarkAgent.on("messageBroadcast", (data) => {
+    if ((data.roomId === BOOKMARKAGENT_IDS.ROOM_ID || data.channelId === BOOKMARKAGENT_IDS.CHANNEL_ID) && 
+        data.senderId === BOOKMARKAGENT_IDS.AGENT_ID) {
+      console.log("📚 Message from BookMarkAgent:", data)
+      
+      chrome.runtime.sendMessage({
+        type: "BOOKMARK_AGENT_RESPONSE",
+        text: data.text
+      })
+    }
+  })
+
+  socketBookmarkAgent.on("disconnect", (reason) => {
+    console.warn("🔌 BookMarkAgent socket disconnected:", reason)
+    setTimeout(initializeBookmarkAgentSocket, 5000)
+  })
+}
+
+// === 6. Envoi de bookmarks au BookMarkAgent ===
+export function sendBookmarksToAgent(urls: string[]): void {
+  if (!socketBookmarkAgent?.connected) {
+    console.warn("⚠️ BookMarkAgent socket non connecté")
+    return
+  }
+
+  const message = `Import de ${urls.length} favoris:\n${urls.slice(0, 10).join('\n')}${urls.length > 10 ? '\n...' : ''}`
+
+  const payload = {
+    type: 2,
+    payload: {
+      senderId: BOOKMARKAGENT_IDS.AUTHOR_ID,
+      senderName: "Bookmark Importer",
+      message,
+      messageId: generateUUID(),
+      roomId: BOOKMARKAGENT_IDS.ROOM_ID,
+      channelId: BOOKMARKAGENT_IDS.CHANNEL_ID,
+      serverId: BOOKMARKAGENT_IDS.SERVER_ID,
+      source: "bookmark-extension",
+      attachments: [],
+      metadata: {
+        channelType: "DM",
+        isDm: true,
+        targetUserId: BOOKMARKAGENT_IDS.AGENT_ID,
+        bookmarkUrls: urls
+      }
+    }
+  }
+
+  console.log("📤 Message au BookMarkAgent :", payload)
+  socketBookmarkAgent.emit("message", payload)
+}
+
+// === 7. Fonctions utilitaires pour les bookmarks ===
+export function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): string[] {
+  const urls: string[] = []
+  
+  function traverseBookmarks(nodes: chrome.bookmarks.BookmarkTreeNode[]) {
+    for (const node of nodes) {
+      if (node.url) {
+        urls.push(node.url)
+      }
+      if (node.children) {
+        traverseBookmarks(node.children)
+      }
+    }
+  }
+  
+  traverseBookmarks(bookmarkNodes)
+  return urls
+}
+
+export async function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
+  try {
+    const bookmarkTree = await chrome.bookmarks.getTree()
+    const urls = extractBookmarkUrls(bookmarkTree)
+    console.log(`📚 Found ${urls.length} bookmarks`)
+    return { success: true, urls }
+  } catch (error) {
+    console.error("❌ Failed to get bookmarks:", error)
+    return { success: false, error: error.message }
+  }
 }
