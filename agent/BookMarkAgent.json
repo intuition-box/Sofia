@@ -1,0 +1,22 @@
+{
+  "id": "e7bc819e-9e9c-06ab-bf87-b7d9e5f54dcd",
+  "name": "BookMarkAgent",
+  "username": "",
+  "bio": [],
+  "messageExamples": [],
+  "postExamples": [],
+  "topics": [],
+  "adjectives": [],
+  "knowledge": [],
+  "plugins": [
+    "@elizaos/plugin-sql",
+    "@elizaos/plugin-bootstrap",
+    "@elizaos/plugin-gaianet"
+  ],
+  "settings": {},
+  "style": {
+    "all": [],
+    "chat": [],
+    "post": []
+  }
+}
