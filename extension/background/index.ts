@@ -4,12 +4,17 @@ import { initializeChatbotSocket , initializeSofiaSocket, initializeBookmarkAgen
 import { setupMessageHandlers } from "./messages";
 
 function init(): void {
+  console.log("🚀 [index.ts] Starting extension initialization...")
   cleanOldBehaviors();
+  console.log("📚 [index.ts] Initializing SofIA socket...")
   initializeSofiaSocket();
+  console.log("🤖 [index.ts] Initializing Chatbot socket...")
   initializeChatbotSocket()
+  console.log("📚 [index.ts] Initializing BookMarkAgent socket...")
   initializeBookmarkAgentSocket();
+  console.log("📨 [index.ts] Setting up message handlers...")
   setupMessageHandlers();
-
+  console.log("✅ [index.ts] Extension initialization completed")
 }
 
 chrome.runtime.onMessage.addListener((message, sender) => {

@@ -178,17 +178,22 @@ export function setupMessageHandlers(): void {
         break
 
       case "GET_BOOKMARKS":
+        console.log('📚 [messages.ts] GET_BOOKMARKS request received')
         getAllBookmarks()
           .then(result => {
+            console.log('📚 [messages.ts] getAllBookmarks result:', result)
             if (result.success && result.urls) {
+              console.log(`📚 [messages.ts] Sending ${result.urls.length} bookmarks to agent...`)
               sendBookmarksToAgent(result.urls)
+              console.log('📚 [messages.ts] Bookmarks sent to agent, responding to UI')
               sendResponse({ success: true, count: result.urls.length })
             } else {
+              console.error('📚 [messages.ts] getAllBookmarks failed:', result.error)
               sendResponse({ success: false, error: result.error })
             }
           })
           .catch(error => {
-            console.error("❌ Error getting bookmarks:", error)
+            console.error("❌ [messages.ts] Exception in GET_BOOKMARKS:", error)
             sendResponse({ success: false, error: error.message })
           })
         return true

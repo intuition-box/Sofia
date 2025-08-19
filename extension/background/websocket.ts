@@ -187,6 +187,8 @@ export function sendMessageToChatbot(text: string): void {
 
 // === 5. Initialiser WebSocket pour BookMarkAgent ===
 export async function initializeBookmarkAgentSocket(): Promise<void> {
+  console.log("📚 [websocket.ts] Initializing BookMarkAgent socket...")
+  
   socketBookmarkAgent = io("http://localhost:3000", {
     transports: ["websocket"],
     path: "/socket.io",
@@ -197,45 +199,74 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
   })
 
   socketBookmarkAgent.on("connect", () => {
-    console.log("📚 Connected to BookMarkAgent, socket ID:", socketBookmarkAgent.id)
+    console.log("✅ [websocket.ts] Connected to BookMarkAgent, socket ID:", socketBookmarkAgent.id)
 
-    socketBookmarkAgent.emit("message", {
+    const joinMessage = {
       type: 1,
       payload: {
         roomId: BOOKMARKAGENT_IDS.ROOM_ID,
         entityId: BOOKMARKAGENT_IDS.AUTHOR_ID
       }
-    })
-
-    console.log("📨 Sent room join for BookMarkAgent:", BOOKMARKAGENT_IDS.ROOM_ID)
+    }
+    
+    console.log("📨 [websocket.ts] Sending room join for BookMarkAgent:", joinMessage)
+    socketBookmarkAgent.emit("message", joinMessage)
+    console.log("✅ [websocket.ts] Room join sent for BookMarkAgent")
   })
 
   socketBookmarkAgent.on("messageBroadcast", (data) => {
+    console.log("📩 [websocket.ts] Received messageBroadcast:", data)
+    
     if ((data.roomId === BOOKMARKAGENT_IDS.ROOM_ID || data.channelId === BOOKMARKAGENT_IDS.CHANNEL_ID) && 
         data.senderId === BOOKMARKAGENT_IDS.AGENT_ID) {
-      console.log("📚 Message from BookMarkAgent:", data)
+      console.log("✅ [websocket.ts] Message is from BookMarkAgent, forwarding to extension")
       
       chrome.runtime.sendMessage({
         type: "BOOKMARK_AGENT_RESPONSE",
         text: data.text
       })
+    } else {
+      console.log("⏭️ [websocket.ts] Message not for BookMarkAgent, ignoring")
     }
   })
 
-  socketBookmarkAgent.on("disconnect", (reason) => {
-    console.warn("🔌 BookMarkAgent socket disconnected:", reason)
-    setTimeout(initializeBookmarkAgentSocket, 5000)
+  socketBookmarkAgent.on("connect_error", (error) => {
+    console.error("❌ [websocket.ts] BookMarkAgent connection error:", error)
   })
+
+  socketBookmarkAgent.on("disconnect", (reason) => {
+    console.warn("🔌 [websocket.ts] BookMarkAgent socket disconnected:", reason)
+    setTimeout(() => {
+      console.log("🔄 [websocket.ts] Attempting to reconnect BookMarkAgent...")
+      initializeBookmarkAgentSocket()
+    }, 5000)
+  })
+  
+  console.log("📚 [websocket.ts] BookMarkAgent socket initialization completed")
 }
 
 // === 6. Envoi de bookmarks au BookMarkAgent ===
 export function sendBookmarksToAgent(urls: string[]): void {
-  if (!socketBookmarkAgent?.connected) {
-    console.warn("⚠️ BookMarkAgent socket non connecté")
+  console.log('📚 [websocket.ts] sendBookmarksToAgent() called with', urls.length, 'URLs')
+  
+  console.log('📚 [websocket.ts] BookMarkAgent socket status:', {
+    exists: !!socketBookmarkAgent,
+    connected: socketBookmarkAgent?.connected,
+    id: socketBookmarkAgent?.id
+  })
+  
+  if (!socketBookmarkAgent) {
+    console.error("❌ [websocket.ts] BookMarkAgent socket is null/undefined")
+    return
+  }
+  
+  if (!socketBookmarkAgent.connected) {
+    console.error("❌ [websocket.ts] BookMarkAgent socket not connected")
     return
   }
 
   const message = `Import de ${urls.length} favoris:\n${urls.slice(0, 10).join('\n')}${urls.length > 10 ? '\n...' : ''}`
+  console.log('📚 [websocket.ts] Constructed message for agent:', message.substring(0, 100) + '...')
 
   const payload = {
     type: 2,
@@ -258,8 +289,9 @@ export function sendBookmarksToAgent(urls: string[]): void {
     }
   }
 
-  console.log("📤 Message au BookMarkAgent :", payload)
+  console.log("📤 [websocket.ts] Sending payload to BookMarkAgent:", payload)
   socketBookmarkAgent.emit("message", payload)
+  console.log("✅ [websocket.ts] Message emitted to BookMarkAgent")
 }
 
 // === 7. Fonctions utilitaires pour les bookmarks ===
@@ -282,13 +314,23 @@ export function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTree
 }
 
 export async function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
+  console.log('📚 [websocket.ts] getAllBookmarks() called')
   try {
+    console.log('📚 [websocket.ts] Calling chrome.bookmarks.getTree()...')
+    const startTime = Date.now()
     const bookmarkTree = await chrome.bookmarks.getTree()
+    const getTreeTime = Date.now() - startTime
+    console.log(`📚 [websocket.ts] chrome.bookmarks.getTree() took ${getTreeTime}ms`)
+    
+    console.log('📚 [websocket.ts] Extracting URLs from bookmark tree...')
+    const extractStartTime = Date.now()
     const urls = extractBookmarkUrls(bookmarkTree)
-    console.log(`📚 Found ${urls.length} bookmarks`)
+    const extractTime = Date.now() - extractStartTime
+    console.log(`📚 [websocket.ts] Extracted ${urls.length} bookmarks in ${extractTime}ms`)
+    
     return { success: true, urls }
   } catch (error) {
-    console.error("❌ Failed to get bookmarks:", error)
+    console.error("❌ [websocket.ts] Failed to get bookmarks:", error)
     return { success: false, error: error.message }
   }
 }

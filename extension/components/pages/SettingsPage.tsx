@@ -52,23 +52,37 @@ const SettingsPage = () => {
   }
 
   const handleImportBookmarks = async () => {
+    console.log('📚 [SettingsPage] Import bookmarks button clicked')
+    
     if (!confirm('Import all your browser bookmarks to BookMarkAgent?')) {
+      console.log('📚 [SettingsPage] User cancelled import')
       return
     }
     
+    console.log('📚 [SettingsPage] User confirmed import, starting process...')
     setIsImportingBookmarks(true)
+    
     try {
+      console.log('📚 [SettingsPage] Sending GET_BOOKMARKS message to background...')
+      const startTime = Date.now()
+      
       const response = await chrome.runtime.sendMessage({ type: "GET_BOOKMARKS" })
       
+      const endTime = Date.now()
+      console.log(`📚 [SettingsPage] Received response after ${endTime - startTime}ms:`, response)
+      
       if (response.success) {
+        console.log(`📚 [SettingsPage] Success! Imported ${response.count} bookmarks`)
         alert(`Successfully imported ${response.count} bookmarks to BookMarkAgent!`)
       } else {
+        console.error('📚 [SettingsPage] Import failed:', response.error)
         alert(`Failed to import bookmarks: ${response.error}`)
       }
     } catch (error) {
-      console.error('❌ Failed to import bookmarks:', error)
+      console.error('❌ [SettingsPage] Exception during import:', error)
       alert('Failed to import bookmarks. Please try again.')
     } finally {
+      console.log('📚 [SettingsPage] Import process finished')
       setIsImportingBookmarks(false)
     }
   }
