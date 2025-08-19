@@ -61,7 +61,8 @@
       "tabs",
       "activeTab",
       "alarms",
-      "sidePanel"
+      "sidePanel",
+      "bookmark"
     ],
     "host_permissions": [
       "<all_urls>",
