@@ -1,4 +1,4 @@
-import logger from '@lib/utils/logger'
+import logger from '../../logger'
 import { AuthTokenClaims, PrivyClient, User } from '@privy-io/server-auth'
 import { parse } from 'cookie'
 
