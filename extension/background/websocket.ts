@@ -184,18 +184,20 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
       console.log("✅ [websocket.ts] Message is from BookMarkAgent, processing response")
       
       try {
-        // Utiliser le système de messages interne pour stocker
-        chrome.runtime.sendMessage({
-          type: "STORE_BOOKMARK_TRIPLETS",
-          text: data.text,
-          timestamp: Date.now()
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            console.warn("⚠️ [websocket.ts] Failed to store via messages:", chrome.runtime.lastError.message)
-          } else {
-            console.log("✅ [websocket.ts] BookMarkAgent response stored via messages")
+        // Stocker directement dans IndexedDB comme les messages SofIA
+        try {
+          const newMessage = {
+            id: `bookmark_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            content: { text: data.text },
+            created_at: Date.now(),
+            processed: false
           }
-        })
+          
+          await elizaDataService.storeMessage(newMessage, newMessage.id)
+          console.log("✅ [websocket.ts] BookMarkAgent response stored in IndexedDB:", { id: newMessage.id })
+        } catch (error) {
+          console.error("❌ [websocket.ts] Failed to store BookMarkAgent response:", error)
+        }
         
         // Débloquer pour le lot suivant
         unlockBookmarkResponse()
@@ -206,19 +208,6 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
         unlockBookmarkResponse()
       }
 
-      // Continuer à envoyer le message à l'extension pour compatibilité
-      try {
-        chrome.runtime.sendMessage({
-          type: "BOOKMARK_AGENT_RESPONSE",
-          text: data.text
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            console.warn("⚠️ [websocket.ts] Failed to send BOOKMARK_AGENT_RESPONSE:", chrome.runtime.lastError.message)
-          }
-        })
-      } catch (error) {
-        console.warn("⚠️ [websocket.ts] Error sending BOOKMARK_AGENT_RESPONSE:", error)
-      }
     } else {
       if (data.senderId === BOOKMARKAGENT_IDS.AUTHOR_ID) {
         console.log("📤 [websocket.ts] Own message echo, ignoring")
