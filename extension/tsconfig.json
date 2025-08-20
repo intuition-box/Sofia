@@ -7,9 +7,11 @@
     },
     "types": [
       "chrome",
-      "react"
+      "react",
+      "react-dom"
     ],
     "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "module": "ES2020",
