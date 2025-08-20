@@ -8,6 +8,7 @@ import { messageBus } from "~lib/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
 import { getAllBookmarks, sendBookmarksToAgent } from "./websocket"
+import { elizaDataService } from "../lib/indexedDB-methods"
 
 
 // Buffer temporaire de pageData par tabId
@@ -201,7 +202,7 @@ export function setupMessageHandlers(): void {
       case "STORE_BOOKMARK_TRIPLETS":
         console.log('💾 [messages.ts] STORE_BOOKMARK_TRIPLETS request received')
         try {
-          // Stocker le JSON de triplets dans IndexedDB
+          // Stocker le JSON de triplets directement dans IndexedDB (comme SofIA)
           const newMessage = {
             id: `bookmark_${message.timestamp}_${Math.random().toString(36).substr(2, 9)}`,
             content: { text: message.text },
@@ -209,8 +210,16 @@ export function setupMessageHandlers(): void {
             processed: false
           }
           
-          sendToAgent(message.text) // Utilise la méthode existante
-          console.log('✅ [messages.ts] Bookmark triplets stored:', { id: newMessage.id })
+          await elizaDataService.storeMessage(newMessage, newMessage.id)
+          console.log('✅ [messages.ts] Bookmark triplets stored in IndexedDB:', { id: newMessage.id })
+          
+          // Nettoyer les anciens messages périodiquement (garder les 50 derniers)
+          const allMessages = await elizaDataService.getAllMessages()
+          if (allMessages.length > 50) {
+            console.log("🧹 Cleaning old bookmark messages, keeping 50 most recent")
+            await elizaDataService.deleteOldMessages(30) // Garder les 30 derniers jours
+          }
+          
           sendResponse({ success: true, id: newMessage.id })
         } catch (error) {
           console.error("❌ [messages.ts] Failed to store bookmark triplets:", error)

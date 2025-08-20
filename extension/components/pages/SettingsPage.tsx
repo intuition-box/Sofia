@@ -82,7 +82,6 @@ const SettingsPage = () => {
       console.error('❌ [SettingsPage] Exception during import:', error)
       alert('Failed to import bookmarks. Please try again.')
     } finally {
-      console.log('📚 [SettingsPage] Import process finished')
       setIsImportingBookmarks(false)
     }
   }

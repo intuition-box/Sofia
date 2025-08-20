@@ -295,7 +295,11 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
         console.warn("⚠️ [websocket.ts] Error sending BOOKMARK_AGENT_RESPONSE:", error)
       }
     } else {
-      console.log("⏭️ [websocket.ts] Message not for BookMarkAgent, ignoring")
+      if (data.senderId === BOOKMARKAGENT_IDS.AUTHOR_ID) {
+        console.log("📤 [websocket.ts] Own message echo, ignoring")
+      } else {
+        console.log("⏭️ [websocket.ts] Message not for BookMarkAgent, ignoring")
+      }
     }
   })
 
@@ -362,7 +366,7 @@ function sendBookmarkBatchesSequentially(allUrls: string[], batchSize: number, c
     // Callback appelé quand on reçoit la réponse ou timeout
     setTimeout(() => {
       sendBookmarkBatchesSequentially(allUrls, batchSize, currentIndex + batchSize, totalBatches)
-    }, 1000) // 1 seconde entre les lots
+    }, 120000) // 2 minutes entre les lots
   }
   
   sendBookmarkBatch(batch, batchNumber, totalBatches, onComplete)
@@ -394,7 +398,7 @@ function sendBookmarkBatch(urls: string[], batchNumber: number, totalBatches: nu
   isWaitingForBookmarkResponse = true
   currentBatchCallback = onComplete
   
-  // Timeout de 30 secondes pour la réponse
+  // Timeout de 2 minutes pour la réponse
   responseTimeout = setTimeout(() => {
     console.warn(`⏰ [websocket.ts] Timeout waiting for response to batch ${batchNumber}`)
     isWaitingForBookmarkResponse = false
@@ -402,7 +406,7 @@ function sendBookmarkBatch(urls: string[], batchNumber: number, totalBatches: nu
       currentBatchCallback()
       currentBatchCallback = null
     }
-  }, 30000)
+  }, 120000)
 
   const payload = {
     type: 2,
