@@ -1,5 +1,6 @@
 import { useStorage } from "@plasmohq/storage/hook"
 import { useRouter } from './RouterProvider'
+import { useState } from 'react'
 import graphIcon from '../../assets/Icon=Graph.svg'
 import coreIcon from '../../assets/Icon=access-point.svg'
 import syncIcon from '../../assets/Icon=Sync.svg'
@@ -11,14 +12,46 @@ import '../styles/BottomNavigation.css'
 const BottomNavigation = () => {
   const [account] = useStorage<string>("metamask-account")
   const { currentPage, navigateTo } = useRouter()
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   if (!account) return null
 
+  const getActiveIndex = () => {
+    const pages = ['core', 'sync', 'search', 'profile', 'settings']
+    return pages.indexOf(currentPage)
+  }
+
+  const activeIndex = getActiveIndex()
+  
+  const handleMouseEnter = (index: number) => {
+    setHoveredIndex(index)
+  }
+
+
+  const handleContainerMouseLeave = () => {
+    setHoveredIndex(null)
+  }
+
   return (
-    <div className="bottom-nav">
+    <div className="bottom-nav" onMouseLeave={handleContainerMouseLeave}>
+      <div 
+        className="nav-background" 
+        style={{ 
+          left: `calc(${activeIndex * 20}% + 10% - 30px)`,
+          transform: 'none'
+        }}
+      />
+      <div 
+        className="nav-hover-background" 
+        style={{ 
+          left: hoveredIndex !== null ? `calc(${hoveredIndex * 20}% + 10% - 30px)` : '0px',
+          opacity: hoveredIndex !== null ? 1 : 0
+        }}
+      />
       <button 
         onClick={() => navigateTo('core')}
-        className="nav-button core"
+        onMouseEnter={() => handleMouseEnter(0)}
+        className={`nav-button ${currentPage === 'core' ? 'active' : ''}`}
       >
         <img 
           src={coreIcon} 
@@ -29,6 +62,7 @@ const BottomNavigation = () => {
       </button>
       <button 
         onClick={() => navigateTo('sync')}
+        onMouseEnter={() => handleMouseEnter(1)}
         className={`nav-button ${currentPage === 'sync' ? 'active' : ''}`}
       >
         <img 
@@ -40,6 +74,7 @@ const BottomNavigation = () => {
       </button>
       <button 
         onClick={() => navigateTo('search')}
+        onMouseEnter={() => handleMouseEnter(2)}
         className={`nav-button ${currentPage === 'search' ? 'active' : ''}`}
       >
         <img 
@@ -51,6 +86,7 @@ const BottomNavigation = () => {
       </button>
       <button 
         onClick={() => navigateTo('profile')}
+        onMouseEnter={() => handleMouseEnter(3)}
         className={`nav-button ${currentPage === 'profile' ? 'active' : ''}`}
       >
         <img 
@@ -62,6 +98,7 @@ const BottomNavigation = () => {
       </button>
       <button 
         onClick={() => navigateTo('settings')}
+        onMouseEnter={() => handleMouseEnter(4)}
         className={`nav-button ${currentPage === 'settings' ? 'active' : ''}`}
       >
         <img 
