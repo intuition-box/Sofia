@@ -3,6 +3,7 @@
     "metamask-extension-provider": "^5.0.0"
   },
   "devDependencies": {
+    "@elizaos/cli": "^1.4.3",
     "vite": "^7.0.4"
   }
 }

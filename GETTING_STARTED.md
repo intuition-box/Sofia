@@ -103,7 +103,7 @@ cd intuition-mcp-server
 npm install
 
 # Start the MCP server
-intuition-mcp-server start:http
+npm start:http
 ```
 
 Expected output:

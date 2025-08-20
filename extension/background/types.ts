@@ -38,10 +38,15 @@ export interface MessageData {
   | "CONNECT_TO_METAMASK"
   | "GET_METAMASK_ACCOUNT"
   | "METAMASK_RESULT"
-  | "AGENT_RESPONSE";
+  | "AGENT_RESPONSE"
+  | "GET_TAB_ID"
+  | "GET_BOOKMARKS"
+  | "STORE_BOOKMARK_TRIPLETS";
   data: any;
   pageLoadTime?: number;
   tabId?: number;
+  text?: string;
+  timestamp?: number;
 }
 
 export interface BehaviorData {

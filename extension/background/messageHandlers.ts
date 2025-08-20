@@ -1,4 +1,3 @@
-
 import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { sanitizeUrl, isSensitiveUrl } from "./utils/url"
 import { sendToAgent, clearOldSentMessages } from "./utils/buffer"
@@ -7,6 +6,8 @@ import { EXCLUDED_URL_PATTERNS, BEHAVIOR_CACHE_TIMEOUT_MS } from "./constants"
 import { messageBus } from "~lib/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
+import { getAllBookmarks, sendBookmarksToAgent } from "./websocket"
+import { elizaDataService } from "../lib/indexedDB-methods"
 
 
 // Buffer temporaire de pageData par tabId
@@ -59,8 +60,8 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
   }
   const scrollStats = getScrollStats(parsedData.url)
   if (scrollStats && scrollStats.scrollAttentionScore != undefined) {
-    behaviorText += `Scrolls: ${scrollStats.count}, Δmoy: ${scrollStats.avgDelta}ms\n`
-    behaviorText += `Attention Score: ${scrollStats.scrollAttentionScore.toFixed(2)}\n`
+    behaviorText += `Scrolls: ${scrollStats.count}, Δmoy: ${scrollStats.avgDelta}ms\\n`
+    behaviorText += `Attention Score: ${scrollStats.scrollAttentionScore.toFixed(2)}\\n`
   }
 
   const message =
@@ -90,6 +91,28 @@ ${behaviorText}` : "")
   sendToAgent(message)
   clearOldSentMessages()
   if (behavior) removeBehaviorFromCache(parsedData.url)
+}
+
+// Handler séparé pour STORE_BOOKMARK_TRIPLETS
+async function handleStoreBookmarkTriplets(message: any, sendResponse: (response: any) => void): Promise<void> {
+  console.log('💾 [messageHandlers.ts] STORE_BOOKMARK_TRIPLETS request received')
+  try {
+    // Stocker le JSON de triplets directement dans IndexedDB (comme SofIA)
+    const newMessage = {
+      id: `bookmark_${message.timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+      content: { text: message.text },
+      created_at: message.timestamp,
+      processed: false
+    }
+    
+    await elizaDataService.storeMessage(newMessage, newMessage.id)
+    console.log('✅ [messageHandlers.ts] Bookmark triplets stored in IndexedDB:', { id: newMessage.id })
+    
+    sendResponse({ success: true, id: newMessage.id })
+  } catch (error) {
+    console.error("❌ [messageHandlers.ts] Failed to store bookmark triplets:", error)
+    sendResponse({ success: false, error: error.message })
+  }
 }
 
 export function setupMessageHandlers(): void {
@@ -175,6 +198,34 @@ export function setupMessageHandlers(): void {
       case "CLEAR_TRACKING_DATA":
         sendResponse({ success: true, message: "Aucune donnée stockée localement à effacer" })
         break
+
+      case "GET_BOOKMARKS":
+        console.log('📚 [messageHandlers.ts] GET_BOOKMARKS request received')
+        getAllBookmarks()
+          .then(result => {
+            console.log('📚 [messageHandlers.ts] getAllBookmarks result:', result)
+            if (result.success && result.urls) {
+              console.log(`📚 [messageHandlers.ts] Starting import process for ${result.urls.length} bookmarks...`)
+              // Ne pas répondre tout de suite - attendre que l'import soit terminé
+              sendBookmarksToAgent(result.urls, (finalResult) => {
+                // Callback appelé quand TOUS les batches sont terminés
+                console.log('📚 [messageHandlers.ts] All batches processed, final result:', finalResult)
+                sendResponse(finalResult)
+              })
+            } else {
+              console.error('📚 [messageHandlers.ts] getAllBookmarks failed:', result.error)
+              sendResponse({ success: false, error: result.error })
+            }
+          })
+          .catch(error => {
+            console.error("❌ [messageHandlers.ts] Exception in GET_BOOKMARKS:", error)
+            sendResponse({ success: false, error: error.message })
+          })
+        return true
+
+      case "STORE_BOOKMARK_TRIPLETS":
+        handleStoreBookmarkTriplets(message, sendResponse)
+        return true
     }
 
     sendResponse({ success: true })
