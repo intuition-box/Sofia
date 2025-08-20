@@ -1,7 +1,7 @@
 import { cleanOldBehaviors } from "./behavior";
 import { initializeChatbotSocket , initializeSofiaSocket, initializeBookmarkAgentSocket} from "./websocket";
 
-import { setupMessageHandlers } from "./messages";
+import { setupMessageHandlers } from "./messageHandlers";
 
 function init(): void {
   console.log("🚀 [index.ts] Starting extension initialization...")

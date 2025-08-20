@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import logoIcon from '../../assets/iconcolored.png'
 import '../styles/ChatPage.css'
-import { sendMessageToChatbot, initializeChatbotSocket } from '../../background/websocket'
+import { sendMessageToChatbotSocket, initializeChatbotSocket } from '../../background/websocket'
 import { Storage } from "@plasmohq/storage"
 
 const storage = new Storage()
@@ -65,7 +65,7 @@ const ChatPage = () => {
 
     setMessages(prev => [...prev, newUserMessage])
     console.log("✉️ Message utilisateur :", message)
-    sendMessageToChatbot(message)
+    sendMessageToChatbotSocket(message)
 
     setChatInput("")
   }

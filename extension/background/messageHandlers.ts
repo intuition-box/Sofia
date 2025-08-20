@@ -1,4 +1,3 @@
-
 import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { sanitizeUrl, isSensitiveUrl } from "./utils/url"
 import { sendToAgent, clearOldSentMessages } from "./utils/buffer"
@@ -61,8 +60,8 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
   }
   const scrollStats = getScrollStats(parsedData.url)
   if (scrollStats && scrollStats.scrollAttentionScore != undefined) {
-    behaviorText += `Scrolls: ${scrollStats.count}, Δmoy: ${scrollStats.avgDelta}ms\n`
-    behaviorText += `Attention Score: ${scrollStats.scrollAttentionScore.toFixed(2)}\n`
+    behaviorText += `Scrolls: ${scrollStats.count}, Δmoy: ${scrollStats.avgDelta}ms\\n`
+    behaviorText += `Attention Score: ${scrollStats.scrollAttentionScore.toFixed(2)}\\n`
   }
 
   const message =
@@ -92,6 +91,28 @@ ${behaviorText}` : "")
   sendToAgent(message)
   clearOldSentMessages()
   if (behavior) removeBehaviorFromCache(parsedData.url)
+}
+
+// Handler séparé pour STORE_BOOKMARK_TRIPLETS
+async function handleStoreBookmarkTriplets(message: any, sendResponse: (response: any) => void): Promise<void> {
+  console.log('💾 [messageHandlers.ts] STORE_BOOKMARK_TRIPLETS request received')
+  try {
+    // Stocker le JSON de triplets directement dans IndexedDB (comme SofIA)
+    const newMessage = {
+      id: `bookmark_${message.timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+      content: { text: message.text },
+      created_at: message.timestamp,
+      processed: false
+    }
+    
+    await elizaDataService.storeMessage(newMessage, newMessage.id)
+    console.log('✅ [messageHandlers.ts] Bookmark triplets stored in IndexedDB:', { id: newMessage.id })
+    
+    sendResponse({ success: true, id: newMessage.id })
+  } catch (error) {
+    console.error("❌ [messageHandlers.ts] Failed to store bookmark triplets:", error)
+    sendResponse({ success: false, error: error.message })
+  }
 }
 
 export function setupMessageHandlers(): void {
@@ -179,52 +200,28 @@ export function setupMessageHandlers(): void {
         break
 
       case "GET_BOOKMARKS":
-        console.log('📚 [messages.ts] GET_BOOKMARKS request received')
+        console.log('📚 [messageHandlers.ts] GET_BOOKMARKS request received')
         getAllBookmarks()
           .then(result => {
-            console.log('📚 [messages.ts] getAllBookmarks result:', result)
+            console.log('📚 [messageHandlers.ts] getAllBookmarks result:', result)
             if (result.success && result.urls) {
-              console.log(`📚 [messages.ts] Sending ${result.urls.length} bookmarks to agent...`)
+              console.log(`📚 [messageHandlers.ts] Sending ${result.urls.length} bookmarks to agent...`)
               sendBookmarksToAgent(result.urls)
-              console.log('📚 [messages.ts] Bookmarks sent to agent, responding to UI')
+              console.log('📚 [messageHandlers.ts] Bookmarks sent to agent, responding to UI')
               sendResponse({ success: true, count: result.urls.length })
             } else {
-              console.error('📚 [messages.ts] getAllBookmarks failed:', result.error)
+              console.error('📚 [messageHandlers.ts] getAllBookmarks failed:', result.error)
               sendResponse({ success: false, error: result.error })
             }
           })
           .catch(error => {
-            console.error("❌ [messages.ts] Exception in GET_BOOKMARKS:", error)
+            console.error("❌ [messageHandlers.ts] Exception in GET_BOOKMARKS:", error)
             sendResponse({ success: false, error: error.message })
           })
         return true
 
       case "STORE_BOOKMARK_TRIPLETS":
-        console.log('💾 [messages.ts] STORE_BOOKMARK_TRIPLETS request received')
-        try {
-          // Stocker le JSON de triplets directement dans IndexedDB (comme SofIA)
-          const newMessage = {
-            id: `bookmark_${message.timestamp}_${Math.random().toString(36).substr(2, 9)}`,
-            content: { text: message.text },
-            created_at: message.timestamp,
-            processed: false
-          }
-          
-          await elizaDataService.storeMessage(newMessage, newMessage.id)
-          console.log('✅ [messages.ts] Bookmark triplets stored in IndexedDB:', { id: newMessage.id })
-          
-          // Nettoyer les anciens messages périodiquement (garder les 50 derniers)
-          const allMessages = await elizaDataService.getAllMessages()
-          if (allMessages.length > 50) {
-            console.log("🧹 Cleaning old bookmark messages, keeping 50 most recent")
-            await elizaDataService.deleteOldMessages(30) // Garder les 30 derniers jours
-          }
-          
-          sendResponse({ success: true, id: newMessage.id })
-        } catch (error) {
-          console.error("❌ [messages.ts] Failed to store bookmark triplets:", error)
-          sendResponse({ success: false, error: error.message })
-        }
+        handleStoreBookmarkTriplets(message, sendResponse)
         return true
     }
 
