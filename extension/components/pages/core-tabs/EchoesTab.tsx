@@ -415,13 +415,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           <p className="empty-subtext">
             Your triplets will appear automatically when you receive messages
           </p>
-          <button 
-            className="btn-secondary"
-            onClick={clearOldMessages}
-            style={{ marginTop: '16px' }}
-          >
-            🧹 Clean storage
-          </button>
         </div>
       ) : availableCount === 0 && publishedCount === 0 ? (
         <div className="empty-state">
