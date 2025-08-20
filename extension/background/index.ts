@@ -1,14 +1,20 @@
 import { cleanOldBehaviors } from "./behavior";
-import { initializeChatbotSocket , initializeSofiaSocket} from "./websocket";
+import { initializeChatbotSocket , initializeSofiaSocket, initializeBookmarkAgentSocket} from "./websocket";
 
-import { setupMessageHandlers } from "./messages";
+import { setupMessageHandlers } from "./messageHandlers";
 
 function init(): void {
+  console.log("🚀 [index.ts] Starting extension initialization...")
   cleanOldBehaviors();
+  console.log("📚 [index.ts] Initializing SofIA socket...")
   initializeSofiaSocket();
+  console.log("🤖 [index.ts] Initializing Chatbot socket...")
   initializeChatbotSocket()
+  console.log("📚 [index.ts] Initializing BookMarkAgent socket...")
+  initializeBookmarkAgentSocket();
+  console.log("📨 [index.ts] Setting up message handlers...")
   setupMessageHandlers();
-
+  console.log("✅ [index.ts] Extension initialization completed")
 }
 
 chrome.runtime.onMessage.addListener((message, sender) => {
