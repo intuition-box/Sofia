@@ -7,6 +7,7 @@ import { Storage } from '@plasmohq/storage'
 import { disconnectWallet, cleanupProvider } from '../../lib/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
 import { elizaDataService } from '../../lib/indexedDB-methods'
+import { useBookmarkImport } from '../../hooks/useBookmartImport' // <-- corriger l'import
 import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
@@ -16,40 +17,25 @@ const SettingsPage = () => {
   const { isTrackingEnabled, toggleTracking } = useTracking()
   const [isDataSharingEnabled, setIsDataSharingEnabled] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
-  const [isImportingBookmarks, setIsImportingBookmarks] = useState(false)
-  const [importProgress, setImportProgress] = useState(0)
-  const [importStatus, setImportStatus] = useState('')
-  
-  const storage = new Storage()
-  const [account, setAccount] = useStorage<string>("metamask-account")
 
+  const storage = new Storage()
+  const [account, setAccount] = useStorage<string>('metamask-account')
+
+  // ---- Import persistant via hook
+  const { state: importState, startImport, resetImport, isImporting } = useBookmarkImport()
+  const { progress, message, status } = importState
 
   const handleClearStorage = async () => {
-    if (!confirm('Are you sure you want to clear all stored data? This action cannot be undone.')) {
-      return
-    }
-    
+    if (!confirm('Are you sure you want to clear all stored data? This action cannot be undone.')) return
     setIsClearing(true)
     try {
-      // Disconnect MetaMask wallet first
       if (account) {
-        setAccount("")
+        setAccount('')
         await disconnectWallet()
-        console.log("🔌 MetaMask wallet disconnected")
       }
-      
-      // Cleanup provider streams
       cleanupProvider()
-      console.log("🧹 MetaMask provider streams cleaned")
-      
-      // Clear Plasmo Storage
       await storage.clear()
-      console.log("🧹 Plasmo Storage cleared successfully")
-      
-      // Clear IndexedDB (messages Eliza et états triplets)
       await elizaDataService.clearAll()
-      console.log("🧹 IndexedDB cleared successfully")
-      
       alert('All storage cleared and wallet disconnected successfully!')
     } catch (error) {
       console.error('❌ Failed to clear storage:', error)
@@ -60,91 +46,23 @@ const SettingsPage = () => {
   }
 
   const handleImportBookmarks = async () => {
-    console.log('📚 [SettingsPage] Import bookmarks button clicked')
-    
-    if (!confirm('Import all your browser bookmarks to BookMarkAgent?')) {
-      console.log('📚 [SettingsPage] User cancelled import')
-      return
-    }
-    
-    console.log('📚 [SettingsPage] User confirmed import, starting process...')
-    setIsImportingBookmarks(true)
-    setImportProgress(0)
-    setImportStatus('Initializing import...')
-    
-    // Set up progress listener
-    const progressListener = (message: any) => {
-      if (message.type === 'BOOKMARK_IMPORT_PROGRESS') {
-        console.log('📊 [SettingsPage] Progress update:', message)
-        setImportProgress(message.progress)
-        setImportStatus(message.status)
-      }
-    }
-    
-    chrome.runtime.onMessage.addListener(progressListener)
-    
-    try {
-      console.log('📚 [SettingsPage] Sending GET_BOOKMARKS message to background...')
-      const startTime = Date.now()
-      setImportStatus('Getting bookmarks...')
-      
-      const response = await chrome.runtime.sendMessage({ type: "GET_BOOKMARKS" })
-      
-      const endTime = Date.now()
-      console.log(`📚 [SettingsPage] Received response after ${endTime - startTime}ms:`, response)
-      
-      if (response.success) {
-        console.log(`📚 [SettingsPage] Import process completed:`, response)
-        setImportProgress(100)
-        
-        if (response.successfulBatches === response.totalBatches) {
-          // Tous les batches ont réussi
-          setImportStatus(`Import completed successfully! ${response.count} bookmarks processed`)
-          setTimeout(() => {
-            alert(`Successfully imported ${response.count} bookmarks to BookMarkAgent! (${response.successfulBatches}/${response.totalBatches} batches processed)`)
-          }, 500)
-        } else {
-          // Certains batches ont échoué
-          setImportStatus(`Import completed with errors: ${response.successfulBatches}/${response.totalBatches} batches successful`)
-          setTimeout(() => {
-            alert(`Import completed with some errors:\n- Successful batches: ${response.successfulBatches}/${response.totalBatches}\n- Bookmarks processed: ${response.count}\n- Some batches may have timed out or failed due to GaiaNet issues`)
-          }, 500)
-        }
-      } else {
-        console.error('📚 [SettingsPage] Import failed:', response.error)
-        setImportStatus(`Import failed: ${response.error}`)
-        alert(`Failed to import bookmarks: ${response.error}`)
-      }
-    } catch (error) {
-      console.error('❌ [SettingsPage] Exception during import:', error)
-      setImportStatus('Import failed due to an error')
-      alert('Failed to import bookmarks. Please try again.')
-    } finally {
-      chrome.runtime.onMessage.removeListener(progressListener)
-      setTimeout(() => {
-        setIsImportingBookmarks(false)
-        setImportProgress(0)
-        setImportStatus('')
-      }, 2000)
-    }
+    if (!confirm('Import all your browser bookmarks to BookMarkAgent?')) return
+    // On ne gère plus de state local ni de listeners ici.
+    // Le hook écoute les messages et met à jour un storage persistant.
+    await startImport()
   }
 
   return (
     <div className="page settings-page">
-      <button 
-        onClick={() => navigateTo('home-connected')}
-        className="back-button"
-      >
+      <button onClick={() => navigateTo('home-connected')} className="back-button">
         <img src={homeIcon} alt="Home" className="home-icon" />
       </button>
-      
+
       <h2 className="section-title">Settings</h2>
-      
 
       {/* General Section */}
       <div className="settings-section">
         <h3 className="settings-section-title">General</h3>
-        
         <div className="settings-item">
           <span>Language</span>
           <select className="select">
@@ -157,82 +75,91 @@ const SettingsPage = () => {
       {/* Privacy Section */}
       <div className="settings-section">
         <h3 className="settings-section-title">Privacy</h3>
-        
+
         <div className="settings-item">
           <span>Data Tracking</span>
-          <TrackingStatus 
-            isEnabled={isTrackingEnabled}
-            onToggle={toggleTracking}
-          />
+          <TrackingStatus isEnabled={isTrackingEnabled} onToggle={toggleTracking} />
         </div>
-        
+
         <div className="settings-item">
           <span>Data Sharing</span>
-          <TrackingStatus 
+          <TrackingStatus
             isEnabled={isDataSharingEnabled}
             onToggle={() => setIsDataSharingEnabled(!isDataSharingEnabled)}
           />
         </div>
-        
+
         <div className="settings-item">
           <span>Import Bookmarks</span>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-            <button 
+            <button
               onClick={handleImportBookmarks}
-              disabled={isImportingBookmarks}
+              disabled={isImporting}
               className="import-bookmarks-button"
               style={{
                 padding: '8px 16px',
-                backgroundColor: isImportingBookmarks ? '#6c757d' : '#007bff',
+                backgroundColor: isImporting ? '#6c757d' : '#007bff',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: isImportingBookmarks ? 'not-allowed' : 'pointer',
-                opacity: isImportingBookmarks ? 0.8 : 1,
+                cursor: isImporting ? 'not-allowed' : 'pointer',
+                opacity: isImporting ? 0.8 : 1,
                 fontSize: '14px',
                 fontWeight: '500',
                 transition: 'all 0.2s ease'
               }}
             >
-              {isImportingBookmarks ? 'Importing...' : 'Import to BookMarkAgent'}
+              {isImporting ? 'Importing...' : 'Import to BookMarkAgent'}
             </button>
-            
-            {isImportingBookmarks && (
+
+            {status !== 'idle' && (
               <div style={{ width: '100%', maxWidth: '300px' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginBottom: '4px',
-                  fontSize: '12px',
-                  color: '#666'
-                }}>
-                  <span>{importStatus}</span>
-                  <span>{Math.round(importProgress)}%</span>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                    fontSize: '12px',
+                    color: '#666'
+                  }}
+                >
+                  <span>{message ?? (status === 'running' ? 'Import in progress...' : status)}</span>
+                  <span>{Math.round(progress)}%</span>
                 </div>
-                <div style={{
-                  width: '100%',
-                  height: '8px',
-                  backgroundColor: '#e9ecef',
-                  borderRadius: '4px',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    width: `${importProgress}%`,
-                    height: '100%',
-                    backgroundColor: '#007bff',
-                    transition: 'width 0.3s ease',
-                    borderRadius: '4px'
-                  }} />
+                <div
+                  style={{
+                    width: '100%',
+                    height: '8px',
+                    backgroundColor: '#e9ecef',
+                    borderRadius: '4px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${progress}%`,
+                      height: '100%',
+                      backgroundColor: '#007bff',
+                      transition: 'width 0.3s ease',
+                      borderRadius: '4px'
+                    }}
+                  />
                 </div>
+
+                {status === 'success' && (
+                  <button style={{ marginTop: 8 }} onClick={resetImport}>
+                    Reset
+                  </button>
+                )}
               </div>
             )}
           </div>
         </div>
-        
+
         <div className="settings-item">
           <span>Clear All Data</span>
-          <button 
+          <button
             onClick={handleClearStorage}
             disabled={isClearing}
             className="clear-storage-button"
@@ -256,7 +183,6 @@ const SettingsPage = () => {
       {/* Blockchain Integration Section */}
       <div className="settings-section">
         <h3 className="settings-section-title">Blockchain Integration</h3>
-        
         <div className="settings-item">
           <span>Wallet Connection</span>
           <WalletConnectionButton />
@@ -265,6 +191,5 @@ const SettingsPage = () => {
     </div>
   )
 }
-
 
 export default SettingsPage
