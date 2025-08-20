@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react'
 import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/indexedDB-methods'
 import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
-import { useCheckExistingTriple } from '../../../hooks/useCheckExistingTriple'
-import { useCheckExistingAtom } from '../../../hooks/useCheckExistingAtom'
-import { useGetExistingAtoms } from '../../../hooks/useGetExistingAtoms'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
@@ -28,7 +25,7 @@ interface EchoTriplet {
   description: string
   timestamp: number
   sourceMessageId: string
-  status: 'available' | 'checking' | 'ready' | 'published' | 'exists_on_chain'
+  status: 'available' | 'published'
   // Blockchain data (filled after checks)
   subjectVaultId?: string
   predicateVaultId?: string
@@ -51,11 +48,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     refreshMessages 
   } = useElizaData({ autoRefresh: true, refreshInterval: 5000 })
 
-  // Hooks blockchain pour la vérification et création
+  // Hook blockchain pour la création (utilise les autres hooks en interne)
   const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
-  const { checkTripleExists } = useCheckExistingTriple()
-  const { checkAndCreateAtom } = useCheckExistingAtom()
-  const { getAtomByIpfsUri } = useGetExistingAtoms()
 
   // Charger les états sauvegardés puis traiter les messages
   useEffect(() => {
@@ -92,9 +86,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 
                 // Vérifier dans les états sauvegardés d'abord, puis dans l'état actuel
                 const existingTriplet = savedStates?.find(t => t.id === tripletId) || 
-                                     echoTriplets.find(t => t.id === tripletId)
+                                    echoTriplets.find(t => t.id === tripletId)
                 
-                if (existingTriplet && (existingTriplet.status === 'ready' || existingTriplet.status === 'published' || existingTriplet.status === 'exists_on_chain')) {
+                if (existingTriplet && existingTriplet.status === 'published') {
                   // Garder le triplet existant avec son statut avancé
                   newEchoTriplets.push(existingTriplet)
                   console.log(`🔒 EchoesTab: Preserving triplet ${tripletId} with status: ${existingTriplet.status}`)
@@ -162,71 +156,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     }
   }
 
-  // Vérifier et préparer tous les triplets (créer atoms + vérifier existence)
-  const checkAndPrepareAllTriplets = async () => {
-    setIsProcessing(true)
-    try {
-      const availableTriplets = echoTriplets.filter(t => t.status === 'available')
-      
-      if (availableTriplets.length === 0) {
-        alert("No triplets available to check!")
-        return
-      }
-
-      console.log(`🔍 EchoesTab: Checking ${availableTriplets.length} triplets...`)
-      
-      for (const triplet of availableTriplets) {
-        try {
-          // Marquer comme en cours de vérification
-          setEchoTriplets(prev => 
-            prev.map(t => t.id === triplet.id ? { ...t, status: 'checking' as const } : t)
-          )
-
-          console.log(`🔍 Checking triplet: ${triplet.triplet.subject} ${triplet.triplet.predicate} ${triplet.triplet.object}`)
-
-          // 1. Créer/vérifier l'atom Object
-          const objectAtom = await checkAndCreateAtom({
-            name: triplet.triplet.object,
-            description: triplet.description,
-            url: triplet.url
-          })
-          
-          console.log(`📄 Object atom: ${objectAtom.vaultId} (${objectAtom.source})`)
-
-          // 2. Pour User et Predicate, on va utiliser la logique de useCreateTripleOnChain
-          // qui gère automatiquement ces atoms
-          // Donc on simule juste leur création pour avoir les IDs
-          
-          // Pour l'instant, marquer comme prêt
-          setEchoTriplets(prev => 
-            prev.map(t => t.id === triplet.id ? { 
-              ...t, 
-              status: 'ready' as const,
-              objectVaultId: objectAtom.vaultId,
-              onChainStatus: objectAtom.source
-            } : t)
-          )
-
-          console.log(`✅ Triplet ${triplet.id} prepared and ready for publication`)
-
-        } catch (error) {
-          console.error(`❌ Failed to prepare triplet ${triplet.id}:`, error)
-          // Remettre en available en cas d'erreur
-          setEchoTriplets(prev => 
-            prev.map(t => t.id === triplet.id ? { ...t, status: 'available' as const } : t)
-          )
-        }
-      }
-
-      console.log(`✅ EchoesTab: Finished checking all triplets`)
-      
-    } catch (error) {
-      console.error('❌ EchoesTab: Check failed:', error)
-      alert(`Check error: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsProcessing(false)
-    }
-  }
 
   // Publier un triplet spécifique on-chain
   const publishTriplet = async (tripletId: string) => {
@@ -296,12 +225,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     }
   }
 
-  // Statistiques des triplets
+  // Statistiques des triplets (simplifiées)
   const availableCount = echoTriplets.filter(t => t.status === 'available').length
-  const checkingCount = echoTriplets.filter(t => t.status === 'checking').length
-  const readyCount = echoTriplets.filter(t => t.status === 'ready').length
   const publishedCount = echoTriplets.filter(t => t.status === 'published').length
-  const existsOnChainCount = echoTriplets.filter(t => t.status === 'exists_on_chain').length
 
   if (isLoadingEliza) {
     return (
@@ -316,19 +242,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   return (
     <div className="triples-container">
       {/* Section d'actions principales */}
-      {availableCount > 0 && (
+      {/* {availableCount > 0 && (
         <div className="import-section">
           <div className="import-header">
             <h3>📡 Echoes ({availableCount})</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button 
-                className="btn-secondary"
-                onClick={checkAndPrepareAllTriplets}
-                disabled={isProcessing}
-                style={{ fontSize: '12px', padding: '8px 12px' }}
-              >
-                {isProcessing ? 'Checking...' : 'Listen'}
-              </button>
               <button 
                 className="btn-secondary"
                 onClick={clearOldMessages}
@@ -340,7 +258,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Stats */}
       {echoTriplets.length > 0 && (
@@ -350,22 +268,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             <span className="stat-label">Available</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number stat-created">{readyCount}</span>
-            <span className="stat-label">Ready</span>
-          </div>
-          <div className="stat-item">
             <span className="stat-number stat-existing">{publishedCount}</span>
             <span className="stat-label">Published</span>
           </div>
         </div>
       )}
 
-      {/* Liste des triplets prêts pour publication */}
-      {readyCount > 0 && (
+      {/* Liste des triplets disponibles pour publication */}
+      {availableCount > 0 && (
         <div style={{ marginBottom: '20px' }}>
-          <h4>🔗 Ready for Publication ({readyCount})</h4>
+          {/* <h4>🔗 Available for Publication ({availableCount})</h4> */}
           {echoTriplets
-            .filter(t => t.status === 'ready')
+            .filter(t => t.status === 'available')
             .sort((a, b) => b.timestamp - a.timestamp)
             .map((tripletItem, index) => {
               const isExpanded = expandedTriplet?.msgIndex === 1 && expandedTriplet?.tripletIndex === index
@@ -403,12 +317,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                     {isExpanded && (
                       <div className="triplet-details">
                         <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">⛓️ Blockchain Info</h4>
-                          {tripletItem.objectVaultId && (
-                            <p className="triplet-detail-name">Object VaultID: {tripletItem.objectVaultId}</p>
-                          )}
+                          <h4 className="triplet-detail-title">⛓️ Status</h4>
                           <p className="triplet-detail-name">
-                            Status: 🔗 Ready for publication
+                            Status: 📡 Available for publication
                           </p>
                         </div>
 
@@ -512,14 +423,14 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             🧹 Clean storage
           </button>
         </div>
-      ) : availableCount === 0 && readyCount === 0 && publishedCount === 0 ? (
+      ) : availableCount === 0 && publishedCount === 0 ? (
         <div className="empty-state">
           <p>All your triplets are processed!</p>
           <p className="empty-subtext">
             Navigate to new pages to generate more triplets
           </p>
         </div>
-      ) : availableCount === 0 && readyCount === 0 ? (
+      ) : availableCount === 0 ? (
         <div className="empty-state">
           <p>All triplets are published!</p>
           <p className="empty-subtext">
