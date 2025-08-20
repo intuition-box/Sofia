@@ -1,0 +1,62 @@
+MIT License
+
+Copyright (c) 2025 SofIA Extension Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Acknowledgments
+
+This project is built upon the following technologies and frameworks:
+
+### Core Technologies
+- **Intuition** - Knowledge graph infrastructure and Web3 integration
+- **ElizaOS** - AI agent framework for semantic data processing
+- **GaiaNet** - Decentralized AI network for model inference
+
+### Additional Dependencies
+- **Plasmo** - Modern browser extension framework
+- **React** - UI framework for component-based development
+- **TypeScript** - Type-safe JavaScript development
+- **Chrome Extension APIs** - Browser integration capabilities
+
+## Third Party Licenses
+
+This software incorporates components from the following projects, each with their own licensing terms:
+
+### Intuition Protocol
+- Repository: https://github.com/0xIntuition
+- License: MIT License
+- Usage: Web3 knowledge graph integration and blockchain functionality
+
+### ElizaOS Framework  
+- Repository: https://github.com/elizaOS/eliza
+- License: MIT License
+- Usage: AI agent infrastructure and semantic processing capabilities
+
+### GaiaNet Network
+- Repository: https://github.com/GaiaNet-AI
+- License: Apache License 2.0
+- Usage: Decentralized AI model inference and processing
+
+### Plasmo Framework
+- Repository: https://github.com/PlasmoHQ/plasmo
+- License: MIT License
+- Usage: Browser extension development framework
+
+All third-party components retain their original copyright notices and license terms. Users of this software must comply with the licensing requirements of all included dependencies.
