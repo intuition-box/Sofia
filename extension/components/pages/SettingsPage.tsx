@@ -6,6 +6,7 @@ import WalletConnectionButton from '../THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
 import { disconnectWallet, cleanupProvider } from '../../lib/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
+import { elizaDataService } from '../../lib/indexedDB-methods'
 import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
@@ -41,10 +42,15 @@ const SettingsPage = () => {
       cleanupProvider()
       console.log("🧹 MetaMask provider streams cleaned")
       
-      // Clear all storage
+      // Clear Plasmo Storage
       await storage.clear()
       console.log("🧹 Plasmo Storage cleared successfully")
-      alert('Storage cleared and wallet disconnected successfully!')
+      
+      // Clear IndexedDB (messages Eliza et états triplets)
+      await elizaDataService.clearAll()
+      console.log("🧹 IndexedDB cleared successfully")
+      
+      alert('All storage cleared and wallet disconnected successfully!')
     } catch (error) {
       console.error('❌ Failed to clear storage:', error)
       alert('Failed to clear storage. Please try again.')
