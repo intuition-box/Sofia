@@ -6,4 +6,5 @@
 
 - [Features](./SofIA/docs/Features.md)
 - [Technical Documentation](./SofIA/docs/Technical-Documentation.md)
+- [UI Documentation](./docs/UI_doc.md) - Comprehensive UI guidelines and design system
 - [Architecture Diagram](./SofIA/docs/Architecture_Diagram.excalidraw)
