@@ -233,8 +233,8 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
 }
 
 // === 6. Envoi de bookmarks au BookMarkAgent ===
-export function sendBookmarksToAgent(urls: string[]): void {
-  sendBookmarksToAgentSender(socketBookmarkAgent, urls)
+export function sendBookmarksToAgent(urls: string[], onComplete?: (result: any) => void): void {
+  sendBookmarksToAgentSender(socketBookmarkAgent, urls, onComplete)
 }
 
 // === 7. Fonctions utilitaires pour les bookmarks (délégation) ===

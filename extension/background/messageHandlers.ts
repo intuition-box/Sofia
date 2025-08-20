@@ -205,10 +205,13 @@ export function setupMessageHandlers(): void {
           .then(result => {
             console.log('📚 [messageHandlers.ts] getAllBookmarks result:', result)
             if (result.success && result.urls) {
-              console.log(`📚 [messageHandlers.ts] Sending ${result.urls.length} bookmarks to agent...`)
-              sendBookmarksToAgent(result.urls)
-              console.log('📚 [messageHandlers.ts] Bookmarks sent to agent, responding to UI')
-              sendResponse({ success: true, count: result.urls.length })
+              console.log(`📚 [messageHandlers.ts] Starting import process for ${result.urls.length} bookmarks...`)
+              // Ne pas répondre tout de suite - attendre que l'import soit terminé
+              sendBookmarksToAgent(result.urls, (finalResult) => {
+                // Callback appelé quand TOUS les batches sont terminés
+                console.log('📚 [messageHandlers.ts] All batches processed, final result:', finalResult)
+                sendResponse(finalResult)
+              })
             } else {
               console.error('📚 [messageHandlers.ts] getAllBookmarks failed:', result.error)
               sendResponse({ success: false, error: result.error })
