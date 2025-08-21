@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import logoIcon from '../../assets/iconcolored.png'
+import HomeIcon from '../../assets/Icon=home.svg'
 import '../styles/ChatPage.css'
 import { sendMessageToChatbotSocket, initializeChatbotSocket } from '../../background/websocket'
 import { Storage } from "@plasmohq/storage"
@@ -113,7 +114,9 @@ const ChatPage = () => {
   return (
     <div className="chat-page">
       <div className="chat-header">
-        <button onClick={goBack} className="chat-back-button">←</button>
+        <button onClick={goBack} className="chat-back-button">
+          <img src={HomeIcon} alt="Home" className="home-icon" />
+        </button>
       </div>
 
       <div className="chat-messages">

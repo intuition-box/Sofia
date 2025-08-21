@@ -108,7 +108,7 @@
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(5px) saturate(100%);
   -webkit-backdrop-filter: blur(5px) saturate(100%);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   transition: all 0.3s ease;
   min-height: 120px;
   position: relative;
@@ -142,14 +142,15 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 0px;
   gap: 12px;
 }
 
 /* Triplet text clickable */
 .triplet-text.clickable {
   cursor: pointer;
-  padding: 8px;
+  padding: 0px;
+  margin-bottom: 20px;
   border-radius: 8px;
   transition: background-color 0.2s ease;
 }

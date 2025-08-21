@@ -158,7 +158,7 @@
 .echo-card {
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 12px;
-  padding: 20px;
+  padding: 6px;
   margin-bottom: 20px;
   backdrop-filter: blur(50px) saturate(100%);
   -webkit-backdrop-filter: blur(50px) saturate(100%);
@@ -177,8 +177,10 @@
 .triplet-item {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 0px;
 }
 
 .triplet-text {
@@ -249,8 +251,8 @@
 
 /* Ajustements spécifiques pour les nouveaux boutons */
 .quick-action-button[data-action="amplify"] .quick-action-icon {
-  width: 82px;
-  height: 18px;
+  width: 90px;
+  height: 20px;
 }
 
 .quick-action-button[data-action="scan"] .quick-action-icon {
