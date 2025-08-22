@@ -262,10 +262,10 @@
 
 /* Triplet Details Section - SofIA Design System */
 .triplet-details {
-  margin-top: 16px;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
   backdrop-filter: blur(10px) saturate(100%);
   -webkit-backdrop-filter: blur(10px) saturate(100%);
   transition: all 0.3s ease;
@@ -338,4 +338,181 @@
   color: #C7866C; /* 500 */
   text-decoration: none;
   transform: translateX(2px);
+}
+
+/* Selection Panel Styles */
+.selection-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(251, 247, 245, 0.05);
+  border: 1px solid rgba(251, 247, 245, 0.1);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #F2DED6;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.select-all-label:hover {
+  color: #FBF7F5;
+}
+
+.select-all-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #C7866C;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.select-all-checkbox:checked {
+  background: #C7866C;
+  border-color: #C7866C;
+}
+
+.select-all-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #FBF7F5;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.batch-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.batch-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.add-to-signals {
+  background: rgba(199, 134, 108, 0.2);
+  color: #C7866C;
+  border: 1px solid rgba(199, 134, 108, 0.3);
+}
+
+.add-to-signals:hover {
+  background: rgba(199, 134, 108, 0.3);
+  color: #FBF7F5;
+  transform: translateY(-1px);
+}
+
+.delete-selected {
+  background: rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.delete-selected:hover {
+  background: rgba(220, 38, 38, 0.3);
+  color: #FBF7F5;
+  transform: translateY(-1px);
+}
+
+/* Echo Header Styles */
+.echo-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 0px;
+}
+
+.echo-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(251, 247, 245, 0.3);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.echo-checkbox:checked {
+  background: #C7866C;
+  border-color: #C7866C;
+}
+
+.echo-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #FBF7F5;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.echo-checkbox:hover {
+  border-color: #C7866C;
+  transform: scale(1.1);
+}
+
+/* Selected Echo Card */
+.triplet-item.selected {
+  background: rgba(199, 134, 108, 0.1);
+  border-color: rgba(199, 134, 108, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+  .selection-panel {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .batch-actions {
+    justify-content: center;
+  }
+  
+  .echo-header {
+    gap: 8px;
+  }
+  
+  .batch-btn {
+    flex: 1;
+    text-align: center;
+  }
 }

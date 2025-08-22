@@ -53,7 +53,7 @@
   height: 44px;
   background: rgba(141, 141, 141, 0.2);
   border-radius: 8px;
-  transition: left 0.2s ease, opacity 0.2s ease;
+  transition: top 0.2s cubic-bezier(0.9, -0.5, 0.5, 0.9), opacity 0.2s ease;
   top: 8px;
   z-index: -2;
   opacity: 0;

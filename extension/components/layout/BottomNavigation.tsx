@@ -13,6 +13,7 @@ const BottomNavigation = () => {
   const [account] = useStorage<string>("metamask-account")
   const { currentPage, navigateTo } = useRouter()
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [lastHoveredIndex, setLastHoveredIndex] = useState<number>(0)
 
   if (!account) return null
 
@@ -25,6 +26,7 @@ const BottomNavigation = () => {
   
   const handleMouseEnter = (index: number) => {
     setHoveredIndex(index)
+    setLastHoveredIndex(index)
   }
 
 
@@ -44,7 +46,8 @@ const BottomNavigation = () => {
       <div 
         className="nav-hover-background" 
         style={{ 
-          left: hoveredIndex !== null ? `calc(${hoveredIndex * 20}% + 10% - 30px)` : '0px',
+          left: `calc(${(hoveredIndex !== null ? hoveredIndex : lastHoveredIndex) * 20}% + 10% - 30px)`,
+          top: hoveredIndex !== null ? '8px' : '-50px',
           opacity: hoveredIndex !== null ? 1 : 0
         }}
       />

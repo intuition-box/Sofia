@@ -104,14 +104,17 @@
 /* Echo Cards (utilisée pour SignalsTab et EchoesTab) */
 .echo-card {
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(5px) saturate(100%);
   -webkit-backdrop-filter: blur(5px) saturate(100%);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   transition: all 0.3s ease;
-  min-height: 120px;
+  min-height: 80px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .echo-card:hover {
@@ -150,7 +153,7 @@
 .triplet-text.clickable {
   cursor: pointer;
   padding: 0px;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
   border-radius: 8px;
   transition: background-color 0.2s ease;
 }
