@@ -40,6 +40,10 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [echoTriplets, setEchoTriplets] = useState<EchoTriplet[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
+  
+  // Selection state management
+  const [selectedEchoes, setSelectedEchoes] = useState<Set<string>>(new Set())
+  const [isSelectAll, setIsSelectAll] = useState(false)
 
   // Hook IndexedDB pour les messages Eliza (lecture seule)
   const { 
@@ -225,6 +229,61 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     }
   }
 
+  // Selection functions
+  const toggleEchoSelection = (echoId: string) => {
+    setSelectedEchoes(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(echoId)) {
+        newSet.delete(echoId)
+        setIsSelectAll(false)
+      } else {
+        newSet.add(echoId)
+        // Check if all available echoes are now selected
+        const availableEchoes = echoTriplets.filter(t => t.status === 'available')
+        if (newSet.size === availableEchoes.length) {
+          setIsSelectAll(true)
+        }
+      }
+      return newSet
+    })
+  }
+
+  const toggleSelectAll = () => {
+    const availableEchoes = echoTriplets.filter(t => t.status === 'available')
+    if (isSelectAll) {
+      setSelectedEchoes(new Set())
+      setIsSelectAll(false)
+    } else {
+      setSelectedEchoes(new Set(availableEchoes.map(t => t.id)))
+      setIsSelectAll(true)
+    }
+  }
+
+  const deleteSelectedEchoes = async () => {
+    if (selectedEchoes.size === 0) return
+    
+    setEchoTriplets(prev => prev.filter(t => !selectedEchoes.has(t.id)))
+    setSelectedEchoes(new Set())
+    setIsSelectAll(false)
+  }
+
+  const addSelectedToSignals = async () => {
+    if (selectedEchoes.size === 0) return
+    
+    const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
+    
+    for (const triplet of selectedTriplets) {
+      try {
+        await publishTriplet(triplet.id)
+      } catch (error) {
+        console.error(`Failed to publish triplet ${triplet.id}:`, error)
+      }
+    }
+    
+    setSelectedEchoes(new Set())
+    setIsSelectAll(false)
+  }
+
   // Statistiques des triplets (simplifiées)
   const availableCount = echoTriplets.filter(t => t.status === 'available').length
   const publishedCount = echoTriplets.filter(t => t.status === 'published').length
@@ -238,9 +297,57 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       </div>
     )
   }
-
+  
   return (
     <div className="triples-container">
+      {/* Stats */}
+      {echoTriplets.length > 0 && (
+        <div className="signals-stats">
+          <div className="stat-item">
+            <span className="stat-number stat-atom-only">{availableCount}</span>
+            <span className="stat-label">Available</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number stat-existing">{publishedCount}</span>
+            <span className="stat-label">Published</span>
+          </div>
+        </div>
+      )}
+      {/* Selection Panel */}
+      {(selectedEchoes.size > 0 || availableCount > 0) && (
+        <div className="selection-panel">
+          <div className="selection-info">
+            <label className="select-all-label">
+              <input
+                type="checkbox"
+                checked={isSelectAll}
+                onChange={toggleSelectAll}
+                className="select-all-checkbox"
+              />
+              <span>{selectedEchoes.size > 0 ? `${selectedEchoes.size} selected` : 'Select All'}</span>
+            </label>
+          </div>
+          
+          {selectedEchoes.size > 0 && (
+            <div className="batch-actions">
+              <button 
+                className="batch-btn add-to-signals"
+                onClick={addSelectedToSignals}
+                disabled={isProcessing}
+              >
+                Amplify ({selectedEchoes.size})
+              </button>
+              <button 
+                className="batch-btn delete-selected"
+                onClick={deleteSelectedEchoes}
+              >
+                Remove ({selectedEchoes.size})
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Section d'actions principales */}
       {/* {availableCount > 0 && (
         <div className="import-section">
@@ -260,19 +367,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         </div>
       )} */}
 
-      {/* Stats */}
-      {echoTriplets.length > 0 && (
-        <div className="signals-stats">
-          <div className="stat-item">
-            <span className="stat-number stat-atom-only">{availableCount}</span>
-            <span className="stat-label">Available</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number stat-existing">{publishedCount}</span>
-            <span className="stat-label">Published</span>
-          </div>
-        </div>
-      )}
 
       {/* Liste des triplets disponibles pour publication */}
       {availableCount > 0 && (
@@ -286,27 +380,27 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
               return (
                 <div key={tripletItem.id} className="echo-card border-green">
-                  <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
-                    <p
-                      className="triplet-text clickable"
-                      onClick={() => {
-                        setExpandedTriplet(isExpanded ? null : { msgIndex: 1, tripletIndex: index })
-                      }}
-                    >
-                      <span className="subject">{tripletItem.triplet.subject}</span>{' '}
-                      <span className="action">{tripletItem.triplet.predicate}</span>{' '}
-                      <span className="object">{tripletItem.triplet.object}</span>
-                    </p>
-
-                    <div className="triplet-header">
-                      <div className="signal-actions">
-                        <QuickActionButton
-                          action="amplify"
-                          onClick={() => publishTriplet(tripletItem.id)}
-                          disabled={processingTripletId === tripletItem.id || isCreating}
-                        />
-                      </div>
+                  <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}>
+                    <div className="echo-header">
+                      <input
+                        type="checkbox"
+                        checked={selectedEchoes.has(tripletItem.id)}
+                        onChange={() => toggleEchoSelection(tripletItem.id)}
+                        className="echo-checkbox"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <p
+                        className="triplet-text clickable"
+                        onClick={() => {
+                          setExpandedTriplet(isExpanded ? null : { msgIndex: 1, tripletIndex: index })
+                        }}
+                      >
+                        <span className="subject">{tripletItem.triplet.subject}</span>{' '}
+                        <span className="action">{tripletItem.triplet.predicate}</span>{' '}
+                        <span className="object">{tripletItem.triplet.object}</span>
+                      </p>
                     </div>
+
 
                     {processingTripletId === tripletItem.id && (
                       <div className="processing-message">
