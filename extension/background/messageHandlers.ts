@@ -8,6 +8,14 @@ import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
 import { getAllBookmarks, sendBookmarksToAgent } from "./websocket"
 import { elizaDataService } from "../lib/indexedDB-methods"
+import { 
+  recordPageForIntention, 
+  recordUserPredicate, 
+  getTopIntentions, 
+  getDomainIntentionStats,
+  getPredicateUpgradeSuggestions,
+  getIntentionGlobalStats
+} from "./intentionRanking"
 
 
 // Buffer temporaire de pageData par tabId
@@ -91,6 +99,9 @@ ${behaviorText}` : "")
   sendToAgent(message)
   clearOldSentMessages()
   if (behavior) removeBehaviorFromCache(parsedData.url)
+  
+  // Enregistrer la page pour le système de ranking d'intention
+  recordPageForIntention(parsedData)
 }
 
 // Handler séparé pour STORE_BOOKMARK_TRIPLETS
@@ -225,6 +236,66 @@ export function setupMessageHandlers(): void {
 
       case "STORE_BOOKMARK_TRIPLETS":
         handleStoreBookmarkTriplets(message, sendResponse)
+        return true
+
+      case "GET_INTENTION_RANKING":
+        try {
+          const limit = message.data?.limit || 10
+          const rankings = getTopIntentions(limit)
+          sendResponse({ success: true, data: rankings })
+        } catch (error) {
+          console.error("❌ GET_INTENTION_RANKING error:", error)
+          sendResponse({ success: false, error: error.message })
+        }
+        return true
+
+      case "GET_DOMAIN_INTENTIONS":
+        try {
+          const domain = message.data?.domain
+          if (!domain) {
+            sendResponse({ success: false, error: "Domain parameter required" })
+            return true
+          }
+          const stats = getDomainIntentionStats(domain)
+          sendResponse({ success: true, data: stats })
+        } catch (error) {
+          console.error("❌ GET_DOMAIN_INTENTIONS error:", error)
+          sendResponse({ success: false, error: error.message })
+        }
+        return true
+
+      case "RECORD_PREDICATE":
+        try {
+          const { url, predicate } = message.data || {}
+          if (!url || !predicate) {
+            sendResponse({ success: false, error: "URL and predicate parameters required" })
+            return true
+          }
+          recordUserPredicate(url, predicate)
+          console.log(`🎯 [messageHandlers] Predicate "${predicate}" recorded for ${url}`)
+          sendResponse({ success: true })
+        } catch (error) {
+          console.error("❌ RECORD_PREDICATE error:", error)
+          sendResponse({ success: false, error: error.message })
+        }
+        return true
+
+      case "GET_UPGRADE_SUGGESTIONS":
+        try {
+          const minConfidence = message.data?.minConfidence || 0.7
+          const suggestions = getPredicateUpgradeSuggestions(minConfidence)
+          const globalStats = getIntentionGlobalStats()
+          sendResponse({ 
+            success: true, 
+            data: { 
+              suggestions, 
+              globalStats 
+            }
+          })
+        } catch (error) {
+          console.error("❌ GET_UPGRADE_SUGGESTIONS error:", error)
+          sendResponse({ success: false, error: error.message })
+        }
         return true
     }
 
