@@ -32,6 +32,7 @@
     "@elizaos/plugin-bootstrap": "latest",
     "@elizaos/plugin-gaianet": "file:../plugins/gaianet",
     "@elizaos/plugin-mcp": "1.0.7",
+    "@elizaos/plugin-ollama": "1.2.4",
     "@elizaos/plugin-openai": "^1.0.10",
     "@elizaos/plugin-sql": "latest",
     "@tanstack/react-query": "^5.29.0",
