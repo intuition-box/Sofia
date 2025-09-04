@@ -189,6 +189,10 @@
   font-weight: 500;
   transition: var(--transition-fast);
   min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  justify-content: center;
 }
 
 .connect-button:hover {
@@ -207,6 +211,10 @@
   font-weight: 500;
   transition: var(--transition-fast);
   min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  justify-content: center;
 }
 
 .disconnect-button:hover {
@@ -286,4 +294,34 @@
   .cancel-button {
     flex: 1;
   }
+}
+
+/* Connected button */
+.connected-button {
+  background: #10B981;
+  color: white;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: var(--transition-fast);
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  justify-content: center;
+}
+
+.connected-button:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+/* Button icons */
+.button-icon {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1);
 }
