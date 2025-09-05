@@ -41,7 +41,11 @@ export interface MessageData {
   | "AGENT_RESPONSE"
   | "GET_TAB_ID"
   | "GET_BOOKMARKS"
-  | "STORE_BOOKMARK_TRIPLETS";
+  | "STORE_BOOKMARK_TRIPLETS"
+  | "GET_INTENTION_RANKING"
+  | "GET_DOMAIN_INTENTIONS"
+  | "RECORD_PREDICATE"
+  | "GET_UPGRADE_SUGGESTIONS";
   data: any;
   pageLoadTime?: number;
   tabId?: number;

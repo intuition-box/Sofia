@@ -3,14 +3,12 @@
 // URI IPFS de l'atom "User" créé manuellement
 export const USER_ATOM_IPFS_URI = "ipfs://bafkreiarxi6whglrjisihmsn4tl2kx5f3zhe7sgq67c6rfw6ru4ijnqzh4"
 
-// Mapping des predicates existants on-chain
 export const PREDICATES_MAPPING: Record<string, string> = {
-  "has visited": "ipfs://bafkreiaa6ljkzil66lnidqxayzsxp4r5aelajwmdf2q2qd7orpijqcuyn4",
-  "loves": "ipfs://bafkreih22bageqksejd3zlqokyziivikuo66i2gbtvpzcsl6a2agw6sq2a",
-  "likes": "ipfs://bafkreiejbzildzqu2y3zt32cyztldpma63qtkx67v6fetltohoni3lsvtq",
+  "have visited": "ipfs://bafkreiaa6ljkzil66lnidqxayzsxp4r5aelajwmdf2q2qd7orpijqcuyn4",
+  "love": "ipfs://bafkreih22bageqksejd3zlqokyziivikuo66i2gbtvpzcsl6a2agw6sq2a",
+  "like": "ipfs://bafkreiejbzildzqu2y3zt32cyztldpma63qtkx67v6fetltohoni3lsvtq",
   "trust" : "ipfs://bafkreicdwhpwnhjgfvqulxab3zmdncbnnldgowpd5bbwrtnyfuw2ttsujq",
-  "is interested by": "ipfs://bafkreigo6qefg3ssfgitcn7k3dnghcoy6yajlg7bmcbnuqnlfjdjkhe23y",
-  // Ajoutez d'autres predicates ici selon vos besoins
+  "are interested by": "ipfs://bafkreigo6qefg3ssfgitcn7k3dnghcoy6yajlg7bmcbnuqnlfjdjkhe23y",
 }
 
 // Fonction helper pour obtenir l'URI IPFS d'un predicate

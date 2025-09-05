@@ -6,6 +6,7 @@ import { useContractTest } from '../../../hooks/useContractTest'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
+import { useAccount } from 'wagmi'
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
 
@@ -41,6 +42,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [echoTriplets, setEchoTriplets] = useState<EchoTriplet[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
+  const { address } = useAccount() // Get connected wallet address
   
   // Selection state management
   const [selectedEchoes, setSelectedEchoes] = useState<Set<string>>(new Set())
@@ -404,7 +406,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                           setExpandedTriplet(isExpanded ? null : { msgIndex: 1, tripletIndex: index })
                         }}
                       >
-                        <span className="subject">{tripletItem.triplet.subject}</span>{' '}
+                        <span className="subject">{(tripletItem.triplet.subject === 'User' || tripletItem.triplet.subject === address) ? 'You' : tripletItem.triplet.subject}</span>{' '}
                         <span className="action">{tripletItem.triplet.predicate}</span>{' '}
                         <span className="object">{tripletItem.triplet.object}</span>
                       </p>
@@ -442,8 +444,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           }
         </div>
       )}
-
-
       {/* États vides */}
       {echoTriplets.length === 0 ? (
         <div className="empty-state">

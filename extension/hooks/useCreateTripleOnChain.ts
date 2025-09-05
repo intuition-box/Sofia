@@ -25,6 +25,7 @@ const MULTIVAULT_V2_ABI = [
 import { useGetExistingAtoms } from './useGetExistingAtoms'
 import { useCheckExistingAtom } from './useCheckExistingAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'
+import { useAccount } from 'wagmi'
 import { USER_ATOM_IPFS_URI, getPredicateIpfsUri, PREDICATES_MAPPING } from '../const/atomsMapping'
 
 export interface TripleOnChainResult {
@@ -42,6 +43,7 @@ export const useCreateTripleOnChain = () => {
   const { getUserAtom, getPredicateAtom } = useGetExistingAtoms()
   const { checkAndCreateAtom } = useCheckExistingAtom()
   const { checkTripleExists } = useCheckExistingTriple()
+  const { address } = useAccount()
   
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -57,31 +59,28 @@ export const useCreateTripleOnChain = () => {
     try {
       console.log('🔗 Starting triple creation on-chain...')
       console.log('Predicate:', predicateName, 'Object:', objectData.name)
+      console.log('Connected wallet address:', address)
       
-      // 1. Récupérer/créer l'atom User
-      setCurrentStep('Récupération de l\'atom User...')
-      let userAtom
-      try {
-        userAtom = await getUserAtom(USER_ATOM_IPFS_URI)
-        console.log('👤 User atom found, VaultID:', userAtom.vaultId)
-      } catch (error) {
-        console.log('⚠️ User atom not found, creating it automatically...')
-        setCurrentStep('Création de l\'atom User...')
-        
-        // Créer l'atom User automatiquement avec les mêmes métadonnées
-        const userAtomResult = await checkAndCreateAtom({
-          name: 'User',
-          description: 'Atom représentant l\'utilisateur dans le système',
-          url: '' // URL vide pour l'atom User
-        })
-        
-        userAtom = {
-          vaultId: userAtomResult.vaultId,
-          ipfsUri: userAtomResult.ipfsUri,
-          name: 'User'
-        }
-        console.log('👤 User atom created, VaultID:', userAtom.vaultId)
+      if (!address) {
+        throw new Error('No wallet connected')
       }
+      
+      // 1. Créer un atom User spécifique au wallet connecté
+      setCurrentStep('Récupération/création de l\'atom User pour le wallet connecté...')
+      
+      const userAtomResult = await checkAndCreateAtom({
+        name: address, // Utiliser l'adresse du wallet comme nom
+        description: `User atom for wallet ${address}`,
+        url: `https://etherscan.io/address/${address}` // Lien vers l'adresse sur Etherscan
+      })
+      
+      const userAtom = {
+        vaultId: userAtomResult.vaultId,
+        ipfsUri: userAtomResult.ipfsUri,
+        name: address
+      }
+      
+      console.log('👤 User atom for wallet', address, 'VaultID:', userAtom.vaultId)
       
       // 2. Récupérer/créer l'atom Predicate
       setCurrentStep('Récupération de l\'atom Predicate...')
