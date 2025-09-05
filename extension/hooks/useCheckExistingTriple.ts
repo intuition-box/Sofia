@@ -4,20 +4,24 @@ import { getClients } from '../lib/viemClients'
 const MULTIVAULT_V2_ABI = [
   {
     "type": "function",
-    "name": "tripleHashFromAtoms",
+    "name": "calculateTripleId",
     "inputs": [
       {"type": "bytes32", "name": "subjectId"},
       {"type": "bytes32", "name": "predicateId"},
       {"type": "bytes32", "name": "objectId"}
     ],
     "outputs": [{"type": "bytes32", "name": ""}],
-    "stateMutability": "view"
+    "stateMutability": "pure"
   },
   {
     "type": "function",
-    "name": "triplesByHash",
-    "inputs": [{"type": "bytes32", "name": "hash"}],
-    "outputs": [{"type": "bytes32", "name": ""}],
+    "name": "getTriple",
+    "inputs": [{"type": "bytes32", "name": "tripleId"}],
+    "outputs": [
+      {"type": "bytes32", "name": "subject"},
+      {"type": "bytes32", "name": "predicate"},
+      {"type": "bytes32", "name": "object"}
+    ],
     "stateMutability": "view"
   }
 ]
@@ -48,17 +52,62 @@ export const useCheckExistingTriple = () => {
         object: objectVaultId
       })
       
-      // FALLBACK: Since tripleHashFromAtoms doesn't work in V2,
-      // we'll skip the existence check and let the contract handle duplicates
-      console.log('⚠️ Skipping existence check - letting contract handle duplicate detection')
-      console.log('Contract will return 0x22319959 error if triple already exists')
-      
-      // Generate a dummy hash for now
-      const dummyHash = `0x${Date.now().toString(16).padStart(64, '0')}`
-      
-      return {
-        exists: false,
-        tripleHash: dummyHash
+      const { publicClient } = await getClients()
+      const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
+
+      try {
+        // First calculate the triple ID using the V2 function
+        const tripleId = await publicClient.readContract({
+          address: contractAddress,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'calculateTripleId',
+          args: [
+            subjectVaultId as `0x${string}`,
+            predicateVaultId as `0x${string}`,
+            objectVaultId as `0x${string}`
+          ]
+        }) as `0x${string}`
+        
+        console.log('🔍 Triple ID calculated:', tripleId)
+
+        // Then check if this triple exists using getTriple
+        try {
+          const [subject, predicate, object] = await publicClient.readContract({
+            address: contractAddress,
+            abi: MULTIVAULT_V2_ABI,
+            functionName: 'getTriple',
+            args: [tripleId]
+          }) as [string, string, string]
+          
+          console.log('🔍 Triple found with components:', { subject, predicate, object })
+          
+          // If getTriple doesn't revert, the triple exists
+          return {
+            exists: true,
+            tripleVaultId: tripleId,
+            tripleHash: tripleId
+          }
+        } catch (getTripleError) {
+          // getTriple reverts with TripleDoesNotExist if triple doesn't exist
+          console.log('🔍 Triple does not exist (getTriple reverted)')
+          
+          return {
+            exists: false,
+            tripleHash: tripleId
+          }
+        }
+      } catch (contractError) {
+        console.warn('⚠️ Contract existence check failed, falling back to creation attempt:', contractError)
+        
+        // Generate a dummy hash for fallback
+        const dummyHash = `0x${Date.now().toString(16).padStart(64, '0')}`
+        
+        // Return exists: false so the creation process can proceed
+        // If the triple already exists, the contract will throw 0x22319959 which we handle
+        return {
+          exists: false,
+          tripleHash: dummyHash
+        }
       }
     } catch (error) {
       console.error('❌ Triple check failed:', error)
@@ -80,10 +129,10 @@ export const useCheckExistingTriple = () => {
       const { publicClient } = await getClients()
       const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-      const tripleHash = await publicClient.readContract({
+      const tripleId = await publicClient.readContract({
         address: contractAddress,
         abi: MULTIVAULT_V2_ABI,
-        functionName: 'tripleHashFromAtoms',
+        functionName: 'calculateTripleId',
         args: [
           subjectVaultId as `0x${string}`,
           predicateVaultId as `0x${string}`,
@@ -91,9 +140,9 @@ export const useCheckExistingTriple = () => {
         ]
       }) as `0x${string}`
 
-      return tripleHash as string
+      return tripleId as string
     } catch (error) {
-      console.error('❌ Triple hash calculation failed:', error)
+      console.error('❌ Triple ID calculation failed:', error)
       throw error
     }
   }
