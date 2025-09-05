@@ -204,6 +204,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       
     } catch (error) {
       console.error(`❌ Failed to publish triplet ${tripletId}:`, error)
+      
+      // Check if error is due to triple already existing
+      if (error instanceof Error && error.message === 'TRIPLE_ALREADY_EXISTS') {
+        console.log('✅ Triple already exists on chain, removing from list')
+        
+        // Add to blacklist to prevent recreation
+        await elizaDataService.addPublishedTripletId(tripletId)
+        
+        // Show popup for existing triplet
+        alert(`✅ Triplet already exists on chain!\nRemoving from your pending list.`)
+        
+        // Remove from local display
+        const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
+        setEchoTriplets(updatedTriplets)
+        await elizaDataService.storeTripletStates(updatedTriplets)
+      }
     } finally {
       setProcessingTripletId(null)
     }
@@ -295,37 +311,62 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         const result = await createTriplesBatch(batchInput)
         
         if (result.success) {
+          const createdResults = result.results.filter(r => r.source === 'created')
+          const existingResults = result.results.filter(r => r.source === 'existing')
+          
           console.log('✅ Batch publication successful!', {
-            created: result.results.filter(r => r.source === 'created').length,
-            existing: result.results.filter(r => r.source === 'existing').length,
+            created: createdResults.length,
+            existing: existingResults.length,
             failed: result.failedTriples.length,
             txHash: result.txHash
           })
           
-          // Add all selected triplets to blacklist
-          for (const triplet of selectedTriplets) {
+          // Find which triplets correspond to existing results  
+          const existingTripletIds = new Set<string>()
+          
+          // Match existing results back to original triplet IDs
+          existingResults.forEach(existingResult => {
+            // Find the original triplet that matches this result
+            const matchingTriplet = selectedTriplets.find(triplet => 
+              triplet.triplet.predicate === batchInput.find(input => 
+                input.predicateName === triplet.triplet.predicate &&
+                input.objectData.name === triplet.triplet.object
+              )?.predicateName
+            )
+            if (matchingTriplet) {
+              existingTripletIds.add(matchingTriplet.id)
+            }
+          })
+          
+          // Add only successfully created or existing triplets to blacklist
+          const processedTriplets = selectedTriplets.filter(triplet => 
+            !result.failedTriples.some(failed => 
+              failed.input.predicateName === triplet.triplet.predicate &&
+              failed.input.objectData.name === triplet.triplet.object
+            )
+          )
+          
+          for (const triplet of processedTriplets) {
             await elizaDataService.addPublishedTripletId(triplet.id)
           }
           
           // Show summary alert
-          const createdCount = result.results.filter(r => r.source === 'created').length
-          const existingCount = result.results.filter(r => r.source === 'existing').length
-          
-          if (existingCount > 0) {
+          if (existingResults.length > 0) {
             alert(`✅ Batch complete!
-Created: ${createdCount} new triplets
-Already existed: ${existingCount} triplets
+Created: ${createdResults.length} new triplets
+Already existed: ${existingResults.length} triplets (removed from list)
 ${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.slice(-8)}` : ''}
 
-All triplets removed from your pending list.`)
-          } else {
+Successfully processed triplets removed from your pending list.`)
+          } else if (createdResults.length > 0) {
             alert(`✅ Batch successful!
-Created: ${createdCount} triplets in single transaction
+Created: ${createdResults.length} triplets in single transaction
 ${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.slice(-8)}` : ''}`)
           }
           
-          // Remove all selected triplets from local display
-          const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
+          // Remove only successfully processed triplets (created + existing)
+          const processedTripletIds = new Set(processedTriplets.map(t => t.id))
+          const updatedTriplets = echoTriplets.filter(t => !processedTripletIds.has(t.id))
           setEchoTriplets(updatedTriplets)
           await elizaDataService.storeTripletStates(updatedTriplets)
           
