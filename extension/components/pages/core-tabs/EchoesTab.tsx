@@ -191,27 +191,16 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       // Ajouter à la liste noire pour empêcher la recréation
       await elizaDataService.addPublishedTripletId(tripletId)
       
-      // Supprimer de l'affichage local
+      // Check if triplet already existed on chain
+      if (result.source === 'existing') {
+        // Show popup for existing triplet
+        alert(`✅ Triplet already exists on chain!\nVault ID: ${result.tripleVaultId}\nRemoving from your pending list.`)
+      }
+      
+      // Supprimer de l'affichage local (que ce soit nouveau ou existant)
       const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
       setEchoTriplets(updatedTriplets)
       await elizaDataService.storeTripletStates(updatedTriplets)
-
-      // Triplet published successfully
-      // Marquer comme publié avec toutes les infos blockchain
-      setEchoTriplets(prev => 
-        prev.map(t => t.id === tripletId ? { 
-          ...t, 
-          status: 'published' as const,
-          tripleVaultId: result.tripleVaultId,
-          subjectVaultId: result.subjectVaultId,
-          predicateVaultId: result.predicateVaultId,
-          objectVaultId: result.objectVaultId,
-          txHash: result.txHash,
-          onChainStatus: result.source
-        } : t)
-      )
-
-      // Triplet published successfully
       
     } catch (error) {
       console.error(`❌ Failed to publish triplet ${tripletId}:`, error)

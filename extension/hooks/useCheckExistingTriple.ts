@@ -48,9 +48,10 @@ export const useCheckExistingTriple = () => {
         object: objectVaultId
       })
       
-      // TEMPORARY: Skip existence check and always return "doesn't exist"
-      // This is the same approach used in testnet branch due to V2 API differences
-      console.log('⚠️ Temporarily bypassing triple existence check - always returning new')
+      // FALLBACK: Since tripleHashFromAtoms doesn't work in V2,
+      // we'll skip the existence check and let the contract handle duplicates
+      console.log('⚠️ Skipping existence check - letting contract handle duplicate detection')
+      console.log('Contract will return 0x22319959 error if triple already exists')
       
       // Generate a dummy hash for now
       const dummyHash = `0x${Date.now().toString(16).padStart(64, '0')}`
