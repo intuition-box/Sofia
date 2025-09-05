@@ -65,15 +65,29 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
       }
 
       const normalizedAccount = account.toLowerCase()
-      console.log('🔍 [useIntuitionTriplets] Filtering triplets for wallet:', normalizedAccount)
       
+      // Format checksum exact trouvé sur l'explorer Intuition
+      const checksumAccount = '0x0B940A81271aD090AbD2C18d1a5873e5cb93D42a' // Format exact de l'explorer
+      const upperAccount = account.toUpperCase()
+      
+      console.log('🔍 [useIntuitionTriplets] Testing multiple address formats:')
+      console.log('  - Lowercase:', normalizedAccount)
+      console.log('  - Checksum (explorer):', checksumAccount)
+      console.log('  - Original (MetaMask):', account)
+      console.log('  - Uppercase:', upperAccount)
+      
+      // Essayer avec l'opérateur _in pour tester plusieurs formats
       const triplesQuery = `
         query GetUserTriples {
-          triples(where: {creator_id: {_ilike: "${normalizedAccount}"}}, limit: 50) {
+          triples(where: {creator_id: {_in: ["${normalizedAccount}", "${checksumAccount}", "${account}", "${upperAccount}"]}}, limit: 50, order_by: {created_at: desc}) {
+            term_id
             subject_id
             predicate_id
             object_id
             creator_id
+            created_at
+            transaction_hash
+            block_number
           }
         }
       `
@@ -148,18 +162,23 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
           object: `${triple.object_id} -> ${objectTerm?.atom?.label || 'Unknown'}`
         })
 
+        // Convertir created_at en timestamp
+        const timestamp = new Date(triple.created_at).getTime()
+
         const resolvedTriplet: IntuitionTriplet = {
-          id: `intuition_${triple.subject_id.slice(-8)}_${triple.predicate_id.slice(-8)}_${triple.object_id.slice(-8)}`,
+          id: triple.term_id,
           triplet: {
             subject: subjectTerm?.atom?.label || 'Unknown',
             predicate: predicateTerm?.atom?.label || 'Unknown', 
             object: objectTerm?.atom?.label || 'Unknown'
           },
-          url: `https://sepolia.basescan.org/tx/${triple.subject_id}`,
+          url: `https://testnet.explorer.intuition.systems/tx/${triple.transaction_hash}`,
           description: `${subjectTerm?.atom?.label || 'Unknown'} ${predicateTerm?.atom?.label || 'Unknown'} ${objectTerm?.atom?.label || 'Unknown'}`,
-          timestamp: Date.now(),
+          timestamp: timestamp,
           source: 'intuition_api' as const,
           confidence: 0.95,
+          txHash: triple.transaction_hash,
+          tripleVaultId: triple.term_id,
           subjectVaultId: triple.subject_id,
           predicateVaultId: triple.predicate_id,
           atomVaultId: triple.object_id,
