@@ -27,14 +27,18 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
   const [editedQuery, setEditedQuery] = useState('')
 
   const formatNumber = (num: number) => {
+    if (num === 0) return '0'
     if (num >= 1000000000) {
-      return (num / 1000000000).toFixed(1) + 'B'
+      const formatted = (num / 1000000000).toFixed(1)
+      return formatted.endsWith('.0') ? formatted.slice(0, -2) + 'B' : formatted + 'B'
     }
     if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M'
+      const formatted = (num / 1000000).toFixed(1)
+      return formatted.endsWith('.0') ? formatted.slice(0, -2) + 'M' : formatted + 'M'
     }
     if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K'
+      const formatted = (num / 1000).toFixed(1)
+      return formatted.endsWith('.0') ? formatted.slice(0, -2) + 'K' : formatted + 'K'
     }
     return num.toLocaleString()
   }
@@ -205,21 +209,38 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
           <div className="results-list">
             {topResults.map((result, index) => (
               <div key={result.id || index} className="result-card">
-                <div className="result-header">
-                  <span className="attestations-count">{formatNumber(result.attestations)} attestations</span>
-                  <span className="stake-amount">💎 {formatNumber(result.stake)}</span>
-                  <span className="status-badge true">True</span>
+                {/* Atom Name - Most Important */}
+                <div className="atom-title">
+                  <h3 className="atom-name">{result.label}</h3>
+                  <span className="atom-type">{result.type}</span>
                 </div>
                 
-                <div className="result-body">
+                {/* Key Metrics */}
+                <div className="key-metrics">
+                  <div className="metric-item">
+                    <span className="metric-label">Score:</span>
+                    <span className="metric-value">{formatNumber(result.attestations)}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Stake:</span>
+                    <span className="metric-value">💎 {formatNumber(result.stake)}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Related Triples:</span>
+                    <span className="metric-value">{result.relatedTriples.length}</span>
+                  </div>
+                </div>
+                
+                {/* Content */}
+                <div className="result-content">
                   {result.description && (
-                    <div className="result-description">
+                    <div className="atom-description">
                       <p>{result.description}</p>
                     </div>
                   )}
                   
                   {result.url && (
-                    <div className="result-url">
+                    <div className="atom-url">
                       <span className="url-icon">🔗</span>
                       <a href={result.url} target="_blank" rel="noopener noreferrer" className="url-link">
                         {result.url}
@@ -228,42 +249,25 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
                   )}
                   
                   {result.email && (
-                    <div className="result-email">
+                    <div className="atom-email">
                       <span className="email-icon">📧</span>
                       <span>{result.email}</span>
                     </div>
                   )}
-                  
-                  <div className="auditor-section">
-                    <div className="auditor-info">
-                    <div className="audit-details">
-                      <span>audited by</span>
-                      <img src={PersonIcon} alt="Person" className="auditor-icon" />
-                      <span className="auditor-name">{result.auditedBy || 'Expert_Luvr'}</span>
-                    </div>
-                    </div>
-                  </div>
-                  {result.consensys && (
-                    <div className="consensys-badge">
-                      <span className="consensys-icon">C</span>
-                      <span>{result.consensys}</span>
-                    </div>
-                  )}
                 </div>
 
-                <div className="result-footer">
-                  <div className="metrics">
-                    {(() => {
-                      const metrics = getTripleMetrics(result)
-                      return (
-                        <>
-                          <span className="metric red">●Against: {formatNumber(metrics.against)}</span>
-                          <span className="metric">OPINION: {formatNumber(metrics.opinion)}</span>
-                          <span className="metric green">●For: {formatNumber(metrics.forCount)}</span>
-                        </>
-                      )
-                    })()}
-                  </div>
+                {/* Sentiment Metrics */}
+                <div className="sentiment-metrics">
+                  {(() => {
+                    const metrics = getTripleMetrics(result)
+                    return (
+                      <>
+                        <span className="sentiment-metric positive">{formatNumber(metrics.forCount)}</span>
+                        <span className="sentiment-metric neutral">{formatNumber(metrics.opinion)}</span>
+                        <span className="sentiment-metric negative">{formatNumber(metrics.against)}</span>
+                      </>
+                    )
+                  })()}
                 </div>
               </div>
             ))}
@@ -342,21 +346,45 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
             <div className="related-content">
               {topResults.length > 0 && topResults[0].relatedTriples.length > 0 ? (
                 <div className="related-triples">
-                  <h3>Related connections:</h3>
+                  <h3>Complete Triples with "{topResults[0].label}":</h3>
                   {topResults[0].relatedTriples.map((triple, index) => (
-                    <div key={index} className="triple-item">
-                      <div className="triple-predicate">
-                        {triple.predicate?.emoji && <span className="predicate-emoji">{triple.predicate.emoji}</span>}
-                        <span className="predicate-label">{triple.predicate?.label}</span>
+                    <div key={index} className="triple-item-complete">
+                      <div className="triple-full-statement">
+                        <span className="triple-subject">
+                          {triple.subject?.emoji && <span className="subject-emoji">{triple.subject.emoji}</span>}
+                          <span className="subject-label">{triple.subject?.label}</span>
+                        </span>
+                        <span className="triple-connector">→</span>
+                        <span className="triple-predicate">
+                          {triple.predicate?.emoji && <span className="predicate-emoji">{triple.predicate.emoji}</span>}
+                          <span className="predicate-label">{triple.predicate?.label}</span>
+                        </span>
+                        <span className="triple-connector">→</span>
+                        <span className="triple-object">
+                          {triple.object?.emoji && <span className="object-emoji">{triple.object.emoji}</span>}
+                          <span className="object-label">{triple.object?.label}</span>
+                        </span>
                       </div>
-                      <div className="triple-object">
-                        {triple.object?.emoji && <span className="object-emoji">{triple.object.emoji}</span>}
-                        <span className="object-label">{triple.object?.label}</span>
+                      <div className="triple-meta">
                         {triple.vault?.position_count && (
                           <span className="triple-positions">
-                            ({formatNumber(triple.vault.position_count)} positions)
+                            👍 {formatNumber(triple.vault.position_count)} positions
                           </span>
                         )}
+                        {triple.counter_vault?.position_count && (
+                          <span className="triple-counter-positions">
+                            👎 {formatNumber(triple.counter_vault.position_count)} against
+                          </span>
+                        )}
+                        <button 
+                          className="explore-triple-btn"
+                          onClick={() => {
+                            // Open Intuition portal
+                            window.open('https://intuition.systems', '_blank')
+                          }}
+                        >
+                          🚀 View on Intuition
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -416,21 +444,38 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
               <div className="results-list">
                 {sortedResults.map((result, index) => (
                   <div key={result.id || index} className="result-card">
-                    <div className="result-header">
-                      <span className="attestations-count">{formatNumber(result.attestations)} attestations</span>
-                      <span className="stake-amount">💎 {formatNumber(result.stake)}</span>
-                      <span className="status-badge true">True</span>
+                    {/* Atom Name - Most Important */}
+                    <div className="atom-title">
+                      <h3 className="atom-name">{result.label}</h3>
+                      <span className="atom-type">{result.type}</span>
                     </div>
                     
-                    <div className="result-body">
+                    {/* Key Metrics */}
+                    <div className="key-metrics">
+                      <div className="metric-item">
+                        <span className="metric-label">Score:</span>
+                        <span className="metric-value">{formatNumber(result.attestations)}</span>
+                      </div>
+                      <div className="metric-item">
+                        <span className="metric-label">Stake:</span>
+                        <span className="metric-value">💎 {formatNumber(result.stake)}</span>
+                      </div>
+                      <div className="metric-item">
+                        <span className="metric-label">Related Triples:</span>
+                        <span className="metric-value">{result.relatedTriples.length}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="result-content">
                       {result.description && (
-                        <div className="result-description">
+                        <div className="atom-description">
                           <p>{result.description}</p>
                         </div>
                       )}
                       
                       {result.url && (
-                        <div className="result-url">
+                        <div className="atom-url">
                           <span className="url-icon">🔗</span>
                           <a href={result.url} target="_blank" rel="noopener noreferrer" className="url-link">
                             {result.url}
@@ -439,42 +484,25 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
                       )}
                       
                       {result.email && (
-                        <div className="result-email">
+                        <div className="atom-email">
                           <span className="email-icon">📧</span>
                           <span>{result.email}</span>
                         </div>
                       )}
-                      
-                      <div className="auditor-section">
-                        <div className="auditor-info">
-                          <img src={PersonIcon} alt="Person" className="auditor-icon" />
-                          <span className="auditor-name">{result.auditedBy || 'Expert_Luvr'}</span>
-                        </div>
-                        <div className="audit-details">
-                          <span>audited by</span>
-                        </div>
-                      </div>
-                      {result.consensys && (
-                        <div className="consensys-badge">
-                          <span className="consensys-icon">C</span>
-                          <span>{result.consensys}</span>
-                        </div>
-                      )}
                     </div>
 
-                    <div className="result-footer">
-                      <div className="metrics">
-                        {(() => {
-                          const metrics = getTripleMetrics(result)
-                          return (
-                            <>
-                              <span className="metric red">●Against: {formatNumber(metrics.against)}</span>
-                              <span className="metric">OPINION: {formatNumber(metrics.opinion)}</span>
-                              <span className="metric green">●For: {formatNumber(metrics.forCount)}</span>
-                            </>
-                          )
-                        })()}
-                      </div>
+                    {/* Sentiment Metrics */}
+                    <div className="sentiment-metrics">
+                      {(() => {
+                        const metrics = getTripleMetrics(result)
+                        return (
+                          <>
+                            <span className="sentiment-metric positive">{formatNumber(metrics.forCount)}</span>
+                            <span className="sentiment-metric neutral">{formatNumber(metrics.opinion)}</span>
+                            <span className="sentiment-metric negative">{formatNumber(metrics.against)}</span>
+                          </>
+                        )
+                      })()}
                     </div>
                   </div>
                 ))}
