@@ -1,17 +1,16 @@
 import { createConfig } from 'wagmi'
-import { base, baseSepolia } from 'viem/chains'
 import { injected } from '@wagmi/connectors'
 import type { Config } from 'wagmi'
+import { http } from 'viem'
 
-import { transportsMap } from './chain'
+import { intuitionTestnet } from '../config'
 
 export const wagmiConfig: Config = createConfig({
-  chains: [base, baseSepolia],
+  chains: [intuitionTestnet],
   connectors: [
     injected()
   ],
   transports: {
-    [base.id]: transportsMap(base.id),
-    [baseSepolia.id]: transportsMap(baseSepolia.id),
+    [intuitionTestnet.id]: http('https://testnet.rpc.intuition.systems'),
   },
 })

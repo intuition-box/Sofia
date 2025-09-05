@@ -1,7 +1,16 @@
 import { useState } from 'react'
-import { Multivault } from "@0xintuition/protocol"
 import { getClients } from '../lib/viemClients'
 import { keccak256, stringToBytes } from 'viem'
+
+const MULTIVAULT_ABI = [
+  {
+    "type": "function",
+    "name": "atomsByHash",
+    "inputs": [{"type": "bytes32", "name": "hash"}],
+    "outputs": [{"type": "uint256", "name": ""}],
+    "stateMutability": "view"
+  }
+]
 
 export interface ExistingAtom {
   vaultId: string
@@ -19,33 +28,9 @@ export const useGetExistingAtoms = () => {
     try {
       console.log(`🔍 Searching for existing atom "${atomName}" with URI:`, ipfsUri)
       
-      const { publicClient } = await getClients()
-      //@ts-ignore
-      const multivault = new Multivault({ walletClient: null, publicClient })
-
-      // Hash l'URI IPFS pour rechercher dans le contract (même logique ligne 50)
-      const uriHash = keccak256(stringToBytes(ipfsUri))
-      
-      // Utilise atomsByHash pour trouver le VaultID (même logique ligne 54-59)
-      const existingAtomId = await publicClient.readContract({
-        address: multivault.contract.address,
-        abi: multivault.contract.abi,
-        functionName: 'atomsByHash',
-        args: [uriHash]
-      })
-
-      if (existingAtomId && existingAtomId > 0n) {
-        const result = {
-          vaultId: existingAtomId.toString(),
-          ipfsUri,
-          name: atomName
-        }
-        console.log(`✅ Found existing atom "${atomName}":`, result)
-        return result
-      } else {
-        console.log(`❌ Atom "${atomName}" not found on-chain`)
-        return null
-      }
+      // TEMPORARY: Always return null to force creation of new atoms
+      console.log(`⚠️ Temporarily bypassing atom lookup - always returning null to create new atom`)
+      return null
     } catch (error) {
       console.error(`❌ Error getting atom "${atomName}":`, error)
       throw error

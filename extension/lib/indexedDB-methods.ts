@@ -126,6 +126,57 @@ export class ElizaDataService {
   }
 
   /**
+   * Store published triplet IDs to prevent recreation
+   */
+  static async storePublishedTripletIds(publishedIds: string[]): Promise<number> {
+    // Remove existing published triplet IDs first
+    const existing = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_published_triplets')
+    for (const record of existing) {
+      if (record.id) {
+        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+      }
+    }
+    
+    // Store new published triplet IDs
+    const record: ElizaRecord = {
+      messageId: 'echoesTab_published_triplets',
+      content: publishedIds as any,
+      timestamp: Date.now(),
+      type: 'published_triplets'
+    }
+    
+    const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
+    console.log('🚫 Published triplet IDs stored:', publishedIds.length)
+    return result as number
+  }
+
+  /**
+   * Load published triplet IDs
+   */
+  static async loadPublishedTripletIds(): Promise<string[]> {
+    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_published_triplets')
+    if (records.length > 0 && records[0].content) {
+      const ids = records[0].content as string[]
+      console.log('🚫 Published triplet IDs loaded:', ids.length)
+      return ids
+    }
+    console.log('🚫 No published triplet IDs found')
+    return []
+  }
+
+  /**
+   * Add a triplet ID to the published list
+   */
+  static async addPublishedTripletId(tripletId: string): Promise<void> {
+    const existingIds = await this.loadPublishedTripletIds()
+    if (!existingIds.includes(tripletId)) {
+      existingIds.push(tripletId)
+      await this.storePublishedTripletIds(existingIds)
+      console.log('🚫 Added triplet to published list:', tripletId)
+    }
+  }
+
+  /**
    * Clear all Eliza data
    */
   static async clearAll(): Promise<void> {

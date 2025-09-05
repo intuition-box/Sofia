@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/indexedDB-methods'
 import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
+import { useContractTest } from '../../../hooks/useContractTest'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
@@ -54,6 +55,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   // Hook blockchain pour la création (utilise les autres hooks en interne)
   const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
+  
+  // Hook de test pour debug
+  const { testContract, isLoading: isTestLoading, results: testResults } = useContractTest()
 
   // Charger les états sauvegardés puis traiter les messages
   useEffect(() => {
@@ -75,6 +79,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const processRawMessages = async (savedStates?: EchoTriplet[]) => {
     try {
       console.log(`🔍 EchoesTab: Processing ${rawMessages.length} raw messages${savedStates ? ' with saved states' : ''}`)
+      
+      // Charger la liste noire des triplets publiés
+      const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
+      console.log('🚫 Published triplets blacklist loaded:', publishedTripletIds.length)
+      
       const newEchoTriplets: EchoTriplet[] = []
       
       for (const record of rawMessages) {
@@ -88,31 +97,37 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               parsed.triplets.forEach((triplet, index) => {
                 const tripletId = `${record.messageId}_${index}`
                 
-                // Vérifier dans les états sauvegardés d'abord, puis dans l'état actuel
+                // Vérifier si le triplet a été publié (liste noire)
+                if (publishedTripletIds.includes(tripletId)) {
+                  console.log(`🚫 EchoesTab: Skipping published triplet ${tripletId}`)
+                  return // Skip ce triplet définitivement
+                }
+                
+                // Vérifier si le triplet existe déjà dans les états sauvegardés
                 const existingTriplet = savedStates?.find(t => t.id === tripletId) || 
                                     echoTriplets.find(t => t.id === tripletId)
                 
-                if (existingTriplet && existingTriplet.status === 'published') {
-                  // Garder le triplet existant avec son statut avancé
+                // Si le triplet existe déjà, le garder tel quel
+                if (existingTriplet) {
                   newEchoTriplets.push(existingTriplet)
-                  console.log(`🔒 EchoesTab: Preserving triplet ${tripletId} with status: ${existingTriplet.status}`)
-                } else {
-                  // Créer un nouveau triplet en statut 'available'
-                  const echoTriplet: EchoTriplet = {
-                    id: tripletId,
-                    triplet: {
-                      subject: triplet.subject,
-                      predicate: triplet.predicate,
-                      object: triplet.object
-                    },
-                    url: parsed.rawObjectUrl || '',
-                    description: parsed.rawObjectDescription || parsed.intention,
-                    timestamp: record.timestamp,
-                    sourceMessageId: record.messageId,
-                    status: 'available'
-                  }
-                  newEchoTriplets.push(echoTriplet)
+                  return
                 }
+                
+                // Créer un nouveau triplet en statut 'available'
+                const echoTriplet: EchoTriplet = {
+                  id: tripletId,
+                  triplet: {
+                    subject: triplet.subject,
+                    predicate: triplet.predicate,
+                    object: triplet.object
+                  },
+                  url: parsed.rawObjectUrl || '',
+                  description: parsed.rawObjectDescription || parsed.intention,
+                  timestamp: record.timestamp,
+                  sourceMessageId: record.messageId,
+                  status: 'available'
+                }
+                newEchoTriplets.push(echoTriplet)
               })
               
               console.log(`✅ EchoesTab: Processed ${parsed.triplets.length} triplets from message ${record.messageId}`)
@@ -185,19 +200,13 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         }
       )
 
-      // Marquer comme publié avec toutes les infos blockchain
-      setEchoTriplets(prev => 
-        prev.map(t => t.id === tripletId ? { 
-          ...t, 
-          status: 'published' as const,
-          tripleVaultId: result.tripleVaultId,
-          subjectVaultId: result.subjectVaultId,
-          predicateVaultId: result.predicateVaultId,
-          objectVaultId: result.objectVaultId,
-          txHash: result.txHash,
-          onChainStatus: result.source
-        } : t)
-      )
+      // Ajouter à la liste noire pour empêcher la recréation
+      await elizaDataService.addPublishedTripletId(tripletId)
+      
+      // Supprimer de l'affichage local
+      const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
+      setEchoTriplets(updatedTriplets)
+      await elizaDataService.storeTripletStates(updatedTriplets)
 
       console.log(`✅ EchoesTab: Triplet ${tripletId} published successfully!`, result)
       
@@ -284,9 +293,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     setIsSelectAll(false)
   }
 
-  // Statistiques des triplets (simplifiées)
+  // Statistiques des triplets (seulement disponibles)
   const availableCount = echoTriplets.filter(t => t.status === 'available').length
-  const publishedCount = echoTriplets.filter(t => t.status === 'published').length
 
   if (isLoadingEliza) {
     return (
@@ -300,16 +308,32 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   
   return (
     <div className="triples-container">
+      {/* Contract Debug - TEMPORARY */}
+      <div style={{padding: '10px', border: '1px solid orange', margin: '10px 0', borderRadius: '5px'}}>
+        <button 
+          onClick={testContract}
+          disabled={isTestLoading}
+          style={{padding: '5px 10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '3px'}}
+        >
+          {isTestLoading ? 'Testing...' : '🧪 Test Contract'}
+        </button>
+        {testResults.length > 0 && (
+          <div style={{marginTop: '10px', fontSize: '12px'}}>
+            {testResults.map((result, i) => (
+              <div key={i} style={{color: result.includes('✅') ? 'green' : 'red'}}>
+                {result}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Stats */}
       {echoTriplets.length > 0 && (
         <div className="signals-stats">
           <div className="stat-item">
             <span className="stat-number stat-atom-only">{availableCount}</span>
-            <span className="stat-label">Available</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number stat-existing">{publishedCount}</span>
-            <span className="stat-label">Published</span>
+            <span className="stat-label">Available Echoes</span>
           </div>
         </div>
       )}
@@ -434,73 +458,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         </div>
       )}
 
-      {/* Liste des triplets publiés */}
-      {publishedCount > 0 && (
-        <div style={{ marginBottom: '20px' }}>
-          <h4>✅ Published ({publishedCount})</h4>
-          {echoTriplets
-            .filter(t => t.status === 'published')
-            .sort((a, b) => b.timestamp - a.timestamp)
-            .map((tripletItem, index) => {
-              const isExpanded = expandedTriplet?.msgIndex === 2 && expandedTriplet?.tripletIndex === index
-
-              return (
-                <div key={tripletItem.id} className="echo-card border-blue">
-                  <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
-                    <p
-                      className="triplet-text clickable"
-                      onClick={() => {
-                        setExpandedTriplet(isExpanded ? null : { msgIndex: 2, tripletIndex: index })
-                      }}
-                    >
-                      <span className="subject">{tripletItem.triplet.subject}</span>{' '}
-                      <span className="action">{tripletItem.triplet.predicate}</span>{' '}
-                      <span className="object">{tripletItem.triplet.object}</span>
-                    </p>
-
-                    <div className="triplet-header">
-                      <div className="signal-actions">
-                        <QuickActionButton
-                          action="scan"
-                          onClick={() => handleViewOnExplorer(tripletItem.txHash, tripletItem.tripleVaultId)}
-                        />
-                      </div>
-                    </div>
-
-                    {isExpanded && (
-                      <div className="triplet-details">
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">⛓️ Blockchain</h4>
-                          <p className="triplet-detail-name">Triple VaultID: {tripletItem.tripleVaultId}</p>
-                          <p className="triplet-detail-name">Subject VaultID: {tripletItem.subjectVaultId}</p>
-                          <p className="triplet-detail-name">Predicate VaultID: {tripletItem.predicateVaultId}</p>
-                          <p className="triplet-detail-name">Object VaultID: {tripletItem.objectVaultId}</p>
-                          {tripletItem.txHash && (
-                            <p className="triplet-detail-name">
-                              TX: {tripletItem.txHash.slice(0, 10)}...{tripletItem.txHash.slice(-8)}
-                            </p>
-                          )}
-                          <p className="triplet-detail-name">
-                            Status: ⛓️ Published on-chain
-                          </p>
-                        </div>
-
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">🌐 Source</h4>
-                          <p className="triplet-detail-name">{tripletItem.url}</p>
-                          <p className="triplet-detail-timestamp">
-                            {new Date(tripletItem.timestamp).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })
-          }
-        </div>
-      )}
 
       {/* États vides */}
       {echoTriplets.length === 0 ? (
@@ -510,18 +467,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             Your triplets will appear automatically when you receive messages
           </p>
         </div>
-      ) : availableCount === 0 && publishedCount === 0 ? (
-        <div className="empty-state">
-          <p>All your triplets are processed!</p>
-          <p className="empty-subtext">
-            Navigate to new pages to generate more triplets
-          </p>
-        </div>
       ) : availableCount === 0 ? (
         <div className="empty-state">
-          <p>All triplets are published!</p>
+          <p>All echoes have been amplified!</p>
           <p className="empty-subtext">
-            Check the Signals tab to view all your published triplets
+            Check the Signals tab to view your published triplets
           </p>
         </div>
       ) : null}

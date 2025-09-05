@@ -1,11 +1,24 @@
-import { base, baseSepolia } from "viem/chains"
+import { defineChain } from "viem"
 
-const CURRENT_ENV = process.env.NODE_ENV
+// Définir le testnet Intuition avec le vrai chainId
+export const intuitionTestnet = defineChain({
+  id: 13579, // Vrai chainId d'Intuition testnet
+  name: 'Intuition Testnet',
+  network: 'intuition-testnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    public: { http: ['https://testnet.rpc.intuition.systems'] },
+    default: { http: ['https://testnet.rpc.intuition.systems'] },
+  },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://testnet.intuition.systems' },
+  },
+})
 
-export const IS_DEV = CURRENT_ENV !== "production"
-
-export const SELECTED_CHAIN = baseSepolia // Force Base Sepolia pour les tests
-
+export const SELECTED_CHAIN = intuitionTestnet
 export const DEFAULT_CHAIN_ID = SELECTED_CHAIN.id.toString()
-
-export const MULTIVAULT_CONTRACT_ADDRESS = "0x1A6950807E33d5bC9975067e6D6b5Ea4cD661665" // Force Base Sepolia
+export const MULTIVAULT_CONTRACT_ADDRESS = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
