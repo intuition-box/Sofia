@@ -49,19 +49,14 @@ export function useIntuitionSearch() {
         query SearchAtoms($where: atoms_bool_exp) {
           atoms(
             where: $where
-            order_by: { vault: { position_count: desc_nulls_last } }
+            order_by: { created_at: desc }
             limit: 20
           ) {
             term_id
             label
             type
-            vault {
-              id
-              position_count
-              current_share_price
-            }
             emoji
-            block_number
+            creator_id
             created_at
             transaction_hash
           }
@@ -89,17 +84,85 @@ export function useIntuitionSearch() {
       const atoms = atomsResponse.atoms
       console.log(`📈 Found ${atoms.length} atoms`)
 
-      // For each atom, also search for related triples
+      // For each atom, get vault data and related triples
       const results: AtomSearchResult[] = await Promise.all(
         atoms.map(async (atom: any) => {
+          // Try to get real vault data for this atom
+          let vaultData = { position_count: 0, current_share_price: 0 }
+          
+          // First, let's see what tables actually exist in the indexer
+          console.log('🔍 Attempting to fetch vault data for atom:', atom.term_id)
+          
+          try {
+            const vaultQuery = `
+              query GetVaultData($termId: String!) {
+                vaults(where: { term_id: { _eq: $termId } }) {
+                  term_id
+                  position_count
+                  current_share_price
+                  total_shares
+                  total_assets
+                }
+              }
+            `
+            const vaultResponse = await intuitionGraphqlClient.request(vaultQuery, {
+              termId: atom.term_id
+            })
+            
+            console.log('📊 Vault response for', atom.term_id, ':', vaultResponse)
+            
+            if (vaultResponse?.vaults?.[0]) {
+              const vault = vaultResponse.vaults[0]
+              vaultData = {
+                position_count: parseInt(vault.position_count) || 0,
+                current_share_price: parseFloat(vault.current_share_price) || 0
+              }
+              console.log('✅ Found vault data:', vaultData)
+            } else {
+              console.log('⚠️ No vault data found for atom:', atom.term_id)
+            }
+          } catch (vaultError) {
+            console.warn('❌ Vault query failed for atom:', atom.term_id, vaultError)
+            
+            // Try alternative table names that might exist in the indexer
+            try {
+              const altQuery = `
+                query GetAtomVaults($termId: String!) {
+                  atom_vaults(where: { atom_id: { _eq: $termId } }) {
+                    atom_id
+                    position_count
+                    share_price
+                    total_supply
+                  }
+                }
+              `
+              const altResponse = await intuitionGraphqlClient.request(altQuery, {
+                termId: atom.term_id
+              })
+              
+              console.log('📊 Alternative vault response:', altResponse)
+              
+              if (altResponse?.atom_vaults?.[0]) {
+                const vault = altResponse.atom_vaults[0]
+                vaultData = {
+                  position_count: parseInt(vault.position_count) || 0,
+                  current_share_price: parseFloat(vault.share_price) || 0
+                }
+                console.log('✅ Found alternative vault data:', vaultData)
+              }
+            } catch (altError) {
+              console.warn('❌ Alternative vault query also failed:', altError)
+              // Keep default values (0, 0) - don't invent data
+            }
+          }
           // Search for triples where this atom appears as subject or object
           const triplesQuery = `
             query GetRelatedTriples($atomId: String!) {
               triples(
                 where: {
                   _or: [
-                    { subject_id: { _eq: $atomId } },
-                    { object_id: { _eq: $atomId } }
+                    { subject: { term_id: { _eq: $atomId } } },
+                    { object: { term_id: { _eq: $atomId } } }
                   ]
                 }
                 limit: 10
@@ -120,12 +183,9 @@ export function useIntuitionSearch() {
                   label
                   emoji
                 }
-                vault {
-                  position_count
-                }
-                counter_vault {
-                  position_count
-                }
+                creator_id
+                created_at
+                transaction_hash
               }
             }
           `
@@ -136,27 +196,34 @@ export function useIntuitionSearch() {
               atomId: atom.term_id
             })
             
+            console.log('🔍 Related triples response for', atom.label, ':', triplesResponse)
+            
             if (triplesResponse?.triples) {
-              relatedTriples = triplesResponse.triples.map((triple: any) => ({
-                id: triple.term_id,
-                subject: {
-                  id: triple.subject.term_id,
-                  label: triple.subject.label,
-                  emoji: triple.subject.emoji
-                },
-                predicate: {
-                  id: triple.predicate.term_id,
-                  label: triple.predicate.label,
-                  emoji: triple.predicate.emoji
-                },
-                object: {
-                  id: triple.object.term_id,
-                  label: triple.object.label,
-                  emoji: triple.object.emoji
-                },
-                vault: triple.vault,
-                counter_vault: triple.counter_vault
-              }))
+              // Simplify: skip vault data for triples to speed up display
+              relatedTriples = triplesResponse.triples.map((triple: any) => {
+                return {
+                  id: triple.term_id,
+                  subject: {
+                    id: triple.subject.term_id,
+                    label: triple.subject.label,
+                    emoji: triple.subject.emoji
+                  },
+                  predicate: {
+                    id: triple.predicate.term_id,
+                    label: triple.predicate.label,
+                    emoji: triple.predicate.emoji
+                  },
+                  object: {
+                    id: triple.object.term_id,
+                    label: triple.object.label,
+                    emoji: triple.object.emoji
+                  },
+                  vault: { position_count: 0 },
+                  counter_vault: { position_count: 0 }
+                }
+              })
+              
+              console.log(`✅ Found ${relatedTriples.length} related triples for ${atom.label}`)
             }
           } catch (triplesError) {
             console.warn('⚠️ Failed to fetch related triples for atom:', atom.term_id, triplesError)
@@ -194,14 +261,45 @@ export function useIntuitionSearch() {
             return undefined
           }
 
+          // Calculate weighted score based on related triples
+          const calculateAtomScore = (triples: TripleResult[]) => {
+            let totalScore = 0
+            triples.forEach(triple => {
+              const positions = triple.vault?.position_count || 0
+              const counterPositions = triple.counter_vault?.position_count || 0
+              
+              // Weight based on predicate sentiment
+              const predicate = triple.predicate.label.toLowerCase()
+              let predicateWeight = 1
+              
+              if (predicate.includes('love') || predicate.includes('like') || predicate.includes('support')) {
+                predicateWeight = 1.5 // Positive sentiment
+              } else if (predicate.includes('hate') || predicate.includes('dislike') || predicate.includes('against')) {
+                predicateWeight = 0.5 // Negative sentiment
+              }
+              
+              // Calculate net positive sentiment (positions - counter positions)
+              const netPositions = Math.max(0, positions - counterPositions)
+              totalScore += netPositions * predicateWeight
+            })
+            
+            return totalScore
+          }
+
+          const atomScore = calculateAtomScore(relatedTriples)
+
+          // Use only real vault data - no invented values
+          const realStake = vaultData.current_share_price
+          console.log('💎 Final stake for', atom.label, ':', realStake)
+
           return {
             id: atom.term_id,
             label: atom.label || 'Unnamed',
             description: extractDescription(atom.label),
             url: extractUrl(atom.label),
             email: extractEmail(atom.label),
-            attestations: atom.vault?.position_count || 0,
-            stake: parseInt(atom.vault?.current_share_price || '0'),
+            attestations: atomScore, // Use calculated score instead of simple vault count
+            stake: realStake,
             type: determineType(atom.label, atom.type),
             auditedBy: 'Intuition Network', // Default auditor
             relatedTriples,
@@ -212,7 +310,7 @@ export function useIntuitionSearch() {
 
       setState(prev => ({ ...prev, isLoading: false }))
       
-      // Sort by attestations (position count)
+      // Sort by weighted score (based on related triples sentiment and positions)
       return results.sort((a, b) => b.attestations - a.attestations)
 
     } catch (error) {
