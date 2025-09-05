@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/indexedDB-methods'
 import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
-import { useContractTest } from '../../../hooks/useContractTest'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
@@ -57,9 +56,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   // Hook blockchain pour la création (utilise les autres hooks en interne)
   const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
-  
-  // Hook de test pour debug
-  const { testContract, isLoading: isTestLoading, results: testResults } = useContractTest()
 
   // Charger les états sauvegardés puis traiter les messages
   useEffect(() => {
@@ -307,25 +303,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   
   return (
     <div className="triples-container">
-      {/* Contract Debug - TEMPORARY */}
-      <div style={{padding: '10px', border: '1px solid orange', margin: '10px 0', borderRadius: '5px'}}>
-        <button 
-          onClick={testContract}
-          disabled={isTestLoading}
-          style={{padding: '5px 10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '3px'}}
-        >
-          {isTestLoading ? 'Testing...' : '🧪 Test Contract'}
-        </button>
-        {testResults.length > 0 && (
-          <div style={{marginTop: '10px', fontSize: '12px'}}>
-            {testResults.map((result, i) => (
-              <div key={i} style={{color: result.includes('✅') ? 'green' : 'red'}}>
-                {result}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Stats */}
       {echoTriplets.length > 0 && (
