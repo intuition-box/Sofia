@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useIntuitionTriplets, type IntuitionTriplet } from '../../../hooks/useIntuitionTriplets'
+import { useExplorerTriplets, type ExplorerTriplet } from '../../../hooks/useExplorerTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
+import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
 
@@ -10,16 +11,15 @@ interface SignalsTabProps {
 }
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
-  const { triplets, isLoading, error, refreshFromAPI } = useIntuitionTriplets()
+  const { triplets, isLoading, error, refreshFromExplorer } = useExplorerTriplets()
+  const [address] = useStorage<string>("metamask-account")
   
-  // Afficher tous les triplets depuis l'API Intuition testnet
+  // Afficher tous les triplets depuis l'Explorer API
   const publishedTriplets = triplets.sort((a, b) => b.timestamp - a.timestamp)
   
   const publishedCounts = {
     total: publishedTriplets.length,
-    created: publishedTriplets.filter(t => t.source === 'created').length,
-    existing: publishedTriplets.filter(t => t.source === 'existing').length,
-    intuition: publishedTriplets.filter(t => t.source === 'intuition_api').length,
+    explorer: publishedTriplets.filter(t => t.source === 'explorer_api').length,
   }
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
@@ -44,11 +44,27 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       : 'border-blue'
   }
 
+  if (!address) {
+    return (
+      <div className="triples-container">
+        <div className="empty-state">
+          <p>🔌 Connect your wallet</p>
+          <p className="empty-subtext">
+            Connect your MetaMask wallet to view your on-chain triplets
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>🔄 Loading triplets from Intuition testnet...</p>
+          <p>🔄 Loading triplets from Explorer API...</p>
+          <p className="empty-subtext">
+            Wallet: {address.slice(0, 6)}...{address.slice(-4)}
+          </p>
         </div>
       </div>
     )
@@ -58,9 +74,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>❌ Error connecting to Intuition testnet</p>
+          <p>❌ Error connecting to Explorer API</p>
           <p className="empty-subtext">{error}</p>
-          <button onClick={refreshFromAPI} className="retry-button">
+          <button onClick={refreshFromExplorer} className="retry-button">
             🔄 Retry Connection
           </button>
         </div>
@@ -72,7 +88,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     <div className="triples-container">
       {/* Dashboard header */}
       <div className="dashboard-header">
-        <p>Dashboard of your Signals already published on blockchain</p>
+        <p>Your Signals published on Intuition Testnet</p>
+        <p className="empty-subtext">
+          Wallet: {address.slice(0, 6)}...{address.slice(-4)} • Real-time from Explorer API
+        </p>
+        <button onClick={refreshFromExplorer} className="refresh-button">
+          🔄 Refresh from Explorer
+        </button>
       </div>
 
       {/* Stats header */}
@@ -83,12 +105,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
             <span className="stat-label">Total Published</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number stat-created">{publishedCounts.created}</span>
-            <span className="stat-label">Created</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number stat-existing">{publishedCounts.existing}</span>
-            <span className="stat-label">Existing</span>
+            <span className="stat-number stat-created">{publishedCounts.explorer}</span>
+            <span className="stat-label">From Explorer</span>
           </div>
         </div>
       )}
@@ -98,7 +116,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
           return (
-            <div key={tripletItem.id} className={`echo-card ${getBorderStyle(tripletItem.source)}`}>
+            <div key={tripletItem.id} className={`echo-card border-green`}>
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
                 
                 {/* Header avec badges et actions */}
@@ -144,41 +162,35 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">⛓️ Blockchain</h4>
-                      <p className="triplet-detail-name">Object VaultID: {tripletItem.atomVaultId}</p>
+                      {tripletItem.atomVaultId && (
+                        <p className="triplet-detail-name">Object VaultID: {tripletItem.atomVaultId.slice(0, 10)}...{tripletItem.atomVaultId.slice(-8)}</p>
+                      )}
                       {tripletItem.tripleVaultId && (
                         <p className="triplet-detail-name">Triple VaultID: {tripletItem.tripleVaultId}</p>
                       )}
                       {tripletItem.subjectVaultId && (
-                        <p className="triplet-detail-name">Subject VaultID: {tripletItem.subjectVaultId}</p>
+                        <p className="triplet-detail-name">Subject VaultID: {tripletItem.subjectVaultId.slice(0, 10)}...{tripletItem.subjectVaultId.slice(-8)}</p>
                       )}
                       {tripletItem.predicateVaultId && (
-                        <p className="triplet-detail-name">Predicate VaultID: {tripletItem.predicateVaultId}</p>
-                      )}
-                      {tripletItem.txHash && (
-                        <p className="triplet-detail-name">
-                          TX: {tripletItem.txHash.slice(0, 10)}...{tripletItem.txHash.slice(-8)}
-                        </p>
-                      )}
-                      {tripletItem.ipfsUri && (
-                        <p className="triplet-detail-name">
-                          📦 IPFS: {tripletItem.ipfsUri.slice(0, 20)}...
-                        </p>
+                        <p className="triplet-detail-name">Predicate VaultID: {tripletItem.predicateVaultId.slice(0, 10)}...{tripletItem.predicateVaultId.slice(-8)}</p>
                       )}
                       <p className="triplet-detail-name">
-                        Status: {tripletItem.tripleStatus === 'on-chain' ? '⛓️ On-Chain' : '🔗 Atom Only'}
+                        TX: {tripletItem.txHash.slice(0, 10)}...{tripletItem.txHash.slice(-8)}
                       </p>
+                      <p className="triplet-detail-name">Block: {tripletItem.blockNumber}</p>
+                      <p className="triplet-detail-name">Status: ⛓️ On-Chain (Explorer API)</p>
                     </div>
 
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">🌐 Source</h4>
                       <p className="triplet-detail-name">
-                        {tripletItem.url || 'Intuition Testnet API'}
+                        Intuition Explorer API (Real-time)
                       </p>
                       <p className="triplet-detail-timestamp">
                         {new Date(tripletItem.timestamp).toLocaleString()}
                       </p>
                       <p className="triplet-detail-name">
-                        Creator: {tripletItem.subjectVaultId?.slice(0, 8)}...{tripletItem.subjectVaultId?.slice(-6)}
+                        Creator: {address.slice(0, 8)}...{address.slice(-6)}
                       </p>
                     </div>
                   </div>
@@ -189,13 +201,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         })
       ) : (
         <div className="empty-state">
-          <p>📡 Connected to Intuition testnet</p>
+          <p>📡 Connected to Intuition Explorer API</p>
           <p className="empty-subtext">
-            No triplets found on the Intuition blockchain yet.<br/>
-            Create some triplets in Echoes tab to see them appear here after publishing!
+            No triplets found for wallet {address.slice(0, 6)}...{address.slice(-4)}<br/>
+            Create some triplets in Echoes tab to see them appear here immediately!
           </p>
-          <button onClick={refreshFromAPI} className="refresh-button">
-            🔄 Refresh from API
+          <button onClick={refreshFromExplorer} className="refresh-button">
+            🔄 Refresh from Explorer
           </button>
         </div>
       )}
