@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/indexedDB-methods'
-import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
+import { useCreateTripleOnChain, type BatchTripleInput } from '../../../hooks/useCreateTripleOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
@@ -55,7 +55,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   } = useElizaData({ autoRefresh: true, refreshInterval: 5000 })
 
   // Hook blockchain pour la création (utilise les autres hooks en interne)
-  const { createTripleOnChain, isCreating, currentStep } = useCreateTripleOnChain()
+  const { createTripleOnChain, createTriplesBatch, isCreating, currentStep } = useCreateTripleOnChain()
 
   // Charger les états sauvegardés puis traiter les messages
   useEffect(() => {
@@ -268,11 +268,79 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
     
-    for (const triplet of selectedTriplets) {
+    if (selectedTriplets.length === 1) {
+      // Single triplet - use existing individual method
       try {
-        await publishTriplet(triplet.id)
+        await publishTriplet(selectedTriplets[0].id)
       } catch (error) {
-        console.error(`Failed to publish triplet ${triplet.id}:`, error)
+        console.error(`Failed to publish triplet ${selectedTriplets[0].id}:`, error)
+      }
+    } else if (selectedTriplets.length > 1) {
+      // Multiple triplets - use batch method
+      setIsProcessing(true)
+      
+      try {
+        console.log(`🔗 Starting batch publication of ${selectedTriplets.length} triplets`)
+        
+        // Prepare batch input
+        const batchInput = selectedTriplets.map(triplet => ({
+          predicateName: triplet.triplet.predicate,
+          objectData: {
+            name: triplet.triplet.object,
+            description: triplet.description,
+            url: triplet.url
+          }
+        }))
+        
+        const result = await createTriplesBatch(batchInput)
+        
+        if (result.success) {
+          console.log('✅ Batch publication successful!', {
+            created: result.results.filter(r => r.source === 'created').length,
+            existing: result.results.filter(r => r.source === 'existing').length,
+            failed: result.failedTriples.length,
+            txHash: result.txHash
+          })
+          
+          // Add all selected triplets to blacklist
+          for (const triplet of selectedTriplets) {
+            await elizaDataService.addPublishedTripletId(triplet.id)
+          }
+          
+          // Show summary alert
+          const createdCount = result.results.filter(r => r.source === 'created').length
+          const existingCount = result.results.filter(r => r.source === 'existing').length
+          
+          if (existingCount > 0) {
+            alert(`✅ Batch complete!
+Created: ${createdCount} new triplets
+Already existed: ${existingCount} triplets
+${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.slice(-8)}` : ''}
+
+All triplets removed from your pending list.`)
+          } else {
+            alert(`✅ Batch successful!
+Created: ${createdCount} triplets in single transaction
+${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.slice(-8)}` : ''}`)
+          }
+          
+          // Remove all selected triplets from local display
+          const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
+          setEchoTriplets(updatedTriplets)
+          await elizaDataService.storeTripletStates(updatedTriplets)
+          
+        } else {
+          console.error('❌ Batch publication had failures:', result.failedTriples)
+          alert(`❌ Batch completed with some errors:
+${result.failedTriples.length} triplets failed
+Check console for details`)
+        }
+        
+      } catch (error) {
+        console.error('❌ Batch publication failed:', error)
+        alert(`❌ Batch publication failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      } finally {
+        setIsProcessing(false)
       }
     }
     
