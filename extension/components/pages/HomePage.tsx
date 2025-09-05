@@ -4,7 +4,6 @@ import welcomeImage from '../ui/icons/Welcome.png'
 import '../styles/HomePage.css'
 
 const HomePage = () => {
-  const [termsAccepted, setTermsAccepted] = useState(false)
 
   return (
     <div className="home-page">
@@ -28,22 +27,12 @@ const HomePage = () => {
         <p className="description-paragraph">
           By combining personal history and decentralized certification via Intuition Systems, SofIA Validation facts in the form of attested triplets, to provide reliable and verifiable recommendations.
         </p>
+
+        <p className="description-paragraph terms-text">For more details, please read and accept the <a href="../../docs/terms-and-conditions.md" target="_blank" rel="noopener noreferrer"><strong>Terms and Conditions</strong></a>.</p>
       </div>
 
       <div className="connect-section">
-        <WalletConnectionButton disabled={!termsAccepted} />
-      </div>
-
-      <div className="terms-section">
-        <label className="terms-checkbox">
-          <input
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={(e) => setTermsAccepted(e.target.checked)}
-          />
-          <span className="checkmark"></span>
-          <span className="terms-text">I have read and accept the Terms and Conditions.</span>
-        </label>
+        <WalletConnectionButton />
       </div>
     </div>
   )

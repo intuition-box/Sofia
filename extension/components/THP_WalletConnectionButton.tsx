@@ -1,8 +1,9 @@
 import React from "react"
-import { Button } from "~components/ui/button"
 import { connectWallet, disconnectWallet } from "../lib/metamask"
 import { useStorage } from "@plasmohq/storage/hook"
-import { PowerOff } from 'lucide-react';
+import { PowerOff } from 'lucide-react'
+import connectButton from './ui/icons/ConnectButton.png'
+import connectButtonHover from './ui/icons/ConnectButtonHover.png'
 
 interface WalletConnectionButtonProps {
   disabled?: boolean;
@@ -11,6 +12,7 @@ interface WalletConnectionButtonProps {
 const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProps) => {
   const [account, setAccount] = useStorage<string>("metamask-account")
   const [isDisconnectHovered, setIsDisconnectHovered] = React.useState(false)
+  const [isConnectHovered, setIsConnectHovered] = React.useState(false)
 
   const handleConnect = async () => {
     if (disabled) return;
@@ -30,13 +32,12 @@ const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProp
 
   const disconnectButtonStyle = {
     padding: '4px',
-    color: '#6c757d',
     backgroundColor: 'transparent',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    transform: isDisconnectHovered ? 'scale(1.1)' : 'scale(1)'
+    transition: 'color 0.2s ease',
+    color: isDisconnectHovered ? '#dc3545' : '#6c757d'
   }
 
   const iconStyle = {
@@ -47,13 +48,21 @@ const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProp
   return (
     <div>
       {!account ? (
-        <Button 
-          variant="successOutline" 
+        <img
+          src={isConnectHovered && !disabled ? connectButtonHover : connectButton}
+          alt="Connect your Wallet"
           onClick={handleConnect}
-          disabled={disabled}
-        >
-          Connect your Wallet
-        </Button>
+          onMouseEnter={() => !disabled && setIsConnectHovered(true)}
+          onMouseLeave={() => setIsConnectHovered(false)}
+          style={{
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            opacity: disabled ? 0.5 : 1,
+            width: '350px',
+            height: 'auto',
+            objectFit: 'cover',
+            filter: isConnectHovered && !disabled ? 'drop-shadow(0 0 20px rgba(242, 213, 124, 0.4)) drop-shadow(0 0 20px rgba(213, 223, 136, 0.4)) drop-shadow(0 0 20px rgba(251, 110, 58, 0.4)) drop-shadow(0 0 20px rgba(208, 74, 164, 0.4))' : 'none'
+          }}
+        />
       ) : (
         <div>
           <button

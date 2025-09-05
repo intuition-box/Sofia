@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import logoIcon from '../../assets/iconcolored.png'
+import logoIcon from '../../assets/icon.png'
 import HomeIcon from '../../assets/Icon=home.svg'
 import '../styles/ChatPage.css'
 import { sendMessageToChatbotSocket, initializeChatbotSocket } from '../../background/websocket'

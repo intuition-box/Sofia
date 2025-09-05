@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTracking } from '../../hooks/useTracking'
 import { useRouter } from '../layout/RouterProvider'
-import logoIcon from '../../assets/iconcolored.png'
+import logoIcon from '../../assets/icon.png'
 import thumbsUpIcon from '../ui/icons/Thumbs up.png'
 import toggleTrue from '../ui/icons/button=True.png'
 import toggleFalse from '../ui/icons/button=False.png'
@@ -60,16 +60,6 @@ const HomeConnectedPage = () => {
             src={isTrackingEnabled ? toggleTrue : toggleFalse}
             alt={isTrackingEnabled ? "Enabled" : "Disabled"}
             className="toggle-icon"
-          />
-        </button>
-        <button
-          onClick={() => navigateTo('recommendations')}
-          className="floating-button"
-        >
-          <img
-            src={thumbsUpIcon}
-            alt="Recommendations"
-            className="floating-icon"
           />
         </button>
       </div>
