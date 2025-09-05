@@ -76,23 +76,40 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
       console.log('  - Original (MetaMask):', account)
       console.log('  - Uppercase:', upperAccount)
       
-      // Essayer avec l'opérateur _in pour tester plusieurs formats
+      // Query simplifiée qui correspond exactement à celle de l'explorateur
       const triplesQuery = `
-        query GetUserTriples {
-          triples(where: {creator_id: {_in: ["${normalizedAccount}", "${checksumAccount}", "${account}", "${upperAccount}"]}}, limit: 50, order_by: {created_at: desc}) {
-            term_id
-            subject_id
-            predicate_id
-            object_id
+        query Object($where: triples_bool_exp) {
+          triples(where: $where) {
+            subject {
+              label
+              term_id
+            }
+            predicate {
+              label
+              term_id
+            }
+            object {
+              label
+              term_id
+            }
             creator_id
+            term_id
             created_at
             transaction_hash
-            block_number
           }
         }
       `
       
-      const triplesResponse = await intuitionGraphqlClient.request(triplesQuery)
+      // Utiliser l'adresse du wallet connecté dans l'app
+      const queryVariables = {
+        where: {
+          creator_id: {
+            _eq: account
+          }
+        }
+      }
+      
+      const triplesResponse = await intuitionGraphqlClient.request(triplesQuery, queryVariables)
       console.log('📊 [useIntuitionTriplets] Raw triples response:', triplesResponse)
       
       if (!triplesResponse?.triples) {
@@ -110,56 +127,15 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
         return
       }
 
-      // Collecter tous les IDs uniques pour une seule requête
-      const allIds = new Set<string>()
-      triples.forEach(triple => {
-        allIds.add(triple.subject_id)
-        allIds.add(triple.predicate_id) 
-        allIds.add(triple.object_id)
-      })
+      // Plus besoin de requêtes séparées, les labels sont déjà dans la réponse
+      console.log(`🏷️ [useIntuitionTriplets] Processing ${triples.length} triples with embedded labels`)
 
-      const uniqueIds = Array.from(allIds)
-      console.log(`🔍 [useIntuitionTriplets] Looking up ${uniqueIds.length} unique atom IDs`)
-
-      // Requête batch pour tous les termes
-      const termsQuery = `
-        query GetTerms {
-          terms(where: {id: {_in: [${uniqueIds.map(id => `"${id}"`).join(',')}]}}) {
-            id
-            atom {
-              label
-            }
-          }
-        }
-      `
-
-      const termsResponse = await intuitionGraphqlClient.request(termsQuery)
-      console.log('🏷️ [useIntuitionTriplets] Terms response:', termsResponse)
-
-      if (!termsResponse?.terms) {
-        console.log('❌ [useIntuitionTriplets] No terms found in response')
-        setTriplets([])
-        return
-      }
-
-      // Créer un map pour lookup rapide
-      const termsMap = new Map()
-      termsResponse.terms.forEach(term => {
-        termsMap.set(term.id, term)
-      })
-
-      console.log(`🗂️ [useIntuitionTriplets] Created terms map with ${termsMap.size} entries`)
-
-      // Mapper les triplets avec les labels d'atomes
+      // Mapper les triplets avec les labels déjà disponibles
       const mappedTriplets: IntuitionTriplet[] = triples.map((triple, index) => {
-        const subjectTerm = termsMap.get(triple.subject_id)
-        const predicateTerm = termsMap.get(triple.predicate_id)
-        const objectTerm = termsMap.get(triple.object_id)
-
         console.log(`🔗 [useIntuitionTriplets] Mapping triple ${index + 1}:`, {
-          subject: `${triple.subject_id} -> ${subjectTerm?.atom?.label || 'Unknown'}`,
-          predicate: `${triple.predicate_id} -> ${predicateTerm?.atom?.label || 'Unknown'}`,
-          object: `${triple.object_id} -> ${objectTerm?.atom?.label || 'Unknown'}`
+          subject: `${triple.subject.term_id} -> ${triple.subject.label}`,
+          predicate: `${triple.predicate.term_id} -> ${triple.predicate.label}`,
+          object: `${triple.object.term_id} -> ${triple.object.label}`
         })
 
         // Convertir created_at en timestamp
@@ -168,20 +144,20 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
         const resolvedTriplet: IntuitionTriplet = {
           id: triple.term_id,
           triplet: {
-            subject: subjectTerm?.atom?.label || 'Unknown',
-            predicate: predicateTerm?.atom?.label || 'Unknown', 
-            object: objectTerm?.atom?.label || 'Unknown'
+            subject: triple.subject.label || 'Unknown',
+            predicate: triple.predicate.label || 'Unknown', 
+            object: triple.object.label || 'Unknown'
           },
           url: `https://testnet.explorer.intuition.systems/tx/${triple.transaction_hash}`,
-          description: `${subjectTerm?.atom?.label || 'Unknown'} ${predicateTerm?.atom?.label || 'Unknown'} ${objectTerm?.atom?.label || 'Unknown'}`,
+          description: `${triple.subject.label || 'Unknown'} ${triple.predicate.label || 'Unknown'} ${triple.object.label || 'Unknown'}`,
           timestamp: timestamp,
           source: 'intuition_api' as const,
           confidence: 0.95,
           txHash: triple.transaction_hash,
           tripleVaultId: triple.term_id,
-          subjectVaultId: triple.subject_id,
-          predicateVaultId: triple.predicate_id,
-          atomVaultId: triple.object_id,
+          subjectVaultId: triple.subject.term_id,
+          predicateVaultId: triple.predicate.term_id,
+          atomVaultId: triple.object.term_id,
           tripleStatus: 'on-chain' as const
         }
 

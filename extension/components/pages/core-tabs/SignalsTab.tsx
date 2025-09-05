@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useExplorerTriplets, type ExplorerTriplet } from '../../../hooks/useExplorerTriplets'
+import { useIntuitionTriplets, type IntuitionTriplet } from '../../../hooks/useIntuitionTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
 import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/AtomCreationModal.css'
@@ -11,15 +11,15 @@ interface SignalsTabProps {
 }
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
-  const { triplets, isLoading, error, refreshFromExplorer } = useExplorerTriplets()
+  const { triplets, isLoading, error, refreshFromAPI } = useIntuitionTriplets()
   const [address] = useStorage<string>("metamask-account")
   
-  // Afficher tous les triplets depuis l'Explorer API
+  // Afficher tous les triplets depuis l'API GraphQL Intuition
   const publishedTriplets = triplets.sort((a, b) => b.timestamp - a.timestamp)
   
   const publishedCounts = {
     total: publishedTriplets.length,
-    explorer: publishedTriplets.filter(t => t.source === 'explorer_api').length,
+    intuition: publishedTriplets.filter(t => t.source === 'intuition_api').length,
   }
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
@@ -61,7 +61,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>🔄 Loading triplets from Explorer API...</p>
+          <p>🔄 Loading triplets from GraphQL API...</p>
           <p className="empty-subtext">
             Wallet: {address.slice(0, 6)}...{address.slice(-4)}
           </p>
@@ -74,9 +74,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>❌ Error connecting to Explorer API</p>
+          <p>❌ Error connecting to GraphQL API</p>
           <p className="empty-subtext">{error}</p>
-          <button onClick={refreshFromExplorer} className="retry-button">
+          <button onClick={refreshFromAPI} className="retry-button">
             🔄 Retry Connection
           </button>
         </div>
@@ -86,16 +86,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
   return (
     <div className="triples-container">
-      {/* Dashboard header */}
-      <div className="dashboard-header">
-        <p>Your Signals published on Intuition Testnet</p>
-        <p className="empty-subtext">
-          Wallet: {address.slice(0, 6)}...{address.slice(-4)} • Real-time from Explorer API
-        </p>
-        <button onClick={refreshFromExplorer} className="refresh-button">
-          🔄 Refresh from Explorer
-        </button>
-      </div>
 
       {/* Stats header */}
       {publishedCounts.total > 0 && (
@@ -105,8 +95,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
             <span className="stat-label">Total Published</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number stat-created">{publishedCounts.explorer}</span>
-            <span className="stat-label">From Explorer</span>
+            <span className="stat-number stat-created">{publishedCounts.intuition}</span>
+            <span className="stat-label">From GraphQL API</span>
           </div>
         </div>
       )}
@@ -178,13 +168,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                         TX: {tripletItem.txHash.slice(0, 10)}...{tripletItem.txHash.slice(-8)}
                       </p>
                       <p className="triplet-detail-name">Block: {tripletItem.blockNumber}</p>
-                      <p className="triplet-detail-name">Status: ⛓️ On-Chain (Explorer API)</p>
+                      <p className="triplet-detail-name">Status: ⛓️ On-Chain (GraphQL API)</p>
                     </div>
 
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">🌐 Source</h4>
                       <p className="triplet-detail-name">
-                        Intuition Explorer API (Real-time)
+                        Intuition GraphQL API (Real-time)
                       </p>
                       <p className="triplet-detail-timestamp">
                         {new Date(tripletItem.timestamp).toLocaleString()}
@@ -201,13 +191,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         })
       ) : (
         <div className="empty-state">
-          <p>📡 Connected to Intuition Explorer API</p>
+          <p>📡 Connected to Intuition GraphQL API</p>
           <p className="empty-subtext">
             No triplets found for wallet {address.slice(0, 6)}...{address.slice(-4)}<br/>
             Create some triplets in Echoes tab to see them appear here immediately!
           </p>
-          <button onClick={refreshFromExplorer} className="refresh-button">
-            🔄 Refresh from Explorer
+          <button onClick={refreshFromAPI} className="refresh-button">
+            🔄 Refresh from GraphQL API
           </button>
         </div>
       )}
