@@ -57,10 +57,19 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     try {
       console.log('🔄 [useIntuitionTriplets] Fetching triplets from API...')
       
-      // Get all triplets (not filtered by user anymore)
+      // Get triplets filtered by user wallet address
+      if (!account) {
+        console.log('❌ [useIntuitionTriplets] No wallet account available for filtering')
+        setTriplets([])
+        return
+      }
+
+      const normalizedAccount = account.toLowerCase()
+      console.log('🔍 [useIntuitionTriplets] Filtering triplets for wallet:', normalizedAccount)
+      
       const triplesQuery = `
-        query GetAllTriples {
-          triples(limit: 50) {
+        query GetUserTriples {
+          triples(where: {creator_id: {_ilike: "${normalizedAccount}"}}, limit: 50) {
             subject_id
             predicate_id
             object_id
@@ -173,10 +182,12 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     }
   }
 
-  // Auto-fetch on mount
+  // Auto-fetch on mount and when account changes
   useEffect(() => {
-    refreshFromAPI()
-  }, [])
+    if (account) {
+      refreshFromAPI()
+    }
+  }, [account])
 
   const searchTriplets = (query: string): IntuitionTriplet[] => {
     if (!query.trim()) return triplets
