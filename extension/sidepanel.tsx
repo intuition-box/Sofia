@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useStorage } from "@plasmohq/storage/hook"
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { configureClient, API_URL_DEV } from '@0xintuition/graphql'
+import { configureClient } from '@0xintuition/graphql'
 import "./style.css"
 
 import { wagmiConfig } from "./lib/utils/wagmi"
@@ -76,7 +76,7 @@ const SidePanelContent = () => {
   )
 }
 
-// Configurer le client GraphQL pour utiliser l'endpoint testnet
+// Configure GraphQL client to use testnet endpoint
 configureClient({ 
   apiUrl: 'https://testnet.intuition.sh/v1/graphql' 
 })

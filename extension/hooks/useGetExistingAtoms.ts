@@ -1,6 +1,16 @@
 import { useState } from 'react'
 import { getClients } from '../lib/viemClients'
-import { keccak256, stringToBytes } from 'viem'
+import { keccak256, stringToHex } from 'viem'
+
+const MULTIVAULT_V2_ABI = [
+  {
+    "type": "function",
+    "name": "isTermCreated",
+    "inputs": [{"type": "bytes32", "name": "id"}],
+    "outputs": [{"type": "bool", "name": ""}],
+    "stateMutability": "view"
+  }
+]
 
 const MULTIVAULT_ABI = [
   {
@@ -28,9 +38,32 @@ export const useGetExistingAtoms = () => {
     try {
       console.log(`🔍 Searching for existing atom "${atomName}" with URI:`, ipfsUri)
       
-      // TEMPORARY: Always return null to force creation of new atoms
-      console.log(`⚠️ Temporarily bypassing atom lookup - always returning null to create new atom`)
-      return null
+      const { publicClient } = await getClients()
+      const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
+
+      // Hash the IPFS URI to check in contract (same as other hooks)
+      const atomHash = keccak256(stringToHex(ipfsUri))
+      
+      // Use direct ABI call to check if atom exists
+      const atomExists = await publicClient.readContract({
+        address: contractAddress,
+        abi: MULTIVAULT_V2_ABI,
+        functionName: 'isTermCreated',
+        args: [atomHash]
+      }) as boolean
+
+      if (atomExists) {
+        const result = {
+          vaultId: atomHash,
+          ipfsUri,
+          name: atomName
+        }
+        console.log(`✅ Found existing atom "${atomName}":`, result)
+        return result
+      } else {
+        console.log(`❌ Atom "${atomName}" not found on-chain`)
+        return null
+      }
     } catch (error) {
       console.error(`❌ Error getting atom "${atomName}":`, error)
       throw error

@@ -22,10 +22,32 @@ const MULTIVAULT_V2_ABI = [
     "stateMutability": "payable"
   }
 ]
+
+const MULTIVAULT_V2_ABI = [
+  {
+    "type": "function",
+    "name": "getTripleCost",
+    "inputs": [],
+    "outputs": [{"type": "uint256", "name": ""}],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "createTriples",
+    "inputs": [
+      {"type": "bytes32[]", "name": "subjectIds"},
+      {"type": "bytes32[]", "name": "predicateIds"},
+      {"type": "bytes32[]", "name": "objectIds"},
+      {"type": "uint256[]", "name": "assets"}
+    ],
+    "outputs": [{"type": "bytes32[]", "name": ""}],
+    "stateMutability": "payable"
+  }
+]
 import { useGetExistingAtoms } from './useGetExistingAtoms'
 import { useCheckExistingAtom } from './useCheckExistingAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'
-import { useAccount } from 'wagmi'
+import { useStorage } from "@plasmohq/storage/hook"
 import { USER_ATOM_IPFS_URI, getPredicateIpfsUri, PREDICATES_MAPPING } from '../const/atomsMapping'
 
 export interface TripleOnChainResult {
@@ -43,7 +65,7 @@ export const useCreateTripleOnChain = () => {
   const { getUserAtom, getPredicateAtom } = useGetExistingAtoms()
   const { checkAndCreateAtom } = useCheckExistingAtom()
   const { checkTripleExists } = useCheckExistingTriple()
-  const { address } = useAccount()
+  const [address] = useStorage<string>("metamask-account")
   
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -65,13 +87,13 @@ export const useCreateTripleOnChain = () => {
         throw new Error('No wallet connected')
       }
       
-      // 1. Créer un atom User spécifique au wallet connecté
-      setCurrentStep('Récupération/création de l\'atom User pour le wallet connecté...')
+      // 1. Create User atom specific to connected wallet
+      setCurrentStep('Creating/retrieving User atom for connected wallet...')
       
       const userAtomResult = await checkAndCreateAtom({
-        name: address, // Utiliser l'adresse du wallet comme nom
+        name: address,
         description: `User atom for wallet ${address}`,
-        url: `https://etherscan.io/address/${address}` // Lien vers l'adresse sur Etherscan
+        url: `https://etherscan.io/address/${address}`
       })
       
       const userAtom = {
@@ -82,20 +104,19 @@ export const useCreateTripleOnChain = () => {
       
       console.log('👤 User atom for wallet', address, 'VaultID:', userAtom.vaultId)
       
-      // 2. Récupérer/créer l'atom Predicate
-      setCurrentStep('Récupération de l\'atom Predicate...')
+      // 2. Create/retrieve Predicate atom
+      setCurrentStep('Retrieving Predicate atom...')
       const predicateIpfsUri = getPredicateIpfsUri(predicateName)
       let predicateAtom
       
       if (!predicateIpfsUri) {
-        // Si le predicate n'est pas dans le mapping, le créer automatiquement
         console.log(`⚠️ Predicate "${predicateName}" not in mapping, creating it automatically...`)
-        setCurrentStep('Création de l\'atom Predicate...')
+        setCurrentStep('Creating Predicate atom...')
         
         const predicateAtomResult = await checkAndCreateAtom({
           name: predicateName,
-          description: `Predicate représentant la relation "${predicateName}"`,
-          url: '' // URL vide pour les predicates
+          description: `Predicate representing the relation "${predicateName}"`,
+          url: ''
         })
         
         predicateAtom = {
@@ -105,18 +126,17 @@ export const useCreateTripleOnChain = () => {
         }
         console.log('🔗 Predicate atom created, VaultID:', predicateAtom.vaultId)
       } else {
-        // Essayer de récupérer le predicate existant
         try {
           predicateAtom = await getPredicateAtom(predicateIpfsUri, predicateName)
           console.log('🔗 Predicate atom found, VaultID:', predicateAtom.vaultId)
         } catch (error) {
           console.log(`⚠️ Predicate "${predicateName}" not found with URI, creating it automatically...`)
-          setCurrentStep('Création de l\'atom Predicate...')
+          setCurrentStep('Creating Predicate atom...')
           
           const predicateAtomResult = await checkAndCreateAtom({
             name: predicateName,
-            description: `Predicate représentant la relation "${predicateName}"`,
-            url: '' // URL vide pour les predicates
+            description: `Predicate representing the relation "${predicateName}"`,
+            url: ''
           })
           
           predicateAtom = {
@@ -128,13 +148,13 @@ export const useCreateTripleOnChain = () => {
         }
       }
       
-      // 3. Créer/récupérer l'atom Object
-      setCurrentStep('Création/récupération de l\'atom Object...')
+      // 3. Create/retrieve Object atom
+      setCurrentStep('Creating/retrieving Object atom...')
       const objectAtom = await checkAndCreateAtom(objectData)
       console.log('📄 Object atom VaultID:', objectAtom.vaultId)
       
-      // 4. Vérifier si le triplet existe déjà
-      setCurrentStep('Vérification de l\'existence du triplet...')
+      // 4. Check if triple already exists
+      setCurrentStep('Checking triple existence...')
       const tripleCheck = await checkTripleExists(
         userAtom.vaultId,
         predicateAtom.vaultId,
@@ -142,7 +162,6 @@ export const useCreateTripleOnChain = () => {
       )
       
       if (tripleCheck.exists) {
-        // Triplet existe déjà
         console.log('✅ Triple already exists! VaultID:', tripleCheck.tripleVaultId)
         
         return {
@@ -155,8 +174,8 @@ export const useCreateTripleOnChain = () => {
           tripleHash: tripleCheck.tripleHash
         }
       } else {
-        // Créer le triplet
-        setCurrentStep('Création du triplet on-chain...')
+        // Create the triple
+        setCurrentStep('Creating triple on-chain...')
         console.log('🆕 Creating new triple...')
         
         const { walletClient, publicClient } = await getClients()
@@ -172,7 +191,6 @@ export const useCreateTripleOnChain = () => {
         console.log('💰 Triple cost:', tripleCost.toString())
 
         // V2 uses createTriples (plural) with bytes32[] arrays
-        // Convert vaultIds to bytes32 format if needed
         const subjectId = userAtom.vaultId as `0x${string}`
         const predicateId = predicateAtom.vaultId as `0x${string}`
         const objectId = objectAtom.vaultId as `0x${string}`
@@ -237,7 +255,7 @@ export const useCreateTripleOnChain = () => {
         
         return {
           success: true,
-          tripleVaultId: tripleVaultId, // V2 uses bytes32 as string
+          tripleVaultId: tripleVaultId,
           txHash: hash,
           subjectVaultId: userAtom.vaultId,
           predicateVaultId: predicateAtom.vaultId,

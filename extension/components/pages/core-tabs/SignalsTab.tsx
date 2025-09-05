@@ -23,14 +23,12 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   }
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
-    if (vaultId) {
-      // Lien vers l'explorateur Intuition avec le VaultID
-      window.open(`https://testnet.intuition.sh/explorer/vault/${vaultId}`, '_blank')
-    } else if (txHash) {
-      // Base Sepolia explorer
-      window.open(`https://sepolia.basescan.org/tx/${txHash}`, '_blank')
-    } else {
-      console.log('❌ No vault ID or tx hash available')
+    if (txHash) {
+      // Intuition Testnet explorer
+      window.open(`https://testnet.explorer.intuition.systems/tx/${txHash}`, '_blank')
+    } else if (vaultId) {
+      console.log('🔍 View vault:', vaultId)
+      // TODO: Link to vault explorer
     }
   }
 

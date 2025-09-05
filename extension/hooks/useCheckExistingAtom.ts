@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/viemClients'
-import { keccak256, stringToBytes } from 'viem'
+import { keccak256, stringToHex } from 'viem'
 import { useCreateAtom, type AtomIPFSData } from './useCreateAtom'
 
-const MULTIVAULT_ABI = [
+const MULTIVAULT_V2_ABI = [
   {
     "type": "function",
-    "name": "atomsByHash",
-    "inputs": [{"type": "bytes32", "name": "hash"}],
-    "outputs": [{"type": "uint256", "name": ""}],
+    "name": "isTermCreated",
+    "inputs": [{"type": "bytes32", "name": "id"}],
+    "outputs": [{"type": "bool", "name": ""}],
     "stateMutability": "view"
   }
 ]
@@ -50,22 +50,48 @@ export const useCheckExistingAtom = () => {
       const ipfsUri = result.pinThing.uri
       console.log('📌 IPFS URI obtained:', ipfsUri)
 
+      // 2. Check if atom exists on-chain using direct ABI approach
       const { publicClient } = await getClients()
       const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-      // TEMPORARY: Skip existence check and always create
-      console.log('⚠️ Temporarily bypassing existence check - always creating new atoms')
-      
-      const { vaultId, txHash } = await createAtomWithMultivault(atomData)
-      
-      console.log('✅ New atom created!', { vaultId, txHash })
-      
-      return {
-        exists: false,
-        vaultId,
-        txHash,
-        ipfsUri,
-        source: 'created'
+      // Hash the IPFS URI to check in contract (same as useCreateAtom)
+      const atomHash = keccak256(stringToHex(ipfsUri))
+      console.log('🔍 Checking atom hash:', atomHash)
+
+      // Use direct ABI call to check if atom exists
+      const atomExists = await publicClient.readContract({
+        address: contractAddress,
+        abi: MULTIVAULT_V2_ABI,
+        functionName: 'isTermCreated',
+        args: [atomHash]
+      }) as boolean
+
+      console.log('📋 Atom exists:', atomExists)
+
+      if (atomExists) {
+        // Atom exists - return existing vaultId (use the hash as vaultId like in useCreateAtom)
+        console.log('✅ Atom already exists! VaultId:', atomHash)
+        return {
+          exists: true,
+          vaultId: atomHash,
+          ipfsUri,
+          source: 'existing'
+        }
+      } else {
+        // Atom doesn't exist - use existing createAtom logic
+        console.log('🆕 Atom doesn\'t exist, creating with existing logic...')
+        
+        const { vaultId, txHash } = await createAtomWithMultivault(atomData)
+        
+        console.log('✅ New atom created using existing logic!', { vaultId, txHash })
+        
+        return {
+          exists: false,
+          vaultId,
+          txHash,
+          ipfsUri,
+          source: 'created'
+        }
       }
     } catch (error) {
       console.error('❌ Atom check/creation failed:', error)

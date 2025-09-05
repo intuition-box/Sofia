@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { getClients } from '../lib/viemClients'
 
-const MULTIVAULT_ABI = [
+const MULTIVAULT_V2_ABI = [
   {
     "type": "function",
     "name": "tripleHashFromAtoms",
     "inputs": [
-      {"type": "uint256", "name": "subjectId"},
-      {"type": "uint256", "name": "predicateId"},
-      {"type": "uint256", "name": "objectId"}
+      {"type": "bytes32", "name": "subjectId"},
+      {"type": "bytes32", "name": "predicateId"},
+      {"type": "bytes32", "name": "objectId"}
     ],
     "outputs": [{"type": "bytes32", "name": ""}],
     "stateMutability": "view"
@@ -17,7 +17,7 @@ const MULTIVAULT_ABI = [
     "type": "function",
     "name": "triplesByHash",
     "inputs": [{"type": "bytes32", "name": "hash"}],
-    "outputs": [{"type": "uint256", "name": ""}],
+    "outputs": [{"type": "bytes32", "name": ""}],
     "stateMutability": "view"
   }
 ]
@@ -49,6 +49,7 @@ export const useCheckExistingTriple = () => {
       })
       
       // TEMPORARY: Skip existence check and always return "doesn't exist"
+      // This is the same approach used in testnet branch due to V2 API differences
       console.log('⚠️ Temporarily bypassing triple existence check - always returning new')
       
       // Generate a dummy hash for now
@@ -77,19 +78,20 @@ export const useCheckExistingTriple = () => {
     try {
       const { publicClient } = await getClients()
       const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
+      const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
       const tripleHash = await publicClient.readContract({
         address: contractAddress,
-        abi: MULTIVAULT_ABI,
+        abi: MULTIVAULT_V2_ABI,
         functionName: 'tripleHashFromAtoms',
         args: [
-          BigInt(subjectVaultId),
-          BigInt(predicateVaultId), 
-          BigInt(objectVaultId)
+          subjectVaultId as `0x${string}`,
+          predicateVaultId as `0x${string}`,
+          objectVaultId as `0x${string}`
         ]
       }) as `0x${string}`
 
-      return tripleHash.toString()
+      return tripleHash as string
     } catch (error) {
       console.error('❌ Triple hash calculation failed:', error)
       throw error

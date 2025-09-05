@@ -6,7 +6,7 @@ import { useContractTest } from '../../../hooks/useContractTest'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
-import { useAccount } from 'wagmi'
+import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
 
@@ -42,7 +42,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [echoTriplets, setEchoTriplets] = useState<EchoTriplet[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
-  const { address } = useAccount() // Get connected wallet address
+  const [address] = useStorage<string>("metamask-account")
   
   // Selection state management
   const [selectedEchoes, setSelectedEchoes] = useState<Set<string>>(new Set())
@@ -80,9 +80,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   const processRawMessages = async (savedStates?: EchoTriplet[]) => {
     try {
-      // Charger la liste noire des triplets publiés
-      const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
-      
       const newEchoTriplets: EchoTriplet[] = []
       
       for (const record of rawMessages) {
@@ -108,27 +105,27 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 // Si le triplet existe déjà, le garder tel quel
                 if (existingTriplet) {
                   newEchoTriplets.push(existingTriplet)
-                  return
+                } else {
+                  // Créer un nouveau triplet en statut 'available'
+                  const echoTriplet: EchoTriplet = {
+                    id: tripletId,
+                    triplet: {
+                      subject: triplet.subject,
+                      predicate: triplet.predicate,
+                      object: triplet.object
+                    },
+                    url: parsed.rawObjectUrl || '',
+                    description: parsed.rawObjectDescription || parsed.intention,
+                    timestamp: record.timestamp,
+                    sourceMessageId: record.messageId,
+                    status: 'available'
+                  }
+                  newEchoTriplets.push(echoTriplet)
                 }
-                
-                // Créer un nouveau triplet en statut 'available'
-                const echoTriplet: EchoTriplet = {
-                  id: tripletId,
-                  triplet: {
-                    subject: triplet.subject,
-                    predicate: triplet.predicate,
-                    object: triplet.object
-                  },
-                  url: parsed.rawObjectUrl || '',
-                  description: parsed.rawObjectDescription || parsed.intention,
-                  timestamp: record.timestamp,
-                  sourceMessageId: record.messageId,
-                  status: 'available'
-                }
-                newEchoTriplets.push(echoTriplet)
               })
             }
           } catch (parseError) {
+            // Silent parse errors
             // Silent parse errors
           }
         }
@@ -201,6 +198,21 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       await elizaDataService.storeTripletStates(updatedTriplets)
 
       // Triplet published successfully
+      // Marquer comme publié avec toutes les infos blockchain
+      setEchoTriplets(prev => 
+        prev.map(t => t.id === tripletId ? { 
+          ...t, 
+          status: 'published' as const,
+          tripleVaultId: result.tripleVaultId,
+          subjectVaultId: result.subjectVaultId,
+          predicateVaultId: result.predicateVaultId,
+          objectVaultId: result.objectVaultId,
+          txHash: result.txHash,
+          onChainStatus: result.source
+        } : t)
+      )
+
+      // Triplet published successfully
       
     } catch (error) {
       console.error(`❌ Failed to publish triplet ${tripletId}:`, error)
@@ -221,7 +233,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
     if (txHash) {
-      window.open(`https://sepolia.basescan.org/tx/${txHash}`, '_blank')
+      window.open(`https://testnet.explorer.intuition.systems/tx/${txHash}`, '_blank')
     }
   }
 
