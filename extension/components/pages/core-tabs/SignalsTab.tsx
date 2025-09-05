@@ -10,9 +10,9 @@ interface SignalsTabProps {
 }
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
-  const { triplets, isLoading } = useIntuitionTriplets()
+  const { triplets, isLoading, error, refreshFromAPI } = useIntuitionTriplets()
   
-  // Afficher tous les triplets (quand API Intuition sera disponible)
+  // Afficher tous les triplets depuis l'API Intuition testnet
   const publishedTriplets = triplets.sort((a, b) => b.timestamp - a.timestamp)
   
   const publishedCounts = {
@@ -23,12 +23,14 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   }
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
-    if (txHash) {
+    if (vaultId) {
+      // Lien vers l'explorateur Intuition avec le VaultID
+      window.open(`https://testnet.intuition.sh/explorer/vault/${vaultId}`, '_blank')
+    } else if (txHash) {
       // Base Sepolia explorer
       window.open(`https://sepolia.basescan.org/tx/${txHash}`, '_blank')
-    } else if (vaultId) {
-      console.log('🔍 View vault:', vaultId)
-      // TODO: Lien vers explorateur de vaults
+    } else {
+      console.log('❌ No vault ID or tx hash available')
     }
   }
 
@@ -48,7 +50,21 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>Loading published triplets...</p>
+          <p>🔄 Loading triplets from Intuition testnet...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="triples-container">
+        <div className="empty-state">
+          <p>❌ Error connecting to Intuition testnet</p>
+          <p className="empty-subtext">{error}</p>
+          <button onClick={refreshFromAPI} className="retry-button">
+            🔄 Retry Connection
+          </button>
         </div>
       </div>
     )
@@ -145,9 +161,11 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                           TX: {tripletItem.txHash.slice(0, 10)}...{tripletItem.txHash.slice(-8)}
                         </p>
                       )}
-                      <p className="triplet-detail-name">
-                        📦 IPFS: {tripletItem.ipfsUri.slice(0, 20)}...
-                      </p>
+                      {tripletItem.ipfsUri && (
+                        <p className="triplet-detail-name">
+                          📦 IPFS: {tripletItem.ipfsUri.slice(0, 20)}...
+                        </p>
+                      )}
                       <p className="triplet-detail-name">
                         Status: {tripletItem.tripleStatus === 'on-chain' ? '⛓️ On-Chain' : '🔗 Atom Only'}
                       </p>
@@ -155,9 +173,14 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">🌐 Source</h4>
-                      <p className="triplet-detail-name">{tripletItem.url}</p>
+                      <p className="triplet-detail-name">
+                        {tripletItem.url || 'Intuition Testnet API'}
+                      </p>
                       <p className="triplet-detail-timestamp">
                         {new Date(tripletItem.timestamp).toLocaleString()}
+                      </p>
+                      <p className="triplet-detail-name">
+                        Creator: {tripletItem.subjectVaultId?.slice(0, 8)}...{tripletItem.subjectVaultId?.slice(-6)}
                       </p>
                     </div>
                   </div>
@@ -168,11 +191,14 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         })
       ) : (
         <div className="empty-state">
-          <p>🔄 Waiting for Intuition API</p>
+          <p>📡 Connected to Intuition testnet</p>
           <p className="empty-subtext">
-            This tab will display triplets from the Intuition blockchain when the API becomes available.<br/>
-            For now, use the Echoes tab to work with your local triplets.
+            No triplets found on the Intuition blockchain yet.<br/>
+            Create some triplets in Echoes tab to see them appear here after publishing!
           </p>
+          <button onClick={refreshFromAPI} className="refresh-button">
+            🔄 Refresh from API
+          </button>
         </div>
       )}
     </div>

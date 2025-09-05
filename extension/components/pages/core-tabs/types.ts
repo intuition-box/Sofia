@@ -20,10 +20,7 @@ export interface ParsedSofiaMessage {
 }
 
 export function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
-  console.log("🔍 Parsing message text:", text)
-  
   if (!text || typeof text !== 'string' || text.trim().length === 0) {
-    console.log("❌ Empty or invalid text")
     return null
   }
 
@@ -52,8 +49,6 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
   } catch (error) {
     // Try to extract JSON structure manually from broken Eliza output
     try {
-      console.log("🔧 Attempting manual JSON extraction...")
-      
       // Extract triplets section
       const tripletMatch = text.match(/"triplets"\s*:\s*\[(.*?)\]/s)
       const intentionMatch = text.match(/"intention"\s*:\s*"([^"]*)"/)
@@ -84,9 +79,6 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
         }
       }
       
-      console.log("🎯 Extracted triplets:", parsedTriplets)
-      console.log("🔗 Extracted URL:", rawObjectUrl)
-      
       return {
         triplets: parsedTriplets,
         intention: intentionMatch ? intentionMatch[1] : '',
@@ -95,7 +87,6 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
         rawObjectDescription
       }
     } catch (extractError) {
-      console.log("✅ Manual extraction failed, treating as plain text intention")
       return {
         triplets: [],
         intention: text.trim(),

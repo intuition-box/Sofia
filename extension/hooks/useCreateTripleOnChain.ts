@@ -1,6 +1,27 @@
 import { useState } from 'react'
-import { Multivault } from "@0xintuition/protocol"
 import { getClients } from '../lib/viemClients'
+
+const MULTIVAULT_V2_ABI = [
+  {
+    "type": "function",
+    "name": "getTripleCost",
+    "inputs": [],
+    "outputs": [{"type": "uint256", "name": ""}],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "createTriples",
+    "inputs": [
+      {"type": "bytes32[]", "name": "subjectIds"},
+      {"type": "bytes32[]", "name": "predicateIds"},
+      {"type": "bytes32[]", "name": "objectIds"},
+      {"type": "uint256[]", "name": "assets"}
+    ],
+    "outputs": [{"type": "bytes32[]", "name": ""}],
+    "stateMutability": "payable"
+  }
+]
 import { useGetExistingAtoms } from './useGetExistingAtoms'
 import { useCheckExistingAtom } from './useCheckExistingAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'
@@ -139,25 +160,84 @@ export const useCreateTripleOnChain = () => {
         console.log('🆕 Creating new triple...')
         
         const { walletClient, publicClient } = await getClients()
-        //@ts-ignore
-        const multivault = new Multivault({ walletClient, publicClient })
+        const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-        // Get triple cost and create triple
-        const tripleCost = await multivault.getTripleCost()
+        // Get triple cost
+        const tripleCost = await publicClient.readContract({
+          address: contractAddress,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'getTripleCost'
+        }) as bigint
+
+        console.log('💰 Triple cost:', tripleCost.toString())
+
+        // V2 uses createTriples (plural) with bytes32[] arrays
+        // Convert vaultIds to bytes32 format if needed
+        const subjectId = userAtom.vaultId as `0x${string}`
+        const predicateId = predicateAtom.vaultId as `0x${string}`
+        const objectId = objectAtom.vaultId as `0x${string}`
         
-        const { vaultId: tripleVaultId, hash } = await multivault.createTriple({
-          subjectId: BigInt(userAtom.vaultId),
-          predicateId: BigInt(predicateAtom.vaultId),
-          objectId: BigInt(objectAtom.vaultId),
-          initialDeposit: tripleCost,
-          wait: true
+        console.log('🔗 Creating triple with V2:', { subjectId, predicateId, objectId })
+
+        // Simulate first to check for errors
+        const simulation = await publicClient.simulateContract({
+          address: contractAddress,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'createTriples',
+          args: [
+            [subjectId],    // bytes32[]
+            [predicateId],  // bytes32[]
+            [objectId],     // bytes32[]
+            [tripleCost]    // uint256[]
+          ],
+          value: tripleCost,
+          account: walletClient.account
         })
+
+        console.log('✅ Simulation successful, creating triple with V2...')
+
+        // Execute the transaction
+        console.log('🚀 Sending triple transaction with value:', tripleCost.toString())
+        
+        const hash = await walletClient.writeContract({
+          address: contractAddress,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'createTriples',
+          args: [
+            [subjectId],    // bytes32[]
+            [predicateId],  // bytes32[]
+            [objectId],     // bytes32[]
+            [tripleCost]    // uint256[]
+          ],
+          value: tripleCost,
+          gas: 2000000n,
+          maxFeePerGas: 50000000000n,
+          maxPriorityFeePerGas: 10000000000n
+        })
+
+        console.log('🔗 Transaction sent:', hash)
+
+        // Wait for transaction receipt
+        const receipt = await publicClient.waitForTransactionReceipt({
+          hash: hash
+        })
+
+        console.log('✅ Transaction confirmed:', receipt)
+        console.log('📋 Receipt status:', receipt.status)
+        
+        if (receipt.status !== 'success') {
+          throw new Error(`Transaction failed with status: ${receipt.status}`)
+        }
+
+        // V2 returns bytes32[] instead of uint256
+        const tripleIds = simulation.result as `0x${string}`[]
+        const tripleVaultId = tripleIds[0] // First triple ID
 
         console.log('✅ Triple created successfully!', { tripleVaultId, hash })
         
         return {
           success: true,
-          tripleVaultId: tripleVaultId.toString(),
+          tripleVaultId: tripleVaultId, // V2 uses bytes32 as string
           txHash: hash,
           subjectVaultId: userAtom.vaultId,
           predicateVaultId: predicateAtom.vaultId,

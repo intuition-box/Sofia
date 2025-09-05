@@ -13,7 +13,6 @@
   "dependencies": {
     "@0xintuition/1ui": "^0.4.1",
     "@0xintuition/graphql": "1.0.0-alpha.0",
-    "@0xintuition/protocol": "0.1.4",
     "@apollo/client": "^3.13.8",
     "@plasmohq/storage": "^1.15.0",
     "@privy-io/react-auth": "^2.20.0",
