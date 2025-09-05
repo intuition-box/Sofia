@@ -42,14 +42,6 @@
     "@elizaos/plugin-bootstrap"
   ],
   "settings": {
-    "mcp": {
-      "servers": {
-        "intuition": {
-          "type": "sse",
-          "url": "http://localhost:3001/sse"
-        }
-      }
-    }
   },
   "style": {
     "all": [],

@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { useMCPClient } from '../../hooks/useMCPClient'
+import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
 const SearchPage = () => {
   const { navigateTo } = useRouter()
-  const { isReady, isLoading, error } = useMCPClient()
+  const { isReady, isLoading, error } = useIntuitionSearch()
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleSearch = () => {
@@ -35,7 +35,7 @@ const SearchPage = () => {
       <div className="page-content">
         <input
           type="text"
-          placeholder="Search in Intuition blockchain..."
+          placeholder="Search atoms in Intuition blockchain..."
           className="search-input"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

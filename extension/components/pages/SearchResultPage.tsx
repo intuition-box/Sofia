@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { useMCPClient, type SearchResult } from '../../hooks/useMCPClient'
+import { useIntuitionSearch, type AtomSearchResult } from '../../hooks/useIntuitionSearch'
 import SendIcon from '../ui/icons/quick_action/Selected=send.svg'
 import SendHoverIcon from '../ui/icons/quick_action/Selected=send hover.svg'
 import VoteIcon from '../ui/icons/quick_action/Selected=vote.svg'
@@ -17,10 +17,10 @@ interface SearchResultPageProps {
 
 const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => {
   const { navigateTo } = useRouter()
-  const { searchAtoms, isLoading, error } = useMCPClient()
+  const { searchAtoms, isLoading, error } = useIntuitionSearch()
   const [activeTab, setActiveTab] = useState<'overview' | 'related' | 'about' | 'more'>('overview')
   const [searchQuery, setSearchQuery] = useState('')
-  const [results, setResults] = useState<SearchResult[]>([])
+  const [results, setResults] = useState<AtomSearchResult[]>([])
   const [sendHovered, setSendHovered] = useState(false)
   const [voteHovered, setVoteHovered] = useState(false)
   const [isEditingSearch, setIsEditingSearch] = useState(false)
@@ -39,7 +39,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
     return num.toLocaleString()
   }
 
-  const getTripleMetrics = (result: SearchResult) => {
+  const getTripleMetrics = (result: AtomSearchResult) => {
     // Utiliser les triples disponibles et leurs positions
     let totalPositions = 0
     let againstCount = 0
@@ -124,7 +124,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
     const query = propQuery || localStorage.getItem('searchQuery') || 'Intuition Systems'
     setSearchQuery(query)
     performSearch(query)
-  }, [propQuery, searchAtoms])
+  }, [propQuery])
 
   return (
     <div className="page search-result-page">
@@ -139,7 +139,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
                 onChange={(e) => setEditedQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="search-edit-input"
-                placeholder="Search in Intuition blockchain..."
+                placeholder="Search atoms in Intuition blockchain..."
                 autoFocus
               />
               <div className="search-edit-actions">
@@ -188,7 +188,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
         {isLoading && (
           <div className="loading-state">
             <div className="spinner"></div>
-            <p>Searching blockchain...</p>
+            <p>Searching atoms on Intuition blockchain...</p>
           </div>
         )}
 
