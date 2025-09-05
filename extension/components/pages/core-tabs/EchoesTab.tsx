@@ -78,11 +78,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   const processRawMessages = async (savedStates?: EchoTriplet[]) => {
     try {
-      console.log(`🔍 EchoesTab: Processing ${rawMessages.length} raw messages${savedStates ? ' with saved states' : ''}`)
-      
       // Charger la liste noire des triplets publiés
       const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
-      console.log('🚫 Published triplets blacklist loaded:', publishedTripletIds.length)
       
       const newEchoTriplets: EchoTriplet[] = []
       
@@ -99,7 +96,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 
                 // Vérifier si le triplet a été publié (liste noire)
                 if (publishedTripletIds.includes(tripletId)) {
-                  console.log(`🚫 EchoesTab: Skipping published triplet ${tripletId}`)
                   return // Skip ce triplet définitivement
                 }
                 
@@ -129,17 +125,14 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 }
                 newEchoTriplets.push(echoTriplet)
               })
-              
-              console.log(`✅ EchoesTab: Processed ${parsed.triplets.length} triplets from message ${record.messageId}`)
             }
           } catch (parseError) {
-            console.error(`❌ EchoesTab: Failed to parse message ${record.messageId}:`, parseError)
+            // Silent parse errors
           }
         }
       }
       
       setEchoTriplets(newEchoTriplets)
-      console.log(`✅ EchoesTab: Processed ${newEchoTriplets.length} total triplets`)
       
     } catch (error) {
       console.error('❌ EchoesTab: Failed to process messages:', error)
@@ -152,7 +145,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       const savedStates = await elizaDataService.loadTripletStates()
       
       if (savedStates.length > 0) {
-        console.log(`💾 EchoesTab: Loading ${savedStates.length} saved triplet states`)
         setEchoTriplets(savedStates)
         await new Promise(resolve => setTimeout(resolve, 0))
       }
@@ -189,8 +181,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     setProcessingTripletId(tripletId)
     
     try {
-      console.log(`🔗 EchoesTab: Publishing triplet ${tripletId} on-chain`)
-      
       const result = await createTripleOnChain(
         triplet.triplet.predicate,
         {
@@ -208,11 +198,10 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       setEchoTriplets(updatedTriplets)
       await elizaDataService.storeTripletStates(updatedTriplets)
 
-      console.log(`✅ EchoesTab: Triplet ${tripletId} published successfully!`, result)
+      // Triplet published successfully
       
     } catch (error) {
-      console.error(`❌ EchoesTab: Failed to publish triplet ${tripletId}:`, error)
-      alert(`Publish error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error(`❌ Failed to publish triplet ${tripletId}:`, error)
     } finally {
       setProcessingTripletId(null)
     }
@@ -221,10 +210,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Nettoyer les anciens messages
   const clearOldMessages = async () => {
     try {
-      console.log("🧹 EchoesTab: Manual cleanup initiated...")
       await elizaDataService.deleteOldMessages(7)
       await refreshMessages()
-      console.log("✅ EchoesTab: Cleanup completed")
     } catch (error) {
       console.error('❌ EchoesTab: Cleanup failed:', error)
     }
@@ -233,8 +220,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
     if (txHash) {
       window.open(`https://sepolia.basescan.org/tx/${txHash}`, '_blank')
-    } else if (vaultId) {
-      console.log('🔍 View vault:', vaultId)
     }
   }
 

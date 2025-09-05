@@ -75,12 +75,33 @@ export const useCreateAtom = () => {
       }) as bigint
 
       console.log('💰 Atom cost:', atomCost.toString())
+      
+      // Check if atom already exists
+      const atomHash = keccak256(stringToHex(ipfsUri))
+      const atomExists = await publicClient.readContract({
+        address: contractAddress,
+        abi: MULTIVAULT_V2_ABI,
+        functionName: 'isTermCreated',
+        args: [atomHash]
+      }) as boolean
+      
+      if (atomExists) {
+        console.log('✅ Atom already exists:', atomHash)
+        return {
+          vaultId: atomHash,
+          txHash: 'existing'
+        }
+      }
+      
+      console.log('🆕 Creating new atom with hash:', atomHash)
 
       // Convert IPFS URI to bytes for V2
       const encodedData = stringToHex(ipfsUri)
       console.log('🔧 Encoded data:', encodedData)
       
       // Create atom with V2
+      console.log('🚀 Sending transaction with args:', [[encodedData], [atomCost]], 'value:', atomCost.toString())
+      
       const txHash = await walletClient.writeContract({
         address: contractAddress,
         abi: MULTIVAULT_V2_ABI,
@@ -95,6 +116,10 @@ export const useCreateAtom = () => {
       // Wait for confirmation
       const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
       console.log('✅ Confirmed:', receipt.status === 'success')
+      
+      if (receipt.status !== 'success') {
+        throw new Error(`Transaction failed with status: ${receipt.status}`)
+      }
 
       // Extract the real atom ID from the transaction logs
       // V2 MultiVault should emit an event with the atom ID

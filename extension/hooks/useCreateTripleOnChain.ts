@@ -198,6 +198,8 @@ export const useCreateTripleOnChain = () => {
         console.log('✅ Simulation successful, creating triple with V2...')
 
         // Execute the transaction
+        console.log('🚀 Sending triple transaction with value:', tripleCost.toString())
+        
         const hash = await walletClient.writeContract({
           address: contractAddress,
           abi: MULTIVAULT_V2_ABI,
@@ -222,6 +224,11 @@ export const useCreateTripleOnChain = () => {
         })
 
         console.log('✅ Transaction confirmed:', receipt)
+        console.log('📋 Receipt status:', receipt.status)
+        
+        if (receipt.status !== 'success') {
+          throw new Error(`Transaction failed with status: ${receipt.status}`)
+        }
 
         // V2 returns bytes32[] instead of uint256
         const tripleIds = simulation.result as `0x${string}`[]
