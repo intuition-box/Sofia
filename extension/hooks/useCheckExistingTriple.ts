@@ -78,7 +78,6 @@ export const useCheckExistingTriple = () => {
     try {
       const { publicClient } = await getClients()
       const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
-      const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
       const tripleHash = await publicClient.readContract({
         address: contractAddress,

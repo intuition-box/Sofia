@@ -22,28 +22,6 @@ const MULTIVAULT_V2_ABI = [
     "stateMutability": "payable"
   }
 ]
-
-const MULTIVAULT_V2_ABI = [
-  {
-    "type": "function",
-    "name": "getTripleCost",
-    "inputs": [],
-    "outputs": [{"type": "uint256", "name": ""}],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "createTriples",
-    "inputs": [
-      {"type": "bytes32[]", "name": "subjectIds"},
-      {"type": "bytes32[]", "name": "predicateIds"},
-      {"type": "bytes32[]", "name": "objectIds"},
-      {"type": "uint256[]", "name": "assets"}
-    ],
-    "outputs": [{"type": "bytes32[]", "name": ""}],
-    "stateMutability": "payable"
-  }
-]
 import { useGetExistingAtoms } from './useGetExistingAtoms'
 import { useCheckExistingAtom } from './useCheckExistingAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'

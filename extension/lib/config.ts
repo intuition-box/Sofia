@@ -20,7 +20,5 @@ export const intuitionTestnet = defineChain({
 })
 
 export const SELECTED_CHAIN = intuitionTestnet
-export const SELECTED_CHAIN = intuitionTestnet
 export const DEFAULT_CHAIN_ID = SELECTED_CHAIN.id.toString()
-export const MULTIVAULT_CONTRACT_ADDRESS = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 export const MULTIVAULT_CONTRACT_ADDRESS = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
