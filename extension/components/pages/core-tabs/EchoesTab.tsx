@@ -76,6 +76,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   const processRawMessages = async (savedStates?: EchoTriplet[]) => {
     try {
+      // Charger la liste noire des triplets publiés
+      const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
+      
       const newEchoTriplets: EchoTriplet[] = []
       
       for (const record of rawMessages) {
