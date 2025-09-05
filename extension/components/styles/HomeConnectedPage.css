@@ -111,6 +111,7 @@
 }
 
 .toggle-icon {
+  margin-top: 140px;
   width: 80px;
   height: 80px;
   transition: var(--transition-normal);

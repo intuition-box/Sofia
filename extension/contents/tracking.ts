@@ -1,5 +1,8 @@
 import type { PlasmoCSConfig } from "plasmo"
 import type { PlasmoMessage } from "~types/messaging"
+import { Storage } from "@plasmohq/storage"
+
+const storage = new Storage()
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -10,6 +13,22 @@ export const config: PlasmoCSConfig = {
 let pageLoadTime = Date.now()
 let isPageVisible = true
 let scrollCount = 0
+
+// Function to check if tracking is enabled
+async function isTrackingEnabled(): Promise<boolean> {
+  try {
+    const enabled: boolean | string | null = await storage.get("tracking_enabled")
+    // Handle different possible types
+    if (enabled === false || enabled === "false") {
+      return false
+    }
+    // Default to true if not set or any other value
+    return true
+  } catch (error) {
+    console.error("Error checking tracking status:", error)
+    return true // Default to enabled on error
+  }
+}
 
 function shouldIgnoreFrame(): boolean {
   const url = window.location.href
@@ -57,6 +76,11 @@ async function getCurrentTabId(): Promise<number> {
 }
 
 async function extractRealData() {
+  if (!(await isTrackingEnabled())) {
+    console.log("🔒 Tracking disabled - PAGE_DATA not sent")
+    return
+  }
+
   const title = document.title || ""
   const keywords = document.querySelector('meta[name="keywords"]')?.getAttribute("content") || ""
   const description = document.querySelector('meta[name="description"]')?.getAttribute("content") || ""
@@ -103,16 +127,20 @@ document.addEventListener("visibilitychange", async () => {
   if (shouldIgnoreFrame()) return
 
   if (document.visibilityState === "hidden" && isPageVisible) {
-    const duration = Date.now() - pageLoadTime
-    chrome.runtime.sendMessage({
-      type: "PAGE_DURATION",
-      data: {
-        url: window.location.href,
-        duration,
-        timestamp: Date.now()
-      },
-      tabId: await getCurrentTabId()
-    } as PlasmoMessage).catch(() => {})
+    if (await isTrackingEnabled()) {
+      const duration = Date.now() - pageLoadTime
+      chrome.runtime.sendMessage({
+        type: "PAGE_DURATION",
+        data: {
+          url: window.location.href,
+          duration,
+          timestamp: Date.now()
+        },
+        tabId: await getCurrentTabId()
+      } as PlasmoMessage).catch(() => {})
+    } else {
+      console.log("🔒 Tracking disabled - PAGE_DURATION not sent")
+    }
     isPageVisible = false
   } else if (document.visibilityState === "visible" && !isPageVisible) {
     pageLoadTime = Date.now()
@@ -124,7 +152,7 @@ document.addEventListener("visibilitychange", async () => {
 let scrollTimeout: NodeJS.Timeout
 let lastScrollTime = Date.now()
 
-window.addEventListener("scroll", () => {
+window.addEventListener("scroll", async () => {
   if (shouldIgnoreFrame()) return
 
   const now = Date.now()
@@ -135,34 +163,43 @@ window.addEventListener("scroll", () => {
   scrollCount++
   clearTimeout(scrollTimeout)
 
-  scrollTimeout = setTimeout(() => {
-    chrome.runtime.sendMessage({
-      type: "SCROLL_DATA",
-      data: {
-        scrollY: window.scrollY,
-        timestamp: Date.now(),
-        url: window.location.href,
-        scrollCount
-      }
-    } as PlasmoMessage).catch(() => {})
+  scrollTimeout = setTimeout(async () => {
+    if (await isTrackingEnabled()) {
+      chrome.runtime.sendMessage({
+        type: "SCROLL_DATA",
+        data: {
+          scrollY: window.scrollY,
+          timestamp: Date.now(),
+          url: window.location.href,
+          deltaT,
+          scrollCount
+        }
+      } as PlasmoMessage).catch(() => {})
+    } else {
+      console.log("🔒 Tracking disabled - SCROLL_DATA not sent")
+    }
   }, 100)
 })
 
 let currentUrl = window.location.href
-const observer = new MutationObserver(() => {
+const observer = new MutationObserver(async () => {
   if (shouldIgnoreFrame()) return
 
   if (window.location.href !== currentUrl) {
-    const duration = Date.now() - pageLoadTime
-    chrome.runtime.sendMessage({
-      type: "PAGE_DURATION",
-      data: {
-        url: currentUrl,
-        duration,
-        timestamp: Date.now()
-      },
-      tabId: getCurrentTabId()
-    } as PlasmoMessage).catch(() => {})
+    if (await isTrackingEnabled()) {
+      const duration = Date.now() - pageLoadTime
+      chrome.runtime.sendMessage({
+        type: "PAGE_DURATION",
+        data: {
+          url: currentUrl,
+          duration,
+          timestamp: Date.now()
+        },
+        tabId: await getCurrentTabId()
+      } as PlasmoMessage).catch(() => {})
+    } else {
+      console.log("🔒 Tracking disabled - PAGE_DURATION not sent")
+    }
 
     currentUrl = window.location.href
     pageLoadTime = Date.now()
@@ -178,22 +215,26 @@ if (!shouldIgnoreFrame() && document.body) {
   })
 }
 
-window.addEventListener("beforeunload", () => {
+window.addEventListener("beforeunload", async () => {
   if (shouldIgnoreFrame()) return
 
-  const duration = Date.now() - pageLoadTime
+  if (await isTrackingEnabled()) {
+    const duration = Date.now() - pageLoadTime
 
-  getCurrentTabId().then((tabId) => {
-    chrome.runtime.sendMessage({
-      type: "PAGE_DURATION",
-      data: {
-        url: window.location.href,
-        duration,
-        timestamp: Date.now()
-      },
-      tabId
-    } as PlasmoMessage).catch(() => {})
-  })
+    getCurrentTabId().then((tabId) => {
+      chrome.runtime.sendMessage({
+        type: "PAGE_DURATION",
+        data: {
+          url: window.location.href,
+          duration,
+          timestamp: Date.now()
+        },
+        tabId
+      } as PlasmoMessage).catch(() => {})
+    })
+  } else {
+    console.log("🔒 Tracking disabled - PAGE_DURATION not sent")
+  }
 })
 
 function startWhenReady() {
