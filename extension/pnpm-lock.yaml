@@ -56,6 +56,9 @@ importers:
       lucide-react:
         specifier: ^0.525.0
         version: 0.525.0(react@18.2.0)
+      metamask-extension-provider:
+        specifier: ^5.0.0
+        version: 5.0.0
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
@@ -5852,6 +5855,10 @@ packages:
   merge2@1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
+
+  metamask-extension-provider@5.0.0:
+    resolution: {integrity: sha512-tHJAk02PF5U2Vzv1gLXkIWU38Jw7S3+cNaICwvLYqEHkH+V2aJHQX87xJ5pVzK5ivTnLav0AW4wbvpAZSCMYkg==}
+    engines: {npm: '>=9'}
 
   methods@1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
@@ -16217,6 +16224,14 @@ snapshots:
   merge-stream@2.0.0: {}
 
   merge2@1.4.1: {}
+
+  metamask-extension-provider@5.0.0:
+    dependencies:
+      '@metamask/providers': 16.1.0
+      detect-browser: 5.3.0
+      extension-port-stream: 3.0.0
+    transitivePeerDependencies:
+      - supports-color
 
   methods@1.1.2: {}
 

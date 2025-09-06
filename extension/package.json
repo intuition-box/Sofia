@@ -27,6 +27,7 @@
     "express": "^5.1.0",
     "graphql": "^16.11.0",
     "lucide-react": "^0.525.0",
+    "metamask-extension-provider": "^5.0.0",
     "node-fetch": "^3.3.2",
     "plasmo": "0.90.5",
     "react": "18.2.0",
