@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { getClients } from '../lib/viemClients'
 import { MULTIVAULT_V2_ABI } from '../contracts/abis'
-import { useGetExistingAtoms } from './useGetExistingAtoms'
 import { useCheckExistingAtom } from './useCheckExistingAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'
 import { useStorage } from "@plasmohq/storage/hook"
-import { USER_ATOM_IPFS_URI, getPredicateIpfsUri, PREDICATES_MAPPING } from '../const/atomsMapping'
 
 export interface TripleOnChainResult {
   success: boolean
@@ -32,7 +30,6 @@ export interface BatchTripleResult {
 }
 
 export const useCreateTripleOnChain = () => {
-  const { getUserAtom, getPredicateAtom } = useGetExistingAtoms()
   const { checkAndCreateAtom } = useCheckExistingAtom()
   const { checkTripleExists } = useCheckExistingTriple()
   const [address] = useStorage<string>("metamask-account")
@@ -57,8 +54,8 @@ export const useCreateTripleOnChain = () => {
         throw new Error('No wallet connected')
       }
       
-      // 1. Create User atom specific to connected wallet
-      setCurrentStep('Creating/retrieving User atom for connected wallet...')
+      // 1. Create User atom (always create, let contract handle duplicates)
+      setCurrentStep('Creating User atom...')
       
       const userAtomResult = await checkAndCreateAtom({
         name: address,
@@ -72,54 +69,25 @@ export const useCreateTripleOnChain = () => {
         name: address
       }
       
-      console.log('👤 User atom for wallet', address, 'VaultID:', userAtom.vaultId)
+      console.log('👤 User atom VaultID:', userAtom.vaultId)
       
-      // 2. Create/retrieve Predicate atom
-      setCurrentStep('Retrieving Predicate atom...')
-      const predicateIpfsUri = getPredicateIpfsUri(predicateName)
-      let predicateAtom
+      // 2. Create Predicate atom (always create, let contract handle duplicates)
+      setCurrentStep('Creating Predicate atom...')
+      const predicateAtomResult = await checkAndCreateAtom({
+        name: predicateName,
+        description: `Predicate representing the relation "${predicateName}"`,
+        url: ''
+      })
       
-      if (!predicateIpfsUri) {
-        console.log(`⚠️ Predicate "${predicateName}" not in mapping, creating it automatically...`)
-        setCurrentStep('Creating Predicate atom...')
-        
-        const predicateAtomResult = await checkAndCreateAtom({
-          name: predicateName,
-          description: `Predicate representing the relation "${predicateName}"`,
-          url: ''
-        })
-        
-        predicateAtom = {
-          vaultId: predicateAtomResult.vaultId,
-          ipfsUri: predicateAtomResult.ipfsUri,
-          name: predicateName
-        }
-        console.log('🔗 Predicate atom created, VaultID:', predicateAtom.vaultId)
-      } else {
-        try {
-          predicateAtom = await getPredicateAtom(predicateIpfsUri, predicateName)
-          console.log('🔗 Predicate atom found, VaultID:', predicateAtom.vaultId)
-        } catch (error) {
-          console.log(`⚠️ Predicate "${predicateName}" not found with URI, creating it automatically...`)
-          setCurrentStep('Creating Predicate atom...')
-          
-          const predicateAtomResult = await checkAndCreateAtom({
-            name: predicateName,
-            description: `Predicate representing the relation "${predicateName}"`,
-            url: ''
-          })
-          
-          predicateAtom = {
-            vaultId: predicateAtomResult.vaultId,
-            ipfsUri: predicateAtomResult.ipfsUri,
-            name: predicateName
-          }
-          console.log('🔗 Predicate atom created, VaultID:', predicateAtom.vaultId)
-        }
+      const predicateAtom = {
+        vaultId: predicateAtomResult.vaultId,
+        ipfsUri: predicateAtomResult.ipfsUri,
+        name: predicateName
       }
+      console.log('🔗 Predicate atom VaultID:', predicateAtom.vaultId)
       
-      // 3. Create/retrieve Object atom
-      setCurrentStep('Creating/retrieving Object atom...')
+      // 3. Create Object atom (always create, let contract handle duplicates)
+      setCurrentStep('Creating Object atom...')
       const objectAtom = await checkAndCreateAtom(objectData)
       console.log('📄 Object atom VaultID:', objectAtom.vaultId)
       
