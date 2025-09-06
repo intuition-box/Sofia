@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/indexedDB-methods'
 import { useCreateTripleOnChain, type BatchTripleInput } from '../../../hooks/useCreateTripleOnChain'
+import { useSmartAccount } from '../../../hooks/useSmartAccount'
+import { usePinThingMutation } from '@0xintuition/graphql'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
@@ -54,8 +56,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     refreshMessages 
   } = useElizaData({ autoRefresh: true, refreshInterval: 5000 })
 
-  // Hook blockchain pour la création (utilise les autres hooks en interne)
-  const { createTripleOnChain, createTriplesBatch, isCreating, currentStep } = useCreateTripleOnChain()
+  // ERC-4337 Smart Account hook (replaces legacy blockchain hooks)
+  const smartAccount = useSmartAccount()
+  const { mutateAsync: pinThing } = usePinThingMutation()
 
   // Charger les états sauvegardés puis traiter les messages
   useEffect(() => {
@@ -166,64 +169,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   }
 
 
-  // Publier un triplet spécifique on-chain
-  const publishTriplet = async (tripletId: string) => {
-    const triplet = echoTriplets.find(t => t.id === tripletId)
-    if (!triplet) return
-
-    if (isCreating || processingTripletId) {
-      console.warn('Triple creation already in progress')
-      return
-    }
-
-    setProcessingTripletId(tripletId)
-    
-    try {
-      const result = await createTripleOnChain(
-        triplet.triplet.predicate,
-        {
-          name: triplet.triplet.object,
-          description: triplet.description,
-          url: triplet.url
-        }
-      )
-
-      // Ajouter à la liste noire pour empêcher la recréation
-      await elizaDataService.addPublishedTripletId(tripletId)
-      
-      // Check if triplet already existed on chain
-      if (result.source === 'existing') {
-        // Show popup for existing triplet
-        alert(`✅ Triplet already exists on chain!\nVault ID: ${result.tripleVaultId}\nRemoving from your pending list.`)
-      }
-      
-      // Supprimer de l'affichage local (que ce soit nouveau ou existant)
-      const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
-      setEchoTriplets(updatedTriplets)
-      await elizaDataService.storeTripletStates(updatedTriplets)
-      
-    } catch (error) {
-      console.error(`❌ Failed to publish triplet ${tripletId}:`, error)
-      
-      // Check if error is due to triple already existing
-      if (error instanceof Error && error.message === 'TRIPLE_ALREADY_EXISTS') {
-        console.log('✅ Triple already exists on chain, removing from list')
-        
-        // Add to blacklist to prevent recreation
-        await elizaDataService.addPublishedTripletId(tripletId)
-        
-        // Show popup for existing triplet
-        alert(`✅ Triplet already exists on chain!\nRemoving from your pending list.`)
-        
-        // Remove from local display
-        const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
-        setEchoTriplets(updatedTriplets)
-        await elizaDataService.storeTripletStates(updatedTriplets)
-      }
-    } finally {
-      setProcessingTripletId(null)
-    }
-  }
 
   // Nettoyer les anciens messages
   const clearOldMessages = async () => {
@@ -284,105 +229,71 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
     
-    if (selectedTriplets.length === 1) {
-      // Single triplet - use existing individual method
-      try {
-        await publishTriplet(selectedTriplets[0].id)
-      } catch (error) {
-        console.error(`Failed to publish triplet ${selectedTriplets[0].id}:`, error)
-      }
-    } else if (selectedTriplets.length > 1) {
-      // Multiple triplets - use batch method
-      setIsProcessing(true)
+    // Check if Smart Account is ready
+    if (!smartAccount.accountInfo?.isDeployed) {
+      alert('Smart Wallet not deployed. Please deploy it first in Settings.')
+      return
+    }
+    
+    setIsProcessing(true)
+    
+    try {
+      console.log(`🚀 Using Smart Account ERC-4337 for ${selectedTriplets.length} triplets`)
       
-      try {
-        console.log(`🔗 Starting batch publication of ${selectedTriplets.length} triplets`)
+      // Convert triplets to atom operations 
+      const operations = []
+      
+      for (const triplet of selectedTriplets) {
+        // Pin each object to IPFS first
+        const pinResult = await pinThing({
+          name: triplet.triplet.object,
+          description: triplet.description,
+          url: triplet.url,
+          image: ''
+        })
         
-        // Prepare batch input
-        const batchInput = selectedTriplets.map(triplet => ({
-          predicateName: triplet.triplet.predicate,
-          objectData: {
+        if (pinResult.pinThing?.uri) {
+          // Create atom operation for the object
+          const atomOp = await smartAccount.createAtomOperation({
             name: triplet.triplet.object,
             description: triplet.description,
-            url: triplet.url
-          }
-        }))
-        
-        const result = await createTriplesBatch(batchInput)
-        
-        if (result.success) {
-          const createdResults = result.results.filter(r => r.source === 'created')
-          const existingResults = result.results.filter(r => r.source === 'existing')
-          
-          console.log('✅ Batch publication successful!', {
-            created: createdResults.length,
-            existing: existingResults.length,
-            failed: result.failedTriples.length,
-            txHash: result.txHash
+            url: pinResult.pinThing.uri
           })
-          
-          // Find which triplets correspond to existing results  
-          const existingTripletIds = new Set<string>()
-          
-          // Match existing results back to original triplet IDs
-          existingResults.forEach(existingResult => {
-            // Find the original triplet that matches this result
-            const matchingTriplet = selectedTriplets.find(triplet => 
-              triplet.triplet.predicate === batchInput.find(input => 
-                input.predicateName === triplet.triplet.predicate &&
-                input.objectData.name === triplet.triplet.object
-              )?.predicateName
-            )
-            if (matchingTriplet) {
-              existingTripletIds.add(matchingTriplet.id)
-            }
-          })
-          
-          // Add only successfully created or existing triplets to blacklist
-          const processedTriplets = selectedTriplets.filter(triplet => 
-            !result.failedTriples.some(failed => 
-              failed.input.predicateName === triplet.triplet.predicate &&
-              failed.input.objectData.name === triplet.triplet.object
-            )
-          )
-          
-          for (const triplet of processedTriplets) {
-            await elizaDataService.addPublishedTripletId(triplet.id)
-          }
-          
-          // Show summary alert
-          if (existingResults.length > 0) {
-            alert(`✅ Batch complete!
-Created: ${createdResults.length} new triplets
-Already existed: ${existingResults.length} triplets (removed from list)
-${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.slice(-8)}` : ''}
-
-Successfully processed triplets removed from your pending list.`)
-          } else if (createdResults.length > 0) {
-            alert(`✅ Batch successful!
-Created: ${createdResults.length} triplets in single transaction
-${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.slice(-8)}` : ''}`)
-          }
-          
-          // Remove only successfully processed triplets (created + existing)
-          const processedTripletIds = new Set(processedTriplets.map(t => t.id))
-          const updatedTriplets = echoTriplets.filter(t => !processedTripletIds.has(t.id))
-          setEchoTriplets(updatedTriplets)
-          await elizaDataService.storeTripletStates(updatedTriplets)
-          
-        } else {
-          console.error('❌ Batch publication had failures:', result.failedTriples)
-          alert(`❌ Batch completed with some errors:
-${result.failedTriples.length} triplets failed
-Check console for details`)
+          operations.push(atomOp)
+        }
+      }
+      
+      if (operations.length > 0) {
+        // Execute all operations in a single Smart Account batch (ERC-4337)
+        const txHash = operations.length === 1 
+          ? await smartAccount.executeOperation(operations[0])
+          : await smartAccount.executeBatch(operations)
+        
+        console.log('✅ ERC-4337 Smart Account execution successful!', { 
+          operations: operations.length,
+          txHash 
+        })
+        
+        // Add to blacklist and remove from display
+        for (const triplet of selectedTriplets) {
+          await elizaDataService.addPublishedTripletId(triplet.id)
         }
         
-      } catch (error) {
-        console.error('❌ Batch publication failed:', error)
-        alert(`❌ Batch publication failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      } finally {
-        setIsProcessing(false)
+        const processedTripletIds = new Set(selectedTriplets.map(t => t.id))
+        const updatedTriplets = echoTriplets.filter(t => !processedTripletIds.has(t.id))
+        setEchoTriplets(updatedTriplets)
+        await elizaDataService.storeTripletStates(updatedTriplets)
+        
+        alert(`✅ Smart Wallet ${operations.length === 1 ? 'operation' : 'batch'} successful!
+Created: ${operations.length} atoms via ERC-4337
+Transaction: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`)
       }
+      
+    } catch (error) {
+      console.error('❌ ERC-4337 Smart Account execution failed:', error)
+      alert(`❌ Smart Wallet execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsProcessing(false)
     }
     
     setSelectedEchoes(new Set())
@@ -434,9 +345,9 @@ Check console for details`)
               <button 
                 className="batch-btn add-to-signals"
                 onClick={addSelectedToSignals}
-                disabled={isProcessing}
+                disabled={isProcessing || smartAccount.isLoading}
               >
-                Amplify ({selectedEchoes.size})
+                {isProcessing || smartAccount.isLoading ? 'Processing...' : `Amplify (${selectedEchoes.size})`}
               </button>
               <button 
                 className="batch-btn delete-selected"
@@ -503,9 +414,9 @@ Check console for details`)
                     </div>
 
 
-                    {processingTripletId === tripletItem.id && (
+                    {(isProcessing || smartAccount.isLoading) && selectedEchoes.has(tripletItem.id) && (
                       <div className="processing-message">
-                        {currentStep || '⚙️ Publishing triplet...'}
+                        {'⚙️ Processing via Smart Wallet...'}
                       </div>
                     )}
 

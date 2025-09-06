@@ -75,3 +75,129 @@ export const MULTIVAULT_ABI = [
     "stateMutability": "view"
   }
 ]
+
+export const ATOM_WALLET_ABI = [
+  {
+    "type": "function",
+    "name": "initialize",
+    "inputs": [
+      {"name": "anEntryPoint", "type": "address"},
+      {"name": "_multiVault", "type": "address"}, 
+      {"name": "_termId", "type": "bytes32"}
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "execute",
+    "inputs": [
+      {"name": "dest", "type": "address"},
+      {"name": "value", "type": "uint256"},
+      {"name": "data", "type": "bytes"}
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "executeBatch",
+    "inputs": [
+      {"name": "dest", "type": "address[]"},
+      {"name": "values", "type": "uint256[]"},
+      {"name": "data", "type": "bytes[]"}
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "addDeposit",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawDepositTo",
+    "inputs": [
+      {"name": "withdrawAddress", "type": "address"},
+      {"name": "amount", "type": "uint256"}
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [{"name": "newOwner", "type": "address"}],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "acceptOwnership",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "claimAtomWalletDepositFees",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getDeposit",
+    "inputs": [],
+    "outputs": [{"type": "uint256", "name": ""}],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "entryPoint",
+    "inputs": [],
+    "outputs": [{"type": "address", "name": ""}],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [{"type": "address", "name": ""}],
+    "stateMutability": "view"
+  }
+]
+
+export const ATOM_WALLET_FACTORY_ABI = [
+  {
+    "type": "function",
+    "name": "initialize",
+    "inputs": [{"name": "_multiVault", "type": "address"}],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function", 
+    "name": "deployAtomWallet",
+    "inputs": [{"name": "atomId", "type": "bytes32"}],
+    "outputs": [{"type": "address", "name": ""}],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "computeAtomWalletAddr",
+    "inputs": [{"name": "atomId", "type": "bytes32"}],
+    "outputs": [{"type": "address", "name": ""}],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "multiVault",
+    "inputs": [],
+    "outputs": [{"type": "address", "name": ""}],
+    "stateMutability": "view"
+  }
+]

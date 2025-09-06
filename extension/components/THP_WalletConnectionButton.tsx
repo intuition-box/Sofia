@@ -4,6 +4,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { PowerOff } from 'lucide-react'
 import connectButton from './ui/icons/ConnectButton.png'
 import connectButtonHover from './ui/icons/ConnectButtonHover.png'
+import { useSmartAccount } from "../hooks/useSmartAccount"
 
 interface WalletConnectionButtonProps {
   disabled?: boolean;
@@ -13,13 +14,32 @@ const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProp
   const [account, setAccount] = useStorage<string>("metamask-account")
   const [isDisconnectHovered, setIsDisconnectHovered] = React.useState(false)
   const [isConnectHovered, setIsConnectHovered] = React.useState(false)
+  
+  const smartAccount = useSmartAccount()
+  
+  // Auto-setup Smart Wallet only happens during connection in handleConnect
 
   const handleConnect = async () => {
     if (disabled) return;
     
     try {
       const accountAddress = await connectWallet()
+      console.log('💳 Connected to wallet:', accountAddress)
+      console.log('💾 Setting account in storage...')
       setAccount(accountAddress)
+      console.log('✅ Account set in storage')
+      
+      // Force Smart Account initialization after storage is set
+      console.log('⚡ Forcing Smart Account initialization with address:', accountAddress)
+      setTimeout(async () => {
+        try {
+          console.log('🚀 Auto-deploying Smart Wallet for new user...')
+          await smartAccount.deployAtomWallet(accountAddress)
+          console.log('✅ Smart Wallet auto-deployment completed!')
+        } catch (deployError) {
+          console.warn('⚠️ Smart Wallet auto-deployment failed:', deployError)
+        }
+      }, 100) // Small delay to ensure storage propagation
     } catch (error) {
       console.error("Failed to connect to wallet: ", error)
     }

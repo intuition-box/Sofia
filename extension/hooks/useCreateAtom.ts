@@ -95,17 +95,39 @@ export const useCreateAtom = () => {
         throw new Error(`Transaction failed with status: ${receipt.status}`)
       }
 
-      // Extract the real atom ID from the transaction logs
-      // V2 MultiVault should emit an event with the atom ID
-      console.log('📜 Transaction logs:', receipt.logs)
+      // Extract the real atom ID from the AtomCreated event logs
+      console.log('📜 Transaction logs count:', receipt.logs.length)
       
-      // For V2, we need to calculate the atom ID from the data
-      // Based on MultiVault code: atomId = keccak256(data)
-      const realAtomId = keccak256(encodedData)
-      console.log('🔑 Calculated atom ID:', realAtomId)
+      let realAtomId: string | null = null
+      
+      // Look for AtomCreated event - atomId should be in the event data
+      for (const log of receipt.logs) {
+        try {
+          // AtomCreated event signature: AtomCreated(address indexed sender, bytes32 indexed atomId, bytes data, address atomWallet)
+          // atomId will be in topics[2] (topics[0] = event signature, topics[1] = sender, topics[2] = atomId)
+          if (log.topics && log.topics.length >= 3) {
+            const eventSignature = log.topics[0]
+            // Check if this is AtomCreated event (we could verify the signature but atomId is the important part)
+            if (eventSignature && log.topics[2]) {
+              realAtomId = log.topics[2] // This should be the atomId
+              console.log('🔑 Found atomId in AtomCreated event:', realAtomId)
+              break
+            }
+          }
+        } catch (error) {
+          console.log('📜 Error parsing log:', error)
+          // Continue searching in other logs
+        }
+      }
+      
+      // Fallback to calculated ID if not found in logs (shouldn't happen)
+      if (!realAtomId) {
+        realAtomId = keccak256(encodedData)
+        console.log('🔑 Fallback calculated atom ID:', realAtomId)
+      }
 
       return {
-        vaultId: realAtomId, // Real bytes32 atom ID
+        vaultId: realAtomId, // Real bytes32 atom ID from contract event
         txHash
       }
     } catch (error) {
