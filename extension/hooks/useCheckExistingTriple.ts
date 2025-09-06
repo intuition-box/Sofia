@@ -1,30 +1,6 @@
 import { useState } from 'react'
 import { getClients } from '../lib/viemClients'
-
-const MULTIVAULT_V2_ABI = [
-  {
-    "type": "function",
-    "name": "calculateTripleId",
-    "inputs": [
-      {"type": "bytes32", "name": "subjectId"},
-      {"type": "bytes32", "name": "predicateId"},
-      {"type": "bytes32", "name": "objectId"}
-    ],
-    "outputs": [{"type": "bytes32", "name": ""}],
-    "stateMutability": "pure"
-  },
-  {
-    "type": "function",
-    "name": "getTriple",
-    "inputs": [{"type": "bytes32", "name": "tripleId"}],
-    "outputs": [
-      {"type": "bytes32", "name": "subject"},
-      {"type": "bytes32", "name": "predicate"},
-      {"type": "bytes32", "name": "object"}
-    ],
-    "stateMutability": "view"
-  }
-]
+import { MULTIVAULT_V2_ABI } from '../contracts/abis'
 
 export interface ExistingTriple {
   exists: boolean

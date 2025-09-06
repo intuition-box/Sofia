@@ -1,26 +1,7 @@
 import { useState } from 'react'
 import { getClients } from '../lib/viemClients'
 import { keccak256, stringToHex } from 'viem'
-
-const MULTIVAULT_V2_ABI = [
-  {
-    "type": "function",
-    "name": "isTermCreated",
-    "inputs": [{"type": "bytes32", "name": "id"}],
-    "outputs": [{"type": "bool", "name": ""}],
-    "stateMutability": "view"
-  }
-]
-
-const MULTIVAULT_ABI = [
-  {
-    "type": "function",
-    "name": "atomsByHash",
-    "inputs": [{"type": "bytes32", "name": "hash"}],
-    "outputs": [{"type": "uint256", "name": ""}],
-    "stateMutability": "view"
-  }
-]
+import { MULTIVAULT_V2_ABI, MULTIVAULT_ABI } from '../contracts/abis'
 
 export interface ExistingAtom {
   vaultId: string

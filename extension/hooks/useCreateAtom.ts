@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/viemClients'
 import { stringToHex, keccak256 } from 'viem'
+import { MULTIVAULT_V2_ABI } from '../contracts/abis'
 
 export interface AtomIPFSData {
   name: string
@@ -9,33 +10,6 @@ export interface AtomIPFSData {
   url: string
   image?: any
 }
-
-const MULTIVAULT_V2_ABI = [
-  {
-    "type": "function",
-    "name": "getAtomCost",
-    "inputs": [],
-    "outputs": [{"type": "uint256", "name": ""}],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "createAtoms",
-    "inputs": [
-      {"type": "bytes[]", "name": "atomDatas"},
-      {"type": "uint256[]", "name": "assets"}
-    ],
-    "outputs": [{"type": "bytes32[]", "name": ""}],
-    "stateMutability": "payable"
-  },
-  {
-    "type": "function",
-    "name": "isTermCreated",
-    "inputs": [{"type": "bytes32", "name": "id"}],
-    "outputs": [{"type": "bool", "name": ""}],
-    "stateMutability": "view"
-  }
-]
 
 export const useCreateAtom = () => {
   const { mutateAsync: pinThing } = usePinThingMutation()

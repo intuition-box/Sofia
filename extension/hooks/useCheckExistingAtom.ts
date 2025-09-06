@@ -3,16 +3,7 @@ import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/viemClients'
 import { keccak256, stringToHex } from 'viem'
 import { useCreateAtom, type AtomIPFSData } from './useCreateAtom'
-
-const MULTIVAULT_V2_ABI = [
-  {
-    "type": "function",
-    "name": "isTermCreated",
-    "inputs": [{"type": "bytes32", "name": "id"}],
-    "outputs": [{"type": "bool", "name": ""}],
-    "stateMutability": "view"
-  }
-]
+import { MULTIVAULT_V2_ABI } from '../contracts/abis'
 
 export interface AtomCheckResult {
   exists: boolean
