@@ -129,9 +129,9 @@ export const useSmartAccount = () => {
       // Step 1: Create user atom with existing hook
       console.log('📝 Creating user atom with useCreateAtom hook...')
       const atomResult = await createAtomHook.createAtomWithMultivault({
-        name: `User Profile - ${targetAddress}`,
-        description: `Smart Wallet user profile for ${targetAddress}`,
-        url: `https://app.intuition.systems/user/${targetAddress}`,
+        name: "User",
+        description: targetAddress, // L'adresse du wallet comme description
+        url: targetAddress, // L'adresse du wallet comme URL
         image: ''
       })
 

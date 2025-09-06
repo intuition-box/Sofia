@@ -3,6 +3,7 @@ import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/indexedDB-methods'
 import { useCreateTripleOnChain, type BatchTripleInput } from '../../../hooks/useCreateTripleOnChain'
 import { useSmartAccount } from '../../../hooks/useSmartAccount'
+import { useCreateAtom } from '../../../hooks/useCreateAtom'
 import { usePinThingMutation } from '@0xintuition/graphql'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
@@ -59,6 +60,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // ERC-4337 Smart Account hook (replaces legacy blockchain hooks)
   const smartAccount = useSmartAccount()
   const { mutateAsync: pinThing } = usePinThingMutation()
+  
+  // Test hook pour création atom directe
+  const createAtomHook = useCreateAtom()
 
   // Charger les états sauvegardés puis traiter les messages
   useEffect(() => {
@@ -445,6 +449,40 @@ Transaction: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`)
           }
         </div>
       )}
+      {/* Bouton de test pour création atom */}
+      {address && (
+        <div style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+          <button 
+            onClick={async () => {
+              try {
+                console.log('🧪 Testing direct atom creation...')
+                const result = await createAtomHook.createAtomWithMultivault({
+                  name: "Test Atom",
+                  description: "Test atom creation directly",
+                  url: "https://test.com"
+                })
+                console.log('✅ Test atom created:', result)
+                alert(`✅ Atom créé avec succès! ID: ${result.vaultId}`)
+              } catch (error) {
+                console.error('❌ Test atom creation failed:', error)
+                alert(`❌ Erreur: ${error.message}`)
+              }
+            }}
+            disabled={createAtomHook.isLoading}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: createAtomHook.isLoading ? '#ccc' : '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: createAtomHook.isLoading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {createAtomHook.isLoading ? 'Creating...' : '🧪 Test Atom Creation'}
+          </button>
+        </div>
+      )}
+      
       {/* États vides */}
       {echoTriplets.length === 0 ? (
         <div className="empty-state">
