@@ -203,7 +203,6 @@ export const useCreateTripleOnChain = () => {
           account: walletClient.account
         })
 
-        console.log('✅ Simulation successful, creating triple with V2...')
 
         // Execute the transaction
         console.log('🚀 Sending triple transaction with value:', tripleCost.toString())

@@ -84,7 +84,6 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
       const recent = await elizaDataService.getRecentMessages(maxRecentMessages)
       setRecentMessages(recent)
 
-      console.log(`📨 Loaded ${allElizaMessages.length} Eliza messages (${regularMessages.length} regular, ${parsedMsgs.length} parsed)`)
 
     } catch (err) {
       console.error('❌ Error loading Eliza messages:', err)

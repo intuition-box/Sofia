@@ -196,7 +196,7 @@ export function useIntuitionSearch() {
               atomId: atom.term_id
             })
             
-            console.log('🔍 Related triples response for', atom.label, ':', triplesResponse)
+            console.log('🔍 Related triples response for', atom.label, '(atomId:', atom.term_id, '):', triplesResponse)
             
             if (triplesResponse?.triples) {
               // Simplify: skip vault data for triples to speed up display
