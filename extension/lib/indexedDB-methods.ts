@@ -118,10 +118,8 @@ export class ElizaDataService {
   static async loadTripletStates(): Promise<any[]> {
     const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_triplet_states')
     if (records.length > 0 && records[0].content) {
-      console.log('💾 EchoesTab triplet states loaded:', (records[0].content as any[]).length)
       return records[0].content as any[]
     }
-    console.log('💾 No saved triplet states found')
     return []
   }
 
@@ -157,10 +155,8 @@ export class ElizaDataService {
     const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_published_triplets')
     if (records.length > 0 && records[0].content) {
       const ids = records[0].content as string[]
-      console.log('🚫 Published triplet IDs loaded:', ids.length)
       return ids
     }
-    console.log('🚫 No published triplet IDs found')
     return []
   }
 
