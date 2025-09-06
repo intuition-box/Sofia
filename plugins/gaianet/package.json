@@ -26,10 +26,10 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@elizaos/core": "^1.4.2"
+    "@elizaos/core": "1.4.2"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^24.3.1",
     "@typescript-eslint/eslint-plugin": "8.19.0",
     "@typescript-eslint/parser": "8.19.0",
     "eslint": "^9.16.0",
