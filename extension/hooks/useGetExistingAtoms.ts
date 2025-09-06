@@ -24,14 +24,18 @@ export const useGetExistingAtoms = () => {
 
       // Hash the IPFS URI to check in contract (same as other hooks)
       const atomHash = keccak256(stringToHex(ipfsUri))
+      console.log(`🔑 Generated atom hash for "${atomName}":`, atomHash)
       
       // Use direct ABI call to check if atom exists
+      console.log(`🔍 Checking contract ${contractAddress} for atom existence...`)
       const atomExists = await publicClient.readContract({
         address: contractAddress,
         abi: MULTIVAULT_V2_ABI,
         functionName: 'isTermCreated',
         args: [atomHash]
       }) as boolean
+      
+      console.log(`📊 Contract response for "${atomName}": ${atomExists}`)
 
       if (atomExists) {
         const result = {
@@ -42,7 +46,7 @@ export const useGetExistingAtoms = () => {
         console.log(`✅ Found existing atom "${atomName}":`, result)
         return result
       } else {
-        console.log(`❌ Atom "${atomName}" not found on-chain`)
+        console.log(`❌ Atom "${atomName}" not found on-chain (hash: ${atomHash})`)
         return null
       }
     } catch (error) {
