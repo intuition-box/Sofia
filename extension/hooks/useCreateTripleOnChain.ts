@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getClients } from '../lib/viemClients'
 import { MULTIVAULT_V2_ABI } from '../contracts/abis'
-import { useCheckExistingAtom } from './useCheckExistingAtom'
+import { useCreateAtom } from './useCreateAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'
 import { useStorage } from "@plasmohq/storage/hook"
 
@@ -30,7 +30,7 @@ export interface BatchTripleResult {
 }
 
 export const useCreateTripleOnChain = () => {
-  const { checkAndCreateAtom } = useCheckExistingAtom()
+  const { createAtomWithMultivault } = useCreateAtom()
   const { checkTripleExists } = useCheckExistingTriple()
   const [address] = useStorage<string>("metamask-account")
   
@@ -57,7 +57,7 @@ export const useCreateTripleOnChain = () => {
       // 1. Create User atom (always create, let contract handle duplicates)
       setCurrentStep('Creating User atom...')
       
-      const userAtomResult = await checkAndCreateAtom({
+      const userAtomResult = await createAtomWithMultivault({
         name: address,
         description: `User atom for wallet ${address}`,
         url: `https://etherscan.io/address/${address}`
@@ -65,7 +65,7 @@ export const useCreateTripleOnChain = () => {
       
       const userAtom = {
         vaultId: userAtomResult.vaultId,
-        ipfsUri: userAtomResult.ipfsUri,
+        ipfsUri: '', // Set by createAtomWithMultivault
         name: address
       }
       
@@ -73,7 +73,7 @@ export const useCreateTripleOnChain = () => {
       
       // 2. Create Predicate atom (always create, let contract handle duplicates)
       setCurrentStep('Creating Predicate atom...')
-      const predicateAtomResult = await checkAndCreateAtom({
+      const predicateAtomResult = await createAtomWithMultivault({
         name: predicateName,
         description: `Predicate representing the relation "${predicateName}"`,
         url: ''
@@ -81,14 +81,14 @@ export const useCreateTripleOnChain = () => {
       
       const predicateAtom = {
         vaultId: predicateAtomResult.vaultId,
-        ipfsUri: predicateAtomResult.ipfsUri,
+        ipfsUri: '', // Set by createAtomWithMultivault
         name: predicateName
       }
       console.log('🔗 Predicate atom VaultID:', predicateAtom.vaultId)
       
       // 3. Create Object atom (always create, let contract handle duplicates)
       setCurrentStep('Creating Object atom...')
-      const objectAtom = await checkAndCreateAtom(objectData)
+      const objectAtom = await createAtomWithMultivault(objectData)
       console.log('📄 Object atom VaultID:', objectAtom.vaultId)
       
       // 4. Check if triple already exists
