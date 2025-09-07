@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { getClients } from '../lib/viemClients'
-import { MULTIVAULT_V2_ABI } from '../contracts/abis'
+import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
 import { SELECTED_CHAIN } from '../lib/config'
 import { useCreateAtom } from './useCreateAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'

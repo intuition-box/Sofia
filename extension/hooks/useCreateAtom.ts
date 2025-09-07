@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/viemClients'
 import { stringToHex, keccak256 } from 'viem'
-import { MULTIVAULT_V2_ABI } from '../contracts/abis'
+import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
+import { SELECTED_CHAIN } from '~lib/config'
 
 export interface AtomIPFSData {
   name: string
@@ -75,14 +76,18 @@ export const useCreateAtom = () => {
       
       // Create atom with V2
       console.log('🚀 Sending transaction with args:', [[encodedData], [atomCost]], 'value:', atomCost.toString())
-      
+
+
+
       const txHash = await walletClient.writeContract({
         address: contractAddress,
         abi: MULTIVAULT_V2_ABI,
         functionName: 'createAtoms',
         args: [[encodedData], [atomCost]],
         value: atomCost,
-        gas: 2000000n
+        gas: 2000000n,
+        chain: SELECTED_CHAIN,
+        account: ""
       })
 
       console.log('🔗 Transaction:', txHash)

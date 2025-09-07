@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getClients } from '../lib/viemClients'
 import { keccak256, stringToHex } from 'viem'
-import { MULTIVAULT_V2_ABI, MULTIVAULT_ABI } from '../contracts/abis'
+import { MULTIVAULT_V2_ABI, MULTIVAULT_ABI } from '../contracts/ABIs'
 
 export interface ExistingAtom {
   vaultId: string
