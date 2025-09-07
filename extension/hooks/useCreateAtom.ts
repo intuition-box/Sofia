@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/viemClients'
-import { stringToHex, keccak256 } from 'viem'
+import { stringToHex } from 'viem'
 import { MULTIVAULT_V2_ABI } from '../contracts/abis'
 
 export interface AtomIPFSData {
@@ -50,28 +50,38 @@ export const useCreateAtom = () => {
 
       console.log('💰 Atom cost:', atomCost.toString())
       
-      // Check if atom already exists
-      const atomHash = keccak256(stringToHex(ipfsUri))
+      // Convert IPFS URI to bytes for the contract
+      const encodedData = stringToHex(ipfsUri)
+      console.log('🔧 Encoded data:', encodedData)
+
+      // Check if atom already exists using contract method
+      const calculatedAtomId = await publicClient.readContract({
+        address: contractAddress,
+        abi: MULTIVAULT_V2_ABI,
+        functionName: 'calculateAtomId',
+        args: [encodedData]
+      }) as `0x${string}`
+      
+      console.log('🔍 Calculated atomId:', calculatedAtomId)
+
       const atomExists = await publicClient.readContract({
         address: contractAddress,
         abi: MULTIVAULT_V2_ABI,
         functionName: 'isTermCreated',
-        args: [atomHash]
+        args: [calculatedAtomId]
       }) as boolean
       
+      console.log('📊 Atom exists:', atomExists)
+
       if (atomExists) {
-        console.log('✅ Atom already exists:', atomHash)
+        console.log('✅ Atom already exists, returning existing atomId')
         return {
-          vaultId: atomHash,
-          txHash: 'existing'
+          vaultId: calculatedAtomId,
+          txHash: '' // No transaction for existing atom
         }
       }
-      
-      console.log('🆕 Creating new atom with hash:', atomHash)
 
-      // Convert IPFS URI to bytes for V2
-      const encodedData = stringToHex(ipfsUri)
-      console.log('🔧 Encoded data:', encodedData)
+      console.log('🆕 Creating new atom with calculated ID:', calculatedAtomId)
       
       // Create atom with V2
       console.log('🚀 Sending transaction with args:', [[encodedData], [atomCost]], 'value:', atomCost.toString())
@@ -82,7 +92,9 @@ export const useCreateAtom = () => {
         functionName: 'createAtoms',
         args: [[encodedData], [atomCost]],
         value: atomCost,
-        gas: 2000000n
+        gas: 500000n,
+        account: walletClient.account!,
+        chain: undefined
       })
 
       console.log('🔗 Transaction:', txHash)
@@ -95,39 +107,12 @@ export const useCreateAtom = () => {
         throw new Error(`Transaction failed with status: ${receipt.status}`)
       }
 
-      // Extract the real atom ID from the AtomCreated event logs
-      console.log('📜 Transaction logs count:', receipt.logs.length)
+      // For successful transaction, use the calculated atomId  
+      // (the contract ensures atomId calculation is deterministic)
+      console.log('✅ Atom created successfully')
       
-      let realAtomId: string | null = null
-      
-      // Look for AtomCreated event - atomId should be in the event data
-      for (const log of receipt.logs) {
-        try {
-          // AtomCreated event signature: AtomCreated(address indexed sender, bytes32 indexed atomId, bytes data, address atomWallet)
-          // atomId will be in topics[2] (topics[0] = event signature, topics[1] = sender, topics[2] = atomId)
-          if (log.topics && log.topics.length >= 3) {
-            const eventSignature = log.topics[0]
-            // Check if this is AtomCreated event (we could verify the signature but atomId is the important part)
-            if (eventSignature && log.topics[2]) {
-              realAtomId = log.topics[2] // This should be the atomId
-              console.log('🔑 Found atomId in AtomCreated event:', realAtomId)
-              break
-            }
-          }
-        } catch (error) {
-          console.log('📜 Error parsing log:', error)
-          // Continue searching in other logs
-        }
-      }
-      
-      // Fallback to calculated ID if not found in logs (shouldn't happen)
-      if (!realAtomId) {
-        realAtomId = keccak256(encodedData)
-        console.log('🔑 Fallback calculated atom ID:', realAtomId)
-      }
-
       return {
-        vaultId: realAtomId, // Real bytes32 atom ID from contract event
+        vaultId: calculatedAtomId,
         txHash
       }
     } catch (error) {

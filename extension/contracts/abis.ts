@@ -56,6 +56,13 @@ export const MULTIVAULT_V2_ABI = [
   },
   {
     "type": "function",
+    "name": "calculateAtomId",
+    "inputs": [{"type": "bytes", "name": "data"}],
+    "outputs": [{"type": "bytes32", "name": ""}],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
     "name": "createAtoms",
     "inputs": [
       {"type": "bytes[]", "name": "atomDatas"},
@@ -63,16 +70,66 @@ export const MULTIVAULT_V2_ABI = [
     ],
     "outputs": [{"type": "bytes32[]", "name": ""}],
     "stateMutability": "payable"
-  }
-]
-
-export const MULTIVAULT_ABI = [
+  },
   {
     "type": "function",
-    "name": "atomsByHash",
-    "inputs": [{"type": "bytes32", "name": "hash"}],
+    "name": "atomWarden",
+    "inputs": [],
+    "outputs": [{"type": "address", "name": ""}],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function", 
+    "name": "entryPoint",
+    "inputs": [],
+    "outputs": [{"type": "address", "name": ""}],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "atomDepositAmount", 
+    "inputs": [],
     "outputs": [{"type": "uint256", "name": ""}],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "atomWalletBeacon",
+    "inputs": [],
+    "outputs": [{"type": "address", "name": ""}],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "walletConfig",
+    "inputs": [],
+    "outputs": [
+      {"name": "permit2", "type": "address"}, 
+      {"name": "entryPoint", "type": "address"}, 
+      {"name": "atomWarden", "type": "address"}, 
+      {"name": "atomWalletBeacon", "type": "address"}, 
+      {"name": "atomWalletFactory", "type": "address"}
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "setWalletConfig",
+    "inputs": [
+      {
+        "name": "_walletConfig",
+        "type": "tuple",
+        "components": [
+          {"name": "permit2", "type": "address"},
+          {"name": "entryPoint", "type": "address"},
+          {"name": "atomWarden", "type": "address"},
+          {"name": "atomWalletBeacon", "type": "address"},
+          {"name": "atomWalletFactory", "type": "address"}
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   }
 ]
 

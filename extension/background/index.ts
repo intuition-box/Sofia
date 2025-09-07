@@ -1,6 +1,5 @@
 import { cleanOldBehaviors } from "./behavior";
 import { initializeChatbotSocket , initializeSofiaSocket, initializeBookmarkAgentSocket} from "./websocket";
-
 import { setupMessageHandlers } from "./messageHandlers";
 
 function init(): void {

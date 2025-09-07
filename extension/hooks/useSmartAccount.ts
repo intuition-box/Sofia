@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
 import { getClients } from '../lib/viemClients'
-import { ATOM_WALLET_FACTORY_ADDRESS, MULTIVAULT_CONTRACT_ADDRESS } from '../lib/config'
+import { ATOM_WALLET_FACTORY_ADDRESS, MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, ENTRY_POINT_ADDRESS } from '../lib/config'
 import { ATOM_WALLET_FACTORY_ABI, ATOM_WALLET_ABI, MULTIVAULT_V2_ABI } from '../contracts/abis'
 import { encodeFunctionData, stringToHex, keccak256, type Address } from 'viem'
 import { useCreateAtom } from './useCreateAtom'
@@ -129,10 +129,9 @@ export const useSmartAccount = () => {
       // Step 1: Create user atom with existing hook
       console.log('📝 Creating user atom with useCreateAtom hook...')
       const atomResult = await createAtomHook.createAtomWithMultivault({
-        name: "User",
-        description: targetAddress, // L'adresse du wallet comme description
-        url: targetAddress, // L'adresse du wallet comme URL
-        image: ''
+        name: targetAddress,
+        description: `SofIA browser user on Intuition Testnet`,
+        url: `https://testnet.explorer.intuition.systems/address/${targetAddress}`
       })
 
       const userAtomId = atomResult.vaultId
@@ -141,48 +140,53 @@ export const useSmartAccount = () => {
       console.log('🔗 Atom creation tx:', atomResult.txHash)
       console.log('🏭 Factory Address:', ATOM_WALLET_FACTORY_ADDRESS)
 
-      // Step 2: Check if wallet already exists for this atomId
-      const predictedAddress = await computeWalletAddress(userAtomId)
-      console.log('📍 Predicted wallet address:', predictedAddress)
 
-      const existingCode = await publicClient.getBytecode({ address: predictedAddress })
-      console.log('🔍 Existing bytecode length:', existingCode?.length || 0)
+      // Step 4: Verify atomId exists before deployment
+      console.log('🔍 Verifying atomId exists in MultiVault...')
+      const atomExists = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS,
+        abi: MULTIVAULT_V2_ABI,
+        functionName: 'isTermCreated',
+        args: [userAtomId]
+      }) as boolean
       
-      if (existingCode !== undefined && existingCode !== '0x' && existingCode.length > 2) {
-        console.log('⚠️ AtomWallet already exists at this address!')
-        
-        // Try to get the owner to confirm it's the right wallet
-        try {
-          const owner = await publicClient.readContract({
-            address: predictedAddress,
-            abi: ATOM_WALLET_ABI,
-            functionName: 'owner'
-          }) as string
-          
-          console.log('👤 Existing wallet owner:', owner)
-          console.log('👤 Current user:', targetAddress)
-          
-          if (owner.toLowerCase() === targetAddress.toLowerCase()) {
-            console.log('✅ Wallet already belongs to current user!')
-            await initializeSmartAccount(userAtomId, targetAddress)
-            return 'already-deployed'
-          } else {
-            throw new Error(`AtomWallet already deployed but owned by different address: ${owner}`)
-          }
-        } catch (ownerError) {
-          console.error('❌ Could not verify wallet ownership:', ownerError)
-          throw new Error(`AtomWallet exists at ${predictedAddress} but cannot verify ownership`)
-        }
+      console.log('📊 AtomId exists in MultiVault:', atomExists)
+      
+      if (!atomExists) {
+        throw new Error(`AtomId ${userAtomId} not found in MultiVault - cannot deploy AtomWallet`)
       }
-
-      // Step 3: Deploy the AtomWallet
+      
+      // Step 5: Deploy the AtomWallet
       console.log('🚀 Deploying AtomWallet...')
       
+      // Get deposit amount 
+      console.log('💰 Getting atomDepositAmount for factory call...')
+      let depositAmount = BigInt(0)
+      
+      try {
+        depositAmount = await publicClient.readContract({
+          address: MULTIVAULT_CONTRACT_ADDRESS,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'getAtomCost'
+        }) as bigint
+        console.log('💰 Atom deposit amount:', depositAmount.toString())
+      } catch (error) {
+        console.error('⚠️ Could not get atomDepositAmount:', error)
+        depositAmount = BigInt('1000000001000000')
+        console.log('💰 Using fallback deposit amount:', depositAmount.toString())
+      }
+
+      console.log('🔧 Deploying AtomWallet with deposit amount...')
+
       const txHash = await walletClient.writeContract({
         address: ATOM_WALLET_FACTORY_ADDRESS,
         abi: ATOM_WALLET_FACTORY_ABI,
         functionName: 'deployAtomWallet',
-        args: [userAtomId]
+        args: [userAtomId],
+        account: targetAddress as `0x${string}`,
+        chain: SELECTED_CHAIN,
+        gas: BigInt(500000),
+        value: depositAmount 
       })
 
       console.log('🔗 AtomWallet deployment tx:', txHash)
@@ -221,133 +225,18 @@ export const useSmartAccount = () => {
     }
   }
 
-  // Execute batch operations via AtomWallet
-  const executeBatch = async (operations: UserOperation[]): Promise<string> => {
-    if (!accountInfo?.address) {
-      throw new Error('Smart account not initialized')
-    }
-
-    if (!accountInfo.isDeployed) {
-      throw new Error('AtomWallet not deployed. Please deploy first.')
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const { walletClient, publicClient } = await getClients()
-
-      console.log('🔄 Executing', operations.length, 'operations via AtomWallet')
-
-      const targets = operations.map(op => op.target)
-      const values = operations.map(op => op.value) 
-      const dataArray = operations.map(op => op.data)
-
-      // Calculate total value needed
-      const totalValue = values.reduce((sum, val) => sum + val, 0n)
-
-      const txHash = await walletClient.writeContract({
-        address: accountInfo.address,
-        abi: ATOM_WALLET_ABI,
-        functionName: 'executeBatch',
-        args: [targets, values, dataArray],
-        value: totalValue,
-        gas: BigInt(1000000 + (operations.length * 500000))
-      })
-
-      console.log('🔗 Batch execution tx:', txHash)
-
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
-      
-      if (receipt.status !== 'success') {
-        throw new Error(`Batch execution failed: ${receipt.status}`)
-      }
-
-      console.log('✅ Batch operations executed successfully')
-      
-      // Refresh account info
-      await initializeSmartAccount()
-      
-      return txHash
-    } catch (error) {
-      console.error('❌ Batch execution failed:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      setError(new Error(`Batch execution failed: ${errorMessage}`))
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Execute single operation (wrapper around executeBatch)
-  const executeOperation = async (operation: UserOperation): Promise<string> => {
-    return executeBatch([operation])
-  }
-
-  // Helper to create atom operation
-  const createAtomOperation = async (atomData: {
-    name: string
-    description?: string
-    url: string
-  }): Promise<UserOperation> => {
-    try {
-      const { publicClient } = await getClients()
-
-      // Get atom cost
-      const atomCost = await publicClient.readContract({
-        address: MULTIVAULT_CONTRACT_ADDRESS,
-        abi: MULTIVAULT_V2_ABI,
-        functionName: 'getAtomCost'
-      }) as bigint
-
-      // Simple IPFS URI (in production, use actual IPFS pinning)
-      const ipfsUri = `temp://${atomData.name}-${Date.now()}`
-      const encodedData = stringToHex(ipfsUri)
-
-      const callData = encodeFunctionData({
-        abi: MULTIVAULT_V2_ABI,
-        functionName: 'createAtoms',
-        args: [[encodedData], [atomCost]]
-      })
-
-      return {
-        target: MULTIVAULT_CONTRACT_ADDRESS,
-        value: atomCost,
-        data: callData,
-        description: `Create atom: ${atomData.name}`
-      }
-    } catch (error) {
-      console.error('❌ Failed to create atom operation:', error)
-      throw error
-    }
-  }
-
-  // Auto-initialize when address changes
-  useEffect(() => {
-    console.log('🔍 useSmartAccount useEffect - address changed:', address)
-    if (address) {
-      console.log('🚀 Initializing Smart Account for address:', address)
-      initializeSmartAccount().catch(console.error)
-    } else {
-      console.log('❌ No address provided, clearing account info')
-      setAccountInfo(null)
-    }
-  }, [address])
-
   return {
-    // State
+    accountInfo,
     isLoading,
     error,
-    accountInfo,
-    
-    // Core functions
-    initializeSmartAccount,
     deployAtomWallet,
-    executeOperation,
-    executeBatch,
-    
-    // Helpers
-    createAtomOperation,
-    computeWalletAddress
+    initializeSmartAccount,
+    getAccountBalance: async () => {
+      if (!accountInfo) return BigInt(0)
+      const { publicClient } = await getClients()
+      return await publicClient.getBalance({ address: accountInfo.address })
+    }
   }
 }
+
+export default useSmartAccount

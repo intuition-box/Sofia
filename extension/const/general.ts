@@ -2,19 +2,9 @@ import { intuitionTestnet } from '../lib/config'
 
 export const CURRENT_ENV = 'development'
 
-export const DEFAULT_CHAIN_ID = intuitionTestnet.id.toString()
-
 export const DEFAULT_VERIFIER = function (): void {
   throw new Error('verify function must be implemented')
 }
-
-export const MULTIVAULT_CONTRACT_ADDRESS = '0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d'
-
-export const RELIC_CONTRACT_ADDRESS =
-  CURRENT_ENV === 'development'
-    ? '0x7aB2F10CaC6E27971fa93A5D5470Bb84126Bb734' // dev contract address
-    : '0x7aB2F10CaC6E27971fa93A5D5470Bb84126Bb734' // prod contract address
-
 export const DEFAULT_LIMIT = 10
 
 export const MIN_DEPOSIT = CURRENT_ENV === 'development' ? 0.00069 : 0.00042
