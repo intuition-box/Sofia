@@ -42,6 +42,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
   const [address] = useStorage<string>("metamask-account")
+  const [hasInitialLoad, setHasInitialLoad] = useState(false)
   
   // Selection state management
   const [selectedEchoes, setSelectedEchoes] = useState<Set<string>>(new Set())
@@ -130,7 +131,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         }
       }
       
-      setEchoTriplets(newEchoTriplets)
+      // Éviter le glitch en ne mettant à jour que si la liste a réellement changé
+      setEchoTriplets(prev => {
+        // Comparer les IDs pour éviter une mise à jour inutile
+        const prevIds = prev.map(t => t.id).sort().join(',')
+        const newIds = newEchoTriplets.map(t => t.id).sort().join(',')
+        
+        if (prevIds === newIds) {
+          return prev // Garder l'état précédent si identique
+        }
+        
+        return newEchoTriplets
+      })
       
     } catch (error) {
       console.error('❌ EchoesTab: Failed to process messages:', error)
@@ -142,17 +154,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     try {
       const savedStates = await elizaDataService.loadTripletStates()
       
-      if (savedStates.length > 0) {
-        setEchoTriplets(savedStates)
-        await new Promise(resolve => setTimeout(resolve, 0))
-      }
-      
-      // Utiliser la fonction unifiée avec ou sans états sauvegardés
+      // Utiliser la fonction unifiée avec les états sauvegardés
       await processRawMessages(savedStates.length > 0 ? savedStates : undefined)
+      
+      // Marquer le chargement initial comme terminé
+      if (!hasInitialLoad) {
+        setHasInitialLoad(true)
+      }
       
     } catch (error) {
       console.error('❌ EchoesTab: Failed to load saved states:', error)
       await processRawMessages()
+      
+      // Marquer le chargement initial comme terminé même en cas d'erreur
+      if (!hasInitialLoad) {
+        setHasInitialLoad(true)
+      }
     }
   }
 
@@ -392,7 +409,8 @@ Check console for details`)
   // Statistiques des triplets (seulement disponibles)
   const availableCount = echoTriplets.filter(t => t.status === 'available').length
 
-  if (isLoadingEliza) {
+  // Afficher le loading seulement au premier chargement
+  if (isLoadingEliza && !hasInitialLoad) {
     return (
       <div className="triples-container">
         <div className="empty-state">
