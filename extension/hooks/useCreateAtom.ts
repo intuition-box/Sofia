@@ -4,6 +4,7 @@ import { getClients } from '../lib/viemClients'
 import { stringToHex, keccak256 } from 'viem'
 import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
 import { SELECTED_CHAIN } from '~lib/config'
+import { useStorage } from "@plasmohq/storage/hook"
 
 export interface AtomIPFSData {
   name: string
@@ -14,6 +15,7 @@ export interface AtomIPFSData {
 
 export const useCreateAtom = () => {
   const { mutateAsync: pinThing } = usePinThingMutation()
+  const [address] = useStorage<string>("metamask-account")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
@@ -87,7 +89,7 @@ export const useCreateAtom = () => {
         value: atomCost,
         gas: 2000000n,
         chain: SELECTED_CHAIN,
-        account: ""
+        account: address as `0x${string}`
       })
 
       console.log('🔗 Transaction:', txHash)

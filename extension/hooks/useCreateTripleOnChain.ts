@@ -17,6 +17,18 @@ export interface TripleOnChainResult {
   tripleHash: string
 }
 
+export interface BatchTripleInput {
+  predicateName: string
+  objectData: { name: string; description?: string; url: string }
+}
+
+export interface BatchTripleResult {
+  success: boolean
+  results: TripleOnChainResult[]
+  txHash?: string
+  failedTriples: { input: BatchTripleInput; error: string }[]
+}
+
 
 export const useCreateTripleOnChain = () => {
   const { createAtomWithMultivault } = useCreateAtom()
@@ -213,8 +225,52 @@ export const useCreateTripleOnChain = () => {
   }
 
 
+  const createTriplesBatch = async (inputs: BatchTripleInput[]): Promise<BatchTripleResult> => {
+    setIsCreating(true)
+    setError(null)
+    
+    try {
+      console.log(`🔗 Starting batch creation of ${inputs.length} triples`)
+      setCurrentStep(`Creating ${inputs.length} triples in batch...`)
+      
+      const results: TripleOnChainResult[] = []
+      const failedTriples: { input: BatchTripleInput; error: string }[] = []
+      
+      // Process each triple individually
+      for (const input of inputs) {
+        try {
+          const result = await createTripleOnChain(input.predicateName, input.objectData)
+          results.push(result)
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+          failedTriples.push({ input, error: errorMessage })
+          console.error(`❌ Failed to create triple for ${input.predicateName}:`, error)
+        }
+      }
+      
+      console.log(`✅ Batch completed: ${results.length} successful, ${failedTriples.length} failed`)
+      
+      return {
+        success: failedTriples.length === 0,
+        results,
+        txHash: results.find(r => r.txHash)?.txHash,
+        failedTriples
+      }
+      
+    } catch (error) {
+      console.error('❌ Batch creation failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      setError(new Error(`Batch creation failed: ${errorMessage}`))
+      throw new Error(`Batch creation failed: ${errorMessage}`)
+    } finally {
+      setIsCreating(false)
+      setCurrentStep('')
+    }
+  }
+
   return { 
     createTripleOnChain,
+    createTriplesBatch,
     isCreating, 
     error,
     currentStep
