@@ -190,20 +190,35 @@
   margin: 0;
 }
 
-.triplet-text .subject {
-  font-weight: 600;
-  color: #C7866C;
+.triplet-text {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* espace entre les éléments */
 }
 
+/* Subject → bulle arrondie */
+.triplet-text .subject {
+  font-weight: 600;
+  color: #fff;
+  background: #2d2d2d;
+  padding: 6px 14px;
+  border-radius: 12px;
+}
+
+/* Predicate (action) → texte simple entre les bulles */
 .triplet-text .action {
   margin: 0 8px;
   font-style: italic;
   color: #A6AF6B;
 }
 
+/* Object → bulle arrondie */
 .triplet-text .object {
   font-weight: 500;
-  color: #F2DED6;
+  color: #fff;
+  background: #2d2d2d;
+  padding: 6px 14px;
+  border-radius: 12px;
 }
 
 .add-button {
