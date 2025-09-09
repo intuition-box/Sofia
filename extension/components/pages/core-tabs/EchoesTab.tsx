@@ -213,7 +213,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       const publishedTripletDetails: PublishedTripletDetails = {
         originalId: tripletId,
         triplet: {
-          subject: triplet.triplet.subject === 'User' ? address! : triplet.triplet.subject,
+          subject: address!,
           predicate: triplet.triplet.predicate,
           object: triplet.triplet.object
         },
@@ -257,7 +257,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         const publishedTripletDetails: PublishedTripletDetails = {
           originalId: tripletId,
           triplet: {
-            subject: triplet.triplet.subject === 'User' ? address! : triplet.triplet.subject,
+            subject: address!,
             predicate: triplet.triplet.predicate,
             object: triplet.triplet.object
           },
@@ -437,7 +437,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               const publishedDetails: PublishedTripletDetails = {
                 originalId: triplet.id,
                 triplet: {
-                  subject: triplet.triplet.subject === 'User' ? address! : triplet.triplet.subject,
+                  subject: address!,
                   predicate: triplet.triplet.predicate,
                   object: triplet.triplet.object
                 },
