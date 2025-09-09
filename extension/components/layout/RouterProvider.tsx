@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 
-type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'core' | 'recommendations' | 'sync' | 'search' | 'search-result' | 'chat'
+type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'Sofia' | 'recommendations' | 'search' | 'search-result' | 'chat'
 
 interface RouterContextType {
   currentPage: Page
