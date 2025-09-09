@@ -106,7 +106,7 @@ const SearchPage = () => {
 
         {/* High-value triplets section */}
         <div className="trending-section">
-          <h3 className="section-title">Trending Triplets</h3>
+          <h3 className="section-title">Trending Claims</h3>
           
           {tripletsLoading && (
             <div className="empty-state">

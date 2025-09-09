@@ -7,6 +7,7 @@ import VoteIcon from '../ui/icons/quick_action/Selected=vote.svg'
 import VoteHoverIcon from '../ui/icons/quick_action/Selected=vote hover.svg'
 import PersonIcon from '../../assets/Icon=person.svg'
 import VoteIconSvg from '../../assets/Icon=vote.svg'
+import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
@@ -137,38 +138,61 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
 
   return (
     <div className="triples-container">
-      {/* Header avec recherche et retour */}
+      {/* Header avec recherche et navigation */}
       <div className="search-header">
         <button 
-          onClick={() => navigateTo('search')}
+          onClick={() => navigateTo('home-connected')}
           className="back-button"
         >
-          ←
+          <img src={homeIcon} alt="Home" className="home-icon" />
         </button>
-        <h2>
-          {isEditingSearch ? (
-            <input
-              type="text"
-              value={editedQuery}
-              onChange={(e) => setEditedQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="search-input"
-              placeholder="Search atoms in Intuition blockchain..."
-              autoFocus
-              style={{ width: '100%', margin: 0 }}
-            />
-          ) : (
-            <span onClick={handleSearchEdit} style={{ cursor: 'pointer' }}>
-              "{searchQuery}"
-            </span>
-          )}
-        </h2>
-        {isEditingSearch && (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={handleSearchSave} className="search-button" style={{ padding: '4px 8px', fontSize: '12px' }}>✓</button>
-            <button onClick={handleSearchCancel} className="search-button" style={{ padding: '4px 8px', fontSize: '12px' }}>✕</button>
-          </div>
-        )}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input
+            type="text"
+            value={isEditingSearch ? editedQuery : searchQuery}
+            onChange={(e) => {
+              if (isEditingSearch) {
+                setEditedQuery(e.target.value)
+              } else {
+                setSearchQuery(e.target.value)
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (isEditingSearch) {
+                  handleSearchSave()
+                } else {
+                  const newQuery = (e.target as HTMLInputElement).value.trim()
+                  if (newQuery && newQuery !== searchQuery) {
+                    setSearchQuery(newQuery)
+                    localStorage.setItem('searchQuery', newQuery)
+                    performSearch(newQuery)
+                  }
+                }
+              } else if (e.key === 'Escape') {
+                if (isEditingSearch) {
+                  handleSearchCancel()
+                }
+              }
+            }}
+            onFocus={() => {
+              if (!isEditingSearch) {
+                setEditedQuery(searchQuery)
+                setIsEditingSearch(true)
+              }
+            }}
+            onBlur={() => {
+              if (isEditingSearch) {
+                setTimeout(() => {
+                  setIsEditingSearch(false)
+                }, 100)
+              }
+            }}
+            className="search-input"
+            placeholder="Search atoms in Intuition blockchain..."
+            style={{ flex: 1, margin: 0 }}
+          />
+        </div>
       </div>
 
       <div className="search-content">
