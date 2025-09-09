@@ -511,7 +511,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   return (
     <div className="triples-container">
 
-      {/* Stats */}
+      Stats
       {echoTriplets.length > 0 && (
         <div className="signals-stats">
           <div className="stat-item">

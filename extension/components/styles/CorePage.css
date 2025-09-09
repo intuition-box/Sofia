@@ -193,26 +193,26 @@
 .triplet-text {
   display: flex;
   align-items: center;
-  gap: 8px; /* espace entre les éléments */
+  gap: 8px; 
 }
 
-/* Subject → bulle arrondie */
+/* Subject  */
 .triplet-text .subject {
   font-weight: 600;
-  color: #fff;
+  color: #C7866C;
   background: #2d2d2d;
   padding: 6px 14px;
   border-radius: 12px;
 }
 
-/* Predicate (action) → texte simple entre les bulles */
+/* Predicate */
 .triplet-text .action {
   margin: 0 8px;
   font-style: italic;
   color: #ffffff;
 }
 
-/* Object → bulle arrondie */
+/* Object  */
 .triplet-text .object {
   font-weight: 500;
   color: #fff;

@@ -155,19 +155,6 @@ const SearchPage = () => {
                       {/* Support Market Cap metrics */}
                     </div>
                       <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
-                        {tripletItem.totalSupportMarketCap > 0 && (
-                          <span className="sentiment-metric market-cap" style={{
-                            backgroundColor: '#434343ff',
-                            color: '#ffffffff',
-                            padding: '2px 6px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: '500',
-                            marginRight: '4px'
-                          }}>
-                            {formatNumber(tripletItem.totalSupportMarketCap)} TTRUST Mkt Cap
-                          </span>
-                        )}
                         {tripletItem.totalUsers > 0 && (
                           <span className="sentiment-metric users" style={{
                             backgroundColor: '#ffffffff',
@@ -193,14 +180,6 @@ const SearchPage = () => {
                           </span>
                         )}
                       </div>
-
-                    {/* Actions */}
-                    <div className="signal-actions">
-                      <QuickActionButton
-                        action="scan"
-                        onClick={() => handleViewOnExplorer(tripletItem.txHash)}
-                      />
-                    </div>
 
                     {isExpanded && (
                       <div className="triplet-details">

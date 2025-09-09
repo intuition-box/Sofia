@@ -80,7 +80,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       // Intuition Testnet explorer
       window.open(`https://testnet.explorer.intuition.systems/tx/${txHash}`, '_blank')
     } else if (vaultId) {
-      console.log('🔍 View vault:', vaultId)
+      console.log('View vault:', vaultId)
       // TODO: Link to vault explorer
     }
   }
@@ -206,7 +206,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   <div className="triplet-details">
                     <div className="triplet-detail-section">
                       <div className="triplet-detail-section">
-                        <h4 className="triplet-detail-title">📊 Community Voting</h4>
+                        <h4 className="triplet-detail-title"> Community Voting</h4>
                         {(() => {
                           const metrics = getTripletMetrics(tripletItem)
                           const total = metrics.forCount + metrics.against + metrics.neutral
@@ -254,22 +254,22 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                           )
                         })()}
                       </div>
-                      <h4 className="triplet-detail-title">🧍 Subject</h4>
+                      <h4 className="triplet-detail-title">Subject</h4>
                       <p className="triplet-detail-name">{formatWalletAddress(tripletItem.triplet.subject)}</p>
                     </div>
 
                     <div className="triplet-detail-section">
-                      <h4 className="triplet-detail-title">🔗 Predicate</h4>
+                      <h4 className="triplet-detail-title">Predicate</h4>
                       <p className="triplet-detail-name">{tripletItem.triplet.predicate}</p>
                     </div>
 
                     <div className="triplet-detail-section">
-                      <h4 className="triplet-detail-title">📄 Object</h4>
+                      <h4 className="triplet-detail-title">Object</h4>
                       <p className="triplet-detail-name">{tripletItem.triplet.object}</p>
                     </div>
 
                     <div className="triplet-detail-section">
-                      {/* <h4 className="triplet-detail-title">⛓️ Blockchain</h4>
+                      {/* <h4 className="triplet-detail-title">Blockchain</h4>
                       {tripletItem.objectVaultId && (
                         <p className="triplet-detail-name">Object VaultID: {tripletItem.objectVaultId.slice(0, 10)}...{tripletItem.objectVaultId.slice(-8)}</p>
                       )}
@@ -293,7 +293,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
 
                     <div className="triplet-detail-section">
-                      <h4 className="triplet-detail-title">🌐 Source</h4>
+                      <h4 className="triplet-detail-title"> Source</h4>
                       <p className="triplet-detail-name">
                         Published from Echoes Tab ({tripletItem.source === 'created' ? 'New Triple' : 'Existing Triple'})
                       </p>
@@ -315,7 +315,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         })
       ) : (
         <div className="empty-state">
-          <p>📡 No Published Triplets Found</p>
+          <p>No Published Triplets Found</p>
           <p className="empty-subtext">
             Triplets you publish from Echoes tab will appear here automatically.<br/>
             Create some triplets to see them displayed with full blockchain details!
