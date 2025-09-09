@@ -54,13 +54,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     // Base metrics simulation based on the type of predicate
     let baseVotes = Math.floor(Math.random() * 500) + 50 // Random base between 50-550
     
-    if (predicate.includes('supports') || predicate.includes('likes') || predicate.includes('endorses')) {
+    if ( predicate.includes('likes') ) {
       return {
         forCount: Math.floor(baseVotes * 0.7),
         against: Math.floor(baseVotes * 0.2),
         neutral: Math.floor(baseVotes * 0.1)
       }
-    } else if (predicate.includes('against') || predicate.includes('opposes') || predicate.includes('disagrees')) {
+    } else if (predicate.includes('use') ) {
       return {
         forCount: Math.floor(baseVotes * 0.15),
         against: Math.floor(baseVotes * 0.75),
@@ -68,9 +68,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       }
     } else {
       return {
-        forCount: Math.floor(baseVotes * 0.4),
-        against: Math.floor(baseVotes * 0.3),
-        neutral: Math.floor(baseVotes * 0.3)
+        forCount: Math.floor(baseVotes * 0.8),
+        against: Math.floor(baseVotes * 0.1),
+        neutral: Math.floor(baseVotes * 0.1)
       }
     }
   }
@@ -152,7 +152,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 </p>
 
                 {/* Voting metrics */}
-                <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
+                {/* <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
                   {(() => {
                     const metrics = getTripletMetrics(tripletItem)
                     return (
@@ -192,7 +192,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       </>
                     )
                   })()}
-                </div>
+                </div> */}
 
                 </div>
                   {/* Actions à droite - uniquement scan/view */}
