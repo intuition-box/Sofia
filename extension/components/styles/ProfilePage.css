@@ -16,8 +16,8 @@
 
 .profile-header {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+  align-items: flex-start;
   gap: var(--spacing-xl);
   margin-bottom: var(--spacing-3xl);
 }
@@ -30,8 +30,8 @@
 }
 
 .profile-photo {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   border-radius: var(--radius-full);
   overflow: hidden;
   border: 3px solid var(--color-border-light);
@@ -86,6 +86,8 @@
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-sm);
+  flex: 1;
+  justify-content: center;
 }
 
 .wallet-info {
@@ -165,10 +167,11 @@
 }
 
 .verified-badge {
-  color: #10B981;
-  font-weight: bold;
+  width: 20px;
+  height: 20px;
   margin-left: var(--spacing-sm);
-  font-size: var(--font-size-lg);
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .connected-indicator {
@@ -324,4 +327,184 @@
   width: 16px;
   height: 16px;
   filter: brightness(0) invert(1);
+}
+
+/* Account Page Specific Styles */
+.profile-name-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+.profile-name-text {
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.profile-stats-container {
+  display: flex;
+  gap: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+  justify-content: center;
+}
+
+.profile-stat-item {
+  text-align: center;
+}
+
+.profile-stat-number {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.profile-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.action-buttons-container {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.following-button {
+  background: linear-gradient(90deg, #c73a97, #7c3aed);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+  justify-content: center;
+}
+
+.message-button {
+  background: #374151;
+  color: #d1d5db;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+  justify-content: center;
+}
+
+
+
+.search-container {
+  position: relative;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.search-input-with-icon {
+  padding-right: calc(var(--spacing-xl) + 8px);
+}
+
+.search-icon {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+
+.user-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.user-avatar-container {
+  position: relative;
+}
+
+.user-avatar-small {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 2px solid var(--color-border-light);
+  background: var(--color-bg-glass-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.online-status-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background-color: #10B981;
+  border-radius: 50%;
+  border: 2px solid var(--color-bg-primary);
+}
+
+.user-details-container {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.user-left-content {
+  flex: 1;
+}
+
+.user-name-text {
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.user-description-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.user-right-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xs);
+}
+
+.user-followers-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.follow-button {
+  background: transparent;
+  color: #F2D57C;
+  border: 1px solid #F2D57C;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
 }
