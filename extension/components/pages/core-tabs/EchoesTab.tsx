@@ -510,23 +510,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   
   return (
     <div className="triples-container">
-      {echoTriplets.length > 0 && (
+      {/* {echoTriplets.length > 0 && (
         <div className="signals-stats">
           <div className="stat-item">
             <span className="stat-number stat-atom-only">{availableCount}</span>
             <span className="stat-label">Available Echoes</span>
           </div>
         </div>
-      )}
+      )} */}
       {/* Selection Panel */}
       {(selectedEchoes.size > 0 || availableCount > 0) && (
         <div className="selection-panel">
           <div className="selection-info">
             <label className="select-all-label">
               <input
-                type="checkbox"
                 checked={isSelectAll}
-                onChange={toggleSelectAll}
+                onClick={toggleSelectAll}
                 className="select-all-checkbox"
               />
               <span>{selectedEchoes.size > 0 ? `${selectedEchoes.size} selected` : 'Select All'}</span>
