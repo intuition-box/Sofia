@@ -418,50 +418,29 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           </div>
           
           {selectedEchoes.size > 0 && (
-            <div className="batch-actions">
-              <button 
-                className="batch-btn add-to-signals"
-                onClick={addSelectedToSignals}
-                disabled={isProcessing}
-              >
-                Amplify ({selectedEchoes.size})
-              </button>
-              <button 
-                className="batch-btn delete-selected"
-                onClick={deleteSelectedEchoes}
-              >
-                Remove ({selectedEchoes.size})
-              </button>
-            </div>
-          )}
-          
-          {/* Barre de progression pour le batch */}
-          {isProcessing && selectedEchoes.size > 1 && (
-            <div className="batch-progress-container" style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
-              <div className="processing-message" style={{ marginBottom: '8px' }}>
-                {currentStep || '⚙️ Starting batch...'}
+            <div>
+              <div className="batch-actions">
+                <button 
+                  className="batch-btn add-to-signals"
+                  onClick={addSelectedToSignals}
+                  disabled={isProcessing}
+                >
+                  Amplify ({selectedEchoes.size})
+                </button>
+                <button 
+                  className="batch-btn delete-selected"
+                  onClick={deleteSelectedEchoes}
+                >
+                  Remove ({selectedEchoes.size})
+                </button>
               </div>
-              <div className="progress-bar" style={{ 
-                width: '100%', 
-                height: '8px', 
-                backgroundColor: '#e9ecef', 
-                borderRadius: '4px', 
-                overflow: 'hidden' 
-              }}>
-                <div 
-                  className="progress-fill" 
-                  style={{
-                    width: `${batchProgress.current}%`,
-                    height: '100%',
-                    backgroundColor: batchProgress.phase === 'error' ? '#dc3545' : '#28a745',
-                    transition: 'width 0.3s ease',
-                    borderRadius: '4px'
-                  }}
-                ></div>
-              </div>
-              <div style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px', textAlign: 'center' }}>
-                {batchProgress.current}% completed
-              </div>
+              
+              {/* Barre de progression pour le batch - même style que les triples */}
+              {isProcessing && selectedEchoes.size > 1 && (
+                <div className="processing-message">
+                  {currentStep || 'Starting batch...'}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -523,7 +502,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
                     {processingTripletId === tripletItem.id && (
                       <div className="processing-message">
-                        {currentStep || ' Publishing triplet...'}
+                        {currentStep || 'Publishing triplet...'}
                       </div>
                     )}
 

@@ -242,7 +242,7 @@ export const useCreateTripleOnChain = () => {
       }
 
       // Phase 1: Collect all unique atoms needed (0-10%)
-      setCurrentStep('📋 Analyzing required atoms...')
+      setCurrentStep('Analyzing required atoms...')
       setBatchProgress({ current: 5, total: 100, phase: 'analyzing' })
       const uniqueAtoms = new Map<string, { name: string; description?: string; url: string; type: string }>()
       
@@ -276,7 +276,7 @@ export const useCreateTripleOnChain = () => {
       console.log(`📋 Need ${uniqueAtoms.size} unique atoms`)
 
       // Phase 2: Check existing atoms and prepare batch creation (10-30%)
-      setCurrentStep(`🔍 Checking ${uniqueAtoms.size} existing atoms...`)
+      setCurrentStep(`Checking ${uniqueAtoms.size} existing atoms...`)
       setBatchProgress({ current: 15, total: 100, phase: 'checking_atoms' })
       const atomResults = new Map<string, string>() // key -> vaultId
       const atomsToCreate: { key: string; atomData: AtomIPFSData; ipfsUri: string; atomHash: string }[] = []
@@ -325,7 +325,7 @@ export const useCreateTripleOnChain = () => {
 
       // Phase 2b: Create all missing atoms in ONE batch transaction (30-60%)
       if (atomsToCreate.length > 0) {
-        setCurrentStep(`🆕 Creating ${atomsToCreate.length} atoms on-chain...`)
+        setCurrentStep(`Creating ${atomsToCreate.length} atoms on-chain...`)
         setBatchProgress({ current: 35, total: 100, phase: 'creating_atoms' })
         console.log(`🆕 Creating ${atomsToCreate.length} atoms in one transaction`)
 
@@ -347,7 +347,7 @@ export const useCreateTripleOnChain = () => {
         console.log(`🚀 Sending batch atom transaction, value: ${totalValue.toString()}`)
 
         setBatchProgress({ current: 45, total: 100, phase: 'sending_atoms' })
-        setCurrentStep('🚀 Sending atoms transaction...')
+        setCurrentStep('Sending atoms transaction...')
 
         // Create all atoms in one transaction
         const hash = await walletClient.writeContract({
@@ -364,7 +364,7 @@ export const useCreateTripleOnChain = () => {
         console.log(`🔗 Batch atom transaction sent: ${hash}`)
 
         setBatchProgress({ current: 55, total: 100, phase: 'confirming_atoms' })
-        setCurrentStep('⏳ Confirming atoms transaction...')
+        setCurrentStep('Confirming atoms transaction...')
 
         // Wait for confirmation
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -383,7 +383,7 @@ export const useCreateTripleOnChain = () => {
       }
 
       // Phase 3: Check existing triples and group new ones for batch creation (60-75%)
-      setCurrentStep('🔍 Verifying existing triples...')
+      setCurrentStep('Verifying existing triples...')
       setBatchProgress({ current: 65, total: 100, phase: 'checking_triples' })
       const results: TripleOnChainResult[] = []
       const triplesToCreate: {
@@ -439,7 +439,7 @@ export const useCreateTripleOnChain = () => {
 
       // Phase 4: Create new triples in batch (if any) (75-100%)
       if (triplesToCreate.length > 0) {
-        setCurrentStep(`🔗 Creating ${triplesToCreate.length} triples on-chain...`)
+        setCurrentStep(`Creating ${triplesToCreate.length} triples on-chain...`)
         setBatchProgress({ current: 75, total: 100, phase: 'creating_triples' })
         console.log(`🔗 Creating ${triplesToCreate.length} new triples in batch`)
 
@@ -464,7 +464,7 @@ export const useCreateTripleOnChain = () => {
         console.log(`🚀 Sending batch triple transaction, value: ${totalValue.toString()}`)
 
         setBatchProgress({ current: 85, total: 100, phase: 'sending_triples' })
-        setCurrentStep('🚀 Sending triples transaction...')
+        setCurrentStep('Sending triples transaction...')
 
         // Simulate first
         const simulation = await publicClient.simulateContract({
@@ -490,7 +490,7 @@ export const useCreateTripleOnChain = () => {
         console.log(`🔗 Batch transaction sent: ${hash}`)
 
         setBatchProgress({ current: 95, total: 100, phase: 'confirming_triples' })
-        setCurrentStep('⏳ Confirming triples transaction...')
+        setCurrentStep('Confirming triples transaction...')
 
         // Wait for confirmation
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -520,7 +520,7 @@ export const useCreateTripleOnChain = () => {
       }
 
       setBatchProgress({ current: 100, total: 100, phase: 'finalizing' })
-      setCurrentStep('✅ Batch completed successfully!')
+      setCurrentStep('Batch completed successfully!')
 
       const summary = {
         total: inputs.length,
@@ -543,7 +543,7 @@ export const useCreateTripleOnChain = () => {
       console.error('❌ Optimized batch creation failed:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       setBatchProgress({ current: 0, total: 100, phase: 'error' })
-      setCurrentStep(`❌ Batch failed: ${errorMessage}`)
+      setCurrentStep(`Batch failed: ${errorMessage}`)
       setError(new Error(`Batch creation failed: ${errorMessage}`))
       throw new Error(`Batch creation failed: ${errorMessage}`)
     } finally {
