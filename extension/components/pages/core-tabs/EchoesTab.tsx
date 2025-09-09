@@ -445,14 +445,14 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 description: triplet.description,
                 sourceMessageId: triplet.sourceMessageId || '',
                 // Try different property names based on actual structure
-                tripleVaultId: correspondingResult.tripleVaultId || correspondingResult.vaultId || correspondingResult.id || `temp_${Date.now()}_${i}`,
+                tripleVaultId: correspondingResult.tripleVaultId  || `temp_${Date.now()}_${i}`,
                 txHash: result.txHash || '',
-                subjectVaultId: correspondingResult.subjectVaultId || correspondingResult.subject?.vaultId || '',
-                predicateVaultId: correspondingResult.predicateVaultId || correspondingResult.predicate?.vaultId || '',
-                objectVaultId: correspondingResult.objectVaultId || correspondingResult.object?.vaultId || '',
+                subjectVaultId: correspondingResult.subjectVaultId || '',
+                predicateVaultId: correspondingResult.predicateVaultId ||  '',
+                objectVaultId: correspondingResult.objectVaultId ||  '',
                 timestamp: Date.now(),
                 source: correspondingResult.source || 'created',
-                id: correspondingResult.tripleVaultId || correspondingResult.vaultId || correspondingResult.id || `temp_${Date.now()}_${i}`
+                id: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`
               }
               
               try {
@@ -510,8 +510,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   
   return (
     <div className="triples-container">
-
-      Stats
       {echoTriplets.length > 0 && (
         <div className="signals-stats">
           <div className="stat-item">
