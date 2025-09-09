@@ -40,6 +40,12 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return num.toLocaleString()
   }
 
+  // Format wallet address to show first 6 and last 4 characters (e.g., 0xb94...d42a)
+  const formatWalletAddress = (address: string) => {
+    if (!address || address.length < 10) return address
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
   const getTripletMetrics = (triplet: any) => {
     // For now, generate mock metrics based on the triplet predicate
     // In a real implementation, this would fetch actual voting data from the blockchain
@@ -143,7 +149,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
                   }}
                 >
-                  <span className="subject">{tripletItem.triplet.subject}</span>{' '}
+                  <span className="subject">{formatWalletAddress(tripletItem.triplet.subject)}</span>{' '}
                   <span className="action">{tripletItem.triplet.predicate}</span>{' '}
                   <span className="object">{tripletItem.triplet.object}</span>
                 </p>
@@ -203,7 +209,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   <div className="triplet-details">
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">🧍 Subject</h4>
-                      <p className="triplet-detail-name">{tripletItem.triplet.subject}</p>
+                      <p className="triplet-detail-name">{formatWalletAddress(tripletItem.triplet.subject)}</p>
                     </div>
 
                     <div className="triplet-detail-section">
