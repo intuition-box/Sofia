@@ -71,16 +71,18 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
       const checksumAccount = '0x0B940A81271aD090AbD2C18d1a5873e5cb93D42a' // Format exact de l'explorer
       const upperAccount = account.toUpperCase()
       
-      console.log('🔍 [useIntuitionTriplets] Testing multiple address formats:')
-      console.log('  - Lowercase:', normalizedAccount)
-      console.log('  - Checksum (explorer):', checksumAccount)
-      console.log('  - Original (MetaMask):', account)
-      console.log('  - Uppercase:', upperAccount)
+      console.log('🔍 [useIntuitionTriplets] Filtering triplets by subject.label:', account)
       
-      // Query simplifiée qui correspond exactement à celle de l'explorateur
+      // Query pour récupérer les triplets où le subject correspond à l'adresse wallet
       const triplesQuery = `
-        query Object($where: triples_bool_exp) {
-          triples(where: $where) {
+        query GetMyTriples($walletAddress: String!) {
+          triples(where: {
+            subject: {
+              label: {
+                _eq: $walletAddress
+              }
+            }
+          }) {
             subject {
               label
               term_id
@@ -101,13 +103,9 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
         }
       `
       
-      // Utiliser l'adresse du wallet connecté dans l'app
+      // Filtrer par l'adresse wallet comme subject
       const queryVariables = {
-        where: {
-          creator_id: {
-            _eq: account
-          }
-        }
+        walletAddress: account
       }
       
       const triplesResponse = await intuitionGraphqlClient.request(triplesQuery, queryVariables)

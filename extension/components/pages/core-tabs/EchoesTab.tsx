@@ -5,6 +5,7 @@ import { useCreateTripleOnChain, type BatchTripleInput } from '../../../hooks/us
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
 import { parseSofiaMessage } from './types'
+import type { PublishedTripletDetails } from '../../../types/published-triplets'
 import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
@@ -208,6 +209,30 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       // Ajouter à la liste noire pour empêcher la recréation
       await elizaDataService.addPublishedTripletId(tripletId)
       
+      // Sauvegarder les détails complets pour SignalsTab
+      const publishedTripletDetails: PublishedTripletDetails = {
+        originalId: tripletId,
+        triplet: {
+          subject: triplet.triplet.subject === 'User' ? address! : triplet.triplet.subject,
+          predicate: triplet.triplet.predicate,
+          object: triplet.triplet.object
+        },
+        url: triplet.url,
+        description: triplet.description,
+        sourceMessageId: triplet.sourceMessageId,
+        tripleVaultId: result.tripleVaultId,
+        txHash: result.txHash || '',
+        subjectVaultId: result.subjectVaultId,
+        predicateVaultId: result.predicateVaultId,
+        objectVaultId: result.objectVaultId,
+        timestamp: Date.now(),
+        source: result.source,
+        id: result.tripleVaultId
+      }
+      
+      await elizaDataService.storePublishedTriplet(publishedTripletDetails)
+      console.log('💾 Triplet details saved for SignalsTab')
+      
       // Check if triplet already existed on chain
       if (result.source === 'existing') {
         console.log(`✅ Triplet already exists on chain! Vault ID: ${result.tripleVaultId}`)
@@ -227,6 +252,29 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         
         // Add to blacklist to prevent recreation
         await elizaDataService.addPublishedTripletId(tripletId)
+        
+        // Save details for SignalsTab even if existing
+        const publishedTripletDetails: PublishedTripletDetails = {
+          originalId: tripletId,
+          triplet: {
+            subject: triplet.triplet.subject === 'User' ? address! : triplet.triplet.subject,
+            predicate: triplet.triplet.predicate,
+            object: triplet.triplet.object
+          },
+          url: triplet.url,
+          description: triplet.description,
+          sourceMessageId: triplet.sourceMessageId,
+          tripleVaultId: 'existing_' + tripletId, // Placeholder since we don't have the real vaultId
+          txHash: '',
+          subjectVaultId: '',
+          predicateVaultId: '',
+          objectVaultId: '',
+          timestamp: Date.now(),
+          source: 'existing',
+          id: 'existing_' + tripletId
+        }
+        
+        await elizaDataService.storePublishedTriplet(publishedTripletDetails)
         
         console.log(`✅ Triplet already exists on chain! Removing from pending list.`)
         
@@ -365,6 +413,58 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             await elizaDataService.addPublishedTripletId(triplet.id)
           }
           
+          // Store detailed triplet information for successful publications
+          console.log('🔍 Starting to store triplet details for', selectedTriplets.length, 'triplets')
+          console.log('🔍 Batch results:', result.results)
+          console.log('🔍 First batch result structure:', result.results[0])
+          console.log('🔍 All result keys:', result.results.map(r => Object.keys(r)))
+          console.log('🔍 Batch input structure:', batchInput)
+          console.log('🔍 Selected triplets structure:', selectedTriplets.map(t => t.triplet))
+          
+          for (let i = 0; i < selectedTriplets.length; i++) {
+            const triplet = selectedTriplets[i]
+            console.log(`🔍 Processing triplet ${i + 1}/${selectedTriplets.length}:`, triplet.triplet)
+            
+            // Use simple index-based matching for batch results
+            // The results should be in the same order as the input
+            const correspondingResult = result.results[i]
+            
+            console.log('🔍 Using index-based matching for result:', i)
+            console.log('🔍 Result structure:', correspondingResult)
+            console.log('🔍 Result properties:', correspondingResult ? Object.keys(correspondingResult) : 'null')
+            
+            if (correspondingResult) {
+              const publishedDetails: PublishedTripletDetails = {
+                originalId: triplet.id,
+                triplet: {
+                  subject: triplet.triplet.subject === 'User' ? address! : triplet.triplet.subject,
+                  predicate: triplet.triplet.predicate,
+                  object: triplet.triplet.object
+                },
+                url: triplet.url,
+                description: triplet.description,
+                sourceMessageId: triplet.sourceMessageId || '',
+                // Try different property names based on actual structure
+                tripleVaultId: correspondingResult.tripleVaultId || correspondingResult.vaultId || correspondingResult.id || `temp_${Date.now()}_${i}`,
+                txHash: result.txHash || '',
+                subjectVaultId: correspondingResult.subjectVaultId || correspondingResult.subject?.vaultId || '',
+                predicateVaultId: correspondingResult.predicateVaultId || correspondingResult.predicate?.vaultId || '',
+                objectVaultId: correspondingResult.objectVaultId || correspondingResult.object?.vaultId || '',
+                timestamp: Date.now(),
+                source: correspondingResult.source || 'created',
+                id: correspondingResult.tripleVaultId || correspondingResult.vaultId || correspondingResult.id || `temp_${Date.now()}_${i}`
+              }
+              
+              try {
+                console.log(`💾 About to store triplet details for ${triplet.id}:`, publishedDetails)
+                await elizaDataService.storePublishedTriplet(publishedDetails)
+                console.log(`✅ Successfully stored triplet details for ${triplet.id}`)
+              } catch (error) {
+                console.error(`❌ Failed to store triplet details for ${triplet.id}:`, error)
+              }
+            }
+          }
+          
           // Log summary instead of showing popup
           if (existingResults.length > 0) {
             console.log(`✅ Batch complete! Created: ${createdResults.length} new, ${existingResults.length} already existed`)
@@ -452,8 +552,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                   Remove ({selectedEchoes.size})
                 </button>
               </div>
-              
-              {/* Barre de progression pour le batch - même style que les triples */}
               {isProcessing && selectedEchoes.size > 1 && (
                 <div className="processing-message">
                   {currentStep || 'Starting batch...'}
@@ -529,7 +627,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">⛓️ Status</h4>
                           <p className="triplet-detail-name">
-                            Status: 📡 Available for publication
+                            Status: Available for publication
                           </p>
                         </div>
 
@@ -552,9 +650,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       {/* États vides */}
       {echoTriplets.length === 0 ? (
         <div className="empty-state">
-          <p>No SofIA messages found</p>
+          <p>Continue to navigate</p>
           <p className="empty-subtext">
-            Your triplets will appear automatically when you receive messages
+            Your triplets will appear automatically 
           </p>
         </div>
       ) : availableCount === 0 ? (

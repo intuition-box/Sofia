@@ -173,6 +173,59 @@ export class ElizaDataService {
   }
 
   /**
+   * Store published triplet details for SignalsTab
+   */
+  static async storePublishedTriplet(tripletDetails: any): Promise<number> {
+    // Get existing published triplets
+    const existingTriplets = await this.loadPublishedTriplets()
+    
+    // Check if this triplet already exists (by tripleVaultId or original triplet ID)
+    const existsIndex = existingTriplets.findIndex(t => 
+      t.tripleVaultId === tripletDetails.tripleVaultId || 
+      t.originalId === tripletDetails.originalId
+    )
+    
+    if (existsIndex !== -1) {
+      // Update existing triplet
+      existingTriplets[existsIndex] = { ...existingTriplets[existsIndex], ...tripletDetails }
+    } else {
+      // Add new triplet
+      existingTriplets.push(tripletDetails)
+    }
+    
+    // First, delete existing records to avoid unique constraint issues
+    const existingRecords = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'published_triplets_details')
+    for (const record of existingRecords) {
+      if (record.id) {
+        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+      }
+    }
+    
+    // Store updated list with a new record
+    const record: ElizaRecord = {
+      messageId: 'published_triplets_details',
+      content: existingTriplets,
+      timestamp: Date.now(),
+      type: 'published_triplets_details'
+    }
+    
+    const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
+    console.log('🔗 Published triplet details stored:', tripletDetails.tripleVaultId)
+    return result as number
+  }
+
+  /**
+   * Load all published triplet details for SignalsTab
+   */
+  static async loadPublishedTriplets(): Promise<any[]> {
+    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'published_triplets_details')
+    if (records.length > 0 && records[0].content) {
+      return records[0].content as any[]
+    }
+    return []
+  }
+
+  /**
    * Clear all Eliza data
    */
   static async clearAll(): Promise<void> {
@@ -490,3 +543,7 @@ export const navigationDataService = NavigationDataService
 export const userProfileService = UserProfileService
 export const userSettingsService = UserSettingsService
 export const searchHistoryService = SearchHistoryService
+
+// Export individual triplet functions for convenience
+export const storePublishedTriplet = ElizaDataService.storePublishedTriplet
+export const loadPublishedTriplets = ElizaDataService.loadPublishedTriplets
