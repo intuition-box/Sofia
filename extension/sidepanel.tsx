@@ -18,7 +18,6 @@ import SettingsPage from "./components/pages/SettingsPage"
 import ProfilePage from "./components/pages/ProfilePage"
 import CorePage from "./components/pages/CorePage"
 import RecommendationsPage from "./components/pages/RecommendationsPage"
-import SyncPage from "./components/pages/SyncPage"
 import SearchPage from "./components/pages/SearchPage"
 import SearchResultPage from "./components/pages/SearchResultPage"
 import ChatPage from "./components/pages/ChatPage"
@@ -51,12 +50,10 @@ const SidePanelContent = () => {
         return <SettingsPage />
       case 'profile':
         return <ProfilePage />
-      case 'core':
+      case 'Sofia':
         return <CorePage />
       case 'recommendations':
         return <RecommendationsPage />
-      case 'sync':
-        return <SyncPage />
       case 'search':
         return <SearchPage />
       case 'search-result':
