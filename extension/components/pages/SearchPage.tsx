@@ -131,7 +131,7 @@ const SearchPage = () => {
               const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
               return (
-                <div key={tripletItem.id} className="echo-card border-blue">
+                <div key={tripletItem.id} className="echo-card border-green">
                   <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
                     
                     <div className="triplet-header">
@@ -157,8 +157,8 @@ const SearchPage = () => {
                       <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
                         {tripletItem.totalUsers > 0 && (
                           <span className="sentiment-metric users" style={{
-                            backgroundColor: '#ffffffff',
-                            color: '#000000ff',
+                            backgroundColor: '#8b8b8b77',
+                            color: '#ffffffff',
                             padding: '2px 6px',
                             borderRadius: '12px',
                             fontSize: '11px',
@@ -169,8 +169,8 @@ const SearchPage = () => {
                         )}
                         {tripletItem.supportRatio > 0 && (
                           <span className="sentiment-metric ratio" style={{
-                            backgroundColor: '#ffffffff',
-                            color: '#000000ff',
+                            backgroundColor: '#8b8b8b77',
+                            color: '#ffffffff',
                             padding: '2px 6px',
                             borderRadius: '12px',
                             fontSize: '11px',

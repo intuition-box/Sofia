@@ -105,7 +105,7 @@
 .echo-card {
   border-radius: 12px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.591);
   backdrop-filter: blur(5px) saturate(100%);
   -webkit-backdrop-filter: blur(5px) saturate(100%);
   margin-bottom: 8px;
@@ -131,14 +131,6 @@
   );
 }
 
-.echo-card.border-blue {
-  border: 1px solid rgba(212, 165, 116, 0.4);
-  background: linear-gradient(135deg, 
-    rgba(212, 165, 116, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(212, 165, 116, 0.05) 100%
-  );
-}
 
 /* Header du triplet avec badges et actions */
 .triplet-header {

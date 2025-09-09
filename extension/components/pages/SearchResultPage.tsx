@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch, type AtomSearchResult } from '../../hooks/useIntuitionSearch'
-import SendIcon from '../ui/icons/quick_action/Selected=send.svg'
-import SendHoverIcon from '../ui/icons/quick_action/Selected=send hover.svg'
-import VoteIcon from '../ui/icons/quick_action/Selected=vote.svg'
-import VoteHoverIcon from '../ui/icons/quick_action/Selected=vote hover.svg'
-import PersonIcon from '../../assets/Icon=person.svg'
-import VoteIconSvg from '../../assets/Icon=vote.svg'
 import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -21,8 +15,6 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
   const [activeTab, setActiveTab] = useState<'overview' | 'related' | 'about' | 'more'>('overview')
   const [searchQuery, setSearchQuery] = useState('')
   const [results, setResults] = useState<AtomSearchResult[]>([])
-  const [sendHovered, setSendHovered] = useState(false)
-  const [voteHovered, setVoteHovered] = useState(false)
   const [isEditingSearch, setIsEditingSearch] = useState(false)
   const [editedQuery, setEditedQuery] = useState('')
 
@@ -43,52 +35,6 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
     return num.toLocaleString()
   }
 
-  // Format wallet address to match SignalsTab style
-  const formatWalletAddress = (address: string) => {
-    if (!address || address.length < 10) return address
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
-
-  const getTripleMetrics = (result: AtomSearchResult) => {
-    // Utiliser les triples disponibles et leurs positions
-    let totalPositions = 0
-    let againstCount = 0
-    let forCount = 0
-    let opinionCount = 0
-
-    // Compter les positions de tous les triples
-    result.relatedTriples.forEach(triple => {
-      const positions = triple.vault?.position_count || triple.counter_vault?.position_count || 0
-      totalPositions += positions
-
-      const label = triple.predicate?.label?.toLowerCase() || ''
-      
-      // Catégoriser selon le prédicat
-      if (label.includes('against') || label.includes('disagree') || label.includes('oppose') || label.includes('dislike')) {
-        againstCount += positions
-      } else if (label.includes('support') || label.includes('agree') || label.includes('like') || label.includes('endorse')) {
-        forCount += positions
-      } else {
-        opinionCount += positions
-      }
-    })
-
-    // Si pas de données spécifiques, utiliser des estimations basées sur les attestations
-    if (totalPositions === 0) {
-      const baseCount = Math.max(result.attestations, 100)
-      return {
-        against: Math.floor(baseCount * 0.15),
-        opinion: Math.floor(baseCount * 0.70), 
-        forCount: Math.floor(baseCount * 0.15)
-      }
-    }
-
-    return {
-      against: againstCount,
-      opinion: opinionCount,
-      forCount: forCount
-    }
-  }
 
   const sortedResults = results.sort((a, b) => b.attestations - a.attestations)
   const topResults = activeTab === 'more' ? sortedResults : sortedResults.slice(0, 3)
@@ -233,7 +179,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
         {!isLoading && !error && results.length > 0 && activeTab !== 'more' && (
           <div className="trending-section">
             {topResults.map((result, index) => (
-              <div key={result.id || index} className="echo-card border-blue">
+              <div key={result.id || index} className="echo-card border-green">
                 <div className="triplet-item">
                   <div className="triplet-header">
                     <p className="triplet-text">
@@ -241,73 +187,11 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
                       <span className="action">is a</span><br />
                       <span className="object">{result.type}</span>
                     </p>
-
-                    {/* Métriques */}
-                    <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
-                      <span className="sentiment-metric" style={{
-                        backgroundColor: '#434343ff',
-                        color: '#ffffffff',
-                        padding: '2px 6px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        fontWeight: '500',
-                        marginRight: '4px'
-                      }}>
-                        Score: {formatNumber(result.attestations)}
-                      </span>
-                      <span className="sentiment-metric" style={{
-                        backgroundColor: '#ffffffff',
-                        color: '#000000ff',
-                        padding: '2px 6px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        fontWeight: '500',
-                        marginRight: '4px'
-                      }}>
-                        Stake: {formatNumber(result.stake)}
-                      </span>
-                      <span className="sentiment-metric" style={{
-                        backgroundColor: '#ffffffff',
-                        color: '#000000ff',
-                        padding: '2px 6px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        fontWeight: '500'
-                      }}>
-                        {result.relatedTriples.length} triples
-                      </span>
-                    </div>
                   </div>
-
-                  {/* Description et liens si disponibles */}
-                  {(result.description || result.url || result.email) && (
-                    <div className="triplet-details" style={{marginTop: '12px'}}>
-                      {result.description && (
-                        <div className="triplet-detail-section">
-                          <p className="triplet-detail-name">{result.description}</p>
-                        </div>
-                      )}
-                      
-                      {result.url && (
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">🔗 URL</h4>
-                          <a href={result.url} target="_blank" rel="noopener noreferrer" className="triplet-detail-name" style={{color: '#4A90E2', textDecoration: 'underline'}}>
-                            {result.url}
-                          </a>
-                        </div>
-                      )}
-                      
-                      {result.email && (
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">📧 Email</h4>
-                          <p className="triplet-detail-name">{result.email}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
+
           </div>
         )}
       </div>
