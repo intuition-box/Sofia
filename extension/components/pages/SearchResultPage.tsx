@@ -9,7 +9,6 @@ import PersonIcon from '../../assets/Icon=person.svg'
 import VoteIconSvg from '../../assets/Icon=vote.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
-import '../styles/SearchResultPage.css'
 
 interface SearchResultPageProps {
   searchQuery?: string
@@ -41,6 +40,12 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
       return formatted.endsWith('.0') ? formatted.slice(0, -2) + 'K' : formatted + 'K'
     }
     return num.toLocaleString()
+  }
+
+  // Format wallet address to match SignalsTab style
+  const formatWalletAddress = (address: string) => {
+    if (!address || address.length < 10) return address
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
   const getTripleMetrics = (result: AtomSearchResult) => {
@@ -131,143 +136,151 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
   }, [propQuery])
 
   return (
-    <div className="page search-result-page">
-      {/* Header avec recherche et close */}
-      <div className="search-result-header">
-        <div className="search-header-bar">
+    <div className="triples-container">
+      {/* Header avec recherche et retour */}
+      <div className="search-header">
+        <button 
+          onClick={() => navigateTo('search')}
+          className="back-button"
+        >
+          ←
+        </button>
+        <h2>
           {isEditingSearch ? (
-            <div className="search-edit-container">
-              <input
-                type="text"
-                value={editedQuery}
-                onChange={(e) => setEditedQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="search-edit-input"
-                placeholder="Search atoms in Intuition blockchain..."
-                autoFocus
-              />
-              <div className="search-edit-actions">
-                <button onClick={handleSearchSave} className="save-search-btn">✓</button>
-                <button onClick={handleSearchCancel} className="cancel-search-btn">✕</button>
-              </div>
-            </div>
+            <input
+              type="text"
+              value={editedQuery}
+              onChange={(e) => setEditedQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="search-input"
+              placeholder="Search atoms in Intuition blockchain..."
+              autoFocus
+              style={{ width: '100%', margin: 0 }}
+            />
           ) : (
-            <div className="search-display-container">
-              <span className="search-query" onClick={handleSearchEdit}>{searchQuery}</span>
-              <button onClick={handleSearchEdit} className="edit-search-btn">✏️</button>
-            </div>
+            <span onClick={handleSearchEdit} style={{ cursor: 'pointer' }}>
+              "{searchQuery}"
+            </span>
           )}
-          <button 
-            onClick={() => navigateTo('search')}
-            className="close-button"
-          >
-            ✕
-          </button>
-        </div>
+        </h2>
+        {isEditingSearch && (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={handleSearchSave} className="search-button" style={{ padding: '4px 8px', fontSize: '12px' }}>✓</button>
+            <button onClick={handleSearchCancel} className="search-button" style={{ padding: '4px 8px', fontSize: '12px' }}>✕</button>
+          </div>
+        )}
       </div>
 
-      <div className="search-result-content">
-        {/* Titre principal */}
-        <div className="main-title-section">
-          <h1 className="main-title">{results[0]?.label || searchQuery}</h1>
-          <div className="action-buttons">
-            <button 
-              onMouseEnter={() => setSendHovered(true)}
-              onMouseLeave={() => setSendHovered(false)}
-              style={{background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100px', height: 'auto'}}
-            >
-              <img src={sendHovered ? SendHoverIcon : SendIcon} alt="Send" style={{width: '100%', height: 'auto'}} />
-            </button>
-            <button 
-              onMouseEnter={() => setVoteHovered(true)}
-              onMouseLeave={() => setVoteHovered(false)}
-              style={{background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100px', height: 'auto'}}
-            >
-              <img src={voteHovered ? VoteHoverIcon : VoteIcon} alt="Vote" style={{width: '100%', height: 'auto'}} />
-            </button>
-          </div>
-        </div>
+      <div className="search-content">
 
-        {/* État de chargement */}
         {isLoading && (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>Searching atoms on Intuition blockchain...</p>
+          <div className="empty-state">
+            <p>Searching atoms...</p>
+            <p className="empty-subtext">
+              Searching "{searchQuery}" on Intuition blockchain
+            </p>
           </div>
         )}
 
-        {/* État d'erreur */}
         {error && (
-          <div className="error-state">
-            <p>Search failed: {error}</p>
-            <button onClick={() => window.location.reload()}>Retry</button>
+          <div className="empty-state">
+            <p>❌ Search failed</p>
+            <p className="empty-subtext">{error}</p>
+            <button onClick={() => performSearch(searchQuery)} className="search-button">
+              Retry Search
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !error && results.length === 0 && (
+          <div className="empty-state">
+            <p>🔍 No results found</p>
+            <p className="empty-subtext">
+              No atoms found for "{searchQuery}"<br/>
+              Try a different search term or check your spelling
+            </p>
+            <button onClick={() => performSearch(searchQuery)} className="search-button">
+              Search Again
+            </button>
           </div>
         )}
 
         {/* Liste des résultats */}
-        {!isLoading && !error && activeTab !== 'more' && (
-          <div className="results-list">
+        {!isLoading && !error && results.length > 0 && activeTab !== 'more' && (
+          <div className="trending-section">
             {topResults.map((result, index) => (
-              <div key={result.id || index} className="result-card">
-                {/* Atom Name - Most Important */}
-                <div className="atom-title">
-                  <h3 className="atom-name">{result.label}</h3>
-                  <span className="atom-type">{result.type}</span>
-                </div>
-                
-                {/* Key Metrics */}
-                <div className="key-metrics">
-                  <div className="metric-item">
-                    <span className="metric-label">Score:</span>
-                    <span className="metric-value">{formatNumber(result.attestations)}</span>
-                  </div>
-                  <div className="metric-item">
-                    <span className="metric-label">Stake:</span>
-                    <span className="metric-value">💎 {formatNumber(result.stake)}</span>
-                  </div>
-                  <div className="metric-item">
-                    <span className="metric-label">Related Triples:</span>
-                    <span className="metric-value">{result.relatedTriples.length}</span>
-                  </div>
-                </div>
-                
-                {/* Content */}
-                <div className="result-content">
-                  {result.description && (
-                    <div className="atom-description">
-                      <p>{result.description}</p>
-                    </div>
-                  )}
-                  
-                  {result.url && (
-                    <div className="atom-url">
-                      <span className="url-icon">🔗</span>
-                      <a href={result.url} target="_blank" rel="noopener noreferrer" className="url-link">
-                        {result.url}
-                      </a>
-                    </div>
-                  )}
-                  
-                  {result.email && (
-                    <div className="atom-email">
-                      <span className="email-icon">📧</span>
-                      <span>{result.email}</span>
-                    </div>
-                  )}
-                </div>
+              <div key={result.id || index} className="echo-card border-blue">
+                <div className="triplet-item">
+                  <div className="triplet-header">
+                    <p className="triplet-text">
+                      <span className="subject">{result.label}</span><br />
+                      <span className="action">is a</span><br />
+                      <span className="object">{result.type}</span>
+                    </p>
 
-                {/* Sentiment Metrics */}
-                <div className="sentiment-metrics">
-                  {(() => {
-                    const metrics = getTripleMetrics(result)
-                    return (
-                      <>
-                        <span className="sentiment-metric positive">{formatNumber(metrics.forCount)}</span>
-                        <span className="sentiment-metric neutral">{formatNumber(metrics.opinion)}</span>
-                        <span className="sentiment-metric negative">{formatNumber(metrics.against)}</span>
-                      </>
-                    )
-                  })()}
+                    {/* Métriques */}
+                    <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
+                      <span className="sentiment-metric" style={{
+                        backgroundColor: '#434343ff',
+                        color: '#ffffffff',
+                        padding: '2px 6px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        marginRight: '4px'
+                      }}>
+                        Score: {formatNumber(result.attestations)}
+                      </span>
+                      <span className="sentiment-metric" style={{
+                        backgroundColor: '#ffffffff',
+                        color: '#000000ff',
+                        padding: '2px 6px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        marginRight: '4px'
+                      }}>
+                        Stake: {formatNumber(result.stake)}
+                      </span>
+                      <span className="sentiment-metric" style={{
+                        backgroundColor: '#ffffffff',
+                        color: '#000000ff',
+                        padding: '2px 6px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '500'
+                      }}>
+                        {result.relatedTriples.length} triples
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Description et liens si disponibles */}
+                  {(result.description || result.url || result.email) && (
+                    <div className="triplet-details" style={{marginTop: '12px'}}>
+                      {result.description && (
+                        <div className="triplet-detail-section">
+                          <p className="triplet-detail-name">{result.description}</p>
+                        </div>
+                      )}
+                      
+                      {result.url && (
+                        <div className="triplet-detail-section">
+                          <h4 className="triplet-detail-title">🔗 URL</h4>
+                          <a href={result.url} target="_blank" rel="noopener noreferrer" className="triplet-detail-name" style={{color: '#4A90E2', textDecoration: 'underline'}}>
+                            {result.url}
+                          </a>
+                        </div>
+                      )}
+                      
+                      {result.email && (
+                        <div className="triplet-detail-section">
+                          <h4 className="triplet-detail-title">📧 Email</h4>
+                          <p className="triplet-detail-name">{result.email}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -275,241 +288,256 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
         )}
 
         {/* Navigation tabs */}
-        <div className="tab-navigation">
-          <button 
-            className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            Overview
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'related' ? 'active' : ''}`}
-            onClick={() => setActiveTab('related')}
-          >
-            Related to
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'about' ? 'active' : ''}`}
-            onClick={() => setActiveTab('about')}
-          >
-            About
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'more' ? 'active' : ''}`}
-            onClick={() => setActiveTab('more')}
-          >
-            More
-          </button>
-        </div>
+        {!isLoading && !error && results.length > 0 && (
+          <div className="trending-section">
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              <button 
+                className={`search-button ${activeTab === 'overview' ? '' : ''}`}
+                onClick={() => setActiveTab('overview')}
+                style={{ 
+                  padding: '6px 12px',
+                  fontSize: '12px',
+                  backgroundColor: activeTab === 'overview' ? '#4A90E2' : 'rgba(255,255,255,0.1)',
+                  color: activeTab === 'overview' ? 'white' : '#D4A574'
+                }}
+              >
+                Overview
+              </button>
+              <button 
+                className={`search-button ${activeTab === 'related' ? '' : ''}`}
+                onClick={() => setActiveTab('related')}
+                style={{ 
+                  padding: '6px 12px',
+                  fontSize: '12px',
+                  backgroundColor: activeTab === 'related' ? '#4A90E2' : 'rgba(255,255,255,0.1)',
+                  color: activeTab === 'related' ? 'white' : '#D4A574'
+                }}
+              >
+                Related
+              </button>
+              <button 
+                className={`search-button ${activeTab === 'about' ? '' : ''}`}
+                onClick={() => setActiveTab('about')}
+                style={{ 
+                  padding: '6px 12px',
+                  fontSize: '12px',
+                  backgroundColor: activeTab === 'about' ? '#4A90E2' : 'rgba(255,255,255,0.1)',
+                  color: activeTab === 'about' ? 'white' : '#D4A574'
+                }}
+              >
+                About
+              </button>
+              <button 
+                className={`search-button ${activeTab === 'more' ? '' : ''}`}
+                onClick={() => setActiveTab('more')}
+                style={{ 
+                  padding: '6px 12px',
+                  fontSize: '12px',
+                  backgroundColor: activeTab === 'more' ? '#4A90E2' : 'rgba(255,255,255,0.1)',
+                  color: activeTab === 'more' ? 'white' : '#D4A574'
+                }}
+              >
+                More
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Contenu des tabs */}
-        <div className="tab-content">
-          {activeTab === 'overview' && (
-            <div className="overview-content">
-              {topResults.length > 0 && (
-                <>
-                  {topResults[0].url && (
-                    <div className="info-item">
-                      <span className="info-icon">📍</span>
-                      <a href={topResults[0].url} target="_blank" rel="noopener noreferrer" className="info-text">
-                        {topResults[0].url}
-                      </a>
+        {!isLoading && !error && results.length > 0 && activeTab === 'overview' && (
+          <div className="trending-section">
+            {topResults.length > 0 && (
+              <div className="echo-card border-blue">
+                <div className="triplet-item">
+                  <div className="triplet-details">
+                    <div className="triplet-detail-section">
+                      <h4 className="triplet-detail-title">📝 Overview</h4>
+                      {topResults[0].description && (
+                        <p className="triplet-detail-name">{topResults[0].description}</p>
+                      )}
+                      <p className="triplet-detail-name">Type: {topResults[0].type}</p>
+                      <p className="triplet-detail-name">Attestations: {formatNumber(topResults[0].attestations)}</p>
+                      <p className="triplet-detail-name">Stake: {formatNumber(topResults[0].stake)}</p>
                     </div>
-                  )}
-                  
-                  {topResults[0].description && (
-                    <div className="info-item">
-                      <span className="info-icon">📝</span>
-                      <span className="info-text">{topResults[0].description}</span>
-                    </div>
-                  )}
-                  
-                  {topResults[0].email && (
-                    <div className="info-item">
-                      <span className="info-icon">📧</span>
-                      <span className="info-text">{topResults[0].email}</span>
-                    </div>
-                  )}
-                  
-                  <div className="info-item">
-                    <img src={VoteIconSvg} alt="Vote" className="info-icon" />
-                    <span className="info-text">Vote on this signal</span>
-                    <span className="info-subtext">
-                      {formatNumber(topResults[0].attestations)} attestations
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-          {activeTab === 'related' && (
-            <div className="related-content">
-              {topResults.length > 0 && topResults[0].relatedTriples.length > 0 ? (
-                <div className="related-triples">
-                  <h3>Complete Triples with "{topResults[0].label}":</h3>
-                  {topResults[0].relatedTriples.map((triple, index) => (
-                    <div key={index} className="triple-item-complete">
-                      <div className="triple-full-statement">
-                        <span className="triple-subject">
-                          {triple.subject?.emoji && <span className="subject-emoji">{triple.subject.emoji}</span>}
-                          <span className="subject-label">{triple.subject?.label}</span>
-                        </span>
-                        <span className="triple-connector">→</span>
-                        <span className="triple-predicate">
-                          {triple.predicate?.emoji && <span className="predicate-emoji">{triple.predicate.emoji}</span>}
-                          <span className="predicate-label">{triple.predicate?.label}</span>
-                        </span>
-                        <span className="triple-connector">→</span>
-                        <span className="triple-object">
-                          {triple.object?.emoji && <span className="object-emoji">{triple.object.emoji}</span>}
-                          <span className="object-label">{triple.object?.label}</span>
-                        </span>
+                    
+                    {topResults[0].url && (
+                      <div className="triplet-detail-section">
+                        <h4 className="triplet-detail-title">🔗 URL</h4>
+                        <a href={topResults[0].url} target="_blank" rel="noopener noreferrer" className="triplet-detail-name" style={{color: '#4A90E2', textDecoration: 'underline'}}>
+                          {topResults[0].url}
+                        </a>
                       </div>
-                      <div className="triple-meta">
+                    )}
+                    
+                    {topResults[0].email && (
+                      <div className="triplet-detail-section">
+                        <h4 className="triplet-detail-title">📧 Email</h4>
+                        <p className="triplet-detail-name">{topResults[0].email}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {!isLoading && !error && results.length > 0 && activeTab === 'related' && (
+          <div className="trending-section">
+            {topResults.length > 0 && topResults[0].relatedTriples.length > 0 ? (
+              topResults[0].relatedTriples.map((triple, index) => (
+                <div key={index} className="echo-card border-blue">
+                  <div className="triplet-item">
+                    <div className="triplet-header">
+                      <p className="triplet-text">
+                        <span className="subject">
+                          {triple.subject?.label?.startsWith('0x') 
+                            ? formatWalletAddress(triple.subject.label) 
+                            : triple.subject?.label}
+                        </span><br />
+                        <span className="action">{triple.predicate?.label}</span><br />
+                        <span className="object">{triple.object?.label}</span>
+                      </p>
+
+                      <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
                         {triple.vault?.position_count && (
-                          <span className="triple-positions">
-                            👍 {formatNumber(triple.vault.position_count)} positions
+                          <span className="sentiment-metric" style={{
+                            backgroundColor: '#e8f5e8',
+                            color: '#2d5a2d',
+                            padding: '2px 6px',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: '500',
+                            marginRight: '4px'
+                          }}>
+                            👍 {formatNumber(triple.vault.position_count)} support
                           </span>
                         )}
                         {triple.counter_vault?.position_count && (
-                          <span className="triple-counter-positions">
+                          <span className="sentiment-metric" style={{
+                            backgroundColor: '#ffe6e6',
+                            color: '#cc0000',
+                            padding: '2px 6px',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: '500'
+                          }}>
                             👎 {formatNumber(triple.counter_vault.position_count)} against
                           </span>
                         )}
-                        <button 
-                          className="explore-triple-btn"
-                          onClick={() => {
-                            // Open Intuition portal
-                            window.open('https://intuition.systems', '_blank')
-                          }}
-                        >
-                          🚀 View on Intuition
-                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p>No related connections found</p>
-              )}
-            </div>
-          )}
-          {activeTab === 'about' && (
-            <div className="about-content">
-              {topResults.length > 0 && (
-                <div className="about-details">
-                  <h3>About {topResults[0].name || topResults[0].label}</h3>
-                  
-                  <div className="about-info">
-                    <div className="info-row">
-                      <span className="info-label">Type:</span>
-                      <span className="info-value">{topResults[0].type}</span>
-                    </div>
-                    
-                    <div className="info-row">
-                      <span className="info-label">ID:</span>
-                      <span className="info-value">{topResults[0].id}</span>
-                    </div>
-                    
-                    {topResults[0].identifier && (
-                      <div className="info-row">
-                        <span className="info-label">Identifier:</span>
-                        <span className="info-value">{topResults[0].identifier}</span>
-                      </div>
-                    )}
-                    
-                    <div className="info-row">
-                      <span className="info-label">Attestations:</span>
-                      <span className="info-value">{formatNumber(topResults[0].attestations)}</span>
-                    </div>
-                    
-                    <div className="info-row">
-                      <span className="info-label">Stake:</span>
-                      <span className="info-value">{formatNumber(topResults[0].stake)}</span>
-                    </div>
-                    
-                    {topResults[0].auditedBy && (
-                      <div className="info-row">
-                        <span className="info-label">Audited by:</span>
-                        <span className="info-value">{topResults[0].auditedBy}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-          {activeTab === 'more' && (
-            <div className="more-content">
-              <div className="results-list">
-                {sortedResults.map((result, index) => (
-                  <div key={result.id || index} className="result-card">
-                    {/* Atom Name - Most Important */}
-                    <div className="atom-title">
-                      <h3 className="atom-name">{result.label}</h3>
-                      <span className="atom-type">{result.type}</span>
+              ))
+            ) : (
+              <div className="empty-state">
+                <p>No related connections found</p>
+              </div>
+            )}
+          </div>
+        )}
+        {!isLoading && !error && results.length > 0 && activeTab === 'about' && (
+          <div className="trending-section">
+            {topResults.length > 0 && (
+              <div className="echo-card border-blue">
+                <div className="triplet-item">
+                  <div className="triplet-details">
+                    <div className="triplet-detail-section">
+                      <h4 className="triplet-detail-title">📋 About {topResults[0].label}</h4>
+                      <p className="triplet-detail-name">Type: {topResults[0].type}</p>
+                      <p className="triplet-detail-name">ID: {topResults[0].id}</p>
+                      <p className="triplet-detail-name">Attestations: {formatNumber(topResults[0].attestations)}</p>
+                      <p className="triplet-detail-name">Stake: {formatNumber(topResults[0].stake)}</p>
+                      {topResults[0].auditedBy && (
+                        <p className="triplet-detail-name">Audited by: {topResults[0].auditedBy}</p>
+                      )}
                     </div>
-                    
-                    {/* Key Metrics */}
-                    <div className="key-metrics">
-                      <div className="metric-item">
-                        <span className="metric-label">Score:</span>
-                        <span className="metric-value">{formatNumber(result.attestations)}</span>
-                      </div>
-                      <div className="metric-item">
-                        <span className="metric-label">Stake:</span>
-                        <span className="metric-value">💎 {formatNumber(result.stake)}</span>
-                      </div>
-                      <div className="metric-item">
-                        <span className="metric-label">Related Triples:</span>
-                        <span className="metric-value">{result.relatedTriples.length}</span>
-                      </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {!isLoading && !error && results.length > 0 && activeTab === 'more' && (
+          <div className="trending-section">
+            {sortedResults.map((result, index) => (
+              <div key={result.id || index} className="echo-card border-blue">
+                <div className="triplet-item">
+                  <div className="triplet-header">
+                    <p className="triplet-text">
+                      <span className="subject">{result.label}</span><br />
+                      <span className="action">is a</span><br />
+                      <span className="object">{result.type}</span>
+                    </p>
+
+                    {/* Métriques */}
+                    <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
+                      <span className="sentiment-metric" style={{
+                        backgroundColor: '#434343ff',
+                        color: '#ffffffff',
+                        padding: '2px 6px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        marginRight: '4px'
+                      }}>
+                        Score: {formatNumber(result.attestations)}
+                      </span>
+                      <span className="sentiment-metric" style={{
+                        backgroundColor: '#ffffffff',
+                        color: '#000000ff',
+                        padding: '2px 6px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        marginRight: '4px'
+                      }}>
+                        Stake: {formatNumber(result.stake)}
+                      </span>
+                      <span className="sentiment-metric" style={{
+                        backgroundColor: '#ffffffff',
+                        color: '#000000ff',
+                        padding: '2px 6px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '500'
+                      }}>
+                        {result.relatedTriples.length} triples
+                      </span>
                     </div>
-                    
-                    {/* Content */}
-                    <div className="result-content">
+                  </div>
+
+                  {/* Description et liens si disponibles */}
+                  {(result.description || result.url || result.email) && (
+                    <div className="triplet-details" style={{marginTop: '12px'}}>
                       {result.description && (
-                        <div className="atom-description">
-                          <p>{result.description}</p>
+                        <div className="triplet-detail-section">
+                          <p className="triplet-detail-name">{result.description}</p>
                         </div>
                       )}
                       
                       {result.url && (
-                        <div className="atom-url">
-                          <span className="url-icon">🔗</span>
-                          <a href={result.url} target="_blank" rel="noopener noreferrer" className="url-link">
+                        <div className="triplet-detail-section">
+                          <h4 className="triplet-detail-title">🔗 URL</h4>
+                          <a href={result.url} target="_blank" rel="noopener noreferrer" className="triplet-detail-name" style={{color: '#4A90E2', textDecoration: 'underline'}}>
                             {result.url}
                           </a>
                         </div>
                       )}
                       
                       {result.email && (
-                        <div className="atom-email">
-                          <span className="email-icon">📧</span>
-                          <span>{result.email}</span>
+                        <div className="triplet-detail-section">
+                          <h4 className="triplet-detail-title">📧 Email</h4>
+                          <p className="triplet-detail-name">{result.email}</p>
                         </div>
                       )}
                     </div>
-
-                    {/* Sentiment Metrics */}
-                    <div className="sentiment-metrics">
-                      {(() => {
-                        const metrics = getTripleMetrics(result)
-                        return (
-                          <>
-                            <span className="sentiment-metric positive">{formatNumber(metrics.forCount)}</span>
-                            <span className="sentiment-metric neutral">{formatNumber(metrics.opinion)}</span>
-                            <span className="sentiment-metric negative">{formatNumber(metrics.against)}</span>
-                          </>
-                        )
-                      })()}
-                    </div>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

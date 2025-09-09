@@ -54,3 +54,29 @@
   border-radius: 12px;
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
+
+/* Trending Section Styles */
+.trending-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trending-section .section-title {
+  color: #D4A574;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: left;
+  margin-bottom: 16px;
+  font-family: var(--font-family-display);
+}
+
+/* Blue border for trending triplets */
+.border-blue {
+  border-left: 4px solid #4A90E2;
+}
+
+.border-blue:hover {
+  border-left-color: #357ABD;
+  box-shadow: 0 4px 20px rgba(74, 144, 226, 0.15);
+}
