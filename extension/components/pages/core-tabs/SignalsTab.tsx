@@ -40,7 +40,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return num.toLocaleString()
   }
 
-  // Format wallet address to show first 6 and last 4 characters (e.g., 0xb94...d42a)
+  // Format wallet address
   const formatWalletAddress = (address: string) => {
     if (!address || address.length < 10) return address
     return `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -143,14 +143,11 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   
 
                 {/* Texte du triplet */}
-                <p
-                  className="triplet-text clickable"
-                  onClick={() => {
-                    setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
-                  }}
-                >
-                  <span className="subject">{formatWalletAddress(tripletItem.triplet.subject)}</span>{' '}
-                  <span className="action">{tripletItem.triplet.predicate}</span>{' '}
+                <p className="triplet-text clickable" onClick={() => {
+                  setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
+                }}>
+                  <span className="subject">{formatWalletAddress(tripletItem.triplet.subject)}</span><br />
+                  <span className="action">{tripletItem.triplet.predicate}</span><br />
                   <span className="object">{tripletItem.triplet.object}</span>
                 </p>
 
@@ -208,6 +205,55 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 {isExpanded && (
                   <div className="triplet-details">
                     <div className="triplet-detail-section">
+                      <div className="triplet-detail-section">
+                        <h4 className="triplet-detail-title">📊 Community Voting</h4>
+                        {(() => {
+                          const metrics = getTripletMetrics(tripletItem)
+                          const total = metrics.forCount + metrics.against + metrics.neutral
+                          return (
+                            <>
+                              <div style={{marginBottom: '8px'}}>
+                                <p className="triplet-detail-name">
+                                  Support: {formatNumber(metrics.forCount)} ({Math.round((metrics.forCount / total) * 100)}%)
+                                </p>
+                                <p className="triplet-detail-name">
+                                  Neutral: {formatNumber(metrics.neutral)} ({Math.round((metrics.neutral / total) * 100)}%)
+                                </p>
+                                <p className="triplet-detail-name">
+                                  Against: {formatNumber(metrics.against)} ({Math.round((metrics.against / total) * 100)}%)
+                                </p>
+                              </div>
+                              <div style={{
+                                width: '100%',
+                                height: '6px',
+                                backgroundColor: '#f0f0f0',
+                                borderRadius: '3px',
+                                overflow: 'hidden',
+                                display: 'flex'
+                              }}>
+                                <div style={{
+                                  width: `${(metrics.forCount / total) * 100}%`,
+                                  backgroundColor: '#4CAF50',
+                                  height: '100%'
+                                }}></div>
+                                <div style={{
+                                  width: `${(metrics.neutral / total) * 100}%`,
+                                  backgroundColor: '#9E9E9E',
+                                  height: '100%'
+                                }}></div>
+                                <div style={{
+                                  width: `${(metrics.against / total) * 100}%`,
+                                  backgroundColor: '#F44336',
+                                  height: '100%'
+                                }}></div>
+                              </div>
+                              <p className="triplet-detail-name" style={{fontSize: '11px', color: '#666', marginTop: '4px'}}>
+                                Total votes: {formatNumber(total)}
+                              </p>
+                            </>
+                          )
+                        })()}
+                      </div>
                       <h4 className="triplet-detail-title">🧍 Subject</h4>
                       <p className="triplet-detail-name">{formatWalletAddress(tripletItem.triplet.subject)}</p>
                     </div>
@@ -223,7 +269,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     </div>
 
                     <div className="triplet-detail-section">
-                      <h4 className="triplet-detail-title">⛓️ Blockchain</h4>
+                      {/* <h4 className="triplet-detail-title">⛓️ Blockchain</h4>
                       {tripletItem.objectVaultId && (
                         <p className="triplet-detail-name">Object VaultID: {tripletItem.objectVaultId.slice(0, 10)}...{tripletItem.objectVaultId.slice(-8)}</p>
                       )}
@@ -242,58 +288,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       {tripletItem.blockNumber && (
                         <p className="triplet-detail-name">Block: {tripletItem.blockNumber}</p>
                       )}
-                      <p className="triplet-detail-name">Status: ⛓️ On-Chain (Local)</p>
+                      <p className="triplet-detail-name">Status: ⛓️ On-Chain (Local)</p> */}
                     </div>
 
-                    <div className="triplet-detail-section">
-                      <h4 className="triplet-detail-title">📊 Community Voting</h4>
-                      {(() => {
-                        const metrics = getTripletMetrics(tripletItem)
-                        const total = metrics.forCount + metrics.against + metrics.neutral
-                        return (
-                          <>
-                            <div style={{marginBottom: '8px'}}>
-                              <p className="triplet-detail-name">
-                                Support: {formatNumber(metrics.forCount)} ({Math.round((metrics.forCount / total) * 100)}%)
-                              </p>
-                              <p className="triplet-detail-name">
-                                Neutral: {formatNumber(metrics.neutral)} ({Math.round((metrics.neutral / total) * 100)}%)
-                              </p>
-                              <p className="triplet-detail-name">
-                                Against: {formatNumber(metrics.against)} ({Math.round((metrics.against / total) * 100)}%)
-                              </p>
-                            </div>
-                            <div style={{
-                              width: '100%',
-                              height: '6px',
-                              backgroundColor: '#f0f0f0',
-                              borderRadius: '3px',
-                              overflow: 'hidden',
-                              display: 'flex'
-                            }}>
-                              <div style={{
-                                width: `${(metrics.forCount / total) * 100}%`,
-                                backgroundColor: '#4CAF50',
-                                height: '100%'
-                              }}></div>
-                              <div style={{
-                                width: `${(metrics.neutral / total) * 100}%`,
-                                backgroundColor: '#9E9E9E',
-                                height: '100%'
-                              }}></div>
-                              <div style={{
-                                width: `${(metrics.against / total) * 100}%`,
-                                backgroundColor: '#F44336',
-                                height: '100%'
-                              }}></div>
-                            </div>
-                            <p className="triplet-detail-name" style={{fontSize: '11px', color: '#666', marginTop: '4px'}}>
-                              Total votes: {formatNumber(total)}
-                            </p>
-                          </>
-                        )
-                      })()}
-                    </div>
 
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">🌐 Source</h4>
