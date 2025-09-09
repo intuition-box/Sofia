@@ -41,13 +41,6 @@ const SearchPage = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <button 
-          onClick={handleSearch}
-          className="search-button"
-          disabled={!searchQuery.trim() || !isReady}
-        >
-          {isLoading ? 'Initializing...' : 'Search in Intuition'}
-        </button>
         
         {error && (
           <div className="error-state">
