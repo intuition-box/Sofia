@@ -190,20 +190,35 @@
   margin: 0;
 }
 
+.triplet-text {
+  display: flex;
+  align-items: center;
+  gap: 8px; 
+}
+
+/* Subject  */
 .triplet-text .subject {
   font-weight: 600;
   color: #C7866C;
+  background: #2d2d2d;
+  padding: 6px 14px;
+  border-radius: 12px;
 }
 
+/* Predicate */
 .triplet-text .action {
   margin: 0 8px;
   font-style: italic;
-  color: #A6AF6B;
+  color: #ffffff;
 }
 
+/* Object  */
 .triplet-text .object {
   font-weight: 500;
-  color: #F2DED6;
+  color: #fff;
+  background: #2d2d2d;
+  padding: 6px 14px;
+  border-radius: 12px;
 }
 
 .add-button {

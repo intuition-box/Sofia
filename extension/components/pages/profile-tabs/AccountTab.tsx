@@ -36,7 +36,7 @@ const AccountTab = () => {
         <div className="profile-info">
           <div className="profile-name-container">
             <span className="profile-name-text">Passive_Records</span>
-            <img src={checkIcon} alt="Verified" className="verified-badge" style={{ filter: 'brightness(0) invert(0.4) sepia(1) saturate(5) hue-rotate(175deg)' }} />
+            {/* <img src={checkIcon} alt="Verified" className="verified-badge" style={{ filter: 'brightness(0) invert(0.4) sepia(1) saturate(5) hue-rotate(175deg)' }} /> */}
           </div>
           <div className="profile-stats-container">
             <div className="profile-stat-item">

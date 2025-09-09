@@ -131,7 +131,7 @@ const SearchPage = () => {
               const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
               return (
-                <div key={tripletItem.id} className="echo-card border-blue">
+                <div key={tripletItem.id} className="echo-card border-green">
                   <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
                     
                     <div className="triplet-header">
@@ -155,23 +155,10 @@ const SearchPage = () => {
                       {/* Support Market Cap metrics */}
                     </div>
                       <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
-                        {tripletItem.totalSupportMarketCap > 0 && (
-                          <span className="sentiment-metric market-cap" style={{
-                            backgroundColor: '#434343ff',
-                            color: '#ffffffff',
-                            padding: '2px 6px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: '500',
-                            marginRight: '4px'
-                          }}>
-                            {formatNumber(tripletItem.totalSupportMarketCap)} TTRUST Mkt Cap
-                          </span>
-                        )}
                         {tripletItem.totalUsers > 0 && (
                           <span className="sentiment-metric users" style={{
-                            backgroundColor: '#ffffffff',
-                            color: '#000000ff',
+                            backgroundColor: '#8b8b8b77',
+                            color: '#ffffffff',
                             padding: '2px 6px',
                             borderRadius: '12px',
                             fontSize: '11px',
@@ -182,8 +169,8 @@ const SearchPage = () => {
                         )}
                         {tripletItem.supportRatio > 0 && (
                           <span className="sentiment-metric ratio" style={{
-                            backgroundColor: '#ffffffff',
-                            color: '#000000ff',
+                            backgroundColor: '#8b8b8b77',
+                            color: '#ffffffff',
                             padding: '2px 6px',
                             borderRadius: '12px',
                             fontSize: '11px',
@@ -193,14 +180,6 @@ const SearchPage = () => {
                           </span>
                         )}
                       </div>
-
-                    {/* Actions */}
-                    <div className="signal-actions">
-                      <QuickActionButton
-                        action="scan"
-                        onClick={() => handleViewOnExplorer(tripletItem.txHash)}
-                      />
-                    </div>
 
                     {isExpanded && (
                       <div className="triplet-details">
