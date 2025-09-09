@@ -32,7 +32,7 @@ export const useCheckExistingTriple = () => {
       const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
       try {
-        // First calculate the triple ID using the V2 function
+        // First calculate the triple ID 
         const tripleId = await publicClient.readContract({
           address: contractAddress,
           abi: MULTIVAULT_V2_ABI,
@@ -74,15 +74,10 @@ export const useCheckExistingTriple = () => {
         }
       } catch (contractError) {
         console.warn('⚠️ Contract existence check failed, falling back to creation attempt:', contractError)
-        
-        // Generate a dummy hash for fallback
-        const dummyHash = `0x${Date.now().toString(16).padStart(64, '0')}`
-        
-        // Return exists: false so the creation process can proceed
-        // If the triple already exists, the contract will throw 0x22319959 which we handle
+        // Return false if we can't check - let the contract handle duplicates
         return {
           exists: false,
-          tripleHash: dummyHash
+          tripleHash: '' // No ID available if calculation failed
         }
       }
     } catch (error) {
@@ -95,37 +90,10 @@ export const useCheckExistingTriple = () => {
     }
   }
 
-  // Fonction helper pour calculer seulement le hash sans vérifier l'existence
-  const calculateTripleHash = async (
-    subjectVaultId: string,
-    predicateVaultId: string,
-    objectVaultId: string
-  ): Promise<string> => {
-    try {
-      const { publicClient } = await getClients()
-      const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-      const tripleId = await publicClient.readContract({
-        address: contractAddress,
-        abi: MULTIVAULT_V2_ABI,
-        functionName: 'calculateTripleId',
-        args: [
-          subjectVaultId as `0x${string}`,
-          predicateVaultId as `0x${string}`,
-          objectVaultId as `0x${string}`
-        ]
-      }) as `0x${string}`
-
-      return tripleId as string
-    } catch (error) {
-      console.error('❌ Triple ID calculation failed:', error)
-      throw error
-    }
-  }
 
   return { 
     checkTripleExists,
-    calculateTripleHash,
     isChecking, 
     error 
   }

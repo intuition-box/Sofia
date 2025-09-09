@@ -55,7 +55,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   } = useElizaData({ autoRefresh: true, refreshInterval: 5000 })
 
   // Hook blockchain pour la création (utilise les autres hooks en interne)
-  const { createTripleOnChain, createTriplesBatch, isCreating, currentStep } = useCreateTripleOnChain()
+  const { createTripleOnChain, createTriplesBatch, isCreating, currentStep, batchProgress } = useCreateTripleOnChain()
 
   // Charger les états sauvegardés puis traiter les messages
   useEffect(() => {
@@ -193,8 +193,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       
       // Check if triplet already existed on chain
       if (result.source === 'existing') {
-        // Show popup for existing triplet
-        alert(`✅ Triplet already exists on chain!\nVault ID: ${result.tripleVaultId}\nRemoving from your pending list.`)
+        console.log(`✅ Triplet already exists on chain! Vault ID: ${result.tripleVaultId}`)
       }
       
       // Supprimer de l'affichage local (que ce soit nouveau ou existant)
@@ -212,8 +211,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         // Add to blacklist to prevent recreation
         await elizaDataService.addPublishedTripletId(tripletId)
         
-        // Show popup for existing triplet
-        alert(`✅ Triplet already exists on chain!\nRemoving from your pending list.`)
+        console.log(`✅ Triplet already exists on chain! Removing from pending list.`)
         
         // Remove from local display
         const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
@@ -350,18 +348,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             await elizaDataService.addPublishedTripletId(triplet.id)
           }
           
-          // Show summary alert
+          // Log summary instead of showing popup
           if (existingResults.length > 0) {
-            alert(`✅ Batch complete!
-Created: ${createdResults.length} new triplets
-Already existed: ${existingResults.length} triplets (removed from list)
-${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.slice(-8)}` : ''}
-
-Successfully processed triplets removed from your pending list.`)
+            console.log(`✅ Batch complete! Created: ${createdResults.length} new, ${existingResults.length} already existed`)
           } else if (createdResults.length > 0) {
-            alert(`✅ Batch successful!
-Created: ${createdResults.length} triplets in single transaction
-${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.slice(-8)}` : ''}`)
+            console.log(`✅ Batch successful! Created: ${createdResults.length} triplets`, result.txHash)
           }
           
           // Remove only successfully processed triplets (created + existing)
@@ -372,14 +363,11 @@ ${result.txHash ? `Transaction: ${result.txHash.slice(0, 10)}...${result.txHash.
           
         } else {
           console.error('❌ Batch publication had failures:', result.failedTriples)
-          alert(`❌ Batch completed with some errors:
-${result.failedTriples.length} triplets failed
-Check console for details`)
+          console.log(`❌ Batch completed with ${result.failedTriples.length} failed triplets`)
         }
         
       } catch (error) {
         console.error('❌ Batch publication failed:', error)
-        alert(`❌ Batch publication failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
       } finally {
         setIsProcessing(false)
       }
@@ -446,6 +434,36 @@ Check console for details`)
               </button>
             </div>
           )}
+          
+          {/* Barre de progression pour le batch */}
+          {isProcessing && selectedEchoes.size > 1 && (
+            <div className="batch-progress-container" style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+              <div className="processing-message" style={{ marginBottom: '8px' }}>
+                {currentStep || '⚙️ Starting batch...'}
+              </div>
+              <div className="progress-bar" style={{ 
+                width: '100%', 
+                height: '8px', 
+                backgroundColor: '#e9ecef', 
+                borderRadius: '4px', 
+                overflow: 'hidden' 
+              }}>
+                <div 
+                  className="progress-fill" 
+                  style={{
+                    width: `${batchProgress.current}%`,
+                    height: '100%',
+                    backgroundColor: batchProgress.phase === 'error' ? '#dc3545' : '#28a745',
+                    transition: 'width 0.3s ease',
+                    borderRadius: '4px'
+                  }}
+                ></div>
+              </div>
+              <div style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px', textAlign: 'center' }}>
+                {batchProgress.current}% completed
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -505,7 +523,7 @@ Check console for details`)
 
                     {processingTripletId === tripletItem.id && (
                       <div className="processing-message">
-                        {currentStep || '⚙️ Publishing triplet...'}
+                        {currentStep || ' Publishing triplet...'}
                       </div>
                     )}
 
