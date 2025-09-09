@@ -5,6 +5,7 @@ import logoIcon from '../../assets/icon.png'
 import thumbsUpIcon from '../ui/icons/Thumbs up.png'
 import toggleTrue from '../ui/icons/button=True.png'
 import toggleFalse from '../ui/icons/button=False.png'
+import LevelProgress from '../LevelProgress'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
 
@@ -49,6 +50,9 @@ const HomeConnectedPage = () => {
         </div>
       </div>
 
+      <div className="level-progress-section">
+        <LevelProgress />
+      </div>
 
       <div className="floating-buttons">
         <button
