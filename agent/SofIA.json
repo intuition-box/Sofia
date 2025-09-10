@@ -59,8 +59,7 @@
         "@elizaos/plugin-bootstrap",
         "@elizaos/plugin-mcp"
     ],
-    "settings": {
-    },
+    "settings": {},
     "style": {
         "all": [],
         "chat": [],
