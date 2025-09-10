@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/indexedDB-methods'
+import sofiaDB, { STORES } from '../../../lib/indexedDB'
 import { useCreateTripleOnChain, type BatchTripleInput } from '../../../hooks/useCreateTripleOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import type { Message, ParsedSofiaMessage, Triplet } from './types'
@@ -336,11 +337,40 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const deleteSelectedEchoes = async () => {
     if (selectedEchoes.size === 0) return
     
+    // Supprimer les messages source de la base de données
+    const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
+    const messageIdsToDelete = new Set<string>()
+    
+    selectedTriplets.forEach(triplet => {
+      // Extraire le messageId du tripletId (format: messageId_index)
+      const messageId = triplet.sourceMessageId
+      messageIdsToDelete.add(messageId)
+    })
+    
+    // Supprimer les messages source de IndexedDB
+    for (const messageId of messageIdsToDelete) {
+      try {
+        // Trouver et supprimer le message par messageId
+        const messages = await elizaDataService.getAllMessages()
+        const messageToDelete = messages.find(m => m.messageId === messageId)
+        if (messageToDelete && messageToDelete.id) {
+          await sofiaDB.delete(STORES.ELIZA_DATA, messageToDelete.id)
+          console.log('🗑️ Deleted message from IndexedDB:', messageId)
+        }
+      } catch (error) {
+        console.error('Failed to delete message:', messageId, error)
+      }
+    }
+    
+    // Mettre à jour l'affichage local
     const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
     setEchoTriplets(updatedTriplets)
     
     // Sauvegarder les états après suppression
     await elizaDataService.storeTripletStates(updatedTriplets)
+    
+    // Rafraîchir les messages pour refléter les changements
+    await refreshMessages()
     
     setSelectedEchoes(new Set())
     setIsSelectAll(false)
