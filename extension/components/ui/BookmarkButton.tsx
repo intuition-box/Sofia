@@ -8,6 +8,7 @@ import { useBookmarks } from '../../hooks/useBookmarks'
 import type { Triplet } from '~components/pages/core-tabs/types'
 import type { BookmarkedTriplet } from '../../types/bookmarks'
 import QuickActionButton from './QuickActionButton'
+import '../styles/BookmarkStyles.css'
 
 interface BookmarkButtonProps {
   triplet: Triplet
@@ -66,46 +67,18 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
       />
 
       {showModal && (
-        <div className="modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(14, 14, 14, 0.18)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div className="echo-card border-green" style={{
-            padding: '24px',
-            borderRadius: '16px',
-            maxWidth: '400px',
-            width: '90%',
-            border: '1px solid rgba(199, 134, 108, 0.4)',
-            background: 'linear-gradient(135deg, rgba(199, 134, 108, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(199, 134, 108, 0.05) 100%)',
-            boxShadow: '0 20px 40px rgba(55, 33, 24, 0.15)',
-            maxHeight: '80vh',
-            overflow: 'auto'
-          }}>
-            <h3 style={{ margin: '0 0 16px 0', color: 'rgba(255, 255, 255, 0.86)' }}>
+        <div className="bookmark-modal-overlay">
+          <div className="bookmark-modal-content">
+            <h3 className="bookmark-modal-title">
               Add to Bookmark List
             </h3>
 
             {/* Show triplet preview */}
-            <div style={{
-              padding: '12px',
-              background: 'var(--bg-secondary)',
-              borderRadius: '8px',
-              marginBottom: '16px',
-              border: '1px solid var(--border-color)'
-            }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+            <div className="bookmark-triplet-preview">
+              <div className="bookmark-triplet-preview-label">
                 Triplet to bookmark:
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
+              <div className="bookmark-triplet-preview-content">
                 <strong>{triplet.subject}</strong> → {triplet.predicate} → <strong>{triplet.object}</strong>
               </div>
             </div>
@@ -114,22 +87,14 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
               <>
                 {/* List selection */}
                 {lists.length > 0 ? (
-                  <div style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                  <div className="bookmark-form-group">
+                    <label className="bookmark-label">
                       Select a list:
                     </label>
                     <select
                       value={selectedListId}
                       onChange={(e) => setSelectedListId(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-color)',
-                        background: 'var(--bg-secondary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '14px'
-                      }}
+                      className="bookmark-select"
                     >
                       <option value="">Choose a list...</option>
                       {lists.map(list => (
@@ -140,32 +105,16 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                     </select>
                   </div>
                 ) : (
-                  <div style={{ 
-                    padding: '16px', 
-                    background: 'var(--bg-secondary)', 
-                    borderRadius: '8px', 
-                    marginBottom: '16px',
-                    textAlign: 'center',
-                    color: 'var(--text-secondary)'
-                  }}>
+                  <div className="bookmark-empty-message">
                     No bookmark lists found. Create your first list below!
                   </div>
                 )}
 
                 {/* Create new list option */}
-                <div style={{ marginBottom: '16px' }}>
+                <div className="bookmark-form-group">
                   <button
                     onClick={() => setIsCreatingList(true)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px 16px',
-                      borderRadius: '4px',
-                      border: '1px solid var(--border-color)',
-                      background: 'var(--bg-secondary)',
-                      color: 'var(--text-primary)',
-                      cursor: 'pointer',
-                      justifyContent: 'center'
-                    }}
+                    className="bookmark-button bookmark-button-full"
                   >
                     + Create New List
                   </button>
@@ -174,8 +123,8 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
             ) : (
               <>
                 {/* Create new list form */}
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                <div className="bookmark-form-group">
+                  <label className="bookmark-label">
                     New list name:
                   </label>
                   <input
@@ -184,34 +133,17 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                     onChange={(e) => setNewListName(e.target.value)}
                     placeholder="Enter list name..."
                     autoFocus
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)',
-                      background: 'var(--bg-secondary)',
-                      color: 'var(--text-primary)',
-                      fontSize: '14px'
-                    }}
+                    className="bookmark-input"
                   />
                 </div>
                 
-                <div style={{ marginBottom: '16px' }}>
+                <div className="bookmark-form-group">
                   <button
                     onClick={() => {
                       setIsCreatingList(false)
                       setNewListName('')
                     }}
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px 16px',
-                      borderRadius: '4px',
-                      border: '1px solid var(--border-color)',
-                      background: 'var(--bg-secondary)',
-                      color: 'var(--text-primary)',
-                      cursor: 'pointer',
-                      justifyContent: 'center'
-                    }}
+                    className="bookmark-button bookmark-button-full"
                   >
                     ← Back to List Selection
                   </button>
@@ -220,7 +152,7 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
             )}
 
             {/* Action buttons */}
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div className="bookmark-button-group">
               <button 
                 onClick={() => {
                   setShowModal(false)
@@ -228,28 +160,18 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                   setNewListName('')
                   setSelectedListId('')
                 }}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer'
-                }}
+                className="bookmark-button"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleAddToBookmark}
                 disabled={isCreatingList ? !newListName.trim() : !selectedListId}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--border-color)',
-                  background: (isCreatingList ? !newListName.trim() : !selectedListId) ? 'var(--bg-disabled)' : 'var(--accent-color)',
-                  color: (isCreatingList ? !newListName.trim() : !selectedListId) ? 'var(--text-disabled)' : 'white',
-                  cursor: (isCreatingList ? !newListName.trim() : !selectedListId) ? 'not-allowed' : 'pointer'
-                }}
+                className={
+                  (isCreatingList ? !newListName.trim() : !selectedListId) 
+                    ? "bookmark-button-disabled" 
+                    : "bookmark-button-primary"
+                }
               >
                 {isCreatingList ? 'Create & Add' : 'Add to List'}
               </button>

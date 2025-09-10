@@ -1,0 +1,377 @@
+/**
+ * Bookmark Components Styles
+ * Styles pour les modals et composants de bookmarks
+ */
+
+/* Modal Overlay pour les bookmarks */
+.bookmark-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(14, 14, 14, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+/* Modal Content avec style echo-card border-green */
+.bookmark-modal-content {
+  padding: 24px;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 90%;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: linear-gradient(135deg, rgba(199, 134, 108, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(199, 134, 108, 0.05) 100%);
+  box-shadow: 0 20px 40px rgba(55, 33, 24, 0.15);
+  max-height: 80vh;
+  overflow: auto;
+}
+
+/* Titres dans les modals */
+.bookmark-modal-title {
+  margin: 0 0 16px 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Labels */
+.bookmark-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.79);
+}
+
+/* Champs de saisie */
+.bookmark-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
+}
+
+.bookmark-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.bookmark-input:focus {
+  outline: none;
+  border-color: rgba(199, 134, 108, 0.6);
+  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+}
+
+/* Textarea spécifique */
+.bookmark-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.bookmark-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.bookmark-textarea:focus {
+  outline: none;
+  border-color: rgba(199, 134, 108, 0.6);
+  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+}
+
+/* Select dropdown */
+.bookmark-select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
+}
+
+.bookmark-select:focus {
+  outline: none;
+  border-color: rgba(199, 134, 108, 0.6);
+  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+}
+
+/* Boutons */
+.bookmark-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.bookmark-button:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(199, 134, 108, 0.6);
+}
+
+/* Bouton primaire */
+.bookmark-button-primary {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(199, 134, 108, 0.8);
+  color: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.bookmark-button-primary:hover {
+  background: rgba(199, 134, 108, 0.9);
+  border-color: rgba(199, 134, 108, 0.8);
+}
+
+/* Bouton désactivé */
+.bookmark-button-disabled {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  font-size: 14px;
+}
+
+/* Bouton pleine largeur */
+.bookmark-button-full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Preview du triplet */
+.bookmark-triplet-preview {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+}
+
+.bookmark-triplet-preview-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.79);
+  margin-bottom: 4px;
+}
+
+.bookmark-triplet-preview-content {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+/* Message d'état vide */
+.bookmark-empty-message {
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.79);
+}
+
+/* Conteneurs */
+.bookmark-form-group {
+  margin-bottom: 16px;
+}
+
+.bookmark-form-group:last-child {
+  margin-bottom: 24px;
+}
+
+.bookmark-button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Header styles pour BookmarkTab */
+.bookmark-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(199, 134, 108, 0.4);
+}
+
+.bookmark-header-title {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 18px;
+}
+
+/* Navigation des listes */
+.bookmark-nav-button {
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.79);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bookmark-nav-button:hover {
+  background: rgba(199, 134, 108, 0.1);
+}
+
+.bookmark-nav-button.active {
+  background: rgba(199, 134, 108, 0.8);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Navigation wrapper */
+.bookmark-nav-wrapper {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.bookmark-nav-list-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bookmark-nav-action-button {
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.bookmark-nav-action-button:hover {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+/* Barre de recherche */
+.bookmark-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
+}
+
+.bookmark-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.bookmark-search-input:focus {
+  outline: none;
+  border-color: rgba(199, 134, 108, 0.6);
+  box-shadow: 0 0 0 2px rgba(199, 134, 108, 0.2);
+}
+
+/* Styles pour les cartes de listes dans BookmarkTab */
+.bookmark-list-card {
+  margin-bottom: 12px;
+}
+
+.bookmark-triplet-card {
+  margin-bottom: 12px;
+}
+
+.bookmark-card {
+  margin-bottom: 12px;
+}
+
+.bookmark-list-info h4 {
+  margin: 0 0 8px 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 16px;
+}
+
+.bookmark-list-info p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.79);
+}
+
+.bookmark-list-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Styles pour les triplets bookmarkés */
+.bookmark-triplet-card {
+  margin-bottom: 12px;
+}
+
+.bookmark-triplet-details {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  border-top: 1px solid rgba(199, 134, 108, 0.4);
+  padding-top: 8px;
+}
+
+.bookmark-triplet-details a {
+  color: rgba(199, 134, 108, 0.9);
+  text-decoration: none;
+}
+
+.bookmark-triplet-details a:hover {
+  color: rgba(199, 134, 108, 1);
+  text-decoration: underline;
+}
+
+/* Boutons d'actions dans les cartes */
+.bookmark-action-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.bookmark-action-button:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(199, 134, 108, 0.6);
+}
+
+.bookmark-action-button.primary {
+  background: rgba(199, 134, 108, 0.8);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.bookmark-action-button.primary:hover {
+  background: rgba(199, 134, 108, 0.9);
+}
+
+.bookmark-action-button.danger {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.bookmark-action-button.danger:hover {
+  background: rgba(255, 0, 0, 0.1);
+  border-color: rgba(255, 0, 0, 0.4);
+}

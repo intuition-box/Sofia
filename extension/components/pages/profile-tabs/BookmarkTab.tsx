@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useBookmarks } from '../../../hooks/useBookmarks'
 import '../../styles/CorePage.css'
+import '../../styles/BookmarkStyles.css'
 
 const BookmarkTab = () => {
   const { 
@@ -122,16 +123,8 @@ const BookmarkTab = () => {
           <p>Error loading bookmarks: {error}</p>
           <button 
             onClick={refreshFromLocal}
-            className="reload-button"
-            style={{ 
-              marginTop: '10px',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--accent-color)',
-              color: 'white',
-              cursor: 'pointer'
-            }}
+            className="bookmark-button-primary"
+            style={{ marginTop: '10px' }}
           >
             Retry
           </button>
@@ -145,81 +138,44 @@ const BookmarkTab = () => {
       {/* Header with lists navigation */}
       <div className="bookmark-header" style={{ padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>Bookmark Lists</h3>
+          <h3 className="bookmark-header-title">Bookmark Lists</h3>
           <button
             onClick={() => setIsCreatingList(true)}
-            style={{ 
-              fontSize: '12px', 
-              padding: '6px 12px',
-              borderRadius: '4px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--accent-color)',
-              color: 'white',
-              cursor: 'pointer'
-            }}
+            className="bookmark-button-primary"
+            style={{ fontSize: '12px', padding: '6px 12px' }}
           >
             + New List
           </button>
         </div>
 
         {/* Lists navigation */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="bookmark-nav-wrapper">
           <button
             onClick={() => setSelectedListId(null)}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '16px',
-              border: '1px solid var(--border-color)',
-              background: selectedListId === null ? 'var(--accent-color)' : 'transparent',
-              color: selectedListId === null ? 'white' : 'var(--text-primary)',
-              fontSize: '12px',
-              cursor: 'pointer'
-            }}
+            className={`bookmark-nav-button ${selectedListId === null ? 'active' : ''}`}
           >
             All ({triplets.length})
           </button>
           
           {lists.map(list => (
-            <div key={list.id} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div key={list.id} className="bookmark-nav-list-item">
               <button
                 onClick={() => setSelectedListId(list.id)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '16px',
-                  border: '1px solid var(--border-color)',
-                  background: selectedListId === list.id ? 'var(--accent-color)' : 'transparent',
-                  color: selectedListId === list.id ? 'white' : 'var(--text-primary)',
-                  fontSize: '12px',
-                  cursor: 'pointer'
-                }}
+                className={`bookmark-nav-button ${selectedListId === list.id ? 'active' : ''}`}
               >
                 {list.name} ({list.tripletIds.length})
               </button>
               
               <button
                 onClick={() => startEditingList(list.id)}
-                style={{
-                  padding: '4px',
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
+                className="bookmark-nav-action-button"
               >
                 ✏️
               </button>
               
               <button
                 onClick={() => handleDeleteList(list.id)}
-                style={{
-                  padding: '4px',
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
+                className="bookmark-nav-action-button"
               >
                 🗑️
               </button>
@@ -235,15 +191,7 @@ const BookmarkTab = () => {
               placeholder="Search bookmarked triplets..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                background: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px'
-              }}
+              className="bookmark-search-input"
             />
           </div>
         )}
@@ -251,34 +199,14 @@ const BookmarkTab = () => {
 
       {/* Create/Edit List Modal */}
       {(isCreatingList || isEditingList) && (
-        <div className="modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(14, 14, 14, 0.18)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div className="echo-card border-green" style={{
-            padding: '24px',
-            borderRadius: '16px',
-            maxWidth: '400px',
-            width: '90%',
-            border: '1px solid rgba(199, 134, 108, 0.4)',
-            background: 'linear-gradient(135deg, rgba(199, 134, 108, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(199, 134, 108, 0.05) 100%)',
-            boxShadow: '0 20px 40px rgba(55, 33, 24, 0.15)'
-          }}>
-            <h3 style={{ margin: '0 0 16px 0', color: 'rgba(255, 255, 255, 0.86) ' }}>
+        <div className="bookmark-modal-overlay">
+          <div className="bookmark-modal-content">
+            <h3 className="bookmark-modal-title">
               {isCreatingList ? 'Create New List' : 'Edit List'}
             </h3>
             
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: 'rgba(255, 255, 255, 0.79) ' }}>
+            <div className="bookmark-form-group">
+              <label className="bookmark-label">
                 List Name
               </label>
               <input
@@ -286,19 +214,12 @@ const BookmarkTab = () => {
                 value={newListName}
                 onChange={(e) => setNewListName(e.target.value)}
                 placeholder="Enter list name..."
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--bg-secondary)',
-                  color: 'rgba(255, 255, 255, 0.79) '
-                }}
+                className="bookmark-input"
               />
             </div>
             
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: 'rgba(255, 255, 255, 0.79) '}}>
+            <div className="bookmark-form-group">
+              <label className="bookmark-label">
                 Description (optional)
               </label>
               <textarea
@@ -306,43 +227,21 @@ const BookmarkTab = () => {
                 onChange={(e) => setNewListDescription(e.target.value)}
                 placeholder="Enter description..."
                 rows={3}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--bg-secondary)',
-                  color: 'rgba(255, 255, 255, 0.79) ',
-                  resize: 'vertical'
-                }}
+                className="bookmark-textarea"
               />
             </div>
             
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div className="bookmark-button-group">
               <button 
                 onClick={cancelEdit}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--bg-secondary)',
-                  color: 'rgba(255, 255, 255, 0.79) ',
-                  cursor: 'pointer'
-                }}
+                className="bookmark-button"
               >
                 Cancel
               </button>
               <button 
                 onClick={() => isCreatingList ? handleCreateList() : handleUpdateList(isEditingList!)}
                 disabled={!newListName.trim()}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--border-color)',
-                  background: !newListName.trim() ? 'var(--bg-disabled)' : 'var(--accent-color)',
-                  color: !newListName.trim() ? 'rgba(255, 255, 255, 0.79) ' : 'white',
-                  cursor: !newListName.trim() ? 'not-allowed' : 'pointer'
-                }}
+                className={!newListName.trim() ? "bookmark-button-disabled" : "bookmark-button-primary"}
               >
                 {isCreatingList ? 'Create' : 'Update'}
               </button>
@@ -365,19 +264,13 @@ const BookmarkTab = () => {
           ) : (
             <div className="lists-grid">
               {lists.map((list) => (
-                <div key={list.id} className="echo-card border-green" style={{ marginBottom: '12px' }}>
+                <div key={list.id} className="echo-card border-green bookmark-card">
                   <div className="triplet-item">
                     <div className="triplet-header">
-                      <div className="list-info">
-                        <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)', fontSize: '16px' }}>
-                          {list.name}
-                        </h4>
-                        {list.description && (
-                          <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>
-                            {list.description}
-                          </p>
-                        )}
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      <div className="bookmark-list-info">
+                        <h4>{list.name}</h4>
+                        {list.description && <p>{list.description}</p>}
+                        <div className="bookmark-list-meta">
                           <span>{list.tripletIds.length} triplets</span>
                           <span>Created: {formatDate(list.createdAt)}</span>
                           {list.updatedAt !== list.createdAt && (
@@ -389,43 +282,19 @@ const BookmarkTab = () => {
                     <div className="signal-actions">
                       <button
                         onClick={() => setSelectedListId(list.id)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--border-color)',
-                          background: 'var(--accent-color)',
-                          color: 'white',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
+                        className="bookmark-action-button primary"
                       >
                         View
                       </button>
                       <button
                         onClick={() => startEditingList(list.id)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--border-color)',
-                          background: 'var(--bg-secondary)',
-                          color: 'var(--text-primary)',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
+                        className="bookmark-action-button"
                       >
                         ✏️ Edit
                       </button>
                       <button
                         onClick={() => handleDeleteList(list.id)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--border-color)',
-                          background: 'var(--bg-secondary)',
-                          color: 'var(--text-secondary)',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
+                        className="bookmark-action-button danger"
                       >
                         🗑️ Delete
                       </button>
@@ -447,7 +316,7 @@ const BookmarkTab = () => {
           ) : (
             <div className="triplets-list">
               {displayedTriplets.map((bookmarkedTriplet) => (
-                <div key={bookmarkedTriplet.id} className="echo-card border-green" style={{ marginBottom: '12px' }}>
+                <div key={bookmarkedTriplet.id} className="echo-card border-green bookmark-card">
                   <div className="triplet-item">
                     <div className="triplet-header">
                       <p className="triplet-text">
@@ -459,33 +328,19 @@ const BookmarkTab = () => {
                     <div className="signal-actions">
                       <button
                         onClick={() => removeTripletFromList(selectedListId, bookmarkedTriplet.id)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--border-color)',
-                          background: 'var(--bg-secondary)',
-                          color: 'var(--text-secondary)',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
+                        className="bookmark-action-button danger"
                       >
                         🗑️ Remove
                       </button>
                     </div>
-                    <div style={{ 
-                      marginTop: '12px', 
-                      fontSize: '12px', 
-                      color: 'var(--text-secondary)',
-                      borderTop: '1px solid var(--border-color)',
-                      paddingTop: '8px'
-                    }}>
+                    <div className="bookmark-triplet-details">
                       <div>Source: {bookmarkedTriplet.sourceType}</div>
                       <div>Added: {formatDate(bookmarkedTriplet.addedAt)}</div>
                       {bookmarkedTriplet.description && (
                         <div>Description: {bookmarkedTriplet.description}</div>
                       )}
                       {bookmarkedTriplet.url && (
-                        <div>URL: <a href={bookmarkedTriplet.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-color)' }}>
+                        <div>URL: <a href={bookmarkedTriplet.url} target="_blank" rel="noopener noreferrer">
                           {bookmarkedTriplet.url.length > 50 ? bookmarkedTriplet.url.slice(0, 50) + '...' : bookmarkedTriplet.url}
                         </a></div>
                       )}
