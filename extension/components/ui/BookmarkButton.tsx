@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { useBookmarks } from '../../hooks/useBookmarks'
 import type { Triplet } from '~components/pages/core-tabs/types'
 import type { BookmarkedTriplet } from '../../types/bookmarks'
+import QuickActionButton from './QuickActionButton'
 
 interface BookmarkButtonProps {
   triplet: Triplet
@@ -65,29 +66,31 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
       />
 
       {showModal && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
+          background: 'rgba(14, 14, 14, 0.18)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000
+          zIndex: 1000,
+          backdropFilter: 'blur(4px)'
         }}>
-          <div style={{
-            background: 'var(--bg-primary)',
+          <div className="echo-card border-green" style={{
             padding: '24px',
-            borderRadius: '12px',
+            borderRadius: '16px',
             maxWidth: '400px',
             width: '90%',
-            border: '1px solid var(--border-color)',
+            border: '1px solid rgba(199, 134, 108, 0.4)',
+            background: 'linear-gradient(135deg, rgba(199, 134, 108, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(199, 134, 108, 0.05) 100%)',
+            boxShadow: '0 20px 40px rgba(55, 33, 24, 0.15)',
             maxHeight: '80vh',
             overflow: 'auto'
           }}>
-            <h3 style={{ margin: '0 0 16px 0', color: 'var(--text-primary)' }}>
+            <h3 style={{ margin: '0 0 16px 0', color: 'rgba(255, 255, 255, 0.86)' }}>
               Add to Bookmark List
             </h3>
 
@@ -218,20 +221,38 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
 
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <QuickActionButton onClick={() => {
-                setShowModal(false)
-                setIsCreatingList(false)
-                setNewListName('')
-                setSelectedListId('')
-              }}>
+              <button 
+                onClick={() => {
+                  setShowModal(false)
+                  setIsCreatingList(false)
+                  setNewListName('')
+                  setSelectedListId('')
+                }}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer'
+                }}
+              >
                 Cancel
-              </QuickActionButton>
-              <QuickActionButton 
+              </button>
+              <button 
                 onClick={handleAddToBookmark}
                 disabled={isCreatingList ? !newListName.trim() : !selectedListId}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border-color)',
+                  background: (isCreatingList ? !newListName.trim() : !selectedListId) ? 'var(--bg-disabled)' : 'var(--accent-color)',
+                  color: (isCreatingList ? !newListName.trim() : !selectedListId) ? 'var(--text-disabled)' : 'white',
+                  cursor: (isCreatingList ? !newListName.trim() : !selectedListId) ? 'not-allowed' : 'pointer'
+                }}
               >
                 {isCreatingList ? 'Create & Add' : 'Add to List'}
-              </QuickActionButton>
+              </button>
             </div>
           </div>
         </div>

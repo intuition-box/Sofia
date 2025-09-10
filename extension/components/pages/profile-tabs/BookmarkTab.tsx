@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useBookmarks } from '../../../hooks/useBookmarks'
-import QuickActionButton from '../../ui/QuickActionButton'
 import '../../styles/CorePage.css'
 
 const BookmarkTab = () => {
@@ -121,13 +120,21 @@ const BookmarkTab = () => {
       <div className="triples-container">
         <div className="empty-state">
           <p>Error loading bookmarks: {error}</p>
-          <QuickActionButton 
+          <button 
             onClick={refreshFromLocal}
             className="reload-button"
-            style={{ marginTop: '10px' }}
+            style={{ 
+              marginTop: '10px',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--accent-color)',
+              color: 'white',
+              cursor: 'pointer'
+            }}
           >
             Retry
-          </QuickActionButton>
+          </button>
         </div>
       </div>
     )
@@ -139,12 +146,20 @@ const BookmarkTab = () => {
       <div className="bookmark-header" style={{ padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>Bookmark Lists</h3>
-          <QuickActionButton
+          <button
             onClick={() => setIsCreatingList(true)}
-            style={{ fontSize: '12px', padding: '6px 12px' }}
+            style={{ 
+              fontSize: '12px', 
+              padding: '6px 12px',
+              borderRadius: '4px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--accent-color)',
+              color: 'white',
+              cursor: 'pointer'
+            }}
           >
             + New List
-          </QuickActionButton>
+          </button>
         </div>
 
         {/* Lists navigation */}
@@ -236,32 +251,34 @@ const BookmarkTab = () => {
 
       {/* Create/Edit List Modal */}
       {(isCreatingList || isEditingList) && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
+          background: 'rgba(14, 14, 14, 0.18)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000
+          zIndex: 1000,
+          backdropFilter: 'blur(4px)'
         }}>
-          <div style={{
-            background: 'var(--bg-primary)',
+          <div className="echo-card border-green" style={{
             padding: '24px',
-            borderRadius: '12px',
+            borderRadius: '16px',
             maxWidth: '400px',
             width: '90%',
-            border: '1px solid var(--border-color)'
+            border: '1px solid rgba(199, 134, 108, 0.4)',
+            background: 'linear-gradient(135deg, rgba(199, 134, 108, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(199, 134, 108, 0.05) 100%)',
+            boxShadow: '0 20px 40px rgba(55, 33, 24, 0.15)'
           }}>
-            <h3 style={{ margin: '0 0 16px 0', color: 'var(--text-primary)' }}>
+            <h3 style={{ margin: '0 0 16px 0', color: 'rgba(255, 255, 255, 0.86) ' }}>
               {isCreatingList ? 'Create New List' : 'Edit List'}
             </h3>
             
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: 'rgba(255, 255, 255, 0.79) ' }}>
                 List Name
               </label>
               <input
@@ -275,13 +292,13 @@ const BookmarkTab = () => {
                   borderRadius: '8px',
                   border: '1px solid var(--border-color)',
                   background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)'
+                  color: 'rgba(255, 255, 255, 0.79) '
                 }}
               />
             </div>
             
             <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', color: 'rgba(255, 255, 255, 0.79) '}}>
                 Description (optional)
               </label>
               <textarea
@@ -295,22 +312,40 @@ const BookmarkTab = () => {
                   borderRadius: '8px',
                   border: '1px solid var(--border-color)',
                   background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)',
+                  color: 'rgba(255, 255, 255, 0.79) ',
                   resize: 'vertical'
                 }}
               />
             </div>
             
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <QuickActionButton onClick={cancelEdit}>
+              <button 
+                onClick={cancelEdit}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-secondary)',
+                  color: 'rgba(255, 255, 255, 0.79) ',
+                  cursor: 'pointer'
+                }}
+              >
                 Cancel
-              </QuickActionButton>
-              <QuickActionButton 
+              </button>
+              <button 
                 onClick={() => isCreatingList ? handleCreateList() : handleUpdateList(isEditingList!)}
                 disabled={!newListName.trim()}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border-color)',
+                  background: !newListName.trim() ? 'var(--bg-disabled)' : 'var(--accent-color)',
+                  color: !newListName.trim() ? 'rgba(255, 255, 255, 0.79) ' : 'white',
+                  cursor: !newListName.trim() ? 'not-allowed' : 'pointer'
+                }}
               >
                 {isCreatingList ? 'Create' : 'Update'}
-              </QuickActionButton>
+              </button>
             </div>
           </div>
         </div>
@@ -318,60 +353,148 @@ const BookmarkTab = () => {
 
       {/* Content */}
       <div style={{ padding: '16px' }}>
-        {displayedTriplets.length === 0 ? (
-          <div className="empty-state">
-            <p>
-              {selectedListId 
-                ? 'No triplets in this list yet!'
-                : lists.length === 0 
-                  ? 'No bookmark lists yet!'
-                  : 'No bookmarked triplets found!'
-              }
-            </p>
-            <p className="empty-subtext">
-              {selectedListId
-                ? 'Add triplets to this list from your Knowledge Graph.'
-                : 'Create your first bookmark list to start organizing your favorite triplets.'
-              }
-            </p>
-          </div>
-        ) : (
-          <div className="triplets-list">
-            {displayedTriplets.map((bookmarkedTriplet) => (
-              <div
-                key={bookmarkedTriplet.id}
-                className="triplet-item"
-                style={{
-                  padding: '16px',
-                  marginBottom: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  background: 'var(--bg-secondary)'
-                }}
-              >
-                <div className="triplet-content">
-                  <div className="triplet-row">
-                    <span className="triplet-part subject">{bookmarkedTriplet.triplet.subject}</span>
-                    <span className="triplet-part predicate">{bookmarkedTriplet.triplet.predicate}</span>
-                    <span className="triplet-part object">{bookmarkedTriplet.triplet.object}</span>
-                  </div>
-                  
-                  <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    <div>Source: {bookmarkedTriplet.sourceType}</div>
-                    <div>Added: {formatDate(bookmarkedTriplet.addedAt)}</div>
-                    {bookmarkedTriplet.description && (
-                      <div>Description: {bookmarkedTriplet.description}</div>
-                    )}
-                    {bookmarkedTriplet.url && (
-                      <div>URL: <a href={bookmarkedTriplet.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-color)' }}>
-                        {bookmarkedTriplet.url}
-                      </a></div>
-                    )}
+        {selectedListId === null ? (
+          /* Show all lists as cards */
+          lists.length === 0 ? (
+            <div className="empty-state">
+              <p>No bookmark lists yet!</p>
+              <p className="empty-subtext">
+                Create your first bookmark list to start organizing your favorite triplets.
+              </p>
+            </div>
+          ) : (
+            <div className="lists-grid">
+              {lists.map((list) => (
+                <div key={list.id} className="echo-card border-green" style={{ marginBottom: '12px' }}>
+                  <div className="triplet-item">
+                    <div className="triplet-header">
+                      <div className="list-info">
+                        <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)', fontSize: '16px' }}>
+                          {list.name}
+                        </h4>
+                        {list.description && (
+                          <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                            {list.description}
+                          </p>
+                        )}
+                        <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                          <span>{list.tripletIds.length} triplets</span>
+                          <span>Created: {formatDate(list.createdAt)}</span>
+                          {list.updatedAt !== list.createdAt && (
+                            <span>Updated: {formatDate(list.updatedAt)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="signal-actions">
+                      <button
+                        onClick={() => setSelectedListId(list.id)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--border-color)',
+                          background: 'var(--accent-color)',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => startEditingList(list.id)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--border-color)',
+                          background: 'var(--bg-secondary)',
+                          color: 'var(--text-primary)',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteList(list.id)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--border-color)',
+                          background: 'var(--bg-secondary)',
+                          color: 'var(--text-secondary)',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
+        ) : (
+          /* Show triplets in selected list */
+          displayedTriplets.length === 0 ? (
+            <div className="empty-state">
+              <p>No triplets in this list yet!</p>
+              <p className="empty-subtext">
+                Add triplets to this list from your Knowledge Graph.
+              </p>
+            </div>
+          ) : (
+            <div className="triplets-list">
+              {displayedTriplets.map((bookmarkedTriplet) => (
+                <div key={bookmarkedTriplet.id} className="echo-card border-green" style={{ marginBottom: '12px' }}>
+                  <div className="triplet-item">
+                    <div className="triplet-header">
+                      <p className="triplet-text">
+                        <span className="subject">{bookmarkedTriplet.triplet.subject}</span><br />
+                        <span className="action">{bookmarkedTriplet.triplet.predicate}</span><br />
+                        <span className="object">{bookmarkedTriplet.triplet.object}</span>
+                      </p>
+                    </div>
+                    <div className="signal-actions">
+                      <button
+                        onClick={() => removeTripletFromList(selectedListId, bookmarkedTriplet.id)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--border-color)',
+                          background: 'var(--bg-secondary)',
+                          color: 'var(--text-secondary)',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        🗑️ Remove
+                      </button>
+                    </div>
+                    <div style={{ 
+                      marginTop: '12px', 
+                      fontSize: '12px', 
+                      color: 'var(--text-secondary)',
+                      borderTop: '1px solid var(--border-color)',
+                      paddingTop: '8px'
+                    }}>
+                      <div>Source: {bookmarkedTriplet.sourceType}</div>
+                      <div>Added: {formatDate(bookmarkedTriplet.addedAt)}</div>
+                      {bookmarkedTriplet.description && (
+                        <div>Description: {bookmarkedTriplet.description}</div>
+                      )}
+                      {bookmarkedTriplet.url && (
+                        <div>URL: <a href={bookmarkedTriplet.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-color)' }}>
+                          {bookmarkedTriplet.url.length > 50 ? bookmarkedTriplet.url.slice(0, 50) + '...' : bookmarkedTriplet.url}
+                        </a></div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>
