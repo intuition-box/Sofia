@@ -100,6 +100,17 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                   return // Skip ce triplet définitivement
                 }
                 
+                // Vérifier si un triplet identique existe déjà (même contenu)
+                const isDuplicate = newEchoTriplets.some(existing => 
+                  existing.triplet.subject === triplet.subject &&
+                  existing.triplet.predicate === triplet.predicate &&
+                  existing.triplet.object === triplet.object
+                )
+                
+                if (isDuplicate) {
+                  return // Skip ce triplet car identique à un existant
+                }
+                
                 // Vérifier si le triplet existe déjà dans les états sauvegardés
                 const existingTriplet = savedStates?.find(t => t.id === tripletId) || 
                                     echoTriplets.find(t => t.id === tripletId)
