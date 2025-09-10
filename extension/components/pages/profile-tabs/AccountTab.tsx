@@ -1,53 +1,85 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStorage } from '@plasmohq/storage/hook'
-import discordIcon from '../../../assets/Discord_Logo.svg'
 import xIcon from '../../../assets/X_logo.svg'
 import searchIcon from '../../../assets/Icon=Search.svg'
 import checkIcon from '../../../assets/Icon=Check.svg'
 import connectButtonOn from '../../../assets/connectButtonOn.svg'
 import connectButtonOff from '../../../assets/connectButtonOff.svg'
 
-const DISCORD_CLIENT_ID = "1415320283161559132"
 const X_CLIENT_ID = process.env.PLASMO_PUBLIC_X_CLIENT_ID || "votre_client_id_x"
 
 const AccountTab = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const [discordUser, setDiscordUser] = useStorage<any>("discord-user")
   const [xUser, setXUser] = useStorage<any>("x-user")
+  const [xFollowing, setXFollowing] = useState<any[]>([])
 
   const mockUsers = [
-    { id: 1, name: 'Peggie', description: 'Web3 builder focused on decentralization and blockchain innovation', avatar: 'https://randomuser.me/api/portraits/women/1.jpg', isOnline: true },
-    { id: 2, name: 'Eve', description: 'Crypto-economy specialist driving strategy and adoption', avatar: 'https://randomuser.me/api/portraits/women/2.jpg', isOnline: false },
-    { id: 3, name: 'Betty', description: 'Solidity developer with expertise in DeFi, NFTs, and DAOs', avatar: 'https://randomuser.me/api/portraits/women/3.jpg', isOnline: true },
-    { id: 4, name: 'Dianne', description: 'Web3 entrepreneur creating sustainable blockchain solutions', avatar: 'https://randomuser.me/api/portraits/women/4.jpg', isOnline: false },
-    { id: 5, name: 'Sarah', description: 'Product manager in Web3, improving user experience and growth', avatar: 'https://randomuser.me/api/portraits/women/5.jpg', isOnline: false },
-    { id: 6, name: 'Julie', description: 'NFT and metaverse strategist with strong community-building skills', avatar: 'https://randomuser.me/api/portraits/women/6.jpg', isOnline: true }
+    { id: 1, name: 'Peggie', description: 'Web3 builder focused on decentralization and blockchain innovation', avatar: 'https://randomuser.me/api/portraits/women/1.jpg', isOnline: true, isFromX: false, username: undefined },
+    { id: 2, name: 'Eve', description: 'Crypto-economy specialist driving strategy and adoption', avatar: 'https://randomuser.me/api/portraits/women/2.jpg', isOnline: false, isFromX: false, username: undefined },
+    { id: 3, name: 'Betty', description: 'Solidity developer with expertise in DeFi, NFTs, and DAOs', avatar: 'https://randomuser.me/api/portraits/women/3.jpg', isOnline: true, isFromX: false, username: undefined },
+    { id: 4, name: 'Dianne', description: 'Web3 entrepreneur creating sustainable blockchain solutions', avatar: 'https://randomuser.me/api/portraits/women/4.jpg', isOnline: false, isFromX: false, username: undefined },
+    { id: 5, name: 'Sarah', description: 'Product manager in Web3, improving user experience and growth', avatar: 'https://randomuser.me/api/portraits/women/5.jpg', isOnline: false, isFromX: false, username: undefined },
+    { id: 6, name: 'Julie', description: 'NFT and metaverse strategist with strong community-building skills', avatar: 'https://randomuser.me/api/portraits/women/6.jpg', isOnline: true, isFromX: false, username: undefined }
   ]
 
-  const filteredUsers = mockUsers.filter(user =>
+  // Combiner les utilisateurs mockés et les follows X
+  const allUsers = [...mockUsers, ...xFollowing.map(follow => ({
+    id: follow.id,
+    name: follow.name,
+    description: follow.description || 'Utilisateur X',
+    avatar: follow.profile_image_url || 'https://via.placeholder.com/40x40/666/fff?text=' + follow.username.charAt(0).toUpperCase(),
+    isOnline: Math.random() > 0.5, // Random pour l'exemple
+    isFromX: true,
+    username: follow.username
+  }))]
+
+  const filteredUsers = allUsers.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.description.toLowerCase().includes(searchQuery.toLowerCase())
+    user.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (user.username && user.username.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
 
-  // Fonction de connexion Discord
-  const connectDiscord = () => {
-    chrome.runtime.sendMessage({
-      type: 'CONNECT_DISCORD',
-      clientId: DISCORD_CLIENT_ID
-    }, async (response) => {
-      if (response?.success) {
-        setDiscordUser(response.user)
-        // Forcer un refresh depuis le storage pour être sûr
-        const result = await chrome.storage.local.get('discord-user')
-        if (result['discord-user']) {
-          setDiscordUser(result['discord-user'])
-        }
-      } else {
-        console.error('Erreur Discord:', response?.error)
+  // Fonction pour récupérer les follows X
+  const fetchXFollowing = async () => {
+    if (!xUser) return
+    
+    try {
+      const result = await chrome.storage.local.get('x-access-token')
+      const accessToken = result['x-access-token']
+      
+      if (!accessToken) {
+        console.error('Token d\'accès X manquant')
+        return
       }
-    })
+
+      const response = await fetch(`${process.env.PLASMO_PUBLIC_OAUTH_SERVER_URL || 'http://localhost:3001'}/auth/x/following`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user_id: xUser.id, 
+          access_token: accessToken 
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setXFollowing(data.following)
+      } else {
+        console.error('Erreur récupération follows:', data.error)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des follows:', error)
+    }
   }
+
+  // Charger les follows automatiquement quand l'utilisateur X est connecté
+  useEffect(() => {
+    if (xUser) {
+      fetchXFollowing()
+    }
+  }, [xUser])
 
   // Fonction de connexion X/Twitter
   const connectX = () => {
@@ -70,12 +102,10 @@ const AccountTab = () => {
 
 
   // Fonction de déconnexion
-  const disconnectAccount = async (platform: 'discord' | 'x') => {
-    if (platform === 'discord') {
-      await setDiscordUser(null)
-    } else {
-      await setXUser(null)
-    }
+  const disconnectAccount = async (platform: 'x') => {
+    await setXUser(null)
+    await chrome.storage.local.remove('x-access-token')
+    setXFollowing([])
   }
 
   return (
@@ -112,36 +142,6 @@ const AccountTab = () => {
       <div className="action-buttons-container">
         <button 
           className="connect-button"
-          onClick={discordUser ? () => disconnectAccount('discord') : connectDiscord}
-          style={{
-            backgroundImage: `url(${discordUser ? connectButtonOn : connectButtonOff})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: 'none',
-            width: '271px',
-            height: '42px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 20px',
-            cursor: 'pointer',
-            backgroundColor: 'transparent'
-          }}
-        >
-          <img 
-            src={discordIcon} 
-            alt="Discord" 
-            className="button-icon"
-            style={{ width: '24px', height: '24px', marginRight: '12px' }}
-          />
-          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
-            {discordUser ? discordUser.username : 'Discord'}
-          </span>
-        </button>
-        
-        <button 
-          className="connect-button"
           onClick={xUser ? () => disconnectAccount('x') : connectX}
           style={{
             backgroundImage: `url(${xUser ? connectButtonOn : connectButtonOff})`,
@@ -150,7 +150,7 @@ const AccountTab = () => {
             backgroundPosition: 'center',
             border: 'none',
             width: '271px',
-            height: '42px',
+            height: '67px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -169,6 +169,7 @@ const AccountTab = () => {
             {xUser ? `@${xUser.username}` : 'X'}
           </span>
         </button>
+        
       </div>
       
 
@@ -176,7 +177,7 @@ const AccountTab = () => {
       <div className="search-container">
         <input
           type="text"
-          placeholder="Search"
+          placeholder="0x11s...6ca86"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="alias-input search-input-with-icon"
@@ -200,8 +201,13 @@ const AccountTab = () => {
             </div>
             <div className="user-details-container">
               <div className="user-left-content">
-                <div className="user-name-text">{user.name}</div>
-                <div className="user-description-text">{user.description}</div>
+                <div className="user-name-text">
+                  {user.name}
+                  {user.isFromX && <span style={{ marginLeft: '8px', fontSize: '10px', color: '#1da1f2' }}>X</span>}
+                </div>
+                <div className="user-description-text">
+                  {user.username && `@${user.username} - `}{user.description}
+                </div>
               </div>
               <div className="user-right-content">
                 <button className="follow-button">Add to my Circle</button>

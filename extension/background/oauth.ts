@@ -94,7 +94,7 @@ export async function handleXOAuth(clientId: string, sendResponse: (response: an
       response_type: 'code',
       client_id: clientId,
       redirect_uri: redirectUri,
-      scope: 'users.read tweet.read',
+      scope: 'users.read tweet.read follows.read',
       state: 'state',
       code_challenge: codeChallenge,
       code_challenge_method: 'S256'
@@ -125,8 +125,11 @@ export async function handleXOAuth(clientId: string, sendResponse: (response: an
             const data = await response.json()
             
             if (data.success) {
-              // Stocker les données utilisateur et nettoyer le code verifier
-              await chrome.storage.local.set({ "x-user": data.user })
+              // Stocker les données utilisateur et le token d'accès, puis nettoyer le code verifier
+              await chrome.storage.local.set({ 
+                "x-user": data.user,
+                "x-access-token": data.access_token
+              })
               await chrome.storage.local.remove('x-code-verifier')
               sendResponse({ success: true, user: data.user })
             } else {

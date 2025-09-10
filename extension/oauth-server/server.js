@@ -4,9 +4,12 @@ const fetch = require('node-fetch');
 // Forcer le rechargement du .env
 delete process.env.DISCORD_CLIENT_ID;
 delete process.env.DISCORD_CLIENT_SECRET;
+delete process.env.X_CLIENT_ID;
+delete process.env.X_CLIENT_SECRET;
 require('dotenv').config();
 
-console.log('🔴 FORCE RELOAD - CLIENT_ID:', process.env.DISCORD_CLIENT_ID);
+console.log('🔴 FORCE RELOAD - DISCORD CLIENT_ID:', process.env.DISCORD_CLIENT_ID);
+console.log('🔴 FORCE RELOAD - X CLIENT_ID:', process.env.X_CLIENT_ID);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -120,11 +123,18 @@ app.post('/auth/discord/exchange', async (req, res) => {
 // Exchange X/Twitter OAuth code pour un token
 app.post('/auth/x/exchange', async (req, res) => {
   try {
+    console.log('🔵 X exchange request:', req.body);
     const { code, codeVerifier, redirectUri } = req.body;
 
     if (!code || !codeVerifier) {
+      console.log('❌ Code ou code verifier X manquant');
       return res.status(400).json({ success: false, error: 'Code ou code verifier manquant' });
     }
+
+    // Debug des variables d'environnement X
+    console.log('🔵 X_CLIENT_ID:', process.env.X_CLIENT_ID);
+    console.log('🔵 X_CLIENT_SECRET présent:', !!process.env.X_CLIENT_SECRET);
+    console.log('🔵 X Redirect URI:', redirectUri);
 
     // Échanger le code contre un token d'accès
     const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
@@ -143,8 +153,10 @@ app.post('/auth/x/exchange', async (req, res) => {
     });
 
     const tokenData = await tokenResponse.json();
+    console.log('🔵 X token response:', tokenData);
 
     if (!tokenData.access_token) {
+      console.log('❌ Token X manquant:', tokenData);
       return res.status(400).json({ 
         success: false, 
         error: 'Impossible d\'obtenir le token X',
@@ -178,7 +190,8 @@ app.post('/auth/x/exchange', async (req, res) => {
         username: userData.username,
         name: userData.name,
         profile_image_url: userData.profile_image_url
-      }
+      },
+      access_token: tokenData.access_token
     });
 
   } catch (error) {
@@ -186,6 +199,61 @@ app.post('/auth/x/exchange', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Erreur serveur lors de l\'authentification X',
+      details: error.message
+    });
+  }
+});
+
+// Endpoint pour récupérer les follows d'un utilisateur X
+app.post('/auth/x/following', async (req, res) => {
+  try {
+    const { user_id, access_token } = req.body;
+
+    if (!user_id || !access_token) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'user_id et access_token requis' 
+      });
+    }
+
+    // Récupérer la liste des follows via l'API X v1.1
+    const followingResponse = await fetch(`https://api.twitter.com/1.1/friends/list.json?user_id=${user_id}&count=200&include_user_entities=false`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const followingData = await followingResponse.json();
+
+    if (!followingResponse.ok) {
+      console.error('Erreur API X following:', followingData);
+      return res.status(followingResponse.status).json({ 
+        success: false, 
+        error: 'Impossible de récupérer les follows',
+        details: followingData
+      });
+    }
+
+    // Adapter le format v1.1 vers notre format attendu
+    const adaptedFollowing = followingData.users ? followingData.users.map(user => ({
+      id: user.id_str,
+      username: user.screen_name,
+      name: user.name,
+      description: user.description,
+      profile_image_url: user.profile_image_url_https
+    })) : [];
+
+    res.json({ 
+      success: true, 
+      following: adaptedFollowing,
+      meta: { result_count: adaptedFollowing.length }
+    });
+
+  } catch (error) {
+    console.error('Erreur récupération follows X:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erreur serveur lors de la récupération des follows',
       details: error.message
     });
   }
