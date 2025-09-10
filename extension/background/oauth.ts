@@ -1,4 +1,4 @@
-const OAUTH_SERVER_URL = process.env.PLASMO_PUBLIC_OAUTH_SERVER_URL || "http://localhost:3001"
+const OAUTH_SERVER_URL = "http://localhost:3001"
 
 // Fonction pour générer un code verifier pour PKCE (X/Twitter)
 const generateCodeVerifier = () => {
