@@ -3,10 +3,11 @@
  * High-level API for managing different data types
  */
 
-import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord } from './indexedDB'
-import type { ParsedSofiaMessage, Message } from '~components/pages/graph-tabs/types'
+import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type BookmarkListRecord, type BookmarkedTripletRecord } from './indexedDB'
+import type { ParsedSofiaMessage, Message, Triplet } from '~components/pages/graph-tabs/types'
 import type { VisitData } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
+import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
 /**
  * Eliza Data Methods
@@ -537,12 +538,199 @@ export class SearchHistoryService {
   }
 }
 
+/**
+ * Bookmark Service Methods
+ */
+export class BookmarkService {
+  /**
+   * Create a new bookmark list
+   */
+  static async createList(name: string, description?: string): Promise<string> {
+    const listId = `list_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    const list: BookmarkList = {
+      id: listId,
+      name,
+      description,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      tripletIds: []
+    }
+    
+    await sofiaDB.put(STORES.BOOKMARK_LISTS, list)
+    console.log('📋 Bookmark list created:', name)
+    return listId
+  }
+
+  /**
+   * Get all bookmark lists
+   */
+  static async getAllLists(): Promise<BookmarkList[]> {
+    const lists = await sofiaDB.getAll<BookmarkList>(STORES.BOOKMARK_LISTS)
+    return lists.sort((a, b) => b.updatedAt - a.updatedAt)
+  }
+
+  /**
+   * Get a specific bookmark list
+   */
+  static async getList(listId: string): Promise<BookmarkList | null> {
+    return await sofiaDB.get<BookmarkList>(STORES.BOOKMARK_LISTS, listId) || null
+  }
+
+  /**
+   * Update a bookmark list
+   */
+  static async updateList(listId: string, updates: Partial<Pick<BookmarkList, 'name' | 'description'>>): Promise<void> {
+    const existingList = await this.getList(listId)
+    if (!existingList) {
+      throw new Error(`List with ID ${listId} not found`)
+    }
+
+    const updatedList: BookmarkList = {
+      ...existingList,
+      ...updates,
+      updatedAt: Date.now()
+    }
+
+    await sofiaDB.put(STORES.BOOKMARK_LISTS, updatedList)
+    console.log('📋 Bookmark list updated:', listId)
+  }
+
+  /**
+   * Delete a bookmark list
+   */
+  static async deleteList(listId: string): Promise<void> {
+    // Remove all triplets from this list first
+    const triplets = await this.getTripletsByList(listId)
+    for (const triplet of triplets) {
+      await sofiaDB.delete(STORES.BOOKMARKED_TRIPLETS, triplet.id)
+    }
+
+    // Delete the list itself
+    await sofiaDB.delete(STORES.BOOKMARK_LISTS, listId)
+    console.log('🗑️ Bookmark list deleted:', listId)
+  }
+
+  /**
+   * Add a triplet to a bookmark list
+   */
+  static async addTripletToList(
+    listId: string, 
+    triplet: Triplet, 
+    sourceInfo: Pick<BookmarkedTriplet, 'sourceType' | 'sourceId' | 'url' | 'description' | 'sourceMessageId'>
+  ): Promise<void> {
+    const list = await this.getList(listId)
+    if (!list) {
+      throw new Error(`List with ID ${listId} not found`)
+    }
+
+    const tripletId = `triplet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    const bookmarkedTriplet: BookmarkedTriplet = {
+      id: tripletId,
+      triplet,
+      ...sourceInfo,
+      addedAt: Date.now()
+    }
+
+    // Add triplet to database
+    await sofiaDB.put(STORES.BOOKMARKED_TRIPLETS, bookmarkedTriplet)
+
+    // Update list with new triplet ID
+    const updatedList: BookmarkList = {
+      ...list,
+      tripletIds: [...list.tripletIds, tripletId],
+      updatedAt: Date.now()
+    }
+
+    await sofiaDB.put(STORES.BOOKMARK_LISTS, updatedList)
+    console.log('🔖 Triplet added to list:', listId, triplet.subject)
+  }
+
+  /**
+   * Remove a triplet from a bookmark list
+   */
+  static async removeTripletFromList(listId: string, tripletId: string): Promise<void> {
+    const list = await this.getList(listId)
+    if (!list) {
+      throw new Error(`List with ID ${listId} not found`)
+    }
+
+    // Remove triplet from database
+    await sofiaDB.delete(STORES.BOOKMARKED_TRIPLETS, tripletId)
+
+    // Update list by removing triplet ID
+    const updatedList: BookmarkList = {
+      ...list,
+      tripletIds: list.tripletIds.filter(id => id !== tripletId),
+      updatedAt: Date.now()
+    }
+
+    await sofiaDB.put(STORES.BOOKMARK_LISTS, updatedList)
+    console.log('🗑️ Triplet removed from list:', listId, tripletId)
+  }
+
+  /**
+   * Get all triplets in a specific list
+   */
+  static async getTripletsByList(listId: string): Promise<BookmarkedTriplet[]> {
+    const list = await this.getList(listId)
+    if (!list) return []
+
+    const triplets: BookmarkedTriplet[] = []
+    for (const tripletId of list.tripletIds) {
+      const triplet = await sofiaDB.get<BookmarkedTriplet>(STORES.BOOKMARKED_TRIPLETS, tripletId)
+      if (triplet) {
+        triplets.push(triplet)
+      }
+    }
+
+    return triplets.sort((a, b) => b.addedAt - a.addedAt)
+  }
+
+  /**
+   * Get all bookmarked triplets
+   */
+  static async getAllTriplets(): Promise<BookmarkedTriplet[]> {
+    const triplets = await sofiaDB.getAll<BookmarkedTriplet>(STORES.BOOKMARKED_TRIPLETS)
+    return triplets.sort((a, b) => b.addedAt - a.addedAt)
+  }
+
+  /**
+   * Search triplets across all lists
+   */
+  static async searchTriplets(query: string): Promise<BookmarkedTriplet[]> {
+    if (!query.trim()) return []
+
+    const allTriplets = await this.getAllTriplets()
+    const lowercaseQuery = query.toLowerCase()
+
+    return allTriplets.filter(triplet => 
+      triplet.triplet.subject.toLowerCase().includes(lowercaseQuery) ||
+      triplet.triplet.predicate.toLowerCase().includes(lowercaseQuery) ||
+      triplet.triplet.object.toLowerCase().includes(lowercaseQuery) ||
+      (triplet.description && triplet.description.toLowerCase().includes(lowercaseQuery)) ||
+      (triplet.url && triplet.url.toLowerCase().includes(lowercaseQuery))
+    )
+  }
+
+  /**
+   * Clear all bookmarks
+   */
+  static async clearAll(): Promise<void> {
+    await sofiaDB.clear(STORES.BOOKMARK_LISTS)
+    await sofiaDB.clear(STORES.BOOKMARKED_TRIPLETS)
+    console.log('🗑️ All bookmarks cleared')
+  }
+}
+
 // Export all services
 export const elizaDataService = ElizaDataService
 export const navigationDataService = NavigationDataService  
 export const userProfileService = UserProfileService
 export const userSettingsService = UserSettingsService
 export const searchHistoryService = SearchHistoryService
+export const bookmarkService = BookmarkService
 
 // Export individual triplet functions for convenience
 export const storePublishedTriplet = ElizaDataService.storePublishedTriplet

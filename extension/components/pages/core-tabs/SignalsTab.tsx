@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocalPublishedTriplets } from '../../../hooks/useLocalPublishedTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
+import BookmarkButton from '../../ui/BookmarkButton'
 import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
@@ -195,8 +196,19 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 </div> */}
 
                 </div>
-                  {/* Actions à droite - uniquement scan/view */}
+                  {/* Actions à droite - scan/view et bookmark */}
                   <div className="signal-actions">
+                    <BookmarkButton
+                      triplet={tripletItem.triplet}
+                      sourceInfo={{
+                        sourceType: 'published',
+                        sourceId: tripletItem.originalId,
+                        url: tripletItem.url,
+                        description: tripletItem.description,
+                        sourceMessageId: tripletItem.sourceMessageId
+                      }}
+                      size="small"
+                    />
                     <QuickActionButton
                       action="scan"
                       onClick={() => handleViewOnExplorer(tripletItem.txHash, tripletItem.tripleVaultId)}

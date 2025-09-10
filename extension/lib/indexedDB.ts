@@ -6,10 +6,11 @@
 import type { ParsedSofiaMessage, Triplet, Message } from '~components/pages/graph-tabs/types'
 import type { VisitData, DOMData, SimplifiedHistoryEntry, CompleteVisitData, SessionData, PageMetrics } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
+import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
-const DB_VERSION = 1
+const DB_VERSION = 3
 
 // Object store names
 export const STORES = {
@@ -17,7 +18,9 @@ export const STORES = {
   NAVIGATION_DATA: 'navigation_data', 
   USER_PROFILE: 'user_profile',
   USER_SETTINGS: 'user_settings',
-  SEARCH_HISTORY: 'search_history'
+  SEARCH_HISTORY: 'search_history',
+  BOOKMARK_LISTS: 'bookmark_lists',
+  BOOKMARKED_TRIPLETS: 'bookmarked_triplets'
 } as const
 
 // Record types for IndexedDB
@@ -56,6 +59,14 @@ export interface SearchRecord {
   query: string
   timestamp: number
   results?: any[]
+}
+
+export interface BookmarkListRecord extends BookmarkList {
+  id?: string
+}
+
+export interface BookmarkedTripletRecord extends BookmarkedTriplet {
+  id?: string
 }
 
 /**
@@ -152,6 +163,26 @@ export class SofiaIndexedDB {
       })
       searchStore.createIndex('timestamp', 'timestamp', { unique: false })
       searchStore.createIndex('query', 'query', { unique: false })
+    }
+
+    // Bookmark lists store
+    if (!db.objectStoreNames.contains(STORES.BOOKMARK_LISTS)) {
+      const bookmarkListsStore = db.createObjectStore(STORES.BOOKMARK_LISTS, {
+        keyPath: 'id'
+      })
+      bookmarkListsStore.createIndex('name', 'name', { unique: false })
+      bookmarkListsStore.createIndex('createdAt', 'createdAt', { unique: false })
+      bookmarkListsStore.createIndex('updatedAt', 'updatedAt', { unique: false })
+    }
+
+    // Bookmarked triplets store
+    if (!db.objectStoreNames.contains(STORES.BOOKMARKED_TRIPLETS)) {
+      const bookmarkedTripletsStore = db.createObjectStore(STORES.BOOKMARKED_TRIPLETS, {
+        keyPath: 'id'
+      })
+      bookmarkedTripletsStore.createIndex('sourceType', 'sourceType', { unique: false })
+      bookmarkedTripletsStore.createIndex('sourceId', 'sourceId', { unique: false })
+      bookmarkedTripletsStore.createIndex('addedAt', 'addedAt', { unique: false })
     }
 
     console.log('✅ Object stores created successfully')
