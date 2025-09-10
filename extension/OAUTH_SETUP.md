@@ -23,7 +23,7 @@ npm run dev
 
 1. Ouvrez Chrome → Extensions → Mode développeur
 2. Notez l'ID de votre extension (ex: `abcdefghijklmnopqrstuvwxyzabcdef`)
-3. Votre URL de redirection sera : `https://abcdefghijklmnopqrstuvwxyzabcdef.chromiumapp.org/`
+3. Votre URL de redirection sera : `https://gelnopmoeejcfahhcfjcmmgmmbbalpnm.chromiumapp.org/`
 
 ### 3. Configurer les Applications OAuth
 

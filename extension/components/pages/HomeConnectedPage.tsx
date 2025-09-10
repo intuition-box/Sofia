@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTracking } from '../../hooks/useTracking'
 import { useRouter } from '../layout/RouterProvider'
-import logoIcon from '../../assets/icon.png'
+import chatIcon from '../../components/ui/icons/chatIcon.png'
 import thumbsUpIcon from '../ui/icons/Thumbs up.png'
 import toggleTrue from '../ui/icons/button=True.png'
 import toggleFalse from '../ui/icons/button=False.png'
@@ -21,7 +21,7 @@ const HomeConnectedPage = () => {
       <div className="chat-section">
         <div className="chat-input-container">
           <img
-            src={logoIcon}
+            src={chatIcon}
             alt="Sofia"
             className="chat-logo"
             onClick={async () => {

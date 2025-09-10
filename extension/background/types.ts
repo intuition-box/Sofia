@@ -45,12 +45,15 @@ export interface MessageData {
   | "GET_INTENTION_RANKING"
   | "GET_DOMAIN_INTENTIONS"
   | "RECORD_PREDICATE"
-  | "GET_UPGRADE_SUGGESTIONS";
+  | "GET_UPGRADE_SUGGESTIONS"
+  | "CONNECT_DISCORD"
+  | "CONNECT_X";
   data: any;
   pageLoadTime?: number;
   tabId?: number;
   text?: string;
   timestamp?: number;
+  clientId?: string;
 }
 
 export interface BehaviorData {

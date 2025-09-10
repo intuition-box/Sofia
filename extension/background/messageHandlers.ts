@@ -17,6 +17,7 @@ import {
   getIntentionGlobalStats,
   loadDomainIntentions
 } from "./intentionRanking"
+import { handleDiscordOAuth, handleXOAuth } from "./oauth"
 
 
 // Buffer temporaire de pageData par tabId
@@ -297,6 +298,14 @@ export function setupMessageHandlers(): void {
           console.error("❌ GET_UPGRADE_SUGGESTIONS error:", error)
           sendResponse({ success: false, error: error.message })
         }
+        return true
+
+      case "CONNECT_DISCORD":
+        handleDiscordOAuth(message.clientId, sendResponse)
+        return true
+
+      case "CONNECT_X":
+        handleXOAuth(message.clientId, sendResponse)
         return true
     }
 

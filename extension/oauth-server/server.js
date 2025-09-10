@@ -1,7 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+// Forcer le rechargement du .env
+delete process.env.DISCORD_CLIENT_ID;
+delete process.env.DISCORD_CLIENT_SECRET;
 require('dotenv').config();
+
+console.log('🔴 FORCE RELOAD - CLIENT_ID:', process.env.DISCORD_CLIENT_ID);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,30 +30,48 @@ app.get('/', (req, res) => {
 // Exchange Discord OAuth code pour un token
 app.post('/auth/discord/exchange', async (req, res) => {
   try {
+    console.log('🔵 Discord exchange request:', req.body);
     const { code, redirectUri } = req.body;
 
     if (!code) {
+      console.log('❌ Code Discord manquant');
       return res.status(400).json({ success: false, error: 'Code manquant' });
     }
 
-    // Échanger le code contre un token d'accès
+    // Debug des variables d'environnement
+    console.log('🔵 CLIENT_ID:', process.env.DISCORD_CLIENT_ID);
+    console.log('🔵 CLIENT_SECRET présent:', !!process.env.DISCORD_CLIENT_SECRET);
+    console.log('🔵 CLIENT_SECRET:', process.env.DISCORD_CLIENT_SECRET);
+    console.log('🔵 Redirect URI:', redirectUri);
+    console.log('🔵 Variables env complètes:', { 
+      DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
+      DISCORD_CLIENT_SECRET_PREFIX: process.env.DISCORD_CLIENT_SECRET?.substring(0, 10)
+    });
+
+    // Échanger le code contre un token d'accès (méthode standard Discord)
+    const params = new URLSearchParams({
+      client_id: process.env.DISCORD_CLIENT_ID,
+      client_secret: process.env.DISCORD_CLIENT_SECRET,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+    });
+
+    console.log('🔵 Params envoyés:', params.toString());
+
     const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({
-        client_id: process.env.DISCORD_CLIENT_ID,
-        client_secret: process.env.DISCORD_CLIENT_SECRET,
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-      }),
+      body: params,
     });
 
     const tokenData = await tokenResponse.json();
+    console.log('🔵 Discord token response:', tokenData);
 
     if (!tokenData.access_token) {
+      console.log('❌ Token Discord manquant:', tokenData);
       return res.status(400).json({ 
         success: false, 
         error: 'Impossible d\'obtenir le token Discord',
@@ -171,5 +194,5 @@ app.post('/auth/x/exchange', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Serveur OAuth Sofia démarré sur le port ${PORT}`);
   console.log(`📝 Configurez les applications OAuth avec l'URL de redirection :`);
-  console.log(`   https://[EXTENSION-ID].chromiumapp.org/`);
+  console.log(`   https://gelnopmoeejcfahhcfjcmmgmmbbalpnm.chromiumapp.org/`);
 });

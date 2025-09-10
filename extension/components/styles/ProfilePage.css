@@ -87,7 +87,9 @@
   align-items: center;
   gap: var(--spacing-sm);
   flex: 1;
-  justify-content: center;
+  justify-content: space-around;
+  display: flex;
+  flex-wrap: nowrap;
 }
 
 .wallet-info {
@@ -307,8 +309,9 @@
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-size: var(--font-size-xs);
+  font-weight: 450;
+  text-align: center;
   transition: var(--transition-fast);
   min-width: 120px;
   display: flex;
@@ -326,7 +329,20 @@
 .button-icon {
   width: 16px;
   height: 16px;
-  filter: brightness(0) invert(1);
+  /* Assurer que les icônes restent visibles */
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Styles spécifiques pour les icônes selon l'état du bouton */
+.following-button .button-icon {
+  /* Pour les boutons connectés (fond violet), garder les icônes blanches */
+  filter: none;
+}
+
+.message-button .button-icon {
+  /* Pour les boutons non connectés (fond gris), améliorer le contraste */
+  filter: brightness(1.2);
 }
 
 /* Account Page Specific Styles */
@@ -374,10 +390,16 @@
   display: flex;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-2xl);
+  display: flex;
+  align-content: flex-end;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-around;
 }
 
 .following-button {
-  background: linear-gradient(90deg, #c73a97, #7c3aed);
+  background: linear-gradient(135deg, #D8461F, #E4B545, #ABAD4F, #AB2E6B);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -390,6 +412,7 @@
   gap: var(--spacing-xs);
   flex: 1;
   justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .message-button {
@@ -466,8 +489,12 @@
 .user-details-container {
   flex: 1;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: space-around;
 }
 
 .user-left-content {
@@ -478,17 +505,19 @@
   font-weight: 500;
   color: var(--color-text-primary);
   margin-bottom: 2px;
+  text-align: left;
 }
 
 .user-description-text {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+  text-align: left;
 }
 
 .user-right-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--spacing-xs);
 }
 
@@ -500,8 +529,8 @@
 
 .follow-button {
   background: transparent;
-  color: #F2D57C;
-  border: 1px solid #F2D57C;
+  color: #797979;
+  border: 1px solid #797979;
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   cursor: pointer;
