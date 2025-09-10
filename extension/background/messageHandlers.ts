@@ -14,7 +14,8 @@ import {
   getTopIntentions, 
   getDomainIntentionStats,
   getPredicateUpgradeSuggestions,
-  getIntentionGlobalStats
+  getIntentionGlobalStats,
+  loadDomainIntentions
 } from "./intentionRanking"
 
 

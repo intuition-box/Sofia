@@ -1,5 +1,6 @@
 import type { PageData } from "./types";
 import { PREDICATES_MAPPING } from "../const/atomsMapping";
+import sofiaDB, { STORES, type DomainIntentionRecord } from "../lib/indexedDB";
 
 // Types pour le système de ranking d'intention
 export interface DomainIntention {
@@ -99,6 +100,9 @@ class IntentionRankingSystem {
 
     this.domainIntentions.set(domain, existing);
     
+    // Sauvegarder en IndexedDB
+    this.saveDomainIntention(domain, existing);
+    
     console.log(`🎯 [intentionRanking] Domain ${domain}: visits=${existing.visitCount}, score=${existing.intentionScore}`);
   }
 
@@ -113,6 +117,10 @@ class IntentionRankingSystem {
       existing.suggestedUpgrade = this.analyzePredicateUpgrade(existing);
       
       this.domainIntentions.set(domain, existing);
+      
+      // Sauvegarder en IndexedDB
+      this.saveDomainIntention(domain, existing);
+      
       console.log(`✨ [intentionRanking] Explicit predicate "${predicateName}" recorded for ${domain}`);
     }
   }
@@ -155,14 +163,29 @@ class IntentionRankingSystem {
   // Analyse pour suggérer des upgrades de prédicats
   private analyzePredicateUpgrade(intention: DomainIntention): PredicateUpgrade | null {
     const avgDurationMinutes = intention.avgDuration / 60000;
-    const hasEmotionalPredicate = Object.keys(intention.predicates)
-      .some(p => INTENTION_CATEGORIES[p] === 'emotional');
     
-    // Conditions pour upgrade vers "loves"
-    if (intention.visitCount >= 15 && avgDurationMinutes > 3 && intention.maxAttentionScore > 0.8) {
-      if (!hasEmotionalPredicate) {
+    // Déterminer le prédicat actuel le plus élevé
+    const currentPredicates = Object.keys(intention.predicates);
+    
+    // Progression: has visited → likes → loves → trust
+    
+    // Upgrade vers "trust" (depuis "loves")
+    if (intention.visitCount >= 25 && avgDurationMinutes > 5 && intention.maxAttentionScore > 0.9) {
+      if (intention.predicates["loves"] && !intention.predicates["trust"]) {
         return {
-          fromPredicate: "has visited",
+          fromPredicate: "loves",
+          toPredicate: "trust",
+          reason: `Confiance établie: ${intention.visitCount} visites, ${avgDurationMinutes.toFixed(1)}min moyenne, attention ${Math.round(intention.maxAttentionScore * 100)}%`,
+          confidence: 0.95
+        };
+      }
+    }
+    
+    // Upgrade vers "loves" (depuis "likes")
+    if (intention.visitCount >= 15 && avgDurationMinutes > 3 && intention.maxAttentionScore > 0.8) {
+      if (intention.predicates["likes"] && !intention.predicates["loves"]) {
+        return {
+          fromPredicate: "likes",
           toPredicate: "loves",
           reason: `Très forte engagement: ${intention.visitCount} visites, ${avgDurationMinutes.toFixed(1)}min moyenne, attention ${Math.round(intention.maxAttentionScore * 100)}%`,
           confidence: 0.9
@@ -170,9 +193,9 @@ class IntentionRankingSystem {
       }
     }
     
-    // Conditions pour upgrade vers "likes"
+    // Upgrade vers "likes" (depuis "has visited")
     if (intention.visitCount >= 8 && avgDurationMinutes > 1.5 && intention.maxAttentionScore > 0.6) {
-      if (!intention.predicates["likes"] && !hasEmotionalPredicate) {
+      if (intention.predicates["has visited"] && !intention.predicates["likes"]) {
         return {
           fromPredicate: "has visited",
           toPredicate: "likes",
@@ -182,9 +205,9 @@ class IntentionRankingSystem {
       }
     }
     
-    // Conditions pour upgrade vers "is interested by"
+    // Upgrade vers "is interested by" (alternative path pour l'attention)
     if (intention.visitCount >= 4 && intention.maxAttentionScore > 0.5) {
-      if (!intention.predicates["is interested by"] && !hasEmotionalPredicate) {
+      if (intention.predicates["has visited"] && !intention.predicates["is interested by"] && !intention.predicates["likes"]) {
         return {
           fromPredicate: "has visited",
           toPredicate: "is interested by",
@@ -283,6 +306,56 @@ class IntentionRankingSystem {
   exportData(): DomainIntention[] {
     return Array.from(this.domainIntentions.values());
   }
+
+  // Sauvegarder une intention de domaine en IndexedDB
+  private async saveDomainIntention(domain: string, intention: DomainIntention): Promise<void> {
+    try {
+      const record: DomainIntentionRecord = {
+        domain: intention.domain,
+        visitCount: intention.visitCount,
+        totalDuration: intention.totalDuration,
+        avgDuration: intention.avgDuration,
+        maxAttentionScore: intention.maxAttentionScore,
+        lastVisit: intention.lastVisit.getTime(),
+        firstVisit: intention.firstVisit.getTime(),
+        predicates: intention.predicates,
+        intentionScore: intention.intentionScore
+      };
+      await sofiaDB.put(STORES.DOMAIN_INTENTIONS, record);
+    } catch (error) {
+      console.error(`❌ [intentionRanking] Failed to save domain intention for ${domain}:`, error);
+    }
+  }
+
+  // Charger toutes les intentions depuis IndexedDB
+  async loadDomainIntentions(): Promise<void> {
+    try {
+      const records = await sofiaDB.getAll<DomainIntentionRecord>(STORES.DOMAIN_INTENTIONS);
+      
+      for (const record of records) {
+        const intention: DomainIntention = {
+          domain: record.domain,
+          visitCount: record.visitCount,
+          totalDuration: record.totalDuration,
+          avgDuration: record.avgDuration,
+          maxAttentionScore: record.maxAttentionScore,
+          lastVisit: new Date(record.lastVisit),
+          firstVisit: new Date(record.firstVisit),
+          predicates: record.predicates,
+          intentionScore: record.intentionScore
+        };
+        
+        // Recalculer la suggestion d'upgrade au cas où les règles ont changé
+        intention.suggestedUpgrade = this.analyzePredicateUpgrade(intention);
+        
+        this.domainIntentions.set(record.domain, intention);
+      }
+      
+      console.log(`✅ [intentionRanking] Loaded ${records.length} domain intentions from IndexedDB`);
+    } catch (error) {
+      console.error('❌ [intentionRanking] Failed to load domain intentions:', error);
+    }
+  }
 }
 
 // Instance globale
@@ -315,4 +388,8 @@ export function getIntentionGlobalStats() {
 
 export function cleanOldIntentionData(): void {
   intentionRanking.cleanOldIntentions();
+}
+
+export async function loadDomainIntentions(): Promise<void> {
+  await intentionRanking.loadDomainIntentions();
 }

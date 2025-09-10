@@ -132,7 +132,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         }
       }
       
-      // Éviter le glitch en ne mettant à jour que si la liste a réellement changé
       setEchoTriplets(prev => {
         // Comparer les IDs pour éviter une mise à jour inutile
         const prevIds = prev.map(t => t.id).sort().join(',')
