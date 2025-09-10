@@ -131,6 +131,16 @@
   );
 }
 
+.echo-card.border-blue {
+  border: 2px solid rgba(74, 144, 226, 0.8);
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.15) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(74, 144, 226, 0.1) 100%
+  );
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
 
 /* Header du triplet avec badges et actions */
 .triplet-header {

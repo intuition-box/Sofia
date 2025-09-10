@@ -590,19 +590,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               const isExpanded = expandedTriplet?.msgIndex === 1 && expandedTriplet?.tripletIndex === index
 
               return (
-                <div key={tripletItem.id} className="echo-card border-green">
+                <div 
+                  key={tripletItem.id} 
+                  className={`echo-card ${selectedEchoes.has(tripletItem.id) ? 'border-blue' : 'border-green'}`}
+                  onClick={() => toggleEchoSelection(tripletItem.id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}>
                     <div className="echo-header">
-                      <input
-                        type="checkbox"
-                        checked={selectedEchoes.has(tripletItem.id)}
-                        onChange={() => toggleEchoSelection(tripletItem.id)}
-                        className="echo-checkbox"
-                        onClick={(e) => e.stopPropagation()}
-                      />
                       <p
                         className="triplet-text clickable"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation() // Empêcher la sélection de la carte
                           setExpandedTriplet(isExpanded ? null : { msgIndex: 1, tripletIndex: index })
                         }}
                       >
