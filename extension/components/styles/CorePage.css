@@ -360,12 +360,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(251, 247, 245, 0.05);
-  border: 1px solid rgba(251, 247, 245, 0.1);
-  border-radius: 16px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  backdrop-filter: blur(10px);
+  padding: 8px;
   transition: all 0.3s ease;
 }
 

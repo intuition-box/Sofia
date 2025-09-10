@@ -557,12 +557,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         <div className="selection-panel">
           <div className="selection-info">
             <label className="select-all-label">
-              <input
-                checked={isSelectAll}
-                onClick={toggleSelectAll}
-                className="select-all-checkbox"
-              />
-              <span>{selectedEchoes.size > 0 ? `${selectedEchoes.size} selected` : 'Select All'}</span>
+              <span onClick={toggleSelectAll} style={{cursor: 'pointer'}}>{selectedEchoes.size > 0 ? `${selectedEchoes.size} selected` : 'Select All'}</span>
             </label>
           </div>
           
