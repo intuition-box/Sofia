@@ -70,46 +70,27 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
   }
   const scrollStats = getScrollStats(parsedData.url)
   if (scrollStats && scrollStats.scrollAttentionScore != undefined) {
-    behaviorText += `Scrolls: ${scrollStats.count}, Δmoy: ${scrollStats.avgDelta}ms
-`
-    behaviorText += `Attention Score: ${scrollStats.scrollAttentionScore.toFixed(2)}
-`
+    behaviorText += `Scrolls: ${scrollStats.count}, Δmoy: ${scrollStats.avgDelta}ms\\n`
+    behaviorText += `Attention Score: ${scrollStats.scrollAttentionScore.toFixed(2)}\\n`
   }
 
-  // Format pour correspondre exactement aux exemples de SofIA.json
-  const domain = new URL(parsedData.url).hostname.replace('www.', '')
-  const domainStats = getDomainIntentionStats(domain)
-  
-  let message = `URL: ${sanitizeUrl(parsedData.url)}\nTitle: ${parsedData.title.slice(0, 50)}`
-  
-  // Ajouter description si disponible
-  if (parsedData.description) {
-    message += `\nDescription: ${parsedData.description.slice(0, 100)}`
-  }
-  
-  // Format temps comme dans les exemples (00:01:20 format)
-  if (parsedData.duration && parsedData.duration > 1000) {
-    const minutes = Math.floor(parsedData.duration / 60000)
-    const seconds = Math.floor((parsedData.duration % 60000) / 1000)
-    message += `\nTime: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-  } else {
-    message += `\nTime: 00:00:30`
-  }
-  
-  // Calculer l'Attention Score basé sur les visites pour déclencher les règles de SofIA
-  let finalAttentionScore = 0.3
-  if (domainStats) {
-    // Mapper visitCount vers Attention Score selon les règles SofIA
-    if (domainStats.visitCount >= 25) finalAttentionScore = 0.9  // → trust
-    else if (domainStats.visitCount >= 15) finalAttentionScore = 0.8  // → love  
-    else if (domainStats.visitCount >= 5) finalAttentionScore = 0.75  // → like
-    else if (domainStats.visitCount >= 3) finalAttentionScore = 0.4   // → interested
-    
-    // Prendre le max entre le score calculé et l'attention réelle
-    finalAttentionScore = Math.max(finalAttentionScore, domainStats.maxAttentionScore)
-  }
-  
-  message += `\nAttention Score: ${finalAttentionScore.toFixed(2)}`
+  const message =
+    `URL: ${sanitizeUrl(parsedData.url)}
+` +
+    `Titre: ${parsedData.title.slice(0, 100)}
+` +
+    (parsedData.keywords ? `Mots-clés: ${parsedData.keywords.slice(0, 50)}
+` : "") +
+    (parsedData.description ? `Description: ${parsedData.description.slice(0, 150)}
+` : "") +
+    (parsedData.h1 ? `H1: ${parsedData.h1.slice(0, 80)}
+` : "") +
+    `Timestamp: ${new Date(parsedData.timestamp).toLocaleString("fr-FR")}` +
+    (attentionText ? `
+${attentionText}` : "") +
+    (behaviorText ? `
+Comportement:
+${behaviorText}` : "")
 
   console.group("🧠 Nouvelle page capturée")
   console.log(message)
