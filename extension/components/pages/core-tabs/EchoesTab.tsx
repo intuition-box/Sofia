@@ -336,7 +336,12 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const deleteSelectedEchoes = async () => {
     if (selectedEchoes.size === 0) return
     
-    setEchoTriplets(prev => prev.filter(t => !selectedEchoes.has(t.id)))
+    const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
+    setEchoTriplets(updatedTriplets)
+    
+    // Sauvegarder les états après suppression
+    await elizaDataService.storeTripletStates(updatedTriplets)
+    
     setSelectedEchoes(new Set())
     setIsSelectAll(false)
   }
