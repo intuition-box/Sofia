@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useBookmarks } from '../../hooks/useBookmarks'
 import type { Triplet } from '~components/pages/core-tabs/types'
 import type { BookmarkedTriplet } from '../../types/bookmarks'
@@ -49,6 +50,10 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
     }
   }
 
+  const handleOpenModal = () => {
+    setShowModal(true)
+  }
+
   const buttonStyle = size === 'small' ? {
     fontSize: '11px',
     padding: '4px 8px',
@@ -62,16 +67,47 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
     <>
       <QuickActionButton
         action="add"
-        onClick={() => setShowModal(true)}
+        onClick={handleOpenModal}
         className={className}
       />
 
-      {showModal && (
-        <div className="bookmark-modal-overlay">
-          <div className="bookmark-modal-content">
-            <h3 className="bookmark-modal-title">
-              Add to Bookmark List
-            </h3>
+      {showModal && createPortal(
+        <div 
+          className="bookmark-modal-overlay"
+          onClick={() => {
+            setShowModal(false)
+            setIsCreatingList(false)
+            setNewListName('')
+            setSelectedListId('')
+          }}
+        >
+          <div 
+            className="bookmark-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 className="bookmark-modal-title" style={{ margin: 0 }}>
+                Add to Bookmark List
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowModal(false)
+                  setIsCreatingList(false)
+                  setNewListName('')
+                  setSelectedListId('')
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  padding: '4px'
+                }}
+              >
+                ✕
+              </button>
+            </div>
 
             {/* Show triplet preview */}
             <div className="bookmark-triplet-preview">
@@ -177,7 +213,8 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

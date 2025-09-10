@@ -10,11 +10,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(14, 14, 14, 0.18);
+  background: rgba(14, 14, 14, 0.7);
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
   backdrop-filter: blur(4px);
 }
 
@@ -25,10 +25,13 @@
   max-width: 400px;
   width: 90%;
   border: 1px solid rgba(199, 134, 108, 0.4);
-  background: linear-gradient(135deg, rgba(199, 134, 108, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(199, 134, 108, 0.05) 100%);
+  background: linear-gradient(135deg, rgb(199, 134, 108) 0%, rgb(67, 67, 67) 50%, rgb(199, 134, 108) 100%);
   box-shadow: 0 20px 40px rgba(55, 33, 24, 0.15);
   max-height: 80vh;
+  z-index: 9999;
   overflow: auto;
+  pointer-events: auto;
+  position: relative;
 }
 
 /* Titres dans les modals */

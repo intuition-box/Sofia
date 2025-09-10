@@ -5,6 +5,7 @@ import BookmarkButton from '../../ui/BookmarkButton'
 import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
+import '../../styles/BookmarkStyles.css'
 
 interface SignalsTabProps {
   expandedTriplet: { tripletId: string } | null
@@ -197,7 +198,10 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
                 </div>
                   {/* Actions à droite - scan/view et bookmark */}
-                  <div className="signal-actions">
+                  <div 
+                    className="signal-actions"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <BookmarkButton
                       triplet={tripletItem.triplet}
                       sourceInfo={{

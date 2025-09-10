@@ -133,6 +133,10 @@ const BookmarkTab = () => {
     )
   }
 
+  function removeTripletFromList(selectedListId: string, id: string): void {
+    throw new Error('Function not implemented.')
+  }
+
   return (
     <div className="triples-container">
       {/* Header with lists navigation */}
@@ -156,31 +160,6 @@ const BookmarkTab = () => {
           >
             All ({triplets.length})
           </button>
-          
-          {lists.map(list => (
-            <div key={list.id} className="bookmark-nav-list-item">
-              <button
-                onClick={() => setSelectedListId(list.id)}
-                className={`bookmark-nav-button ${selectedListId === list.id ? 'active' : ''}`}
-              >
-                {list.name} ({list.tripletIds.length})
-              </button>
-              
-              <button
-                onClick={() => startEditingList(list.id)}
-                className="bookmark-nav-action-button"
-              >
-                ✏️
-              </button>
-              
-              <button
-                onClick={() => handleDeleteList(list.id)}
-                className="bookmark-nav-action-button"
-              >
-                🗑️
-              </button>
-            </div>
-          ))}
         </div>
 
         {/* Search bar */}
@@ -290,13 +269,13 @@ const BookmarkTab = () => {
                         onClick={() => startEditingList(list.id)}
                         className="bookmark-action-button"
                       >
-                        ✏️ Edit
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDeleteList(list.id)}
                         className="bookmark-action-button danger"
                       >
-                        🗑️ Delete
+                        Delete
                       </button>
                     </div>
                   </div>
@@ -320,8 +299,6 @@ const BookmarkTab = () => {
                   <div className="triplet-item">
                     <div className="triplet-header">
                       <p className="triplet-text">
-                        <span className="subject">{bookmarkedTriplet.triplet.subject}</span><br />
-                        <span className="action">{bookmarkedTriplet.triplet.predicate}</span><br />
                         <span className="object">{bookmarkedTriplet.triplet.object}</span>
                       </p>
                     </div>
@@ -330,7 +307,7 @@ const BookmarkTab = () => {
                         onClick={() => removeTripletFromList(selectedListId, bookmarkedTriplet.id)}
                         className="bookmark-action-button danger"
                       >
-                        🗑️ Remove
+                        Remove
                       </button>
                     </div>
                     <div className="bookmark-triplet-details">
