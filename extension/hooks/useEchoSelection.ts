@@ -85,40 +85,50 @@ export const useEchoSelection = ({
   const deleteSelected = useCallback(async () => {
     if (selectedEchoes.size === 0) return
     
-    // Delete source messages from database
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
     const messageIdsToDelete = new Set<string>()
     
+    // Collect unique message IDs to delete
     selectedTriplets.forEach(triplet => {
-      // Extract messageId from tripletId (format: messageId_index)
       const messageId = triplet.sourceMessageId
       messageIdsToDelete.add(messageId)
     })
     
-    // Delete source messages from IndexedDB
-    for (const messageId of messageIdsToDelete) {
-      try {
-        // Find and delete message by messageId
-        const messages = await elizaDataService.getAllMessages()
+    try {
+      // Get all messages first 
+      const messages = await elizaDataService.getAllMessages()
+      
+      // Prepare all delete operations in parallel
+      const deleteOperations = []
+      const messagesToDelete = []
+      
+      for (const messageId of messageIdsToDelete) {
         const messageToDelete = messages.find(m => m.messageId === messageId)
         if (messageToDelete && messageToDelete.id) {
-          await sofiaDB.delete(STORES.ELIZA_DATA, messageToDelete.id)
-          console.log('🗑️ Deleted message from IndexedDB:', messageId)
+          deleteOperations.push(sofiaDB.delete(STORES.ELIZA_DATA, messageToDelete.id))
+          messagesToDelete.push(messageId)
         }
-      } catch (error) {
-        console.error('Failed to delete message:', messageId, error)
       }
+      
+      // Execute all database deletions in parallel
+      await Promise.all(deleteOperations)
+      console.log(`🗑️ Deleted ${messagesToDelete.length} messages from IndexedDB`)
+      
+      // Update local display only after database operations succeed
+      const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
+      setEchoTriplets(updatedTriplets)
+      
+      // Clear selection
+      setSelectedEchoes(new Set())
+      setIsSelectAll(false)
+      
+      // Refresh messages to ensure consistency (after local updates)
+      await refreshMessages()
+      
+    } catch (error) {
+      console.error('❌ Failed to delete selected messages:', error)
+      // Don't update local state if database operations failed
     }
-    
-    // Update local display
-    const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
-    setEchoTriplets(updatedTriplets)
-    
-    // Refresh messages to reflect changes
-    await refreshMessages()
-    
-    setSelectedEchoes(new Set())
-    setIsSelectAll(false)
   }, [selectedEchoes, echoTriplets, setEchoTriplets, refreshMessages, elizaDataService, sofiaDB, STORES])
 
   return {
