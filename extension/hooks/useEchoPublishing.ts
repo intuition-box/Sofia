@@ -76,54 +76,10 @@ export const useEchoPublishing = ({
         }
       )
 
-      // Add to blacklist to prevent recreation
-      await elizaDataService.addPublishedTripletId(tripletId)
-      
-      // Save complete details for SignalsTab
-      const publishedTripletDetails: PublishedTripletDetails = {
-        originalId: tripletId,
-        triplet: {
-          subject: address,
-          predicate: triplet.triplet.predicate,
-          object: triplet.triplet.object
-        },
-        url: triplet.url,
-        description: triplet.description,
-        sourceMessageId: triplet.sourceMessageId,
-        tripleVaultId: result.tripleVaultId,
-        txHash: result.txHash || '',
-        subjectVaultId: result.subjectVaultId,
-        predicateVaultId: result.predicateVaultId,
-        objectVaultId: result.objectVaultId,
-        timestamp: Date.now(),
-        source: result.source,
-        id: result.tripleVaultId
-      }
-      
-      await elizaDataService.storePublishedTriplet(publishedTripletDetails)
-      console.log('💾 Triplet details saved for SignalsTab')
-      
-      // Check if triplet already existed on chain
-      if (result.source === 'existing') {
-        console.log(`✅ Triplet already exists on chain! Vault ID: ${result.tripleVaultId}`)
-      }
-      
-      // Update local display
-      const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
-      onTripletsUpdate(updatedTriplets)
-      
-    } catch (error) {
-      console.error(`❌ Failed to publish triplet ${tripletId}:`, error)
-      
-      // Check if error is due to triple already existing
-      if (error instanceof Error && error.message === 'TRIPLE_ALREADY_EXISTS') {
-        console.log('✅ Triple already exists on chain, removing from list')
-        
-        // Add to blacklist to prevent recreation
-        await elizaDataService.addPublishedTripletId(tripletId)
-        
-        // Save details for SignalsTab even if existing
-        const publishedTripletDetails: PublishedTripletDetails = {
+      // Save to database first (both blacklist and details)
+      await Promise.all([
+        elizaDataService.addPublishedTripletId(tripletId),
+        elizaDataService.storePublishedTriplet({
           originalId: tripletId,
           triplet: {
             subject: address,
@@ -133,23 +89,61 @@ export const useEchoPublishing = ({
           url: triplet.url,
           description: triplet.description,
           sourceMessageId: triplet.sourceMessageId,
-          tripleVaultId: 'existing_' + tripletId,
-          txHash: '',
-          subjectVaultId: '',
-          predicateVaultId: '',
-          objectVaultId: '',
+          tripleVaultId: result.tripleVaultId,
+          txHash: result.txHash || '',
+          subjectVaultId: result.subjectVaultId,
+          predicateVaultId: result.predicateVaultId,
+          objectVaultId: result.objectVaultId,
           timestamp: Date.now(),
-          source: 'existing',
-          id: 'existing_' + tripletId
+          source: result.source,
+          id: result.tripleVaultId
+        })
+      ])
+      
+      console.log(`✅ Published triplet ${result.source === 'existing' ? '(already existed)' : '(new)'}: ${result.tripleVaultId}`)
+      
+      // Update local display only after database operations succeed
+      const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
+      onTripletsUpdate(updatedTriplets)
+      
+    } catch (error) {
+      console.error(`❌ Failed to publish triplet ${tripletId}:`, error)
+      
+      // For TRIPLE_ALREADY_EXISTS error, treat as successful (just mark as published)
+      if (error instanceof Error && error.message === 'TRIPLE_ALREADY_EXISTS') {
+        console.log('✅ Triple already exists on chain, marking as published')
+        
+        try {
+          await Promise.all([
+            elizaDataService.addPublishedTripletId(tripletId),
+            elizaDataService.storePublishedTriplet({
+              originalId: tripletId,
+              triplet: {
+                subject: address,
+                predicate: triplet.triplet.predicate,
+                object: triplet.triplet.object
+              },
+              url: triplet.url,
+              description: triplet.description,
+              sourceMessageId: triplet.sourceMessageId,
+              tripleVaultId: 'existing_' + tripletId,
+              txHash: '',
+              subjectVaultId: '', 
+              predicateVaultId: '',
+              objectVaultId: '',
+              timestamp: Date.now(),
+              source: 'existing',
+              id: 'existing_' + tripletId
+            })
+          ])
+          
+          // Remove from local display only if database operations succeed
+          const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
+          onTripletsUpdate(updatedTriplets)
+          
+        } catch (dbError) {
+          console.error(`❌ Failed to save existing triplet ${tripletId}:`, dbError)
         }
-        
-        await elizaDataService.storePublishedTriplet(publishedTripletDetails)
-        
-        console.log(`✅ Triplet already exists on chain! Removing from pending list.`)
-        
-        // Remove from local display
-        const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
-        onTripletsUpdate(updatedTriplets)
       }
     } finally {
       setProcessingTripletId(null)
@@ -199,7 +193,7 @@ export const useEchoPublishing = ({
             txHash: result.txHash
           })
           
-          // Add successfully processed triplets to blacklist
+          // Process successful triplets - parallel database operations
           const processedTriplets = selectedTriplets.filter(triplet => 
             !result.failedTriples.some(failed => 
               failed.input.predicateName === triplet.triplet.predicate &&
@@ -207,17 +201,20 @@ export const useEchoPublishing = ({
             )
           )
           
-          for (const triplet of processedTriplets) {
-            await elizaDataService.addPublishedTripletId(triplet.id)
-          }
+          // Prepare all database operations in parallel
+          const dbOperations = []
           
-          // Store detailed triplet information for successful publications
           for (let i = 0; i < selectedTriplets.length; i++) {
             const triplet = selectedTriplets[i]
             const correspondingResult = result.results[i]
             
-            if (correspondingResult) {
-              const publishedDetails: PublishedTripletDetails = {
+            // Only process if not failed and has result
+            if (correspondingResult && processedTriplets.includes(triplet)) {
+              // Add blacklist operation
+              dbOperations.push(elizaDataService.addPublishedTripletId(triplet.id))
+              
+              // Add storage operation
+              dbOperations.push(elizaDataService.storePublishedTriplet({
                 originalId: triplet.id,
                 triplet: {
                   subject: address,
@@ -235,25 +232,22 @@ export const useEchoPublishing = ({
                 timestamp: Date.now(),
                 source: correspondingResult.source || 'created',
                 id: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`
-              }
-              
-              try {
-                await elizaDataService.storePublishedTriplet(publishedDetails)
-                console.log(`✅ Successfully stored triplet details for ${triplet.id}`)
-              } catch (error) {
-                console.error(`❌ Failed to store triplet details for ${triplet.id}:`, error)
-              }
+              }))
             }
           }
           
-          // Log completion summary
-          if (existingResults.length > 0) {
-            console.log(`✅ Batch complete! Created: ${createdResults.length} new, ${existingResults.length} already existed`)
-          } else if (createdResults.length > 0) {
-            console.log(`✅ Batch successful! Created: ${createdResults.length} triplets`, result.txHash)
+          // Execute all database operations in parallel
+          try {
+            await Promise.all(dbOperations)
+            console.log(`✅ Saved ${processedTriplets.length} triplets to database`)
+          } catch (error) {
+            console.error('❌ Some database operations failed:', error)
           }
           
-          // Remove successfully processed triplets
+          // Log completion summary
+          console.log(`✅ Batch complete! Created: ${createdResults.length} new, ${existingResults.length} already existed`)
+          
+          // Update local display only after database operations succeed
           const processedTripletIds = new Set(processedTriplets.map(t => t.id))
           const updatedTriplets = echoTriplets.filter(t => !processedTripletIds.has(t.id))
           onTripletsUpdate(updatedTriplets)
