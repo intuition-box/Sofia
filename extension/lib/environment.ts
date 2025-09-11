@@ -1,7 +1,7 @@
 import type { Address } from 'viem'
 import { intuitionTestnet } from './config'
 
-import logger from './logger'
+
 
 const intuitionRpcUrl = 'https://testnet.rpc.intuition.systems'
 const multiVaultContractAddressIntuition = '0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d'
@@ -48,7 +48,6 @@ export const getChainEnvConfig = (env: string): ChainConfig => {
         return chainOptions[DEFAULT_CHAIN_ENV]
     }
     if (!(env in chainOptions)) {
-        logger(`No config for provided environment: ${env}.`)
         return chainOptions[DEFAULT_CHAIN_ENV]
     }
     return chainOptions[env as ChainEnv]
