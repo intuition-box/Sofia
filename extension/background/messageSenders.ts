@@ -255,7 +255,6 @@ export async function sendBookmarksToAgent(socketBookmarkAgent: any, urls: strin
     console.error("❌ BookMarkAgent socket is null/undefined")
     return { 
       success: false, 
-      error: 'BookMarkAgent not available',
       successfulBatches: 0,
       failedBatches: 1,
       totalBatches: 1,
@@ -274,7 +273,6 @@ export async function sendBookmarksToAgent(socketBookmarkAgent: any, urls: strin
     console.error('❌ Bookmark processing failed:', error)
     return { 
       success: false, 
-      error: error.message,
       successfulBatches: 0,
       failedBatches: 1,
       totalBatches: 1,
