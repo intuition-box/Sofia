@@ -30,7 +30,7 @@ const SidePanelContent = () => {
   // Synchronize wallet connections
   useWalletSync()
 
-  // Gestion automatique de la page selon l'état de connexion
+  // Automatic page management based on connection state
   useEffect(() => {
     if (account && currentPage === 'home') {
       navigateTo('home-connected')
@@ -78,7 +78,7 @@ configureClient({
   apiUrl: 'https://testnet.intuition.sh/v1/graphql' 
 })
 
-// Client de requête pour React Query
+// Query client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

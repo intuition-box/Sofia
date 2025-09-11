@@ -337,20 +337,20 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const deleteSelectedEchoes = async () => {
     if (selectedEchoes.size === 0) return
     
-    // Supprimer les messages source de la base de données
+    // Delete source messages from database
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
     const messageIdsToDelete = new Set<string>()
     
     selectedTriplets.forEach(triplet => {
-      // Extraire le messageId du tripletId (format: messageId_index)
+      // Extract messageId from tripletId (format: messageId_index)
       const messageId = triplet.sourceMessageId
       messageIdsToDelete.add(messageId)
     })
     
-    // Supprimer les messages source de IndexedDB
+    // Delete source messages from IndexedDB
     for (const messageId of messageIdsToDelete) {
       try {
-        // Trouver et supprimer le message par messageId
+        // Find and delete message by messageId
         const messages = await elizaDataService.getAllMessages()
         const messageToDelete = messages.find(m => m.messageId === messageId)
         if (messageToDelete && messageToDelete.id) {
@@ -362,14 +362,14 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       }
     }
     
-    // Mettre à jour l'affichage local
+    // Update local display
     const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
     setEchoTriplets(updatedTriplets)
     
-    // Sauvegarder les états après suppression
+    // Save states after deletion
     await elizaDataService.storeTripletStates(updatedTriplets)
     
-    // Rafraîchir les messages pour refléter les changements
+    // Refresh messages to reflect changes
     await refreshMessages()
     
     setSelectedEchoes(new Set())
@@ -630,7 +630,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                       <p
                         className="triplet-text clickable"
                         onClick={(e) => {
-                          e.stopPropagation() // Empêcher la sélection de la carte
+                          e.stopPropagation() // Prevent card selection
                           setExpandedTriplet(isExpanded ? null : { msgIndex: 1, tripletIndex: index })
                         }}
                       >
@@ -672,7 +672,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           }
         </div>
       )}
-      {/* États vides */}
+      {/* Empty states */}
       {echoTriplets.length === 0 ? (
         <div className="empty-state">
           <p>Continue to navigate</p>
