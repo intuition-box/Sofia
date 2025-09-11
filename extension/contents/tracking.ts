@@ -133,5 +133,40 @@ function startWhenReady() {
   }
 }
 
+// Variables for duration tracking
+let pageStartTime = Date.now()
+
+// Track page duration on visibility change or before unload
+async function sendPageDuration() {
+  const duration = Date.now() - pageStartTime
+  console.log("⏱️ [TRACKING DEBUG] Sending PAGE_DURATION:", duration)
+  
+  try {
+    const tabId = await getCurrentTabId()
+    chrome.runtime.sendMessage({
+      type: "PAGE_DURATION",
+      data: { duration },
+      tabId: tabId
+    })
+    console.log("✅ [TRACKING DEBUG] PAGE_DURATION sent with tabId:", tabId, "duration:", duration)
+  } catch (error) {
+    console.error("❌ [TRACKING DEBUG] Error sending PAGE_DURATION:", error)
+  }
+}
+
+// Send duration when page becomes hidden or user leaves
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    console.log("👁️ [TRACKING DEBUG] Page hidden - sending duration")
+    sendPageDuration()
+  }
+})
+
+// Send duration before page unloads
+window.addEventListener("beforeunload", () => {
+  console.log("🚪 [TRACKING DEBUG] Page unloading - sending duration")
+  sendPageDuration()
+})
+
 // Initialize tracking
 startWhenReady()
