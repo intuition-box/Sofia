@@ -143,7 +143,7 @@ const ChatPage = () => {
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => {
-              console.log("🔑 Touche pressée :", e.key)
+              console.log("🔑 Key pressed:", e.key)
               if (e.key === 'Enter') handleSendMessage()
             }}
             placeholder="Talk with SofIA"

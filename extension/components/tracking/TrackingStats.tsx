@@ -22,35 +22,35 @@ const TrackingStats = ({
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <span style={styles.title}>📊 Statistiques de navigation</span>
+        <span style={styles.title}>📊 Navigation Statistics</span>
       </div>
       <div style={styles.statsGrid}>
         <div style={styles.statItem}>
           <div style={styles.statIcon}>🌐</div>
           <div style={styles.statContent}>
             <div style={styles.statValue}>{totalPages}</div>
-            <div style={styles.statLabel}>Pages visitées</div>
+            <div style={styles.statLabel}>Pages visited</div>
           </div>
         </div>
         <div style={styles.statItem}>
           <div style={styles.statIcon}>👁️</div>
           <div style={styles.statContent}>
             <div style={styles.statValue}>{totalVisits}</div>
-            <div style={styles.statLabel}>Visites totales</div>
+            <div style={styles.statLabel}>Total visits</div>
           </div>
         </div>
         <div style={styles.statItem}>
           <div style={styles.statIcon}>⏱️</div>
           <div style={styles.statContent}>
             <div style={styles.statValue}>{formatDuration(totalTime)}</div>
-            <div style={styles.statLabel}>Temps total</div>
+            <div style={styles.statLabel}>Total time</div>
           </div>
         </div>
         <div style={styles.statItem}>
           <div style={styles.statIcon}>🥇</div>
           <div style={styles.statContent}>
             <div style={styles.statValue}>{formatMostVisitedUrl(mostVisitedUrl)}</div>
-            <div style={styles.statLabel}>Plus visitée</div>
+            <div style={styles.statLabel}>Most visited</div>
           </div>
         </div>
       </div>

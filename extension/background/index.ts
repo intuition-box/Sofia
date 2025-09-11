@@ -31,7 +31,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log("✅ Tracking activé - Extension prête");
+  console.log("✅ Tracking enabled - Extension ready");
 });
 
 chrome.action.onClicked.addListener(async (tab) => {
@@ -42,6 +42,6 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 init();
 
-console.log('🚀 SOFIA Extension - Service Worker prêt (Plasmo)');
+console.log('🚀 SOFIA Extension - Service Worker ready (Plasmo)');
 
 export { };
