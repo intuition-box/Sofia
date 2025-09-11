@@ -63,17 +63,10 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
     message += `\nDescription: ${parsedData.description.slice(0, 100)}`
   }
   
-  // Format temps comme dans les exemples (00:01:20 format)
-  if (parsedData.duration && parsedData.duration > 1000) {
-    const minutes = Math.floor(parsedData.duration / 60000)
-    const seconds = Math.floor((parsedData.duration % 60000) / 1000)
-    message += `\nTime: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-  } else {
-    message += `\nTime: 00:00:30`
-  }
-  
-  // Calculate Attention Score based on visits to trigger SofIA rules
+  // Calculate Attention Score and get suggested predicate from intentionRanking
   let finalAttentionScore = 0.3
+  let suggestedPredicate = "have visited"
+  
   if (domainStats) {
     // Map visitCount to Attention Score according to SofIA rules
     let calculatedScore = 0.3
@@ -85,10 +78,22 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
     // Take the max between calculated score and real attention
     finalAttentionScore = Math.max(calculatedScore, domainStats.maxAttentionScore)
     
-    console.log(`🎯 [SofIA Score] Domain: ${domain}, visits: ${domainStats.visitCount}, calculated: ${calculatedScore}, real: ${domainStats.maxAttentionScore}, final: ${finalAttentionScore}`)
+    // Get suggested predicate from intentionRanking system
+    if (domainStats.suggestedUpgrade?.toPredicate) {
+      suggestedPredicate = domainStats.suggestedUpgrade.toPredicate
+    } else {
+      // Fallback based on visit patterns if no suggestion
+      if (domainStats.visitCount >= 25 && finalAttentionScore > 0.7) suggestedPredicate = "trust"
+      else if (domainStats.visitCount >= 15 && finalAttentionScore > 0.7) suggestedPredicate = "love"
+      else if (domainStats.visitCount >= 8) suggestedPredicate = "like"
+      else if (domainStats.visitCount >= 4) suggestedPredicate = "are interested by"
+    }
+    
+    console.log(`🎯 [SofIA] Domain: ${domain}, visits: ${domainStats.visitCount}, score: ${finalAttentionScore}, suggested: ${suggestedPredicate}`)
   }
   
   message += `\nAttention Score: ${finalAttentionScore.toFixed(2)}`
+  message += `\nSuggested Predicate: ${suggestedPredicate}`
 
   console.log("🧠 Page captured:", parsedData.url)
 
