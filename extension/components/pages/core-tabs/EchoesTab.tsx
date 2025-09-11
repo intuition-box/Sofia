@@ -60,55 +60,31 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Blockchain hook for creation (uses other hooks internally)
   const { createTripleOnChain, createTriplesBatch, isCreating, currentStep, batchProgress } = useCreateTripleOnChain()
 
-  // Load saved states then process messages
+  // Transform rawMessages directly to echoTriplets
   useEffect(() => {
-    loadSavedStatesAndProcess()
-  }, [rawMessages])
-
-  // Save states when they change (avoid infinite loop)
-  useEffect(() => {
-    if (echoTriplets.length > 0) {
-      // Debounce to avoid too frequent saves
-      const timeoutId = setTimeout(() => {
-        saveTripletStates()
-      }, 500)
-      
-      return () => clearTimeout(timeoutId)
-    }
-  }, [echoTriplets])
-
-  const processRawMessages = async (savedStates?: EchoTriplet[]) => {
-    try {
-      // Load blacklist of published triplets
-      const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
-      
-      const newEchoTriplets: EchoTriplet[] = []
-      
-      for (const record of rawMessages) {
-        if (record.type === 'message' && record.content) {
-          const message = record.content as Message
-          
-          try {
-            const parsed = parseSofiaMessage(message.content.text, message.created_at)
+    const transformMessages = async () => {
+      try {
+        // Load blacklist of published triplets
+        const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
+        
+        const newEchoTriplets: EchoTriplet[] = []
+        
+        for (const record of rawMessages) {
+          if (record.type === 'message' && record.content) {
+            const message = record.content as Message
             
-            if (parsed && parsed.triplets.length > 0) {
-              parsed.triplets.forEach((triplet, index) => {
-                const tripletId = `${record.messageId}_${index}`
-                
-                // Check if triplet has been published (blacklist)
-                if (publishedTripletIds.includes(tripletId)) {
-                  return // Skip this triplet permanently
-                }
-                
-                // Check if triplet already exists in saved states
-                const existingTriplet = savedStates?.find(t => t.id === tripletId) || 
-                                    echoTriplets.find(t => t.id === tripletId)
-                
-                // If triplet already exists, keep it as is
-                if (existingTriplet) {
-                  newEchoTriplets.push(existingTriplet)
-                } else {
-                  // Create a new triplet with 'available' status
+            try {
+              const parsed = parseSofiaMessage(message.content.text, message.created_at)
+              
+              if (parsed && parsed.triplets.length > 0) {
+                parsed.triplets.forEach((triplet, index) => {
+                  const tripletId = `${record.messageId}_${index}`
+                  
+                  // Skip if already published
+                  if (publishedTripletIds.includes(tripletId)) {
+                    return
+                  }
+                  
                   const echoTriplet: EchoTriplet = {
                     id: tripletId,
                     triplet: {
@@ -123,65 +99,25 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                     status: 'available'
                   }
                   newEchoTriplets.push(echoTriplet)
-                }
-              })
+                })
+              }
+            } catch (parseError) {
+              // Silent parse errors
             }
-          } catch (parseError) {
-            // Silent parse errors
-            // Silent parse errors
           }
         }
-      }
-      
-      setEchoTriplets(prev => {
-        // Compare IDs to avoid unnecessary update
-        const prevIds = prev.map(t => t.id).sort().join(',')
-        const newIds = newEchoTriplets.map(t => t.id).sort().join(',')
         
-        if (prevIds === newIds) {
-          return prev // Keep previous state if identical
-        }
-        
-        return newEchoTriplets
-      })
-      
-    } catch (error) {
-      console.error('❌ EchoesTab: Failed to process messages:', error)
-    }
-  }
-
-  // Load saved states and process messages  
-  const loadSavedStatesAndProcess = async () => {
-    try {
-      const savedStates = await elizaDataService.loadTripletStates()
-      
-      // Use unified function with saved states
-      await processRawMessages(savedStates.length > 0 ? savedStates : undefined)
-      
-      // Mark initial loading as completed
-      if (!hasInitialLoad) {
+        setEchoTriplets(newEchoTriplets)
         setHasInitialLoad(true)
-      }
-      
-    } catch (error) {
-      console.error('❌ EchoesTab: Failed to load saved states:', error)
-      await processRawMessages()
-      
-      // Mark initial loading as completed even on error
-      if (!hasInitialLoad) {
+        
+      } catch (error) {
+        console.error('❌ EchoesTab: Failed to transform messages:', error)
         setHasInitialLoad(true)
       }
     }
-  }
 
-  // Save triplet states
-  const saveTripletStates = async () => {
-    try {
-      await elizaDataService.storeTripletStates(echoTriplets)
-    } catch (error) {
-      console.error('❌ EchoesTab: Failed to save triplet states:', error)
-    }
-  }
+    transformMessages()
+  }, [rawMessages])
 
 
   // Publish specific triplet on-chain
@@ -241,7 +177,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       // Supprimer de l'affichage local (que ce soit nouveau ou existant)
       const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
       setEchoTriplets(updatedTriplets)
-      await elizaDataService.storeTripletStates(updatedTriplets)
       
     } catch (error) {
       console.error(`❌ Failed to publish triplet ${tripletId}:`, error)
@@ -281,8 +216,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         // Remove from local display
         const updatedTriplets = echoTriplets.filter(t => t.id !== tripletId)
         setEchoTriplets(updatedTriplets)
-        await elizaDataService.storeTripletStates(updatedTriplets)
-      }
+        }
     } finally {
       setProcessingTripletId(null)
     }
@@ -366,8 +300,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
     setEchoTriplets(updatedTriplets)
     
-    // Save states after deletion
-    await elizaDataService.storeTripletStates(updatedTriplets)
     
     // Refresh messages to reflect changes
     await refreshMessages()
@@ -510,8 +442,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           const processedTripletIds = new Set(processedTriplets.map(t => t.id))
           const updatedTriplets = echoTriplets.filter(t => !processedTripletIds.has(t.id))
           setEchoTriplets(updatedTriplets)
-          await elizaDataService.storeTripletStates(updatedTriplets)
-          
+              
         } else {
           console.error('❌ Batch publication had failures:', result.failedTriples)
           console.log(`❌ Batch completed with ${result.failedTriples.length} failed triplets`)
