@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client"
 import { SOFIA_IDS, CHATBOT_IDS, BOOKMARKAGENT_IDS } from "./constants"
-import { elizaDataService } from "../lib/indexedDB-methods"
+import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   sendMessageToSofia, 
   sendMessageToChatbot, 

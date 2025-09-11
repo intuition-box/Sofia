@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
-import { intuitionGraphqlClient } from '../lib/graphql-client'
+import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 
 export interface IntuitionTriplet {
   blockNumber: ReactNode

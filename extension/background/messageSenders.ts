@@ -1,5 +1,5 @@
 import { SOFIA_IDS, CHATBOT_IDS, BOOKMARKAGENT_IDS } from "./constants"
-import { messageBus } from "~lib/MessageBus"
+
 
 function generateUUID(): string {
   return crypto.randomUUID

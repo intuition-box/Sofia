@@ -7,8 +7,8 @@ export const intuitionTestnet = defineChain({
   network: 'intuition-testnet',
   nativeCurrency: {
     decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
+    name: 'Trust',
+    symbol: 'TRUST',
   },
   rpcUrls: {
     public: { http: ['https://testnet.rpc.intuition.systems'] },

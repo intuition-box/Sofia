@@ -1,6 +1,6 @@
 import { createWalletClient, custom, createPublicClient } from 'viem'
-import { SELECTED_CHAIN } from './config'
-import { getMetaProvider } from './metamask'
+import { SELECTED_CHAIN } from '../config/config'
+import { getMetaProvider } from '../services/metamask'
 
 export const getClients = async () => {
     const provider = await getMetaProvider()

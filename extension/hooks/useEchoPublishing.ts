@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react'
 import { useCreateTripleOnChain, type BatchTripleInput } from './useCreateTripleOnChain'
-import { elizaDataService } from '../lib/indexedDB-methods'
+import { elizaDataService } from '../lib/database/indexedDB-methods'
 import type { PublishedTripletDetails } from '../types/published-triplets'
 
 // EchoTriplet type (should be exported from EchoesTab later)
