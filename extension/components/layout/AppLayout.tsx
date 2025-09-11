@@ -1,5 +1,5 @@
 import { useStorage } from "@plasmohq/storage/hook"
-import SplineBackground from '../Splinebackground'
+import SplineBackground from '../ui/Splinebackground'
 import { useRouter } from './RouterProvider'
 import '../styles/Global.css'
 import '../styles/AppLayout.css'

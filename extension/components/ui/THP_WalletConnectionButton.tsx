@@ -1,5 +1,5 @@
 import React from "react"
-import { connectWallet, disconnectWallet } from "../lib/metamask"
+import { connectWallet, disconnectWallet } from "../../lib/metamask"
 import { useStorage } from "@plasmohq/storage/hook"
 import { PowerOff } from 'lucide-react'
 import connectButton from './ui/icons/ConnectButton.png'
