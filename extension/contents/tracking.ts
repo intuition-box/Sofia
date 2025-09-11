@@ -71,10 +71,15 @@ async function getCurrentTabId(): Promise<number> {
 }
 
 async function extractRealData() {
-  if (!(await isTrackingEnabled())) {
+  const enabled = await isTrackingEnabled()
+  console.log("🔍 [TRACKING DEBUG] Tracking enabled:", enabled)
+  
+  if (!enabled) {
     console.log("🔒 Tracking disabled - PAGE_DATA not sent")
     return
   }
+  
+  console.log("✅ [TRACKING DEBUG] Tracking active - extracting page data")
 
   const title = document.title || ""
   const keywords = document.querySelector('meta[name="keywords"]')?.getAttribute("content") || ""
@@ -93,27 +98,37 @@ async function extractRealData() {
   }
 
   try {
+    console.log("📤 [TRACKING DEBUG] Sending PAGE_DATA:", pageData)
     chrome.runtime.sendMessage({
       type: "PAGE_DATA",
       data: pageData,
       tabId: await getCurrentTabId(),
       pageLoadTime: Date.now()
     } as PlasmoMessage)
+    console.log("✅ [TRACKING DEBUG] PAGE_DATA sent successfully")
   } catch (error) {
-    console.error("Error sending PAGE_DATA:", error)
+    console.error("❌ [TRACKING DEBUG] Error sending PAGE_DATA:", error)
   }
 }
 
 function startWhenReady() {
+  console.log("🚀 [TRACKING DEBUG] startWhenReady called on:", window.location.href)
+  
   if (shouldIgnoreFrame()) {
+    console.log("🚫 [TRACKING DEBUG] Frame ignored for:", window.location.hostname)
     return
   }
 
+  console.log("📋 [TRACKING DEBUG] Document ready state:", document.readyState)
+  
   if (document.readyState === "loading") {
+    console.log("⏳ [TRACKING DEBUG] Waiting for DOMContentLoaded...")
     document.addEventListener("DOMContentLoaded", () => {
+      console.log("🎯 [TRACKING DEBUG] DOMContentLoaded - starting extraction in 1s")
       setTimeout(extractRealData, 1000)
     })
   } else {
+    console.log("▶️ [TRACKING DEBUG] DOM ready - starting extraction in 1s")
     setTimeout(extractRealData, 1000)
   }
 }
