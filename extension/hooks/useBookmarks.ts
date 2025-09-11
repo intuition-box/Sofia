@@ -1,12 +1,7 @@
-/**
- * useBookmarks Hook
- * Manages bookmark lists and triplets stored locally in IndexedDB
- */
-
 import { useState, useEffect } from 'react'
 import { BookmarkService } from '../lib/indexedDB-methods'
 import type { BookmarkList, BookmarkedTriplet, UseBookmarksResult } from '../types/bookmarks'
-import type { Triplet } from '~components/pages/core-tabs/types'
+import type { Triplet } from '../../extension/types/messages'
 
 export const useBookmarks = (): UseBookmarksResult => {
   const [lists, setLists] = useState<BookmarkList[]>([])
