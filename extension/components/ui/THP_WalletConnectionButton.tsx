@@ -2,8 +2,8 @@ import React from "react"
 import { connectWallet, disconnectWallet } from "../../lib/metamask"
 import { useStorage } from "@plasmohq/storage/hook"
 import { PowerOff } from 'lucide-react'
-import connectButton from './ui/icons/ConnectButton.png'
-import connectButtonHover from './ui/icons/ConnectButtonHover.png'
+import connectButton from '../ui/icons/ConnectButton.png'
+import connectButtonHover from '../ui/icons/ConnectButtonHover.png'
 
 interface WalletConnectionButtonProps {
   disabled?: boolean;
