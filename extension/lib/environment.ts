@@ -12,7 +12,6 @@ export type ChainConfig = {
     chainId: number
     name: string
     rpcUrl: string
-    rpcUrl: string
     contractAddress: `0x${string}`
 }
 

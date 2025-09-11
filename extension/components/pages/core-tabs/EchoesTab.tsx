@@ -75,7 +75,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const {
     isProcessing,
     processingTripletId,
-    publishTriplet,
     publishSelected
   } = useEchoPublishing({
     echoTriplets,
