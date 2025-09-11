@@ -41,7 +41,10 @@ function shouldIgnoreFrame(): boolean {
     "jscache.com",
     "indexww.com",
     "a-mo.net",
-    "casalemedia.com"
+    "casalemedia.com",
+    "ogs.google.com",
+    "www.google.com",
+    "youtube.com"
   ]
 
   if (window !== window.top && ignoredDomains.some(domain => hostname.includes(domain))) {
@@ -139,16 +142,15 @@ let pageStartTime = Date.now()
 // Track page duration on visibility change or before unload
 async function sendPageDuration() {
   const duration = Date.now() - pageStartTime
-  console.log("⏱️ [TRACKING DEBUG] Sending PAGE_DURATION:", duration)
+  const url = window.location.href
+  console.log("⏱️ [TRACKING DEBUG] Sending PAGE_DURATION:", duration, "for URL:", url)
   
   try {
-    const tabId = await getCurrentTabId()
     chrome.runtime.sendMessage({
       type: "PAGE_DURATION",
-      data: { duration },
-      tabId: tabId
+      data: { duration, url }
     })
-    console.log("✅ [TRACKING DEBUG] PAGE_DURATION sent with tabId:", tabId, "duration:", duration)
+    console.log("✅ [TRACKING DEBUG] PAGE_DURATION sent for URL:", url, "duration:", duration)
   } catch (error) {
     console.error("❌ [TRACKING DEBUG] Error sending PAGE_DURATION:", error)
   }
