@@ -5,8 +5,6 @@ import sofiaDB, { STORES } from '../../../lib/indexedDB'
 import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import { useEchoSelection } from '../../../hooks/useEchoSelection'
-import type { Message, ParsedSofiaMessage } from './types'
-import { parseSofiaMessage } from './types'
 import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
@@ -47,6 +45,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Hook IndexedDB pour les messages Eliza 
   const { 
     messages: rawMessages, 
+    parsedMessages,
     isLoading: isLoadingEliza, 
     refreshMessages 
   } = useElizaData({ autoRefresh: true, refreshInterval: 5000 })
@@ -98,40 +97,34 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         
         const newEchoTriplets: EchoTriplet[] = []
         
-        for (const record of rawMessages) {
-          if (record.type === 'message' && record.content) {
-            const message = record.content as Message
+        for (const record of parsedMessages) {
+          if (record.type === 'parsed_message' && record.content) {
+            const parsed = record.content as any // Already parsed by useElizaData
             
-            try {
-              const parsed = parseSofiaMessage(message.content.text, message.created_at)
-              
-              if (parsed && parsed.triplets.length > 0) {
-                parsed.triplets.forEach((triplet, index) => {
-                  const tripletId = `${record.messageId}_${index}`
-                  
-                  // Skip if already published
-                  if (publishedTripletIds.includes(tripletId)) {
-                    return
-                  }
-                  
-                  const echoTriplet: EchoTriplet = {
-                    id: tripletId,
-                    triplet: {
-                      subject: triplet.subject,
-                      predicate: triplet.predicate,
-                      object: triplet.object
-                    },
-                    url: parsed.rawObjectUrl || '',
-                    description: parsed.rawObjectDescription || parsed.intention,
-                    timestamp: record.timestamp,
-                    sourceMessageId: record.messageId,
-                    status: 'available'
-                  }
-                  newEchoTriplets.push(echoTriplet)
-                })
-              }
-            } catch (parseError) {
-              // Silent parse errors
+            if (parsed && parsed.triplets && parsed.triplets.length > 0) {
+              parsed.triplets.forEach((triplet, index) => {
+                const tripletId = `${record.messageId}_${index}`
+                
+                // Skip if already published
+                if (publishedTripletIds.includes(tripletId)) {
+                  return
+                }
+                
+                const echoTriplet: EchoTriplet = {
+                  id: tripletId,
+                  triplet: {
+                    subject: triplet.subject,
+                    predicate: triplet.predicate,
+                    object: triplet.object
+                  },
+                  url: parsed.rawObjectUrl || '',
+                  description: parsed.rawObjectDescription || parsed.intention,
+                  timestamp: record.timestamp,
+                  sourceMessageId: record.messageId,
+                  status: 'available'
+                }
+                newEchoTriplets.push(echoTriplet)
+              })
             }
           }
         }
@@ -146,7 +139,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     }
 
     transformMessages()
-  }, [rawMessages])
+  }, [parsedMessages])
 
   // Unused functions removed
   const availableCount = echoTriplets.filter(t => t.status === 'available').length
