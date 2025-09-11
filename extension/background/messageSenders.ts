@@ -73,219 +73,223 @@ export function sendMessageToChatbot(socketBot: any, text: string): void {
   socketBot.emit("message", payload)
 }
 
-// === Variables for sequential management ===
-let isWaitingForBookmarkResponse = false
-let pendingBatches: Array<{urls: string[], batchNumber: number, totalBatches: number}> = []
-let responseTimeout: NodeJS.Timeout | null = null
-let currentBatchCallback: (() => void) | null = null
+// === Configuration ===
+const BOOKMARK_CONFIG = {
+  BATCH_SIZE: 5,
+  TIMEOUT_MS: 120000, // 2 minutes
+  DELAY_BETWEEN_BATCHES_MS: 120000 // 2 minutes
+}
 
-// Variables for global import tracking
-let globalImportCallback: ((result: any) => void) | null = null
-let totalBatchesExpected = 0
-let successfulBatches = 0
-let failedBatches = 0
-let totalBookmarksProcessed = 0
+// === Progress tracking utility ===
+class ProgressTracker {
+  private sendProgressUpdate(progress: number, status: string): void {
+    try {
+      chrome.runtime.sendMessage({
+        type: 'BOOKMARK_IMPORT_PROGRESS',
+        progress,
+        status
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          // Ignore silently - UI might not be listening
+        }
+      })
+    } catch (error) {
+      // Ignore errors - UI might not be available
+    }
+  }
 
-// === Function to send progress updates ===
-function sendProgressUpdate(progress: number, status: string): void {
-  try {
-    chrome.runtime.sendMessage({
-      type: 'BOOKMARK_IMPORT_PROGRESS',
-      progress,
-      status
-    }, (response) => {
-      if (chrome.runtime.lastError) {
-        // Ignore silently - UI might not be listening
+  updateSending(batchNumber: number, totalBatches: number): void {
+    const progress = Math.round((batchNumber / totalBatches) * 50) + 5 // 5% to 55%
+    this.sendProgressUpdate(progress, `Sending batch ${batchNumber}/${totalBatches}...`)
+  }
+
+  updateProcessing(processedBatches: number, totalBatches: number, batchNumber: number, success: boolean): void {
+    const progress = Math.round((processedBatches / totalBatches) * 40) + 55 // 55% to 95%
+    const status = `Batch ${batchNumber}/${totalBatches} ${success ? 'completed' : 'failed'} (${processedBatches}/${totalBatches})`
+    this.sendProgressUpdate(progress, status)
+  }
+
+  finalize(message: string): void {
+    this.sendProgressUpdate(100, message)
+  }
+}
+
+// === Bookmark batch processor ===
+class BookmarkBatchProcessor {
+  private socket: any
+  private progressTracker = new ProgressTracker()
+  private isProcessing = false
+
+  constructor(socket: any) {
+    this.socket = socket
+  }
+
+  async processBookmarks(urls: string[]): Promise<{success: boolean, successfulBatches: number, failedBatches: number, totalBatches: number, count: number, message: string}> {
+    if (this.isProcessing) {
+      throw new Error('Bookmark processing already in progress')
+    }
+
+    if (!this.socket?.connected) {
+      throw new Error('BookMarkAgent socket not connected')
+    }
+
+    this.isProcessing = true
+    console.log('📚 Starting bookmark import:', urls.length, 'URLs')
+
+    try {
+      const totalBatches = Math.ceil(urls.length / BOOKMARK_CONFIG.BATCH_SIZE)
+      console.log(`📚 Processing ${urls.length} bookmarks in ${totalBatches} batches`)
+
+      const results = await this.processBatchesSequentially(urls, totalBatches)
+      
+      const result = {
+        success: results.failedBatches === 0,
+        successfulBatches: results.successfulBatches,
+        failedBatches: results.failedBatches,
+        totalBatches,
+        count: results.totalBookmarksProcessed,
+        message: results.failedBatches === 0 
+          ? `Successfully processed all ${totalBatches} batches (${results.totalBookmarksProcessed} bookmarks)`
+          : `Processed ${results.successfulBatches}/${totalBatches} batches successfully (${results.failedBatches} failed)`
       }
-    })
-  } catch (error) {
-    // Ignore errors - UI might not be available
-  }
-}
 
-// === Send bookmarks to BookMarkAgent ===
-export function sendBookmarksToAgent(socketBookmarkAgent: any, urls: string[], onComplete?: (result: any) => void): void {
-  console.log('📚 Starting bookmark import:', urls.length, 'URLs')
-  
-  // Reset global tracking
-  globalImportCallback = onComplete || null
-  successfulBatches = 0
-  failedBatches = 0
-  totalBookmarksProcessed = 0
-  
-  if (!socketBookmarkAgent) {
-    console.error("❌ [messageSenders.ts] BookMarkAgent socket is null/undefined")
-    sendProgressUpdate(0, 'Error: BookMarkAgent not available')
-    if (globalImportCallback) {
-      globalImportCallback({ success: false, error: 'BookMarkAgent not available' })
+      this.progressTracker.finalize(result.message)
+      return result
+
+    } finally {
+      this.isProcessing = false
     }
-    return
   }
-  
-  if (!socketBookmarkAgent.connected) {
-    console.error("❌ [messageSenders.ts] BookMarkAgent socket not connected")
-    sendProgressUpdate(0, 'Error: BookMarkAgent not connected')
-    if (globalImportCallback) {
-      globalImportCallback({ success: false, error: 'BookMarkAgent not connected' })
+
+  private async processBatchesSequentially(urls: string[], totalBatches: number): Promise<{successfulBatches: number, failedBatches: number, totalBookmarksProcessed: number}> {
+    let successfulBatches = 0
+    let failedBatches = 0
+    let totalBookmarksProcessed = 0
+
+    for (let i = 0; i < totalBatches; i++) {
+      const startIndex = i * BOOKMARK_CONFIG.BATCH_SIZE
+      const batch = urls.slice(startIndex, startIndex + BOOKMARK_CONFIG.BATCH_SIZE)
+      const batchNumber = i + 1
+
+      this.progressTracker.updateSending(batchNumber, totalBatches)
+
+      try {
+        await this.sendBatchWithTimeout(batch, batchNumber, totalBatches)
+        successfulBatches++
+        totalBookmarksProcessed += batch.length
+        this.progressTracker.updateProcessing(successfulBatches + failedBatches, totalBatches, batchNumber, true)
+      } catch (error) {
+        console.error(`❌ Batch ${batchNumber} failed:`, error)
+        failedBatches++
+        this.progressTracker.updateProcessing(successfulBatches + failedBatches, totalBatches, batchNumber, false)
+      }
+
+      // Wait between batches (except for the last one)
+      if (i < totalBatches - 1) {
+        await this.delay(BOOKMARK_CONFIG.DELAY_BETWEEN_BATCHES_MS)
+      }
     }
-    return
+
+    return { successfulBatches, failedBatches, totalBookmarksProcessed }
   }
 
-  // Split into batches of 5 and send sequentially (less load for GaiaNet)
-  const batchSize = 5
-  totalBatchesExpected = Math.ceil(urls.length / batchSize)
-  
-  console.log(`📚 Processing ${urls.length} bookmarks in ${totalBatchesExpected} batches`)
-  sendProgressUpdate(5, `Processing ${urls.length} bookmarks in ${totalBatchesExpected} batches...`)
+  private async sendBatchWithTimeout(urls: string[], batchNumber: number, totalBatches: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`Timeout waiting for response to batch ${batchNumber}`))
+      }, BOOKMARK_CONFIG.TIMEOUT_MS)
 
-  sendBookmarkBatchesSequentially(socketBookmarkAgent, urls, batchSize, 0, totalBatchesExpected)
-}
-
-// === Function to finalize import ===
-function finalizeImport(): void {
-  const totalProcessed = successfulBatches + failedBatches
-  console.log(`📊 Import finalized - Success: ${successfulBatches}, Failed: ${failedBatches}`)
-  
-  if (globalImportCallback) {
-    const result = {
-      success: failedBatches === 0,
-      successfulBatches,
-      failedBatches,
-      totalBatches: totalBatchesExpected,
-      count: totalBookmarksProcessed,
-      message: failedBatches === 0 
-        ? `Successfully processed all ${totalBatchesExpected} batches (${totalBookmarksProcessed} bookmarks)`
-        : `Processed ${successfulBatches}/${totalBatchesExpected} batches successfully (${failedBatches} failed)`
-    }
-    
-    sendProgressUpdate(100, result.message)
-    globalImportCallback(result)
-    globalImportCallback = null
-  }
-}
-
-// === Sequential sending of bookmark batches ===
-function sendBookmarkBatchesSequentially(socketBookmarkAgent: any, allUrls: string[], batchSize: number, currentIndex: number, totalBatches: number): void {
-  if (currentIndex >= allUrls.length) {
-    return
-  }
-
-  const batch = allUrls.slice(currentIndex, currentIndex + batchSize)
-  const batchNumber = Math.floor(currentIndex / batchSize) + 1
-  
-  // Calculate progress percentage for sending
-  const progress = Math.round((batchNumber / totalBatches) * 50) + 5 // 5% to 55% for sending
-  sendProgressUpdate(progress, `Sending batch ${batchNumber}/${totalBatches}...`)
-  
-  const onComplete = (batchSuccess: boolean) => {
-    // Callback called when we receive response or timeout
-    if (batchSuccess) {
-      successfulBatches++
-      totalBookmarksProcessed += batch.length
-    } else {
-      failedBatches++
-    }
-    
-    const processedBatches = successfulBatches + failedBatches
-    const progressForResponses = Math.round((processedBatches / totalBatches) * 40) + 55 // 55% to 95%
-    
-    sendProgressUpdate(
-      progressForResponses, 
-      `Batch ${batchNumber}/${totalBatches} ${batchSuccess ? 'completed' : 'failed'} (${processedBatches}/${totalBatches})`
-    )
-    
-    // Check if all batches have been processed
-    if (processedBatches >= totalBatches) {
-      finalizeImport()
-      return
-    }
-    
-    setTimeout(() => {
-      sendBookmarkBatchesSequentially(socketBookmarkAgent, allUrls, batchSize, currentIndex + batchSize, totalBatches)
-    }, 120000) // 2 minutes between batches
-  }
-  
-  sendBookmarkBatch(socketBookmarkAgent, batch, batchNumber, totalBatches, onComplete)
-}
-
-// === Send a batch of bookmarks with response waiting ===
-function sendBookmarkBatch(socketBookmarkAgent: any, urls: string[], batchNumber: number, totalBatches: number, onComplete: (success: boolean) => void): void {
-  if (!socketBookmarkAgent?.connected) {
-    console.error("❌ [messageSenders.ts] BookMarkAgent socket disconnected during batch send")
-    onComplete(false)
-    return
-  }
-
-  if (isWaitingForBookmarkResponse) {
-    console.warn("⚠️ [messageSenders.ts] Already waiting for bookmark response, queueing batch")
-    pendingBatches.push({urls, batchNumber, totalBatches})
-    return
-  }
-
-  const message = urls.join('\n')
-
-  const messageId = generateUUID()
-  
-  // Mark as waiting for response and store callback
-  isWaitingForBookmarkResponse = true
-  currentBatchCallback = () => onComplete(true) // Success callback
-  
-  // 2 minute timeout for response
-  responseTimeout = setTimeout(() => {
-    console.warn(`⏰ [messageSenders.ts] Timeout waiting for response to batch ${batchNumber}`)
-    sendProgressUpdate(
-      Math.round(((successfulBatches + failedBatches + 1) / totalBatchesExpected) * 40) + 55, 
-      `Batch ${batchNumber} timed out - continuing...`
-    )
-    isWaitingForBookmarkResponse = false
-    if (currentBatchCallback) {
-      currentBatchCallback = null
-      onComplete(false) // Failed due to timeout
-    }
-  }, 120000)
-
-  const payload = {
-    type: 2,
-    payload: {
-      senderId: BOOKMARKAGENT_IDS.AUTHOR_ID,
-      senderName: "Extension",
-      message,
-      messageId,
-      roomId: BOOKMARKAGENT_IDS.ROOM_ID,
-      channelId: BOOKMARKAGENT_IDS.CHANNEL_ID,
-      serverId: BOOKMARKAGENT_IDS.SERVER_ID,
-      source: "bookmark-extension",
-      attachments: [],
-      metadata: {
-        channelType: "DM",
-        isDm: true,
-        targetUserId: BOOKMARKAGENT_IDS.AGENT_ID,
-        bookmarkUrls: urls,
-        batchInfo: {
-          batchNumber,
-          totalBatches,
-          batchSize: urls.length
+      // Send the batch
+      const payload = {
+        type: 2,
+        payload: {
+          senderId: BOOKMARKAGENT_IDS.AUTHOR_ID,
+          senderName: "Extension",
+          message: urls.join('\n'),
+          messageId: generateUUID(),
+          roomId: BOOKMARKAGENT_IDS.ROOM_ID,
+          channelId: BOOKMARKAGENT_IDS.CHANNEL_ID,
+          serverId: BOOKMARKAGENT_IDS.SERVER_ID,
+          source: "bookmark-extension",
+          attachments: [],
+          metadata: {
+            channelType: "DM",
+            isDm: true,
+            targetUserId: BOOKMARKAGENT_IDS.AGENT_ID,
+            bookmarkUrls: urls,
+            batchInfo: {
+              batchNumber,
+              totalBatches,
+              batchSize: urls.length
+            }
+          }
         }
       }
+
+      // Store resolver for when response comes back
+      this.storeResponseHandler(timeout, resolve, reject)
+      
+      this.socket.emit("message", payload)
+    })
+  }
+
+  private storeResponseHandler(timeout: NodeJS.Timeout, resolve: Function, reject: Function): void {
+    // This will be called by unlockBookmarkResponse
+    globalResponseHandler = () => {
+      clearTimeout(timeout)
+      resolve()
     }
   }
 
-  socketBookmarkAgent.emit("message", payload)
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+}
+
+// Global handler for responses 
+let globalResponseHandler: (() => void) | null = null
+
+// === Send bookmarks to BookMarkAgent ===
+export async function sendBookmarksToAgent(socketBookmarkAgent: any, urls: string[]): Promise<{success: boolean, successfulBatches: number, failedBatches: number, totalBatches: number, count: number, message: string}> {
+  if (!socketBookmarkAgent) {
+    console.error("❌ BookMarkAgent socket is null/undefined")
+    return { 
+      success: false, 
+      error: 'BookMarkAgent not available',
+      successfulBatches: 0,
+      failedBatches: 1,
+      totalBatches: 1,
+      count: 0,
+      message: 'BookMarkAgent not available'
+    }
+  }
+
+  const processor = new BookmarkBatchProcessor(socketBookmarkAgent)
+  
+  try {
+    const result = await processor.processBookmarks(urls)
+    console.log('📊 Import finalized - Success:', result.successfulBatches, 'Failed:', result.failedBatches)
+    return result
+  } catch (error) {
+    console.error('❌ Bookmark processing failed:', error)
+    return { 
+      success: false, 
+      error: error.message,
+      successfulBatches: 0,
+      failedBatches: 1,
+      totalBatches: 1,
+      count: 0,
+      message: `Failed to process bookmarks: ${error.message}`
+    }
+  }
 }
 
 // === Function to unlock after receiving BookMark response ===
 export function unlockBookmarkResponse(success: boolean = true): void {
-  if (responseTimeout) {
-    clearTimeout(responseTimeout)
-    responseTimeout = null
+  if (globalResponseHandler) {
+    globalResponseHandler()
+    globalResponseHandler = null
   }
-  isWaitingForBookmarkResponse = false
-  
-  if (currentBatchCallback) {
-    currentBatchCallback()
-    currentBatchCallback = null
-  }
-  
 }
 
 // === Utility functions for bookmarks ===

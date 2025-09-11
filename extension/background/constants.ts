@@ -11,7 +11,7 @@ export const CHATBOT_IDS = {
   AGENT_ID: "79c0c83b-2bd2-042f-a534-952c58a1024d", // l’agent chatbot
   AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab", // user
   CHANNEL_ID: "e04d96d2-9750-434e-b2d9-d833c7e34881",
-  ROOM_ID: "e04d96d2-9750-434e-b2d9-d833c7e34881", // même valeur si DM
+  ROOM_ID: "e04d96d2-9750-434e-b2d9-d833c7e34881", // same value if DM
   SERVER_ID: "00000000-0000-0000-0000-000000000000"
 }
 
@@ -19,7 +19,7 @@ export const BOOKMARKAGENT_IDS = {
   AGENT_ID: "e7bc819e-9e9c-06ab-bf87-b7d9e5f54dcd", // l’agent chatbot
   AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab", // user
   CHANNEL_ID: "866c15b7-075e-4ff0-be34-fb967b4d4554",
-  ROOM_ID: "866c15b7-075e-4ff0-be34-fb967b4d4554", // même valeur si DM
+  ROOM_ID: "866c15b7-075e-4ff0-be34-fb967b4d4554", // same value if DM
   SERVER_ID: "00000000-0000-0000-0000-000000000000"
 }
 
@@ -39,21 +39,21 @@ export const WRITE_DELAY_MS = 2000;
 export const MAX_BEHAVIOR_AGE_MS = 15 * 60 * 1000;
 export const BEHAVIOR_CACHE_TIMEOUT_MS = 10 * 60 * 1000;
 
-// Patterns sensibles consolidés (utilisés pour filtrage et sécurité)
+// Consolidated sensitive patterns (used for filtering and security)
 export const SENSITIVE_URL_PATTERNS = [
   'login', 'auth', 'signin', 'signup', 'register', 'password',
   'bank', 'payment', 'checkout', 'secure', 'private', 'admin', 
   'oauth', 'token', 'session', 'CAPTCHA', 'reCAPTCHA'
 ];
 
-// Patterns d'exclusion spécifiques (technique + sensible)
+// Specific exclusion patterns (technical + sensitive)
 export const EXCLUDED_URL_PATTERNS = [
   // Sites techniques
   'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
   'widget', 'chrome-extension://', 'sandbox', 'about:blank', 'CookieSync Page',
   // Services de mail
   'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
-  // Patterns sensibles (référence aux patterns sensibles)
+  // Sensitive patterns (reference to sensitive patterns)
   ...SENSITIVE_URL_PATTERNS
 ];
 

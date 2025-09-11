@@ -64,7 +64,7 @@ class IntentionRankingSystem {
     }
   }
 
-  // Enregistrer une visite de page (intégration avec votre système existant)
+  // Record page visit (integration with existing system)
   recordPageVisit(pageData: PageData): void {
     const domain = this.extractDomain(pageData.url);
     const now = new Date();
@@ -81,14 +81,14 @@ class IntentionRankingSystem {
       intentionScore: 0
     };
 
-    // Mise à jour des métriques
+    // Update metrics
     existing.visitCount++;
     existing.totalDuration += pageData.duration || 0;
     existing.avgDuration = existing.totalDuration / existing.visitCount;
     existing.maxAttentionScore = Math.max(existing.maxAttentionScore, pageData.attentionScore || 0);
     existing.lastVisit = new Date(pageData.timestamp);
 
-    // Auto-assignment du prédicat "has visited"
+    // Auto-assignment of "has visited" predicate
     existing.predicates["has visited"] = existing.visitCount;
 
     // Calcul du score d'intention
@@ -105,7 +105,7 @@ class IntentionRankingSystem {
     console.log(`🎯 [intentionRanking] Domain ${domain}: visits=${existing.visitCount}, score=${existing.intentionScore}`);
   }
 
-  // Enregistrer un prédicat explicite (quand l'utilisateur crée un triple)
+  // Record explicit predicate (when user creates a triple)
   recordExplicitPredicate(url: string, predicateName: string): void {
     const domain = this.extractDomain(url);
     const existing = this.domainIntentions.get(domain);
@@ -124,32 +124,32 @@ class IntentionRankingSystem {
     }
   }
 
-  // Calcul du score d'intention basé sur vos métriques existantes
+  // Calculate intention score based on existing metrics
   private calculateIntentionScore(intention: DomainIntention): number {
     let score = 0;
 
-    // 1. Score de fréquence (logarithmique pour éviter la dominance)
+    // 1. Frequency score (logarithmic to avoid dominance)
     const frequencyScore = Math.log(intention.visitCount + 1) * 0.8;
     
-    // 2. Score de durée moyenne (votre système de tracking existant)
+    // 2. Average duration score (existing tracking system)
     const avgDurationMinutes = intention.avgDuration / 60000;
     const durationScore = Math.min(avgDurationMinutes / 5, 2) * 1.2; // Max 2 points pour 5min+
     
-    // 3. Score d'attention (intégration avec votre attentionScore)
+    // 3. Attention score (integration with attentionScore)
     const attentionScore = intention.maxAttentionScore * 1.5;
     
-    // 4. Score basé sur les prédicats pondérés
+    // 4. Score based on weighted predicates)
     let predicateScore = 0;
     for (const [predicate, count] of Object.entries(intention.predicates)) {
       const weight = PREDICATE_WEIGHTS[predicate] || 1.0;
       predicateScore += count * weight * 0.5;
     }
     
-    // 5. Bonus de récence (derniers 7 jours)
+    // 5. Recency bonus (last 7 days)
     const daysSinceLastVisit = (Date.now() - intention.lastVisit.getTime()) / (1000 * 60 * 60 * 24);
     const recencyBonus = Math.max(0, (7 - daysSinceLastVisit) / 7) * 0.8;
     
-    // 6. Bonus de consistance (visites étalées dans le temps)
+    // 6. Consistency bonus (visits spread over time)
     const daysSinceFirstVisit = (Date.now() - intention.firstVisit.getTime()) / (1000 * 60 * 60 * 24);
     const consistencyBonus = intention.visitCount > 3 && daysSinceFirstVisit > 1 
       ? Math.min(daysSinceFirstVisit / 30, 1) * 0.5 
@@ -159,11 +159,11 @@ class IntentionRankingSystem {
     return Math.round(score * 100) / 100;
   }
 
-  // Analyse pour suggérer des upgrades de prédicats
+  // Analysis to suggest predicate upgrades
   private analyzePredicateUpgrade(intention: DomainIntention): PredicateUpgrade | null {
     const avgDurationMinutes = intention.avgDuration / 60000;
     
-    // Déterminer le prédicat actuel le plus élevé
+    // Determine current highest predicate
     const currentPredicates = Object.keys(intention.predicates);
     
     // Progression: has visited → likes → loves → trust
@@ -240,7 +240,7 @@ class IntentionRankingSystem {
       .slice(0, limit);
   }
 
-  // Obtenir les stats d'un domaine spécifique
+  // Get stats for specific domain
   getDomainStats(domain: string): DomainIntention | null {
     return this.domainIntentions.get(domain) || null;
   }
@@ -264,7 +264,7 @@ class IntentionRankingSystem {
       ? domains.reduce((sum, d) => sum + d.intentionScore, 0) / domains.length 
       : 0;
     
-    // Catégorie dominante
+    // Dominant category
     const categoryCount = {};
     domains.forEach(d => {
       Object.keys(d.predicates).forEach(p => {
@@ -301,7 +301,7 @@ class IntentionRankingSystem {
     }
   }
 
-  // Exporter toutes les données
+  // Export all data
   exportData(): DomainIntention[] {
     return Array.from(this.domainIntentions.values());
   }
@@ -344,7 +344,7 @@ class IntentionRankingSystem {
           intentionScore: record.intentionScore
         };
         
-        // Recalculer la suggestion d'upgrade au cas où les règles ont changé
+        // Recalculate upgrade suggestion in case rules have changed
         intention.suggestedUpgrade = this.analyzePredicateUpgrade(intention);
         
         this.domainIntentions.set(record.domain, intention);
@@ -360,7 +360,7 @@ class IntentionRankingSystem {
 // Instance globale
 export const intentionRanking = new IntentionRankingSystem();
 
-// Fonctions d'export pour intégration avec votre système
+// Export functions for integration with your system
 export function recordPageForIntention(pageData: PageData): void {
   intentionRanking.recordPageVisit(pageData);
 }
