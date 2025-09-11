@@ -14,27 +14,18 @@ import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
  */
 export class ElizaDataService {
   /**
-   * Store a message from Eliza and auto-parse if possible
+   * Store a message from Eliza - only store if parsing succeeds
    */
   static async storeMessage(message: Message, messageId?: string): Promise<number> {
-    const record: ElizaRecord = {
-      messageId: messageId || `msg_${Date.now()}_${Math.random()}`,
-      content: message,
-      timestamp: Date.now(),
-      type: 'message'
-    }
-    
-    const result = await sofiaDB.add(STORES.ELIZA_DATA, record)
-    console.log('💬 Eliza message stored:', messageId)
-    
-    // Try to parse the message automatically
+    // Try to parse the message first
     const parsed = parseSofiaMessage(message.content.text, message.created_at)
     if (parsed && parsed.triplets.length > 0) {
-      console.log(`🔍 Auto-parsed message with ${parsed.triplets.length} triplets`)
-      await this.storeParsedMessage(parsed, messageId)
+      console.log(`🔍 Parsed message with ${parsed.triplets.length} triplets - storing only parsed version`)
+      return await this.storeParsedMessage(parsed, messageId)
+    } else {
+      console.log('⚠️ Message could not be parsed or has no triplets - skipping storage')
+      return 0
     }
-    
-    return result as number
   }
 
 
