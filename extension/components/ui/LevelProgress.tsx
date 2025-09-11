@@ -1,6 +1,6 @@
-import leftLaurelIcon from './ui/icons/left side.svg'
-import rightLaurelIcon from './ui/icons/right side.svg'
-import './styles/LevelProgress.css'
+import leftLaurelIcon from '../ui/icons/left side.svg'
+import rightLaurelIcon from '../ui/icons/right side.svg'
+import '../styles/LevelProgress.css'
 
 interface LevelProgressProps {
   currentXP?: number

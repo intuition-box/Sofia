@@ -5,7 +5,7 @@ import chatIcon from '../../components/ui/icons/chatIcon.png'
 import thumbsUpIcon from '../ui/icons/Thumbs up.png'
 import toggleTrue from '../ui/icons/button=True.png'
 import toggleFalse from '../ui/icons/button=False.png'
-import LevelProgress from '../LevelProgress'
+import LevelProgress from '../ui/LevelProgress'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
 
