@@ -11,10 +11,10 @@ function generateUUID(): string {
     })
 }
 
-// === Envoi de message à SofIA ===
+// === Send message to SofIA ===
 export function sendMessageToSofia(socketSofia: any, text: string): void {
   if (!socketSofia?.connected) {
-    console.warn("⚠️ SofIA socket non connecté")
+    console.warn("⚠️ SofIA socket not connected")
     return
   }
 
@@ -38,14 +38,14 @@ export function sendMessageToSofia(socketSofia: any, text: string): void {
     }
   }
 
-  console.log("📤 Message à SofIA :", payload)
+  console.log("📤 Message to SofIA:", payload)
   socketSofia.emit("message", payload)
 }
 
-// === Envoi de message au Chatbot ===
+// === Send message to Chatbot ===
 export function sendMessageToChatbot(socketBot: any, text: string): void {
   if (!socketBot?.connected) {
-    console.warn("⚠️ Chatbot socket non connecté")
+    console.warn("⚠️ Chatbot socket not connected")
     return
   }
 
@@ -69,24 +69,24 @@ export function sendMessageToChatbot(socketBot: any, text: string): void {
     }
   }
 
-  console.log("📤 Message au Chatbot :", payload)
+  console.log("📤 Message to Chatbot:", payload)
   socketBot.emit("message", payload)
 }
 
-// === Variables pour la gestion séquentielle ===
+// === Variables for sequential management ===
 let isWaitingForBookmarkResponse = false
 let pendingBatches: Array<{urls: string[], batchNumber: number, totalBatches: number}> = []
 let responseTimeout: NodeJS.Timeout | null = null
 let currentBatchCallback: (() => void) | null = null
 
-// Variables pour le suivi global de l'import
+// Variables for global import tracking
 let globalImportCallback: ((result: any) => void) | null = null
 let totalBatchesExpected = 0
 let successfulBatches = 0
 let failedBatches = 0
 let totalBookmarksProcessed = 0
 
-// === Fonction pour envoyer les mises à jour de progression ===
+// === Function to send progress updates ===
 function sendProgressUpdate(progress: number, status: string): void {
   try {
     chrome.runtime.sendMessage({
@@ -103,21 +103,15 @@ function sendProgressUpdate(progress: number, status: string): void {
   }
 }
 
-// === Envoi de bookmarks au BookMarkAgent ===
+// === Send bookmarks to BookMarkAgent ===
 export function sendBookmarksToAgent(socketBookmarkAgent: any, urls: string[], onComplete?: (result: any) => void): void {
-  console.log('📚 [messageSenders.ts] sendBookmarksToAgent() called with', urls.length, 'URLs')
+  console.log('📚 Starting bookmark import:', urls.length, 'URLs')
   
   // Reset global tracking
   globalImportCallback = onComplete || null
   successfulBatches = 0
   failedBatches = 0
   totalBookmarksProcessed = 0
-  
-  console.log('📚 [messageSenders.ts] BookMarkAgent socket status:', {
-    exists: !!socketBookmarkAgent,
-    connected: socketBookmarkAgent?.connected,
-    id: socketBookmarkAgent?.id
-  })
   
   if (!socketBookmarkAgent) {
     console.error("❌ [messageSenders.ts] BookMarkAgent socket is null/undefined")
@@ -137,20 +131,20 @@ export function sendBookmarksToAgent(socketBookmarkAgent: any, urls: string[], o
     return
   }
 
-  // Découper en lots de 5 et envoyer séquentiellement (moins de charge pour GaiaNet)
+  // Split into batches of 5 and send sequentially (less load for GaiaNet)
   const batchSize = 5
   totalBatchesExpected = Math.ceil(urls.length / batchSize)
   
-  console.log(`📚 [messageSenders.ts] Splitting ${urls.length} bookmarks into ${totalBatchesExpected} batches of ${batchSize}`)
+  console.log(`📚 Processing ${urls.length} bookmarks in ${totalBatchesExpected} batches`)
   sendProgressUpdate(5, `Processing ${urls.length} bookmarks in ${totalBatchesExpected} batches...`)
 
   sendBookmarkBatchesSequentially(socketBookmarkAgent, urls, batchSize, 0, totalBatchesExpected)
 }
 
-// === Fonction pour finaliser l'import ===
+// === Function to finalize import ===
 function finalizeImport(): void {
   const totalProcessed = successfulBatches + failedBatches
-  console.log(`📊 [messageSenders.ts] Import finalized - Success: ${successfulBatches}, Failed: ${failedBatches}, Total: ${totalProcessed}`)
+  console.log(`📊 Import finalized - Success: ${successfulBatches}, Failed: ${failedBatches}`)
   
   if (globalImportCallback) {
     const result = {
@@ -170,23 +164,21 @@ function finalizeImport(): void {
   }
 }
 
-// === Envoi séquentiel des lots de bookmarks ===
+// === Sequential sending of bookmark batches ===
 function sendBookmarkBatchesSequentially(socketBookmarkAgent: any, allUrls: string[], batchSize: number, currentIndex: number, totalBatches: number): void {
   if (currentIndex >= allUrls.length) {
-    console.log(`✅ [messageSenders.ts] All ${totalBatches} batches sent`)
-    // Ne pas finaliser ici - attendre que tous les batches reçoivent une réponse
     return
   }
 
   const batch = allUrls.slice(currentIndex, currentIndex + batchSize)
   const batchNumber = Math.floor(currentIndex / batchSize) + 1
   
-  // Calculate progress percentage pour l'envoi
-  const progress = Math.round((batchNumber / totalBatches) * 50) + 5 // 5% à 55% pour l'envoi
+  // Calculate progress percentage for sending
+  const progress = Math.round((batchNumber / totalBatches) * 50) + 5 // 5% to 55% for sending
   sendProgressUpdate(progress, `Sending batch ${batchNumber}/${totalBatches}...`)
   
   const onComplete = (batchSuccess: boolean) => {
-    // Callback appelé quand on reçoit la réponse ou timeout
+    // Callback called when we receive response or timeout
     if (batchSuccess) {
       successfulBatches++
       totalBookmarksProcessed += batch.length
@@ -195,14 +187,14 @@ function sendBookmarkBatchesSequentially(socketBookmarkAgent: any, allUrls: stri
     }
     
     const processedBatches = successfulBatches + failedBatches
-    const progressForResponses = Math.round((processedBatches / totalBatches) * 40) + 55 // 55% à 95%
+    const progressForResponses = Math.round((processedBatches / totalBatches) * 40) + 55 // 55% to 95%
     
     sendProgressUpdate(
       progressForResponses, 
       `Batch ${batchNumber}/${totalBatches} ${batchSuccess ? 'completed' : 'failed'} (${processedBatches}/${totalBatches})`
     )
     
-    // Vérifier si tous les batches ont été traités
+    // Check if all batches have been processed
     if (processedBatches >= totalBatches) {
       finalizeImport()
       return
@@ -210,13 +202,13 @@ function sendBookmarkBatchesSequentially(socketBookmarkAgent: any, allUrls: stri
     
     setTimeout(() => {
       sendBookmarkBatchesSequentially(socketBookmarkAgent, allUrls, batchSize, currentIndex + batchSize, totalBatches)
-    }, 120000) // 2 minutes entre les lots
+    }, 120000) // 2 minutes between batches
   }
   
   sendBookmarkBatch(socketBookmarkAgent, batch, batchNumber, totalBatches, onComplete)
 }
 
-// === Envoi d'un lot de bookmarks avec attente de réponse ===
+// === Send a batch of bookmarks with response waiting ===
 function sendBookmarkBatch(socketBookmarkAgent: any, urls: string[], batchNumber: number, totalBatches: number, onComplete: (success: boolean) => void): void {
   if (!socketBookmarkAgent?.connected) {
     console.error("❌ [messageSenders.ts] BookMarkAgent socket disconnected during batch send")
@@ -230,16 +222,15 @@ function sendBookmarkBatch(socketBookmarkAgent: any, urls: string[], batchNumber
     return
   }
 
-  const message = urls.join('\n') // Juste les URLs, rien d'autre
-  console.log(`📚 [messageSenders.ts] Sending batch ${batchNumber}/${totalBatches} with ${urls.length} URLs`)
+  const message = urls.join('\n')
 
   const messageId = generateUUID()
   
-  // Marquer comme en attente de réponse et stocker le callback
+  // Mark as waiting for response and store callback
   isWaitingForBookmarkResponse = true
   currentBatchCallback = () => onComplete(true) // Success callback
   
-  // Timeout de 2 minutes pour la réponse
+  // 2 minute timeout for response
   responseTimeout = setTimeout(() => {
     console.warn(`⏰ [messageSenders.ts] Timeout waiting for response to batch ${batchNumber}`)
     sendProgressUpdate(
@@ -279,12 +270,10 @@ function sendBookmarkBatch(socketBookmarkAgent: any, urls: string[], batchNumber
     }
   }
 
-  console.log(`📤 [messageSenders.ts] Sending batch ${batchNumber}/${totalBatches} to BookMarkAgent`)
   socketBookmarkAgent.emit("message", payload)
-  console.log(`✅ [messageSenders.ts] Batch ${batchNumber}/${totalBatches} sent, waiting for response...`)
 }
 
-// === Fonction pour débloquer après réception de réponse BookMark ===
+// === Function to unlock after receiving BookMark response ===
 export function unlockBookmarkResponse(success: boolean = true): void {
   if (responseTimeout) {
     clearTimeout(responseTimeout)
@@ -297,10 +286,9 @@ export function unlockBookmarkResponse(success: boolean = true): void {
     currentBatchCallback = null
   }
   
-  console.log(`🔓 [messageSenders.ts] Unlocked for next bookmark batch (${success ? 'success' : 'failed'})`)
 }
 
-// === Fonctions utilitaires pour les bookmarks ===
+// === Utility functions for bookmarks ===
 export function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): string[] {
   const urls: string[] = []
   
@@ -320,23 +308,14 @@ export function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTree
 }
 
 export async function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
-  console.log('📚 [messageSenders.ts] getAllBookmarks() called')
   try {
-    console.log('📚 [messageSenders.ts] Calling chrome.bookmarks.getTree()...')
-    const startTime = Date.now()
     const bookmarkTree = await chrome.bookmarks.getTree()
-    const getTreeTime = Date.now() - startTime
-    console.log(`📚 [messageSenders.ts] chrome.bookmarks.getTree() took ${getTreeTime}ms`)
-    
-    console.log('📚 [messageSenders.ts] Extracting URLs from bookmark tree...')
-    const extractStartTime = Date.now()
     const urls = extractBookmarkUrls(bookmarkTree)
-    const extractTime = Date.now() - extractStartTime
-    console.log(`📚 [messageSenders.ts] Extracted ${urls.length} bookmarks in ${extractTime}ms`)
+    console.log(`📚 Extracted ${urls.length} bookmarks`)
     
     return { success: true, urls }
   } catch (error) {
-    console.error("❌ [messageSenders.ts] Failed to get bookmarks:", error)
+    console.error("❌ Failed to get bookmarks:", error)
     return { success: false, error: error.message }
   }
 }

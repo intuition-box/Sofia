@@ -31,7 +31,6 @@ export interface MessageData {
   | "PAGE_DURATION"
   | "SCROLL_DATA"
   | "TEST_MESSAGE"
-  | "BEHAVIOR_DATA"
   | "GET_TRACKING_STATS"
   | "EXPORT_TRACKING_DATA"
   | "CLEAR_TRACKING_DATA"
@@ -56,24 +55,6 @@ export interface MessageData {
   clientId?: string;
 }
 
-export interface BehaviorData {
-  url: string;
-  videoPlayed?: boolean;
-  videoDuration?: number;
-  audioPlayed?: boolean;
-  audioDuration?: number;
-  articleRead?: boolean;
-  title?: string;
-  readTime?: number;
-  timestamp: number;
-}
-
-export interface BehaviorRecord {
-  type: 'video' | 'audio' | 'article';
-  label: string;
-  duration: number;
-  timestamp: number;
-}
 
 export interface PageData {
   url: string;

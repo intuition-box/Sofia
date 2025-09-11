@@ -170,18 +170,9 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
   })
 
   socketBookmarkAgent.on("messageBroadcast", async (data) => {
-    console.log("📩 [websocket.ts] Received messageBroadcast:", {
-      senderId: data.senderId,
-      expectedAgentId: BOOKMARKAGENT_IDS.AGENT_ID,
-      roomId: data.roomId,
-      expectedRoomId: BOOKMARKAGENT_IDS.ROOM_ID,
-      channelId: data.channelId,
-      expectedChannelId: BOOKMARKAGENT_IDS.CHANNEL_ID
-    })
-    
     if ((data.roomId === BOOKMARKAGENT_IDS.ROOM_ID || data.channelId === BOOKMARKAGENT_IDS.CHANNEL_ID) && 
         data.senderId === BOOKMARKAGENT_IDS.AGENT_ID) {
-      console.log("✅ [websocket.ts] Message is from BookMarkAgent, processing response")
+      console.log("📩 BookMarkAgent response received")
       
       try {
         // Stocker directement dans IndexedDB comme les messages SofIA
@@ -194,7 +185,6 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
           }
           
           await elizaDataService.storeMessage(newMessage, newMessage.id)
-          console.log("✅ [websocket.ts] BookMarkAgent response stored in IndexedDB:", { id: newMessage.id })
         } catch (error) {
           console.error("❌ [websocket.ts] Failed to store BookMarkAgent response:", error)
         }
@@ -208,12 +198,6 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
         unlockBookmarkResponse()
       }
 
-    } else {
-      if (data.senderId === BOOKMARKAGENT_IDS.AUTHOR_ID) {
-        console.log("📤 [websocket.ts] Own message echo, ignoring")
-      } else {
-        console.log("⏭️ [websocket.ts] Message not for BookMarkAgent, ignoring")
-      }
     }
   })
 

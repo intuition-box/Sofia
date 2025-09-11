@@ -5,14 +5,14 @@ let metamaskConnection: MetaMaskConnection | null = null;
 export async function connectToMetamask(): Promise<MetaMaskConnection> {
   try {
     if (metamaskConnection?.account) {
-      console.log('Background: Connexion MetaMask existante trouvée');
+      console.log('Background: Existing MetaMask connection found');
       return metamaskConnection;
     }
 
-    throw new Error('Connexion MetaMask doit être gérée par le composant UI');
+    throw new Error('MetaMask connection must be handled by UI component');
 
   } catch (error) {
-    console.error('Background: Erreur lors de la connexion MetaMask:', error);
+    console.error('Background: Error connecting to MetaMask:', error);
     throw error;
   }
 }

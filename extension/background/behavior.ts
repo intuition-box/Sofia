@@ -1,22 +1,8 @@
-import { MAX_BEHAVIOR_AGE_MS } from "./constants";
-import type { BehaviorData, BehaviorRecord , ScrollStats} from "./types";
-
-
-const behaviorCache: Record<string, BehaviorData> = {};
-
-export function cleanOldBehaviors(maxAgeMs = MAX_BEHAVIOR_AGE_MS): void {
-  const now = Date.now();
-  for (const url in behaviorCache) {
-    if (now - behaviorCache[url]?.timestamp > maxAgeMs) {
-      delete behaviorCache[url];
-    }
-  }
-}
-
+import type { ScrollStats} from "./types";
 
 const scrollTimestampsByUrl = new Map<string, number[]>()
 
-export function recordScroll(url: string, timestamp: number, deltaT: any) {
+export function recordScroll(url: string, timestamp: number) {
   if (!scrollTimestampsByUrl.has(url)) {
     scrollTimestampsByUrl.set(url, [])
   }
@@ -46,47 +32,4 @@ export function getScrollStats(url: string): ScrollStats | null {
 
 export function clearScrolls(url: string) {
   scrollTimestampsByUrl.delete(url)
-}
-
-export function handleBehaviorData(data: BehaviorData,): void {
-  const { url, videoPlayed, videoDuration, audioPlayed, audioDuration, articleRead, title, readTime, timestamp } = data;
-
-  behaviorCache[url] = data;
-
-  const behaviorsToRecord: BehaviorRecord[] = [];
-
-  if (videoPlayed) {
-    behaviorsToRecord.push({
-      type: 'video',
-      label: title || 'Unknown video',
-      duration: videoDuration || 0,
-      timestamp
-    });
-  }
-
-  if (audioPlayed) {
-    behaviorsToRecord.push({
-      type: 'audio',
-      label: title || 'Unknown audio',
-      duration: audioDuration || 0,
-      timestamp
-    });
-  }
-
-  if (articleRead) {
-    behaviorsToRecord.push({
-      type: 'article',
-      label: title || 'Unknown article',
-      duration: readTime || 0,
-      timestamp
-    });
-  }
-}
-
-export function getBehaviorFromCache(url: string): BehaviorData | undefined {
-  return behaviorCache[url];
-}
-
-export function removeBehaviorFromCache(url: string): void {
-  delete behaviorCache[url];
 }

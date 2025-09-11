@@ -1,8 +1,7 @@
 import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { sanitizeUrl, isSensitiveUrl } from "./utils/url"
 import { sendToAgent, clearOldSentMessages } from "./utils/buffer"
-import { getBehaviorFromCache, removeBehaviorFromCache } from "./behavior"
-import { EXCLUDED_URL_PATTERNS, BEHAVIOR_CACHE_TIMEOUT_MS } from "./constants"
+import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { messageBus } from "~lib/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
@@ -41,38 +40,17 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
     parsedData.description ??= ""
     parsedData.h1 ??= ""
   } catch (err) {
-    console.error("❌ Impossible de parser les données PAGE_DATA :", err, data)
+    console.error("❌ Unable to parse PAGE_DATA:", err, data)
     return
   }
 
   if (EXCLUDED_URL_PATTERNS.some(str => parsedData.url.toLowerCase().includes(str))) return
   if (isSensitiveUrl(parsedData.url)) {
-    console.log("🔒 URL sensible ignorée:", parsedData.url)
+    console.log("🔒 Sensitive URL ignored:", parsedData.url)
     return
   }
 
-  let behaviorText = ""
-  const behavior = getBehaviorFromCache(parsedData.url)
-  const now = Date.now()
-
-  if (parsedData.duration && parsedData.duration > 5000) {
-    behaviorText += ` Temps passé sur la page : ${(parsedData.duration / 1000).toFixed(1)}s
-`
-  }
-
-  if (behavior && now - behavior.timestamp < BEHAVIOR_CACHE_TIMEOUT_MS) {
-    if (behavior.videoPlayed) behaviorText += `Vidéo regardée (${behavior.videoDuration?.toFixed(1)}s)
-`
-    if (behavior.audioPlayed) behaviorText += `🎵 Audio écouté (${behavior.audioDuration?.toFixed(1)}s)
-`
-    if (behavior.articleRead) behaviorText += `Article lu : "${behavior.title}" (${(behavior.readTime! / 1000).toFixed(1)}s)
-`
-  }
   const scrollStats = getScrollStats(parsedData.url)
-  if (scrollStats && scrollStats.scrollAttentionScore != undefined) {
-    behaviorText += `Scrolls: ${scrollStats.count}, Δmoy: ${scrollStats.avgDelta}ms\\n`
-    behaviorText += `Attention Score: ${scrollStats.scrollAttentionScore.toFixed(2)}\\n`
-  }
 
   // Format pour correspondre exactement aux exemples de SofIA.json
   const domain = new URL(parsedData.url).hostname.replace('www.', '')
@@ -112,15 +90,11 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
   
   message += `\nAttention Score: ${finalAttentionScore.toFixed(2)}`
 
-  console.group("🧠 Nouvelle page capturée")
-  console.log(message)
-  console.groupEnd()
-  console.log("═".repeat(100))
+  console.log("🧠 Page captured:", parsedData.url)
 
   clearScrolls(parsedData.url)
   sendToAgent(message)
   clearOldSentMessages()
-  if (behavior) removeBehaviorFromCache(parsedData.url)
   
   // Enregistrer la page pour le système de ranking d'intention
   recordPageForIntention(parsedData)
@@ -166,7 +140,7 @@ export function setupMessageHandlers(): void {
         }
         const loadTime = message.pageLoadTime || Date.now()
         pageDataBufferByTabId.set(tabId, { data: message.data, loadTime })
-        console.log(`📥 PAGE_DATA bufferisé pour tabId ${tabId}`)
+        console.log(`📥 PAGE_DATA buffered for tabId ${tabId}`)
         break
       }
 
@@ -174,26 +148,21 @@ export function setupMessageHandlers(): void {
         const tabId = "tabId" in message && typeof message.tabId === "number" ? message.tabId : -1
         const duration = message.data.duration
         if (tabId === -1 || !pageDataBufferByTabId.has(tabId)) {
-          console.warn("⚠️ PAGE_DURATION sans PAGE_DATA associé ou tabId manquant")
+          console.warn("⚠️ PAGE_DURATION without associated PAGE_DATA or missing tabId")
           break
         }
         const buffered = pageDataBufferByTabId.get(tabId)!
         buffered.data.duration = duration
-        console.log(`📤 Fusion PAGE_DATA + PAGE_DURATION pour tabId ${tabId}`)
+        console.log(`📤 Merging PAGE_DATA + PAGE_DURATION for tabId ${tabId}`)
         handlePageDataInline(buffered.data, buffered.loadTime)
         pageDataBufferByTabId.delete(tabId)
         break
       }
 
       case "SCROLL_DATA":
-        recordScroll(message.data.url, message.data.timestamp, message.data.deltaT)
-        console.log(`Scroll enregistré pour ${message.data.url}`)
-
+        recordScroll(message.data.url, message.data.timestamp)
         break
 
-      case "BEHAVIOR_DATA":
-        console.log(`Comportement: ${JSON.stringify(message.data)}`)
-        break
 
       case "CONNECT_TO_METAMASK":
         connectToMetamask()
@@ -209,7 +178,7 @@ export function setupMessageHandlers(): void {
         sendResponse(
           connection?.account
             ? { success: true, account: connection.account, chainId: connection.chainId }
-            : { success: false, error: "Aucune connexion MetaMask trouvée" }
+            : { success: false, error: "No MetaMask connection found" }
         )
         break
       }
@@ -217,41 +186,27 @@ export function setupMessageHandlers(): void {
       case "GET_TRACKING_STATS":
         sendResponse({
           success: true,
-          data: { message: "Données envoyées directement à l'agent - pas de stockage local" }
-        })
-        break
-
-      case "EXPORT_TRACKING_DATA":
-        sendResponse({
-          success: false,
-          error: "Export non disponible - données envoyées directement à l'agent"
+          data: { message: "Data sent directly to agent - no local storage" }
         })
         break
 
       case "CLEAR_TRACKING_DATA":
-        sendResponse({ success: true, message: "Aucune donnée stockée localement à effacer" })
+        sendResponse({ success: true, message: "No local data to clear" })
         break
 
       case "GET_BOOKMARKS":
-        console.log('📚 [messageHandlers.ts] GET_BOOKMARKS request received')
         getAllBookmarks()
           .then(result => {
-            console.log('📚 [messageHandlers.ts] getAllBookmarks result:', result)
             if (result.success && result.urls) {
-              console.log(`📚 [messageHandlers.ts] Starting import process for ${result.urls.length} bookmarks...`)
-              // Ne pas répondre tout de suite - attendre que l'import soit terminé
               sendBookmarksToAgent(result.urls, (finalResult) => {
-                // Callback appelé quand TOUS les batches sont terminés
-                console.log('📚 [messageHandlers.ts] All batches processed, final result:', finalResult)
                 sendResponse(finalResult)
               })
             } else {
-              console.error('📚 [messageHandlers.ts] getAllBookmarks failed:', result.error)
               sendResponse({ success: false, error: result.error })
             }
           })
           .catch(error => {
-            console.error("❌ [messageHandlers.ts] Exception in GET_BOOKMARKS:", error)
+            console.error("❌ GET_BOOKMARKS error:", error)
             sendResponse({ success: false, error: error.message })
           })
         return true
