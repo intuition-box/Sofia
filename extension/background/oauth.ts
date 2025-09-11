@@ -1,6 +1,6 @@
 const OAUTH_SERVER_URL = "http://localhost:3001"
 
-// Fonction pour générer un code verifier pour PKCE (X/Twitter)
+// Function to generate verifier code for PKCE (X/Twitter)
 const generateCodeVerifier = () => {
   const array = new Uint8Array(32)
   crypto.getRandomValues(array)
@@ -10,7 +10,7 @@ const generateCodeVerifier = () => {
     .replace(/=/g, '')
 }
 
-// Fonction pour générer le code challenge pour PKCE
+// Function to generate challenge code for PKCE
 const generateCodeChallenge = async (verifier: string) => {
   const encoder = new TextEncoder()
   const data = encoder.encode(verifier)
@@ -21,7 +21,7 @@ const generateCodeChallenge = async (verifier: string) => {
     .replace(/=/g, '')
 }
 
-// Fonction pour gérer OAuth Discord
+// Function to handle Discord OAuth
 export async function handleDiscordOAuth(clientId: string, sendResponse: (response: any) => void) {
   try {
     const extensionId = chrome.runtime.id
@@ -34,7 +34,7 @@ export async function handleDiscordOAuth(clientId: string, sendResponse: (respon
       scope: 'identify email'
     })
 
-    // Écouter les changements d'onglets pour capturer la redirection
+    // Listen for tab changes to capture redirection
     const handleTabUpdate = async (tabId: number, changeInfo: any, tab: any) => {
       if (changeInfo.url && changeInfo.url.startsWith(redirectUri)) {
         const url = new URL(changeInfo.url)
@@ -45,7 +45,7 @@ export async function handleDiscordOAuth(clientId: string, sendResponse: (respon
           chrome.tabs.remove(tabId)
           
           try {
-            // Échanger le code contre les données utilisateur
+            // Exchange code for user data
             const response = await fetch(`${OAUTH_SERVER_URL}/auth/discord/exchange`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -55,7 +55,7 @@ export async function handleDiscordOAuth(clientId: string, sendResponse: (respon
             const data = await response.json()
             
             if (data.success) {
-              // Stocker les données utilisateur
+              // Store user data
               await chrome.storage.local.set({ "discord-user": data.user })
               sendResponse({ success: true, user: data.user })
             } else {
@@ -70,7 +70,7 @@ export async function handleDiscordOAuth(clientId: string, sendResponse: (respon
 
     chrome.tabs.onUpdated.addListener(handleTabUpdate)
     
-    // Créer l'onglet d'authentification
+    // Create authentication tab
     chrome.tabs.create({ url: authUrl })
     
   } catch (error) {
@@ -78,7 +78,7 @@ export async function handleDiscordOAuth(clientId: string, sendResponse: (respon
   }
 }
 
-// Fonction pour gérer OAuth X/Twitter
+// Function to handle X/Twitter OAuth
 export async function handleXOAuth(clientId: string, sendResponse: (response: any) => void) {
   try {
     const extensionId = chrome.runtime.id
@@ -87,7 +87,7 @@ export async function handleXOAuth(clientId: string, sendResponse: (response: an
     const codeVerifier = generateCodeVerifier()
     const codeChallenge = await generateCodeChallenge(codeVerifier)
     
-    // Stocker le code verifier pour plus tard
+    // Stock code for later
     await chrome.storage.local.set({ 'x-code-verifier': codeVerifier })
 
     const authUrl = `https://x.com/i/oauth2/authorize?` + new URLSearchParams({
@@ -100,7 +100,7 @@ export async function handleXOAuth(clientId: string, sendResponse: (response: an
       code_challenge_method: 'S256'
     })
 
-    // Écouter les changements d'onglets pour capturer la redirection
+    // Listen for tab changes to capture redirection
     const handleTabUpdate = async (tabId: number, changeInfo: any, tab: any) => {
       if (changeInfo.url && changeInfo.url.startsWith(redirectUri)) {
         const url = new URL(changeInfo.url)
@@ -111,11 +111,12 @@ export async function handleXOAuth(clientId: string, sendResponse: (response: an
           chrome.tabs.remove(tabId)
           
           try {
-            // Récupérer le code verifier stocké
+            // Retrieve stored code 
+            
             const result = await chrome.storage.local.get('x-code-verifier')
             const storedCodeVerifier = result['x-code-verifier']
             
-            // Échanger le code contre les données utilisateur
+            // Exchange code for user data
             const response = await fetch(`${OAUTH_SERVER_URL}/auth/x/exchange`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -125,7 +126,7 @@ export async function handleXOAuth(clientId: string, sendResponse: (response: an
             const data = await response.json()
             
             if (data.success) {
-              // Stocker les données utilisateur et le token d'accès, puis nettoyer le code verifier
+              // Store user data and access token, then clean up code verifier
               await chrome.storage.local.set({ 
                 "x-user": data.user,
                 "x-access-token": data.access_token
@@ -144,7 +145,7 @@ export async function handleXOAuth(clientId: string, sendResponse: (response: an
 
     chrome.tabs.onUpdated.addListener(handleTabUpdate)
     
-    // Créer l'onglet d'authentification
+    // Create authentication tab
     chrome.tabs.create({ url: authUrl })
     
   } catch (error) {

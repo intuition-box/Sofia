@@ -72,17 +72,17 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
     message += `\nTime: 00:00:30`
   }
   
-  // Calculer l'Attention Score basé sur les visites pour déclencher les règles de SofIA
+  // Calculate Attention Score based on visits to trigger SofIA rules
   let finalAttentionScore = 0.3
   if (domainStats) {
-    // Mapper visitCount vers Attention Score selon les règles SofIA
+    // Map visitCount to Attention Score according to SofIA rules
     let calculatedScore = 0.3
     if (domainStats.visitCount >= 25) calculatedScore = 0.9  // → trust
     else if (domainStats.visitCount >= 15) calculatedScore = 0.8  // → love  
     else if (domainStats.visitCount >= 5) calculatedScore = 0.75  // → like
     else if (domainStats.visitCount >= 3) calculatedScore = 0.4   // → interested
     
-    // Prendre le max entre le score calculé et l'attention réelle
+    // Take the max between calculated score and real attention
     finalAttentionScore = Math.max(calculatedScore, domainStats.maxAttentionScore)
     
     console.log(`🎯 [SofIA Score] Domain: ${domain}, visits: ${domainStats.visitCount}, calculated: ${calculatedScore}, real: ${domainStats.maxAttentionScore}, final: ${finalAttentionScore}`)
@@ -96,11 +96,11 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
   sendToAgent(message)
   clearOldSentMessages()
   
-  // Enregistrer la page pour le système de ranking d'intention
+  // Record page for intention ranking system
   recordPageForIntention(parsedData)
 }
 
-// Handler séparé pour STORE_BOOKMARK_TRIPLETS
+// Separate handler for STORE_BOOKMARK_TRIPLETS
 async function handleStoreBookmarkTriplets(message: any, sendResponse: (response: any) => void): Promise<void> {
   console.log('💾 [messageHandlers.ts] STORE_BOOKMARK_TRIPLETS request received')
   try {
@@ -196,11 +196,15 @@ export function setupMessageHandlers(): void {
 
       case "GET_BOOKMARKS":
         getAllBookmarks()
-          .then(result => {
+          .then(async result => {
             if (result.success && result.urls) {
-              sendBookmarksToAgent(result.urls, (finalResult) => {
+              try {
+                const finalResult = await sendBookmarksToAgent(result.urls)
                 sendResponse(finalResult)
-              })
+              } catch (error) {
+                console.error("❌ sendBookmarksToAgent error:", error)
+                sendResponse({ success: false, error: error.message })
+              }
             } else {
               sendResponse({ success: false, error: result.error })
             }

@@ -86,7 +86,7 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
   socketBot.on("connect", () => {
     console.log("🤖 Connected to Chatbot, socket ID:", socketBot.id)
 
-    // Envoie du "room join"
+    // Send "room join"
     socketBot.emit("message", {
       type: 1,
       payload: {
@@ -97,7 +97,7 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
 
     console.log("📨 Sent room join for Chatbot:", CHATBOT_IDS.ROOM_ID)
 
-    // ✅ Notification que la socket est prête
+    // ✅ Notification that socket is ready
     if (typeof onReady === "function") {
       onReady()
     }
@@ -125,17 +125,17 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
 
   socketBot.on("disconnect", (reason) => {
     console.warn("🔌 Chatbot socket disconnected:", reason)
-    setTimeout(() => initializeChatbotSocket(onReady), 5000) // Reconnexion avec le même callback
+    setTimeout(() => initializeChatbotSocket(onReady), 5000) // Reconnection with same callback
   })
 }
 
 
-// === 3. Envoi de message à SofIA ===
+// === 3. Send message to SofIA ===
 export function sendMessageToSofiaSocket(text: string): void {
   sendMessageToSofia(socketSofia, text)
 }
 
-// === 4. Envoi de message au Chatbot ===
+// === 4. Send message to Chatbot ===
 export function sendMessageToChatbotSocket(text: string): void {
   sendMessageToChatbot(socketBot, text)
 }
@@ -189,12 +189,12 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
           console.error("❌ [websocket.ts] Failed to store BookMarkAgent response:", error)
         }
         
-        // Débloquer pour le lot suivant
+        // Unlock for next batch
         unlockBookmarkResponse()
         
       } catch (error) {
         console.error("❌ [websocket.ts] Failed to process BookMarkAgent response:", error)
-        // Débloquer quand même en cas d'erreur
+        // Unlock anyway in case of error
         unlockBookmarkResponse()
       }
 
@@ -216,12 +216,12 @@ export async function initializeBookmarkAgentSocket(): Promise<void> {
   console.log("📚 [websocket.ts] BookMarkAgent socket initialization completed")
 }
 
-// === 6. Envoi de bookmarks au BookMarkAgent ===
-export function sendBookmarksToAgent(urls: string[], onComplete?: (result: any) => void): void {
-  sendBookmarksToAgentSender(socketBookmarkAgent, urls, onComplete)
+// === 6. Send bookmarks to BookMarkAgent ===
+export async function sendBookmarksToAgent(urls: string[]): Promise<{success: boolean, successfulBatches: number, failedBatches: number, totalBatches: number, count: number, message: string}> {
+  return await sendBookmarksToAgentSender(socketBookmarkAgent, urls)
 }
 
-// === 7. Fonctions utilitaires pour les bookmarks (délégation) ===
+// === 7. Bookmark utility functions (delegation) ===
 export function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
   return getAllBookmarksFromSender()
 }
