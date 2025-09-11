@@ -1,5 +1,5 @@
 /**
- * Classe centralisée pour gérer les messages Chrome runtime
+ * Centralized class to manage Chrome runtime messages
  */
 export class MessageBus {
   private static instance: MessageBus;
@@ -13,24 +13,24 @@ export class MessageBus {
 
   private constructor() {}
 
-  // Envoyer un message avec gestion d'erreur
+  // Send message with error handling
   public async sendMessage(message: any): Promise<any> {
     try {
       return await chrome.runtime.sendMessage(message);
     } catch (error) {
-      console.warn('MessageBus: Erreur envoi message:', error);
+      console.warn('MessageBus: Message send error:', error);
       return null;
     }
   }
 
-  // Envoyer un message sans attendre de réponse
+  // Send message without waiting for response
   public sendMessageFireAndForget(message: any): void {
     chrome.runtime.sendMessage(message).catch(() => {
-      // Ignore les erreurs silencieusement
+      // Ignore errors silently
     });
   }
 
-  // Messages spécifiques pour l'agent
+  // Specific messages for agent
   public sendAgentResponse(data: any): void {
     this.sendMessageFireAndForget({
       type: "AGENT_RESPONSE",
@@ -38,7 +38,7 @@ export class MessageBus {
     });
   }
 
-  // Messages spécifiques pour MetaMask
+  // Specific messages for MetaMask
   public sendMetamaskResult(result: any): void {
     this.sendMessageFireAndForget({
       type: 'METAMASK_RESULT',
@@ -46,7 +46,7 @@ export class MessageBus {
     });
   }
 
-  // Messages de tracking
+  // Tracking messages
   public async sendTrackingMessage(type: string, data: any): Promise<any> {
     return this.sendMessage({
       type: type,

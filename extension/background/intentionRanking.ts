@@ -1,8 +1,7 @@
 import type { PageData } from "./types";
-import { PREDICATES_MAPPING } from "../const/atomsMapping";
 import sofiaDB, { STORES, type DomainIntentionRecord } from "../lib/indexedDB";
 
-// Types pour le système de ranking d'intention
+// Types for intention ranking system
 export interface DomainIntention {
   domain: string;
   visitCount: number;
@@ -34,7 +33,7 @@ export interface IntentionRankingResult {
   upgradeReason?: string;
 }
 
-// Poids des prédicats pour le calcul du score
+// Predicate weights for score calculation
 const PREDICATE_WEIGHTS = {
   "has visited": 1.0,
   "is interested by": 1.5,
@@ -43,7 +42,7 @@ const PREDICATE_WEIGHTS = {
   "loves": 3.0
 };
 
-// Catégories d'intention
+// Intention categories
 const INTENTION_CATEGORIES = {
   "has visited": "navigation",
   "is interested by": "interest", 

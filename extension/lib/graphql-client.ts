@@ -1,7 +1,7 @@
-// Configuration pour le testnet Intuition
+// Configuration for Intuition testnet
 export const INTUITION_GRAPHQL_ENDPOINT = 'https://testnet.intuition.sh/v1/graphql'
 
-// Client GraphQL simple pour les requêtes
+// Simple GraphQL client for queries
 export const intuitionGraphqlClient = {
   request: async (query: string, variables?: any) => {
     const response = await fetch(INTUITION_GRAPHQL_ENDPOINT, {
@@ -29,5 +29,5 @@ export const intuitionGraphqlClient = {
   }
 }
 
-// Export des types et fonctions utiles du SDK
+// Export useful types and functions from SDK
 export * from '@0xintuition/graphql'

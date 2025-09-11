@@ -61,7 +61,7 @@ declare module 'node-fetch' {
   export default fetch;
 }
 
-// Déclarations pour les assets
+// Asset declarations
 declare module "*.svg" {
   const content: string;
   export default content;
