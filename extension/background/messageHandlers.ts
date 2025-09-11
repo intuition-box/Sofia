@@ -19,8 +19,8 @@ import {
 import { handleDiscordOAuth, handleXOAuth } from "./oauth"
 
 
-// Buffer temporaire de pageData par tabId
-const pageDataBufferByTabId = new Map<number, { data: PageData; loadTime: number }>()
+// Buffer temporaire de pageData par URL
+const pageDataBufferByUrl = new Map<string, { data: PageData; loadTime: number }>()
 
 async function handlePageDataInline(data: any, pageLoadTime: number): Promise<void> {
 
@@ -138,29 +138,27 @@ export function setupMessageHandlers(): void {
         return true
 
       case "PAGE_DATA": {
-        const tabId = "tabId" in message && typeof message.tabId === "number" ? message.tabId : -1
-        if (tabId === -1) {
-          console.warn("❗ PAGE_DATA sans tabId")
+        const url = message.data?.url
+        if (!url) {
+          console.warn("❗ PAGE_DATA sans URL")
           break
         }
         const loadTime = message.pageLoadTime || Date.now()
-        pageDataBufferByTabId.set(tabId, { data: message.data, loadTime })
-        console.log(`📥 PAGE_DATA buffered for tabId ${tabId}`)
+        pageDataBufferByUrl.set(url, { data: message.data, loadTime })
         break
       }
 
       case "PAGE_DURATION": {
-        const tabId = "tabId" in message && typeof message.tabId === "number" ? message.tabId : -1
-        const duration = message.data.duration
-        if (tabId === -1 || !pageDataBufferByTabId.has(tabId)) {
-          console.warn("⚠️ PAGE_DURATION without associated PAGE_DATA or missing tabId")
+        const url = message.data?.url
+        const duration = message.data?.duration
+        if (!url || !pageDataBufferByUrl.has(url)) {
+          console.warn("⚠️ PAGE_DURATION without associated PAGE_DATA for URL:", url)
           break
         }
-        const buffered = pageDataBufferByTabId.get(tabId)!
+        const buffered = pageDataBufferByUrl.get(url)!
         buffered.data.duration = duration
-        console.log(`📤 Merging PAGE_DATA + PAGE_DURATION for tabId ${tabId}`)
         handlePageDataInline(buffered.data, buffered.loadTime)
-        pageDataBufferByTabId.delete(tabId)
+        pageDataBufferByUrl.delete(url)
         break
       }
 
