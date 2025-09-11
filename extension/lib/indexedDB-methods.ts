@@ -1,10 +1,10 @@
 /**
  * Specialized methods for SofIA IndexedDB operations
- * High-level API for managing different data types
  */
 
 import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type BookmarkListRecord, type BookmarkedTripletRecord } from './indexedDB'
-import type { ParsedSofiaMessage, Message, Triplet } from '~components/pages/graph-tabs/types'
+import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
+import { parseSofiaMessage } from './utils/parseSofiaMessage'
 import type { VisitData } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
 import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
@@ -14,7 +14,7 @@ import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
  */
 export class ElizaDataService {
   /**
-   * Store a message from Eliza
+   * Store a message from Eliza and auto-parse if possible
    */
   static async storeMessage(message: Message, messageId?: string): Promise<number> {
     const record: ElizaRecord = {
@@ -26,8 +26,18 @@ export class ElizaDataService {
     
     const result = await sofiaDB.add(STORES.ELIZA_DATA, record)
     console.log('💬 Eliza message stored:', messageId)
+    
+    // Try to parse the message automatically
+    const parsed = parseSofiaMessage(message.content.text, message.created_at)
+    if (parsed && parsed.triplets.length > 0) {
+      console.log(`🔍 Auto-parsed message with ${parsed.triplets.length} triplets`)
+      await this.storeParsedMessage(parsed, messageId)
+    }
+    
     return result as number
   }
+
+
 
   /**
    * Store a parsed Sofia message with triplets

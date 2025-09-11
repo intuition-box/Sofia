@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { elizaDataService } from '~lib/indexedDB-methods'
 import type { ElizaRecord } from '~lib/indexedDB'
-import type { ParsedSofiaMessage, Message } from '~components/pages/graph-tabs/types'
+import type { ParsedSofiaMessage, Message } from '~types/messages'
 
 interface UseElizaDataResult {
   // Data state
@@ -94,13 +94,14 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
   }, [maxRecentMessages])
 
   /**
-   * Store a regular message from Eliza
+   * Store a regular message from Eliza (auto-parsing handled by elizaDataService)
    */
   const storeMessage = useCallback(async (message: Message, messageId?: string) => {
     try {
       setIsStoring(true)
       setError(null)
 
+      // Store the raw message (elizaDataService handles auto-parsing)
       await elizaDataService.storeMessage(message, messageId)
       
       // Refresh data after storing

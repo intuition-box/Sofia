@@ -1,23 +1,9 @@
-export interface Message {
-  content: { text: string }
-  created_at: number
-}
+/**
+ * Sofia Message Parser Utility
+ * Parses Sofia messages and extracts triplets
+ */
 
-export interface Triplet {
-  subject: string
-  predicate: string
-  object: string
-}
-
-export interface ParsedSofiaMessage {
-  triplets: Triplet[]
-  intention: string
-  created_at: number
-  rawObjectUrl?: string  // Keep the original URL for atom creation
-  rawObjectDescription?: string  // Keep the original description for atom creation
-  extractedAt?: number  // Timestamp when triplets were extracted and stored
-  sourceMessageId?: string  // ID of the source message
-}
+import type { Triplet, ParsedSofiaMessage } from '../../types/messages'
 
 export function parseSofiaMessage(text: string, created_at: number): ParsedSofiaMessage | null {
   if (!text || typeof text !== 'string' || text.trim().length === 0) {
