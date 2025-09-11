@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { getClients } from "../lib/viemClients"
+import { getClients } from "../lib/clients/viemClients"
 
 export function useCreatePosition() {
     const createPosition = useCallback(

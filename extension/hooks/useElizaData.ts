@@ -5,8 +5,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { elizaDataService } from '~lib/indexedDB-methods'
-import type { ElizaRecord } from '~lib/indexedDB'
+import { elizaDataService } from '~lib/database/indexedDB-methods'
+import type { ElizaRecord } from '~lib/database/indexedDB'
 import type { ParsedSofiaMessage, Message } from '~types/messages'
 
 interface UseElizaDataResult {

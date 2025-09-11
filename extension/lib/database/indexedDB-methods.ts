@@ -2,9 +2,9 @@
  * Specialized methods for SofIA IndexedDB operations
  */
 
-import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type BookmarkListRecord, type BookmarkedTripletRecord } from './indexedDB'
+import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord} from './indexedDB'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
-import { parseSofiaMessage } from './utils/parseSofiaMessage'
+import { parseSofiaMessage } from '../utils/parseSofiaMessage'
 import type { VisitData } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
 import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'

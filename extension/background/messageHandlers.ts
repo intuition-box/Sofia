@@ -2,11 +2,11 @@ import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { sanitizeUrl, isSensitiveUrl } from "./utils/url"
 import { sendToAgent, clearOldSentMessages } from "./utils/buffer"
 import { EXCLUDED_URL_PATTERNS } from "./constants"
-import { messageBus } from "~lib/MessageBus"
+import { messageBus } from "~lib/services/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
 import { getAllBookmarks, sendBookmarksToAgent } from "./websocket"
-import { elizaDataService } from "../lib/indexedDB-methods"
+import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordPageForIntention, 
   recordUserPredicate, 

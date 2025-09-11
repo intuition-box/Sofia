@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { configureClient } from '@0xintuition/graphql'
 import "./style.css"
 
-import { wagmiConfig } from "./lib/utils/wagmi"
+import { wagmiConfig } from "./lib/config/wagmi"
 import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
 import AppLayout from "./components/layout/AppLayout"
 import BottomNavigation from "./components/layout/BottomNavigation"

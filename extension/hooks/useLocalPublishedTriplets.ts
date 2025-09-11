@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { loadPublishedTriplets } from '../lib/indexedDB-methods'
+import { loadPublishedTriplets } from '../lib/database/indexedDB-methods'
 import { PublishedTripletDetails, UseLocalPublishedTripletsResult } from '../types/published-triplets'
 
 /**

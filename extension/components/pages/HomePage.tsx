@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import welcomeImage from '../ui/icons/Welcome.png'
 import '../styles/HomePage.css'

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { intuitionGraphqlClient } from '../lib/graphql-client'
+import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 
 export interface UseIntuitionSearchState {
   isReady: boolean

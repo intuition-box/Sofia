@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { intuitionGraphqlClient } from '../lib/graphql-client'
+import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 
 export interface HighValueTriplet {
   id: string

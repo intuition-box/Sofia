@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BookmarkService } from '../lib/indexedDB-methods'
+import { BookmarkService } from '../lib/database/indexedDB-methods'
 import type { BookmarkList, BookmarkedTriplet, UseBookmarksResult } from '../types/bookmarks'
 import type { Triplet } from '../../extension/types/messages'
 

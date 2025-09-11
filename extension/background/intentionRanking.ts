@@ -1,5 +1,5 @@
 import type { PageData } from "./types";
-import sofiaDB, { STORES, type DomainIntentionRecord } from "../lib/indexedDB";
+import sofiaDB, { STORES, type DomainIntentionRecord } from "../lib/database/indexedDB";
 
 // Types for intention ranking system
 export interface DomainIntention {
@@ -83,9 +83,11 @@ class IntentionRankingSystem {
 
     // Update metrics
     existing.visitCount++;
-    existing.totalDuration += pageData.duration || 0;
+    const duration = typeof pageData.duration === 'number' ? pageData.duration : 0;
+    existing.totalDuration = (existing.totalDuration || 0) + duration;
     existing.avgDuration = existing.totalDuration / existing.visitCount;
-    existing.maxAttentionScore = Math.max(existing.maxAttentionScore, pageData.attentionScore || 0);
+    const attentionScore = typeof pageData.attentionScore === 'number' ? pageData.attentionScore : 0;
+    existing.maxAttentionScore = Math.max(existing.maxAttentionScore || 0, attentionScore);
     existing.lastVisit = new Date(pageData.timestamp);
 
     // Auto-assignment of "has visited" predicate
@@ -274,7 +276,7 @@ class IntentionRankingSystem {
     });
     
     const topCategory = Object.entries(categoryCount)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || 'navigation';
+      .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0] || 'navigation';
 
     return {
       totalDomains: domains.length,

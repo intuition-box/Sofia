@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { usePinThingMutation } from "@0xintuition/graphql"
-import { getClients } from '../lib/viemClients'
+import { getClients } from '../lib/clients/viemClients'
 import { stringToHex, keccak256 } from 'viem'
 import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
-import { SELECTED_CHAIN } from '~lib/config'
+import { SELECTED_CHAIN } from '~lib/config/config'
 import { useStorage } from "@plasmohq/storage/hook"
 
 export interface AtomIPFSData {

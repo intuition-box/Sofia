@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useStorage } from '@plasmohq/storage/hook'
 import xIcon from '../../../assets/X_logo.svg'
 import searchIcon from '../../../assets/Icon=Search.svg'
-import checkIcon from '../../../assets/Icon=Check.svg'
 import connectButtonOn from '../../../assets/connectButtonOn.svg'
 import connectButtonOff from '../../../assets/connectButtonOff.svg'
 
