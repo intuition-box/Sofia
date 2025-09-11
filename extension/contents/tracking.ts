@@ -9,11 +9,6 @@ export const config: PlasmoCSConfig = {
   all_frames: true
 }
 
-// Variables globales pour le suivi
-let pageLoadTime = Date.now()
-let isPageVisible = true
-let scrollCount = 0
-
 // Function to check if tracking is enabled
 async function isTrackingEnabled(): Promise<boolean> {
   try {
@@ -104,151 +99,24 @@ async function extractRealData() {
       tabId: await getCurrentTabId(),
       pageLoadTime: Date.now()
     } as PlasmoMessage)
-  } catch {}
-}
-
-function testAndExtractData() {
-  if (shouldIgnoreFrame()) return
-
-  chrome.runtime
-    .sendMessage({
-      type: "TEST_MESSAGE",
-      data: { url: window.location.href, title: document.title, timestamp: Date.now() }
-    } as PlasmoMessage)
-    .then(() => {
-      setTimeout(() => extractRealData(), 500)
-    })
-    .catch(() => {
-      setTimeout(() => extractRealData(), 1000)
-    })
-}
-
-document.addEventListener("visibilitychange", async () => {
-  if (shouldIgnoreFrame()) return
-
-  if (document.visibilityState === "hidden" && isPageVisible) {
-    if (await isTrackingEnabled()) {
-      const duration = Date.now() - pageLoadTime
-      chrome.runtime.sendMessage({
-        type: "PAGE_DURATION",
-        data: {
-          url: window.location.href,
-          duration,
-          timestamp: Date.now()
-        },
-        tabId: await getCurrentTabId()
-      } as PlasmoMessage).catch(() => {})
-    } else {
-      console.log("🔒 Tracking disabled - PAGE_DURATION not sent")
-    }
-    isPageVisible = false
-  } else if (document.visibilityState === "visible" && !isPageVisible) {
-    pageLoadTime = Date.now()
-    isPageVisible = true
+  } catch (error) {
+    console.error("Error sending PAGE_DATA:", error)
   }
-})
-
-// Scroll tracking
-let scrollTimeout: NodeJS.Timeout
-let lastScrollTime = Date.now()
-
-window.addEventListener("scroll", async () => {
-  if (shouldIgnoreFrame()) return
-
-  const now = Date.now()
-
-  const deltaT = now - lastScrollTime
-  lastScrollTime = now
-
-  scrollCount++
-  clearTimeout(scrollTimeout)
-
-  scrollTimeout = setTimeout(async () => {
-    if (await isTrackingEnabled()) {
-      chrome.runtime.sendMessage({
-        type: "SCROLL_DATA",
-        data: {
-          scrollY: window.scrollY,
-          timestamp: Date.now(),
-          url: window.location.href,
-          deltaT,
-          scrollCount
-        }
-      } as PlasmoMessage).catch(() => {})
-    } else {
-      console.log("🔒 Tracking disabled - SCROLL_DATA not sent")
-    }
-  }, 100)
-})
-
-let currentUrl = window.location.href
-const observer = new MutationObserver(async () => {
-  if (shouldIgnoreFrame()) return
-
-  if (window.location.href !== currentUrl) {
-    if (await isTrackingEnabled()) {
-      const duration = Date.now() - pageLoadTime
-      chrome.runtime.sendMessage({
-        type: "PAGE_DURATION",
-        data: {
-          url: currentUrl,
-          duration,
-          timestamp: Date.now()
-        },
-        tabId: await getCurrentTabId()
-      } as PlasmoMessage).catch(() => {})
-    } else {
-      console.log("🔒 Tracking disabled - PAGE_DURATION not sent")
-    }
-
-    currentUrl = window.location.href
-    pageLoadTime = Date.now()
-    scrollCount = 0
-    setTimeout(testAndExtractData, 100)
-  }
-})
-
-if (!shouldIgnoreFrame() && document.body) {
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  })
 }
-
-window.addEventListener("beforeunload", async () => {
-  if (shouldIgnoreFrame()) return
-
-  if (await isTrackingEnabled()) {
-    const duration = Date.now() - pageLoadTime
-
-    getCurrentTabId().then((tabId) => {
-      chrome.runtime.sendMessage({
-        type: "PAGE_DURATION",
-        data: {
-          url: window.location.href,
-          duration,
-          timestamp: Date.now()
-        },
-        tabId
-      } as PlasmoMessage).catch(() => {})
-    })
-  } else {
-    console.log("🔒 Tracking disabled - PAGE_DURATION not sent")
-  }
-})
 
 function startWhenReady() {
-  if (shouldIgnoreFrame()) return
+  if (shouldIgnoreFrame()) {
+    return
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
-      setTimeout(testAndExtractData, 100)
+      setTimeout(extractRealData, 1000)
     })
   } else {
-    setTimeout(testAndExtractData, 100)
+    setTimeout(extractRealData, 1000)
   }
 }
 
+// Initialize tracking
 startWhenReady()
-
-export {}
