@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
-import { TrackingStatus } from '../tracking'
+import  TrackingStatus  from '../ui/TrackingStatus'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
 import { disconnectWallet, cleanupProvider } from '../../lib/metamask'
