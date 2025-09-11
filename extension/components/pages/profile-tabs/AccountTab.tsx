@@ -49,7 +49,7 @@ const AccountTab = () => {
       const accessToken = result['x-access-token']
       
       if (!accessToken) {
-        console.error('Token d\'accès X manquant')
+        console.error('X access token missing')
         return
       }
 
@@ -67,10 +67,10 @@ const AccountTab = () => {
       if (data.success) {
         setXFollowing(data.following)
       } else {
-        console.error('Erreur récupération follows:', data.error)
+        console.error('Error fetching follows:', data.error)
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération des follows:', error)
+      console.error('Error during follows retrieval:', error)
     }
   }
 

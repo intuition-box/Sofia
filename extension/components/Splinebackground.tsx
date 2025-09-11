@@ -39,7 +39,7 @@ export default function SplineBackground() {
           }
         `}</style>
         
-        {/* Forme animée de fallback */}
+        {/* Animated fallback shape */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -53,7 +53,7 @@ export default function SplineBackground() {
         }} />
       </div>
       
-      {/* Vidéo Spline */}
+      {/* Spline video */}
       <video
         ref={videoRef}
         autoPlay

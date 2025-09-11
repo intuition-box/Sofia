@@ -16,7 +16,7 @@ interface EchoesTabProps {
   setExpandedTriplet: (value: { msgIndex: number; tripletIndex: number } | null) => void
 }
 
-// Interface pour les triplets locaux à EchoesTab
+// Interface for local triplets in EchoesTab
 interface EchoTriplet {
   id: string
   triplet: {
@@ -39,7 +39,7 @@ interface EchoTriplet {
 }
 
 const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
-  // État local à EchoesTab
+  // Local state for EchoesTab
   const [echoTriplets, setEchoTriplets] = useState<EchoTriplet[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
@@ -57,18 +57,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     refreshMessages 
   } = useElizaData({ autoRefresh: true, refreshInterval: 5000 })
 
-  // Hook blockchain pour la création (utilise les autres hooks en interne)
+  // Blockchain hook for creation (uses other hooks internally)
   const { createTripleOnChain, createTriplesBatch, isCreating, currentStep, batchProgress } = useCreateTripleOnChain()
 
-  // Charger les états sauvegardés puis traiter les messages
+  // Load saved states then process messages
   useEffect(() => {
     loadSavedStatesAndProcess()
   }, [rawMessages])
 
-  // Sauvegarder les états quand ils changent (éviter boucle infinie)
+  // Save states when they change (avoid infinite loop)
   useEffect(() => {
     if (echoTriplets.length > 0) {
-      // Débounce pour éviter les sauvegardes trop fréquentes
+      // Debounce to avoid too frequent saves
       const timeoutId = setTimeout(() => {
         saveTripletStates()
       }, 500)
@@ -79,7 +79,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   const processRawMessages = async (savedStates?: EchoTriplet[]) => {
     try {
-      // Charger la liste noire des triplets publiés
+      // Load blacklist of published triplets
       const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
       
       const newEchoTriplets: EchoTriplet[] = []
@@ -95,20 +95,20 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               parsed.triplets.forEach((triplet, index) => {
                 const tripletId = `${record.messageId}_${index}`
                 
-                // Vérifier si le triplet a été publié (liste noire)
+                // Check if triplet has been published (blacklist)
                 if (publishedTripletIds.includes(tripletId)) {
-                  return // Skip ce triplet définitivement
+                  return // Skip this triplet permanently
                 }
                 
-                // Vérifier si le triplet existe déjà dans les états sauvegardés
+                // Check if triplet already exists in saved states
                 const existingTriplet = savedStates?.find(t => t.id === tripletId) || 
                                     echoTriplets.find(t => t.id === tripletId)
                 
-                // Si le triplet existe déjà, le garder tel quel
+                // If triplet already exists, keep it as is
                 if (existingTriplet) {
                   newEchoTriplets.push(existingTriplet)
                 } else {
-                  // Créer un nouveau triplet en statut 'available'
+                  // Create a new triplet with 'available' status
                   const echoTriplet: EchoTriplet = {
                     id: tripletId,
                     triplet: {
@@ -134,12 +134,12 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       }
       
       setEchoTriplets(prev => {
-        // Comparer les IDs pour éviter une mise à jour inutile
+        // Compare IDs to avoid unnecessary update
         const prevIds = prev.map(t => t.id).sort().join(',')
         const newIds = newEchoTriplets.map(t => t.id).sort().join(',')
         
         if (prevIds === newIds) {
-          return prev // Garder l'état précédent si identique
+          return prev // Keep previous state if identical
         }
         
         return newEchoTriplets
@@ -150,15 +150,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     }
   }
 
-  // Charger les états sauvegardés et traiter les messages  
+  // Load saved states and process messages  
   const loadSavedStatesAndProcess = async () => {
     try {
       const savedStates = await elizaDataService.loadTripletStates()
       
-      // Utiliser la fonction unifiée avec les états sauvegardés
+      // Use unified function with saved states
       await processRawMessages(savedStates.length > 0 ? savedStates : undefined)
       
-      // Marquer le chargement initial comme terminé
+      // Mark initial loading as completed
       if (!hasInitialLoad) {
         setHasInitialLoad(true)
       }
@@ -167,14 +167,14 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       console.error('❌ EchoesTab: Failed to load saved states:', error)
       await processRawMessages()
       
-      // Marquer le chargement initial comme terminé même en cas d'erreur
+      // Mark initial loading as completed even on error
       if (!hasInitialLoad) {
         setHasInitialLoad(true)
       }
     }
   }
 
-  // Sauvegarder les états des triplets
+  // Save triplet states
   const saveTripletStates = async () => {
     try {
       await elizaDataService.storeTripletStates(echoTriplets)
@@ -184,7 +184,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   }
 
 
-  // Publier un triplet spécifique on-chain
+  // Publish specific triplet on-chain
   const publishTriplet = async (tripletId: string) => {
     const triplet = echoTriplets.find(t => t.id === tripletId)
     if (!triplet) return
@@ -206,10 +206,10 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         }
       )
 
-      // Ajouter à la liste noire pour empêcher la recréation
+      // Add to blacklist to prevent recreation
       await elizaDataService.addPublishedTripletId(tripletId)
       
-      // Sauvegarder les détails complets pour SignalsTab
+      // Save complete details for SignalsTab
       const publishedTripletDetails: PublishedTripletDetails = {
         originalId: tripletId,
         triplet: {

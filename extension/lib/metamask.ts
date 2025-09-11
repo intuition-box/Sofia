@@ -54,13 +54,13 @@ export const disconnectWallet = async () => {
     })
     console.log("🔌 Wallet permissions revoked")
     
-    // Nettoyer le provider après déconnexion
+    // Clean up provider after disconnection
     cleanupProvider()
     
     return true
   } catch (error) {
     console.error("Error disconnecting wallet", error)
-    // Nettoyer même en cas d'erreur
+    // Clean up even on error
     cleanupProvider()
     throw error
   }

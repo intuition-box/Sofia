@@ -26,7 +26,7 @@ const ProfilePage = () => {
       </button>
       
       {(discordUser || xUser) && (
-        <span className="verified-badge" title="Profil certifié">✓</span>
+        <span className="verified-badge" title="Verified Profile">✓</span>
       )}
       
       <div className="tabs">

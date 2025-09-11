@@ -197,7 +197,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 </div> */}
 
                 </div>
-                  {/* Actions à droite - scan/view et bookmark */}
+                  {/* Right actions - scan/view and bookmark */}
                   <div 
                     className="signal-actions"
                     onClick={(e) => e.stopPropagation()}

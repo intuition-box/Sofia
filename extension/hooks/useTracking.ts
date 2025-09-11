@@ -99,7 +99,7 @@ export const useTracking = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         chrome.tabs.executeScript(tabs[0].id!, {
-          code: `console.log('📊 SOFIA - Consultez les données de tracking dans la console du background script');`
+          code: `console.log('📊 SOFIA - Check tracking data in background script console');`
         });
       }
     });

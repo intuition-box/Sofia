@@ -1,8 +1,8 @@
 /**
- * Fonctions utilitaires pour le formatage des données
+ * Utility functions for data formatting
  */
 
-// Formater un timestamp en date lisible
+// Format timestamp to readable date
 export function formatTimestamp(ts: number): string {
   return new Date(ts).toLocaleString('fr-FR', {
     year: 'numeric', 
@@ -14,7 +14,7 @@ export function formatTimestamp(ts: number): string {
   });
 }
 
-// Formater une durée en format lisible
+// Format duration to readable format
 export function formatDuration(ms: number): string {
   const sec = Math.floor(ms / 1000);
   const min = Math.floor(sec / 60);
@@ -24,7 +24,7 @@ export function formatDuration(ms: number): string {
   return hrs > 0 ? `${hrs}h ${remMin}m ${remSec}s` : `${min}m ${remSec}s`;
 }
 
-// Formater une URL pour l'affichage (enlever le protocole, raccourcir)
+// Format URL for display (remove protocol, shorten)
 export function formatUrl(url: string, maxLength: number = 50): string {
   try {
     const urlObj = new URL(url);
@@ -40,7 +40,7 @@ export function formatUrl(url: string, maxLength: number = 50): string {
   }
 }
 
-// Formater un nombre en format lisible (K, M, etc.)
+// Format number to readable format (K, M, etc.)
 export function formatNumber(num: number): string {
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M';
@@ -51,7 +51,7 @@ export function formatNumber(num: number): string {
   return num.toString();
 }
 
-// Formater une taille de fichier en format lisible
+// Format file size to readable format
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';
   

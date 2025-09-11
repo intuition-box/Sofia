@@ -175,7 +175,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
           </div>
         )}
 
-        {/* Liste des résultats */}
+        {/* Results list */}
         {!isLoading && !error && results.length > 0 && activeTab !== 'more' && (
           <div className="trending-section">
             {topResults.map((result, index) => (
