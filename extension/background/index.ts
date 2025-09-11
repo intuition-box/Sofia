@@ -1,11 +1,9 @@
-import { cleanOldBehaviors } from "./behavior";
 import { initializeChatbotSocket , initializeSofiaSocket, initializeBookmarkAgentSocket} from "./websocket";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 
 async function init(): Promise<void> {
   console.log("🚀 [index.ts] Starting extension initialization...")
-  cleanOldBehaviors();
   console.log("🎯 [index.ts] Loading domain intentions...")
   await loadDomainIntentions();
   console.log("📚 [index.ts] Initializing SofIA socket...")
