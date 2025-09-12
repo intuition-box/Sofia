@@ -5,7 +5,7 @@ import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { messageBus } from "~lib/services/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
-import { getAllBookmarks, sendBookmarksToAgent } from "./websocket"
+import { getAllBookmarks, sendBookmarksToAgent, processBookmarksWithThemeAnalysis } from "./websocket"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordPageForIntention, 
@@ -202,10 +202,11 @@ export function setupMessageHandlers(): void {
           .then(async result => {
             if (result.success && result.urls) {
               try {
-                const finalResult = await sendBookmarksToAgent(result.urls)
+                console.log('🔄 Starting ThemeExtractor → BookmarkAgent pipeline for', result.urls.length, 'URLs')
+                const finalResult = await processBookmarksWithThemeAnalysis(result.urls)
                 sendResponse(finalResult)
               } catch (error) {
-                console.error("❌ sendBookmarksToAgent error:", error)
+                console.error("❌ processBookmarksWithThemeAnalysis error:", error)
                 sendResponse({ success: false, error: error.message })
               }
             } else {
