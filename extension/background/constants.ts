@@ -2,28 +2,34 @@ export const SOFIA_IDS = {
   CHANNEL_ID: "8662b344-f045-4f8e-ad38-aabae151bccd",
   SERVER_ID: "00000000-0000-0000-0000-000000000000",
   ROOM_ID : "8662b344-f045-4f8e-ad38-aabae151bccd",
-  AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab",// user
-  AGENT_ID: "582f4e58-1285-004d-8ef6-1e6301f3d646",//agent
+  AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab",
+  AGENT_ID: "582f4e58-1285-004d-8ef6-1e6301f3d646",
   AGENT_NAME: "SofIA1"
 };
 
 export const CHATBOT_IDS = {
-  AGENT_ID: "79c0c83b-2bd2-042f-a534-952c58a1024d", // l’agent chatbot
-  AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab", // user
+  AGENT_ID: "79c0c83b-2bd2-042f-a534-952c58a1024d", 
+  AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab", 
   CHANNEL_ID: "e04d96d2-9750-434e-b2d9-d833c7e34881",
-  ROOM_ID: "e04d96d2-9750-434e-b2d9-d833c7e34881", // same value if DM
+  ROOM_ID: "e04d96d2-9750-434e-b2d9-d833c7e34881",
   SERVER_ID: "00000000-0000-0000-0000-000000000000"
 }
 
 export const BOOKMARKAGENT_IDS = {
-  AGENT_ID: "e7bc819e-9e9c-06ab-bf87-b7d9e5f54dcd", // l’agent chatbot
-  AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab", // user
+  AGENT_ID: "e7bc819e-9e9c-06ab-bf87-b7d9e5f54dcd", 
+  AUTHOR_ID: "e7bc819e-9e9c-06ab-bf87-b7d9e5f54dcd", 
   CHANNEL_ID: "866c15b7-075e-4ff0-be34-fb967b4d4554",
-  ROOM_ID: "866c15b7-075e-4ff0-be34-fb967b4d4554", // same value if DM
+  ROOM_ID: "866c15b7-075e-4ff0-be34-fb967b4d4554", 
   SERVER_ID: "00000000-0000-0000-0000-000000000000"
 }
 
-
+export const THEMEEXTRACTOR_IDS = {
+  CHANNEL_ID: "bf386eac-c8e5-4731-818c-ca6f9167445f",
+  ROOM_ID: "bf386eac-c8e5-4731-818c-ca6f9167445f",
+  SERVER_ID: "00000000-0000-0000-0000-000000000000",
+  AGENT_ID: "7dad3d3a-db1a-08a2-9dda-182d98b6cf2b",
+  AUTHOR_ID: "613461d9-c0bb-439f-a628-bae1e7b7950c"
+}
 
 // --- Constants ---
 export const USER_NAME = "User";

@@ -1,6 +1,7 @@
-import { initializeChatbotSocket , initializeSofiaSocket, initializeBookmarkAgentSocket} from "./websocket";
+import { initializeChatbotSocket , initializeSofiaSocket, initializeBookmarkAgentSocket, initializeThemeExtractorSocket} from "./websocket";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
+
 
 async function init(): Promise<void> {
   console.log("🚀 [index.ts] Starting extension initialization...")
@@ -12,9 +13,12 @@ async function init(): Promise<void> {
   initializeChatbotSocket()
   console.log("📚 [index.ts] Initializing BookMarkAgent socket...")
   initializeBookmarkAgentSocket();
-  console.log("📨 [index.ts] Setting up message handlers...")
+  console.log("📨 [index.ts] Setting up message handlers...");
+  initializeThemeExtractorSocket()
+  console.log("🎨 [websocket.ts] Initializing ThemeExtractor socket...")
   setupMessageHandlers();
   console.log("✅ [index.ts] Extension initialization completed")
+
 }
 
 chrome.runtime.onMessage.addListener((message, sender) => {

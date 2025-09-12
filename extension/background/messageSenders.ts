@@ -1,4 +1,4 @@
-import { SOFIA_IDS, CHATBOT_IDS, BOOKMARKAGENT_IDS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS, BOOKMARKAGENT_IDS, THEMEEXTRACTOR_IDS } from "./constants"
 
 
 function generateUUID(): string {
@@ -78,6 +78,12 @@ const BOOKMARK_CONFIG = {
   BATCH_SIZE: 5,
   TIMEOUT_MS: 120000, // 2 minutes
   DELAY_BETWEEN_BATCHES_MS: 120000 // 2 minutes
+}
+
+const THEME_EXTRACTOR_CONFIG = {
+  BATCH_SIZE: 400, // Single batch for all URLs (up to 400 to handle all 353)
+  TIMEOUT_MS: 600000, // 10 minutes for comprehensive analysis
+  DELAY_BETWEEN_BATCHES_MS: 0 // No delay needed for single batch
 }
 
 // === Progress tracking utility ===
@@ -248,6 +254,7 @@ class BookmarkBatchProcessor {
 
 // Global handler for responses 
 let globalResponseHandler: (() => void) | null = null
+let globalThemeExtractorHandler: ((themes: any) => void) | null = null
 
 // === Send bookmarks to BookMarkAgent ===
 export async function sendBookmarksToAgent(socketBookmarkAgent: any, urls: string[]): Promise<{success: boolean, successfulBatches: number, failedBatches: number, totalBatches: number, count: number, message: string}> {
@@ -290,6 +297,14 @@ export function unlockBookmarkResponse(success: boolean = true): void {
   }
 }
 
+// === Function to handle ThemeExtractor response with themes data ===
+export function handleThemeExtractorResponse(themes: any): void {
+  if (globalThemeExtractorHandler) {
+    globalThemeExtractorHandler(themes)
+    globalThemeExtractorHandler = null
+  }
+}
+
 // === Utility functions for bookmarks ===
 export function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): string[] {
   const urls: string[] = []
@@ -319,5 +334,150 @@ export async function getAllBookmarks(): Promise<{ success: boolean; urls?: stri
   } catch (error) {
     console.error("❌ Failed to get bookmarks:", error)
     return { success: false, error: error.message }
+  }
+}
+
+
+// === Theme Extractor batch processor ===
+class ThemeExtractorProcessor {
+  private socket: any
+  private progressTracker = new ProgressTracker()
+  private isProcessing = false
+
+  constructor(socket: any) {
+    this.socket = socket
+  }
+
+  async processBookmarksForThemes(urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
+    if (this.isProcessing) {
+      throw new Error('ThemeExtractor processing already in progress')
+    }
+
+    if (!this.socket?.connected) {
+      throw new Error('ThemeExtractor socket not connected')
+    }
+
+    this.isProcessing = true
+    console.log('🎨 Starting theme extraction for:', urls.length, 'URLs')
+
+    try {
+      const totalBatches = Math.ceil(urls.length / THEME_EXTRACTOR_CONFIG.BATCH_SIZE)
+      console.log(`🎨 Processing ${urls.length} bookmarks for themes in ${totalBatches} batches`)
+
+      const allThemes = await this.processBatchesForThemes(urls, totalBatches)
+      
+      return {
+        success: true,
+        themes: allThemes,
+        message: `Successfully extracted themes from ${urls.length} bookmarks in ${totalBatches} batches`
+      }
+
+    } finally {
+      this.isProcessing = false
+    }
+  }
+
+  private async processBatchesForThemes(urls: string[], totalBatches: number): Promise<any[]> {
+    const allThemes: any[] = []
+
+    for (let i = 0; i < totalBatches; i++) {
+      const startIndex = i * THEME_EXTRACTOR_CONFIG.BATCH_SIZE
+      const batch = urls.slice(startIndex, startIndex + THEME_EXTRACTOR_CONFIG.BATCH_SIZE)
+      const batchNumber = i + 1
+
+      console.log(`🎨 Processing batch ${batchNumber}/${totalBatches} with ${batch.length} URLs`)
+      this.progressTracker.updateSending(batchNumber, totalBatches)
+
+      try {
+        const batchThemes = await this.sendBatchForThemes(batch, batchNumber, totalBatches)
+        console.log(`✅ Batch ${batchNumber}/${totalBatches} completed with ${batchThemes.length} themes`)
+        allThemes.push(...batchThemes)
+        this.progressTracker.updateProcessing(i + 1, totalBatches, batchNumber, true)
+      } catch (error) {
+        console.error(`❌ Theme extraction batch ${batchNumber} failed:`, error)
+        this.progressTracker.updateProcessing(i + 1, totalBatches, batchNumber, false)
+      }
+
+      // Wait between batches (except for the last one)
+      if (i < totalBatches - 1) {
+        await this.delay(THEME_EXTRACTOR_CONFIG.DELAY_BETWEEN_BATCHES_MS)
+      }
+    }
+
+    return allThemes
+  }
+
+  private async sendBatchForThemes(urls: string[], batchNumber: number, totalBatches: number): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`Timeout waiting for themes from batch ${batchNumber}`))
+      }, THEME_EXTRACTOR_CONFIG.TIMEOUT_MS)
+
+      const payload = {
+        type: 2,
+        payload: {
+          senderId: THEMEEXTRACTOR_IDS.AUTHOR_ID,
+          senderName: "Extension",
+          message: urls.join('\n'),
+          messageId: generateUUID(),
+          roomId: THEMEEXTRACTOR_IDS.ROOM_ID,
+          channelId: THEMEEXTRACTOR_IDS.CHANNEL_ID,
+          serverId: THEMEEXTRACTOR_IDS.SERVER_ID,
+          source: "theme-extraction",
+          attachments: [],
+          metadata: {
+            channelType: "DM",
+            isDm: true,
+            targetUserId: THEMEEXTRACTOR_IDS.AGENT_ID,
+            operation: "extract_themes",
+            urls: urls,
+            batchInfo: {
+              batchNumber,
+              totalBatches,
+              batchSize: urls.length
+            }
+          }
+        }
+      }
+
+      // Store resolver for when themes come back (will be resolved in websocket handler)
+      globalThemeExtractorHandler = (themes) => {
+        clearTimeout(timeout)
+        resolve(themes || [])
+      }
+      
+      this.socket.emit("message", payload)
+      console.log(`📤 Sent batch ${batchNumber}/${totalBatches} with ${urls.length} URLs`)
+    })
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+}
+
+export async function sendBookmarksToThemeExtractor(socketThemeExtractor: any, urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
+  if (!socketThemeExtractor) {
+    console.error("❌ ThemeExtractor socket is null/undefined")
+    return { 
+      success: false, 
+      themes: [],
+      message: 'ThemeExtractor not available'
+    }
+  }
+
+  const processor = new ThemeExtractorProcessor(socketThemeExtractor)
+  
+  try {
+    const result = await processor.processBookmarksForThemes(urls)
+    console.log('🎨 Theme extraction completed:', result.themes.length, 'themes found')
+    return result
+  } catch (error) {
+    console.error('❌ Theme extraction failed:', error)
+    return { 
+      success: false, 
+      themes: [],
+      message: `Failed to extract themes: ${error.message}`
+    }
   }
 }
