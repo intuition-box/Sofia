@@ -6,6 +6,32 @@ import { messageBus } from "~lib/services/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
 import { getAllBookmarks, sendBookmarksToAgent, processBookmarksWithThemeAnalysis } from "./websocket"
+
+// Function to get browsing history
+async function getAllHistory(): Promise<{success: boolean, urls?: string[], error?: string}> {
+  try {
+    // Get history from last 30 days
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
+    
+    const historyItems = await chrome.history.search({
+      text: '',
+      startTime: thirtyDaysAgo,
+      maxResults: 1000 // Limit to most recent 1000 items
+    })
+    
+    // Extract URLs and filter out sensitive ones
+    const urls = historyItems
+      .map(item => item.url)
+      .filter((url): url is string => !!url && !isSensitiveUrl(url))
+      .filter(url => !EXCLUDED_URL_PATTERNS.some(pattern => url.includes(pattern)))
+    
+    console.log('📚 Extracted', urls.length, 'history URLs')
+    return { success: true, urls }
+  } catch (error) {
+    console.error('❌ Failed to get browsing history:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordPageForIntention, 
@@ -215,6 +241,28 @@ export function setupMessageHandlers(): void {
           })
           .catch(error => {
             console.error("❌ GET_BOOKMARKS error:", error)
+            sendResponse({ success: false, error: error.message })
+          })
+        return true
+
+      case "GET_HISTORY":
+        getAllHistory()
+          .then(async result => {
+            if (result.success && result.urls) {
+              try {
+                console.log('🔄 Starting ThemeExtractor analysis for', result.urls.length, 'history URLs')
+                const finalResult = await processBookmarksWithThemeAnalysis(result.urls)
+                sendResponse(finalResult)
+              } catch (error) {
+                console.error("❌ processHistoryWithThemeAnalysis error:", error)
+                sendResponse({ success: false, error: error.message })
+              }
+            } else {
+              sendResponse({ success: false, error: result.error })
+            }
+          })
+          .catch(error => {
+            console.error("❌ GET_HISTORY error:", error)
             sendResponse({ success: false, error: error.message })
           })
         return true
