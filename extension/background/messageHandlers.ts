@@ -5,33 +5,7 @@ import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { messageBus } from "~lib/services/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
-import { getAllBookmarks, sendBookmarksToAgent, processBookmarksWithThemeAnalysis } from "./websocket"
-
-// Function to get browsing history
-async function getAllHistory(): Promise<{success: boolean, urls?: string[], error?: string}> {
-  try {
-    // Get history from last 30 days
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
-    
-    const historyItems = await chrome.history.search({
-      text: '',
-      startTime: thirtyDaysAgo,
-      maxResults: 1000 // Limit to most recent 1000 items
-    })
-    
-    // Extract URLs and filter out sensitive ones
-    const urls = historyItems
-      .map(item => item.url)
-      .filter((url): url is string => !!url && !isSensitiveUrl(url))
-      .filter(url => !EXCLUDED_URL_PATTERNS.some(pattern => url.includes(pattern)))
-    
-    console.log('📚 Extracted', urls.length, 'history URLs')
-    return { success: true, urls }
-  } catch (error) {
-    console.error('❌ Failed to get browsing history:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
-}
+import { getAllBookmarks, getAllHistory, sendBookmarksToAgent, processBookmarksWithThemeAnalysis } from "./websocket"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordPageForIntention, 
