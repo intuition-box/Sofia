@@ -337,6 +337,33 @@ export async function getAllBookmarks(): Promise<{ success: boolean; urls?: stri
   }
 }
 
+export async function getAllHistory(): Promise<{success: boolean, urls?: string[], error?: string}> {
+  try {
+    // Get history from last 30 days
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
+    
+    const historyItems = await chrome.history.search({
+      text: '',
+      startTime: thirtyDaysAgo,
+      maxResults: 1000 // Limit to most recent 1000 items
+    })
+    
+    // Extract URLs and filter out sensitive ones - we'll need to import these
+    const { isSensitiveUrl } = await import("./utils/url")
+    
+    const urls = historyItems
+      .map(item => item.url)
+      .filter((url): url is string => !!url && !isSensitiveUrl(url))
+      .filter(url => !EXCLUDED_URL_PATTERNS.some(pattern => url.includes(pattern)))
+    
+    console.log('📚 Extracted', urls.length, 'history URLs')
+    return { success: true, urls }
+  } catch (error) {
+    console.error('❌ Failed to get browsing history:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
 
 // === Theme Extractor batch processor ===
 class ThemeExtractorProcessor {

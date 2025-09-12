@@ -37,6 +37,7 @@ import {
   unlockBookmarkResponse,
   handleThemeExtractorResponse,
   getAllBookmarks as getAllBookmarksFromSender,
+  getAllHistory as getAllHistoryFromSender,
   extractBookmarkUrls
 } from "./messageSenders"
 

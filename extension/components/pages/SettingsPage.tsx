@@ -8,6 +8,7 @@ import { disconnectWallet, cleanupProvider } from '../../lib/services/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
 import { elizaDataService } from '../../lib/database/indexedDB-methods'
 import { useBookmarkImport } from '../../hooks/useBookmartImport'
+import { useHistoryImport } from '../../hooks/useHistoryImport'
 import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
@@ -29,6 +30,19 @@ const SettingsPage = () => {
   // Bookmark import hook (provides persisted state across navigation)
   const { state: importState, startImport, resetImport, isImporting } = useBookmarkImport()
   const { progress, message, status } = importState
+
+  // History import hook
+  const { 
+    state: historyImportState, 
+    startImport: startHistoryImport, 
+    resetImport: resetHistoryImport, 
+    isImporting: isHistoryImporting 
+  } = useHistoryImport()
+  const { 
+    progress: historyProgress, 
+    message: historyMessage, 
+    status: historyStatus 
+  } = historyImportState
 
   // Clears all local storage (Plasmo + IndexedDB) and disconnects wallet
   const handleClearStorage = async () => {
@@ -63,6 +77,12 @@ const SettingsPage = () => {
   const handleImportBookmarks = async () => {
     if (!confirm('Import all your browser bookmarks to BookMarkAgent?')) return
     await startImport() // background handles progress updates via the hook
+  }
+
+  // Starts the history import process
+  const handleImportHistory = async () => {
+    if (!confirm('Analyze your browsing history (last 30 days) to discover your interests?')) return
+    await startHistoryImport() // background handles progress updates via the hook
   }
 
   return (
@@ -105,33 +125,55 @@ const SettingsPage = () => {
           />
         </div>
 
-        {/* Bookmark Import Section */}
+        {/* Import Section */}
         <div className="settings-item">
-          <span>Import Bookmarks</span>
+          <span>Import & Analyze</span>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-            {/* Import button */}
+            {/* Bookmarks Import button */}
             <button
               onClick={handleImportBookmarks}
-              disabled={isImporting}
+              disabled={isImporting || isHistoryImporting}
               className="import-bookmarks-button"
               style={{
                 padding: '8px 16px',
-                backgroundColor: isImporting ? '#6c757d' : '#e9850ad8',
+                backgroundColor: (isImporting || isHistoryImporting) ? '#6c757d' : '#e9850ad8',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: isImporting ? 'not-allowed' : 'pointer',
-                opacity: isImporting ? 0.8 : 1,
+                cursor: (isImporting || isHistoryImporting) ? 'not-allowed' : 'pointer',
+                opacity: (isImporting || isHistoryImporting) ? 0.8 : 1,
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease',
+                marginBottom: '8px'
+              }}
+            >
+              {isImporting ? 'Importing...' : 'Import Bookmarks'}
+            </button>
+            
+            {/* History Import button */}
+            <button
+              onClick={handleImportHistory}
+              disabled={isImporting || isHistoryImporting}
+              className="import-history-button"
+              style={{
+                padding: '8px 16px',
+                backgroundColor: (isImporting || isHistoryImporting) ? '#6c757d' : '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: (isImporting || isHistoryImporting) ? 'not-allowed' : 'pointer',
+                opacity: (isImporting || isHistoryImporting) ? 0.8 : 1,
                 fontSize: '14px',
                 fontWeight: '500',
                 transition: 'all 0.2s ease'
               }}
             >
-              {isImporting ? 'Importing...' : 'Import to BookMarkAgent'}
+              {isHistoryImporting ? 'Analyzing...' : 'Import History'}
             </button>
 
-            {/* Progress bar */}
-            {status !== 'idle' && (
+            {/* Progress bar - shows for both bookmark and history imports */}
+            {(status !== 'idle' || historyStatus !== 'idle') && (
               <div style={{ width: '100%', maxWidth: '300px' }}>
                 {/* Status text and % */}
                 <div
@@ -144,8 +186,13 @@ const SettingsPage = () => {
                     color: '#666'
                   }}
                 >
-                  <span>{message ?? (status === 'running' ? 'Import in progress...' : status)}</span>
-                  <span>{Math.round(progress)}%</span>
+                  <span>
+                    {historyStatus !== 'idle' 
+                      ? (historyMessage ?? (historyStatus === 'running' ? 'History analysis in progress...' : historyStatus))
+                      : (message ?? (status === 'running' ? 'Import in progress...' : status))
+                    }
+                  </span>
+                  <span>{Math.round(historyStatus !== 'idle' ? historyProgress : progress)}%</span>
                 </div>
 
                 {/* Visual progress bar */}
@@ -160,9 +207,9 @@ const SettingsPage = () => {
                 >
                   <div
                     style={{
-                      width: `${progress}%`,
+                      width: `${historyStatus !== 'idle' ? historyProgress : progress}%`,
                       height: '100%',
-                      backgroundColor: '#007bff',
+                      backgroundColor: historyStatus !== 'idle' ? '#28a745' : '#e9850ad8',
                       transition: 'width 0.3s ease',
                       borderRadius: '4px'
                     }}
@@ -170,8 +217,14 @@ const SettingsPage = () => {
                 </div>
 
                 {/* Reset button when finished */}
-                {status === 'success' && (
-                  <button style={{ marginTop: 8 }} onClick={resetImport}>
+                {(status === 'success' || historyStatus === 'success') && (
+                  <button 
+                    style={{ marginTop: 8 }} 
+                    onClick={() => {
+                      if (status === 'success') resetImport()
+                      if (historyStatus === 'success') resetHistoryImport()
+                    }}
+                  >
                     Reset
                   </button>
                 )}
