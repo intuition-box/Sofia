@@ -18,6 +18,7 @@ import {
   loadDomainIntentions
 } from "./intentionRanking"
 import { handleDiscordOAuth, handleXOAuth } from "./oauth"
+import { PULSEAGENT_IDS } from "./constants"
 
 
 // Buffer temporaire pour synchroniser PAGE_DATA et PAGE_DURATION
@@ -289,6 +290,10 @@ export function setupMessageHandlers(): void {
           console.error("❌ GET_UPGRADE_SUGGESTIONS error:", error)
           sendResponse({ success: false, error: error.message })
         }
+        return true
+
+      case "START_PULSE_ANALYSIS":
+        handlePulseAnalysis(sendResponse)
         return true
 
       case "CONNECT_DISCORD":

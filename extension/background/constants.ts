@@ -24,6 +24,14 @@ export const THEMEEXTRACTOR_IDS = {
   AUTHOR_ID: "613461d9-c0bb-439f-a628-bae1e7b7950c"
 }
 
+export const PULSEAGENT_IDS = {
+  CHANNEL_ID: "pulse-channel-id", // TODO: Add real PulseAgent channel ID
+  ROOM_ID: "pulse-room-id", // TODO: Add real PulseAgent room ID  
+  SERVER_ID: "00000000-0000-0000-0000-000000000000",
+  AGENT_ID: "pulse-agent-id", // TODO: Add real PulseAgent ID
+  AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab"
+}
+
 // --- Constants ---
 export const USER_NAME = "User";
 
