@@ -19,6 +19,7 @@ let socketThemeExtractor: Socket
 // Export sockets for direct access
 export function getSofiaSocket(): Socket { return socketSofia }
 export function getChatbotSocket(): Socket { return socketBot }
+export function getThemeExtractorSocket(): Socket { return socketThemeExtractor }
 
 
 // === 1. Initialiser WebSocket pour SofIA ===

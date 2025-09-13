@@ -8,11 +8,12 @@ import '../styles/CorePage.css'
 const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
 const SignalsTab = lazy(() => import('./core-tabs/SignalsTab'))
 const ResonanceTab = lazy(() => import('./core-tabs/ResonanceTab'))
+const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
 
 
 const CorePage = () => {
   const { navigateTo } = useRouter()
-  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Resonance'>('Echoes')
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Resonance' | 'Pulse'>('Echoes')
   const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
   const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
 
@@ -22,7 +23,7 @@ const CorePage = () => {
         <img src={homeIcon} alt="Home" className="home-icon" />
       </button>
       <div className="tabs">
-        {['Echoes', 'Signals', 'Resonance'].map(tab => (
+        {['Echoes', 'Signals', 'Resonance', 'Pulse'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveGraphTab(tab as any)}
@@ -48,6 +49,12 @@ const CorePage = () => {
             />
           )}
           {activeGraphTab === 'Resonance' && <ResonanceTab />}
+          {activeGraphTab === 'Pulse' && (
+            <PulseTab 
+              expandedTriplet={expandedTriplet}
+              setExpandedTriplet={setExpandedTriplet}
+            />
+          )}
         </Suspense>
       </div>
     </div>
