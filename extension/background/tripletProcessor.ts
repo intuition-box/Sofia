@@ -2,10 +2,15 @@ import { elizaDataService } from "../lib/database/indexedDB-methods"
 
 // Function to convert themes directly to triplets
 export function convertThemesToTriplets(themes: any[]): any {
-  const triplets = themes.map(theme => {
+  console.log('🔧 Converting themes to triplets:', themes.length, 'themes')
+  
+  const triplets = themes.map((theme, index) => {
     // Use the predicate and object directly from theme (already in correct format)
     let predicate = theme.predicate
     let objectName = theme.object || theme.name // Use object field if available, fallback to name
+    let firstUrl = theme.urls?.[0] || ""
+    
+    console.log(`🔧 Theme ${index}: ${theme.name} -> URL: ${firstUrl}`)
     
     return {
       subject: {
@@ -20,7 +25,7 @@ export function convertThemesToTriplets(themes: any[]): any {
       object: {
         name: objectName,
         description: `${theme.keywords?.join(', ') || theme.name}`,
-        url: theme.urls?.[0] || ""
+        url: firstUrl
       }
     }
   })
@@ -73,13 +78,14 @@ export async function processUrlsWithThemeAnalysis(
     try {
       const newMessage = {
         id: `${idPrefix}${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        content: { text: JSON.stringify(tripletData) },
+        content: { text: JSON.stringify(tripletData) }, // Store with {triplets: [...]} wrapper
         created_at: Date.now(),
         processed: false
       }
       
       await elizaDataService.storeMessage(newMessage, newMessage.id)
       console.log(`✅ ${type} triplets stored in IndexedDB:`, newMessage.id)
+      console.log(`🔍 Stored message content:`, newMessage.content.text)
       
       return {
         success: true,

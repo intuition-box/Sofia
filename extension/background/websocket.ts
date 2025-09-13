@@ -201,8 +201,8 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
         let themes = []
         try {
           const parsed = JSON.parse(data.text)
-          themes = parsed.themes || []
-          console.log("🎨 Parsed themes:", themes.length, "themes found")
+          themes = parsed // Pass raw parsed data to handler
+          console.log("🎨 Raw parsed data sent to handler")
         } catch (parseError) {
           console.warn("⚠️ Could not parse themes as JSON:", parseError)
           themes = []

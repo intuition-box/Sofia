@@ -83,8 +83,17 @@ let globalThemeExtractorHandler: ((themes: any) => void) | null = null
 
 
 // === Function to handle ThemeExtractor response with themes data ===
-export function handleThemeExtractorResponse(themes: any): void {
+export function handleThemeExtractorResponse(rawData: any): void {
   if (globalThemeExtractorHandler) {
+    // Parse themes from agent response format [{"themes": [...]}]
+    let themes = []
+    if (Array.isArray(rawData) && rawData.length > 0 && rawData[0].themes) {
+      themes = rawData[0].themes
+    } else if (rawData?.themes) {
+      themes = rawData.themes
+    }
+    
+    console.log("🎨 Extracted themes:", themes.length, "themes found")
     globalThemeExtractorHandler(themes)
     globalThemeExtractorHandler = null
   }
