@@ -16,7 +16,7 @@ const BottomNavigation = () => {
   return (
     <div className="bottom-nav">
       <button 
-        onClick={() => navigateTo('Sofia')}
+        onClick={() => currentPage === 'Sofia' ? navigateTo('home-connected') : navigateTo('Sofia')}
         className={`nav-button ${currentPage === 'Sofia' ? 'active' : ''}`}
       >
         <img 
@@ -27,7 +27,7 @@ const BottomNavigation = () => {
         <span className="nav-text">Sofia</span>
       </button>
       <button 
-        onClick={() => navigateTo('search')}
+        onClick={() => currentPage === 'search' ? navigateTo('home-connected') : navigateTo('search')}
         className={`nav-button ${currentPage === 'search' ? 'active' : ''}`}
       >
         <img 
@@ -38,7 +38,7 @@ const BottomNavigation = () => {
         <span className="nav-text">Search</span>
       </button>
       <button 
-        onClick={() => navigateTo('profile')}
+        onClick={() => currentPage === 'profile' ? navigateTo('home-connected') : navigateTo('profile')}
         className={`nav-button ${currentPage === 'profile' ? 'active' : ''}`}
       >
         <img 
@@ -49,7 +49,7 @@ const BottomNavigation = () => {
         <span className="nav-text">Profile</span>
       </button>
       <button 
-        onClick={() => navigateTo('settings')}
+        onClick={() => currentPage === 'settings' ? navigateTo('home-connected') : navigateTo('settings')}
         className={`nav-button ${currentPage === 'settings' ? 'active' : ''}`}
       >
         <img 

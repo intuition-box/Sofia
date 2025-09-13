@@ -1,7 +1,6 @@
 import { useState, Suspense, lazy } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useStorage } from '@plasmohq/storage/hook'
-import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/ProfilePage.css'
 
@@ -18,12 +17,6 @@ const ProfilePage = () => {
 
   return (
     <div className="page profile-page">
-      <button 
-        onClick={() => navigateTo('home-connected')}
-        className="back-button"
-      >
-        <img src={homeIcon} alt="Home" className="home-icon" />
-      </button>
       
       {(discordUser || xUser) && (
         <span className="verified-badge" title="Verified Profile">✓</span>

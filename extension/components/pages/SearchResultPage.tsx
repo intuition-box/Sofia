@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch, type AtomSearchResult } from '../../hooks/useIntuitionSearch'
-import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
@@ -86,12 +85,6 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
     <div className="triples-container">
       {/* Header avec recherche et navigation */}
       <div className="search-header">
-        <button 
-          onClick={() => navigateTo('home-connected')}
-          className="back-button"
-        >
-          <img src={homeIcon} alt="Home" className="home-icon" />
-        </button>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <input
             type="text"

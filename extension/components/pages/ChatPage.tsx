@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import logoIcon from '../../assets/icon.png'
-import HomeIcon from '../../assets/Icon=home.svg'
 import '../styles/ChatPage.css'
 import { getChatbotSocket, initializeChatbotSocket } from '../../background/websocket'
 import { sendMessageToChatbot } from '../../background/messageSenders'
@@ -114,11 +113,6 @@ const ChatPage = () => {
 
   return (
     <div className="chat-page">
-      <div className="chat-header">
-        <button onClick={goBack} className="chat-back-button">
-          <img src={HomeIcon} alt="Home" className="home-icon" />
-        </button>
-      </div>
 
       <div className="chat-messages">
         {messages.map((message) => (

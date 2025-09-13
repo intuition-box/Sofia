@@ -3,7 +3,6 @@ import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useHighValueTriplets } from '../../hooks/useHighValueTriplets'
 import QuickActionButton from '../ui/QuickActionButton'
-import homeIcon from '../../assets/Icon=home.svg'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
@@ -59,12 +58,6 @@ const SearchPage = () => {
   return (
     <div className="triples-container">
       <div className="search-header">
-        <button 
-          onClick={() => navigateTo('home-connected')}
-          className="back-button"
-        >
-          <img src={homeIcon} alt="Home" className="home-icon" />
-        </button>
         <h2>Search Intuition Network</h2>
       </div>
 
