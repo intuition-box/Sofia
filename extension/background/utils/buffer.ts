@@ -1,4 +1,5 @@
-import { sendMessageToSofiaSocket } from "../websocket"
+import { getSofiaSocket } from "../websocket"
+import { sendMessageToSofia } from "../messageSenders"
 
 
 const sentMessages = new Set<string>()
@@ -6,7 +7,7 @@ const sentMessages = new Set<string>()
 export function sendToAgent(message: string): void {
   if (sentMessages.has(message)) return
 
-  sendMessageToSofiaSocket(message) 
+  sendMessageToSofia(getSofiaSocket(), message) 
   sentMessages.add(message)
 }
 

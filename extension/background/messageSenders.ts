@@ -1,4 +1,4 @@
-import { SOFIA_IDS, CHATBOT_IDS, BOOKMARKAGENT_IDS, THEMEEXTRACTOR_IDS, EXCLUDED_URL_PATTERNS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, EXCLUDED_URL_PATTERNS } from "./constants"
 import { isSensitiveUrl } from "./utils/url"
 
 
@@ -75,325 +75,32 @@ export function sendMessageToChatbot(socketBot: any, text: string): void {
 }
 
 // === Configuration ===
-const BOOKMARK_CONFIG = {
-  BATCH_SIZE: 5,
-  TIMEOUT_MS: 120000, // 2 minutes
-  DELAY_BETWEEN_BATCHES_MS: 120000 // 2 minutes
-}
+const THEME_EXTRACTOR_TIMEOUT = 600000 // 10 minutes
 
-const THEME_EXTRACTOR_CONFIG = {
-  BATCH_SIZE: 400, // Single batch for all URLs (up to 400)
-  TIMEOUT_MS: 600000, // 10 minutes for comprehensive analysis
-  DELAY_BETWEEN_BATCHES_MS: 0 // No delay needed for single batch
-}
 
-// === Progress tracking utility ===
-class ProgressTracker {
-  private sendProgressUpdate(progress: number, status: string): void {
-    try {
-      chrome.runtime.sendMessage({
-        type: 'BOOKMARK_IMPORT_PROGRESS',
-        progress,
-        status
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          // Ignore silently - UI might not be listening
-        }
-      })
-    } catch (error) {
-      // Ignore errors - UI might not be available
-    }
-  }
-
-  updateSending(batchNumber: number, totalBatches: number): void {
-    const progress = Math.round((batchNumber / totalBatches) * 50) + 5 // 5% to 55%
-    this.sendProgressUpdate(progress, `Sending batch ${batchNumber}/${totalBatches}...`)
-  }
-
-  updateProcessing(processedBatches: number, totalBatches: number, batchNumber: number, success: boolean): void {
-    const progress = Math.round((processedBatches / totalBatches) * 40) + 55 // 55% to 95%
-    const status = `Batch ${batchNumber}/${totalBatches} ${success ? 'completed' : 'failed'} (${processedBatches}/${totalBatches})`
-    this.sendProgressUpdate(progress, status)
-  }
-
-  finalize(message: string): void {
-    try {
-      chrome.runtime.sendMessage({
-        type: 'BOOKMARK_IMPORT_DONE',
-        count: message.match(/\d+/)?.[0] || 0
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          // Ignore silently
-        }
-      })
-    } catch (error) {
-      // Ignore errors
-    }
-  }
-
-  error(message: string): void {
-    try {
-      chrome.runtime.sendMessage({
-        type: 'BOOKMARK_IMPORT_ERROR',
-        error: message
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          // Ignore silently
-        }
-      })
-    } catch (error) {
-      // Ignore errors
-    }
-  }
-}
-
-// === History Progress tracking utility ===
-class HistoryProgressTracker {
-  private sendProgressUpdate(progress: number, status: string): void {
-    try {
-      chrome.runtime.sendMessage({
-        type: 'HISTORY_IMPORT_PROGRESS',
-        progress,
-        status
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          // Ignore silently - UI might not be listening
-        }
-      })
-    } catch (error) {
-      // Ignore errors - UI might not be available
-    }
-  }
-
-  updateSending(batchNumber: number, totalBatches: number): void {
-    const progress = Math.round((batchNumber / totalBatches) * 50) + 5 // 5% to 55%
-    this.sendProgressUpdate(progress, `Analyzing history batch ${batchNumber}/${totalBatches}...`)
-  }
-
-  updateProcessing(processedBatches: number, totalBatches: number, batchNumber: number, success: boolean): void {
-    const progress = Math.round((processedBatches / totalBatches) * 40) + 55 // 55% to 95%
-    const status = `History batch ${batchNumber}/${totalBatches} ${success ? 'completed' : 'failed'} (${processedBatches}/${totalBatches})`
-    this.sendProgressUpdate(progress, status)
-  }
-
-  finalize(message: string): void {
-    try {
-      chrome.runtime.sendMessage({
-        type: 'HISTORY_IMPORT_DONE',
-        count: message.match(/\d+/)?.[0] || 0
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          // Ignore silently
-        }
-      })
-    } catch (error) {
-      // Ignore errors
-    }
-  }
-
-  error(message: string): void {
-    try {
-      chrome.runtime.sendMessage({
-        type: 'HISTORY_IMPORT_ERROR',
-        error: message
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          // Ignore silently
-        }
-      })
-    } catch (error) {
-      // Ignore errors
-    }
-  }
-}
-
-// === Bookmark batch processor ===
-class BookmarkBatchProcessor {
-  private socket: any
-  private progressTracker = new ProgressTracker()
-  private isProcessing = false
-
-  constructor(socket: any) {
-    this.socket = socket
-  }
-
-  async processBookmarks(urls: string[]): Promise<{success: boolean, successfulBatches: number, failedBatches: number, totalBatches: number, count: number, message: string}> {
-    if (this.isProcessing) {
-      throw new Error('Bookmark processing already in progress')
-    }
-
-    if (!this.socket?.connected) {
-      throw new Error('BookMarkAgent socket not connected')
-    }
-
-    this.isProcessing = true
-    console.log('📚 Starting bookmark import:', urls.length, 'URLs')
-
-    try {
-      const totalBatches = Math.ceil(urls.length / BOOKMARK_CONFIG.BATCH_SIZE)
-      console.log(`📚 Processing ${urls.length} bookmarks in ${totalBatches} batches`)
-
-      const results = await this.processBatchesSequentially(urls, totalBatches)
-      
-      const result = {
-        success: results.failedBatches === 0,
-        successfulBatches: results.successfulBatches,
-        failedBatches: results.failedBatches,
-        totalBatches,
-        count: results.totalBookmarksProcessed,
-        message: results.failedBatches === 0 
-          ? `Successfully processed all ${totalBatches} batches (${results.totalBookmarksProcessed} bookmarks)`
-          : `Processed ${results.successfulBatches}/${totalBatches} batches successfully (${results.failedBatches} failed)`
-      }
-
-      this.progressTracker.finalize(result.message)
-      return result
-
-    } finally {
-      this.isProcessing = false
-    }
-  }
-
-  private async processBatchesSequentially(urls: string[], totalBatches: number): Promise<{successfulBatches: number, failedBatches: number, totalBookmarksProcessed: number}> {
-    let successfulBatches = 0
-    let failedBatches = 0
-    let totalBookmarksProcessed = 0
-
-    for (let i = 0; i < totalBatches; i++) {
-      const startIndex = i * BOOKMARK_CONFIG.BATCH_SIZE
-      const batch = urls.slice(startIndex, startIndex + BOOKMARK_CONFIG.BATCH_SIZE)
-      const batchNumber = i + 1
-
-      this.progressTracker.updateSending(batchNumber, totalBatches)
-
-      try {
-        await this.sendBatchWithTimeout(batch, batchNumber, totalBatches)
-        successfulBatches++
-        totalBookmarksProcessed += batch.length
-        this.progressTracker.updateProcessing(successfulBatches + failedBatches, totalBatches, batchNumber, true)
-      } catch (error) {
-        console.error(`❌ Batch ${batchNumber} failed:`, error)
-        failedBatches++
-        this.progressTracker.updateProcessing(successfulBatches + failedBatches, totalBatches, batchNumber, false)
-      }
-
-      // Wait between batches (except for the last one)
-      if (i < totalBatches - 1) {
-        await this.delay(BOOKMARK_CONFIG.DELAY_BETWEEN_BATCHES_MS)
-      }
-    }
-
-    return { successfulBatches, failedBatches, totalBookmarksProcessed }
-  }
-
-  private async sendBatchWithTimeout(urls: string[], batchNumber: number, totalBatches: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error(`Timeout waiting for response to batch ${batchNumber}`))
-      }, BOOKMARK_CONFIG.TIMEOUT_MS)
-
-      // Send the batch
-      const payload = {
-        type: 2,
-        payload: {
-          senderId: BOOKMARKAGENT_IDS.AUTHOR_ID,
-          senderName: "Extension",
-          message: urls.join('\n'),
-          messageId: generateUUID(),
-          roomId: BOOKMARKAGENT_IDS.ROOM_ID,
-          channelId: BOOKMARKAGENT_IDS.CHANNEL_ID,
-          serverId: BOOKMARKAGENT_IDS.SERVER_ID,
-          source: "bookmark-extension",
-          attachments: [],
-          metadata: {
-            channelType: "DM",
-            isDm: true,
-            targetUserId: BOOKMARKAGENT_IDS.AGENT_ID,
-            bookmarkUrls: urls,
-            batchInfo: {
-              batchNumber,
-              totalBatches,
-              batchSize: urls.length
-            }
-          }
-        }
-      }
-
-      // Store resolver for when response comes back
-      this.storeResponseHandler(timeout, resolve, reject)
-      
-      this.socket.emit("message", payload)
-    })
-  }
-
-  private storeResponseHandler(timeout: NodeJS.Timeout, resolve: Function, reject: Function): void {
-    // This will be called by unlockBookmarkResponse
-    globalResponseHandler = () => {
-      clearTimeout(timeout)
-      resolve()
-    }
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
-}
-
-// Global handler for responses 
-let globalResponseHandler: (() => void) | null = null
+// Global handler for ThemeExtractor responses
 let globalThemeExtractorHandler: ((themes: any) => void) | null = null
 
-// === Send bookmarks to BookMarkAgent ===
-export async function sendBookmarksToAgent(socketBookmarkAgent: any, urls: string[]): Promise<{success: boolean, successfulBatches: number, failedBatches: number, totalBatches: number, count: number, message: string}> {
-  if (!socketBookmarkAgent) {
-    console.error("❌ BookMarkAgent socket is null/undefined")
-    return { 
-      success: false, 
-      successfulBatches: 0,
-      failedBatches: 1,
-      totalBatches: 1,
-      count: 0,
-      message: 'BookMarkAgent not available'
-    }
-  }
-
-  const processor = new BookmarkBatchProcessor(socketBookmarkAgent)
-  
-  try {
-    const result = await processor.processBookmarks(urls)
-    console.log('📊 Import finalized - Success:', result.successfulBatches, 'Failed:', result.failedBatches)
-    return result
-  } catch (error) {
-    console.error('❌ Bookmark processing failed:', error)
-    return { 
-      success: false, 
-      successfulBatches: 0,
-      failedBatches: 1,
-      totalBatches: 1,
-      count: 0,
-      message: `Failed to process bookmarks: ${error.message}`
-    }
-  }
-}
-
-// === Function to unlock after receiving BookMark response ===
-export function unlockBookmarkResponse(success: boolean = true): void {
-  if (globalResponseHandler) {
-    globalResponseHandler()
-    globalResponseHandler = null
-  }
-}
 
 // === Function to handle ThemeExtractor response with themes data ===
-export function handleThemeExtractorResponse(themes: any): void {
+export function handleThemeExtractorResponse(rawData: any): void {
   if (globalThemeExtractorHandler) {
+    // Parse themes from agent response format [{"themes": [...]}]
+    let themes = []
+    if (Array.isArray(rawData) && rawData.length > 0 && rawData[0].themes) {
+      themes = rawData[0].themes
+    } else if (rawData?.themes) {
+      themes = rawData.themes
+    }
+    
+    console.log("🎨 Extracted themes:", themes.length, "themes found")
     globalThemeExtractorHandler(themes)
     globalThemeExtractorHandler = null
   }
 }
 
 // === Utility functions for bookmarks ===
-export function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): string[] {
+function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): string[] {
   const urls: string[] = []
   
   function traverseBookmarks(nodes: chrome.bookmarks.BookmarkTreeNode[]) {
@@ -412,29 +119,7 @@ export function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTree
 }
 
 export async function sendHistoryToThemeExtractor(socketThemeExtractor: any, urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
-  if (!socketThemeExtractor) {
-    console.error("❌ ThemeExtractor socket is null/undefined")
-    return { 
-      success: false, 
-      themes: [],
-      message: 'ThemeExtractor not available'
-    }
-  }
-
-  const processor = new HistoryThemeExtractorProcessor(socketThemeExtractor)
-  
-  try {
-    const result = await processor.processHistoryForThemes(urls)
-    console.log('🎨 History theme extraction completed:', result.themes.length, 'themes found')
-    return result
-  } catch (error) {
-    console.error('❌ History theme extraction failed:', error)
-    return { 
-      success: false, 
-      themes: [],
-      message: `Failed to extract themes from history: ${error.message}`
-    }
-  }
+  return processThemeExtraction(socketThemeExtractor, urls, 'history')
 }
 
 export async function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
@@ -474,19 +159,20 @@ export async function getAllHistory(): Promise<{success: boolean, urls?: string[
 }
 
 
-// === Theme Extractor batch processor ===
+// === Unified Theme Extractor processor ===
 class ThemeExtractorProcessor {
   private socket: any
-  private progressTracker = new ProgressTracker()
   private isProcessing = false
+  private type: string
 
-  constructor(socket: any) {
+  constructor(socket: any, type: 'bookmark' | 'history' = 'bookmark') {
     this.socket = socket
+    this.type = type
   }
 
-  async processBookmarksForThemes(urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
+  async processUrlsForThemes(urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
     if (this.isProcessing) {
-      throw new Error('ThemeExtractor processing already in progress')
+      throw new Error(`${this.type} ThemeExtractor processing already in progress`)
     }
 
     if (!this.socket?.connected) {
@@ -494,67 +180,38 @@ class ThemeExtractorProcessor {
     }
 
     this.isProcessing = true
-    console.log('🎨 Starting theme extraction for:', urls.length, 'URLs')
+    console.log(`🎨 Starting ${this.type} theme extraction:`, urls.length, 'URLs')
 
     try {
-      const totalBatches = Math.ceil(urls.length / THEME_EXTRACTOR_CONFIG.BATCH_SIZE)
-      console.log(`🎨 Processing ${urls.length} bookmarks for themes in ${totalBatches} batches`)
-
-      const allThemes = await this.processBatchesForThemes(urls, totalBatches)
+      const themes = await this.sendForThemes(urls)
+      console.log(`✅ ${this.type} theme extraction completed:`, themes.length, 'themes')
       
       return {
         success: true,
-        themes: allThemes,
-        message: `Successfully extracted themes from ${urls.length} bookmarks in ${totalBatches} batches`
+        themes,
+        message: `Successfully extracted themes from ${urls.length} ${this.type} URLs`
       }
 
+    } catch (error) {
+      console.error(`❌ ${this.type} theme extraction failed:`, error)
+      throw error
     } finally {
       this.isProcessing = false
     }
   }
 
-  private async processBatchesForThemes(urls: string[], totalBatches: number): Promise<any[]> {
-    const allThemes: any[] = []
-
-    for (let i = 0; i < totalBatches; i++) {
-      const startIndex = i * THEME_EXTRACTOR_CONFIG.BATCH_SIZE
-      const batch = urls.slice(startIndex, startIndex + THEME_EXTRACTOR_CONFIG.BATCH_SIZE)
-      const batchNumber = i + 1
-
-      console.log(`🎨 Processing batch ${batchNumber}/${totalBatches} with ${batch.length} URLs`)
-      this.progressTracker.updateSending(batchNumber, totalBatches)
-
-      try {
-        const batchThemes = await this.sendBatchForThemes(batch, batchNumber, totalBatches)
-        console.log(`✅ Batch ${batchNumber}/${totalBatches} completed with ${batchThemes.length} themes`)
-        allThemes.push(...batchThemes)
-        this.progressTracker.updateProcessing(i + 1, totalBatches, batchNumber, true)
-      } catch (error) {
-        console.error(`❌ Theme extraction batch ${batchNumber} failed:`, error)
-        this.progressTracker.updateProcessing(i + 1, totalBatches, batchNumber, false)
-      }
-
-      // Wait between batches (except for the last one)
-      if (i < totalBatches - 1) {
-        await this.delay(THEME_EXTRACTOR_CONFIG.DELAY_BETWEEN_BATCHES_MS)
-      }
-    }
-
-    return allThemes
-  }
-
-  private async sendBatchForThemes(urls: string[], batchNumber: number, totalBatches: number): Promise<any[]> {
+  private async sendForThemes(urls: string[]): Promise<any[]> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        reject(new Error(`Timeout waiting for themes from batch ${batchNumber}`))
-      }, THEME_EXTRACTOR_CONFIG.TIMEOUT_MS)
+        reject(new Error(`Timeout waiting for themes from ${this.type}`))
+      }, THEME_EXTRACTOR_TIMEOUT)
 
       const payload = {
         type: 2,
         payload: {
           senderId: THEMEEXTRACTOR_IDS.AUTHOR_ID,
           senderName: "Extension",
-          message: urls.join('\n'),
+          message: JSON.stringify({ urls }),
           messageId: generateUUID(),
           roomId: THEMEEXTRACTOR_IDS.ROOM_ID,
           channelId: THEMEEXTRACTOR_IDS.CHANNEL_ID,
@@ -564,13 +221,7 @@ class ThemeExtractorProcessor {
           metadata: {
             channelType: "DM",
             isDm: true,
-            targetUserId: THEMEEXTRACTOR_IDS.AGENT_ID,
-            operation: "extract_themes",
-            batchInfo: {
-              batchNumber,
-              totalBatches,
-              batchSize: urls.length
-            }
+            targetUserId: THEMEEXTRACTOR_IDS.AGENT_ID
           }
         }
       }
@@ -582,138 +233,15 @@ class ThemeExtractorProcessor {
       }
       
       this.socket.emit("message", payload)
-      console.log(`📤 Sent batch ${batchNumber}/${totalBatches} with ${urls.length} URLs`)
+      console.log(`📤 Sent ${this.type} request with ${urls.length} URLs`)
     })
   }
 
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
 }
 
-// === History Theme Extractor batch processor ===
-class HistoryThemeExtractorProcessor {
-  private socket: any
-  private progressTracker = new HistoryProgressTracker()
-  private isProcessing = false
 
-  constructor(socket: any) {
-    this.socket = socket
-  }
-
-  async processHistoryForThemes(urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
-    if (this.isProcessing) {
-      throw new Error('History ThemeExtractor processing already in progress')
-    }
-
-    if (!this.socket?.connected) {
-      throw new Error('ThemeExtractor socket not connected')
-    }
-
-    this.isProcessing = true
-    console.log('🎨 Starting theme extraction for history:', urls.length, 'URLs')
-
-    try {
-      const totalBatches = Math.ceil(urls.length / THEME_EXTRACTOR_CONFIG.BATCH_SIZE)
-      console.log(`🎨 Processing ${urls.length} history URLs for themes in ${totalBatches} batches`)
-
-      const allThemes = await this.processBatchesForThemes(urls, totalBatches)
-      
-      this.progressTracker.finalize(`Successfully extracted themes from ${urls.length} history URLs`)
-      
-      return {
-        success: true,
-        themes: allThemes,
-        message: `Successfully extracted themes from ${urls.length} history URLs in ${totalBatches} batches`
-      }
-
-    } catch (error) {
-      this.progressTracker.error(`Failed to extract themes: ${error.message}`)
-      throw error
-    } finally {
-      this.isProcessing = false
-    }
-  }
-
-  private async processBatchesForThemes(urls: string[], totalBatches: number): Promise<any[]> {
-    const allThemes: any[] = []
-
-    for (let i = 0; i < totalBatches; i++) {
-      const startIndex = i * THEME_EXTRACTOR_CONFIG.BATCH_SIZE
-      const batch = urls.slice(startIndex, startIndex + THEME_EXTRACTOR_CONFIG.BATCH_SIZE)
-      const batchNumber = i + 1
-
-      console.log(`🎨 Processing history batch ${batchNumber}/${totalBatches} with ${batch.length} URLs`)
-      this.progressTracker.updateSending(batchNumber, totalBatches)
-
-      try {
-        const themes = await this.sendBatchForThemes(batch, batchNumber, totalBatches)
-        allThemes.push(...(themes || []))
-        
-        this.progressTracker.updateProcessing(i + 1, totalBatches, batchNumber, true)
-        console.log(`✅ History batch ${batchNumber}/${totalBatches} processed successfully:`, themes?.length || 0, 'themes')
-        
-        if (i < totalBatches - 1 && THEME_EXTRACTOR_CONFIG.DELAY_BETWEEN_BATCHES_MS > 0) {
-          await this.delay(THEME_EXTRACTOR_CONFIG.DELAY_BETWEEN_BATCHES_MS)
-        }
-      } catch (error) {
-        console.error(`❌ History batch ${batchNumber}/${totalBatches} failed:`, error)
-        this.progressTracker.updateProcessing(i + 1, totalBatches, batchNumber, false)
-        // Continue with next batch even if this one fails
-      }
-    }
-
-    return allThemes
-  }
-
-  private sendBatchForThemes(urls: string[], batchNumber: number, totalBatches: number): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error(`History theme extraction timeout for batch ${batchNumber}`))
-      }, THEME_EXTRACTOR_CONFIG.TIMEOUT_MS)
-
-      const payload = {
-        type: 2,
-        payload: {
-          senderId: THEMEEXTRACTOR_IDS.AUTHOR_ID,
-          senderName: "Extension User",
-          message: JSON.stringify({ urls }),
-          messageId: generateUUID(),
-          roomId: THEMEEXTRACTOR_IDS.ROOM_ID,
-          channelId: THEMEEXTRACTOR_IDS.CHANNEL_ID,
-          serverId: THEMEEXTRACTOR_IDS.SERVER_ID,
-          source: "history-theme-extraction",
-          attachments: [],
-          metadata: {
-            channelType: "DM",
-            isDm: true,
-            targetUserId: THEMEEXTRACTOR_IDS.AGENT_ID,
-            operation: "extract_themes",
-            batchInfo: {
-              batchNumber,
-              totalBatches,
-              batchSize: urls.length
-            }
-          }
-        }
-      }
-
-      globalThemeExtractorHandler = (themes) => {
-        clearTimeout(timeout)
-        resolve(themes || [])
-      }
-      
-      this.socket.emit("message", payload)
-      console.log(`📤 Sent history batch ${batchNumber}/${totalBatches} with ${urls.length} URLs`)
-    })
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
-}
-
-export async function sendBookmarksToThemeExtractor(socketThemeExtractor: any, urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
+// Generic theme extractor function
+async function processThemeExtraction(socketThemeExtractor: any, urls: string[], type: 'bookmark' | 'history'): Promise<{success: boolean, themes: any[], message: string}> {
   if (!socketThemeExtractor) {
     console.error("❌ ThemeExtractor socket is null/undefined")
     return { 
@@ -723,18 +251,22 @@ export async function sendBookmarksToThemeExtractor(socketThemeExtractor: any, u
     }
   }
 
-  const processor = new ThemeExtractorProcessor(socketThemeExtractor)
+  const processor = new ThemeExtractorProcessor(socketThemeExtractor, type)
   
   try {
-    const result = await processor.processBookmarksForThemes(urls)
-    console.log('🎨 Theme extraction completed:', result.themes.length, 'themes found')
+    const result = await processor.processUrlsForThemes(urls)
+    console.log(`🎨 ${type} theme extraction completed:`, result.themes.length, 'themes found')
     return result
   } catch (error) {
-    console.error('❌ Theme extraction failed:', error)
+    console.error(`❌ ${type} theme extraction failed:`, error)
     return { 
       success: false, 
       themes: [],
-      message: `Failed to extract themes: ${error.message}`
+      message: `Failed to extract ${type} themes: ${error.message}`
     }
   }
+}
+
+export async function sendBookmarksToThemeExtractor(socketThemeExtractor: any, urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
+  return processThemeExtraction(socketThemeExtractor, urls, 'bookmark')
 }

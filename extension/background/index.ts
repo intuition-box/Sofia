@@ -1,4 +1,4 @@
-import { initializeChatbotSocket , initializeSofiaSocket, initializeBookmarkAgentSocket, initializeThemeExtractorSocket} from "./websocket";
+import { initializeChatbotSocket , initializeSofiaSocket, initializeThemeExtractorSocket} from "./websocket";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 
@@ -11,8 +11,6 @@ async function init(): Promise<void> {
   initializeSofiaSocket();
   console.log("🤖 [index.ts] Initializing Chatbot socket...")
   initializeChatbotSocket()
-  console.log("📚 [index.ts] Initializing BookMarkAgent socket...")
-  initializeBookmarkAgentSocket();
   console.log("📨 [index.ts] Setting up message handlers...");
   initializeThemeExtractorSocket()
   console.log("🎨 [websocket.ts] Initializing ThemeExtractor socket...")

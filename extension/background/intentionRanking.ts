@@ -291,7 +291,7 @@ class IntentionRankingSystem {
     const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
     let cleaned = 0;
     
-    for (const [domain, intention] of this.domainIntentions.entries()) {
+    for (const [domain, intention] of Array.from(this.domainIntentions.entries())) {
       if (intention.lastVisit.getTime() < thirtyDaysAgo && intention.visitCount < 3) {
         this.domainIntentions.delete(domain);
         cleaned++;
