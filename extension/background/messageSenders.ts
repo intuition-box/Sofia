@@ -1,4 +1,5 @@
-import { SOFIA_IDS, CHATBOT_IDS, BOOKMARKAGENT_IDS, THEMEEXTRACTOR_IDS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS, BOOKMARKAGENT_IDS, THEMEEXTRACTOR_IDS, EXCLUDED_URL_PATTERNS } from "./constants"
+import { isSensitiveUrl } from "./utils/url"
 
 
 function generateUUID(): string {
@@ -81,7 +82,7 @@ const BOOKMARK_CONFIG = {
 }
 
 const THEME_EXTRACTOR_CONFIG = {
-  BATCH_SIZE: 400, // Single batch for all URLs (up to 400 to handle all 353)
+  BATCH_SIZE: 300, // Single batch for all URLs (up to 300)
   TIMEOUT_MS: 600000, // 10 minutes for comprehensive analysis
   DELAY_BETWEEN_BATCHES_MS: 0 // No delay needed for single batch
 }
@@ -339,17 +340,13 @@ export async function getAllBookmarks(): Promise<{ success: boolean; urls?: stri
 
 export async function getAllHistory(): Promise<{success: boolean, urls?: string[], error?: string}> {
   try {
-    // Get history from last 30 days
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
-    
+    // Get last 300 history items (most recent visits)
     const historyItems = await chrome.history.search({
       text: '',
-      startTime: thirtyDaysAgo,
-      maxResults: 1000 // Limit to most recent 1000 items
+      maxResults: 300 // Just the 300 most recent visits
     })
     
-    // Extract URLs and filter out sensitive ones - we'll need to import these
-    const { isSensitiveUrl } = await import("./utils/url")
+    // Extract URLs and filter out sensitive ones
     
     const urls = historyItems
       .map(item => item.url)
