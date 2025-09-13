@@ -23,7 +23,7 @@ export function getThemeExtractorSocket(): Socket { return socketThemeExtractor 
 
 // Common WebSocket configuration
 const commonSocketConfig = {
-  transports: ["websocket"] as const,
+  transports: ["websocket"],
   path: "/socket.io",
   reconnection: true,
   reconnectionDelay: 1000,
