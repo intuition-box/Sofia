@@ -2,10 +2,11 @@ import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { sanitizeUrl, isSensitiveUrl } from "./utils/url"
 import { sendToAgent, clearOldSentMessages } from "./utils/buffer"
 import { EXCLUDED_URL_PATTERNS } from "./constants"
-import { messageBus } from "~lib/services/MessageBus"
+import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
-import { getAllBookmarks, getAllHistory, sendBookmarksToAgent, processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis } from "./websocket"
+import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis } from "./websocket"
+import { getAllBookmarks, getAllHistory } from "./messageSenders"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordPageForIntention, 
@@ -49,8 +50,6 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
     console.log("🔒 Sensitive URL ignored:", parsedData.url)
     return
   }
-
-  const scrollStats = getScrollStats(parsedData.url)
 
   // Format pour correspondre exactement aux exemples de SofIA.json
   const domain = new URL(parsedData.url).hostname.replace('www.', '')
@@ -169,10 +168,10 @@ export function setupMessageHandlers(): void {
 
       case "CONNECT_TO_METAMASK":
         connectToMetamask()
-          .then(result => messageBus.sendMetamaskResult(result))
+          .then(result => MessageBus.getInstance().sendMetamaskResult(result))
           .catch(error => {
             console.error("MetaMask error:", error)
-            messageBus.sendMetamaskResult({ success: false, error: error.message })
+            MessageBus.getInstance().sendMetamaskResult({ success: false, error: error.message })
           })
         break
 

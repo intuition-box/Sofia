@@ -3,7 +3,8 @@ import { useRouter } from '../layout/RouterProvider'
 import logoIcon from '../../assets/icon.png'
 import HomeIcon from '../../assets/Icon=home.svg'
 import '../styles/ChatPage.css'
-import { sendMessageToChatbotSocket, initializeChatbotSocket } from '../../background/websocket'
+import { getChatbotSocket, initializeChatbotSocket } from '../../background/websocket'
+import { sendMessageToChatbot } from '../../background/messageSenders'
 import { Storage } from "@plasmohq/storage"
 
 const storage = new Storage()
@@ -66,7 +67,7 @@ const ChatPage = () => {
 
     setMessages(prev => [...prev, newUserMessage])
     console.log("✉️ Message utilisateur :", message)
-    sendMessageToChatbotSocket(message)
+    sendMessageToChatbot(getChatbotSocket(), message)
 
     setChatInput("")
   }
