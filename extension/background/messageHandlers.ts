@@ -197,23 +197,57 @@ export function setupMessageHandlers(): void {
         break
 
       case "GET_BOOKMARKS":
+        // Notify start
+        chrome.runtime.sendMessage({ 
+          type: 'BOOKMARK_IMPORT_PROGRESS', 
+          progress: 0, 
+          status: 'Starting bookmark analysis...' 
+        }).catch(() => {})
+        
         getAllBookmarks()
           .then(async result => {
             if (result.success && result.urls) {
               try {
                 console.log('🔄 Starting ThemeExtractor → BookmarkAgent pipeline for', result.urls.length, 'URLs')
+                
+                // Progress update
+                chrome.runtime.sendMessage({ 
+                  type: 'BOOKMARK_IMPORT_PROGRESS', 
+                  progress: 50, 
+                  status: 'Analyzing themes...' 
+                }).catch(() => {})
+                
                 const finalResult = await processBookmarksWithThemeAnalysis(result.urls)
+                
+                // Notify completion
+                chrome.runtime.sendMessage({ 
+                  type: 'BOOKMARK_IMPORT_DONE', 
+                  count: result.urls.length 
+                }).catch(() => {})
+                
                 sendResponse(finalResult)
               } catch (error) {
                 console.error("❌ processBookmarksWithThemeAnalysis error:", error)
+                chrome.runtime.sendMessage({ 
+                  type: 'BOOKMARK_IMPORT_ERROR', 
+                  error: error.message 
+                }).catch(() => {})
                 sendResponse({ success: false, error: error.message })
               }
             } else {
+              chrome.runtime.sendMessage({ 
+                type: 'BOOKMARK_IMPORT_ERROR', 
+                error: result.error 
+              }).catch(() => {})
               sendResponse({ success: false, error: result.error })
             }
           })
           .catch(error => {
             console.error("❌ GET_BOOKMARKS error:", error)
+            chrome.runtime.sendMessage({ 
+              type: 'BOOKMARK_IMPORT_ERROR', 
+              error: error.message 
+            }).catch(() => {})
             sendResponse({ success: false, error: error.message })
           })
         return true
