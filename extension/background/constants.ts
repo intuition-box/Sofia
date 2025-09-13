@@ -25,10 +25,10 @@ export const THEMEEXTRACTOR_IDS = {
 }
 
 export const PULSEAGENT_IDS = {
-  CHANNEL_ID: "pulse-channel-id", // TODO: Add real PulseAgent channel ID
-  ROOM_ID: "pulse-room-id", // TODO: Add real PulseAgent room ID  
+  CHANNEL_ID: "ce76c7e8-51c8-483e-ae33-748a7abb6017",
+  ROOM_ID:  "ce76c7e8-51c8-483e-ae33-748a7abb6017",
   SERVER_ID: "00000000-0000-0000-0000-000000000000",
-  AGENT_ID: "pulse-agent-id", // TODO: Add real PulseAgent ID
+  AGENT_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab",
   AUTHOR_ID: "6cc290c3-862d-4bba-8353-879ffe6232ab"
 }
 
