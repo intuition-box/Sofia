@@ -340,6 +340,10 @@ export function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; 
   return getAllBookmarksFromSender()
 }
 
+export function getAllHistory(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
+  return getAllHistoryFromSender()
+}
+
 
 // === 8. Initialiser WebSocket pour ThemeExtractor ===
 export async function initializeThemeExtractorSocket(): Promise<void> {
