@@ -1,15 +1,11 @@
 import { io, Socket } from "socket.io-client"
 import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS } from "./constants"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
-import { convertThemesToTriplets, processUrlsWithThemeAnalysis } from "./tripletProcessor"
+import { processUrlsWithThemeAnalysis } from "./tripletProcessor"
 import { 
-  sendMessageToSofia, 
-  sendMessageToChatbot, 
   sendBookmarksToThemeExtractor,
   sendHistoryToThemeExtractor,
   handleThemeExtractorResponse,
-  getAllBookmarks,
-  getAllHistory
 } from "./messageSenders"
 
 let socketSofia: Socket
@@ -135,9 +131,6 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
     setTimeout(() => initializeChatbotSocket(onReady), 5000) // Reconnection with same callback
   })
 }
-
-
-
 
 // === 3. Direct theme analysis functions ===
 export async function processBookmarksWithThemeAnalysis(urls: string[]): Promise<{success: boolean, message: string, themesExtracted: number, triplesProcessed: boolean}> {

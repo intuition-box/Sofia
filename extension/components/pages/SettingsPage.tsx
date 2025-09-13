@@ -65,6 +65,11 @@ const SettingsPage = () => {
     chrome.runtime.sendMessage({ type: 'GET_HISTORY' })
   }
 
+  const handlePulseAnalysis = async () => {
+    if (!confirm('Collect pulse data from all open tabs?')) return
+    chrome.runtime.sendMessage({ type: 'START_PULSE_ANALYSIS' })
+  }
+
   return (
     <div className="page settings-page">
 
@@ -105,7 +110,6 @@ const SettingsPage = () => {
         {/* Import Section */}
         <div className="settings-item">
           <span>Import & Analyze</span>
-          <span>Import & Analyze</span>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             <button
               onClick={handleImportBookmarks}
@@ -140,6 +144,23 @@ const SettingsPage = () => {
               }}
             >
               Analyze History
+            </button>
+
+            <button
+              onClick={handlePulseAnalysis}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#ff6b6b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              🫀 Pulse Analysis
             </button>
           </div>
         </div>
