@@ -34,6 +34,7 @@ import {
   sendMessageToChatbot, 
   sendBookmarksToAgent as sendBookmarksToAgentSender,
   sendBookmarksToThemeExtractor as sendBookmarksToThemeExtractorSender,
+  sendHistoryToThemeExtractor as sendHistoryToThemeExtractorSender,
   unlockBookmarkResponse,
   handleThemeExtractorResponse,
   getAllBookmarks as getAllBookmarksFromSender,
@@ -329,6 +330,142 @@ export async function processBookmarksWithThemeAnalysis(urls: string[]): Promise
     return {
       success: false,
       message: `Pipeline failed: ${error.message}`,
+      themesExtracted: 0,
+      triplesProcessed: false
+    }
+  }
+}
+
+// === 8.5. Pipeline: ThemeExtractor for History Analysis ===
+export async function processHistoryWithThemeAnalysis(urls: string[]): Promise<{success: boolean, message: string, themesExtracted: number, triplesProcessed: boolean}> {
+  console.log('🔄 Starting history processing pipeline:', urls.length, 'URLs')
+  
+  try {
+    // Send progress update for history
+    try {
+      chrome.runtime.sendMessage({
+        type: 'HISTORY_IMPORT_PROGRESS',
+        progress: 10,
+        status: 'Starting history analysis...'
+      })
+    } catch (error) {
+      // Ignore progress errors
+    }
+
+    // Step 1: Extract themes from history
+    console.log('🎨 Step 1: Extracting themes from history...')
+    const themeResult = await sendHistoryToThemeExtractorSender(socketThemeExtractor, urls)
+    
+    if (!themeResult.success) {
+      try {
+        chrome.runtime.sendMessage({
+          type: 'HISTORY_IMPORT_ERROR',
+          error: `Theme extraction failed: ${themeResult.message}`
+        })
+      } catch (error) {
+        // Ignore progress errors
+      }
+      return {
+        success: false,
+        message: `Theme extraction failed: ${themeResult.message}`,
+        themesExtracted: 0,
+        triplesProcessed: false
+      }
+    }
+
+    console.log('✅ Themes extracted from history:', themeResult.themes.length)
+    
+    if (themeResult.themes.length === 0) {
+      try {
+        chrome.runtime.sendMessage({
+          type: 'HISTORY_IMPORT_DONE',
+          count: 0
+        })
+      } catch (error) {
+        // Ignore progress errors
+      }
+      return {
+        success: true,
+        message: 'No themes extracted from history',
+        themesExtracted: 0,
+        triplesProcessed: false
+      }
+    }
+
+    // Step 2: Convert themes directly to triplets
+    console.log('📚 Step 2: Converting history themes to triplets...', themeResult.themes.length, 'themes')
+    
+    try {
+      chrome.runtime.sendMessage({
+        type: 'HISTORY_IMPORT_PROGRESS',
+        progress: 80,
+        status: 'Converting themes to triplets...'
+      })
+    } catch (error) {
+      // Ignore progress errors
+    }
+    
+    const tripletData = convertThemesToTriplets(themeResult.themes)
+    console.log('📚 Generated triplets from history:', tripletData.triplets.length)
+    
+    // Step 3: Store triplets directly in IndexedDB
+    try {
+      const newMessage = {
+        id: `history_themes_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        content: { text: JSON.stringify(tripletData) },
+        created_at: Date.now(),
+        processed: false
+      }
+      
+      await elizaDataService.storeMessage(newMessage, newMessage.id)
+      console.log('✅ History triplets stored in IndexedDB:', newMessage.id)
+      
+      try {
+        chrome.runtime.sendMessage({
+          type: 'HISTORY_IMPORT_DONE',
+          count: urls.length
+        })
+      } catch (error) {
+        // Ignore progress errors
+      }
+      
+      return {
+        success: true,
+        message: `History analysis completed: ${themeResult.themes.length} themes extracted, ${tripletData.triplets.length} triplets created and stored`,
+        themesExtracted: themeResult.themes.length,
+        triplesProcessed: true
+      }
+    } catch (error) {
+      console.error('❌ Failed to store history triplets:', error)
+      try {
+        chrome.runtime.sendMessage({
+          type: 'HISTORY_IMPORT_ERROR',
+          error: `Failed to store history data: ${error.message}`
+        })
+      } catch (e) {
+        // Ignore progress errors
+      }
+      return {
+        success: false,
+        message: `History pipeline failed: ${error.message}`,
+        themesExtracted: themeResult.themes.length,
+        triplesProcessed: false
+      }
+    }
+
+  } catch (error) {
+    console.error('❌ History pipeline processing failed:', error)
+    try {
+      chrome.runtime.sendMessage({
+        type: 'HISTORY_IMPORT_ERROR',
+        error: `History analysis failed: ${error.message}`
+      })
+    } catch (e) {
+      // Ignore progress errors
+    }
+    return {
+      success: false,
+      message: `History pipeline failed: ${error.message}`,
       themesExtracted: 0,
       triplesProcessed: false
     }

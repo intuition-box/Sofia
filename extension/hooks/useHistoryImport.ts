@@ -38,7 +38,7 @@ export function useHistoryImport() {
   useEffect(() => {
     const handler = (msg: any) => {
       if (!msg || typeof msg !== 'object') return
-      if (msg.type === 'BOOKMARK_IMPORT_PROGRESS') {
+      if (msg.type === 'HISTORY_IMPORT_PROGRESS') {
         setState(prev => ({
           ...(prev ?? DEFAULT_STATE),
           status: 'running',
@@ -46,7 +46,7 @@ export function useHistoryImport() {
           message: msg.status ?? 'Analyzing history...'
         }))
       }
-      if (msg.type === 'BOOKMARK_IMPORT_DONE') {
+      if (msg.type === 'HISTORY_IMPORT_DONE') {
         setState(prev => ({
           ...(prev ?? DEFAULT_STATE),
           status: 'success',
@@ -55,7 +55,7 @@ export function useHistoryImport() {
           finishedAt: new Date().toISOString()
         }))
       }
-      if (msg.type === 'BOOKMARK_IMPORT_ERROR') {
+      if (msg.type === 'HISTORY_IMPORT_ERROR') {
         setState(prev => ({
           ...(prev ?? DEFAULT_STATE),
           status: 'error',

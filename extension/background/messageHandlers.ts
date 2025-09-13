@@ -5,7 +5,7 @@ import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { messageBus } from "~lib/services/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
-import { getAllBookmarks, getAllHistory, sendBookmarksToAgent, processBookmarksWithThemeAnalysis } from "./websocket"
+import { getAllBookmarks, getAllHistory, sendBookmarksToAgent, processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis } from "./websocket"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordPageForIntention, 
@@ -225,7 +225,7 @@ export function setupMessageHandlers(): void {
             if (result.success && result.urls) {
               try {
                 console.log('🔄 Starting ThemeExtractor analysis for', result.urls.length, 'history URLs')
-                const finalResult = await processBookmarksWithThemeAnalysis(result.urls)
+                const finalResult = await processHistoryWithThemeAnalysis(result.urls)
                 sendResponse(finalResult)
               } catch (error) {
                 console.error("❌ processHistoryWithThemeAnalysis error:", error)
