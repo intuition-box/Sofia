@@ -5,11 +5,11 @@ import { convertThemesToTriplets, processUrlsWithThemeAnalysis } from "./triplet
 import { 
   sendMessageToSofia, 
   sendMessageToChatbot, 
-  sendBookmarksToThemeExtractor as sendBookmarksToThemeExtractorSender,
-  sendHistoryToThemeExtractor as sendHistoryToThemeExtractorSender,
+  sendBookmarksToThemeExtractor,
+  sendHistoryToThemeExtractor,
   handleThemeExtractorResponse,
-  getAllBookmarks as getAllBookmarksFromSender,
-  getAllHistory as getAllHistoryFromSender
+  getAllBookmarks,
+  getAllHistory
 } from "./messageSenders"
 
 let socketSofia: Socket
@@ -21,17 +21,20 @@ export function getSofiaSocket(): Socket { return socketSofia }
 export function getChatbotSocket(): Socket { return socketBot }
 export function getThemeExtractorSocket(): Socket { return socketThemeExtractor }
 
+// Common WebSocket configuration
+const commonSocketConfig = {
+  transports: ["websocket"] as const,
+  path: "/socket.io",
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionAttempts: 5,
+  timeout: 20000
+}
+
 
 // === 1. Initialiser WebSocket pour SofIA ===
 export async function initializeSofiaSocket(): Promise<void> {
-  socketSofia = io("http://localhost:3000", {
-    transports: ["websocket"],
-    path: "/socket.io",
-    reconnection: true,
-    reconnectionDelay: 1000,
-    reconnectionAttempts: 5,
-    timeout: 20000
-  })
+  socketSofia = io("http://localhost:3000", commonSocketConfig)
 
   socketSofia.on("connect", () => {
     console.log("✅ Connected to Eliza (SofIA), socket ID:", socketSofia.id)
@@ -85,10 +88,7 @@ export async function initializeSofiaSocket(): Promise<void> {
 
 // === 2. Initialiser WebSocket pour Chatbot ===
 export async function initializeChatbotSocket(onReady?: () => void): Promise<void> {
-  socketBot = io("http://localhost:3000", {
-    transports: ["websocket"],
-    path: "/socket.io"
-  })
+  socketBot = io("http://localhost:3000", commonSocketConfig)
 
   socketBot.on("connect", () => {
     console.log("🤖 Connected to Chatbot, socket ID:", socketBot.id)
@@ -139,13 +139,12 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
 
 
 
-// === 3. Unified Pipeline: URLs → Themes → Triplets ===
+// === 3. Direct theme analysis functions ===
 export async function processBookmarksWithThemeAnalysis(urls: string[]): Promise<{success: boolean, message: string, themesExtracted: number, triplesProcessed: boolean}> {
   return await processUrlsWithThemeAnalysis(
     urls, 
     'bookmark', 
-    (urls) => sendBookmarksToThemeExtractorSender(socketThemeExtractor, urls),
-    'themes_',
+    (urls) => sendBookmarksToThemeExtractor(socketThemeExtractor, urls),
     'Bookmark analysis completed'
   )
 }
@@ -154,26 +153,16 @@ export async function processHistoryWithThemeAnalysis(urls: string[]): Promise<{
   return await processUrlsWithThemeAnalysis(
     urls, 
     'history', 
-    (urls) => sendHistoryToThemeExtractorSender(socketThemeExtractor, urls),
-    'history_themes_',
+    (urls) => sendHistoryToThemeExtractor(socketThemeExtractor, urls),
     'History analysis completed'
   )
 }
 
 
 
-// === 9. Initialiser WebSocket pour ThemeExtractor ===
+// === 3. Initialiser WebSocket pour ThemeExtractor ===
 export async function initializeThemeExtractorSocket(): Promise<void> {
-  console.log("🎨 [websocket.ts] Initializing ThemeExtractor socket...")
-  
-  socketThemeExtractor = io("http://localhost:3000", {
-    transports: ["websocket"],
-    path: "/socket.io",
-    reconnection: true,
-    reconnectionDelay: 1000,
-    reconnectionAttempts: 5,
-    timeout: 20000
-  })
+  socketThemeExtractor = io("http://localhost:3000", commonSocketConfig)
 
   socketThemeExtractor.on("connect", () => {
     console.log("✅ [websocket.ts] Connected to ThemeExtractor, socket ID:", socketThemeExtractor.id)

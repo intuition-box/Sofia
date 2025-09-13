@@ -119,29 +119,7 @@ function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[])
 }
 
 export async function sendHistoryToThemeExtractor(socketThemeExtractor: any, urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
-  if (!socketThemeExtractor) {
-    console.error("❌ ThemeExtractor socket is null/undefined")
-    return { 
-      success: false, 
-      themes: [],
-      message: 'ThemeExtractor not available'
-    }
-  }
-
-  const processor = new ThemeExtractorProcessor(socketThemeExtractor, 'history')
-  
-  try {
-    const result = await processor.processUrlsForThemes(urls)
-    console.log('🎨 History theme extraction completed:', result.themes.length, 'themes found')
-    return result
-  } catch (error) {
-    console.error('❌ History theme extraction failed:', error)
-    return { 
-      success: false, 
-      themes: [],
-      message: `Failed to extract themes from history: ${error.message}`
-    }
-  }
+  return processThemeExtraction(socketThemeExtractor, urls, 'history')
 }
 
 export async function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
@@ -262,7 +240,8 @@ class ThemeExtractorProcessor {
 }
 
 
-export async function sendBookmarksToThemeExtractor(socketThemeExtractor: any, urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
+// Generic theme extractor function
+async function processThemeExtraction(socketThemeExtractor: any, urls: string[], type: 'bookmark' | 'history'): Promise<{success: boolean, themes: any[], message: string}> {
   if (!socketThemeExtractor) {
     console.error("❌ ThemeExtractor socket is null/undefined")
     return { 
@@ -272,18 +251,22 @@ export async function sendBookmarksToThemeExtractor(socketThemeExtractor: any, u
     }
   }
 
-  const processor = new ThemeExtractorProcessor(socketThemeExtractor, 'bookmark')
+  const processor = new ThemeExtractorProcessor(socketThemeExtractor, type)
   
   try {
     const result = await processor.processUrlsForThemes(urls)
-    console.log('🎨 Theme extraction completed:', result.themes.length, 'themes found')
+    console.log(`🎨 ${type} theme extraction completed:`, result.themes.length, 'themes found')
     return result
   } catch (error) {
-    console.error('❌ Theme extraction failed:', error)
+    console.error(`❌ ${type} theme extraction failed:`, error)
     return { 
       success: false, 
       themes: [],
-      message: `Failed to extract themes: ${error.message}`
+      message: `Failed to extract ${type} themes: ${error.message}`
     }
   }
+}
+
+export async function sendBookmarksToThemeExtractor(socketThemeExtractor: any, urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
+  return processThemeExtraction(socketThemeExtractor, urls, 'bookmark')
 }

@@ -38,7 +38,6 @@ export async function processUrlsWithThemeAnalysis(
   urls: string[], 
   type: 'bookmark' | 'history',
   extractorFunction: Function,
-  idPrefix: string,
   successMessage: string
 ): Promise<{success: boolean, message: string, themesExtracted: number, triplesProcessed: boolean}> {
   console.log(`🔄 Starting ${type} processing pipeline:`, urls.length, 'URLs')
@@ -77,7 +76,7 @@ export async function processUrlsWithThemeAnalysis(
     // Step 3: Store triplets in IndexedDB
     try {
       const newMessage = {
-        id: `${idPrefix}${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         content: { text: JSON.stringify(tripletData) }, // Store with {triplets: [...]} wrapper
         created_at: Date.now(),
         processed: false

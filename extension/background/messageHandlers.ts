@@ -20,8 +20,8 @@ import {
 import { handleDiscordOAuth, handleXOAuth } from "./oauth"
 
 
-// Buffer temporaire de pageData par URL
-const pageDataBufferByUrl = new Map<string, { data: PageData; loadTime: number }>()
+// Buffer temporaire pour synchroniser PAGE_DATA et PAGE_DURATION
+const pageDataBuffer = new Map<string, { data: PageData; loadTime: number }>()
 
 async function handlePageDataInline(data: any, pageLoadTime: number): Promise<void> {
 
@@ -104,6 +104,28 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
   recordPageForIntention(parsedData)
 }
 
+// Generic handler for data extraction (bookmarks/history)
+async function handleDataExtraction(
+  type: string,
+  dataFetcher: () => Promise<{ success: boolean; urls?: string[]; error?: string }>,
+  processor: (urls: string[]) => Promise<any>,
+  sendResponse: (response: any) => void
+): Promise<void> {
+  try {
+    const result = await dataFetcher()
+    if (result.success && result.urls) {
+      console.log(`🔄 Starting ${type} analysis for`, result.urls.length, 'URLs')
+      const finalResult = await processor(result.urls)
+      sendResponse(finalResult)
+    } else {
+      sendResponse({ success: false, error: result.error })
+    }
+  } catch (error) {
+    console.error(`❌ ${type} extraction error:`, error)
+    sendResponse({ success: false, error: error.message })
+  }
+}
+
 // Separate handler for STORE_BOOKMARK_TRIPLETS
 async function handleStoreBookmarkTriplets(message: any, sendResponse: (response: any) => void): Promise<void> {
   console.log('💾 [messageHandlers.ts] STORE_BOOKMARK_TRIPLETS request received')
@@ -143,21 +165,21 @@ export function setupMessageHandlers(): void {
           break
         }
         const loadTime = message.pageLoadTime || Date.now()
-        pageDataBufferByUrl.set(url, { data: message.data, loadTime })
+        pageDataBuffer.set(url, { data: message.data, loadTime })
         break
       }
 
       case "PAGE_DURATION": {
         const url = message.data?.url
         const duration = message.data?.duration
-        if (!url || !pageDataBufferByUrl.has(url)) {
-          console.warn("⚠️ PAGE_DURATION without associated PAGE_DATA for URL:", url)
+        if (!url || !pageDataBuffer.has(url)) {
+          console.warn("⚠️ PAGE_DURATION without PAGE_DATA for:", url)
           break
         }
-        const buffered = pageDataBufferByUrl.get(url)!
+        const buffered = pageDataBuffer.get(url)!
         buffered.data.duration = duration
         handlePageDataInline(buffered.data, buffered.loadTime)
-        pageDataBufferByUrl.delete(url)
+        pageDataBuffer.delete(url)
         break
       }
 
@@ -197,47 +219,11 @@ export function setupMessageHandlers(): void {
         break
 
       case "GET_BOOKMARKS":
-        getAllBookmarks()
-          .then(async result => {
-            if (result.success && result.urls) {
-              try {
-                console.log('🔄 Starting ThemeExtractor → BookmarkAgent pipeline for', result.urls.length, 'URLs')
-                const finalResult = await processBookmarksWithThemeAnalysis(result.urls)
-                sendResponse(finalResult)
-              } catch (error) {
-                console.error("❌ processBookmarksWithThemeAnalysis error:", error)
-                sendResponse({ success: false, error: error.message })
-              }
-            } else {
-              sendResponse({ success: false, error: result.error })
-            }
-          })
-          .catch(error => {
-            console.error("❌ GET_BOOKMARKS error:", error)
-            sendResponse({ success: false, error: error.message })
-          })
+        handleDataExtraction('bookmarks', getAllBookmarks, processBookmarksWithThemeAnalysis, sendResponse)
         return true
 
       case "GET_HISTORY":
-        getAllHistory()
-          .then(async result => {
-            if (result.success && result.urls) {
-              try {
-                console.log('🔄 Starting ThemeExtractor analysis for', result.urls.length, 'history URLs')
-                const finalResult = await processHistoryWithThemeAnalysis(result.urls)
-                sendResponse(finalResult)
-              } catch (error) {
-                console.error("❌ processHistoryWithThemeAnalysis error:", error)
-                sendResponse({ success: false, error: error.message })
-              }
-            } else {
-              sendResponse({ success: false, error: result.error })
-            }
-          })
-          .catch(error => {
-            console.error("❌ GET_HISTORY error:", error)
-            sendResponse({ success: false, error: error.message })
-          })
+        handleDataExtraction('history', getAllHistory, processHistoryWithThemeAnalysis, sendResponse)
         return true
 
       case "STORE_BOOKMARK_TRIPLETS":
