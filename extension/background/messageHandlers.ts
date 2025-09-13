@@ -368,10 +368,6 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      case "START_PULSE_ANALYSIS":
-        handlePulseAnalysis(sendResponse)
-        return true
-
       case "CONNECT_DISCORD":
         handleDiscordOAuth(message.clientId, sendResponse)
         return true
