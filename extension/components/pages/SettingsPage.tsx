@@ -107,7 +107,9 @@ const SettingsPage = () => {
         </div>
 
         {/* Import Section */}
+        {/* Import Section */}
         <div className="settings-item">
+          <span>Import & Analyze</span>
           <span>Import & Analyze</span>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             <button

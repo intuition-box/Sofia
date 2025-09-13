@@ -205,7 +205,6 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
         console.error("❌ [websocket.ts] Failed to process ThemeExtractor response:", error)
         handleThemeExtractorResponse([])
       }
-
     }
   })
 
