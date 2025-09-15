@@ -7,6 +7,17 @@
   transition: var(--transition-normal);
 }
 
+.pulse-animation-section {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
 .chat-section {
   margin-bottom: var(--spacing-xl);
 }

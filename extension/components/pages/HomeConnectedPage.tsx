@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import { useTracking } from '../../hooks/useTracking'
 import { useRouter } from '../layout/RouterProvider'
 import chatIcon from '../../components/ui/icons/chatIcon.png'
-import toggleTrue from '../ui/icons/button=True.png'
-import toggleFalse from '../ui/icons/button=False.png'
 import LevelProgress from '../ui/LevelProgress'
+import PulseAnimation from '../ui/PulseAnimation'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
 
@@ -13,7 +11,6 @@ const storage = new Storage()
 const HomeConnectedPage = () => {
   const [chatInput, setChatInput] = useState("")
   const { navigateTo } = useRouter()
-  const { isTrackingEnabled, toggleTracking } = useTracking()
 
   return (
     <div className="home-connected-page">
@@ -53,18 +50,9 @@ const HomeConnectedPage = () => {
         <LevelProgress />
       </div>
 
-      <div className="floating-buttons">
-        <button
-          onClick={toggleTracking}
-          className="floating-button-check"
-          title={isTrackingEnabled ? "Tracking enabled" : "Tracking disabled"}
-        >
-          <img
-            src={isTrackingEnabled ? toggleTrue : toggleFalse}
-            alt={isTrackingEnabled ? "Enabled" : "Disabled"}
-            className="toggle-icon"
-          />
-        </button>
+
+      <div className="pulse-animation-section">
+        <PulseAnimation size={120} />
       </div>
     </div>
   )
