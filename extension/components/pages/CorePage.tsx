@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy } from 'react'
+import { useState, Suspense, lazy, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import '../styles/Global.css'
 import '../styles/CorePage.css'
@@ -11,9 +11,17 @@ const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
 
 const CorePage = () => {
   const { navigateTo } = useRouter()
-  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse'>('Pulse')
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse'>('Echoes')
   const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
   const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
+
+  useEffect(() => {
+    const targetTab = localStorage.getItem('targetTab')
+    if (targetTab === 'Pulse') {
+      setActiveGraphTab('Pulse')
+      localStorage.removeItem('targetTab') // Nettoyer après utilisation
+    }
+  }, [])
 
   return (
     <div className={`page ${activeGraphTab === 'Pulse' ? 'pulse-active' : ''}`}>

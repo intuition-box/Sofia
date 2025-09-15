@@ -223,6 +223,7 @@ const PulseAnimation = ({ size = 150 }: PulseAnimationProps) => {
   }, [size])
 
   const handleClick = () => {
+    localStorage.setItem('targetTab', 'Pulse')
     navigateTo('Sofia')
   }
 
