@@ -6,7 +6,7 @@ interface BackgroundProps {
   className?: string;
 }
 
-const Background: React.FC<BackgroundProps> = ({ className }) => {
+const Background = ({ className }: BackgroundProps) => {
   return (
     <div className={`animated-background ${className || ''}`}>
       <img className="fond" src={fondImage} alt="" />
