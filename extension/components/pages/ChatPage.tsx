@@ -132,7 +132,13 @@ const ChatPage = () => {
 
       <div className="chat-input-section">
         <div className="chat-input-container">
-          <img src={logoIcon} alt="Sofia" className="chat-logo" />
+          <img
+            src={logoIcon}
+            alt="Sofia"
+            className="chat-logo"
+            onClick={goBack}
+            style={{ cursor: 'pointer' }}
+          />
           <input
             type="text"
             value={chatInput}

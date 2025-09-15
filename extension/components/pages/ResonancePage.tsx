@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useHighValueTriplets } from '../../hooks/useHighValueTriplets'
 import QuickActionButton from '../ui/QuickActionButton'
+import logoIcon from '../../assets/icon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
@@ -63,6 +64,7 @@ const ResonancePage = () => {
 
       <div className="search-content">
         <div className="search-input-container">
+          <img src={logoIcon} alt="Sofia" className="search-logo" />
           <input
             type="text"
             placeholder="Search atoms in Intuition blockchain..."
@@ -71,9 +73,9 @@ const ResonancePage = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <div className="search-hint">
-            Press Enter to search • {isReady ? 'Ready' : 'Initializing...'}
-          </div>
+        </div>
+        <div className="search-hint">
+          Press Enter to search • {isReady ? 'Ready' : 'Initializing...'}
         </div>
         
         {error && (

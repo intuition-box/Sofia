@@ -1,22 +1,42 @@
 /* Styles spécifiques pour RecommendationsPage, SyncPage, SearchPage */
 
-/* Style spécifique pour SearchPage */
-.search-input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  font-size: 16px;
-  background-color: rgba(251, 247, 245, 0.95);
-  color: #372118;
-  outline: none;
-  margin-bottom: 20px;
+/* Style spécifique pour SearchPage - Style like Talk to Sofia */
+.search-input-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  padding: 12px 16px;
   transition: all 0.3s ease;
+  margin-bottom: 20px;
 }
 
-.search-input:focus {
+.search-input-container:focus-within {
   border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 20px rgba(242, 222, 214, 0.4);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .search-button {
