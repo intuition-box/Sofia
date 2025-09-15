@@ -139,7 +139,7 @@ async function handlePulseAnalysis(sendResponse: (response: any) => void): Promi
     const pulseData: any[] = []
     let processedTabs = 0
     
-    // Collect data from each tab
+    // Collect data directly from tabs using Chrome API - much more reliable
     for (const tab of tabs) {
       if (!tab.id || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
         continue
@@ -148,28 +148,32 @@ async function handlePulseAnalysis(sendResponse: (response: any) => void): Promi
       try {
         console.log(`🫀 [Pulse] Collecting from tab ${tab.id}: ${tab.url}`)
         
-        // Send message to content script to collect pulse data
-        const response = await chrome.tabs.sendMessage(tab.id, { type: "COLLECT_PULSE_DATA" })
-        
-        if (response?.success && response?.data) {
-          response.data.tabId = tab.id
-          pulseData.push(response.data)
-          console.log(`🫀 [Pulse] Collected data from: ${response.data.title}`)
+        // Extract data directly from tab object - no content script needed
+        const tabData = {
+          url: tab.url,
+          title: tab.title || '',
+          keywords: '', // Can't get meta keywords without content script, but URL analysis is often sufficient
+          description: '',
+          timestamp: Date.now(),
+          tabId: tab.id,
+          favIconUrl: tab.favIconUrl
         }
         
+        pulseData.push(tabData)
+        console.log(`🫀 [Pulse] Collected data from: ${tabData.title}`)
         processedTabs++
+        
       } catch (error) {
-        console.log(`🫀 [Pulse] Skipped tab ${tab.id} (no content script):`, error.message)
-        // Skip tabs that don't have content script injected
+        console.log(`🫀 [Pulse] Skipped tab ${tab.id}:`, error.message)
       }
     }
     
-    console.log(`🫀 [Pulse] Collected data from ${pulseData.length}/${processedTabs} tabs`)
+    console.log(`🫀 [Pulse] Collected data from ${pulseData.length} tabs`)
     
     if (pulseData.length === 0) {
       sendResponse({ 
         success: false, 
-        error: "No pulse data collected. Make sure to visit some web pages first." 
+        error: "No tabs found for pulse analysis." 
       })
       return
     }

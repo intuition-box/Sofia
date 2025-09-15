@@ -1,6 +1,7 @@
 import { io, Socket } from "socket.io-client"
 import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS } from "./constants"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
+import { sofiaDB, STORES } from "../lib/database/indexedDB"
 import { processUrlsWithThemeAnalysis } from "./tripletProcessor"
 import { 
   sendBookmarksToThemeExtractor,
@@ -244,18 +245,18 @@ export async function initializePulseSocket(): Promise<void> {
       console.log("📩 PulseAgent response received")
       console.log("🫀 RAW MESSAGE from PulseAgent:", data.text)
       
-      // Store pulse analysis results
+      // Store pulse analysis results directly in IndexedDB
       try {
-        const newMessage = {
-          id: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        const pulseRecord = {
+          messageId: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           content: { text: data.text },
-          created_at: Date.now(),
-          processed: false,
+          timestamp: Date.now(),
           type: 'pulse_analysis'
         }
 
-        await elizaDataService.storeMessage(newMessage, newMessage.id)
-        console.log("✅ [websocket.ts] Pulse analysis stored:", { id: newMessage.id })
+        // Use sofiaDB directly to bypass elizaDataService parsing
+        const result = await sofiaDB.put(STORES.ELIZA_DATA, pulseRecord)
+        console.log("✅ [websocket.ts] Pulse analysis stored directly:", { id: result, type: pulseRecord.type })
         
       } catch (error) {
         console.error("❌ [websocket.ts] Failed to store pulse analysis:", error)

@@ -3,8 +3,8 @@
  * Manages local storage of Eliza messages, navigation data, user profile, and settings
  */
 
-import type { ParsedSofiaMessage, Triplet, Message } from '../../types/messages'
-import type { VisitData, DOMData, SimplifiedHistoryEntry, CompleteVisitData, SessionData, PageMetrics } from '~types/history'
+import type { ParsedSofiaMessage, Message } from '../../types/messages'
+import type { VisitData, DOMData } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
 import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
