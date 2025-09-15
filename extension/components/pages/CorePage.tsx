@@ -11,7 +11,7 @@ const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
 
 const CorePage = () => {
   const { navigateTo } = useRouter()
-  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse'>('Echoes')
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse'>('Pulse')
   const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
   const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
 
