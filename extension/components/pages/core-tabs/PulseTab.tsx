@@ -153,11 +153,6 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
 
   return (
     <div className="triples-container">
-      <div className="triples-header">
-        <h3>Behavioral Pulse Analysis</h3>
-        <p className="triples-count">{pulseAnalyses.length} research sessions • {totalThemes} behavioral patterns</p>
-      </div>
-      
       <div className="triples-list">
         {pulseAnalyses.map((analysis, analysisIndex) => {
           const isSessionExpanded = expandedSessions.has(analysisIndex)
