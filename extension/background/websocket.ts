@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client"
-import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS } from "./constants"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { processUrlsWithThemeAnalysis } from "./tripletProcessor"
 import { 
@@ -11,11 +11,13 @@ import {
 let socketSofia: Socket
 let socketBot: Socket
 let socketThemeExtractor: Socket
+let socketPulse: Socket
 
 // Export sockets for direct access
 export function getSofiaSocket(): Socket { return socketSofia }
 export function getChatbotSocket(): Socket { return socketBot }
 export function getThemeExtractorSocket(): Socket { return socketThemeExtractor }
+export function getPulseSocket(): Socket { return socketPulse }
 
 // Common WebSocket configuration
 const commonSocketConfig = {

@@ -1,9 +1,5 @@
-/**
- * Types pour les listes de favoris de triplets
- */
+import type { Triplet } from './messages'
 
-import type { Triplet } from '~components/pages/core-tabs/types'
-import type { PublishedTripletDetails } from './published-triplets'
 
 export interface BookmarkList {
   id: string

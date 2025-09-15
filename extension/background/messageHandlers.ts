@@ -18,7 +18,7 @@ import {
   loadDomainIntentions
 } from "./intentionRanking"
 import { handleDiscordOAuth, handleXOAuth } from "./oauth"
-import { PULSEAGENT_IDS } from "./constants"
+
 
 
 // Buffer temporaire pour synchroniser PAGE_DATA et PAGE_DURATION
@@ -375,6 +375,11 @@ export function setupMessageHandlers(): void {
       case "CONNECT_X":
         handleXOAuth(message.clientId, sendResponse)
         return true
+
+      case "START_PULSE_ANALYSIS":
+        handlePulseAnalysis(sendResponse)
+        return true
+        
     }
 
     sendResponse({ success: true })
