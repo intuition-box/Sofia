@@ -3,8 +3,8 @@
  * Manages local storage of Eliza messages, navigation data, user profile, and settings
  */
 
-import type { ParsedSofiaMessage, Triplet, Message } from '../../types/messages'
-import type { VisitData, DOMData, SimplifiedHistoryEntry, CompleteVisitData, SessionData, PageMetrics } from '~types/history'
+import type { ParsedSofiaMessage, Message } from '../../types/messages'
+import type { VisitData, DOMData } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
 import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
@@ -30,7 +30,7 @@ export interface ElizaRecord {
   messageId: string
   content: ParsedSofiaMessage | Message | any[] | string[]
   timestamp: number
-  type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details'
+  type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details' | 'pulse_analysis'
 }
 
 export interface NavigationRecord {

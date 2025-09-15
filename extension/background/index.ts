@@ -1,4 +1,4 @@
-import { initializeChatbotSocket , initializeSofiaSocket, initializeThemeExtractorSocket} from "./websocket";
+import { initializeChatbotSocket , initializeSofiaSocket, initializeThemeExtractorSocket, initializePulseSocket} from "./websocket";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 
@@ -11,9 +11,11 @@ async function init(): Promise<void> {
   initializeSofiaSocket();
   console.log("🤖 [index.ts] Initializing Chatbot socket...")
   initializeChatbotSocket()
-  console.log("📨 [index.ts] Setting up message handlers...");
+  console.log("🎨 [index.ts] Initializing ThemeExtractor socket...")
   initializeThemeExtractorSocket()
-  console.log("🎨 [websocket.ts] Initializing ThemeExtractor socket...")
+  console.log("🫀 [index.ts] Initializing PulseAgent socket...")
+  initializePulseSocket()
+  console.log("📨 [index.ts] Setting up message handlers...");
   setupMessageHandlers();
   console.log("✅ [index.ts] Extension initialization completed")
 

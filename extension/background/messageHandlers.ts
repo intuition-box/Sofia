@@ -5,8 +5,8 @@ import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
-import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis } from "./websocket"
-import { getAllBookmarks, getAllHistory } from "./messageSenders"
+import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis, getPulseSocket } from "./websocket"
+import { getAllBookmarks, getAllHistory, sendMessageToPulse } from "./messageSenders"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordPageForIntention, 
@@ -18,6 +18,7 @@ import {
   loadDomainIntentions
 } from "./intentionRanking"
 import { handleDiscordOAuth, handleXOAuth } from "./oauth"
+
 
 
 // Buffer temporaire pour synchroniser PAGE_DATA et PAGE_DURATION
@@ -123,6 +124,115 @@ async function handleDataExtraction(
   } catch (error) {
     console.error(`❌ ${type} extraction error:`, error)
     sendResponse({ success: false, error: error.message })
+  }
+}
+
+// Pulse analysis handler
+async function handlePulseAnalysis(sendResponse: (response: any) => void): Promise<void> {
+  try {
+    console.log("🫀 [Pulse] Starting pulse analysis of all tabs")
+    
+    // Get all tabs
+    const tabs = await chrome.tabs.query({})
+    console.log(`🫀 [Pulse] Found ${tabs.length} tabs to analyze`)
+    
+    const pulseData: any[] = []
+    let processedTabs = 0
+    
+    // Collect data directly from tabs using Chrome API - much more reliable
+    for (const tab of tabs) {
+      if (!tab.id || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+        continue
+      }
+      
+      try {
+        console.log(`🫀 [Pulse] Collecting from tab ${tab.id}: ${tab.url}`)
+        
+        // Extract data directly from tab object - no content script needed
+        const tabData = {
+          url: tab.url,
+          title: tab.title || '',
+          keywords: '', // Can't get meta keywords without content script, but URL analysis is often sufficient
+          description: '',
+          timestamp: Date.now(),
+          tabId: tab.id,
+          favIconUrl: tab.favIconUrl
+        }
+        
+        pulseData.push(tabData)
+        console.log(`🫀 [Pulse] Collected data from: ${tabData.title}`)
+        processedTabs++
+        
+      } catch (error) {
+        console.log(`🫀 [Pulse] Skipped tab ${tab.id}:`, error.message)
+      }
+    }
+    
+    console.log(`🫀 [Pulse] Collected data from ${pulseData.length} tabs`)
+    
+    if (pulseData.length === 0) {
+      sendResponse({ 
+        success: false, 
+        error: "No tabs found for pulse analysis." 
+      })
+      return
+    }
+    
+    // Send to PulseAgent
+    const result = await sendPulseDataToAgent(pulseData)
+    sendResponse(result)
+    
+  } catch (error) {
+    console.error("❌ [Pulse] Analysis failed:", error)
+    sendResponse({ success: false, error: error.message })
+  }
+}
+
+// Function to send pulse data to PulseAgent
+async function sendPulseDataToAgent(pulseData: any[]): Promise<{success: boolean, message: string}> {
+  // Clean data to avoid cyclic references
+  const cleanData = pulseData.map(data => ({
+    url: data.url || '',
+    title: data.title || '',
+    keywords: data.keywords || '',
+    description: data.description || '',
+    timestamp: data.timestamp || Date.now()
+  }))
+
+  console.log("🫀 [Pulse] Sending to PulseAgent:", {
+    totalTabs: cleanData.length,
+    data: cleanData.map(d => ({
+      url: d.url,
+      title: d.title.slice(0, 30),
+      keywordsCount: d.keywords.length
+    }))
+  })
+  
+  try {
+    const pulseSocket = getPulseSocket()
+    
+    if (!pulseSocket?.connected) {
+      console.warn("⚠️ PulseAgent socket not connected")
+      return {
+        success: false,
+        message: "❌ PulseAgent not connected. Make sure PulseAgent is running."
+      }
+    }
+    
+    // Send to PulseAgent via WebSocket
+    sendMessageToPulse(pulseSocket, cleanData)
+    
+    return {
+      success: true,
+      message: `✅ Pulse analysis completed! Collected data from ${cleanData.length} tabs and sent to PulseAgent.`
+    }
+    
+  } catch (error) {
+    console.error("❌ [Pulse] Failed to send to PulseAgent:", error)
+    return {
+      success: false,
+      message: `❌ Failed to send pulse data: ${error.message}`
+    }
   }
 }
 
@@ -298,6 +408,11 @@ export function setupMessageHandlers(): void {
       case "CONNECT_X":
         handleXOAuth(message.clientId, sendResponse)
         return true
+
+      case "START_PULSE_ANALYSIS":
+        handlePulseAnalysis(sendResponse)
+        return true
+        
     }
 
     sendResponse({ success: true })

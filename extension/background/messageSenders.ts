@@ -1,4 +1,4 @@
-import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, EXCLUDED_URL_PATTERNS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS, EXCLUDED_URL_PATTERNS } from "./constants"
 import { isSensitiveUrl } from "./utils/url"
 
 
@@ -269,4 +269,38 @@ async function processThemeExtraction(socketThemeExtractor: any, urls: string[],
 
 export async function sendBookmarksToThemeExtractor(socketThemeExtractor: any, urls: string[]): Promise<{success: boolean, themes: any[], message: string}> {
   return processThemeExtraction(socketThemeExtractor, urls, 'bookmark')
+}
+
+// === Send pulse data to PulseAgent ===
+export function sendMessageToPulse(socketPulse: any, pulseData: any[]): void {
+  if (!socketPulse?.connected) {
+    console.warn("⚠️ PulseAgent socket not connected")
+    return
+  }
+
+  const payload = {
+    type: 2,
+    payload: {
+      senderId: PULSEAGENT_IDS.AUTHOR_ID,
+      senderName: "Extension Pulse",
+      message: `Analyze current pulse data:\n${JSON.stringify(pulseData)}`,
+      messageId: generateUUID(),
+      roomId: PULSEAGENT_IDS.ROOM_ID,
+      channelId: PULSEAGENT_IDS.CHANNEL_ID,
+      serverId: PULSEAGENT_IDS.SERVER_ID,
+      source: "pulse-analysis",
+      attachments: [],
+      metadata: {
+        channelType: "DM",
+        isDm: true,
+        targetUserId: PULSEAGENT_IDS.AGENT_ID
+      }
+    }
+  }
+
+  console.log("📤 Message to PulseAgent:", {
+    totalTabs: pulseData.length,
+    sampleData: pulseData.slice(0, 2).map(d => ({ url: d.url, title: d.title?.slice(0, 30) }))
+  })
+  socketPulse.emit("message", payload)
 }
