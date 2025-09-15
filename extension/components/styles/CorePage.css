@@ -544,6 +544,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.3s ease;
+}
+
+.analysis-header.clickable:hover {
+  background: rgba(199, 134, 108, 0.15);
 }
 
 .analysis-header h4 {

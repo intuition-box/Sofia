@@ -30,7 +30,7 @@ export interface ElizaRecord {
   messageId: string
   content: ParsedSofiaMessage | Message | any[] | string[]
   timestamp: number
-  type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details'
+  type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details' | 'pulse_analysis'
 }
 
 export interface NavigationRecord {

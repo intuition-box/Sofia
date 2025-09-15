@@ -28,6 +28,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
   const [address] = useStorage<string>("metamask-account")
   const [pulseAnalyses, setPulseAnalyses] = useState<PulseAnalysis[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedSessions, setExpandedSessions] = useState<Set<number>>(new Set())
 
   // Fetch pulse analyses from IndexedDB
   useEffect(() => {
@@ -40,8 +41,12 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
         console.log("🫀 [PulseTab] All messages:", messages.map(m => ({ 
           id: m.id, 
           type: m.type, 
-          hasThemes: m.content?.text?.includes('themes'), 
-          content: m.content?.text?.substring(0, 100) 
+          hasThemes: typeof m.content === 'object' && m.content && 'text' in m.content 
+            ? (typeof m.content.text === 'string' ? m.content.text.includes('themes') : false)
+            : false,
+          content: typeof m.content === 'object' && m.content && 'text' in m.content 
+            ? (typeof m.content.text === 'string' ? m.content.text.substring(0, 100) : 'N/A')
+            : 'N/A'
         })))
         
         // Filter messages that are pulse analyses (now stored with correct type)
@@ -57,10 +62,12 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
         pulseMessages.forEach((msg, msgIndex) => {
           try {
             let themes: PulseTheme[] = []
-            const text = msg.content?.text || ''
+            const text = (typeof msg.content === 'object' && msg.content && 'text' in msg.content && typeof msg.content.text === 'string') 
+              ? msg.content.text 
+              : ''
             
             // Try to parse JSON from the text
-            if (text.includes('{') && text.includes('themes')) {
+            if (text && text.includes('{') && text.includes('themes')) {
               const jsonMatch = text.match(/\{[\s\S]*\}/);
               if (jsonMatch) {
                 const parsed = JSON.parse(jsonMatch[0])
@@ -71,7 +78,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
             if (themes.length > 0) {
               analysisGroups.push({
                 msgIndex,
-                timestamp: msg.timestamp || msg.created_at, // Handle both old and new format
+                timestamp: msg.timestamp, // Use timestamp from ElizaRecord
                 themes
               })
             }
@@ -98,6 +105,25 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleString()
   }
+
+  const toggleSessionExpansion = (sessionIndex: number) => {
+    setExpandedSessions(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(sessionIndex)) {
+        newSet.delete(sessionIndex)
+      } else {
+        newSet.add(sessionIndex)
+      }
+      return newSet
+    })
+  }
+
+  // Initialize sessions as expanded by default when data loads
+  useEffect(() => {
+    if (pulseAnalyses.length > 0 && expandedSessions.size === 0) {
+      setExpandedSessions(new Set(pulseAnalyses.map((_, index) => index)))
+    }
+  }, [pulseAnalyses])
 
 
   if (loading) {
@@ -133,17 +159,30 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
       </div>
       
       <div className="triples-list">
-        {pulseAnalyses.map((analysis, analysisIndex) => (
-          <div key={analysis.msgIndex} className="pulse-analysis-group">
-            <div className="analysis-header">
-              <h4>Research Session #{analysisIndex + 1}</h4>
-              <div className="analysis-meta">
-                <span className="analysis-time">{formatTimestamp(analysis.timestamp)}</span>
-                <span className="themes-count">{analysis.themes.length} patterns</span>
+        {pulseAnalyses.map((analysis, analysisIndex) => {
+          const isSessionExpanded = expandedSessions.has(analysisIndex)
+          
+          return (
+            <div key={analysis.msgIndex} className="pulse-analysis-group">
+              <div 
+                className="analysis-header clickable"
+                onClick={() => toggleSessionExpansion(analysisIndex)}
+                style={{ cursor: 'pointer' }}
+              >
+                <h4>
+                  <span style={{ marginRight: '8px' }}>
+                    {isSessionExpanded ? '▼' : '▶'}
+                  </span>
+                  Research Session #{analysisIndex + 1}
+                </h4>
+                <div className="analysis-meta">
+                  <span className="analysis-time">{formatTimestamp(analysis.timestamp)}</span>
+                  <span className="themes-count">{analysis.themes.length} patterns</span>
+                </div>
               </div>
-            </div>
-            
-            <div className="analysis-themes">
+              
+              {isSessionExpanded && (
+                <div className="analysis-themes">
               {analysis.themes.map((theme, themeIndex) => {
                 const isExpanded = expandedTriplet?.msgIndex === analysis.msgIndex && expandedTriplet?.tripletIndex === themeIndex
                 
@@ -165,7 +204,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                             }
                           }}
                         >
-                          <span className="subject">User</span>{' '}
+                          <span className="subject">You</span>{' '}
                           <span className="action">{theme.predicate}</span>{' '}
                           <span className="object">{theme.object}</span>
                         </p>
@@ -206,10 +245,12 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                     </div>
                   </div>
                 )
-              })}
+                })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
