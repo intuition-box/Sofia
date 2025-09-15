@@ -6,20 +6,19 @@ import '../styles/CorePage.css'
 // Lazy loading des composants d'onglets
 const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
 const SignalsTab = lazy(() => import('./core-tabs/SignalsTab'))
-const ResonanceTab = lazy(() => import('./core-tabs/ResonanceTab'))
 const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
 
 
 const CorePage = () => {
   const { navigateTo } = useRouter()
-  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Resonance' | 'Pulse'>('Echoes')
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse'>('Echoes')
   const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
   const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
 
   return (
-    <div className="page">
+    <div className={`page ${activeGraphTab === 'Pulse' ? 'pulse-active' : ''}`}>
       <div className="tabs">
-        {['Echoes', 'Signals', 'Resonance', 'Pulse'].map(tab => (
+        {['Echoes', 'Signals', 'Pulse'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveGraphTab(tab as any)}
@@ -44,13 +43,7 @@ const CorePage = () => {
               setExpandedTriplet={setExpandedSignalTriplet}
             />
           )}
-          {activeGraphTab === 'Resonance' && <ResonanceTab />}
-          {activeGraphTab === 'Pulse' && (
-            <PulseTab 
-              expandedTriplet={expandedTriplet}
-              setExpandedTriplet={setExpandedTriplet}
-            />
-          )}
+          {activeGraphTab === 'Pulse' && <PulseTab />}
         </Suspense>
       </div>
     </div>

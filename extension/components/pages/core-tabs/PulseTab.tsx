@@ -1,15 +1,6 @@
-import { useState, useEffect } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/CorePage.css'
 
-interface PulseTabProps {
-  expandedTriplet: { msgIndex: number; tripletIndex: number } | null
-  setExpandedTriplet: (value: { msgIndex: number; tripletIndex: number } | null) => void
-}
-
-const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
-  const [address] = useStorage<string>("metamask-account")
-  
+const PulseTab = () => {
   return (
     <div className="triples-container">
       <div className="empty-state">

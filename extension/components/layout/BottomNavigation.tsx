@@ -1,7 +1,7 @@
 import { useStorage } from "@plasmohq/storage/hook"
 import { useRouter } from './RouterProvider'
 import sofiaIcon from '../../assets/Icon=Sofia.svg'
-import searchIcon from '../../assets/Icon=Search.svg'
+import resonanceIcon from '../../assets/ResonanceIcon.svg'
 import personIcon from '../../assets/Icon=person.svg'
 import settingsIcon from '../../assets/Icon=Settings.svg'
 import '../styles/BottomNavigation.css'
@@ -27,15 +27,15 @@ const BottomNavigation = () => {
         <span className="nav-text">Sofia</span>
       </button>
       <button 
-        onClick={() => currentPage === 'search' ? navigateTo('home-connected') : navigateTo('search')}
-        className={`nav-button ${currentPage === 'search' ? 'active' : ''}`}
+        onClick={() => currentPage === 'resonance' ? navigateTo('home-connected') : navigateTo('resonance')}
+        className={`nav-button ${currentPage === 'resonance' ? 'active' : ''}`}
       >
         <img 
-          src={searchIcon} 
-          alt="Search" 
+          src={resonanceIcon} 
+          alt="Resonance" 
           className="nav-icon"
         />
-        <span className="nav-text">Search</span>
+        <span className="nav-text">Resonance</span>
       </button>
       <button 
         onClick={() => currentPage === 'profile' ? navigateTo('home-connected') : navigateTo('profile')}

@@ -1,5 +1,5 @@
 import { useStorage } from "@plasmohq/storage/hook"
-import SplineBackground from '../ui/Splinebackground'
+import Background from './background'
 import { useRouter } from './RouterProvider'
 import '../styles/Global.css'
 import '../styles/AppLayout.css'
@@ -14,11 +14,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <div className="app-container">
-      <SplineBackground />
+      <Background />
       {(account && currentPage !== 'home-connected') || (!account && currentPage === 'home') ? (
         <div className="app-overlay" />
       ) : null}
-      
+
       <div className="app-content">
         {children}
       </div>
