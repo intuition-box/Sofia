@@ -25,10 +25,11 @@ export const THEMEEXTRACTOR_IDS = {
 }
 
 export const PULSEAGENT_IDS = {
-  CHANNEL_ID: "ce76c7e8-51c8-483e-ae33-748a7abb6017",
-  ROOM_ID:  "ce76c7e8-51c8-483e-ae33-748a7abb6017",
+  CHANNEL_ID: "e31c0aa1-04c8-481c-89bf-be24c1dfb93d",
+  ROOM_ID: "e31c0aa1-04c8-481c-89bf-be24c1dfb93d",
   SERVER_ID: "00000000-0000-0000-0000-000000000000",
   AGENT_ID: "8afb486a-3c96-0569-b112-4a7f465862b2",
+  AUTHOR_ID: "613461d9-c0bb-439f-a628-bae1e7b7950c"
 }
 
 // --- Constants ---

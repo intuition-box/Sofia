@@ -218,3 +218,63 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
   console.log("🎨 [websocket.ts] ThemeExtractor socket initialization completed")
 }
 
+// === 4. Initialiser WebSocket pour PulseAgent ===
+export async function initializePulseSocket(): Promise<void> {
+  socketPulse = io("http://localhost:3000", commonSocketConfig)
+
+  socketPulse.on("connect", () => {
+    console.log("✅ [websocket.ts] Connected to PulseAgent, socket ID:", socketPulse.id)
+
+    const joinMessage = {
+      type: 1,
+      payload: {
+        roomId: PULSEAGENT_IDS.ROOM_ID,
+        entityId: PULSEAGENT_IDS.AUTHOR_ID
+      }
+    }
+    
+    console.log("📨 [websocket.ts] Sending room join for PulseAgent:", joinMessage)
+    socketPulse.emit("message", joinMessage)
+    console.log("✅ [websocket.ts] Room join sent for PulseAgent")
+  })
+
+  socketPulse.on("messageBroadcast", async (data) => {
+    if ((data.roomId === PULSEAGENT_IDS.ROOM_ID || data.channelId === PULSEAGENT_IDS.CHANNEL_ID) && 
+        data.senderId === PULSEAGENT_IDS.AGENT_ID) {
+      console.log("📩 PulseAgent response received")
+      console.log("🫀 RAW MESSAGE from PulseAgent:", data.text)
+      
+      // Store pulse analysis results
+      try {
+        const newMessage = {
+          id: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          content: { text: data.text },
+          created_at: Date.now(),
+          processed: false,
+          type: 'pulse_analysis'
+        }
+
+        await elizaDataService.storeMessage(newMessage, newMessage.id)
+        console.log("✅ [websocket.ts] Pulse analysis stored:", { id: newMessage.id })
+        
+      } catch (error) {
+        console.error("❌ [websocket.ts] Failed to store pulse analysis:", error)
+      }
+    }
+  })
+
+  socketPulse.on("connect_error", (error) => {
+    console.error("❌ [websocket.ts] PulseAgent connection error:", error)
+  })
+
+  socketPulse.on("disconnect", (reason) => {
+    console.warn("🔌 [websocket.ts] PulseAgent socket disconnected:", reason)
+    setTimeout(() => {
+      console.log("🔄 [websocket.ts] Attempting to reconnect PulseAgent...")
+      initializePulseSocket()
+    }, 5000)
+  })
+  
+  console.log("🫀 [websocket.ts] PulseAgent socket initialization completed")
+}
+

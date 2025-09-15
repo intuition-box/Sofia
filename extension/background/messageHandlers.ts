@@ -5,8 +5,8 @@ import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
-import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis } from "./websocket"
-import { getAllBookmarks, getAllHistory } from "./messageSenders"
+import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis, getPulseSocket } from "./websocket"
+import { getAllBookmarks, getAllHistory, sendMessageToPulse } from "./messageSenders"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordPageForIntention, 
@@ -186,20 +186,49 @@ async function handlePulseAnalysis(sendResponse: (response: any) => void): Promi
 
 // Function to send pulse data to PulseAgent
 async function sendPulseDataToAgent(pulseData: any[]): Promise<{success: boolean, message: string}> {
+  // Clean data to avoid cyclic references
+  const cleanData = pulseData.map(data => ({
+    url: data.url || '',
+    title: data.title || '',
+    keywords: data.keywords || '',
+    description: data.description || '',
+    timestamp: data.timestamp || Date.now()
+  }))
+
   console.log("🫀 [Pulse] Sending to PulseAgent:", {
-    totalTabs: pulseData.length,
-    data: pulseData.map(d => ({
+    totalTabs: cleanData.length,
+    data: cleanData.map(d => ({
       url: d.url,
       title: d.title.slice(0, 30),
-      keywordsCount: d.keywords.length,
-      tabId: d.tabId
+      keywordsCount: d.keywords.length
     }))
   })
   
-  // TODO: Replace with actual WebSocket send to PulseAgent
-  return {
-    success: true,
-    message: `✅ Pulse analysis completed! Collected data from ${pulseData.length} tabs and sent to PulseAgent.`
+  try {
+    const pulseSocket = getPulseSocket()
+    
+    if (!pulseSocket?.connected) {
+      console.warn("⚠️ PulseAgent socket not connected")
+      return {
+        success: false,
+        message: "❌ PulseAgent not connected. Make sure PulseAgent is running."
+      }
+    }
+    
+    // Send to PulseAgent via WebSocket
+    sendMessageToPulse(pulseSocket, cleanData)
+    
+    return {
+      success: true,
+      message: `✅ Pulse analysis completed! Collected data from ${cleanData.length} tabs and sent to PulseAgent.`
+    }
+    
+  } catch (error) {
+    console.error("❌ [Pulse] Failed to send to PulseAgent:", error)
+    return {
+      success: false,
+      message: `❌ Failed to send pulse data: ${error.message}`
+    }
   }
 }
 
