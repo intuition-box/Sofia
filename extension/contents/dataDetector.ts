@@ -192,20 +192,34 @@ class DataDetector {
   }
 
   private determineTwitterAction(button: HTMLElement): string {
-    const text = button.textContent?.toLowerCase() || ''
+    const text = button.textContent?.toLowerCase().trim() || ''
     const ariaLabel = button.getAttribute('aria-label')?.toLowerCase() || ''
     
-    // Check if it's currently "Following" (which means clicking will unfollow)
-    if (text.includes('following') || ariaLabel.includes('following')) {
-      return 'unfollowed'
-    }
+    console.log('🐦 [DataDetector] Button text:', `"${text}"`, 'aria-label:', `"${ariaLabel}"`)
     
-    // Check if it's "Follow" (which means clicking will follow)
-    if (text.includes('follow') || ariaLabel.includes('follow')) {
+    // Check for exact text matches
+    if (text === 'follow') {
+      console.log('🐦 [DataDetector] Detected FOLLOW action')
       return 'followed'
     }
     
-    // Default fallback
+    if (text === 'following' || text === 'unfollow') {
+      console.log('🐦 [DataDetector] Detected UNFOLLOW action')  
+      return 'unfollowed'
+    }
+    
+    // Check aria-label patterns
+    if (ariaLabel.includes('follow') && !ariaLabel.includes('following')) {
+      console.log('🐦 [DataDetector] Detected FOLLOW action from aria-label')
+      return 'followed'
+    }
+    
+    if (ariaLabel.includes('following') || ariaLabel.includes('unfollow')) {
+      console.log('🐦 [DataDetector] Detected UNFOLLOW action from aria-label')
+      return 'unfollowed'
+    }
+    
+    console.log('🐦 [DataDetector] Default to FOLLOW action')
     return 'followed'
   }
 
