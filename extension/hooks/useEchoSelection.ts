@@ -125,6 +125,14 @@ export const useEchoSelection = ({
       // Refresh messages to ensure consistency (after local updates)
       await refreshMessages()
       
+      // Notify background to update badge count after deletion
+      try {
+        chrome.runtime.sendMessage({ type: 'TRIPLETS_DELETED' })
+        console.log('📤 Notified background of triplet deletion')
+      } catch (error) {
+        console.error('❌ Failed to notify background of triplet deletion:', error)
+      }
+      
     } catch (error) {
       console.error('❌ Failed to delete selected messages:', error)
       // Don't update local state if database operations failed

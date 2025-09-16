@@ -47,7 +47,13 @@ export interface MessageData {
   | "RECORD_PREDICATE"
   | "GET_UPGRADE_SUGGESTIONS"
   | "CONNECT_DISCORD"
-  | "CONNECT_X";
+  | "CONNECT_X"
+  | "STORE_DETECTED_TRIPLETS"
+  | "UPDATE_ECHO_BADGE" 
+  | "TRIPLET_PUBLISHED"
+  | "TRIPLETS_DELETED"
+  | "INITIALIZE_BADGE"
+  | "START_PULSE_ANALYSIS";
   data: any;
   pageLoadTime?: number;
   tabId?: number;

@@ -2,6 +2,16 @@ import { initializeChatbotSocket , initializeSofiaSocket, initializeThemeExtract
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 
+// Initialize badge count on startup
+async function initializeBadgeCount(): Promise<void> {
+  try {
+    // Send message to messageHandlers to count and update badge
+    chrome.runtime.sendMessage({ type: 'INITIALIZE_BADGE' })
+  } catch (error) {
+    console.error('❌ [index.ts] Failed to initialize badge count:', error)
+  }
+}
+
 
 async function init(): Promise<void> {
   console.log("🚀 [index.ts] Starting extension initialization...")
@@ -17,6 +27,8 @@ async function init(): Promise<void> {
   initializePulseSocket()
   console.log("📨 [index.ts] Setting up message handlers...");
   setupMessageHandlers();
+  console.log("🔔 [index.ts] Initializing badge count...");
+  await initializeBadgeCount();
   console.log("✅ [index.ts] Extension initialization completed")
 
 }

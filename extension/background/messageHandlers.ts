@@ -34,6 +34,55 @@ async function updateEchoBadge(count: number) {
   }
 }
 
+// Count available (unpublished) triplets in IndexedDB
+async function countAvailableEchoes(): Promise<number> {
+  try {
+    // Load published triplet IDs to exclude them
+    const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
+    
+    // Get all parsed messages from IndexedDB
+    const messages = await elizaDataService.getMessagesByType('parsed_message')
+    
+    let availableCount = 0
+    
+    for (const record of messages) {
+      if (record.type === 'parsed_message' && record.content) {
+        try {
+          // Parse the content if it's a string
+          let parsed: any
+          if (typeof record.content === 'string') {
+            parsed = JSON.parse(record.content)
+          } else if (record.content && typeof record.content === 'object') {
+            parsed = record.content as any
+          } else {
+            continue
+          }
+          
+          if (parsed && parsed.triplets && Array.isArray(parsed.triplets) && parsed.triplets.length > 0) {
+            parsed.triplets.forEach((triplet: any, index: number) => {
+              const tripletId = `${record.messageId}_${index}`
+              
+              // Only count if not already published
+              if (!publishedTripletIds.includes(tripletId)) {
+                availableCount++
+              }
+            })
+          }
+        } catch (error) {
+          console.error('❌ [Badge] Failed to parse message content:', error)
+          continue
+        }
+      }
+    }
+    
+    console.log('🔔 [Badge] Counted available echoes:', availableCount)
+    return availableCount
+  } catch (error) {
+    console.error('❌ [Badge] Failed to count available echoes:', error)
+    return 0
+  }
+}
+
 // Buffer temporaire pour synchroniser PAGE_DATA et PAGE_DURATION
 const pageDataBuffer = new Map<string, { data: PageData; loadTime: number }>()
 
@@ -299,6 +348,10 @@ async function handleStoreDetectedTriplets(message: any, sendResponse: (response
       platform: metadata.hostname 
     })
     
+    // Update badge count after storing new triplets
+    const availableCount = await countAvailableEchoes()
+    await updateEchoBadge(availableCount)
+    
     sendResponse({ success: true, id: newMessage.id, count: triplets.length })
   } catch (error) {
     console.error("❌ [messageHandlers.ts] Failed to store detected triplets:", error)
@@ -468,8 +521,40 @@ export function setupMessageHandlers(): void {
 
 
       case "UPDATE_ECHO_BADGE":
-        const count = message.data?.count || 0
+        const count = (message as any).data?.count || 0
         updateEchoBadge(count)
+        sendResponse({ success: true })
+        return true
+
+      case "TRIPLET_PUBLISHED":
+        // Update badge when a triplet is published (becomes unavailable)
+        countAvailableEchoes().then(availableCount => {
+          updateEchoBadge(availableCount)
+        }).catch(error => {
+          console.error('❌ Failed to update badge after triplet published:', error)
+        })
+        sendResponse({ success: true })
+        return true
+
+      case "TRIPLETS_DELETED":
+        // Update badge when triplets are deleted from Echoes
+        countAvailableEchoes().then(availableCount => {
+          updateEchoBadge(availableCount)
+          console.log('🔔 [Badge] Updated after triplet deletion:', availableCount)
+        }).catch(error => {
+          console.error('❌ Failed to update badge after triplets deleted:', error)
+        })
+        sendResponse({ success: true })
+        return true
+
+      case "INITIALIZE_BADGE":
+        // Initialize badge count on extension startup
+        countAvailableEchoes().then(availableCount => {
+          updateEchoBadge(availableCount)
+          console.log('🔔 [Badge] Initialized with count:', availableCount)
+        }).catch(error => {
+          console.error('❌ Failed to initialize badge count:', error)
+        })
         sendResponse({ success: true })
         return true
         

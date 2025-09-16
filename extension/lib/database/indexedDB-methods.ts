@@ -171,6 +171,13 @@ export class ElizaDataService {
       existingIds.push(tripletId)
       await this.storePublishedTripletIds(existingIds)
       console.log('🚫 Added triplet to published list:', tripletId)
+      
+      // Notify background to update badge count
+      try {
+        chrome.runtime.sendMessage({ type: 'TRIPLET_PUBLISHED' })
+      } catch (error) {
+        console.error('❌ Failed to notify background of published triplet:', error)
+      }
     }
   }
 
