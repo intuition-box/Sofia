@@ -258,6 +258,41 @@ async function handleStoreBookmarkTriplets(message: any, sendResponse: (response
   }
 }
 
+// Handler for STORE_DETECTED_TRIPLETS
+async function handleStoreDetectedTriplets(message: any, sendResponse: (response: any) => void): Promise<void> {
+  console.log('🔍 [messageHandlers.ts] STORE_DETECTED_TRIPLETS request received')
+  try {
+    const { triplets, metadata } = message
+    
+    // Format triplets as text for storage
+    const tripletsText = JSON.stringify({
+      triplets: triplets,
+      metadata: metadata,
+      type: 'detected_triplets'
+    })
+    
+    // Store in IndexedDB
+    const newMessage = {
+      id: `detected_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      content: { text: tripletsText },
+      created_at: Date.now(),
+      processed: false
+    }
+    
+    await elizaDataService.storeMessage(newMessage, newMessage.id)
+    console.log('✅ [messageHandlers.ts] Detected triplets stored:', { 
+      id: newMessage.id, 
+      count: triplets.length,
+      platform: metadata.hostname 
+    })
+    
+    sendResponse({ success: true, id: newMessage.id, count: triplets.length })
+  } catch (error) {
+    console.error("❌ [messageHandlers.ts] Failed to store detected triplets:", error)
+    sendResponse({ success: false, error: error.message })
+  }
+}
+
 export function setupMessageHandlers(): void {
   chrome.runtime.onMessage.addListener((message: ChromeMessage, _sender, sendResponse) => {
     switch (message.type) {
@@ -338,6 +373,10 @@ export function setupMessageHandlers(): void {
 
       case "STORE_BOOKMARK_TRIPLETS":
         handleStoreBookmarkTriplets(message, sendResponse)
+        return true
+
+      case "STORE_DETECTED_TRIPLETS":
+        handleStoreDetectedTriplets(message, sendResponse)
         return true
 
 
