@@ -306,57 +306,6 @@ async function handleStoreDetectedTriplets(message: any, sendResponse: (response
   }
 }
 
-// Handler for EXTRACT_EXISTING_FOLLOWS
-async function handleExtractFollows(sendResponse: (response: any) => void): Promise<void> {
-  try {
-    console.log("🔍 [messageHandlers.ts] Starting follow extraction...")
-    
-    // Get active tab
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-    const activeTab = tabs[0]
-    
-    if (!activeTab?.id || !activeTab.url) {
-      sendResponse({ 
-        success: false, 
-        error: "No active tab found" 
-      })
-      return
-    }
-
-    // Check if tab is on supported platform
-    const hostname = new URL(activeTab.url).hostname
-    const supportedPlatforms = ['twitter.com', 'x.com', 'github.com', 'linkedin.com']
-    
-    if (!supportedPlatforms.some(platform => hostname.includes(platform))) {
-      sendResponse({ 
-        success: false, 
-        error: `Platform ${hostname} not supported. Please go to Twitter, GitHub, or LinkedIn.`
-      })
-      return
-    }
-
-    // Send message to content script to extract follows
-    const response = await chrome.tabs.sendMessage(activeTab.id, { 
-      type: "EXTRACT_FOLLOWS" 
-    })
-    
-    if (response?.success) {
-      sendResponse({
-        success: true,
-        message: `✅ Successfully extracted ${response.count || 0} existing follows from ${hostname}`
-      })
-    } else {
-      sendResponse({
-        success: false,
-        error: response?.error || "Failed to extract follows"
-      })
-    }
-    
-  } catch (error) {
-    console.error("❌ [messageHandlers.ts] Follow extraction failed:", error)
-    sendResponse({ success: false, error: error.message })
-  }
-}
 
 export function setupMessageHandlers(): void {
   chrome.runtime.onMessage.addListener((message: ChromeMessage, _sender, sendResponse) => {
@@ -517,9 +466,6 @@ export function setupMessageHandlers(): void {
         handlePulseAnalysis(sendResponse)
         return true
 
-      case "EXTRACT_EXISTING_FOLLOWS":
-        handleExtractFollows(sendResponse)
-        return true
 
       case "UPDATE_ECHO_BADGE":
         const count = message.data?.count || 0

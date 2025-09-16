@@ -70,10 +70,6 @@ const SettingsPage = () => {
     chrome.runtime.sendMessage({ type: 'START_PULSE_ANALYSIS' })
   }
 
-  const handleExtractFollows = async () => {
-    if (!confirm('Extract your existing follows from the current platform? This will only work on Twitter, GitHub, or LinkedIn.')) return
-    chrome.runtime.sendMessage({ type: 'EXTRACT_EXISTING_FOLLOWS' })
-  }
 
   return (
     <div className="page settings-page">
@@ -168,22 +164,6 @@ const SettingsPage = () => {
               🫀 Pulse Analysis
             </button>
 
-            <button
-              onClick={handleExtractFollows}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              🔍 Extract Follows
-            </button>
           </div>
         </div>
 
