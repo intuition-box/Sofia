@@ -5,23 +5,8 @@ export const config: PlasmoCSConfig = {
   all_frames: false
 }
 
-interface AuthToken {
-  name: string
-  value: string
-  source: 'localStorage' | 'sessionStorage' | 'cookie'
-}
-
-interface ApiCall {
-  url: string
-  method: string
-  status?: number
-  timestamp: number
-  hasAuth: boolean
-}
 
 class DataDetector {
-  private authTokens: AuthToken[] = []
-  private apiCalls: ApiCall[] = []
   private hostname: string = window.location.hostname
 
   constructor() {
@@ -33,17 +18,8 @@ class DataDetector {
 
     console.log('🔍 [DataDetector] Starting on:', this.hostname)
     
-    // Extract auth tokens
-    this.extractAuthTokens()
-    
-    // Intercept API calls
-    this.interceptApiCalls()
-    
-    // Listen for button clicks
+    // Only setup Twitter follow/unfollow detection
     this.setupButtonListeners()
-    
-    // Analyze after page loads
-    setTimeout(() => this.analyzeAndCreateTriplets(), 2000)
   }
 
   private shouldIgnore(): boolean {
@@ -51,68 +27,7 @@ class DataDetector {
     return ignored.some(domain => this.hostname.includes(domain))
   }
 
-  private extractAuthTokens() {
-    const commonTokens = [
-      'authToken', 'access_token', 'jwt', 'session', 'token',
-      'github_token', '_gh_sess', 'JSESSIONID', 'li_at', 
-      'auth_token', 'ct0', 'reddit_session'
-    ]
 
-    // localStorage
-    commonTokens.forEach(tokenName => {
-      const value = localStorage.getItem(tokenName)
-      if (value) {
-        this.authTokens.push({ name: tokenName, value, source: 'localStorage' })
-      }
-    })
-
-    // sessionStorage
-    commonTokens.forEach(tokenName => {
-      const value = sessionStorage.getItem(tokenName)
-      if (value) {
-        this.authTokens.push({ name: tokenName, value, source: 'sessionStorage' })
-      }
-    })
-
-    // cookies
-    commonTokens.forEach(tokenName => {
-      const value = this.getCookie(tokenName)
-      if (value) {
-        this.authTokens.push({ name: tokenName, value, source: 'cookie' })
-      }
-    })
-
-    console.log('🔑 [DataDetector] Found auth tokens:', this.authTokens.length)
-  }
-
-  private getCookie(name: string): string | null {
-    const value = `; ${document.cookie}`
-    const parts = value.split(`; ${name}=`)
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null
-    return null
-  }
-
-  private interceptApiCalls() {
-    // Intercept fetch
-    const originalFetch = window.fetch
-    window.fetch = async (...args) => {
-      const response = await originalFetch(...args)
-      this.logApiCall(args[0], 'fetch', response.status)
-      return response
-    }
-
-    // Intercept XMLHttpRequest
-    const originalXHR = window.XMLHttpRequest.prototype.open
-    window.XMLHttpRequest.prototype.open = function(method: string, url: string, ...args: any[]) {
-      this.addEventListener('load', () => {
-        ;(window as any).dataDetector?.logApiCall(url, method, this.status)
-      })
-      return originalXHR.call(this, method, url, ...args)
-    }
-
-    // Make detector available for XHR
-    ;(window as any).dataDetector = this
-  }
 
   private setupButtonListeners() {
     // Twitter/X Follow button detection only
@@ -149,95 +64,40 @@ class DataDetector {
   }
 
   private findTwitterFollowButton(element: HTMLElement): HTMLElement | null {
-    // Check current element and up to 3 parents for Follow button indicators
+    // Check current element and up to 3 parents for Follow button
     let current = element
+    
     for (let i = 0; i < 4; i++) {
       if (!current) break
-
-      // Must be a button or have button role
-      const isButton = current.tagName === 'BUTTON' || 
-                      current.getAttribute('role') === 'button' ||
-                      current.classList.contains('btn')
-
-      if (isButton) {
-        // Check for common Twitter Follow button patterns
+      
+      if (current.tagName === 'BUTTON') {
         const text = current.textContent?.toLowerCase().trim() || ''
-        const ariaLabel = current.getAttribute('aria-label')?.toLowerCase() || ''
-        const dataTestId = current.getAttribute('data-testid') || ''
+        if (text === 'follow' || text === 'following' || text === 'unfollow') {
+          return current
+        }
+      }
 
-        // Must be EXACTLY follow/following, not just contain it
-        if (text === 'follow' || 
-            text === 'following' ||
-            text === 'unfollow' ||
-            ariaLabel.includes('follow') ||
-            dataTestId.includes('follow')) {
+      // Also check for elements with button role (might be needed for Twitter)
+      if (current.getAttribute('role') === 'button') {
+        const text = current.textContent?.toLowerCase().trim() || ''
+        if (text === 'follow' || text === 'following' || text === 'unfollow') {
           return current
         }
       }
 
       current = current.parentElement as HTMLElement
     }
-
     return null
   }
 
   private determineTwitterActionFromState(text: string, ariaLabel: string): string {
-    console.log('🐦 [DataDetector] Analyzing button state:', `text="${text}"`, `aria="${ariaLabel}"`)
-    
-    // CORRECTED LOGIC: Twitter DOM indicates the action that WILL happen
-    // DOM "following" → user WILL follow → create "followed" triplet
-    // DOM "unfollow" → user WILL unfollow → create "unfollowed" triplet
-    
-    // PRIORITY 1: Check exact text matches first
-    if (text === 'follow') {
-      console.log('🐦 [DataDetector] ✅ DOM says "follow" → User will FOLLOW')
-      return 'followed'
-    }
-    
-    if (text === 'following') {
-      console.log('🐦 [DataDetector] ✅ DOM says "following" → User will FOLLOW')  
-      return 'followed'
-    }
-    
+    // Simple logic: text "unfollow" = user will unfollow, everything else = follow
     if (text === 'unfollow') {
-      console.log('🐦 [DataDetector] ✅ DOM says "unfollow" → User will UNFOLLOW')  
       return 'unfollowed'
     }
-    
-    // PRIORITY 2: Check aria-label for clear patterns
-    if (ariaLabel.includes('following')) {
-      console.log('🐦 [DataDetector] ✅ Aria-label contains "following" → User will FOLLOW')
-      return 'followed'
-    }
-    
-    if (ariaLabel.includes('unfollow')) {
-      console.log('🐦 [DataDetector] ✅ Aria-label contains "unfollow" → User will UNFOLLOW')
-      return 'unfollowed'
-    }
-    
-    if (ariaLabel.startsWith('follow ') || ariaLabel.endsWith(' follow') || ariaLabel === 'follow') {
-      console.log('🐦 [DataDetector] ✅ Aria-label indicates FOLLOW action')
-      return 'followed'
-    }
-    
-    // PRIORITY 3: Text contains patterns (less reliable)
-    if (text.includes('follow') && !text.includes('unfollow')) {
-      console.log('🐦 [DataDetector] ⚠️ Text contains "follow" → Assuming FOLLOW action')
-      return 'followed'
-    }
-    
-    // PRIORITY 4: Default case with warning
-    console.log('🐦 [DataDetector] ❌ Could not determine action clearly! Defaulting to FOLLOW')
-    console.log('🐦 [DataDetector] 🔍 Debug info:', { text, ariaLabel })
     return 'followed'
   }
 
-  // Keep old method for compatibility if needed elsewhere
-  private determineTwitterAction(button: HTMLElement): string {
-    const text = button.textContent?.toLowerCase().trim() || ''
-    const ariaLabel = button.getAttribute('aria-label')?.toLowerCase() || ''
-    return this.determineTwitterActionFromState(text, ariaLabel)
-  }
 
   private extractTwitterUsername(): string | null {
     // Try to extract username from URL
@@ -260,13 +120,6 @@ class DataDetector {
     return null
   }
 
-
-
-
-
-
-
-
   private async createAndSendFollowTriplet(predicate: string, object: string, platform: string) {
     const triplet = {
       subject: 'You',
@@ -288,137 +141,6 @@ class DataDetector {
     }
   }
 
-  private logApiCall(url: string | URL | Request, method: string, status?: number) {
-    let urlString: string
-    if (typeof url === 'string') {
-      urlString = url
-    } else if (url instanceof URL) {
-      urlString = url.toString()
-    } else if (url instanceof Request) {
-      urlString = url.url
-    } else {
-      urlString = String(url)
-    }
-    
-    // Only log relevant API calls
-    if (this.isRelevantApiCall(urlString)) {
-      const hasAuth = this.authTokens.length > 0
-      
-      this.apiCalls.push({
-        url: urlString,
-        method,
-        status,
-        timestamp: Date.now(),
-        hasAuth
-      })
-      
-      console.log('🔗 [DataDetector] API call:', method, urlString)
-    }
-  }
-
-  private isRelevantApiCall(url: string): boolean {
-    // Check if it's an API call from the same domain
-    if (url.startsWith('/')) return true
-    if (url.includes(this.hostname)) return true
-    
-    // Check for common API patterns
-    const apiPatterns = ['/api/', '/graphql', '/rest/', '/v1/', '/v2/', '/v3/']
-    return apiPatterns.some(pattern => url.includes(pattern))
-  }
-
-  private async analyzeAndCreateTriplets() {
-    if (this.authTokens.length === 0 && this.apiCalls.length === 0) {
-      console.log('ℹ️ [DataDetector] No auth or API calls detected')
-      return
-    }
-
-    const triplets = this.createTriplets()
-    
-    if (triplets.length > 0) {
-      console.log('🎯 [DataDetector] Created triplets:', triplets.length)
-      await this.sendTriplets(triplets)
-    }
-  }
-
-  private createTriplets(): any[] {
-    const triplets = []
-    const currentUrl = window.location.href
-    const title = document.title
-
-    // Create triplets based on platform and actions
-    const platform = this.detectPlatform()
-    const actions = this.detectActions()
-
-    actions.forEach(action => {
-      triplets.push({
-        subject: 'You',
-        predicate: action.predicate,
-        object: action.object,
-        confidence: action.confidence,
-        platform: platform,
-        timestamp: Date.now(),
-        url: currentUrl,
-        evidence: action.evidence
-      })
-    })
-
-    return triplets
-  }
-
-  private detectPlatform(): string {
-    if (this.hostname.includes('twitter') || this.hostname.includes('x.com')) return 'Twitter'
-    return this.hostname
-  }
-
-  private detectActions(): any[] {
-    const actions = []
-    const path = window.location.pathname
-    const hasAuth = this.authTokens.length > 0
-
-    // Twitter/X patterns only
-    if (this.hostname.includes('twitter') || this.hostname.includes('x.com')) {
-      if (hasAuth && path === '/home') {
-        actions.push({
-          predicate: 'browsed',
-          object: 'Twitter timeline',
-          confidence: 0.8,
-          evidence: 'authenticated timeline access'
-        })
-      }
-    }
-
-    // Generic patterns based on API calls
-    this.apiCalls.forEach(call => {
-      if (call.url.includes('/like') || call.url.includes('/favorite')) {
-        actions.push({
-          predicate: 'liked',
-          object: 'content',
-          confidence: 0.7,
-          evidence: 'like API call'
-        })
-      }
-      if (call.url.includes('/follow')) {
-        actions.push({
-          predicate: 'followed',
-          object: 'user or content',
-          confidence: 0.7,
-          evidence: 'follow API call'
-        })
-      }
-      if (call.url.includes('/bookmark') || call.url.includes('/save')) {
-        actions.push({
-          predicate: 'saved',
-          object: 'content',
-          confidence: 0.8,
-          evidence: 'bookmark API call'
-        })
-      }
-    })
-
-    return actions
-  }
-
-
   private async sendTriplets(triplets: any[]) {
     try {
       chrome.runtime.sendMessage({
@@ -426,8 +148,6 @@ class DataDetector {
         triplets: triplets,
         metadata: {
           hostname: this.hostname,
-          authTokensCount: this.authTokens.length,
-          apiCallsCount: this.apiCalls.length,
           timestamp: Date.now()
         }
       })
@@ -437,10 +157,6 @@ class DataDetector {
       console.error('❌ [DataDetector] Failed to send triplets:', error)
     }
   }
-
-
-
-
 }
 
 // Initialize
