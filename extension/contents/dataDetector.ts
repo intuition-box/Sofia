@@ -45,8 +45,13 @@ class DataDetector {
     // Analyze after page loads
     setTimeout(() => this.analyzeAndCreateTriplets(), 2000)
     
-    // Extract existing follows after page loads
-    setTimeout(() => this.extractExistingFollows(), 3000)
+    // Listen for extract follows messages
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === "EXTRACT_FOLLOWS") {
+        this.handleExtractFollowsRequest(sendResponse)
+        return true // Keep the message channel open for async response
+      }
+    })
   }
 
   private shouldIgnore(): boolean {
@@ -817,6 +822,80 @@ class DataDetector {
     }))
 
     await this.sendTriplets(triplets)
+  }
+
+  private async handleExtractFollowsRequest(sendResponse: (response: any) => void) {
+    try {
+      console.log('🔍 [DataDetector] Extract follows requested for:', this.hostname)
+      
+      // Check if we have auth tokens
+      if (this.authTokens.length === 0) {
+        console.log('⚠️ [DataDetector] No auth tokens found')
+        sendResponse({ 
+          success: false, 
+          error: 'No authentication tokens found on this page',
+          count: 0 
+        })
+        return
+      }
+
+      let extractedCount = 0
+
+      // Extract based on current platform
+      if (this.hostname.includes('twitter') || this.hostname.includes('x.com')) {
+        console.log('🐦 [DataDetector] Extracting Twitter follows...')
+        await this.extractTwitterFollowing()
+        extractedCount = await this.getLastExtractionCount('Twitter')
+      } else if (this.hostname.includes('github')) {
+        console.log('🐙 [DataDetector] Extracting GitHub follows...')
+        await this.extractGitHubFollowing()
+        extractedCount = await this.getLastExtractionCount('GitHub')
+      } else if (this.hostname.includes('linkedin')) {
+        console.log('💼 [DataDetector] Extracting LinkedIn connections...')
+        await this.extractLinkedInConnections()
+        extractedCount = await this.getLastExtractionCount('LinkedIn')
+      } else {
+        console.log('❌ [DataDetector] Unsupported platform:', this.hostname)
+        sendResponse({ 
+          success: false, 
+          error: `Platform ${this.hostname} is not supported for follow extraction`,
+          count: 0 
+        })
+        return
+      }
+
+      console.log('✅ [DataDetector] Follow extraction completed:', extractedCount)
+      sendResponse({ 
+        success: true, 
+        count: extractedCount,
+        platform: this.detectPlatform()
+      })
+
+    } catch (error) {
+      console.error('❌ [DataDetector] Error extracting follows:', error)
+      sendResponse({ 
+        success: false, 
+        error: error.message || 'Unknown error occurred',
+        count: 0 
+      })
+    }
+  }
+
+  private async getLastExtractionCount(platform: string): Promise<number> {
+    // This is a simple estimation - in a real implementation you might want to 
+    // track the actual number of items extracted in each method
+    const recentTriplets = await this.getRecentTriplets(platform)
+    return recentTriplets.length
+  }
+
+  private async getRecentTriplets(platform: string): Promise<any[]> {
+    // Simple estimation - count recent triplets from this platform
+    // In a real implementation, you'd query the actual stored triplets
+    const now = Date.now()
+    const fiveMinutesAgo = now - (5 * 60 * 1000)
+    
+    // Return empty array for now - this would need proper IndexedDB query
+    return []
   }
 }
 

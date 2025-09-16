@@ -64,7 +64,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   } = useEchoSelection({
     availableEchoes,
     echoTriplets,
-    setEchoTriplets,
+    setEchoTriplets: (updatedTriplets) => {
+      setEchoTriplets(updatedTriplets)
+      
+      // Update badge after deletion
+      const availableCount = updatedTriplets.filter(t => t.status === 'available').length
+      chrome.runtime.sendMessage({
+        type: "UPDATE_ECHO_BADGE",
+        data: { count: availableCount }
+      }).catch(error => {
+        console.error('❌ Failed to update echo badge after deletion:', error)
+      })
+    },
     refreshMessages,
     elizaDataService,
     sofiaDB,
@@ -80,7 +91,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     echoTriplets,
     selectedEchoes,
     address: address || '',
-    onTripletsUpdate: setEchoTriplets,
+    onTripletsUpdate: (updatedTriplets) => {
+      setEchoTriplets(updatedTriplets)
+      
+      // Update badge after publishing
+      const availableCount = updatedTriplets.filter(t => t.status === 'available').length
+      chrome.runtime.sendMessage({
+        type: "UPDATE_ECHO_BADGE",
+        data: { count: availableCount }
+      }).catch(error => {
+        console.error('❌ Failed to update echo badge after publishing:', error)
+      })
+    },
     clearSelection
   })
 
@@ -130,6 +152,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         
         setEchoTriplets(newEchoTriplets)
         setHasInitialLoad(true)
+        
+        // Update badge with count of available echoes
+        const availableCount = newEchoTriplets.filter(t => t.status === 'available').length
+        chrome.runtime.sendMessage({
+          type: "UPDATE_ECHO_BADGE",
+          data: { count: availableCount }
+        }).catch(error => {
+          console.error('❌ Failed to update echo badge:', error)
+        })
         
       } catch (error) {
         console.error('❌ EchoesTab: Failed to transform messages:', error)
