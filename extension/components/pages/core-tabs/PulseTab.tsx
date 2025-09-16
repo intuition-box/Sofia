@@ -29,6 +29,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
   const [pulseAnalyses, setPulseAnalyses] = useState<PulseAnalysis[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedSessions, setExpandedSessions] = useState<Set<number>>(new Set())
+  const [expandedTriplets, setExpandedTriplets] = useState<Set<string>>(new Set())
 
   // Fetch pulse analyses from IndexedDB
   useEffect(() => {
@@ -111,8 +112,31 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
       const newSet = new Set(prev)
       if (newSet.has(sessionIndex)) {
         newSet.delete(sessionIndex)
+        // Close all triplets in this session when session closes
+        setExpandedTriplets(expandedTripletsSet => {
+          const newTripletSet = new Set(expandedTripletsSet)
+          for (const tripletId of newTripletSet) {
+            if (tripletId.startsWith(`${sessionIndex}-`)) {
+              newTripletSet.delete(tripletId)
+            }
+          }
+          return newTripletSet
+        })
       } else {
         newSet.add(sessionIndex)
+      }
+      return newSet
+    })
+  }
+
+  const toggleTripletExpansion = (sessionIndex: number, tripletIndex: number) => {
+    const tripletId = `${sessionIndex}-${tripletIndex}`
+    setExpandedTriplets(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(tripletId)) {
+        newSet.delete(tripletId)
+      } else {
+        newSet.add(tripletId)
       }
       return newSet
     })
@@ -179,7 +203,8 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
               {isSessionExpanded && (
                 <div className="analysis-themes">
               {analysis.themes.map((theme, themeIndex) => {
-                const isExpanded = expandedTriplet?.msgIndex === analysis.msgIndex && expandedTriplet?.tripletIndex === themeIndex
+                const tripletId = `${analysisIndex}-${themeIndex}`
+                const isExpanded = expandedTriplets.has(tripletId)
                 
                 return (
                   <div 
@@ -191,13 +216,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                       <div className="echo-header">
                         <p
                           className="triplet-text clickable"
-                          onClick={() => {
-                            if (isExpanded) {
-                              setExpandedTriplet(null)
-                            } else {
-                              setExpandedTriplet({ msgIndex: analysis.msgIndex, tripletIndex: themeIndex })
-                            }
-                          }}
+                          onClick={() => toggleTripletExpansion(analysisIndex, themeIndex)}
                         >
                           <span className="subject">You</span>{' '}
                           <span className="action">{theme.predicate}</span>{' '}
