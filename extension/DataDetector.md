@@ -58,3 +58,34 @@ Send to background → Store in IndexedDB
 
 - `contents/dataDetector.ts` - Main detection script
 - `background/messageHandlers.ts` - Storage handler (`STORE_DETECTED_TRIPLETS`)
+
+
+
+
+
+  1. Analyser la structure DOM de Twitter
+
+  - Examiner comment Twitter structure ses boutons follow
+  - Identifier les attributs ou classes CSS qui indiquent le vrai état
+  - Chercher des data-attributes ou states cachés
+
+  2. Améliorer la détection d'état
+
+  - Ne plus se fier uniquement au textContent
+  - Utiliser les classes CSS du bouton (ex: .following, .not-following)
+  - Chercher des attributs comme data-state, aria-pressed, etc.
+  - Analyser les styles computed pour voir l'état réel
+
+  3. Logique de détection robuste
+
+  - Créer une hiérarchie de détection : attributs > classes > texte
+  - Inverser la logique si nécessaire selon les patterns Twitter
+  - Ajouter des fallbacks basés sur le contexte de la page
+
+  4. Tests complets
+
+  - Tester sur différents états de boutons Twitter
+  - Vérifier la cohérence entre état visuel et détection
+  - S'assurer que follow → "followed" et unfollow → "unfollowed"
+
+  Le problème est donc que Twitter "ment" dans le DOM et on doit détecter l'état

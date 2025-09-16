@@ -115,19 +115,9 @@ class DataDetector {
   }
 
   private setupButtonListeners() {
-    // Twitter/X Follow button detection
+    // Twitter/X Follow button detection only
     if (this.hostname.includes('twitter') || this.hostname.includes('x.com')) {
       this.setupTwitterFollowDetection()
-    }
-    
-    // GitHub Follow button detection
-    if (this.hostname.includes('github')) {
-      this.setupGitHubFollowDetection()
-    }
-
-    // LinkedIn Connect button detection
-    if (this.hostname.includes('linkedin')) {
-      this.setupLinkedInConnectDetection()
     }
   }
 
@@ -140,12 +130,20 @@ class DataDetector {
       // Check if clicked element or its parent is a Follow button
       const followButton = this.findTwitterFollowButton(target)
       if (followButton) {
+        // IMPORTANT: Capture button state BEFORE the click changes it
+        const textBeforeClick = followButton.textContent?.toLowerCase().trim() || ''
+        const ariaLabelBeforeClick = followButton.getAttribute('aria-label')?.toLowerCase() || ''
+        
+        console.log('🐦 [DataDetector] Button state BEFORE click:', `text="${textBeforeClick}"`, `aria="${ariaLabelBeforeClick}"`)
+        
         const username = this.extractTwitterUsername()
-        const action = this.determineTwitterAction(followButton)
+        const action = this.determineTwitterActionFromState(textBeforeClick, ariaLabelBeforeClick)
         console.log('🐦 [DataDetector] Follow button clicked for:', username, 'Action:', action)
         
-        // Create triplet immediately for button click
-        this.createAndSendFollowTriplet(action, username || 'user', 'Twitter')
+        // Add slight delay to avoid rapid click issues
+        setTimeout(() => {
+          this.createAndSendFollowTriplet(action, username || 'user', 'Twitter')
+        }, 100)
       }
     })
   }
@@ -183,36 +181,62 @@ class DataDetector {
     return null
   }
 
+  private determineTwitterActionFromState(text: string, ariaLabel: string): string {
+    console.log('🐦 [DataDetector] Analyzing button state:', `text="${text}"`, `aria="${ariaLabel}"`)
+    
+    // CORRECTED LOGIC: Twitter DOM indicates the action that WILL happen
+    // DOM "following" → user WILL follow → create "followed" triplet
+    // DOM "unfollow" → user WILL unfollow → create "unfollowed" triplet
+    
+    // PRIORITY 1: Check exact text matches first
+    if (text === 'follow') {
+      console.log('🐦 [DataDetector] ✅ DOM says "follow" → User will FOLLOW')
+      return 'followed'
+    }
+    
+    if (text === 'following') {
+      console.log('🐦 [DataDetector] ✅ DOM says "following" → User will FOLLOW')  
+      return 'followed'
+    }
+    
+    if (text === 'unfollow') {
+      console.log('🐦 [DataDetector] ✅ DOM says "unfollow" → User will UNFOLLOW')  
+      return 'unfollowed'
+    }
+    
+    // PRIORITY 2: Check aria-label for clear patterns
+    if (ariaLabel.includes('following')) {
+      console.log('🐦 [DataDetector] ✅ Aria-label contains "following" → User will FOLLOW')
+      return 'followed'
+    }
+    
+    if (ariaLabel.includes('unfollow')) {
+      console.log('🐦 [DataDetector] ✅ Aria-label contains "unfollow" → User will UNFOLLOW')
+      return 'unfollowed'
+    }
+    
+    if (ariaLabel.startsWith('follow ') || ariaLabel.endsWith(' follow') || ariaLabel === 'follow') {
+      console.log('🐦 [DataDetector] ✅ Aria-label indicates FOLLOW action')
+      return 'followed'
+    }
+    
+    // PRIORITY 3: Text contains patterns (less reliable)
+    if (text.includes('follow') && !text.includes('unfollow')) {
+      console.log('🐦 [DataDetector] ⚠️ Text contains "follow" → Assuming FOLLOW action')
+      return 'followed'
+    }
+    
+    // PRIORITY 4: Default case with warning
+    console.log('🐦 [DataDetector] ❌ Could not determine action clearly! Defaulting to FOLLOW')
+    console.log('🐦 [DataDetector] 🔍 Debug info:', { text, ariaLabel })
+    return 'followed'
+  }
+
+  // Keep old method for compatibility if needed elsewhere
   private determineTwitterAction(button: HTMLElement): string {
     const text = button.textContent?.toLowerCase().trim() || ''
     const ariaLabel = button.getAttribute('aria-label')?.toLowerCase() || ''
-    
-    console.log('🐦 [DataDetector] Button text:', `"${text}"`, 'aria-label:', `"${ariaLabel}"`)
-    
-    // Check for exact text matches
-    if (text === 'follow') {
-      console.log('🐦 [DataDetector] Detected FOLLOW action')
-      return 'followed'
-    }
-    
-    if (text === 'following' || text === 'unfollow') {
-      console.log('🐦 [DataDetector] Detected UNFOLLOW action')  
-      return 'unfollowed'
-    }
-    
-    // Check aria-label patterns
-    if (ariaLabel.includes('follow') && !ariaLabel.includes('following')) {
-      console.log('🐦 [DataDetector] Detected FOLLOW action from aria-label')
-      return 'followed'
-    }
-    
-    if (ariaLabel.includes('following') || ariaLabel.includes('unfollow')) {
-      console.log('🐦 [DataDetector] Detected UNFOLLOW action from aria-label')
-      return 'unfollowed'
-    }
-    
-    console.log('🐦 [DataDetector] Default to FOLLOW action')
-    return 'followed'
+    return this.determineTwitterActionFromState(text, ariaLabel)
   }
 
   private extractTwitterUsername(): string | null {
@@ -236,138 +260,12 @@ class DataDetector {
     return null
   }
 
-  private setupGitHubFollowDetection() {
-    document.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement
-      if (!target) return
 
-      const followButton = this.findGitHubFollowButton(target)
-      if (followButton) {
-        const username = this.extractGitHubUsername()
-        const action = this.determineGitHubAction(followButton)
-        console.log('🐙 [DataDetector] GitHub Follow button clicked for:', username, 'Action:', action)
-        
-        this.createAndSendFollowTriplet(action, username || 'GitHub user', 'GitHub')
-      }
-    })
-  }
 
-  private findGitHubFollowButton(element: HTMLElement): HTMLElement | null {
-    let current = element
-    for (let i = 0; i < 4; i++) {
-      if (!current) break
 
-      // Must be a button
-      const isButton = current.tagName === 'BUTTON' || 
-                      current.classList.contains('btn') ||
-                      current.getAttribute('role') === 'button'
 
-      if (isButton) {
-        const text = current.textContent?.toLowerCase().trim() || ''
 
-        // Must be EXACTLY follow/unfollow
-        if (text === 'follow' || text === 'unfollow') {
-          return current
-        }
-      }
 
-      current = current.parentElement as HTMLElement
-    }
-
-    return null
-  }
-
-  private determineGitHubAction(button: HTMLElement): string {
-    const text = button.textContent?.toLowerCase() || ''
-    
-    // Check if it's "Unfollow" (which means currently following)
-    if (text.includes('unfollow')) {
-      return 'unfollowed'
-    }
-    
-    // Check if it's "Follow"
-    if (text.includes('follow')) {
-      return 'followed'
-    }
-    
-    // Default fallback
-    return 'followed'
-  }
-
-  private extractGitHubUsername(): string | null {
-    const path = window.location.pathname
-    const segments = path.split('/').filter(s => s)
-    
-    if (segments.length > 0 && !segments[0].match(/^(orgs|topics|trending|marketplace|pricing|team|enterprise)$/)) {
-      return segments[0]
-    }
-
-    return null
-  }
-
-  private setupLinkedInConnectDetection() {
-    document.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement
-      if (!target) return
-
-      const connectButton = this.findLinkedInConnectButton(target)
-      if (connectButton) {
-        const profileName = this.extractLinkedInProfileName()
-        console.log('💼 [DataDetector] LinkedIn Connect button clicked for:', profileName)
-        
-        this.createAndSendFollowTriplet('connected', profileName || 'LinkedIn user', 'LinkedIn')
-      }
-    })
-  }
-
-  private findLinkedInConnectButton(element: HTMLElement): HTMLElement | null {
-    let current = element
-    for (let i = 0; i < 4; i++) {
-      if (!current) break
-
-      // Must be a button
-      const isButton = current.tagName === 'BUTTON' || 
-                      current.getAttribute('role') === 'button' ||
-                      current.classList.contains('btn')
-
-      if (isButton) {
-        const text = current.textContent?.toLowerCase().trim() || ''
-        const ariaLabel = current.getAttribute('aria-label')?.toLowerCase() || ''
-
-        // Must be EXACTLY connect/follow
-        if (text === 'connect' || 
-            text === 'follow' || 
-            text === 'unfollow' ||
-            ariaLabel.includes('connect') ||
-            ariaLabel.includes('follow')) {
-          return current
-        }
-      }
-
-      current = current.parentElement as HTMLElement
-    }
-
-    return null
-  }
-
-  private extractLinkedInProfileName(): string | null {
-    // Try to extract name from profile page
-    const nameSelectors = [
-      'h1[class*="text-heading"]',
-      '.text-heading-xlarge',
-      '.pv-text-details__name',
-      '[data-anonymize="person-name"]'
-    ]
-
-    for (const selector of nameSelectors) {
-      const element = document.querySelector(selector)
-      if (element?.textContent?.trim()) {
-        return element.textContent.trim()
-      }
-    }
-
-    return null
-  }
 
   private async createAndSendFollowTriplet(predicate: string, object: string, platform: string) {
     const triplet = {
@@ -468,11 +366,7 @@ class DataDetector {
   }
 
   private detectPlatform(): string {
-    if (this.hostname.includes('github')) return 'GitHub'
-    if (this.hostname.includes('linkedin')) return 'LinkedIn'
     if (this.hostname.includes('twitter') || this.hostname.includes('x.com')) return 'Twitter'
-    if (this.hostname.includes('reddit')) return 'Reddit'
-    if (this.hostname.includes('youtube')) return 'YouTube'
     return this.hostname
   }
 
@@ -481,55 +375,7 @@ class DataDetector {
     const path = window.location.pathname
     const hasAuth = this.authTokens.length > 0
 
-    // GitHub patterns
-    if (this.hostname.includes('github')) {
-      if (path.includes('/star')) {
-        actions.push({
-          predicate: 'starred',
-          object: this.extractRepoName() || 'repository',
-          confidence: 0.9,
-          evidence: 'starred repository page'
-        })
-      }
-      if (path.includes('/follow')) {
-        actions.push({
-          predicate: 'followed',
-          object: this.extractUsername() || 'user',
-          confidence: 0.9,
-          evidence: 'followed user page'
-        })
-      }
-      if (hasAuth && this.isRepoPage()) {
-        actions.push({
-          predicate: 'explored',
-          object: this.extractRepoName() || 'repository',
-          confidence: 0.8,
-          evidence: 'authenticated repository view'
-        })
-      }
-    }
-
-    // LinkedIn patterns
-    if (this.hostname.includes('linkedin')) {
-      if (path.includes('/in/')) {
-        actions.push({
-          predicate: 'viewed',
-          object: 'LinkedIn profile',
-          confidence: 0.8,
-          evidence: 'profile page visit'
-        })
-      }
-      if (hasAuth && path.includes('/feed/')) {
-        actions.push({
-          predicate: 'browsed',
-          object: 'LinkedIn feed',
-          confidence: 0.7,
-          evidence: 'authenticated feed access'
-        })
-      }
-    }
-
-    // Twitter/X patterns
+    // Twitter/X patterns only
     if (this.hostname.includes('twitter') || this.hostname.includes('x.com')) {
       if (hasAuth && path === '/home') {
         actions.push({
@@ -572,29 +418,6 @@ class DataDetector {
     return actions
   }
 
-  private extractRepoName(): string | null {
-    const path = window.location.pathname
-    const parts = path.split('/').filter(p => p)
-    if (parts.length >= 2) {
-      return `${parts[0]}/${parts[1]}`
-    }
-    return null
-  }
-
-  private extractUsername(): string | null {
-    const path = window.location.pathname
-    const parts = path.split('/').filter(p => p)
-    if (parts.length >= 1) {
-      return parts[0]
-    }
-    return null
-  }
-
-  private isRepoPage(): boolean {
-    const path = window.location.pathname
-    const parts = path.split('/').filter(p => p)
-    return parts.length >= 2 && !parts.includes('orgs') && !parts.includes('users')
-  }
 
   private async sendTriplets(triplets: any[]) {
     try {
