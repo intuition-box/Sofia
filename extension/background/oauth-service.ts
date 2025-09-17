@@ -69,13 +69,17 @@ class OAuthService {
       clientId: oauthConfig.spotify.clientId,
       clientSecret: oauthConfig.spotify.clientSecret,
       redirectUri: 'https://fgggfhnffjffiipdpipbkkceaengpeag.chromiumapp.org/',
-      scope: ['user-read-private', 'playlist-read-private', 'user-top-read'],
+      scope: ['user-read-private', 'user-follow-read', 'user-top-read'],
       authUrl: 'https://accounts.spotify.com/authorize',
       tokenUrl: 'https://accounts.spotify.com/api/token',
       apiBaseUrl: 'https://api.spotify.com/v1',
       endpoints: {
         profile: '/me',
-        data: ['/me/playlists?limit=50', '/me/top/tracks?limit=50']
+        data: [
+          '/me/following?type=artist&limit=20',
+          '/me/top/tracks?limit=15',
+          '/me/top/artists?limit=15'
+        ]
       }
     })
 
@@ -271,6 +275,7 @@ class OAuthService {
 
     const authUrl = `${config.authUrl}?${params.toString()}`
     console.log(`🔍 [OAuth] Initiating ${platform} OAuth:`, authUrl)
+    console.log(`🔍 [OAuth] Scopes requested:`, config.scope.join(' '))
 
     chrome.tabs.create({ url: authUrl })
     return authUrl
@@ -285,17 +290,26 @@ class OAuthService {
     console.log(`🔍 [OAuth] Handling authorization code for ${platform}`)
 
     const tokenData = await this.exchangeCodeForToken(config, code)
-    const userData = await this.fetchUserData(platform)
     
+    // Store token BEFORE calling fetchUserData so getValidToken() can find it
     const userToken: UserToken = {
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token,
       expiresAt: tokenData.expires_in ? Date.now() + (tokenData.expires_in * 1000) : undefined,
       platform: platform,
-      userId: userData.profile?.id || userData.profile?.data?.[0]?.id
+      userId: undefined // Will be updated after profile fetch
     }
 
     await chrome.storage.local.set({ [`oauth_token_${platform}`]: userToken })
+    
+    // Now fetch user data with the stored token
+    const userData = await this.fetchUserData(platform)
+    
+    // Update token with user ID if we got one
+    if (userData.profile?.id || userData.profile?.data?.[0]?.id) {
+      userToken.userId = userData.profile?.id || userData.profile?.data?.[0]?.id
+      await chrome.storage.local.set({ [`oauth_token_${platform}`]: userToken })
+    }
     
     await this.storeTriplets(platform, userData)
     
@@ -342,10 +356,14 @@ class OAuthService {
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`❌ [OAuth] Token exchange failed:`, response.status, errorText)
       throw new Error(`Token exchange failed: ${response.status}`)
     }
 
-    return await response.json()
+    const tokenData = await response.json()
+    console.log(`✅ [OAuth] Token exchange successful, expires_in:`, tokenData.expires_in)
+    return tokenData
   }
 
   private async fetchUserData(platform: string, accessToken?: string): Promise<any> {
@@ -390,10 +408,14 @@ class OAuthService {
         headers['Client-Id'] = config.clientId
       }
 
+      console.log(`🔍 [OAuth] Fetching profile from: ${config.apiBaseUrl}${config.endpoints.profile}`)
+      console.log(`🔍 [OAuth] Headers:`, headers)
+      
       const profileResponse = await fetch(`${config.apiBaseUrl}${config.endpoints.profile}`, { headers })
       
       if (!profileResponse.ok) {
-        console.error(`❌ [OAuth] Profile fetch failed for ${platform}:`, profileResponse.status)
+        const errorText = await profileResponse.text()
+        console.error(`❌ [OAuth] Profile fetch failed for ${platform}:`, profileResponse.status, errorText)
         throw new Error(`Profile fetch failed: ${profileResponse.status}`)
       }
 
@@ -497,12 +519,12 @@ class OAuthService {
       }
       
       if (platform === 'spotify') {
-        if (endpoint.includes('playlists') && data.items) {
-          data.items.forEach((item: any) => {
+        if (endpoint.includes('following') && data.artists && data.artists.items) {
+          data.artists.items.forEach((artist: any) => {
             triplets.push({
               subject: 'You',
-              predicate: 'created_playlist',
-              object: item.name
+              predicate: 'follows',
+              object: artist.name
             })
           })
         }
@@ -511,8 +533,18 @@ class OAuthService {
           data.items.forEach((item: any) => {
             triplets.push({
               subject: 'You',
-              predicate: 'listens_to',
+              predicate: 'top_track',
               object: `${item.name} by ${item.artists[0].name}`
+            })
+          })
+        }
+        
+        if (endpoint.includes('top/artists') && data.items) {
+          data.items.forEach((artist: any) => {
+            triplets.push({
+              subject: 'You',
+              predicate: 'top_artist',
+              object: artist.name
             })
           })
         }
