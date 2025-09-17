@@ -61,7 +61,7 @@ class OAuthService {
       name: 'Spotify',
       clientId: oauthConfig.spotify.clientId,
       clientSecret: oauthConfig.spotify.clientSecret,
-      redirectUri: `https://${chrome.runtime.id}.chromiumapp.org/`,
+      redirectUri: 'https://fgggfhnffjffiipdpipbkkceaengpeag.chromiumapp.org/',
       scope: ['user-read-private', 'playlist-read-private', 'user-top-read'],
       authUrl: 'https://accounts.spotify.com/authorize',
       tokenUrl: 'https://accounts.spotify.com/api/token',
@@ -123,8 +123,7 @@ class OAuthService {
 
   private async handleTabCallback(url: string, tabId: number) {
     const redirectUris = [
-      'https://fgggfhnffjffiipdpipbkkceaengpeag.chromiumapp.org/',
-      `https://${chrome.runtime.id}.chromiumapp.org/`
+      'https://fgggfhnffjffiipdpipbkkceaengpeag.chromiumapp.org/'
     ]
 
     if (!redirectUris.some(uri => url.startsWith(uri))) {
@@ -370,7 +369,7 @@ class OAuthService {
         if (endpoint.includes('subscriptions') && data.items) {
           data.items.forEach((item: any) => {
             triplets.push({
-              subject: userId,
+              subject: 'You',
               predicate: 'subscribes_to',
               object: item.snippet.title
             })
@@ -380,7 +379,7 @@ class OAuthService {
         if (endpoint.includes('playlists') && data.items) {
           data.items.forEach((item: any) => {
             triplets.push({
-              subject: userId,
+              subject: 'You',
               predicate: 'created_playlist',
               object: item.snippet.title
             })
@@ -392,7 +391,7 @@ class OAuthService {
         if (endpoint.includes('playlists') && data.items) {
           data.items.forEach((item: any) => {
             triplets.push({
-              subject: userId,
+              subject: 'You',
               predicate: 'created_playlist',
               object: item.name
             })
@@ -402,7 +401,7 @@ class OAuthService {
         if (endpoint.includes('top/tracks') && data.items) {
           data.items.forEach((item: any) => {
             triplets.push({
-              subject: userId,
+              subject: 'You',
               predicate: 'listens_to',
               object: `${item.name} by ${item.artists[0].name}`
             })
@@ -414,7 +413,7 @@ class OAuthService {
         if (endpoint.includes('channels/followed') && data.data) {
           data.data.forEach((item: any) => {
             triplets.push({
-              subject: userId,
+              subject: 'You',
               predicate: 'follows',
               object: item.broadcaster_name
             })

@@ -155,7 +155,8 @@ const AccountTab = () => {
             justifyContent: 'center',
             padding: '0 20px',
             cursor: 'pointer',
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
+            marginBottom: '12px'
           }}
         >
           <img 
@@ -166,6 +167,126 @@ const AccountTab = () => {
           />
           <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
             {xUser ? `@${xUser.username}` : 'X'}
+          </span>
+        </button>
+
+        <button 
+          className="connect-button"
+          onClick={() => chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform: 'youtube' })}
+          style={{
+            backgroundImage: `url(${connectButtonOff})`,
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            border: 'none',
+            width: '271px',
+            height: '67px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 20px',
+            cursor: 'pointer',
+            backgroundColor: 'transparent',
+            marginBottom: '12px'
+          }}
+        >
+          <div style={{ 
+            width: '24px', 
+            height: '24px', 
+            marginRight: '12px',
+            backgroundColor: '#ff0000',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '12px'
+          }}>
+            YT
+          </div>
+          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+            YouTube
+          </span>
+        </button>
+
+        <button 
+          className="connect-button"
+          onClick={() => chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform: 'spotify' })}
+          style={{
+            backgroundImage: `url(${connectButtonOff})`,
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            border: 'none',
+            width: '271px',
+            height: '67px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 20px',
+            cursor: 'pointer',
+            backgroundColor: 'transparent',
+            marginBottom: '12px'
+          }}
+        >
+          <div style={{ 
+            width: '24px', 
+            height: '24px', 
+            marginRight: '12px',
+            backgroundColor: '#1db954',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '12px'
+          }}>
+            ♪
+          </div>
+          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+            Spotify
+          </span>
+        </button>
+
+        <button 
+          className="connect-button"
+          onClick={() => chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform: 'twitch' })}
+          style={{
+            backgroundImage: `url(${connectButtonOff})`,
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            border: 'none',
+            width: '271px',
+            height: '67px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 20px',
+            cursor: 'pointer',
+            backgroundColor: 'transparent',
+            marginBottom: '12px'
+          }}
+        >
+          <div style={{ 
+            width: '24px', 
+            height: '24px', 
+            marginRight: '12px',
+            backgroundColor: '#9146ff',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '12px'
+          }}>
+            TV
+          </div>
+          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+            Twitch
           </span>
         </button>
         
