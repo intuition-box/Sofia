@@ -94,19 +94,13 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         // Load blacklist of published triplets
         const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
         
-        console.log('🔍 EchoesTab: Processing', parsedMessages.length, 'parsed messages')
-        console.log('🔍 All parsed messages:', parsedMessages.map(m => ({ id: m.messageId, type: m.type, content: !!m.content })))
-        
         const newEchoTriplets: EchoTriplet[] = []
         
         for (const record of parsedMessages) {
-          console.log('🔍 Processing record:', record.messageId, record.type, !!record.content)
           if (record.type === 'parsed_message' && record.content) {
             const parsed = record.content as any // Already parsed by useElizaData
-            console.log('🔍 Parsed content:', JSON.stringify(parsed, null, 2))
             
             if (parsed && parsed.triplets && parsed.triplets.length > 0) {
-              console.log('🔍 Found triplets for', record.messageId, ':', parsed.triplets.length)
               parsed.triplets.forEach((triplet, index) => {
                 const tripletId = `${record.messageId}_${index}`
                 

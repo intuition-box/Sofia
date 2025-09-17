@@ -25,6 +25,13 @@ interface UserToken {
   userId?: string
 }
 
+interface SyncInfo {
+  platform: string
+  lastSyncAt: number
+  lastItemIds?: string[] // For platforms without date filters
+  totalTriplets: number
+}
+
 class OAuthService {
   private platforms: Map<string, PlatformConfig> = new Map()
 
@@ -110,7 +117,69 @@ class OAuthService {
           .catch(error => sendResponse({ success: false, error: error.message }))
         return true
       }
+
+      if (message.type === 'OAUTH_SYNC') {
+        this.syncPlatformData(message.platform)
+          .then(result => sendResponse({ success: true, data: result }))
+          .catch(error => sendResponse({ success: false, error: error.message }))
+        return true
+      }
+
+      if (message.type === 'OAUTH_GET_SYNC_INFO') {
+        this.getSyncStatus(message.platform)
+          .then(result => sendResponse({ success: true, data: result }))
+          .catch(error => sendResponse({ success: false, error: error.message }))
+        return true
+      }
+
+      if (message.type === 'OAUTH_RESET_SYNC') {
+        this.resetSyncInfo(message.platform)
+          .then(result => sendResponse({ success: true, data: result }))
+          .catch(error => sendResponse({ success: false, error: error.message }))
+        return true
+      }
     })
+  }
+
+  /**
+   * Manually sync data for a platform (public method)
+   */
+  async syncPlatformData(platform: string): Promise<any> {
+    console.log(`🔄 [OAuth] Manual sync requested for ${platform}`)
+    
+    const result = await chrome.storage.local.get(`oauth_token_${platform}`)
+    if (!result[`oauth_token_${platform}`]) {
+      throw new Error(`No token found for ${platform}. Please connect first.`)
+    }
+
+    return await this.fetchUserData(platform)
+  }
+
+  /**
+   * Get sync status for a platform (public method)
+   */
+  async getSyncStatus(platform?: string): Promise<any> {
+    if (platform) {
+      const syncInfo = await this.getLastSyncInfo(platform)
+      const tokenResult = await chrome.storage.local.get(`oauth_token_${platform}`)
+      const isConnected = !!tokenResult[`oauth_token_${platform}`]
+      
+      return {
+        platform,
+        connected: isConnected,
+        lastSync: syncInfo ? {
+          date: new Date(syncInfo.lastSyncAt).toISOString(),
+          triplets: syncInfo.totalTriplets
+        } : null
+      }
+    } else {
+      // Get status for all platforms
+      const platforms = ['youtube', 'spotify', 'twitch']
+      const statuses = await Promise.all(
+        platforms.map(p => this.getSyncStatus(p))
+      )
+      return statuses
+    }
   }
 
   private setupTabListener() {
@@ -216,7 +285,7 @@ class OAuthService {
     console.log(`🔍 [OAuth] Handling authorization code for ${platform}`)
 
     const tokenData = await this.exchangeCodeForToken(config, code)
-    const userData = await this.fetchUserData(platform, tokenData.access_token)
+    const userData = await this.fetchUserData(platform)
     
     const userToken: UserToken = {
       accessToken: tokenData.access_token,
@@ -279,13 +348,31 @@ class OAuthService {
     return await response.json()
   }
 
-  private async fetchUserData(platform: string, accessToken: string): Promise<any> {
+  private async fetchUserData(platform: string, accessToken?: string): Promise<any> {
     const config = this.platforms.get(platform)
     if (!config) {
       throw new Error(`Platform ${platform} not configured`)
     }
 
     console.log(`🔍 [OAuth] Fetching user data for ${platform}`)
+
+    // Get last sync info for incremental sync
+    const lastSync = await this.getLastSyncInfo(platform)
+    if (lastSync) {
+      console.log(`📊 [OAuth] Last sync for ${platform}:`, new Date(lastSync.lastSyncAt).toISOString(), `(${lastSync.totalTriplets} triplets)`)
+    } else {
+      console.log(`📊 [OAuth] First sync for ${platform}`)
+    }
+
+    // Get valid access token (with auto-refresh if needed)
+    let validAccessToken: string
+    if (accessToken) {
+      // For implicit flow (Twitch), use provided token
+      validAccessToken = accessToken
+    } else {
+      // For authorization code flow, get valid token with auto-refresh
+      validAccessToken = await this.getValidToken(platform)
+    }
 
     const userData = {
       platform: platform,
@@ -296,7 +383,7 @@ class OAuthService {
 
     try {
       const headers: HeadersInit = {
-        'Authorization': `Bearer ${accessToken}`
+        'Authorization': `Bearer ${validAccessToken}`
       }
 
       if (platform === 'twitch') {
@@ -319,15 +406,17 @@ class OAuthService {
         console.log(`🔍 [OAuth] Twitch user_id: ${userId}`)
       }
 
+      const allItemIds: string[] = []
+
       for (const endpoint of config.endpoints.data) {
         try {
-          let finalEndpoint = endpoint
+          let finalEndpoint = this.buildIncrementalEndpoint(platform, endpoint, lastSync)
           
           if (platform === 'twitch' && userId) {
             if (endpoint.includes('channels/followed')) {
-              finalEndpoint = `${endpoint}?user_id=${userId}`
+              finalEndpoint = `${finalEndpoint}?user_id=${userId}`
             } else if (endpoint.includes('streams/followed')) {
-              finalEndpoint = `${endpoint}?user_id=${userId}`
+              finalEndpoint = `${finalEndpoint}?user_id=${userId}`
             }
           }
           
@@ -337,10 +426,25 @@ class OAuthService {
           
           if (dataResponse.ok) {
             const data = await dataResponse.json()
-            userData.data[endpoint] = data
-            console.log(`✅ [OAuth] Data fetched from ${endpoint}:`, Object.keys(data))
             
-            const triplets = this.extractTriplets(platform, endpoint, data, userData.profile)
+            // Filter new items for incremental sync
+            const filteredData = this.filterNewItems(platform, endpoint, data, lastSync)
+            
+            const originalCount = this.getItemCount(data)
+            const filteredCount = this.getItemCount(filteredData)
+            
+            if (lastSync && filteredCount < originalCount) {
+              console.log(`📊 [OAuth] Incremental sync: ${filteredCount}/${originalCount} new items from ${endpoint}`)
+            }
+            
+            userData.data[endpoint] = filteredData
+            console.log(`✅ [OAuth] Data fetched from ${endpoint}:`, Object.keys(filteredData))
+            
+            // Extract item IDs for platforms without date support
+            const itemIds = this.extractItemIds(platform, data)
+            allItemIds.push(...itemIds)
+            
+            const triplets = this.extractTriplets(platform, endpoint, filteredData, userData.profile)
             userData.triplets.push(...triplets)
           } else {
             console.error(`❌ [OAuth] Data fetch failed for ${endpoint}:`, dataResponse.status)
@@ -348,6 +452,11 @@ class OAuthService {
         } catch (error) {
           console.error(`❌ [OAuth] Error fetching ${endpoint}:`, error)
         }
+      }
+
+      // Update sync info after successful sync
+      if (userData.triplets.length > 0 || !lastSync) {
+        await this.updateSyncInfo(platform, userData.triplets.length, allItemIds.length > 0 ? allItemIds : undefined)
       }
 
       console.log(`🔍 [OAuth] Total triplets extracted for ${platform}:`, userData.triplets.length)
@@ -454,6 +563,240 @@ class OAuthService {
 
   private generateState(): string {
     return Math.random().toString(36).substring(2) + Date.now().toString(36)
+  }
+
+  /**
+   * Check if a token is expired or will expire soon (within 5 minutes)
+   */
+  private isTokenExpired(token: UserToken): boolean {
+    if (!token.expiresAt) {
+      return false // No expiration info, assume valid
+    }
+    const fiveMinutes = 5 * 60 * 1000
+    return Date.now() >= (token.expiresAt - fiveMinutes)
+  }
+
+  /**
+   * Refresh an expired access token using refresh token
+   */
+  private async refreshAccessToken(platform: string, token: UserToken): Promise<UserToken> {
+    const config = this.platforms.get(platform)
+    if (!config || !config.clientSecret || !token.refreshToken) {
+      throw new Error(`Cannot refresh token for ${platform}: missing config or refresh token`)
+    }
+
+    console.log(`🔄 [OAuth] Refreshing token for ${platform}`)
+
+    const response = await fetch(config.tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
+        refresh_token: token.refreshToken,
+        grant_type: 'refresh_token'
+      })
+    })
+
+    if (!response.ok) {
+      console.error(`❌ [OAuth] Token refresh failed for ${platform}:`, response.status)
+      throw new Error(`Token refresh failed: ${response.status}`)
+    }
+
+    const tokenData = await response.json()
+    
+    const refreshedToken: UserToken = {
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token || token.refreshToken, // Keep old refresh token if new one not provided
+      expiresAt: tokenData.expires_in ? Date.now() + (tokenData.expires_in * 1000) : undefined,
+      platform: token.platform,
+      userId: token.userId
+    }
+
+    // Store refreshed token
+    await chrome.storage.local.set({ [`oauth_token_${platform}`]: refreshedToken })
+    
+    console.log(`✅ [OAuth] Token refreshed successfully for ${platform}`)
+    return refreshedToken
+  }
+
+  /**
+   * Get valid access token, refreshing if necessary
+   */
+  private async getValidToken(platform: string): Promise<string> {
+    const result = await chrome.storage.local.get(`oauth_token_${platform}`)
+    let token = result[`oauth_token_${platform}`] as UserToken
+
+    if (!token) {
+      throw new Error(`No token found for ${platform}. Please reconnect.`)
+    }
+
+    // Check if token needs refresh
+    if (this.isTokenExpired(token)) {
+      console.log(`⚠️ [OAuth] Token expired for ${platform}, refreshing...`)
+      try {
+        token = await this.refreshAccessToken(platform, token)
+      } catch (error) {
+        console.error(`❌ [OAuth] Failed to refresh token for ${platform}:`, error)
+        throw new Error(`Token refresh failed for ${platform}. Please reconnect.`)
+      }
+    }
+
+    return token.accessToken
+  }
+
+  /**
+   * Get last sync info for a platform
+   */
+  private async getLastSyncInfo(platform: string): Promise<SyncInfo | null> {
+    const result = await chrome.storage.local.get(`sync_info_${platform}`)
+    return result[`sync_info_${platform}`] || null
+  }
+
+  /**
+   * Update sync info after successful sync
+   */
+  private async updateSyncInfo(platform: string, newTriplets: number, itemIds?: string[]): Promise<void> {
+    const syncInfo: SyncInfo = {
+      platform,
+      lastSyncAt: Date.now(),
+      lastItemIds: itemIds,
+      totalTriplets: newTriplets
+    }
+    await chrome.storage.local.set({ [`sync_info_${platform}`]: syncInfo })
+    console.log(`💾 [OAuth] Sync info updated for ${platform}:`, syncInfo)
+  }
+
+  /**
+   * Build API endpoint with incremental sync parameters
+   */
+  private buildIncrementalEndpoint(platform: string, endpoint: string, lastSync: SyncInfo | null): string {
+    let modifiedEndpoint = endpoint
+
+    if (platform === 'youtube' && lastSync) {
+      const publishedAfter = new Date(lastSync.lastSyncAt).toISOString()
+      
+      if (endpoint.includes('subscriptions')) {
+        // YouTube subscriptions API doesn't support publishedAfter directly
+        // We'll use full sync but compare results
+        modifiedEndpoint = endpoint
+      } else if (endpoint.includes('playlists')) {
+        // YouTube playlists API doesn't support publishedAfter directly
+        // We'll use full sync but compare results
+        modifiedEndpoint = endpoint
+      }
+    }
+
+    if (platform === 'spotify' && lastSync) {
+      // Spotify APIs generally don't support date filters
+      // We'll use offset/limit and compare results
+      modifiedEndpoint = endpoint
+    }
+
+    if (platform === 'twitch' && lastSync) {
+      // Twitch APIs don't support date filters
+      // We'll compare with lastItemIds
+      modifiedEndpoint = endpoint
+    }
+
+    return modifiedEndpoint
+  }
+
+  /**
+   * Filter new items based on last sync
+   */
+  private filterNewItems(platform: string, endpoint: string, data: any, lastSync: SyncInfo | null): any {
+    if (!lastSync) {
+      return data // First sync, return all data
+    }
+
+    const filtered = { ...data }
+
+    if (platform === 'youtube') {
+      if (data.items && Array.isArray(data.items)) {
+        // Filter items that are newer than last sync
+        filtered.items = data.items.filter((item: any) => {
+          const itemDate = new Date(item.snippet?.publishedAt || item.snippet?.channelPublishedAt || '').getTime()
+          return itemDate > lastSync.lastSyncAt
+        })
+      }
+    }
+
+    if (platform === 'spotify') {
+      if (data.items && Array.isArray(data.items)) {
+        // For Spotify, compare with stored IDs since there's no reliable date
+        const lastIds = lastSync.lastItemIds || []
+        filtered.items = data.items.filter((item: any) => 
+          !lastIds.includes(item.id)
+        )
+      }
+    }
+
+    if (platform === 'twitch') {
+      if (data.data && Array.isArray(data.data)) {
+        // For Twitch, compare with stored IDs
+        const lastIds = lastSync.lastItemIds || []
+        filtered.data = data.data.filter((item: any) => 
+          !lastIds.includes(item.broadcaster_id || item.id)
+        )
+      }
+    }
+
+    return filtered
+  }
+
+  /**
+   * Extract item IDs for platforms without date support
+   */
+  private extractItemIds(platform: string, data: any): string[] {
+    const ids: string[] = []
+
+    if (platform === 'spotify' && data.items) {
+      data.items.forEach((item: any) => {
+        if (item.id) ids.push(item.id)
+      })
+    }
+
+    if (platform === 'twitch' && data.data) {
+      data.data.forEach((item: any) => {
+        const id = item.broadcaster_id || item.id
+        if (id) ids.push(id)
+      })
+    }
+
+    return ids
+  }
+
+  /**
+   * Get count of items in API response for different platforms
+   */
+  private getItemCount(data: any): number {
+    if (data.items && Array.isArray(data.items)) {
+      return data.items.length
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data.length
+    }
+    return 0
+  }
+
+  /**
+   * Reset sync info for a platform (force full sync on next run)
+   */
+  async resetSyncInfo(platform?: string): Promise<void> {
+    if (platform) {
+      await chrome.storage.local.remove(`sync_info_${platform}`)
+      console.log(`🗑️ [OAuth] Sync info reset for ${platform}`)
+    } else {
+      // Reset all platforms
+      const platforms = ['youtube', 'spotify', 'twitch']
+      for (const p of platforms) {
+        await chrome.storage.local.remove(`sync_info_${p}`)
+      }
+      console.log(`🗑️ [OAuth] Sync info reset for all platforms`)
+    }
   }
 }
 
