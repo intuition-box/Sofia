@@ -1,0 +1,153 @@
+// Platform data fetching with incremental sync
+import { UserData } from '../types/interfaces'
+import { TokenManager } from './TokenManager'
+import { SyncManager } from './SyncManager'
+import { PlatformRegistry } from '../platforms/PlatformRegistry'
+
+export class PlatformDataFetcher {
+  constructor(
+    private tokenManager: TokenManager,
+    private syncManager: SyncManager
+  ) {}
+
+  async fetchUserData(platform: string, providedToken?: string): Promise<UserData> {
+    const config = new PlatformRegistry().getConfig(platform)
+    if (!config) {
+      throw new Error(`Platform ${platform} not configured`)
+    }
+
+    console.log(`🔍 [OAuth] Fetching user data for ${platform}`)
+
+    // Get sync info for incremental sync
+    const lastSync = await this.syncManager.getLastSyncInfo(platform)
+    
+    // Get valid access token
+    let accessToken: string
+    if (providedToken) {
+      accessToken = providedToken // For implicit flow
+    } else {
+      accessToken = await this.tokenManager.getValidToken(platform)
+    }
+
+    const userData: UserData = {
+      platform: platform,
+      profile: null,
+      data: {},
+      triplets: []
+    }
+
+    try {
+      const headers: HeadersInit = {
+        'Authorization': `Bearer ${accessToken}`
+      }
+
+      if (config.requiresClientId) {
+        headers['Client-Id'] = config.clientId
+      }
+
+      // Fetch profile
+      const profileResponse = await fetch(`${config.apiBaseUrl}${config.endpoints.profile}`, { headers })
+      
+      if (!profileResponse.ok) {
+        throw new Error(`Profile fetch failed: ${profileResponse.status}`)
+      }
+
+      userData.profile = await profileResponse.json()
+
+      // Get user ID for platforms that need it
+      let userId = null
+      if (platform === 'twitch' && userData.profile.data?.[0]?.id) {
+        userId = userData.profile.data[0].id
+      }
+
+      // Fetch data from endpoints
+      const allItemIds: string[] = []
+
+      for (const endpoint of config.endpoints.data) {
+        try {
+          let finalEndpoint = endpoint
+          
+          // Add user_id for Twitch endpoints
+          if (platform === 'twitch' && userId) {
+            const separator = endpoint.includes('?') ? '&' : '?'
+            finalEndpoint = `${endpoint}${separator}user_id=${userId}`
+          }
+          
+          console.log(`🔍 [OAuth] Fetching: ${config.apiBaseUrl}${finalEndpoint}`)
+          
+          const dataResponse = await fetch(`${config.apiBaseUrl}${finalEndpoint}`, { headers })
+          
+          if (dataResponse.ok) {
+            const data = await dataResponse.json()
+            
+            // Filter for incremental sync
+            const filteredData = this.filterNewItems(platform, endpoint, data, lastSync)
+            
+            userData.data[endpoint] = filteredData
+            
+            // Extract IDs for next sync
+            const itemIds = this.extractItemIds(platform, data)
+            allItemIds.push(...itemIds)
+            
+          } else {
+            console.error(`❌ [OAuth] Data fetch failed for ${endpoint}:`, dataResponse.status)
+          }
+        } catch (error) {
+          console.error(`❌ [OAuth] Error fetching ${endpoint}:`, error)
+        }
+      }
+
+      // Update sync info
+      await this.syncManager.updateSyncInfo(platform, allItemIds)
+
+    } catch (error) {
+      console.error(`❌ [OAuth] Error fetching user data for ${platform}:`, error)
+      throw error
+    }
+
+    return userData
+  }
+
+  private filterNewItems(platform: string, endpoint: string, data: any, lastSync: any): any {
+    if (!lastSync) return data
+
+    const config = new PlatformRegistry().getConfig(platform)!
+    const filtered = { ...data }
+    const dataArray = data[config.dataStructure]
+
+    if (!Array.isArray(dataArray)) return data
+
+    if (config.dateField && platform === 'youtube') {
+      // Date-based filtering
+      filtered[config.dataStructure] = dataArray.filter((item: any) => {
+        const itemDate = new Date(this.getNestedValue(item, config.dateField!)).getTime()
+        return itemDate > lastSync.lastSyncAt
+      })
+    } else if (config.idField && lastSync.lastItemIds) {
+      // ID-based filtering
+      filtered[config.dataStructure] = dataArray.filter((item: any) => 
+        !lastSync.lastItemIds!.includes(item[config.idField!])
+      )
+    }
+
+    return filtered
+  }
+
+  private extractItemIds(platform: string, data: any): string[] {
+    const config = new PlatformRegistry().getConfig(platform)!
+    const ids: string[] = []
+
+    if (config.idField && data[config.dataStructure]) {
+      data[config.dataStructure].forEach((item: any) => {
+        const id = item[config.idField!]
+        if (id) ids.push(id)
+      })
+    }
+
+    return ids
+  }
+
+  private getNestedValue(obj: any, path: string): any {
+    return path.split('.').reduce((current, key) => current?.[key], obj)
+  }
+}
