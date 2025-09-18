@@ -45,7 +45,13 @@ const SettingsPage = () => {
       // Clear custom IndexedDB data (Eliza messages, triplets, etc.)
       await elizaDataService.clearAll()
 
-      alert('All storage cleared and wallet disconnected successfully!')
+      // Clear OAuth tokens and sync info
+      await chrome.storage.local.remove([
+        'oauth_token_youtube', 'oauth_token_spotify', 'oauth_token_twitch',
+        'sync_info_youtube', 'sync_info_spotify', 'sync_info_twitch'
+      ])
+
+      alert('All storage cleared, OAuth disconnected, and wallet disconnected successfully!')
     } catch (error) {
       console.error('❌ Failed to clear storage:', error)
       alert('Failed to clear storage. Please try again.')
@@ -107,7 +113,6 @@ const SettingsPage = () => {
           />
         </div>
 
-        {/* Import Section */}
         {/* Import Section */}
         <div className="settings-item">
           <span>Import & Analyze</span>

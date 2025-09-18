@@ -1,6 +1,7 @@
 import { initializeChatbotSocket , initializeSofiaSocket, initializeThemeExtractorSocket, initializePulseSocket} from "./websocket";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
+import "./oauth/index"; // Initialize OAuth service
 
 // Initialize badge count on startup
 async function initializeBadgeCount(): Promise<void> {

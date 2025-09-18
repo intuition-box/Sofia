@@ -18,6 +18,9 @@ out/
 .env.local
 .env.*.local
 
+# OAuth configuration (contains secrets)
+extension/background/oauth/config/oauth-config.ts
+
 # OS files
 .DS_Store
 Thumbs.db
