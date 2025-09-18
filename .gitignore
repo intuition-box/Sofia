@@ -19,7 +19,7 @@ out/
 .env.*.local
 
 # OAuth configuration (contains secrets)
-extension/config/oauth-config.ts
+extension/background/oauth/config/oauth-config.ts
 
 # OS files
 .DS_Store

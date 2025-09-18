@@ -11,6 +11,42 @@ const AccountTab = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [xUser, setXUser] = useStorage<any>("x-user")
   const [xFollowing, setXFollowing] = useState<any[]>([])
+  
+  // OAuth connection states
+  const [oauthTokens, setOauthTokens] = useState({
+    youtube: false,
+    spotify: false,
+    twitch: false
+  })
+
+  // Check OAuth token status on component mount
+  useEffect(() => {
+    const checkOAuthTokens = async () => {
+      const result = await chrome.storage.local.get([
+        'oauth_token_youtube',
+        'oauth_token_spotify', 
+        'oauth_token_twitch'
+      ])
+      
+      setOauthTokens({
+        youtube: !!result.oauth_token_youtube,
+        spotify: !!result.oauth_token_spotify,
+        twitch: !!result.oauth_token_twitch
+      })
+    }
+    
+    checkOAuthTokens()
+    
+    // Listen for storage changes to update connection states
+    const handleStorageChange = (changes: any) => {
+      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch) {
+        checkOAuthTokens()
+      }
+    }
+    
+    chrome.storage.onChanged.addListener(handleStorageChange)
+    return () => chrome.storage.onChanged.removeListener(handleStorageChange)
+  }, [])
 
   const mockUsers = [
     { id: 1, name: 'Peggie', description: 'Web3 builder focused on decentralization and blockchain innovation', avatar: 'https://randomuser.me/api/portraits/women/1.jpg', isOnline: true, isFromX: false, username: undefined },
@@ -100,7 +136,18 @@ const AccountTab = () => {
   }
 
 
-  // Fonction de déconnexion
+  // Fonction de connexion OAuth
+  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch') => {
+    chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
+  }
+
+  // Fonction de déconnexion OAuth (soft - garde le sync)
+  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch') => {
+    await chrome.storage.local.remove(`oauth_token_${platform}`)
+    // Note: On garde le sync_info pour éviter de re-télécharger les données
+  }
+
+  // Fonction de déconnexion X
   const disconnectAccount = async (platform: 'x') => {
     await setXUser(null)
     await chrome.storage.local.remove('x-access-token')
@@ -141,9 +188,9 @@ const AccountTab = () => {
       <div className="action-buttons-container">
         <button 
           className="connect-button"
-          onClick={() => chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform: 'youtube' })}
+          onClick={() => oauthTokens.youtube ? disconnectOAuth('youtube') : connectOAuth('youtube')}
           style={{
-            backgroundImage: `url(${connectButtonOff})`,
+            backgroundImage: `url(${oauthTokens.youtube ? connectButtonOn : connectButtonOff})`,
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
@@ -175,15 +222,15 @@ const AccountTab = () => {
             YT
           </div>
           <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
-            YouTube
+            {oauthTokens.youtube ? 'Disconnect YouTube' : 'Connect YouTube'}
           </span>
         </button>
 
         <button 
           className="connect-button"
-          onClick={() => chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform: 'spotify' })}
+          onClick={() => oauthTokens.spotify ? disconnectOAuth('spotify') : connectOAuth('spotify')}
           style={{
-            backgroundImage: `url(${connectButtonOff})`,
+            backgroundImage: `url(${oauthTokens.spotify ? connectButtonOn : connectButtonOff})`,
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
@@ -215,15 +262,15 @@ const AccountTab = () => {
             ♪
           </div>
           <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
-            Spotify
+            {oauthTokens.spotify ? 'Disconnect Spotify' : 'Connect Spotify'}
           </span>
         </button>
 
         <button 
           className="connect-button"
-          onClick={() => chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform: 'twitch' })}
+          onClick={() => oauthTokens.twitch ? disconnectOAuth('twitch') : connectOAuth('twitch')}
           style={{
-            backgroundImage: `url(${connectButtonOff})`,
+            backgroundImage: `url(${oauthTokens.twitch ? connectButtonOn : connectButtonOff})`,
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
@@ -255,7 +302,7 @@ const AccountTab = () => {
             TV
           </div>
           <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
-            Twitch
+            {oauthTokens.twitch ? 'Disconnect Twitch' : 'Connect Twitch'}
           </span>
         </button>
         

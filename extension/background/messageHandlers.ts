@@ -17,7 +17,7 @@ import {
   getIntentionGlobalStats,
   loadDomainIntentions
 } from "./intentionRanking"
-import { handleDiscordOAuth, handleXOAuth } from "./oauth"
+// Discord and X/Twitter OAuth removed - not needed
 
 // Badge management for pending echoes count
 async function updateEchoBadge(count: number) {
@@ -507,13 +507,7 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      case "CONNECT_DISCORD":
-        handleDiscordOAuth(message.clientId, sendResponse)
-        return true
-
-      case "CONNECT_X":
-        handleXOAuth(message.clientId, sendResponse)
-        return true
+      // Discord and X/Twitter OAuth removed - not needed
 
       case "START_PULSE_ANALYSIS":
         handlePulseAnalysis(sendResponse)
