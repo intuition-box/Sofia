@@ -20,6 +20,7 @@ out/
 
 # OAuth configuration (contains secrets)
 extension/background/oauth/config/oauth-config.ts
+oauth-config.ts
 
 # OS files
 .DS_Store
