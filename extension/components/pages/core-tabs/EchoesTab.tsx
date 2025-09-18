@@ -255,7 +255,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">Source</h4>
-                          <p className="triplet-detail-name">{tripletItem.url}</p>
+                          <p className="triplet-detail-name">
+                            <a href={tripletItem.url} target="_blank" rel="noopener noreferrer">
+                              {tripletItem.url}
+                            </a>
+                          </p>
                           <p className="triplet-detail-timestamp">
                             {new Date(tripletItem.timestamp).toLocaleString()}
                           </p>
