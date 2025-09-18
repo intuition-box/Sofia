@@ -1,6 +1,6 @@
 // Platform configuration registry
 import { PlatformConfig, TripletRule, OAuthFlow } from '../types/interfaces'
-import { oauthConfig } from '../../config/oauth-config'
+import { oauthConfig } from '../../../config/oauth-config'
 
 export class PlatformRegistry {
   private platforms: Map<string, PlatformConfig> = new Map()

@@ -24,10 +24,19 @@ export class OAuthService {
     this.platformRegistry = new PlatformRegistry()
     this.tokenManager = new TokenManager(this.platformRegistry)
     this.syncManager = new SyncManager()
-    this.dataFetcher = new PlatformDataFetcher(this.tokenManager, this.syncManager)
+    this.dataFetcher = new PlatformDataFetcher(this.tokenManager, this.syncManager, this.platformRegistry)
     this.tripletExtractor = new TripletExtractor(this.platformRegistry)
+    
+    // Connect the services
+    this.dataFetcher.setTripletExtractor(this.tripletExtractor)
+    
     this.flowManager = new OAuthFlowManager(this.platformRegistry, this.tokenManager)
     this.messageHandler = new MessageHandler(this)
+    
+    // Configure automatic data sync after auth
+    this.flowManager.setAuthSuccessCallback(async (platform: string) => {
+      await this.syncPlatformData(platform)
+    })
   }
 
   // Public API methods
@@ -45,9 +54,14 @@ export class OAuthService {
 
   async syncPlatformData(platform: string): Promise<any> {
     const userData = await this.dataFetcher.fetchUserData(platform)
-    const triplets = await this.tripletExtractor.extractTriplets(platform, userData)
-    await this.tripletExtractor.storeTriplets(platform, triplets)
-    return { triplets }
+    // Les triplets sont maintenant extraits pendant le fetch
+    console.log(`🔍 [OAuth] Total triplets extracted for ${platform}:`, userData.triplets.length)
+    
+    if (userData.triplets.length > 0) {
+      await this.tripletExtractor.storeTriplets(platform, userData.triplets)
+    }
+    
+    return { triplets: userData.triplets }
   }
 
   async getSyncStatus(platform?: string): Promise<any> {

@@ -1,9 +1,17 @@
 // Chrome message handling for OAuth
 import { MessageType } from '../types/interfaces'
-import { OAuthService } from '../index'
+
+interface IOAuthService {
+  initiateOAuth(platform: string): Promise<string>
+  handleCallback(platform: string, code: string, state: string): Promise<any>
+  handleImplicitCallback(platform: string, accessToken: string, state: string): Promise<any>
+  syncPlatformData(platform: string): Promise<any>
+  getSyncStatus(platform?: string): Promise<any>
+  resetSyncInfo(platform?: string): Promise<void>
+}
 
 export class MessageHandler {
-  constructor(private oauthService: OAuthService) {
+  constructor(private oauthService: IOAuthService) {
     this.setupMessageListener()
   }
 

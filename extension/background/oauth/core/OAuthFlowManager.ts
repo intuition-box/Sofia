@@ -6,11 +6,17 @@ import { TokenManager } from './TokenManager'
 const REDIRECT_URI = 'https://fgggfhnffjffiipdpipbkkceaengpeag.chromiumapp.org/'
 
 export class OAuthFlowManager {
+  private onAuthSuccess?: (platform: string) => Promise<void>
+
   constructor(
     private platformRegistry: PlatformRegistry,
     private tokenManager: TokenManager
   ) {
     this.setupTabListener()
+  }
+
+  setAuthSuccessCallback(callback: (platform: string) => Promise<void>) {
+    this.onAuthSuccess = callback
   }
 
   async initiateOAuth(platform: string): Promise<string> {
@@ -65,6 +71,12 @@ export class OAuthFlowManager {
     await chrome.storage.session.remove(`oauth_state_${state}`)
     
     console.log(`✅ [OAuth] ${platform} authentication completed`)
+    
+    // Trigger automatic data sync after successful auth
+    if (this.onAuthSuccess) {
+      await this.onAuthSuccess(platform)
+    }
+    
     return { success: true }
   }
 
@@ -81,6 +93,12 @@ export class OAuthFlowManager {
     await chrome.storage.session.remove(`oauth_state_${state}`)
     
     console.log(`✅ [OAuth] ${platform} implicit authentication completed`)
+    
+    // Trigger automatic data sync after successful auth
+    if (this.onAuthSuccess) {
+      await this.onAuthSuccess(platform)
+    }
+    
     return { success: true }
   }
 

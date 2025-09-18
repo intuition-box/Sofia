@@ -141,37 +141,6 @@ const AccountTab = () => {
       <div className="action-buttons-container">
         <button 
           className="connect-button"
-          onClick={xUser ? () => disconnectAccount('x') : connectX}
-          style={{
-            backgroundImage: `url(${xUser ? connectButtonOn : connectButtonOff})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: 'none',
-            width: '271px',
-            height: '67px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 20px',
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            marginBottom: '12px'
-          }}
-        >
-          <img 
-            src={xIcon} 
-            alt="X" 
-            className="button-icon"
-            style={{ width: '24px', height: '24px', marginRight: '12px' }}
-          />
-          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
-            {xUser ? `@${xUser.username}` : 'X'}
-          </span>
-        </button>
-
-        <button 
-          className="connect-button"
           onClick={() => chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform: 'youtube' })}
           style={{
             backgroundImage: `url(${connectButtonOff})`,
