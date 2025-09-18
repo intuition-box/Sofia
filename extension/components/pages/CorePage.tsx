@@ -7,11 +7,12 @@ import '../styles/CorePage.css'
 const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
 const SignalsTab = lazy(() => import('./core-tabs/SignalsTab'))
 const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
+const BookmarkTab = lazy(() => import('./core-tabs/BookmarkTab'))
 
 
 const CorePage = () => {
   const { navigateTo } = useRouter()
-  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse'>('Echoes')
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse' | 'Bookmarks'>('Echoes')
   const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
   const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
 
@@ -26,7 +27,7 @@ const CorePage = () => {
   return (
     <div className={`page ${activeGraphTab === 'Pulse' ? 'pulse-active' : ''}`}>
       <div className="tabs">
-        {['Echoes', 'Signals', 'Pulse'].map(tab => (
+        {['Echoes', 'Signals', 'Pulse', 'Bookmarks'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveGraphTab(tab as any)}
@@ -52,6 +53,7 @@ const CorePage = () => {
             />
           )}
           {activeGraphTab === 'Pulse' && <PulseTab />}
+          {activeGraphTab === 'Bookmarks' && <BookmarkTab />}
         </Suspense>
       </div>
     </div>

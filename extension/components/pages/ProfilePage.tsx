@@ -5,13 +5,11 @@ import '../styles/Global.css'
 import '../styles/ProfilePage.css'
 
 // Lazy loading des composants d'onglets
-const BookmarkTab = lazy(() => import('./profile-tabs/BookmarkTab'))
-const ExploreTab = lazy(() => import('./profile-tabs/ExploreTab'))
 const AccountTab = lazy(() => import('./profile-tabs/AccountTab'))
 
 const ProfilePage = () => {
   const { navigateTo } = useRouter()
-  const [activeProfileTab, setActiveProfileTab] = useState<'Bookmarks' | 'Explore' | 'Account'>('Bookmarks')
+  const [activeProfileTab, setActiveProfileTab] = useState<'Account'>('Account')
   const [discordUser] = useStorage<any>("discord-user")
   const [xUser] = useStorage<any>("x-user")
 
@@ -23,7 +21,7 @@ const ProfilePage = () => {
       )}
       
       <div className="tabs">
-        {['Bookmarks', 'Explore', 'Account'].map(tab => (
+        {['Account'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveProfileTab(tab as any)}
@@ -36,8 +34,6 @@ const ProfilePage = () => {
 
       <div className="page-content">
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
-          {activeProfileTab === 'Bookmarks' && <BookmarkTab />}
-          {activeProfileTab === 'Explore' && <ExploreTab />}
           {activeProfileTab === 'Account' && <AccountTab />}
         </Suspense>
       </div>
