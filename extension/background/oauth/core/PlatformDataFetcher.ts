@@ -96,7 +96,12 @@ export class PlatformDataFetcher {
             
             // Extract triplets immediately for this endpoint
             if (this.tripletExtractor) {
-              const endpointTriplets = this.extractTripletsFromEndpoint(platform, endpoint, filteredData, userData.profile)
+              const endpointTriplets = await this.tripletExtractor.extractTriplets(platform, { 
+                platform: platform, 
+                profile: userData.profile, 
+                data: { [endpoint]: filteredData }, 
+                triplets: [] 
+              })
               userData.triplets.push(...endpointTriplets)
               console.log(`🔍 [OAuth] Extracted ${endpointTriplets.length} triplets from ${endpoint}`)
             }

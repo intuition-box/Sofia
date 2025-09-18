@@ -58,7 +58,7 @@ export class OAuthService {
     console.log(`🔍 [OAuth] Total triplets extracted for ${platform}:`, userData.triplets.length)
     
     if (userData.triplets.length > 0) {
-      await this.tripletExtractor.storeTriplets(platform, userData.triplets)
+      await this.tripletExtractor.storeTriplets(platform, userData.triplets, userData)
     }
     
     return { triplets: userData.triplets }

@@ -29,7 +29,7 @@ export class TripletExtractor {
     return triplets
   }
 
-  async storeTriplets(platform: string, triplets: Triplet[]): Promise<void> {
+  async storeTriplets(platform: string, triplets: Triplet[], userData: UserData): Promise<void> {
     if (triplets.length === 0) {
       console.log(`ℹ️ [OAuth] No triplets to store for ${platform}`)
       return
@@ -38,10 +38,11 @@ export class TripletExtractor {
     console.log(`🔍 [OAuth] Storing ${triplets.length} triplets for ${platform}`)
 
     try {
+      const specificUrl = this.generateSpecificUrl(platform, userData)
       const parsedMessage = {
         intention: `OAuth connection to ${platform}`,
         triplets: triplets,
-        rawObjectUrl: `https://${platform}.com`,
+        rawObjectUrl: specificUrl,
         rawObjectDescription: `Data from ${platform} OAuth connection`
       }
 
@@ -75,10 +76,12 @@ export class TripletExtractor {
       try {
         const object = rule.extractObject(item)
         if (object) {
+          const objectUrl = rule.extractObjectUrl ? rule.extractObjectUrl(item) : undefined
           triplets.push({
             subject: 'You',
             predicate: rule.predicate,
-            object
+            object,
+            objectUrl
           })
         }
       } catch (error) {
@@ -87,5 +90,73 @@ export class TripletExtractor {
     })
 
     return triplets
+  }
+
+  private generateSpecificUrl(platform: string, userData: UserData): string {
+    try {
+      // Priorité 1 : Chercher le premier triplet qui a une objectUrl spécifique
+      const tripletWithUrl = userData.triplets.find(t => t.objectUrl)
+      if (tripletWithUrl?.objectUrl) {
+        console.log(`🎯 [OAuth] Using specific object URL: ${tripletWithUrl.objectUrl}`)
+        return tripletWithUrl.objectUrl
+      }
+
+      // Priorité 2 : Fallback vers votre profil utilisateur
+      console.log(`⚠️ [OAuth] No object URL found, fallback to user profile for ${platform}`)
+      return this.generateUserProfileUrl(platform, userData)
+    } catch (error) {
+      console.warn(`⚠️ [OAuth] Error generating specific URL for ${platform}:`, error)
+      return `https://${platform}.com`
+    }
+  }
+
+  private generateUserProfileUrl(platform: string, userData: UserData): string {
+    try {
+      const profile = userData.profile
+
+      switch (platform) {
+        case 'youtube':
+          // YouTube API returns items array, get first channel
+          const channelData = Array.isArray(profile?.items) ? profile.items[0] : profile
+          // Use channel URL with ID
+          if (channelData?.id) {
+            return `https://www.youtube.com/channel/${channelData.id}`
+          }
+          // Fallback to custom URL or handle from snippet
+          if (channelData?.snippet?.customUrl) {
+            return `https://www.youtube.com/${channelData.snippet.customUrl}`
+          }
+          return 'https://www.youtube.com'
+
+        case 'spotify':
+          // Use user profile URL if available  
+          if (profile?.external_urls?.spotify) {
+            return profile.external_urls.spotify
+          }
+          if (profile?.id) {
+            return `https://open.spotify.com/user/${profile.id}`
+          }
+          return 'https://open.spotify.com'
+
+        case 'twitch':
+          // Twitch API returns data array, get first user
+          const userProfile = Array.isArray(profile?.data) ? profile.data[0] : profile
+          // Use login (username) for URL - always lowercase
+          if (userProfile?.login) {
+            return `https://www.twitch.tv/${userProfile.login}`
+          }
+          // Fallback using display_name (convert to lowercase)
+          if (userProfile?.display_name) {
+            return `https://www.twitch.tv/${userProfile.display_name.toLowerCase()}`
+          }
+          return 'https://www.twitch.tv'
+
+        default:
+          return `https://${platform}.com`
+      }
+    } catch (error) {
+      console.warn(`⚠️ [OAuth] Error generating user profile URL for ${platform}:`, error)
+      return `https://${platform}.com`
+    }
   }
 }

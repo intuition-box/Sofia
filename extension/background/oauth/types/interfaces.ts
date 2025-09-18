@@ -53,6 +53,7 @@ export interface TripletRule {
   pattern: string // endpoint pattern to match
   predicate: string
   extractObject: (item: any) => string
+  extractObjectUrl?: (item: any) => string // URL spécifique de l'objet
   extractFromPath?: string // path to items array (e.g., 'artists.items')
 }
 
@@ -67,4 +68,5 @@ export interface Triplet {
   subject: string
   predicate: string
   object: string
+  objectUrl?: string // URL spécifique de l'objet (artiste, chaîne, etc.)
 }

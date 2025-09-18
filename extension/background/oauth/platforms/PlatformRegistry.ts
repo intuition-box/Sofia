@@ -91,12 +91,14 @@ export class PlatformRegistry {
       {
         pattern: 'subscriptions',
         predicate: 'subscribes_to',
-        extractObject: (item) => item.snippet.title
+        extractObject: (item) => item.snippet.title,
+        extractObjectUrl: (item) => `https://www.youtube.com/channel/${item.snippet.resourceId.channelId}`
       },
       {
         pattern: 'playlists', 
         predicate: 'created_playlist',
-        extractObject: (item) => item.snippet.title
+        extractObject: (item) => item.snippet.title,
+        extractObjectUrl: (item) => `https://www.youtube.com/playlist?list=${item.id}`
       }
     ])
 
@@ -106,17 +108,20 @@ export class PlatformRegistry {
         pattern: 'following',
         predicate: 'follows',
         extractObject: (artist) => artist.name,
+        extractObjectUrl: (artist) => artist.external_urls?.spotify,
         extractFromPath: 'artists.items'
       },
       {
         pattern: 'top/tracks',
         predicate: 'top_track',
-        extractObject: (item) => `${item.name} by ${item.artists[0].name}`
+        extractObject: (item) => `${item.name} by ${item.artists[0].name}`,
+        extractObjectUrl: (item) => item.external_urls?.spotify
       },
       {
         pattern: 'top/artists',
         predicate: 'top_artist', 
-        extractObject: (artist) => artist.name
+        extractObject: (artist) => artist.name,
+        extractObjectUrl: (artist) => artist.external_urls?.spotify
       }
     ])
 
@@ -125,7 +130,8 @@ export class PlatformRegistry {
       {
         pattern: 'channels/followed',
         predicate: 'follows',
-        extractObject: (item) => item.broadcaster_name
+        extractObject: (item) => item.broadcaster_name,
+        extractObjectUrl: (item) => `https://www.twitch.tv/${item.broadcaster_login}`
       }
     ])
   }
