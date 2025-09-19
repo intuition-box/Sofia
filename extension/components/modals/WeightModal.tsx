@@ -31,9 +31,9 @@ const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: Weigh
     try {
       let weightBigInt: bigint | undefined
       if (customWeight && customWeight.trim() !== '') {
-        // Convert ETH to Wei (1 ETH = 10^18 Wei)
-        const ethValue = parseFloat(customWeight)
-        weightBigInt = BigInt(Math.floor(ethValue * 1e18))
+        // Use the value directly as provided by user
+        const trustValue = parseFloat(customWeight)
+        weightBigInt = BigInt(Math.floor(trustValue))
       }
       
       await onSubmit(weightBigInt)
@@ -62,9 +62,9 @@ const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: Weigh
         </div>
         
         <div className="modal-section">
-          <label htmlFor="weight-input">Custom Weight (ETH)</label>
+          <label htmlFor="weight-input">Custom Weight (TRUST)</label>
           <p className="modal-description">
-            Leave empty to use default weight, or enter a custom amount in ETH (e.g., 0.001)
+            Leave empty to use default weight, or enter a custom amount in TRUST (e.g., 0.001)
           </p>
           <input
             id="weight-input"

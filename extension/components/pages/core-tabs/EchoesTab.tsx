@@ -46,7 +46,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Modal state for custom weighting
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [selectedTripletForWeighting, setSelectedTripletForWeighting] = useState<EchoTriplet | null>(null)
-  const [customWeight, setCustomWeight] = useState('')
 
   // Hook IndexedDB pour les messages Eliza 
   const { 
@@ -110,22 +109,22 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   }
 
   // Handle modal weight submission
-  const handleWeightSubmit = async () => {
+  const handleWeightSubmit = async (customWeight?: bigint) => {
     if (!selectedTripletForWeighting) return
     
     try {
-      let weightBigInt: bigint | undefined
-      if (customWeight && customWeight.trim() !== '') {
-        weightBigInt = BigInt(customWeight)
-      }
-      
-      await publishTriplet(selectedTripletForWeighting.id, weightBigInt)
+      await publishTriplet(selectedTripletForWeighting.id, customWeight)
       setShowWeightModal(false)
       setSelectedTripletForWeighting(null)
-      setCustomWeight('')
     } catch (error) {
       console.error('Failed to publish triplet with custom weight:', error)
     }
+  }
+
+  // Handle modal close
+  const handleWeightModalClose = () => {
+    setShowWeightModal(false)
+    setSelectedTripletForWeighting(null)
   }
 
   // Transform rawMessages to echoTriplets
@@ -330,6 +329,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           </p>
         </div>
       ) : null}
+
+      {/* Weight Selection Modal */}
+      <WeightModal
+        isOpen={showWeightModal}
+        triplet={selectedTripletForWeighting}
+        isProcessing={isProcessing}
+        onClose={handleWeightModalClose}
+        onSubmit={handleWeightSubmit}
+      />
     </div>
   )
 }

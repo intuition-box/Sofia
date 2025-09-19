@@ -54,6 +54,7 @@ export const useCreateTripleOnChain = () => {
     try {
       console.log('🔗 Starting triple creation on-chain...')
       console.log('Predicate:', predicateName, 'Object:', objectData.name)
+      console.log('🔍 [createTripleOnChain] Received customWeight:', customWeight?.toString())
       console.log('Connected wallet address:', address)
       
       if (!address) {
