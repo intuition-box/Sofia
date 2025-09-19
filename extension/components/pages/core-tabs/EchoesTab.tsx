@@ -116,6 +116,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       await publishTriplet(selectedTripletForWeighting.id, customWeight)
       setShowWeightModal(false)
       setSelectedTripletForWeighting(null)
+      clearSelection() // Clear the batch selection since the triplet is now published
     } catch (error) {
       console.error('Failed to publish triplet with custom weight:', error)
     }
