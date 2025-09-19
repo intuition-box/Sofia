@@ -297,7 +297,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">Source</h4>
                           <p className="triplet-detail-name">
-                            <a href={tripletItem.url} target="_blank" rel="noopener noreferrer">
+                            <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" style={{ color: 'white' }}>
                               {tripletItem.url}
                             </a>
                           </p>

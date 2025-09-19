@@ -89,8 +89,8 @@ const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: Weigh
         <div className="modal-section">
           <label htmlFor="weight-input">Custom Weight (TRUST)</label>
           <p className="modal-description">
-            The weight represents the value you assign to this information. The more TRUST you invest, 
-            the more you signal that this triplet is important and reliable according to you. 
+            The weight represents the value you assign to this information. The more TRUST you deposit, 
+            the more you weight this signal as important and reliable according to you. 
             Leave empty for default weight, or enter a custom amount (e.g., 0.001).
           </p>
           <input
