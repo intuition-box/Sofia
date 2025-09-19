@@ -37,7 +37,7 @@ interface UseEchoPublishingResult {
   processingTripletId: string | null
   
   // Actions
-  publishTriplet: (tripletId: string) => Promise<void>
+  publishTriplet: (tripletId: string, customWeight?: bigint) => Promise<void>
   publishSelected: () => Promise<void>
 }
 
@@ -55,7 +55,7 @@ export const useEchoPublishing = ({
   const { createTripleOnChain, createTriplesBatch, isCreating } = useCreateTripleOnChain()
 
   // Publish individual triplet
-  const publishTriplet = useCallback(async (tripletId: string) => {
+  const publishTriplet = useCallback(async (tripletId: string, customWeight?: bigint) => {
     const triplet = echoTriplets.find(t => t.id === tripletId)
     if (!triplet) return
 
@@ -73,7 +73,8 @@ export const useEchoPublishing = ({
           name: triplet.triplet.object,
           description: triplet.description,
           url: triplet.url
-        }
+        },
+        customWeight
       )
 
       // Save to database first (both blacklist and details)

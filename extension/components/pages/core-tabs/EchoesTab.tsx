@@ -6,6 +6,7 @@ import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import { useEchoSelection } from '../../../hooks/useEchoSelection'
 import { useStorage } from "@plasmohq/storage/hook"
+import WeightModal from '../../modals/WeightModal'
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
 
@@ -80,6 +81,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const {
     isProcessing,
     processingTripletId,
+    publishTriplet,
     publishSelected
   } = useEchoPublishing({
     echoTriplets,
@@ -91,6 +93,40 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   // Blockchain hook for current step display
   const { currentStep, batchProgress } = useCreateTripleOnChain()
+
+  // Handle Amplify button click - opens modal for single triplet, direct batch for multiple
+  const handleAmplifyClick = () => {
+    if (selectedEchoes.size === 1) {
+      // Single triplet - open weight modal
+      const selectedTriplet = echoTriplets.find(t => selectedEchoes.has(t.id))
+      if (selectedTriplet) {
+        setSelectedTripletForWeighting(selectedTriplet)
+        setShowWeightModal(true)
+      }
+    } else {
+      // Multiple triplets - direct batch publish
+      publishSelected()
+    }
+  }
+
+  // Handle modal weight submission
+  const handleWeightSubmit = async () => {
+    if (!selectedTripletForWeighting) return
+    
+    try {
+      let weightBigInt: bigint | undefined
+      if (customWeight && customWeight.trim() !== '') {
+        weightBigInt = BigInt(customWeight)
+      }
+      
+      await publishTriplet(selectedTripletForWeighting.id, weightBigInt)
+      setShowWeightModal(false)
+      setSelectedTripletForWeighting(null)
+      setCustomWeight('')
+    } catch (error) {
+      console.error('Failed to publish triplet with custom weight:', error)
+    }
+  }
 
   // Transform rawMessages to echoTriplets
   useEffect(() => {
@@ -178,7 +214,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               <div className="batch-actions">
                 <button 
                   className="batch-btn add-to-signals"
-                  onClick={publishSelected}
+                  onClick={handleAmplifyClick}
                   disabled={isProcessing}
                 >
                   Amplify ({selectedEchoes.size})
