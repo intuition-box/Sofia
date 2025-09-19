@@ -5,7 +5,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background: rgba(14, 14, 14, 0.18);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,28 +14,35 @@
 }
 
 .modal-content {
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background: linear-gradient(135deg, 
+    rgba(251, 247, 245, 0.95) 0%,
+    rgba(242, 222, 214, 0.9) 50%,
+    rgba(251, 247, 245, 0.95) 100%
+  );
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(199, 134, 108, 0.2);
+  border-radius: 16px;
   padding: 24px;
   width: 90%;
   max-width: 400px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(55, 33, 24, 0.15);
 }
 
 .modal-content h3 {
   margin: 0 0 20px 0;
-  color: #fff;
-  font-size: 18px;
+  color: var(--color-primary-dark, #372118);
+  font-family: 'Gotu', sans-serif;
+  font-size: 20px;
   font-weight: 600;
 }
 
 .modal-triplet-info {
-  background: #2a2a2a;
-  border: 1px solid #444;
-  border-radius: 6px;
-  padding: 12px;
+  background: rgba(242, 222, 214, 0.3);
+  border: 1px solid rgba(148, 89, 65, 0.2);
+  border-radius: 12px;
+  padding: 16px;
   margin-bottom: 20px;
 }
 
@@ -42,21 +50,22 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.4;
+  color: var(--color-primary-dark, #372118);
 }
 
 .modal-triplet-info .subject {
-  color: #4ade80;
-  font-weight: 500;
+  color: var(--color-accent, #A6AF6B);
+  font-weight: 600;
 }
 
 .modal-triplet-info .action {
-  color: #60a5fa;
-  font-weight: 500;
+  color: var(--color-primary, #C7866C);
+  font-weight: 600;
 }
 
 .modal-triplet-info .object {
-  color: #fbbf24;
-  font-weight: 500;
+  color: var(--color-secondary, #945941);
+  font-weight: 600;
 }
 
 .modal-section {
@@ -65,55 +74,58 @@
 
 .modal-section label {
   display: block;
-  color: #fff;
+  color: var(--color-primary-dark, #372118);
   font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 6px;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .modal-description {
-  color: #888;
+  color: rgba(55, 33, 24, 0.7);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.5;
   margin: 6px 0 12px 0;
 }
 
 .weight-input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #444;
-  border-radius: 6px;
-  background: #2a2a2a;
-  color: #fff;
+  padding: 12px 16px;
+  border: 1px solid rgba(148, 89, 65, 0.3);
+  border-radius: 12px;
+  background: rgba(251, 247, 245, 0.8);
+  color: var(--color-primary-dark, #372118);
   font-size: 14px;
   box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .weight-input:focus {
   outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  border-color: var(--color-primary, #C7866C);
+  box-shadow: 0 0 0 3px rgba(199, 134, 108, 0.2);
+  background: rgba(251, 247, 245, 0.95);
 }
 
 .weight-input::placeholder {
-  color: #666;
+  color: rgba(55, 33, 24, 0.5);
 }
 
 .modal-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  margin-top: 32px;
 }
 
 .modal-btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 80px;
+  min-width: 90px;
 }
 
 .modal-btn:disabled {
@@ -122,21 +134,25 @@
 }
 
 .modal-btn.secondary {
-  background: #374151;
-  color: #fff;
+  background: rgba(148, 89, 65, 0.1);
+  color: var(--color-secondary, #945941);
+  border: 1px solid rgba(148, 89, 65, 0.3);
 }
 
 .modal-btn.secondary:hover:not(:disabled) {
-  background: #4b5563;
+  background: rgba(148, 89, 65, 0.2);
+  border-color: var(--color-secondary, #945941);
 }
 
 .modal-btn.primary {
-  background: #60a5fa;
-  color: #fff;
+  background: var(--color-primary, #C7866C);
+  color: var(--color-text-secondary, #FBF7F5);
 }
 
 .modal-btn.primary:hover:not(:disabled) {
-  background: #3b82f6;
+  background: var(--color-secondary, #945941);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(199, 134, 108, 0.3);
 }
 
 /* Responsive */
