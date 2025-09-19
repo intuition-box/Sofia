@@ -107,24 +107,12 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     if (selectedTripletsForWeighting.length === 0) return
     
     try {
-      if (selectedTripletsForWeighting.length === 1) {
-        // Single triplet
-        const triplet = selectedTripletsForWeighting[0]
-        const weight = customWeights?.[0] || undefined
-        await publishTriplet(triplet.id, weight)
-      } else {
-        // Multiple triplets - we need to implement batch publishing with custom weights
-        // For now, publish them one by one with their respective weights
-        for (let i = 0; i < selectedTripletsForWeighting.length; i++) {
-          const triplet = selectedTripletsForWeighting[i]
-          const weight = customWeights?.[i] || undefined
-          await publishTriplet(triplet.id, weight)
-        }
-      }
+      // Use publishSelected with custom weights (it uses selectedEchoes automatically)
+      await publishSelected(customWeights)
       
       setShowWeightModal(false)
       setSelectedTripletsForWeighting([])
-      clearSelection()
+      // clearSelection() is called automatically by publishSelected
     } catch (error) {
       console.error('Failed to publish triplets with custom weights:', error)
     }

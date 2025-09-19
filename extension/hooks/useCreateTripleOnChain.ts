@@ -22,6 +22,7 @@ export interface TripleOnChainResult {
 export interface BatchTripleInput {
   predicateName: string
   objectData: { name: string; description?: string; url: string }
+  customWeight?: bigint
 }
 
 export interface BatchTripleResult {
@@ -401,6 +402,7 @@ export const useCreateTripleOnChain = () => {
         objectId: string
         originalInput: BatchTripleInput
         index: number
+        customWeight?: bigint
       }[] = []
 
       for (let i = 0; i < inputs.length; i++) {
@@ -438,7 +440,8 @@ export const useCreateTripleOnChain = () => {
               predicateId: predicateVaultId,
               objectId: objectVaultId,
               originalInput: input,
-              index: i
+              index: i,
+              customWeight: input.customWeight
             })
           } else {
             console.log(`🔄 Skipping duplicate triple: ${input.predicateName} - ${input.objectData.name}`)
@@ -455,20 +458,20 @@ export const useCreateTripleOnChain = () => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-        // Get triple cost
-        const tripleCost = await publicClient.readContract({
+        // Get default triple cost
+        const defaultTripleCost = await publicClient.readContract({
           address: contractAddress,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'getTripleCost'
         }) as bigint
 
-        // Prepare batch arrays
+        // Prepare batch arrays with individual custom weights
         const subjectIds = triplesToCreate.map(t => t.subjectId as `0x${string}`)
         const predicateIds = triplesToCreate.map(t => t.predicateId as `0x${string}`)
         const objectIds = triplesToCreate.map(t => t.objectId as `0x${string}`)
-        const tripleCosts = triplesToCreate.map(() => tripleCost)
+        const tripleCosts = triplesToCreate.map(t => t.customWeight || defaultTripleCost)
 
-        const totalValue = tripleCost * BigInt(triplesToCreate.length)
+        const totalValue = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
 
         console.log(`🚀 Sending batch triple transaction, value: ${totalValue.toString()}`)
 
