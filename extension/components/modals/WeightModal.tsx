@@ -16,15 +16,22 @@ interface EchoTriplet {
 
 interface WeightModalProps {
   isOpen: boolean
-  triplet: EchoTriplet | null
+  triplets: EchoTriplet[]
   isProcessing: boolean
   onClose: () => void
-  onSubmit: (customWeight?: bigint) => Promise<void>
+  onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
 
-const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: WeightModalProps) => {
-  const [customWeight, setCustomWeight] = useState('')
+const WeightModal = ({ isOpen, triplets, isProcessing, onClose, onSubmit }: WeightModalProps) => {
+  const [customWeights, setCustomWeights] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
+
+  // Initialize weights array when triplets change
+  useEffect(() => {
+    if (triplets.length > 0) {
+      setCustomWeights(new Array(triplets.length).fill(''))
+    }
+  }, [triplets])
 
   // Processing animation steps
   useEffect(() => {
@@ -50,67 +57,78 @@ const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: Weigh
     }
   }, [isProcessing])
 
-  if (!isOpen || !triplet) return null
+  if (!isOpen || triplets.length === 0) return null
 
   const handleSubmit = async () => {
     try {
-      let weightBigInt: bigint | undefined
-      if (customWeight && customWeight.trim() !== '') {
-        // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
-        const trustValue = parseFloat(customWeight)
-        weightBigInt = BigInt(Math.floor(trustValue * 1e18))
-      }
+      // Convert string weights to bigint array with null for empty values
+      const weightBigIntArray: (bigint | null)[] = customWeights.map(weight => {
+        if (weight && weight.trim() !== '') {
+          // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
+          const trustValue = parseFloat(weight)
+          return BigInt(Math.floor(trustValue * 1e18))
+        }
+        return null // Use default weight
+      })
       
-      await onSubmit(weightBigInt)
-      setCustomWeight('')
+      await onSubmit(weightBigIntArray)
+      setCustomWeights(new Array(triplets.length).fill(''))
     } catch (error) {
-      console.error('Failed to submit weight:', error)
+      console.error('Failed to submit weights:', error)
     }
   }
 
   const handleClose = () => {
-    setCustomWeight('')
+    setCustomWeights(new Array(triplets.length).fill(''))
     onClose()
   }
 
   return (
     <div className={`modal-overlay ${isProcessing ? 'processing' : ''}`}>
       <div className="modal-content">
-        <h3>Amplify Triplet</h3>
-        
-        <div className="modal-triplet-info">
-          <p>
-            <span className="subject">You</span>{' '}
-            <span className="action">{triplet.triplet.predicate}</span>{' '}
-            <span className="object">{triplet.triplet.object}</span>
-          </p>
-        </div>
+        <h3>Amplify {triplets.length === 1 ? 'Triplet' : `${triplets.length} Triplets`}</h3>
         
         <div className="modal-section">
-          <label htmlFor="weight-input">Custom Weight (TRUST)</label>
           <p className="modal-description">
             The weight represents the value you assign to this information. The more TRUST you deposit, 
             the more you weight this signal as important and reliable according to you. 
             Leave empty for default weight, or enter a custom amount (e.g., 0.001).
           </p>
-          <input
-            id="weight-input"
-            type="number"
-            step="0.000001"
-            min="0"
-            placeholder="0.001"
-            value={customWeight}
-            onChange={(e) => setCustomWeight(e.target.value)}
-            className="weight-input"
-            disabled={isProcessing}
-          />
+        </div>
+        
+        <div className="triplets-list">
+          {triplets.map((triplet, index) => (
+            <div key={triplet.id} className="modal-triplet-item">
+              <div className="modal-triplet-info">
+                <p>
+                  <span className="subject">You</span>{' '}
+                  <span className="action">{triplet.triplet.predicate}</span>{' '}
+                  <span className="object">{triplet.triplet.object}</span>
+                </p>
+              </div>
+              <input
+                type="number"
+                step="0.000001"
+                min="0"
+                placeholder="0.001 (or leave empty for default)"
+                value={customWeights[index] || ''}
+                onChange={(e) => {
+                  const newWeights = [...customWeights]
+                  newWeights[index] = e.target.value
+                  setCustomWeights(newWeights)
+                }}
+                className="weight-input"
+                disabled={isProcessing}
+              />
+            </div>
+          ))}
         </div>
 
         {isProcessing && (
           <div className="processing-section">
             <div className="loading-spinner"></div>
             <div className="processing-text">
-              <p className="processing-title">Creating Your Triplet</p>
+              <p className="processing-title">Creating Your {triplets.length === 1 ? 'Triplet' : 'Triplets'}</p>
               <p className="processing-step">{processingStep}</p>
             </div>
           </div>

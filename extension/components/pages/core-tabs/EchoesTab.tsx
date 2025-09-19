@@ -45,7 +45,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   
   // Modal state for custom weighting
   const [showWeightModal, setShowWeightModal] = useState(false)
-  const [selectedTripletForWeighting, setSelectedTripletForWeighting] = useState<EchoTriplet | null>(null)
+  const [selectedTripletsForWeighting, setSelectedTripletsForWeighting] = useState<EchoTriplet[]>([])
 
   // Hook IndexedDB pour les messages Eliza 
   const { 
@@ -93,39 +93,47 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Blockchain hook for current step display
   const { currentStep, batchProgress } = useCreateTripleOnChain()
 
-  // Handle Amplify button click - opens modal for single triplet, direct batch for multiple
+  // Handle Amplify button click - always opens modal for weight selection
   const handleAmplifyClick = () => {
-    if (selectedEchoes.size === 1) {
-      // Single triplet - open weight modal
-      const selectedTriplet = echoTriplets.find(t => selectedEchoes.has(t.id))
-      if (selectedTriplet) {
-        setSelectedTripletForWeighting(selectedTriplet)
-        setShowWeightModal(true)
-      }
-    } else {
-      // Multiple triplets - direct batch publish
-      publishSelected()
+    const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
+    if (selectedTriplets.length > 0) {
+      setSelectedTripletsForWeighting(selectedTriplets)
+      setShowWeightModal(true)
     }
   }
 
   // Handle modal weight submission
-  const handleWeightSubmit = async (customWeight?: bigint) => {
-    if (!selectedTripletForWeighting) return
+  const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
+    if (selectedTripletsForWeighting.length === 0) return
     
     try {
-      await publishTriplet(selectedTripletForWeighting.id, customWeight)
+      if (selectedTripletsForWeighting.length === 1) {
+        // Single triplet
+        const triplet = selectedTripletsForWeighting[0]
+        const weight = customWeights?.[0] || undefined
+        await publishTriplet(triplet.id, weight)
+      } else {
+        // Multiple triplets - we need to implement batch publishing with custom weights
+        // For now, publish them one by one with their respective weights
+        for (let i = 0; i < selectedTripletsForWeighting.length; i++) {
+          const triplet = selectedTripletsForWeighting[i]
+          const weight = customWeights?.[i] || undefined
+          await publishTriplet(triplet.id, weight)
+        }
+      }
+      
       setShowWeightModal(false)
-      setSelectedTripletForWeighting(null)
-      clearSelection() // Clear the batch selection since the triplet is now published
+      setSelectedTripletsForWeighting([])
+      clearSelection()
     } catch (error) {
-      console.error('Failed to publish triplet with custom weight:', error)
+      console.error('Failed to publish triplets with custom weights:', error)
     }
   }
 
   // Handle modal close
   const handleWeightModalClose = () => {
     setShowWeightModal(false)
-    setSelectedTripletForWeighting(null)
+    setSelectedTripletsForWeighting([])
   }
 
   // Transform rawMessages to echoTriplets
@@ -334,7 +342,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       {/* Weight Selection Modal */}
       <WeightModal
         isOpen={showWeightModal}
-        triplet={selectedTripletForWeighting}
+        triplets={selectedTripletsForWeighting}
         isProcessing={isProcessing}
         onClose={handleWeightModalClose}
         onSubmit={handleWeightSubmit}
