@@ -127,6 +127,13 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
 
       await elizaDataService.storeParsedMessage(parsedMessage, messageId)
       
+      // Notify background to update badge count
+      try {
+        chrome.runtime.sendMessage({ type: 'UPDATE_ECHO_BADGE' })
+      } catch (badgeError) {
+        console.error('❌ Failed to notify background of new triplets:', badgeError)
+      }
+      
       // Refresh data after storing
       await loadMessages()
       
@@ -329,6 +336,13 @@ export const useElizaMessageStore = () => {
       setIsStoring(true)
       setError(null)
       await elizaDataService.storeParsedMessage(parsedMessage, messageId)
+      
+      // Notify background to update badge count
+      try {
+        chrome.runtime.sendMessage({ type: 'UPDATE_ECHO_BADGE' })
+      } catch (badgeError) {
+        console.error('❌ Failed to notify background of new triplets:', badgeError)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to store parsed message')
       throw err

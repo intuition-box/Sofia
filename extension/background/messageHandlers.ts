@@ -20,7 +20,7 @@ import {
 // Discord and X/Twitter OAuth removed - not needed
 
 // Badge management for pending echoes count
-async function updateEchoBadge(count: number) {
+export async function updateEchoBadge(count: number) {
   try {
     if (count > 0) {
       await chrome.action.setBadgeText({ text: count.toString() })
@@ -35,7 +35,7 @@ async function updateEchoBadge(count: number) {
 }
 
 // Count available (unpublished) triplets in IndexedDB
-async function countAvailableEchoes(): Promise<number> {
+export async function countAvailableEchoes(): Promise<number> {
   try {
     // Load published triplet IDs to exclude them
     const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
@@ -515,8 +515,13 @@ export function setupMessageHandlers(): void {
 
 
       case "UPDATE_ECHO_BADGE":
-        const count = (message as any).data?.count || 0
-        updateEchoBadge(count)
+        // Recalculate available echoes count and update badge
+        countAvailableEchoes().then(availableCount => {
+          updateEchoBadge(availableCount)
+          console.log('🔔 [Badge] Updated after new triplets stored:', availableCount)
+        }).catch(error => {
+          console.error('❌ Failed to update badge after storing triplets:', error)
+        })
         sendResponse({ success: true })
         return true
 

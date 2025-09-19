@@ -2,6 +2,7 @@
 import { UserData, Triplet } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
 import { elizaDataService } from '../../../lib/database/indexedDB-methods'
+import { updateEchoBadge, countAvailableEchoes } from '../../messageHandlers'
 
 export class TripletExtractor {
   constructor(private platformRegistry: PlatformRegistry) {}
@@ -48,6 +49,15 @@ export class TripletExtractor {
 
       await elizaDataService.storeParsedMessage(parsedMessage, `oauth_${platform}_${Date.now()}`)
       console.log(`✅ [OAuth] Triplets stored successfully for ${platform}`)
+      
+      // Update badge count after storing OAuth triplets
+      try {
+        const availableCount = await countAvailableEchoes()
+        await updateEchoBadge(availableCount)
+        console.log(`🔔 [OAuth] Badge updated after ${platform} import:`, availableCount)
+      } catch (badgeError) {
+        console.error(`❌ [OAuth] Failed to update badge after ${platform} import:`, badgeError)
+      }
 
     } catch (error) {
       console.error(`❌ [OAuth] Failed to store triplets for ${platform}:`, error)
