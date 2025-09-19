@@ -56,7 +56,6 @@ export const useEchoPublishing = ({
 
   // Publish individual triplet
   const publishTriplet = useCallback(async (tripletId: string, customWeight?: bigint) => {
-    console.log('🔍 [publishTriplet] Called with customWeight:', customWeight?.toString())
     const triplet = echoTriplets.find(t => t.id === tripletId)
     if (!triplet) return
 
@@ -66,9 +65,9 @@ export const useEchoPublishing = ({
     }
 
     setProcessingTripletId(tripletId)
+    setIsProcessing(true)
     
     try {
-      console.log('🔍 [publishTriplet] Calling createTripleOnChain with customWeight:', customWeight?.toString())
       const result = await createTripleOnChain(
         triplet.triplet.predicate,
         {
@@ -150,6 +149,7 @@ export const useEchoPublishing = ({
       }
     } finally {
       setProcessingTripletId(null)
+      setIsProcessing(false)
     }
   }, [echoTriplets, address, isCreating, processingTripletId, createTripleOnChain, onTripletsUpdate])
 

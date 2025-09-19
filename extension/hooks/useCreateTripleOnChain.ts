@@ -54,7 +54,6 @@ export const useCreateTripleOnChain = () => {
     try {
       console.log('🔗 Starting triple creation on-chain...')
       console.log('Predicate:', predicateName, 'Object:', objectData.name)
-      console.log('🔍 [createTripleOnChain] Received customWeight:', customWeight?.toString())
       console.log('Connected wallet address:', address)
       
       if (!address) {
@@ -62,6 +61,7 @@ export const useCreateTripleOnChain = () => {
       }
       
       // 1. Create User atom (always create, let contract handle duplicates)
+      // NOTE: Atoms ALWAYS use default cost, customWeight is ONLY for the final triplet
       setCurrentStep('Creating User atom...')
       
       const userAtomResult = await createAtomWithMultivault({
@@ -79,6 +79,7 @@ export const useCreateTripleOnChain = () => {
       console.log('👤 User atom VaultID:', userAtom.vaultId)
       
       // 2. Create Predicate atom (always create, let contract handle duplicates)
+      // NOTE: Atoms ALWAYS use default cost, customWeight is ONLY for the final triplet
       setCurrentStep('Creating Predicate atom...')
       const predicateAtomResult = await createAtomWithMultivault({
         name: predicateName,
@@ -94,6 +95,7 @@ export const useCreateTripleOnChain = () => {
       console.log('🔗 Predicate atom VaultID:', predicateAtom.vaultId)
       
       // 3. Create Object atom (always create, let contract handle duplicates)
+      // NOTE: Atoms ALWAYS use default cost, customWeight is ONLY for the final triplet
       setCurrentStep('Creating Object atom...')
       const objectAtom = await createAtomWithMultivault(objectData)
       console.log('📄 Object atom VaultID:', objectAtom.vaultId)
@@ -126,18 +128,18 @@ export const useCreateTripleOnChain = () => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-        // Get triple cost (default or custom)
+        // Get triple cost (default or custom) - ONLY for the final triplet creation
         let tripleCost: bigint
         if (customWeight) {
           tripleCost = customWeight
-          console.log('💰 Using custom triple weight:', tripleCost.toString())
+          console.log('💰 Using custom triple weight (FINAL TRIPLET ONLY):', tripleCost.toString())
         } else {
           tripleCost = await publicClient.readContract({
             address: contractAddress,
             abi: MULTIVAULT_V2_ABI,
             functionName: 'getTripleCost'
           }) as bigint
-          console.log('💰 Using default triple cost:', tripleCost.toString())
+          console.log('💰 Using default triple cost (FINAL TRIPLET ONLY):', tripleCost.toString())
         }
 
         // V2 uses createTriples (plural) with bytes32[] arrays

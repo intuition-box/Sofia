@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import '../styles/WeightModal.css'
 
 interface Triplet {
@@ -24,6 +24,31 @@ interface WeightModalProps {
 
 const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: WeightModalProps) => {
   const [customWeight, setCustomWeight] = useState('')
+  const [processingStep, setProcessingStep] = useState('')
+
+  // Processing animation steps
+  useEffect(() => {
+    if (isProcessing) {
+      const steps = [
+        'Preparing triplet...',
+        'Creating atoms...',
+        'Publishing to blockchain...',
+        'Confirming transaction...'
+      ]
+      
+      let stepIndex = 0
+      setProcessingStep(steps[0])
+      
+      const interval = setInterval(() => {
+        stepIndex = (stepIndex + 1) % steps.length
+        setProcessingStep(steps[stepIndex])
+      }, 2000)
+      
+      return () => clearInterval(interval)
+    } else {
+      setProcessingStep('')
+    }
+  }, [isProcessing])
 
   if (!isOpen || !triplet) return null
 
@@ -49,7 +74,7 @@ const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: Weigh
   }
 
   return (
-    <div className="modal-overlay">
+    <div className={`modal-overlay ${isProcessing ? 'processing' : ''}`}>
       <div className="modal-content">
         <h3>Amplify Triplet</h3>
         
@@ -75,8 +100,19 @@ const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: Weigh
             value={customWeight}
             onChange={(e) => setCustomWeight(e.target.value)}
             className="weight-input"
+            disabled={isProcessing}
           />
         </div>
+
+        {isProcessing && (
+          <div className="processing-section">
+            <div className="loading-spinner"></div>
+            <div className="processing-text">
+              <p className="processing-title">Creating Your Triplet</p>
+              <p className="processing-step">{processingStep}</p>
+            </div>
+          </div>
+        )}
 
         <div className="modal-actions">
           <button 

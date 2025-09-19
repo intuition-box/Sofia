@@ -44,14 +44,14 @@ export const useCreateAtom = () => {
       const { walletClient, publicClient } = await getClients()
       const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-      // Get atom cost
+      // Get atom cost (ALWAYS use default for atoms, never customWeight)
       const atomCost = await publicClient.readContract({
         address: contractAddress,
         abi: MULTIVAULT_V2_ABI,
         functionName: 'getAtomCost'
       }) as bigint
 
-      console.log('💰 Atom cost:', atomCost.toString())
+      console.log('💰 Atom cost (always default):', atomCost.toString())
       
       // Check if atom already exists
       const atomHash = keccak256(stringToHex(ipfsUri))
