@@ -46,6 +46,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Modal state for custom weighting
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [selectedTripletsForWeighting, setSelectedTripletsForWeighting] = useState<EchoTriplet[]>([])
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState<'timestamp' | 'predicate'>('timestamp')
 
   // Hook IndexedDB pour les messages Eliza 
   const { 
@@ -203,6 +206,16 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             <label className="select-all-label">
               <span onClick={toggleSelectAll} style={{cursor: 'pointer'}}>{selectedEchoes.size > 0 ? `${selectedEchoes.size} selected` : 'Select All'}</span>
             </label>
+            <div className="sort-controls">
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value as 'timestamp' | 'predicate')}
+                className="sort-select"
+              >
+                <option value="timestamp">Sort by Date</option>
+                <option value="predicate">Sort by Predicate</option>
+              </select>
+            </div>
           </div>
           
           {selectedEchoes.size > 0 && (
@@ -243,7 +256,14 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           {/* <h4>🔗 Available for Publication ({availableCount})</h4> */}
           {echoTriplets
             .filter(t => t.status === 'available')
-            .sort((a, b) => b.timestamp - a.timestamp)
+            .sort((a, b) => {
+              if (sortBy === 'predicate') {
+                const predicateCompare = a.triplet.predicate.localeCompare(b.triplet.predicate)
+                if (predicateCompare !== 0) return predicateCompare
+                return b.timestamp - a.timestamp
+              }
+              return b.timestamp - a.timestamp
+            })
             .map((tripletItem, index) => {
               const isExpanded = expandedTriplet?.msgIndex === 1 && expandedTriplet?.tripletIndex === index
 
