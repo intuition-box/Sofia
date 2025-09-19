@@ -41,6 +41,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [echoTriplets, setEchoTriplets] = useState<EchoTriplet[]>([])
   const [address] = useStorage<string>("metamask-account")
   const [hasInitialLoad, setHasInitialLoad] = useState(false)
+  
+  // Modal state for custom weighting
+  const [showWeightModal, setShowWeightModal] = useState(false)
+  const [selectedTripletForWeighting, setSelectedTripletForWeighting] = useState<EchoTriplet | null>(null)
+  const [customWeight, setCustomWeight] = useState('')
 
   // Hook IndexedDB pour les messages Eliza 
   const { 

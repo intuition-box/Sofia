@@ -45,7 +45,8 @@ export const useCreateTripleOnChain = () => {
 
   const createTripleOnChain = async (
     predicateName: string, // ex: "has visited", "loves"
-    objectData: { name: string; description?: string; url: string }
+    objectData: { name: string; description?: string; url: string },
+    customWeight?: bigint // Optional custom weight/value for the triple
   ): Promise<TripleOnChainResult> => {
     setIsCreating(true)
     setError(null)
@@ -124,14 +125,19 @@ export const useCreateTripleOnChain = () => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-        // Get triple cost
-        const tripleCost = await publicClient.readContract({
-          address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'getTripleCost'
-        }) as bigint
-
-        console.log('💰 Triple cost:', tripleCost.toString())
+        // Get triple cost (default or custom)
+        let tripleCost: bigint
+        if (customWeight) {
+          tripleCost = customWeight
+          console.log('💰 Using custom triple weight:', tripleCost.toString())
+        } else {
+          tripleCost = await publicClient.readContract({
+            address: contractAddress,
+            abi: MULTIVAULT_V2_ABI,
+            functionName: 'getTripleCost'
+          }) as bigint
+          console.log('💰 Using default triple cost:', tripleCost.toString())
+        }
 
         // V2 uses createTriples (plural) with bytes32[] arrays
         const subjectId = userAtom.vaultId as `0x${string}`
