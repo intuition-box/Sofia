@@ -31,9 +31,9 @@ const WeightModal = ({ isOpen, triplet, isProcessing, onClose, onSubmit }: Weigh
     try {
       let weightBigInt: bigint | undefined
       if (customWeight && customWeight.trim() !== '') {
-        // Use the value directly as provided by user
+        // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
         const trustValue = parseFloat(customWeight)
-        weightBigInt = BigInt(Math.floor(trustValue))
+        weightBigInt = BigInt(Math.floor(trustValue * 1e18))
       }
       
       await onSubmit(weightBigInt)
