@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
 import  TrackingStatus  from '../ui/TrackingStatus'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
+import { SessionWalletManager } from '../ui/SessionWalletManager'
 import { Storage } from '@plasmohq/storage'
 import { disconnectWallet, cleanupProvider } from '../../lib/services/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
@@ -204,6 +205,13 @@ const SettingsPage = () => {
           <WalletConnectionButton />
         </div>
       </div>
+
+      {/* Session Wallet Section - Test Mode */}
+      {account && (
+        <div className="settings-section">
+          <SessionWalletManager />
+        </div>
+      )}
     </div>
   )
 }

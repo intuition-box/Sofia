@@ -2,11 +2,12 @@ import { generatePrivateKey, privateKeyToAccount, type LocalAccount } from 'viem
 import { createWalletClient, http, formatEther, parseEther } from 'viem'
 import { SELECTED_CHAIN } from '../config/config'
 import { getMetaProvider } from './metamask'
+import { getClients } from '../clients/viemClients'
 
 interface SessionWalletConfig {
   privateKey: string
   address: string
-  balance: bigint
+  balance: string // Stocké en string pour éviter BigInt serialization
   isActive: boolean
   createdAt: number
 }
@@ -35,7 +36,7 @@ export class SessionWallet {
     this.config = {
       privateKey,
       address: account.address,
-      balance: 0n,
+      balance: "0",
       isActive: true,
       createdAt: Date.now()
     }
@@ -80,12 +81,13 @@ export class SessionWallet {
     if (!this.account) return 0n
     
     try {
-      const balance = await this.walletClient.getBalance({
+      const { publicClient } = await getClients()
+      const balance = await publicClient.getBalance({
         address: this.account.address
       })
       
       if (this.config) {
-        this.config.balance = balance
+        this.config.balance = balance.toString()
         await this.saveToStorage()
       }
       
@@ -188,14 +190,14 @@ export class SessionWallet {
     return {
       isReady: true,
       address: this.config.address,
-      balance: formatEther(this.config.balance),
-      balanceWei: this.config.balance
+      balance: formatEther(BigInt(this.config.balance)),
+      balanceWei: BigInt(this.config.balance)
     }
   }
 
   // Vérifier si transaction possible
   canExecute(value: bigint): boolean {
-    return this.config ? this.config.balance >= value : false
+    return this.config ? BigInt(this.config.balance) >= value : false
   }
 }
 

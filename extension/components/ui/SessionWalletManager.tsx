@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { sessionWallet } from '../../lib/services/sessionWallet'
 import { useStorage } from "@plasmohq/storage/hook"
+import TrackingStatus from './TrackingStatus'
 
 interface SessionWalletStatus {
   isReady: boolean
@@ -23,7 +24,6 @@ export const SessionWalletManager: React.FC = () => {
   const updateStatus = async () => {
     const currentStatus = sessionWallet.getStatus()
     if (currentStatus.isReady) {
-      // Mettre à jour balance en temps réel
       await sessionWallet.getBalance()
       setStatus(sessionWallet.getStatus())
     } else {
@@ -39,7 +39,7 @@ export const SessionWalletManager: React.FC = () => {
       setUseSessionWallet(true)
     } catch (error) {
       console.error('Failed to create session wallet:', error)
-      alert('Erreur lors de la création du wallet de session')
+      alert('Error creating session wallet')
     } finally {
       setIsCreating(false)
     }
@@ -47,7 +47,7 @@ export const SessionWalletManager: React.FC = () => {
 
   const handleRefill = async () => {
     if (!refillAmount || parseFloat(refillAmount) <= 0) {
-      alert('Montant invalide')
+      alert('Invalid amount')
       return
     }
 
@@ -56,134 +56,280 @@ export const SessionWalletManager: React.FC = () => {
       const txHash = await sessionWallet.refillFromMetaMask(refillAmount)
       console.log('Refill transaction:', txHash)
       
-      // Attendre un peu puis mettre à jour
       setTimeout(async () => {
         await updateStatus()
         setIsRefilling(false)
       }, 3000)
       
-      alert(`Recharge en cours... Transaction: ${txHash.slice(0, 10)}...`)
+      alert(`Refill in progress... Transaction: ${txHash.slice(0, 10)}...`)
     } catch (error) {
       console.error('Refill failed:', error)
-      alert('Erreur lors de la recharge')
+      alert('Refill error')
       setIsRefilling(false)
     }
   }
 
   const handleDestroyWallet = () => {
-    if (confirm('Êtes-vous sûr de vouloir détruire le wallet de session ? Les fonds seront perdus.')) {
+    if (confirm('Are you sure you want to destroy the session wallet? All funds will be lost.')) {
       sessionWallet.destroy()
       setUseSessionWallet(false)
       setStatus({ isReady: false })
     }
   }
 
-  const toggleSessionWallet = (enabled: boolean) => {
-    if (enabled && !status.isReady) {
-      // Si on active mais pas de wallet, en créer un
+  const toggleSessionWallet = () => {
+    if (!useSessionWallet && !status.isReady) {
       handleCreateWallet()
     } else {
-      setUseSessionWallet(enabled)
+      setUseSessionWallet(!useSessionWallet)
     }
   }
 
   return (
-    <div className="session-wallet-manager p-4 border rounded-lg bg-gray-50">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">🚀 Mode Automatique (Test)</h3>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={useSessionWallet}
-            onChange={(e) => toggleSessionWallet(e.target.checked)}
-            className="rounded"
-          />
-          <span className="text-sm">Activer</span>
-        </label>
+    <div style={styles.container}>
+      <h3 style={styles.title}>🚀 Automatic Mode (Test)</h3>
+      <div style={styles.description}>
+        Transactions without MetaMask popups. Preview of future Sofia experience.
       </div>
-
-      <div className="text-sm text-gray-600 mb-4">
-        <p>Transactions sans popup MetaMask. Aperçu de l'expérience future Sofia.</p>
-      </div>
-
-      {!status.isReady ? (
-        <div className="space-y-3">
-          <p className="text-sm text-gray-500">Aucun wallet de session créé</p>
-          <button
-            onClick={handleCreateWallet}
-            disabled={isCreating}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isCreating ? 'Création...' : 'Créer Wallet de Session'}
-          </button>
+      
+      {/* Important Warning */}
+      <div style={styles.warningBox}>
+        <span style={styles.warningIcon}>⚠️</span>
+        <div style={styles.warningText}>
+          <strong>Important:</strong> Session wallet funds are temporary. 
+          They will be lost if you close the browser or destroy the wallet.
         </div>
-      ) : (
-        <div className="space-y-4">
-          {/* Status du wallet */}
-          <div className="bg-white p-3 rounded border">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Wallet de Session</span>
-              <span className="text-xs text-green-600">● Actif</span>
+      </div>
+
+      {/* Toggle principal */}
+      <div style={styles.settingsItem}>
+        <span>Enable automatic mode</span>
+        <TrackingStatus isEnabled={useSessionWallet} onToggle={toggleSessionWallet} />
+      </div>
+
+      {/* Wallet Status */}
+      {status.isReady && (
+        <div style={styles.walletStatus}>
+          <div style={styles.statusHeader}>
+            <span style={styles.walletLabel}>Session Wallet</span>
+            <span style={styles.activeIndicator}>● Active</span>
+          </div>
+          <div style={styles.walletDetails}>
+            <div style={styles.addressText}>
+              {status.address?.slice(0, 6)}...{status.address?.slice(-4)}
             </div>
-            <div className="text-xs text-gray-600 space-y-1">
-              <div>
-                <span className="font-mono">{status.address?.slice(0, 6)}...{status.address?.slice(-4)}</span>
-              </div>
-              <div className="font-medium">
-                Balance: {parseFloat(status.balance || '0').toFixed(4)} TRUST
-              </div>
+            <div style={styles.balanceText}>
+              Balance: {parseFloat(status.balance || '0').toFixed(4)} TRUST
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Refill manuel */}
-          <div className="bg-white p-3 rounded border">
-            <div className="flex gap-2 items-end">
-              <div className="flex-1">
-                <label className="block text-xs text-gray-600 mb-1">
-                  Montant à recharger (TRUST)
-                </label>
-                <input
-                  type="number"
-                  value={refillAmount}
-                  onChange={(e) => setRefillAmount(e.target.value)}
-                  placeholder="0.1"
-                  step="0.01"
-                  min="0"
-                  className="w-full px-2 py-1 border rounded text-sm"
-                />
-              </div>
+      {/* Refill Section */}
+      {status.isReady && (
+        <div style={styles.settingsItem}>
+          <div style={styles.refillContainer}>
+            <span>Refill</span>
+            <div style={styles.refillInputContainer}>
+              <input
+                type="number"
+                value={refillAmount}
+                onChange={(e) => setRefillAmount(e.target.value)}
+                placeholder="0.1"
+                step="0.01"
+                min="0"
+                style={styles.refillInput}
+              />
               <button
                 onClick={handleRefill}
                 disabled={isRefilling}
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                style={{
+                  ...styles.actionButton,
+                  backgroundColor: isRefilling ? 'rgba(40, 167, 69, 0.5)' : 'rgba(40, 167, 69, 0.8)'
+                }}
               >
-                {isRefilling ? 'Recharge...' : 'Recharger'}
+                {isRefilling ? '...' : '↑'}
               </button>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Actions */}
-          <div className="flex gap-2">
-            <button
-              onClick={updateStatus}
-              className="flex-1 px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
-            >
-              Actualiser
+      {/* Actions */}
+      {status.isReady && (
+        <div style={styles.settingsItem}>
+          <span>Actions</span>
+          <div style={styles.actionButtonsContainer}>
+            <button onClick={updateStatus} style={styles.refreshButton}>
+              ↻
             </button>
-            <button
-              onClick={handleDestroyWallet}
-              className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
-            >
-              Détruire
+            <button onClick={handleDestroyWallet} style={styles.destroyButton}>
+              🗑️
             </button>
           </div>
         </div>
       )}
 
-      {/* Informations */}
-      <div className="mt-4 p-2 bg-blue-50 rounded text-xs text-blue-700">
-        <p><strong>Mode Test:</strong> Ce wallet temporaire permet de tester l'expérience sans popup. Dans la version finale, Sofia gérera tout automatiquement.</p>
-      </div>
+      {/* Create Wallet Button */}
+      {!status.isReady && useSessionWallet && (
+        <div style={styles.settingsItem}>
+          <span>Wallet not created</span>
+          <button
+            onClick={handleCreateWallet}
+            disabled={isCreating}
+            style={{
+              ...styles.actionButton,
+              backgroundColor: isCreating ? 'rgba(199, 134, 108, 0.5)' : 'rgba(199, 134, 108, 0.8)'
+            }}
+          >
+            {isCreating ? '...' : 'Create'}
+          </button>
+        </div>
+      )}
     </div>
   )
+}
+
+const styles = {
+  container: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: '12px',
+    backdropFilter: 'blur(10px) saturate(100%)',
+    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
+    border: '1px solid rgba(255, 255, 255, 0.125)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    padding: '20px',
+    transition: 'all 0.3s ease'
+  },
+  title: {
+    fontFamily: "'Gotu', cursive",
+    fontSize: '18px',
+    fontWeight: '500',
+    color: '#FBF7F5',
+    marginBottom: '10px',
+    marginTop: '0'
+  },
+  description: {
+    fontSize: '14px',
+    color: '#F2DED6',
+    marginBottom: '20px',
+    lineHeight: '1.4'
+  },
+  settingsItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '15px 0',
+    color: '#FBF7F5',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    transition: 'all 0.3s ease'
+  },
+  walletStatus: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '10px',
+    border: '1px solid rgba(255, 255, 255, 0.125)'
+  },
+  statusHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px'
+  },
+  walletLabel: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#FBF7F5'
+  },
+  activeIndicator: {
+    fontSize: '12px',
+    color: '#28a745'
+  },
+  walletDetails: {
+    fontSize: '12px',
+    color: '#F2DED6'
+  },
+  addressText: {
+    fontFamily: 'monospace',
+    marginBottom: '4px'
+  },
+  balanceText: {
+    fontWeight: '500'
+  },
+  refillContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    width: '100%',
+    justifyContent: 'space-between'
+  },
+  refillInputContainer: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center'
+  },
+  refillInput: {
+    backgroundColor: 'rgba(251, 247, 245, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.125)',
+    padding: '6px 8px',
+    borderRadius: '6px',
+    color: '#FBF7F5',
+    width: '80px',
+    fontSize: '12px'
+  },
+  actionButton: {
+    backgroundColor: 'rgba(199, 134, 108, 0.8)',
+    color: '#FBF7F5',
+    padding: '6px 12px',
+    borderRadius: '6px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: '500',
+    transition: 'all 0.3s ease'
+  },
+  actionButtonsContainer: {
+    display: 'flex',
+    gap: '8px'
+  },
+  refreshButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    color: '#FBF7F5',
+    padding: '6px 10px',
+    borderRadius: '6px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: 'all 0.3s ease'
+  },
+  destroyButton: {
+    backgroundColor: 'rgba(220, 53, 69, 0.8)',
+    color: '#FBF7F5',
+    padding: '6px 10px',
+    borderRadius: '6px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '12px',
+    transition: 'all 0.3s ease'
+  },
+  warningBox: {
+    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+    border: '1px solid rgba(255, 193, 7, 0.3)',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '15px',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px'
+  },
+  warningIcon: {
+    fontSize: '16px',
+    flexShrink: 0
+  },
+  warningText: {
+    fontSize: '13px',
+    color: '#F2DED6',
+    lineHeight: '1.4'
+  }
 }
