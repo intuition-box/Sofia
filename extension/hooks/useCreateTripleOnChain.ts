@@ -399,6 +399,8 @@ export const useCreateTripleOnChain = () => {
           value: totalValue,
           gas: 2000000n * BigInt(atomsToCreate.length), // Scale gas with number of atoms
           chain: SELECTED_CHAIN,
+          maxFeePerGas: 50000000000n,
+          maxPriorityFeePerGas: 10000000000n,
           account: address as `0x${string}`
         }
 
@@ -529,6 +531,9 @@ export const useCreateTripleOnChain = () => {
           args: [subjectIds, predicateIds, objectIds, tripleCosts],
           value: totalValue,
           chain: SELECTED_CHAIN,
+          gas: 2000000n,
+          maxFeePerGas: 50000000000n,
+          maxPriorityFeePerGas: 10000000000n,
           account: address as `0x${string}`
         }
 

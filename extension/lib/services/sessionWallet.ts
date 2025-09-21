@@ -1,5 +1,5 @@
 import { generatePrivateKey, privateKeyToAccount, type LocalAccount } from 'viem/accounts'
-import { createWalletClient, http, formatEther, parseEther } from 'viem'
+import { createWalletClient, createPublicClient, http, formatEther, parseEther, encodeFunctionData } from 'viem'
 import { SELECTED_CHAIN } from '../config/config'
 import { getMetaProvider } from './metamask'
 import { getClients } from '../clients/viemClients'
@@ -139,7 +139,7 @@ export class SessionWallet {
     }
   }
 
-  // Transaction automatique SANS popup
+  // Transaction automatique SANS popup avec sendRawTransaction
   async executeTransaction(txParams: any): Promise<string> {
     if (!this.account) {
       throw new Error('Session wallet not ready')
@@ -152,15 +152,51 @@ export class SessionWallet {
     }
 
     try {
-      // Créer walletClient avec account local pour signature directe
-      const sessionWalletClient = createWalletClient({
-        account: this.account,
+      console.log('🔥 Session wallet: preparing raw transaction')
+      
+      // Créer publicClient pour sendRawTransaction
+      const publicClient = createPublicClient({
         chain: SELECTED_CHAIN,
         transport: http('https://testnet.rpc.intuition.systems')
       })
 
-      const hash = await sessionWalletClient.writeContract(txParams)
-      console.log('⚡ Auto transaction executed:', hash)
+      // Encoder les données de la fonction
+      const data = encodeFunctionData({
+        abi: txParams.abi,
+        functionName: txParams.functionName,
+        args: txParams.args
+      })
+
+      // Préparer la transaction EIP-1559 explicite
+      const nonce = await publicClient.getTransactionCount({
+        address: this.account.address
+      })
+
+      const transactionRequest = {
+        to: txParams.address as `0x${string}`,
+        value: txParams.value,
+        data: data,
+        gas: txParams.gas,
+        maxFeePerGas: txParams.maxFeePerGas,
+        maxPriorityFeePerGas: txParams.maxPriorityFeePerGas,
+        chainId: SELECTED_CHAIN.id,
+        nonce: nonce,
+        type: 'eip1559' // Force EIP-1559 explicitement
+      }
+
+      console.log('📋 Transaction request:', transactionRequest)
+
+      // Signer la transaction localement
+      const signedTransaction = await this.account.signTransaction(transactionRequest)
+      
+      console.log('🔏 Transaction signed locally')
+
+      // Envoyer la transaction signée
+      const hash = await publicClient.sendRawTransaction({
+        serializedTransaction: signedTransaction
+      })
+
+      console.log('⚡ Raw transaction sent:', hash)
       
       // Mettre à jour balance après transaction
       setTimeout(async () => {
@@ -169,7 +205,7 @@ export class SessionWallet {
       
       return hash
     } catch (error) {
-      console.error('Auto transaction failed:', error)
+      console.error('Session wallet raw transaction failed:', error)
       throw error
     }
   }
