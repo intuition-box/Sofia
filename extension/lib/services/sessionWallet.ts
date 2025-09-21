@@ -1,0 +1,203 @@
+import { generatePrivateKey, privateKeyToAccount, type LocalAccount } from 'viem/accounts'
+import { createWalletClient, http, formatEther, parseEther } from 'viem'
+import { SELECTED_CHAIN } from '../config/config'
+import { getMetaProvider } from './metamask'
+
+interface SessionWalletConfig {
+  privateKey: string
+  address: string
+  balance: bigint
+  isActive: boolean
+  createdAt: number
+}
+
+export class SessionWallet {
+  private account: LocalAccount | null = null
+  private walletClient: any = null
+  private config: SessionWalletConfig | null = null
+
+  constructor() {
+    this.loadFromStorage()
+  }
+
+  // Créer nouveau session wallet
+  async createNew(): Promise<SessionWalletConfig> {
+    const privateKey = generatePrivateKey()
+    const account = privateKeyToAccount(privateKey)
+    
+    this.account = account
+    this.walletClient = createWalletClient({
+      account,
+      chain: SELECTED_CHAIN,
+      transport: http('https://testnet.rpc.intuition.systems')
+    })
+
+    this.config = {
+      privateKey,
+      address: account.address,
+      balance: 0n,
+      isActive: true,
+      createdAt: Date.now()
+    }
+
+    await this.saveToStorage()
+    console.log('🔥 Session wallet created:', account.address)
+    
+    return this.config
+  }
+
+  // Charger wallet existant
+  private loadFromStorage(): void {
+    try {
+      const stored = localStorage.getItem('sofia-session-wallet')
+      if (stored) {
+        this.config = JSON.parse(stored)
+        if (this.config?.privateKey) {
+          this.account = privateKeyToAccount(this.config.privateKey as `0x${string}`)
+          this.walletClient = createWalletClient({
+            account: this.account,
+            chain: SELECTED_CHAIN,
+            transport: http('https://testnet.rpc.intuition.systems')
+          })
+          console.log('📂 Session wallet loaded:', this.config.address)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load session wallet:', error)
+      this.destroy()
+    }
+  }
+
+  // Sauvegarder en storage
+  private async saveToStorage(): Promise<void> {
+    if (this.config) {
+      localStorage.setItem('sofia-session-wallet', JSON.stringify(this.config))
+    }
+  }
+
+  // Obtenir balance actuelle (TRUST)
+  async getBalance(): Promise<bigint> {
+    if (!this.account) return 0n
+    
+    try {
+      const balance = await this.walletClient.getBalance({
+        address: this.account.address
+      })
+      
+      if (this.config) {
+        this.config.balance = balance
+        await this.saveToStorage()
+      }
+      
+      return balance
+    } catch (error) {
+      console.error('Failed to get TRUST balance:', error)
+      return 0n
+    }
+  }
+
+  // Refill manuel depuis MetaMask (TRUST)
+  async refillFromMetaMask(amount: string): Promise<string> {
+    if (!this.account) {
+      throw new Error('No session wallet created')
+    }
+
+    try {
+      const provider = await getMetaProvider()
+      const accounts = await provider.request({ method: 'eth_accounts' })
+      
+      if (!accounts || accounts.length === 0) {
+        throw new Error('MetaMask not connected')
+      }
+
+      const amountWei = parseEther(amount) // TRUST a 18 decimales comme ETH
+      
+      // Transaction MetaMask → Session wallet (TRUST)
+      const txHash = await provider.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: accounts[0],
+          to: this.account.address,
+          value: `0x${amountWei.toString(16)}`,
+          gas: '0x5208', // 21000 gas for simple transfer
+        }]
+      })
+
+      console.log('💰 TRUST refill transaction sent:', txHash)
+      
+      // Attendre confirmation et mettre à jour balance
+      setTimeout(async () => {
+        await this.getBalance()
+      }, 2000)
+
+      return txHash
+    } catch (error) {
+      console.error('TRUST refill failed:', error)
+      throw error
+    }
+  }
+
+  // Transaction automatique SANS popup
+  async executeTransaction(txParams: any): Promise<string> {
+    if (!this.walletClient || !this.account) {
+      throw new Error('Session wallet not ready')
+    }
+
+    const currentBalance = await this.getBalance()
+    
+    if (currentBalance < txParams.value) {
+      throw new Error('INSUFFICIENT_BALANCE')
+    }
+
+    try {
+      const hash = await this.walletClient.writeContract(txParams)
+      console.log('⚡ Auto transaction executed:', hash)
+      
+      // Mettre à jour balance après transaction
+      setTimeout(async () => {
+        await this.getBalance()
+      }, 2000)
+      
+      return hash
+    } catch (error) {
+      console.error('Auto transaction failed:', error)
+      throw error
+    }
+  }
+
+  // Détruire session wallet
+  destroy(): void {
+    this.account = null
+    this.walletClient = null
+    this.config = null
+    localStorage.removeItem('sofia-session-wallet')
+    console.log('🗑️ Session wallet destroyed')
+  }
+
+  // Status du wallet
+  getStatus(): {
+    isReady: boolean
+    address?: string
+    balance?: string
+    balanceWei?: bigint
+  } {
+    if (!this.config || !this.account) {
+      return { isReady: false }
+    }
+
+    return {
+      isReady: true,
+      address: this.config.address,
+      balance: formatEther(this.config.balance),
+      balanceWei: this.config.balance
+    }
+  }
+
+  // Vérifier si transaction possible
+  canExecute(value: bigint): boolean {
+    return this.config ? this.config.balance >= value : false
+  }
+}
+
+// Instance singleton
+export const sessionWallet = new SessionWallet()
