@@ -141,7 +141,7 @@ export class SessionWallet {
 
   // Transaction automatique SANS popup
   async executeTransaction(txParams: any): Promise<string> {
-    if (!this.walletClient || !this.account) {
+    if (!this.account) {
       throw new Error('Session wallet not ready')
     }
 
@@ -152,7 +152,14 @@ export class SessionWallet {
     }
 
     try {
-      const hash = await this.walletClient.writeContract(txParams)
+      // Créer walletClient avec account local pour signature directe
+      const sessionWalletClient = createWalletClient({
+        account: this.account,
+        chain: SELECTED_CHAIN,
+        transport: http('https://testnet.rpc.intuition.systems')
+      })
+
+      const hash = await sessionWalletClient.writeContract(txParams)
       console.log('⚡ Auto transaction executed:', hash)
       
       // Mettre à jour balance après transaction

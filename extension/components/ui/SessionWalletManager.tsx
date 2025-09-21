@@ -10,7 +10,7 @@ interface SessionWalletStatus {
   balanceWei?: bigint
 }
 
-export const SessionWalletManager: React.FC = () => {
+export const SessionWalletManager= () => {
   const [status, setStatus] = useState<SessionWalletStatus>({ isReady: false })
   const [useSessionWallet, setUseSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   const [refillAmount, setRefillAmount] = useState("0.1")

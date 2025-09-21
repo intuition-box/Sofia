@@ -7,6 +7,7 @@ import { useCheckExistingTriple } from './useCheckExistingTriple'
 import { useStorage } from "@plasmohq/storage/hook"
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { stringToHex, keccak256 } from 'viem'
+import { sessionWallet } from '../lib/services/sessionWallet'
 
 export interface TripleOnChainResult {
   success: boolean
@@ -38,11 +39,39 @@ export const useCreateTripleOnChain = () => {
   const { checkTripleExists } = useCheckExistingTriple()
   const { mutateAsync: pinThing } = usePinThingMutation()
   const [address] = useStorage<string>("metamask-account")
+  const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [currentStep, setCurrentStep] = useState('')
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, phase: '' })
+
+  // Helper function to determine which wallet to use
+  const shouldUseSessionWallet = (transactionValue: bigint): boolean => {
+    if (!useSessionWallet) return false
+    
+    const sessionStatus = sessionWallet.getStatus()
+    if (!sessionStatus.isReady) return false
+    
+    // Check if session wallet has enough balance
+    return sessionWallet.canExecute(transactionValue)
+  }
+
+  // Helper function to execute transaction with appropriate wallet
+  const executeTransaction = async (txParams: any): Promise<string> => {
+    const canUseSession = shouldUseSessionWallet(txParams.value || 0n)
+    
+    if (canUseSession) {
+      console.log('🚀 Using session wallet for automatic transaction')
+      setCurrentStep('Executing automatic transaction...')
+      return await sessionWallet.executeTransaction(txParams)
+    } else {
+      console.log('🔄 Falling back to MetaMask')
+      setCurrentStep('Requesting MetaMask signature...')
+      const { walletClient } = await getClients()
+      return await walletClient.writeContract(txParams)
+    }
+  }
 
   const createTripleOnChain = async (
     predicateName: string, // ex: "has visited", "loves"
@@ -166,10 +195,10 @@ export const useCreateTripleOnChain = () => {
         })
 
 
-        // Execute the transaction
+        // Execute the transaction (automatic or MetaMask)
         console.log('🚀 Sending triple transaction with value:', tripleCost.toString())
         
-        const hash = await walletClient.writeContract({
+        const txParams = {
           address: contractAddress,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'createTriples',
@@ -184,7 +213,9 @@ export const useCreateTripleOnChain = () => {
           gas: 2000000n,
           maxFeePerGas: 50000000000n,
           maxPriorityFeePerGas: 10000000000n
-        })
+        }
+
+        const hash = await executeTransaction(txParams)
 
         console.log('🔗 Transaction sent:', hash)
 
@@ -359,8 +390,8 @@ export const useCreateTripleOnChain = () => {
         setBatchProgress({ current: 45, total: 100, phase: 'sending_atoms' })
         setCurrentStep('Sending atoms transaction...')
 
-        // Create all atoms in one transaction
-        const hash = await walletClient.writeContract({
+        // Create all atoms in one transaction (automatic or MetaMask)
+        const atomsTxParams = {
           address: contractAddress,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'createAtoms',
@@ -369,7 +400,9 @@ export const useCreateTripleOnChain = () => {
           gas: 2000000n * BigInt(atomsToCreate.length), // Scale gas with number of atoms
           chain: SELECTED_CHAIN,
           account: address as `0x${string}`
-        })
+        }
+
+        const hash = await executeTransaction(atomsTxParams)
 
         console.log(`🔗 Batch atom transaction sent: ${hash}`)
 
@@ -488,8 +521,8 @@ export const useCreateTripleOnChain = () => {
           account: walletClient.account
         })
 
-        // Execute batch transaction
-        const hash = await walletClient.writeContract({
+        // Execute batch transaction (automatic or MetaMask)
+        const batchTxParams = {
           address: contractAddress,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'createTriples',
@@ -497,7 +530,9 @@ export const useCreateTripleOnChain = () => {
           value: totalValue,
           chain: SELECTED_CHAIN,
           account: address as `0x${string}`
-        })
+        }
+
+        const hash = await executeTransaction(batchTxParams)
 
         console.log(`🔗 Batch transaction sent: ${hash}`)
 
