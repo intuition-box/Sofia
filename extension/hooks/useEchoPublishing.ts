@@ -208,47 +208,41 @@ export const useEchoPublishing = ({
           )
         )
         
-        // Prepare all database operations in parallel
-        const dbOperations = []
-        
-        for (let i = 0; i < selectedTriplets.length; i++) {
-          const triplet = selectedTriplets[i]
-          const correspondingResult = result.results[i]
-          
-          // Only process if not failed and has result
-          if (correspondingResult && processedTriplets.includes(triplet)) {
-            // Add blacklist operation
-            dbOperations.push(elizaDataService.addPublishedTripletId(triplet.id))
-            
-            // Add storage operation
-            dbOperations.push(elizaDataService.storePublishedTriplet({
-              originalId: triplet.id,
-              triplet: {
-                subject: address,
-                predicate: triplet.triplet.predicate,
-                object: triplet.triplet.object
-              },
-              url: triplet.url,
-              description: triplet.description,
-              sourceMessageId: triplet.sourceMessageId,
-              tripleVaultId: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`,
-              txHash: result.txHash || '',
-              subjectVaultId: correspondingResult.subjectVaultId || '',
-              predicateVaultId: correspondingResult.predicateVaultId || '',
-              objectVaultId: correspondingResult.objectVaultId || '',
-              timestamp: Date.now(),
-              source: correspondingResult.source || 'created',
-              id: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`
-            }))
-          }
-        }
-        
-        // Execute all database operations in parallel
+        // Execute database operations sequentially to avoid uniqueness conflicts
         try {
-          await Promise.all(dbOperations)
-          console.log(`✅ Saved ${processedTriplets.length} triplets to database`)
+          for (let i = 0; i < selectedTriplets.length; i++) {
+            const triplet = selectedTriplets[i]
+            const correspondingResult = result.results[i]
+            
+            // Only process if not failed and has result
+            if (correspondingResult && processedTriplets.includes(triplet)) {
+              // Execute operations sequentially
+              await elizaDataService.addPublishedTripletId(triplet.id)
+              
+              await elizaDataService.storePublishedTriplet({
+                originalId: triplet.id,
+                triplet: {
+                  subject: address,
+                  predicate: triplet.triplet.predicate,
+                  object: triplet.triplet.object
+                },
+                url: triplet.url,
+                description: triplet.description,
+                sourceMessageId: triplet.sourceMessageId,
+                tripleVaultId: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`,
+                txHash: result.txHash || '',
+                subjectVaultId: correspondingResult.subjectVaultId || '',
+                predicateVaultId: correspondingResult.predicateVaultId || '',
+                objectVaultId: correspondingResult.objectVaultId || '',
+                timestamp: Date.now(),
+                source: correspondingResult.source || 'created',
+                id: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`
+              })
+            }
+          }
+          console.log(`✅ Saved ${processedTriplets.length} triplets to database sequentially`)
         } catch (error) {
-          console.error('❌ Some database operations failed:', error)
+          console.error('❌ Database operations failed:', error)
         }
         
         // Update local display only after database operations succeed

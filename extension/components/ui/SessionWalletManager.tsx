@@ -87,9 +87,9 @@ export const SessionWalletManager= () => {
 
   return (
     <div style={styles.container}>
-      <h3 style={styles.title}>🚀 Automatic Mode (Test)</h3>
+      <h3 style={styles.title}>Embeded Wallet</h3>
       <div style={styles.description}>
-        Transactions without MetaMask popups. Preview of future Sofia experience.
+        Transactions without MetaMask interaction. Preview of future Sofia experience.
       </div>
       
       {/* Important Warning */}

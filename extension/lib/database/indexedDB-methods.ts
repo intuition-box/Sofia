@@ -190,53 +190,87 @@ export class ElizaDataService {
    * Store published triplet details for SignalsTab
    */
   static async storePublishedTriplet(tripletDetails: any): Promise<number> {
-    // Get existing published triplets
-    const existingTriplets = await this.loadPublishedTriplets()
+    // Clean up any conflicting old records first
+    await this.cleanupOldTripletRecords()
     
-    // Check if this triplet already exists (by tripleVaultId or original triplet ID)
-    const existsIndex = existingTriplets.findIndex(t => 
-      t.tripleVaultId === tripletDetails.tripleVaultId || 
-      t.originalId === tripletDetails.originalId
+    // Check if this triplet already exists by looking for existing record
+    const existingRecord = await sofiaDB.getByIndex<ElizaRecord>(
+      STORES.ELIZA_DATA, 
+      'messageId', 
+      `published_triplet_${tripletDetails.originalId || tripletDetails.tripleVaultId}`
     )
     
-    if (existsIndex !== -1) {
-      // Update existing triplet
-      existingTriplets[existsIndex] = { ...existingTriplets[existsIndex], ...tripletDetails }
-    } else {
-      // Add new triplet
-      existingTriplets.push(tripletDetails)
-    }
-    
-    // First, delete existing records to avoid unique constraint issues
-    const existingRecords = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'published_triplets_details')
-    for (const record of existingRecords) {
-      if (record.id) {
-        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
-      }
-    }
-    
-    // Store updated list with a new record
+    // Create or update individual triplet record with unique messageId
     const record: ElizaRecord = {
-      messageId: 'published_triplets_details',
-      content: existingTriplets,
+      messageId: `published_triplet_${tripletDetails.originalId || tripletDetails.tripleVaultId}`,
+      content: tripletDetails,
       timestamp: Date.now(),
       type: 'published_triplets_details'
     }
     
-    const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
-    console.log('🔗 Published triplet details stored:', tripletDetails.tripleVaultId)
-    return result as number
+    // If record exists, preserve the id for update
+    if (existingRecord?.id) {
+      record.id = existingRecord.id
+    }
+    
+    try {
+      const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
+      console.log('🔗 Published triplet details stored:', tripletDetails.tripleVaultId || tripletDetails.originalId)
+      return result as number
+    } catch (error) {
+      if (error instanceof Error && error.name === 'ConstraintError') {
+        console.warn('⚠️ Constraint error detected, attempting to resolve...', error.message)
+        // Try to clean up conflicts and retry once
+        await this.cleanupOldTripletRecords()
+        const retryResult = await sofiaDB.put(STORES.ELIZA_DATA, record)
+        console.log('🔗 Published triplet details stored (retry):', tripletDetails.tripleVaultId || tripletDetails.originalId)
+        return retryResult as number
+      }
+      throw error
+    }
   }
 
   /**
    * Load all published triplet details for SignalsTab
    */
   static async loadPublishedTriplets(): Promise<any[]> {
-    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'published_triplets_details')
-    if (records.length > 0 && records[0].content) {
-      return records[0].content as any[]
+    // Clean up old format records that might cause conflicts
+    try {
+      await this.cleanupOldTripletRecords()
+    } catch (error) {
+      console.warn('⚠️ Warning: Could not clean up old triplet records during load:', error)
+      // Continue without cleanup if it fails
     }
-    return []
+    
+    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'type', 'published_triplets_details')
+    // Filter to only get individual triplet records (not the old format)
+    const tripletRecords = records.filter(record => 
+      record.messageId.startsWith('published_triplet_') && record.content
+    )
+    return tripletRecords.map(record => record.content)
+  }
+
+  /**
+   * Clean up old format triplet records to prevent uniqueness conflicts
+   */
+  static async cleanupOldTripletRecords(): Promise<void> {
+    try {
+      // Remove old format records that use 'published_triplets_details' as messageId
+      const oldRecords = await sofiaDB.getAllByIndex<ElizaRecord>(
+        STORES.ELIZA_DATA, 
+        'messageId', 
+        'published_triplets_details'
+      )
+      
+      for (const record of oldRecords) {
+        if (record.id && record.messageId === 'published_triplets_details') {
+          await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+          console.log('🧹 Cleaned up old triplet record format')
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Warning: Could not clean up old triplet records:', error)
+    }
   }
 
   /**
@@ -746,5 +780,5 @@ export const searchHistoryService = SearchHistoryService
 export const bookmarkService = BookmarkService
 
 // Export individual triplet functions for convenience
-export const storePublishedTriplet = ElizaDataService.storePublishedTriplet
-export const loadPublishedTriplets = ElizaDataService.loadPublishedTriplets
+export const storePublishedTriplet = ElizaDataService.storePublishedTriplet.bind(ElizaDataService)
+export const loadPublishedTriplets = ElizaDataService.loadPublishedTriplets.bind(ElizaDataService)
