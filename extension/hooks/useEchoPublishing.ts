@@ -35,10 +35,13 @@ interface UseEchoPublishingResult {
   // State
   isProcessing: boolean
   processingTripletId: string | null
+  transactionStatus?: 'success' | 'failed'
+  transactionError?: string
   
   // Actions
   publishTriplet: (tripletId: string, customWeight?: bigint) => Promise<void>
-  publishSelected: () => Promise<void>
+  publishSelected: (customWeights?: (bigint | null)[]) => Promise<void>
+  clearTransactionStatus: () => void
 }
 
 export const useEchoPublishing = ({
@@ -51,8 +54,16 @@ export const useEchoPublishing = ({
   
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingTripletId, setProcessingTripletId] = useState<string | null>(null)
+  const [transactionStatus, setTransactionStatus] = useState<'success' | 'failed' | undefined>(undefined)
+  const [transactionError, setTransactionError] = useState<string | undefined>(undefined)
   
   const { createTripleOnChain, createTriplesBatch, isCreating } = useCreateTripleOnChain()
+
+  // Clear transaction status
+  const clearTransactionStatus = useCallback(() => {
+    setTransactionStatus(undefined)
+    setTransactionError(undefined)
+  }, [])
 
   // Publish individual triplet
   const publishTriplet = useCallback(async (tripletId: string, customWeight?: bigint) => {
@@ -160,6 +171,7 @@ export const useEchoPublishing = ({
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
     
     setIsProcessing(true)
+    clearTransactionStatus() // Clear previous status
     
     try {
       console.log(`🔗 Starting ${customWeights ? 'weighted ' : ''}batch publication of ${selectedTriplets.length} triplets`)
@@ -244,12 +256,19 @@ export const useEchoPublishing = ({
         const updatedTriplets = echoTriplets.filter(t => !processedTripletIds.has(t.id))
         onTripletsUpdate(updatedTriplets)
         
+        // Set success status
+        setTransactionStatus('success')
+        
       } else {
         console.error(`❌ ${customWeights ? 'Weighted ' : ''}batch publication had failures:`, result.failedTriples)
+        setTransactionStatus('failed')
+        setTransactionError(`Batch publication had ${result.failedTriples.length} failures`)
       }
       
     } catch (error) {
       console.error(`❌ ${customWeights ? 'Weighted ' : ''}batch publication failed:`, error)
+      setTransactionStatus('failed')
+      setTransactionError(error instanceof Error ? error.message : 'Unknown error occurred')
     } finally {
       setIsProcessing(false)
     }
@@ -260,8 +279,11 @@ export const useEchoPublishing = ({
   return {
     isProcessing,
     processingTripletId,
+    transactionStatus,
+    transactionError,
     publishTriplet,
-    publishSelected
+    publishSelected,
+    clearTransactionStatus
   }
 }
 

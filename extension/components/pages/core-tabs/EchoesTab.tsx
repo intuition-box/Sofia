@@ -80,8 +80,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const {
     isProcessing,
     processingTripletId,
+    transactionStatus,
+    transactionError,
     publishTriplet,
-    publishSelected
+    publishSelected,
+    clearTransactionStatus
   } = useEchoPublishing({
     echoTriplets,
     selectedEchoes,
@@ -110,11 +113,13 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       // Use publishSelected with custom weights (it uses selectedEchoes automatically)
       await publishSelected(customWeights)
       
-      setShowWeightModal(false)
-      setSelectedTripletsForWeighting([])
+      // Don't close modal automatically - let user see transaction status
+      // setShowWeightModal(false)
+      // setSelectedTripletsForWeighting([])
       // clearSelection() is called automatically by publishSelected
     } catch (error) {
       console.error('Failed to publish triplets with custom weights:', error)
+      // Don't close modal automatically on error either
     }
   }
 
@@ -122,6 +127,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const handleWeightModalClose = () => {
     setShowWeightModal(false)
     setSelectedTripletsForWeighting([])
+    clearTransactionStatus() // Clear transaction status
+    // Clear selection when user manually closes modal
+    clearSelection()
   }
 
   // Transform rawMessages to echoTriplets
@@ -332,6 +340,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         isOpen={showWeightModal}
         triplets={selectedTripletsForWeighting}
         isProcessing={isProcessing}
+        transactionStatus={transactionStatus}
+        transactionError={transactionError}
         onClose={handleWeightModalClose}
         onSubmit={handleWeightSubmit}
       />

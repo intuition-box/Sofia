@@ -18,11 +18,13 @@ interface WeightModalProps {
   isOpen: boolean
   triplets: EchoTriplet[]
   isProcessing: boolean
+  transactionStatus?: 'success' | 'failed'
+  transactionError?: string
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
 
-const WeightModal = ({ isOpen, triplets, isProcessing, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionStatus, transactionError, onClose, onSubmit }: WeightModalProps) => {
   const [customWeights, setCustomWeights] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
 
@@ -124,12 +126,30 @@ const WeightModal = ({ isOpen, triplets, isProcessing, onClose, onSubmit }: Weig
           ))}
         </div>
 
-        {isProcessing && (
+        {(isProcessing || transactionStatus) && (
           <div className="processing-section">
-            <div className="loading-spinner"></div>
+            {isProcessing && <div className="loading-spinner"></div>}
+            {transactionStatus === 'success' && <div className="success-icon">✅</div>}
+            {transactionStatus === 'failed' && <div className="error-icon">❌</div>}
             <div className="processing-text">
-              <p className="processing-title">Creating Your {triplets.length === 1 ? 'Triplet' : 'Triplets'}</p>
-              <p className="processing-step">{processingStep}</p>
+              {isProcessing && (
+                <>
+                  <p className="processing-title">Creating Your {triplets.length === 1 ? 'Triplet' : 'Triplets'}</p>
+                  <p className="processing-step">{processingStep}</p>
+                </>
+              )}
+              {transactionStatus === 'success' && (
+                <>
+                  <p className="success-title">Transaction Validated</p>
+                  <p className="success-step">Your {triplets.length === 1 ? 'triplet has' : 'triplets have'} been successfully amplified!</p>
+                </>
+              )}
+              {transactionStatus === 'failed' && (
+                <>
+                  <p className="error-title">Transaction Failed</p>
+                  <p className="error-step">{transactionError || 'An error occurred during transaction processing'}</p>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -140,15 +160,26 @@ const WeightModal = ({ isOpen, triplets, isProcessing, onClose, onSubmit }: Weig
             onClick={handleClose}
             disabled={isProcessing}
           >
-            Cancel
+            {transactionStatus ? 'Close' : 'Cancel'}
           </button>
-          <button 
-            className="modal-btn primary"
-            onClick={handleSubmit}
-            disabled={isProcessing}
-          >
-            {isProcessing ? 'Amplifying...' : 'Amplify'}
-          </button>
+          {!transactionStatus && (
+            <button 
+              className="modal-btn primary"
+              onClick={handleSubmit}
+              disabled={isProcessing}
+            >
+              {isProcessing ? 'Amplifying...' : 'Amplify'}
+            </button>
+          )}
+          {transactionStatus === 'failed' && (
+            <button 
+              className="modal-btn primary"
+              onClick={handleSubmit}
+              disabled={isProcessing}
+            >
+              Retry
+            </button>
+          )}
         </div>
       </div>
     </div>
