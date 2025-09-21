@@ -180,8 +180,8 @@ export class SessionWallet {
         maxFeePerGas: txParams.maxFeePerGas,
         maxPriorityFeePerGas: txParams.maxPriorityFeePerGas,
         chainId: SELECTED_CHAIN.id,
-        nonce: nonce,
-        type: 'eip1559' // Force EIP-1559 explicitement
+        nonce: nonce
+        // Pas besoin de spécifier type, viem le détecte automatiquement avec maxFeePerGas
       }
 
       console.log('📋 Transaction request:', transactionRequest)
