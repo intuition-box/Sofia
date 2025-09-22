@@ -134,14 +134,17 @@
 /* Triplet text clickable */
 .triplet-text.clickable {
   cursor: pointer;
-  padding: 0px;
-  margin-bottom: 8px;
+  padding: 8px 10px;
   border-radius: var(--radius-md);
-  transition: background-color 0.2s ease;
 }
 
 .triplet-text.clickable:hover {
   background: var(--background);
+  position: relative;
+  left: -8px;
+  right: -8px;
+  padding: 8px 18px 8px 16px;
+  border-radius: var(--radius-md);
 }
 
 /* Import Section */

@@ -248,9 +248,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               const isExpanded = expandedTriplet?.msgIndex === 1 && expandedTriplet?.tripletIndex === index
 
               return (
-                <div 
-                  key={tripletItem.id} 
-                  className="echo-card"
+                <div
+                  key={tripletItem.id}
+                  className={`echo-card ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}
                   onClick={() => toggleEchoSelection(tripletItem.id)}
                   style={{ cursor: 'pointer' }}
                 >

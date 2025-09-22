@@ -1,4 +1,11 @@
-/* Styles spécifiques pour CorePage */
+/* ========================================
+   CORE PAGE STYLES
+   Architecture organisée par composants
+   ======================================== */
+
+/* ========================================
+   1. BASE LAYOUT & CONTAINERS
+   ======================================== */
 
 .page {
   text-align: center;
@@ -8,18 +15,28 @@
   position: relative;
 }
 
-
-/* Animation pulse complètement supprimée */
-
-.section-title {
-  text-align: center;
-  margin: 30px 0 20px 0;
-  font-family: var(--font-family-display);
-  font-weight: 700;
-  font-size: 24px;
-  font-weight: 500;
-  color: var(--background);
+.page-content {
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(30px) saturate(100%);
+  -webkit-backdrop-filter: blur(10px) saturate(100%);
+  transition: all 0.3s ease;
 }
+
+.triples-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(600px, 100%);
+  margin: 0 auto;
+  text-align: left;
+  padding: 0 16px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* ========================================
+   2. NAVIGATION & TABS
+   ======================================== */
 
 .tabs {
   display: flex;
@@ -61,24 +78,18 @@
   background-color: var(--primary);
 }
 
-/* Utilise .page-content de Global.css avec override spécifique */
-.page-content {
-  border-radius: var(--radius-xl);
-  backdrop-filter: blur(30px) saturate(100%);
-  -webkit-backdrop-filter: blur(10px) saturate(100%);
-  transition: all 0.3s ease;
-}
+/* ========================================
+   3. TYPOGRAPHY & TITLES
+   ======================================== */
 
-.triples-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: min(600px, 100%);
-  margin: 0 auto;
-  text-align: left;
-  padding: 0 16px;
-  box-sizing: border-box;
-  overflow-x: hidden;
+.section-title {
+  text-align: center;
+  margin: 30px 0 20px 0;
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--background);
 }
 
 .subsection-title {
@@ -89,6 +100,10 @@
   color: var(--background);
   margin-bottom: 10px;
 }
+
+/* ========================================
+   4. STATES (Loading, Empty, Error)
+   ======================================== */
 
 .loading-state {
   display: flex;
@@ -105,7 +120,6 @@
   -webkit-backdrop-filter: blur(5px) saturate(100%);
 }
 
-/* Utilise .empty-state de Global.css avec override spécifique */
 .empty-state {
   background-color: var(--muted);
   border-radius: var(--radius-lg);
@@ -122,47 +136,10 @@
   font-style: italic;
   margin-top: 10px;
 }
-.agent-data-section {
-  margin-top: 24px;
-  padding: 12px;
-  background-color: var(--muted);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-}
 
-.agent-message-list,
-.triples-list {
-  margin-top: 12px;
-  padding-left: 20px;
-}
-
-.agent-message,
-.triple-item {
-  padding: 12px 16px;
-  margin-bottom: 4px;
-  background-color: var(--muted);
-  backdrop-filter: blur(10px);
-  border-radius: var(--radius-md);
-  color: var(--background);
-  font-size: 13px;
-  line-height: 1.4;
-  border: 1px solid var(--border);
-  backdrop-filter: blur(5px);
-  transition: all 0.3s ease;
-}
-
-.agent-message:hover,
-.triple-item:hover {
-  background-color: var(--border);
-  border-color: var(--ring);
-  transform: translateY(-1px);
-}
-
-.response-separator,
-.triple-separator {
-  margin: 8px 0;
-}
-
+/* ========================================
+   5. ECHO CARDS
+   ======================================== */
 
 .echo-card {
   background-color: transparent;
@@ -182,6 +159,10 @@
   box-shadow: var(--shadow-heavy), var(--shadow-inset);
 }
 
+/* ========================================
+   6. TRIPLET STRUCTURE
+   ======================================== */
+
 .triplet-item {
   display: flex;
   flex-direction: column;
@@ -194,27 +175,14 @@
 .triplet-text {
   color: var(--secondary-foreground);
   font-size: 14px;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.triplet-text {
-  display: block;
   line-height: 1.6;
-}
-
-.triplet-text .subject,
-.triplet-text .action {
-  display: inline;
-}
-
-.triplet-text .object {
+  margin: 0;
   display: block;
-  margin-top: 8px;
 }
 
-/* Subject  */
+/* Subject */
 .triplet-text .subject {
+  display: inline;
   font-weight: 600;
   color: var(--secondary-foreground);
   padding: 1px 1px;
@@ -223,77 +191,26 @@
 
 /* Predicate */
 .triplet-text .action {
+  display: inline;
   margin: 0;
   font-style: italic;
   color: var(--secondary-foreground);
 }
 
-/* Object  */
+/* Object */
 .triplet-text .object {
+  display: block;
+  margin-top: 8px;
   font-weight: 1000;
   color: var(--primary);
-  padding: 6px 14px;
+  padding: 0px;
   border-radius: var(--radius-lg);
-  max-width: 350px;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
-.add-button {
-  background-color: var(--primary);
-  color: var(--secondary-foreground);
-  border: 1px solid var(--ring);
-  border-radius: var(--radius-sm);
-  padding: 6px 12px;
-  font-size: 12px;
-  cursor: pointer;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
+/* ========================================
+   7. TRIPLET DETAILS SECTIONS
+   ======================================== */
 
-.add-button:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  transform: scale(1.02);
-}
-
-.quick-action-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.quick-action-button:hover,
-.quick-action-button.hovered {
-  transform: scale(1.02);
-}
-
-.quick-action-icon {
-  width: 72px;
-  height: 24px;
-  display: block;
-  object-fit: contain;
-}
-
-/* Ajustements spécifiques pour les nouveaux boutons */
-.quick-action-button[data-action="amplify"] .quick-action-icon {
-  width: 90px;
-  height: 20px;
-}
-
-.quick-action-button[data-action="scan"] .quick-action-icon {
-  width: 65px;
-  height: 18px;
-}
-
-/* Triplet Details Section - SofIA Design System */
 .triplet-details {
   margin-top: 12px;
   display: flex;
@@ -306,9 +223,9 @@
 
 .triplet-detail-section {
   padding: 16px;
-  background-color: var(--background); /* 50 avec transparence */
+  background-color: var(--background);
   border-radius: var(--radius-md);
-  border: 1px solid var(--border); /* 200 avec transparence */
+  border: 1px solid var(--border);
   transition: all 0.3s ease;
   overflow: hidden;
   width: 100%;
@@ -317,16 +234,16 @@
 
 .triplet-detail-section:hover {
   background-color: var(--background);
-  border-color: var(--ring); /* 500 avec transparence */
+  border-color: var(--ring);
   transform: translateY(-1px);
 }
 
 .triplet-detail-title {
   font-family: var(--font-family-display);
-  font-weight: 700; /* Titres selon design system */
+  font-weight: 700;
   font-size: 16px;
   font-weight: 600;
-  color: var(--primary); /* 500 */
+  color: var(--primary);
   margin: 0 0 12px 0;
   display: flex;
   align-items: center;
@@ -335,10 +252,10 @@
 
 .triplet-detail-name {
   font-family: var(--font-family-primary);
-  font-weight: 500; /* Texte selon design system */
+  font-weight: 500;
   font-size: 14px;
   font-weight: 600;
-  color: var(--foreground); /* 50 */
+  color: var(--foreground);
   margin: 0 0 8px 0;
   line-height: 1.4;
   word-break: break-word;
@@ -348,10 +265,10 @@
 
 .triplet-detail-description {
   font-family: var(--font-family-primary);
-  font-weight: 500; /* Texte selon design system */
+  font-weight: 500;
   font-size: 13px;
   font-weight: 400;
-  color: var(--foreground); /* 200 */
+  color: var(--foreground);
   margin: 0 0 8px 0;
   line-height: 1.5;
   opacity: 0.9;
@@ -359,9 +276,9 @@
 
 .triplet-detail-url {
   font-family: var(--font-family-primary);
-  font-weight: 500; /* Texte selon design system */
+  font-weight: 500;
   font-size: 12px;
-  color: var(--foreground); /* 200 */
+  color: var(--foreground);
   text-decoration: underline;
   transition: all 0.3s ease;
   word-break: break-all;
@@ -372,12 +289,19 @@
 }
 
 .triplet-detail-url:hover {
-  color: var(--primary); /* 500 */
+  color: var(--primary);
   text-decoration: none;
   transform: translateX(2px);
 }
 
-/* Selection Panel Styles */
+.triplet-details a {
+  color: var(--foreground);
+}
+
+/* ========================================
+   8. SELECTION & BATCH ACTIONS
+   ======================================== */
+
 .selection-panel {
   display: flex;
   justify-content: space-between;
@@ -456,15 +380,16 @@
 }
 
 .add-to-signals {
-  background: var(--primary);
+  background: var(--color-success);
   color: var(--foreground);
-  border: 1px solid var(--ring);
+  border: 1px solid var(--color-success);
 }
 
 .add-to-signals:hover {
-  background: var(--ring);
+  background: var(--color-success);
   color: var(--background);
   transform: translateY(-1px);
+  opacity: 0.9;
 }
 
 .delete-selected {
@@ -479,7 +404,10 @@
   transform: translateY(-1px);
 }
 
-/* Echo Header Styles */
+/* ========================================
+   9. ECHO HEADERS & CHECKBOXES
+   ======================================== */
+
 .echo-header {
   display: flex;
   align-items: flex-start;
@@ -522,15 +450,91 @@
   transform: scale(1.1);
 }
 
-/* Selected Echo Card */
 .triplet-item.selected {
   background: transparent;
-  border-color: var(--primary);
+  border-color: var(--color-success);
   transform: translateY(-2px);
 }
 
+.echo-card.selected {
+  border-color: var(--color-success);
+  background-color: rgba(var(--color-success-rgb), 0.05);
+  box-shadow: 0 0 0 2px var(--color-success), var(--shadow-heavy);
+  transform: translateY(-2px);
+}
 
-/* Pulse Analysis Group Styles */
+/* ========================================
+   10. BUTTONS & ACTIONS
+   ======================================== */
+
+.add-button {
+  background-color: var(--primary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--ring);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.add-button:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.02);
+}
+
+.quick-action-button {
+  background: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  backdrop-filter: var(--backdrop-blur-light);
+}
+
+.quick-action-button:hover:not(:disabled) {
+  background: var(--secondary);
+  border-color: var(--ring);
+  transform: scale(1.05);
+}
+
+.quick-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quick-action-icon {
+  font-size: 16px;
+  line-height: 1;
+  display: block;
+}
+
+/* Legacy quick action styles for compatibility */
+.quick-action-button[data-action="amplify"] .quick-action-icon {
+  width: 90px;
+  height: 20px;
+}
+
+.quick-action-button[data-action="scan"] .quick-action-icon {
+  width: 65px;
+  height: 18px;
+}
+
+/* ========================================
+   11. PULSE ANALYSIS GROUPS
+   ======================================== */
+
 .pulse-analysis-group {
   margin-bottom: 32px;
   background: var(--background);
@@ -600,22 +604,70 @@
   gap: 12px;
 }
 
-/* Mobile Responsiveness */
+/* ========================================
+   12. AGENT DATA & MESSAGES
+   ======================================== */
+
+.agent-data-section {
+  margin-top: 24px;
+  padding: 12px;
+  background-color: var(--muted);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.agent-message-list,
+.triples-list {
+  margin-top: 12px;
+  padding-left: 20px;
+}
+
+.agent-message,
+.triple-item {
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  background-color: var(--muted);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-md);
+  color: var(--background);
+  font-size: 13px;
+  line-height: 1.4;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.agent-message:hover,
+.triple-item:hover {
+  background-color: var(--border);
+  border-color: var(--ring);
+  transform: translateY(-1px);
+}
+
+.response-separator,
+.triple-separator {
+  margin: 8px 0;
+}
+
+/* ========================================
+   13. MOBILE RESPONSIVENESS
+   ======================================== */
+
 @media (max-width: 480px) {
   .selection-panel {
     flex-direction: column;
     gap: 16px;
     align-items: stretch;
   }
-  
+
   .batch-actions {
     justify-content: center;
   }
-  
+
   .echo-header {
     gap: 8px;
   }
-  
+
   .batch-btn {
     flex: 1;
     text-align: center;
@@ -638,43 +690,4 @@
   .analysis-themes {
     padding: 16px;
   }
-}
-
-/* Liens en blanc pour les URLs dans les triplets */
-.triplet-details a {
-  color: var(--foreground);
-}
-
-/* Quick Action Button Styles */
-.quick-action-button {
-  background: var(--primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-sm);
-  cursor: pointer;
-  transition: var(--transition-normal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  min-height: 32px;
-  backdrop-filter: var(--backdrop-blur-light);
-}
-
-.quick-action-button:hover:not(:disabled) {
-  background: var(--secondary);
-  border-color: var(--ring);
-  transform: scale(1.05);
-}
-
-.quick-action-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.quick-action-icon {
-  font-size: 16px;
-  line-height: 1;
-  display: block;
 }
