@@ -2,7 +2,7 @@ import React from 'react';
 import '../styles/ButtonShowcasePage.css';
 import '../styles/Buttons.css';
 
-const ButtonShowcasePage: React.FC = () => {
+const ButtonShowcasePage = () => {
   return (
     <div className="button-showcase-page">
       <div className="page-header">
@@ -89,6 +89,20 @@ const ButtonShowcasePage: React.FC = () => {
             <button className="btn btn-outline">Deuxième</button>
             <button className="btn btn-outline">Troisième</button>
           </div>
+        </section>
+
+        {/* Boutons de filtre */}
+        <section className="button-section">
+          <h2>Boutons de Filtre</h2>
+          <div className="button-group-demo">
+            <button className="btn-filter">Tous</button>
+            <button className="btn-filter selected">Actif</button>
+            <button className="btn-filter">Inactif</button>
+            <button className="btn-filter">En attente</button>
+          </div>
+          <p style={{marginTop: '16px', fontSize: '14px', color: 'var(--muted-foreground)'}}>
+            All
+          </p>
         </section>
       </div>
     </div>

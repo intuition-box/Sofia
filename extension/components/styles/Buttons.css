@@ -51,15 +51,12 @@
 .btn-primary {
   background-color: var(--primary);
   color: var(--primary-foreground);
-  border-color: var(--primary);
-  box-shadow: var(--shadow-button);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
+  background-color: #FFD87C;
+  color: var(--primary-foreground);
   box-shadow: var(--shadow-button-hover);
-  filter: brightness(0.9);
 }
 
 .btn-primary:active {
@@ -210,4 +207,49 @@
 /* Boutons pleine largeur */
 .btn-full {
   width: 100%;
+}
+
+/* Boutons de filtre */
+.btn-filter {
+  background-color: transparent;
+  color: var(--muted-foreground);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  box-shadow: none;
+}
+
+.btn-filter:hover {
+  background-color: var(--color-bg-glass);
+  color: var(--foreground);
+  border-color: var(--primary);
+}
+
+.btn-filter:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.btn-filter.selected {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-flat);
+}
+
+.btn-filter.selected:hover {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  filter: brightness(1.1);
 }

@@ -144,7 +144,7 @@ const BookmarkTab = () => {
         <div className="bookmark-header-top">
           <button
             onClick={() => setIsCreatingList(true)}
-            className="btn-primary"
+            className="btn btn-primary btn-sm"
           >
             + New List
           </button>
