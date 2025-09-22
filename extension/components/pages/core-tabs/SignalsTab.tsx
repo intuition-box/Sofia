@@ -157,6 +157,11 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       <p className="triplet-detail-name">
                         Original URL: <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" className="triplet-link">{tripletItem.url.slice(0, 50)}...</a>
                       </p>
+                      {tripletItem.customWeight && (
+                        <p className="triplet-detail-name">
+                          Weight: {tripletItem.customWeight} Wei
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
