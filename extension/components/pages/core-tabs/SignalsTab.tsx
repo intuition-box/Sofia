@@ -3,6 +3,7 @@ import { useLocalPublishedTriplets } from '../../../hooks/useLocalPublishedTripl
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import { useStorage } from "@plasmohq/storage/hook"
+import { formatEther } from 'viem'
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
@@ -159,7 +160,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       </p>
                       {tripletItem.customWeight && (
                         <p className="triplet-detail-name">
-                          Weight: {tripletItem.customWeight} Wei
+                          Weight: {formatEther(BigInt(tripletItem.customWeight))} TRUST
                         </p>
                       )}
                     </div>
