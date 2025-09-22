@@ -109,7 +109,8 @@ export const useEchoPublishing = ({
           objectVaultId: result.objectVaultId,
           timestamp: Date.now(),
           source: result.source,
-          id: result.tripleVaultId
+          id: result.tripleVaultId,
+          customWeight: customWeight?.toString()
         })
       ])
       
@@ -146,7 +147,8 @@ export const useEchoPublishing = ({
               objectVaultId: '',
               timestamp: Date.now(),
               source: 'existing',
-              id: 'existing_' + tripletId
+              id: 'existing_' + tripletId,
+              customWeight: customWeight?.toString()
             })
           ])
           
@@ -236,7 +238,8 @@ export const useEchoPublishing = ({
                 objectVaultId: correspondingResult.objectVaultId || '',
                 timestamp: Date.now(),
                 source: correspondingResult.source || 'created',
-                id: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`
+                id: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`,
+                customWeight: customWeights?.[i]?.toString()
               })
             }
           }

@@ -29,6 +29,7 @@ export interface PublishedTripletDetails {
   timestamp: number // When it was published
   source: 'created' | 'existing'
   blockNumber?: number
+  customWeight?: string // Custom weight/value used for this triplet (stored as string for display)
   
   // Display info
   id: string // For React keys, can be same as tripleVaultId
