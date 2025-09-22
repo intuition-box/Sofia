@@ -1,0 +1,96 @@
+/* ResonancePage Styles */
+
+/* Copied and renamed from CommonPage.css */
+
+/* Search container styles - renamed from search-input-container */
+.resonance-search-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--color-bg-glass);
+  border: 1px solid var(--color-border-very-light);
+  border-radius: var(--radius-xl);
+  padding: 12px 16px;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.resonance-search-container:focus-within {
+  border-color: var(--color-border-light);
+  background-color: var(--color-bg-glass-light);
+}
+
+/* Search input styles - renamed from search-input */
+.resonance-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 14px;
+  font-family: var(--font-family-primary);
+}
+
+.resonance-search-input::placeholder {
+  color: var(--muted);
+}
+
+/* Search logo styles - renamed from search-logo */
+.resonance-search-logo {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* Keep using error-state from CommonPage.css - no need to rename these */
+
+/* Trending section styles - renamed from trending-section */
+.resonance-trending-section {
+  border-top: 1px solid var(--color-border-very-light);
+}
+
+/* Section title styles - renamed from section-title */
+.resonance-section-title {
+  color: var(--foreground);
+  font-size: 18px;
+  font-weight: 600;
+  text-align: left;
+  margin-bottom: 16px;
+  font-family: var(--font-family-display);
+}
+
+/* Border blue styles for trending triplets */
+.resonance-border-blue {
+  border-left: 4px solid var(--color-info);
+}
+
+.resonance-border-blue:hover {
+  border-left-color: var(--color-info);
+  box-shadow: var(--shadow-light);
+}
+
+/* Sentiment metrics styles */
+.sentiment-metrics {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.sentiment-metric {
+  background-color: #8b8b8b77;
+  color: #ffffffff;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.sentiment-metric.users {
+  background-color: #8b8b8b77;
+  color: #ffffffff;
+}
+
+.sentiment-metric.ratio {
+  background-color: #8b8b8b77;
+  color: #ffffffff;
+}

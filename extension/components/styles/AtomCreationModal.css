@@ -433,56 +433,7 @@
   margin-top: 8px;
 }
 
-.btn-primary,
-.btn-secondary {
-  font-family: var(--font-family-primary);
-  font-weight: 500;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px 24px;
-  border-radius: var(--radius-lg);
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Bouton Principal avec Liquid Glass */
-.btn-primary {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  backdrop-filter: blur(8px);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--secondary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--muted);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Bouton Secondaire */
-.btn-secondary {
-  background: transparent;
-  color: var(--secondary);
-  border: 2px solid var(--secondary);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--secondary);
-  border-color: var(--secondary);
-}
-
-.btn-secondary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 /* Messages */
 .error-message {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import '../styles/WeightModal.css'
+import '../styles/Buttons.css'
 
 interface Triplet {
   subject: string
@@ -135,15 +136,15 @@ const WeightModal = ({ isOpen, triplets, isProcessing, onClose, onSubmit }: Weig
         )}
 
         <div className="modal-actions">
-          <button 
-            className="modal-btn secondary"
+          <button
+            className="btn btn-sm btn-secondary"
             onClick={handleClose}
             disabled={isProcessing}
           >
             Cancel
           </button>
-          <button 
-            className="modal-btn primary"
+          <button
+            className="btn btn-sm btn-primary"
             onClick={handleSubmit}
             disabled={isProcessing}
           >

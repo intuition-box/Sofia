@@ -40,31 +40,7 @@
   flex-shrink: 0;
 }
 
-.search-button {
-  width: 100%;
-  padding: 12px 24px;
-  background: var(--primary) !important;
-  color: var(--foreground);
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-glass);
-}
-
-.search-button:hover:not(:disabled) {
-  background: var(--accent) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: var(--shadow-button-hover) !important;
-  color: var(--foreground) !important;
-}
-
-.search-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 .error-state {
   text-align: center;

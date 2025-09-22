@@ -21,7 +21,7 @@
 
 .description-sections {
   margin-bottom: var(--spacing-4xl);
-  max-width: 320px;
+  max-width: 400px;
   text-align: center;
 }
 
@@ -40,37 +40,7 @@
   justify-content: center;
 }
 
-/* Override button styles to match design */
-.connect-section button {
-  background: var(--primary) !important;
-  color: var(--primary-foreground) !important;
-  border: none !important;
-  padding: var(--spacing-xl) var(--spacing-6xl) !important;
-  border-radius: var(--radius-md) !important;
-  font-size: var(--font-size-lg) !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: var(--transition-normal) !important;
-  text-transform: none !important;
-  letter-spacing: 0.5px !important;
-  box-shadow: var(--shadow-flat) !important;
-  width: 290px !important;
-  max-width: 100% !important;
-}
-
-.connect-section button:hover {
-  background: var(--accent) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: var(--shadow-minimal) !important;
-}
-
-.connect-section button:disabled {
-  background: var(--muted) !important;
-  color: var(--muted-foreground) !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: var(--shadow-none) !important;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 .terms-section {
   margin-top: var(--spacing-sm);

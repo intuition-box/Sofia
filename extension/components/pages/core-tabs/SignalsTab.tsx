@@ -171,7 +171,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
             Triplets you publish from Echoes tab will appear here automatically.<br/>
             Create some triplets to see them displayed with full blockchain details!
           </p>
-          <button onClick={refreshFromLocal} className="refresh-button">
+          <button onClick={refreshFromLocal} className="btn btn-ghost btn-default">
             Refresh Local Storage
           </button>
         </div>

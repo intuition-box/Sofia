@@ -130,21 +130,7 @@
   display: none;
 }
 
-.photo-upload-button {
-  background-color: var(--primary);
-  color: var(--background);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.photo-upload-button:hover {
-  background-color: var(--accent);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 .bio-section {
   width: 100%;
@@ -192,29 +178,4 @@
   justify-content: center;
 }
 
-.edit-button,
-.save-button,
-.cancel-button {
-  background-color: var(--primary);
-  color: var(--background);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.cancel-button {
-  background-color: var(--color-bg-glass-light);
-}
-
-.edit-button:hover,
-.save-button:hover {
-  background-color: var(--accent);
-}
-
-.cancel-button:hover {
-  background-color: var(--color-bg-glass-lighter);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */

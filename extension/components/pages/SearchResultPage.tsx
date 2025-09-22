@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch, type AtomSearchResult } from '../../hooks/useIntuitionSearch'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
+import '../styles/Buttons.css'
 
 interface SearchResultPageProps {
   searchQuery?: string
@@ -149,7 +150,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
           <div className="empty-state">
             <p>❌ Search failed</p>
             <p className="empty-subtext">{error}</p>
-            <button onClick={() => performSearch(searchQuery)} className="search-button">
+            <button onClick={() => performSearch(searchQuery)} className="btn btn-sm btn-primary">
               Retry Search
             </button>
           </div>
@@ -162,7 +163,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
               No atoms found for "{searchQuery}"<br/>
               Try a different search term or check your spelling
             </p>
-            <button onClick={() => performSearch(searchQuery)} className="search-button">
+            <button onClick={() => performSearch(searchQuery)} className="btn btn-sm btn-primary">
               Search Again
             </button>
           </div>

@@ -114,43 +114,7 @@
   margin-top: 32px;
 }
 
-.modal-btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 90px;
-}
-
-.modal-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.modal-btn.secondary {
-  background: var(--color-bg-glass);
-  color: var(--secondary);
-  border: 1px solid var(--color-border-lighter);
-}
-
-.modal-btn.secondary:hover:not(:disabled) {
-  background: var(--color-bg-glass-light);
-  border-color: var(--secondary);
-}
-
-.modal-btn.primary {
-  background: var(--primary);
-  color: var(--background);
-}
-
-.modal-btn.primary:hover:not(:disabled) {
-  background: var(--secondary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-button);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 /* Processing Section */
 .processing-section {
@@ -168,7 +132,6 @@
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--color-border-light);
   border-top: 3px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -262,7 +225,7 @@
     flex-direction: column;
   }
   
-  .modal-btn {
+  .btn {
     width: 100%;
   }
   

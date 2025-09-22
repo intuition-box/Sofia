@@ -1,11 +1,10 @@
 .level-progress-card {
   border-radius: var(--radius-xl);
-  background: var(--muted);
+  background: #8d77457c;
   padding: 16px 20px;
   color: white;
   width: 80%;
   box-shadow: var(--shadow-flat);
-  border: 2px solid var(--border);
   position: relative;
 }
 

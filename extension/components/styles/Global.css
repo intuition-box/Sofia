@@ -152,30 +152,7 @@
   transition: var(--transition-normal);
 }
 
-/* Bouton retour standard */
-.back-button {
-  background-color: transparent;
-  border: none;
-  color: var(--color-text-primary);
-  font-family: var(--font-family-primary);
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  transition: var(--transition-normal);
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.back-button .home-icon {
-  width: 20px;
-  height: 20px;
-  display: block;
-  filter: brightness(0) invert(1);
-  opacity: 1;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 /* Titre de section */
 .section-title {

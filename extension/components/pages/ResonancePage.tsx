@@ -3,9 +3,10 @@ import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useHighValueTriplets } from '../../hooks/useHighValueTriplets'
 import QuickActionButton from '../ui/QuickActionButton'
-import logoIcon from '../ui/icons/icon.png'
+import logoIcon from '../ui/icons/chatIcon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
+import '../styles/ResonancePage.css'
 
 const ResonancePage = () => {
   const { navigateTo } = useRouter()
@@ -59,12 +60,12 @@ const ResonancePage = () => {
   return (
     <div className="triples-container">
       <div className="search-content">
-        <div className="search-input-container">
-          <img src={logoIcon} alt="Sofia" className="search-logo" />
+        <div className="resonance-search-container">
+          <img src={logoIcon} alt="Sofia" className="resonance-search-logo" />
           <input
             type="text"
             placeholder="Search atoms in Intuition blockchain..."
-            className="search-input"
+            className="resonance-search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -72,7 +73,7 @@ const ResonancePage = () => {
         </div>
                 
         {error && (
-          <div className="empty-state">
+          <div className="error-state">
             <p>❌ Connection Error</p>
             <p className="empty-subtext">
               {error}
@@ -93,8 +94,8 @@ const ResonancePage = () => {
         )}
 
         {/* High-value triplets section */}
-        <div className="trending-section">
-          <h3 className="section-title">Trending Claims</h3>
+        <div className="resonance-trending-section">
+          <h3 className="resonance-section-title">Trending Claims</h3>
           
           {tripletsLoading && (
             <div className="empty-state">
@@ -142,28 +143,14 @@ const ResonancePage = () => {
 
                       {/* Support Market Cap metrics */}
                     </div>
-                      <div className="sentiment-metrics" style={{marginTop: '8px', marginBottom: '4px'}}>
+                      <div className="sentiment-metrics">
                         {tripletItem.totalUsers > 0 && (
-                          <span className="sentiment-metric users" style={{
-                            backgroundColor: '#8b8b8b77',
-                            color: '#ffffffff',
-                            padding: '2px 6px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: '500'
-                          }}>
+                          <span className="sentiment-metric users">
                             {tripletItem.totalUsers} users
                           </span>
                         )}
                         {tripletItem.supportRatio > 0 && (
-                          <span className="sentiment-metric ratio" style={{
-                            backgroundColor: '#8b8b8b77',
-                            color: '#ffffffff',
-                            padding: '2px 6px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: '500'
-                          }}>
+                          <span className="sentiment-metric ratio">
                             {Math.round(tripletItem.supportRatio * 100)}% support
                           </span>
                         )}

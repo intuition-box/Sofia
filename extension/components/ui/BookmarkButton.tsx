@@ -10,6 +10,7 @@ import type { Triplet } from '~components/pages/core-tabs/types'
 import type { BookmarkedTriplet } from '../../types/bookmarks'
 import QuickActionButton from './QuickActionButton'
 import '../styles/BookmarkStyles.css'
+import '../styles/Buttons.css'
 
 interface BookmarkButtonProps {
   triplet: Triplet
@@ -150,7 +151,7 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                 <div className="bookmark-form-group">
                   <button
                     onClick={() => setIsCreatingList(true)}
-                    className="bookmark-button bookmark-button-full"
+                    className="btn btn-sm btn-secondary btn-full"
                   >
                     + Create New List
                   </button>
@@ -179,7 +180,7 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                       setIsCreatingList(false)
                       setNewListName('')
                     }}
-                    className="bookmark-button bookmark-button-full"
+                    className="btn btn-sm btn-secondary btn-full"
                   >
                     ← Back to List Selection
                   </button>
@@ -189,14 +190,14 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
 
             {/* Action buttons */}
             <div className="bookmark-button-group">
-              <button 
+              <button
                 onClick={() => {
                   setShowModal(false)
                   setIsCreatingList(false)
                   setNewListName('')
                   setSelectedListId('')
                 }}
-                className="bookmark-button"
+                className="btn btn-sm btn-secondary"
               >
                 Cancel
               </button>

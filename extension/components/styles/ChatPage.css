@@ -20,19 +20,7 @@
   z-index: var(--z-header);
 }
 
-.chat-back-button {
-  background: none;
-  border: none;
-  color: var(--background);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: var(--radius-full);
-  transition: all 0.2s ease;
-}
-
-.chat-back-button:hover {
-  background-color: var(--color-bg-glass);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 .home-icon {
   width: 24px;

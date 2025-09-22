@@ -55,7 +55,7 @@
 
 .btn-primary:hover {
   background-color: #FFD87C;
-  color: var(--primary-foreground);
+  color: var(--foreground);
   box-shadow: var(--shadow-button-hover);
 }
 
@@ -69,13 +69,12 @@
 /* Bouton secondaire */
 .btn-secondary {
   background-color: var(--secondary);
-  color: var(--secondary-foreground);
-  border-color: var(--secondary);
+  color: var(--background);
+  
 }
 
 .btn-secondary:hover {
   background-color: var(--secondary);
-  border-color: var(--secondary);
   filter: brightness(0.9);
 }
 
@@ -113,7 +112,7 @@
 }
 
 .btn-ghost:hover {
-  background-color: var(--color-bg-glass);
+  background-color: var(--background);
   color: var(--foreground);
 }
 

@@ -62,24 +62,7 @@
   display: none;
 }
 
-.photo-upload-button {
-  background: var(--color-primary);
-  color: var(--color-text-secondary);
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  transition: var(--transition-normal);
-  box-shadow: var(--shadow-flat);
-}
-
-.photo-upload-button:hover {
-  background: var(--color-primary-dark);
-  box-shadow: var(--shadow-minimal);
-  transform: translateY(-1px);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 .profile-info {
   display: flex;
@@ -183,49 +166,9 @@
   margin-left: var(--spacing-sm);
 }
 
-.connect-button {
-  background: var(--color-primary);
-  color: var(--color-text-secondary);
-  border: none;
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  transition: var(--transition-fast);
-  min-width: 120px;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  justify-content: center;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
-.connect-button:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-}
-
-.disconnect-button {
-  background: transparent;
-  color: var(--destructive);
-  border: 1px solid var(--destructive);
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  transition: var(--transition-fast);
-  min-width: 120px;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  justify-content: center;
-}
-
-.disconnect-button:hover {
-  background: var(--destructive);
-  color: white;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 
 .field-actions {
@@ -234,41 +177,7 @@
   justify-content: flex-end;
 }
 
-.edit-button,
-.save-button,
-.cancel-button {
-  background: transparent;
-  border: 1px solid var(--color-border-light);
-  color: var(--color-text-primary);
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  transition: var(--transition-fast);
-  min-width: 60px;
-}
-
-.edit-button:hover {
-  background: var(--color-bg-glass-light);
-  border-color: var(--color-primary);
-}
-
-.save-button {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-text-secondary);
-}
-
-.save-button:hover {
-  background: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
-}
-
-.cancel-button:hover {
-  background: var(--color-bg-glass-light);
-  border-color: var(--color-text-muted);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 /* Responsive */
 @media (max-width: 480px) {
@@ -398,38 +307,7 @@
   justify-content: space-around;
 }
 
-.following-button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: var(--radius-xl);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex: 1;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.message-button {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border: none;
-  padding: 12px 24px;
-  border-radius: var(--radius-xl);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex: 1;
-  justify-content: center;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 
 
@@ -527,13 +405,4 @@
   font-weight: 500;
 }
 
-.follow-button {
-  background: transparent;
-  color: var(--muted-foreground);
-  border: 1px solid var(--border);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */

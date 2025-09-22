@@ -19,14 +19,7 @@
   align-items: center;
 }
 
-.triple-remove-btn {
-  color: var(--destructive);
-  font-size: 0.875rem;
-}
-
-.triple-remove-btn:hover {
-  color: var(--destructive);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 .vote-container {
   display: flex;
@@ -56,25 +49,7 @@
   justify-content: center;
 }
 
-.form-btn {
-  width: 5rem;
-  padding: 0.5rem 1rem;
-  color: var(--foreground);
-  text-align: center;
-  border-radius: 0.75rem;
-  background-color: hsl(var(--btn-atom-form-bg));
-  transition: all 0.2s ease;
-}
-
-.form-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-flat);
-}
-
-.form-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 .success-message {
   color: var(--color-success);

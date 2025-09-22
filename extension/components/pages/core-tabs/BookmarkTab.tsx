@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useBookmarks } from '../../../hooks/useBookmarks'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
+import '../../styles/Buttons.css'
 
 const BookmarkTab = () => {
   const { 
@@ -123,7 +124,7 @@ const BookmarkTab = () => {
           <p>Error loading bookmarks: {error}</p>
           <button 
             onClick={refreshFromLocal}
-            className="bookmark-button-primary"
+            className="btn btn-sm btn-primary"
             style={{ marginTop: '10px' }}
           >
             Retry
@@ -154,7 +155,7 @@ const BookmarkTab = () => {
         <div className="bookmark-nav-wrapper">
           <button
             onClick={() => setSelectedListId(null)}
-            className={`bookmark-nav-button ${selectedListId === null ? 'active' : ''}`}
+            className={`btn-filter ${selectedListId === null ? 'selected' : ''}`}
           >
             All ({triplets.length})
           </button>
@@ -212,13 +213,13 @@ const BookmarkTab = () => {
               <button 
                 onClick={() => isCreatingList ? handleCreateList() : handleUpdateList(isEditingList!)}
                 disabled={!newListName.trim()}
-                className={!newListName.trim() ? "bookmark-button-disabled" : "btn-primary"}
+                className={!newListName.trim() ? "btn btn-sm btn-secondary" : "btn btn-sm btn-primary"}
               >
                 {isCreatingList ? 'Create' : 'Update'}
               </button>
               <button 
                 onClick={cancelEdit}
-                className="btn-secondary"
+                className="btn btn-sm btn-secondary"
               >
                 Cancel
               </button>
@@ -259,19 +260,19 @@ const BookmarkTab = () => {
                     <div className="signal-actions">
                       <button
                         onClick={() => setSelectedListId(list.id)}
-                        className="bookmark-action-button primary"
+                        className="btn btn-sm btn-primary"
                       >
                         View
                       </button>
                       <button
                         onClick={() => startEditingList(list.id)}
-                        className="bookmark-action-button"
+                        className="btn btn-sm btn-secondary"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteList(list.id)}
-                        className="bookmark-action-button danger"
+                        className="btn btn-sm btn-destructive"
                       >
                         Delete
                       </button>
@@ -303,7 +304,7 @@ const BookmarkTab = () => {
                     <div className="signal-actions">
                       <button
                         onClick={() => removeTripletFromList(selectedListId, bookmarkedTriplet.id)}
-                        className="bookmark-action-button danger"
+                        className="btn btn-sm btn-destructive"
                       >
                         Remove
                       </button>

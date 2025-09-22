@@ -23,7 +23,7 @@
   border-radius: var(--radius-xl);
   max-width: 400px;
   width: 90%;
-  background: var(--foreground);
+  background: var(--background);
   box-shadow: var(--shadow-flat);
   max-height: 80vh;
   z-index: 9999;
@@ -35,7 +35,7 @@
 /* Titres dans les modals */
 .bookmark-modal-title {
   margin: 0 0 16px 0;
-  color: var(--background);
+  color: var(--foreground);
   font-size: 18px;
   font-weight: 600;
 }
@@ -53,8 +53,10 @@
   width: 100%;
   padding: 8px 12px;
   border-radius: var(--radius-md);
+  border: solid 2px;
+  border-color: var(--primary);
   background: var(--background);
-  color: var(--background);
+  color: var(--foreground);
   font-size: 14px;
 }
 
@@ -73,8 +75,10 @@
   width: 100%;
   padding: 8px 12px;
   border-radius: var(--radius-md);
+  border: solid 2px;
+  border-color: var(--primary);
   background: var(--background);
-  color: var(--background);
+  color: var(--foreground);
   font-size: 14px;
   resize: vertical;
   min-height: 60px;
@@ -107,36 +111,7 @@
   box-shadow: 0 0 0 2px var(--ring);
 }
 
-/* Boutons */
-.bookmark-button {
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  background: var(--muted);
-  color: var(--background);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.bookmark-button:hover {
-  background: var(--primary);
-}
-
-/* Bouton primaire */
-.bookmark-button-primary {
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  background: var(--foreground);
-  color: var(--background);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.bookmark-button-primary:hover {
-  background: var(--primary);
-  font-style: bold;
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 /* Bouton désactivé */
 .bookmark-button-disabled {
@@ -212,25 +187,7 @@
   font-size: 18px;
 }
 
-/* Navigation des listes */
-.bookmark-nav-button {
-  padding: 6px 12px;
-  border-radius: var(--radius-xl);
-  background: transparent;
-  color: var(--background);
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.bookmark-nav-button:hover {
-  background: var(--primary);
-}
-
-.bookmark-nav-button.active {
-  background: var(--primary);
-  color: var(--background);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 /* Navigation wrapper */
 .bookmark-nav-wrapper {
@@ -246,28 +203,16 @@
   gap: 4px;
 }
 
-.bookmark-nav-action-button {
-  padding: 4px;
-  border: none;
-  background: transparent;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s ease;
-}
-
-.bookmark-nav-action-button:hover {
-  color: var(--background);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 /* Barre de recherche */
 .bookmark-search-input {
   width: 100%;
   padding: 8px 12px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--primary);
+  border: 1px solid var(--foreground);
   background: transparent;
-  color: var(--background);
+  color: var(--foreground);
   font-size: 14px;
 }
 
@@ -277,8 +222,8 @@
 
 .bookmark-search-input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--ring);
+  border-color: var(--foreground);
+  box-shadow: 0 0 0 2px var(--foreground);
 }
 
 /* Styles pour les cartes de listes dans BookmarkTab */
@@ -296,14 +241,14 @@
 
 .bookmark-list-info h4 {
   margin: 0 0 8px 0;
-  color: var(--background);
+  color: var(--foreground);
   font-size: 16px;
 }
 
 .bookmark-list-info p {
   margin: 0 0 8px 0;
   font-size: 14px;
-  color: var(--background);
+  color: var(--foreground);
 }
 
 .bookmark-list-meta {
@@ -336,40 +281,7 @@
   text-decoration: underline;
 }
 
-/* Boutons d'actions dans les cartes */
-.bookmark-action-button {
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--primary);
-  background: var(--muted);
-  color: var(--background);
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s ease;
-}
-
-.bookmark-action-button:hover {
-  background: var(--muted);
-  border-color: var(--primary);
-}
-
-.bookmark-action-button.primary {
-  background: var(--primary);
-  color: var(--background);
-}
-
-.bookmark-action-button.primary:hover {
-  background: var(--primary);
-}
-
-.bookmark-action-button.danger {
-  color: var(--muted-foreground);
-}
-
-.bookmark-action-button.danger:hover {
-  background: var(--destructive);
-  border-color: var(--destructive);
-}
+/* Styles de boutons supprimés - utilisation de Buttons.css */
 
 /* Additional styles extracted from BookmarkTab.tsx */
 .bookmark-header-container {
