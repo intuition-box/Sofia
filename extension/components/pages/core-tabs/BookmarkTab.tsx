@@ -140,13 +140,11 @@ const BookmarkTab = () => {
   return (
     <div className="triples-container">
       {/* Header with lists navigation */}
-      <div className="bookmark-header" style={{ padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h3 className="bookmark-header-title">Bookmark Lists</h3>
+      <div className="bookmark-header bookmark-header-container">
+        <div className="bookmark-header-top">
           <button
             onClick={() => setIsCreatingList(true)}
-            className="bookmark-button-primary"
-            style={{ fontSize: '12px', padding: '6px 12px' }}
+            className="btn-primary"
           >
             + New List
           </button>
@@ -164,7 +162,7 @@ const BookmarkTab = () => {
 
         {/* Search bar */}
         {!selectedListId && (
-          <div style={{ marginTop: '12px' }}>
+          <div className="bookmark-search-container">
             <input
               type="text"
               placeholder="Search bookmarked triplets..."
@@ -212,17 +210,17 @@ const BookmarkTab = () => {
             
             <div className="bookmark-button-group">
               <button 
-                onClick={cancelEdit}
-                className="bookmark-button"
-              >
-                Cancel
-              </button>
-              <button 
                 onClick={() => isCreatingList ? handleCreateList() : handleUpdateList(isEditingList!)}
                 disabled={!newListName.trim()}
-                className={!newListName.trim() ? "bookmark-button-disabled" : "bookmark-button-primary"}
+                className={!newListName.trim() ? "bookmark-button-disabled" : "btn-primary"}
               >
                 {isCreatingList ? 'Create' : 'Update'}
+              </button>
+              <button 
+                onClick={cancelEdit}
+                className="btn-secondary"
+              >
+                Cancel
               </button>
             </div>
           </div>
@@ -230,7 +228,7 @@ const BookmarkTab = () => {
       )}
 
       {/* Content */}
-      <div style={{ padding: '16px' }}>
+      <div className="bookmark-content">
         {selectedListId === null ? (
           /* Show all lists as cards */
           lists.length === 0 ? (

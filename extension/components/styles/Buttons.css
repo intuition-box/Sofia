@@ -1,0 +1,213 @@
+/* Styles des boutons pour l'extension Chrome */
+
+/* Base commune pour tous les boutons */
+.btn {
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  box-shadow: var(--shadow-flat);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Tailles des boutons */
+.btn-sm {
+  height: 32px;
+  padding: 0 var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.btn-default {
+  height: 40px;
+  padding: 0 var(--spacing-lg);
+  font-size: var(--font-size-base);
+}
+
+.btn-lg {
+  height: 48px;
+  padding: 0 var(--spacing-xl);
+  font-size: var(--font-size-lg);
+}
+
+/* Bouton principal */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-button);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-button-hover);
+  filter: brightness(0.9);
+}
+
+.btn-primary:active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-flat);
+  filter: brightness(0.8);
+}
+
+/* Bouton secondaire */
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--secondary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+  filter: brightness(0.9);
+}
+
+.btn-secondary:active {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+  filter: brightness(0.8);
+}
+
+/* Bouton outline */
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-outline:active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  filter: brightness(0.8);
+}
+
+/* Bouton ghost */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--foreground);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.btn-ghost:hover {
+  background-color: var(--color-bg-glass);
+  color: var(--foreground);
+}
+
+.btn-ghost:active {
+  background-color: var(--color-bg-glass-light);
+}
+
+/* Bouton destructif */
+.btn-destructive {
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
+  border-color: var(--destructive);
+}
+
+.btn-destructive:hover {
+  background-color: var(--destructive);
+  border-color: var(--destructive);
+  filter: brightness(0.9);
+}
+
+.btn-destructive:active {
+  background-color: var(--destructive);
+  border-color: var(--destructive);
+  filter: brightness(0.8);
+}
+
+/* Bouton avec icône */
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.btn-icon.btn-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.btn-icon.btn-lg {
+  width: 48px;
+  height: 48px;
+}
+
+/* États spéciaux */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Groupes de boutons */
+.btn-group {
+  display: inline-flex;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-flat);
+}
+
+.btn-group .btn {
+  border-radius: 0;
+  border-right-width: 0;
+  box-shadow: none;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  border-right-width: var(--border-width);
+}
+
+/* Boutons pleine largeur */
+.btn-full {
+  width: 100%;
+}

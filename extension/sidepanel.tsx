@@ -21,6 +21,7 @@ import RecommendationsPage from "./components/pages/RecommendationsPage"
 import ResonancePage from "./components/pages/ResonancePage"
 import SearchResultPage from "./components/pages/SearchResultPage"
 import ChatPage from "./components/pages/ChatPage"
+import ButtonShowcasePage from "./components/pages/ButtonShowcasePage"
 
 
 const SidePanelContent = () => {
@@ -60,6 +61,8 @@ const SidePanelContent = () => {
         return <SearchResultPage />
       case 'chat':
         return <ChatPage />
+      case 'button-showcase':
+        return <ButtonShowcasePage />
       default:
         return <HomeConnectedPage />
     }

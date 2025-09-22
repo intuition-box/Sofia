@@ -120,3 +120,25 @@
   height: 80px;
   transition: var(--transition-normal);
 }
+
+.showcase-link-section {
+  margin-top: var(--spacing-xl);
+  text-align: center;
+}
+
+.showcase-link {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.showcase-link:hover {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}

@@ -48,6 +48,15 @@ const HomeConnectedPage = () => {
       <div className="level-progress-section">
         <LevelProgress />
       </div>
+
+      <div className="showcase-link-section">
+        <button
+          className="showcase-link"
+          onClick={() => navigateTo('button-showcase')}
+        >
+          Voir les boutons
+        </button>
+      </div>
     </div>
   )
 }

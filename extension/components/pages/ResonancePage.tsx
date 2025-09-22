@@ -58,10 +58,6 @@ const ResonancePage = () => {
 
   return (
     <div className="triples-container">
-      <div className="search-header">
-        <h2>Search Intuition Network</h2>
-      </div>
-
       <div className="search-content">
         <div className="search-input-container">
           <img src={logoIcon} alt="Sofia" className="search-logo" />
@@ -74,10 +70,7 @@ const ResonancePage = () => {
             onKeyDown={handleKeyDown}
           />
         </div>
-        <div className="search-hint">
-          Press Enter to search • {isReady ? 'Ready' : 'Initializing...'}
-        </div>
-        
+                
         {error && (
           <div className="empty-state">
             <p>❌ Connection Error</p>

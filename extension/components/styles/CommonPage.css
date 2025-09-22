@@ -9,6 +9,7 @@
   border: 1px solid var(--color-border-very-light);
   border-radius: var(--radius-xl);
   padding: 12px 16px;
+  margin-top: 20px;
   transition: all 0.3s ease;
   margin-bottom: 20px;
 }
@@ -77,13 +78,11 @@
 
 /* Trending Section Styles */
 .trending-section {
-  margin-top: 32px;
-  padding-top: 24px;
   border-top: 1px solid var(--color-border-very-light);
 }
 
 .trending-section .section-title {
-  color: var(--primary);
+  color: var(--foreground);
   font-size: 18px;
   font-weight: 600;
   text-align: left;
