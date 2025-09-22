@@ -9,19 +9,19 @@
   justify-content: space-around;
   align-items: center;
   z-index: 3;
-  border-top: 1px solid rgba(242, 222, 214, 0.2);
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--shadow-flat);
   transition: all 0.3s ease;
 }
 
 .nav-button {
   background-color: transparent;
   border: none;
-  color: #F2DED6;
+  color: var(--foreground);
   font-size: 10px;
   cursor: pointer;
   padding: 8px 4px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -31,25 +31,25 @@
 }
 
 .nav-button.active {
-  color: #FBF7F5;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+  font-weight: var(--font-weight-bold);
+  background: var(--bg-overlay-light);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  border: var(--border-standard);
+  box-shadow: var(--shadow-minimal);
 }
 
 
 .nav-icon {
   width: 20px;
   height: 20px;
-  filter: brightness(0) saturate(100%) invert(91%) sepia(6%) saturate(346%) hue-rotate(314deg) brightness(97%) contrast(88%);
 }
 
 .nav-text {
   font-size: 13px;
   font-weight: 500;
+}
+
+.nav-button.active .nav-text {
+  font-weight: var(--font-weight-bold);
 }

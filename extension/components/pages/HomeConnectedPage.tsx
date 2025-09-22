@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import chatIcon from '../../components/ui/icons/chatIcon.png'
 import LevelProgress from '../ui/LevelProgress'
-import PulseAnimation from '../ui/PulseAnimation'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
 
@@ -48,11 +47,6 @@ const HomeConnectedPage = () => {
 
       <div className="level-progress-section">
         <LevelProgress />
-      </div>
-
-
-      <div className="pulse-animation-section">
-        <PulseAnimation size={120} />
       </div>
     </div>
   )

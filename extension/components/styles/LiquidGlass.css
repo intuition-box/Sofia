@@ -2,13 +2,11 @@
   width: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.1) 0%, 
-    rgba(255, 255, 255, 0.05) 100%);
+  border-radius: var(--radius-md);
+  background: var(--muted);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border);
   margin: 16px 0;
 }
 
@@ -30,33 +28,18 @@
 }
 
 .wave1 {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(74, 144, 226, 0.3) 25%, 
-    rgba(74, 144, 226, 0.5) 50%, 
-    rgba(74, 144, 226, 0.3) 75%, 
-    transparent 100%);
+  background: var(--color-info);
   animation: liquidFlow1 4s ease-in-out infinite;
 }
 
 .wave2 {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(168, 85, 247, 0.2) 25%, 
-    rgba(168, 85, 247, 0.4) 50%, 
-    rgba(168, 85, 247, 0.2) 75%, 
-    transparent 100%);
+  background: var(--accent);
   animation: liquidFlow2 3.5s ease-in-out infinite;
   animation-delay: -1s;
 }
 
 .wave3 {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(34, 197, 94, 0.2) 25%, 
-    rgba(34, 197, 94, 0.3) 50%, 
-    rgba(34, 197, 94, 0.2) 75%, 
-    transparent 100%);
+  background: var(--color-success);
   animation: liquidFlow3 5s ease-in-out infinite;
   animation-delay: -2s;
 }
@@ -95,8 +78,8 @@
 }
 
 .liquid-glass:hover {
-  border-color: rgba(74, 144, 226, 0.3);
-  box-shadow: 0 8px 32px rgba(74, 144, 226, 0.1);
+  border-color: var(--color-info);
+  box-shadow: 0 8px 32px var(--color-info);
   transition: all 0.3s ease;
 }
 

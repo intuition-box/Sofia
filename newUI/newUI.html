@@ -1,0 +1,205 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+
+const Index = () => {
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-6xl mx-auto space-y-12">
+        
+        {/* Header */}
+        <header className="text-center space-y-4">
+          <h1 className="text-4xl font-bold text-foreground">Guide d'utilisation de votre palette</h1>
+          <p className="text-xl text-muted-foreground">Extension Chrome - Démonstration des couleurs</p>
+        </header>
+
+        {/* Palette de couleurs */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Votre palette de couleurs</CardTitle>
+            <CardDescription>Les 5 couleurs de votre extension Chrome</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-5 gap-4">
+              <div className="text-center space-y-2">
+                <div className="w-20 h-20 mx-auto rounded-lg border" style={{backgroundColor: '#AAA292'}}></div>
+                <p className="text-sm font-medium">#AAA292</p>
+                <p className="text-xs text-muted-foreground">Secondaire</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-20 h-20 mx-auto rounded-lg border" style={{backgroundColor: '#FFFCF5'}}></div>
+                <p className="text-sm font-medium">#FFFCF5</p>
+                <p className="text-xs text-muted-foreground">Background</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-20 h-20 mx-auto rounded-lg border" style={{backgroundColor: '#4E4938'}}></div>
+                <p className="text-sm font-medium">#4E4938</p>
+                <p className="text-xs text-muted-foreground">Texte principal</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-20 h-20 mx-auto rounded-lg border" style={{backgroundColor: '#AAA290'}}></div>
+                <p className="text-sm font-medium">#AAA290</p>
+                <p className="text-xs text-muted-foreground">Atténué</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-20 h-20 mx-auto rounded-lg border" style={{backgroundColor: '#9B8750'}}></div>
+                <p className="text-sm font-medium">#9B8750</p>
+                <p className="text-xs text-muted-foreground">Principal</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Boutons */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Boutons</CardTitle>
+            <CardDescription>Comment utiliser vos couleurs pour les boutons</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">Boutons principaux</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button variant="default" size="lg">Action principale</Button>
+                <Button variant="default">Bouton normal</Button>
+                <Button variant="default" size="sm">Petit bouton</Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Utilise la couleur #9B8750 (brun doré) pour les actions importantes</p>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">Boutons secondaires</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button variant="secondary" size="lg">Action secondaire</Button>
+                <Button variant="secondary">Bouton normal</Button>
+                <Button variant="secondary" size="sm">Petit bouton</Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Utilise la couleur #AAA292 pour les actions moins importantes</p>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">Boutons contour</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button variant="outline" size="lg">Bouton contour</Button>
+                <Button variant="outline">Bouton normal</Button>
+                <Button variant="outline" size="sm">Petit bouton</Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Bordure avec la couleur principale, fond transparent</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Formulaires */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Formulaires et inputs</CardTitle>
+            <CardDescription>Champs de saisie avec votre palette</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <Input type="email" placeholder="votre@email.com" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nom d'utilisateur</label>
+                <Input placeholder="Entrez votre nom" />
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">Les bordures utilisent une version plus claire de #AAA292, le focus utilise #9B8750</p>
+          </CardContent>
+        </Card>
+
+        {/* Cards et conteneurs */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Card standard</CardTitle>
+              <CardDescription>Fond #FFFCF5 avec bordures subtiles</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">Contenu de la carte avec un fond crème doux et des bordures discrètes.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Avec badges</CardTitle>
+              <CardDescription>Combinaison avec des éléments colorés</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Badge variant="default">Principal</Badge>
+                <Badge variant="secondary">Secondaire</Badge>
+              </div>
+              <p className="text-sm">Les badges utilisent vos couleurs pour catégoriser l'information.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Navigation</CardTitle>
+              <CardDescription>Éléments de navigation</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button variant="ghost" className="w-full justify-start">Accueil</Button>
+              <Button variant="ghost" className="w-full justify-start">Paramètres</Button>
+              <Button variant="ghost" className="w-full justify-start">Aide</Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Guide d'utilisation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Guide d'utilisation recommandé</CardTitle>
+            <CardDescription>Comment appliquer vos couleurs efficacement</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">🎨 Backgrounds</h3>
+                <ul className="space-y-2 text-sm">
+                  <li><strong>#FFFCF5</strong> - Arrière-plan principal de l'extension</li>
+                  <li><strong>#AAA290</strong> - Zones secondaires, sections atténuées</li>
+                  <li><strong>#AAA292</strong> - Hover states, états intermédiaires</li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">🔲 Bordures</h3>
+                <ul className="space-y-2 text-sm">
+                  <li><strong>#AAA292</strong> - Bordures principales des cartes</li>
+                  <li><strong>#AAA290</strong> - Bordures subtiles, séparateurs</li>
+                  <li><strong>#9B8750</strong> - Focus states, éléments actifs</li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">🔤 Texte</h3>
+                <ul className="space-y-2 text-sm">
+                  <li><strong>#4E4938</strong> - Texte principal, titres</li>
+                  <li><strong>#9B8750</strong> - Liens, texte accentué</li>
+                  <li><strong>#AAA292</strong> - Texte secondaire, descriptions</li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">🎯 Boutons</h3>
+                <ul className="space-y-2 text-sm">
+                  <li><strong>#9B8750</strong> - Boutons d'action principale</li>
+                  <li><strong>#AAA292</strong> - Boutons secondaires</li>
+                  <li><strong>#4E4938</strong> - Texte sur boutons clairs</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+      </div>
+    </div>
+  );
+};
+
+export default Index;

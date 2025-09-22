@@ -243,7 +243,7 @@ const BookmarkTab = () => {
           ) : (
             <div className="lists-grid">
               {lists.map((list) => (
-                <div key={list.id} className="echo-card border-green bookmark-card">
+                <div key={list.id} className="echo-card bookmark-card">
                   <div className="triplet-item">
                     <div className="triplet-header">
                       <div className="bookmark-list-info">
@@ -295,7 +295,7 @@ const BookmarkTab = () => {
           ) : (
             <div className="triplets-list">
               {displayedTriplets.map((bookmarkedTriplet) => (
-                <div key={bookmarkedTriplet.id} className="echo-card border-green bookmark-card">
+                <div key={bookmarkedTriplet.id} className="echo-card bookmark-card">
                   <div className="triplet-item">
                     <div className="triplet-header">
                       <p className="triplet-text">

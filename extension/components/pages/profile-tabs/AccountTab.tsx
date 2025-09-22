@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from '@plasmohq/storage/hook'
-import xIcon from '../../../assets/X_logo.svg'
-import searchIcon from '../../../assets/Icon=Search.svg'
-import connectButtonOn from '../../../assets/connectButtonOn.svg'
-import connectButtonOff from '../../../assets/connectButtonOff.svg'
+import xIcon from '../../ui/icons/X_logo.svg'
+import searchIcon from '../../ui/icons/Icon=Search.svg'
+import connectButtonOn from '../../ui/icons/connectButtonOn.svg'
+import connectButtonOff from '../../ui/icons/connectButtonOff.svg'
 
 const X_CLIENT_ID = process.env.PLASMO_PUBLIC_X_CLIENT_ID || "votre_client_id_x"
 

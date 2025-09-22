@@ -3,7 +3,7 @@ import { OAuthFlow, UserToken } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
 import { TokenManager } from './TokenManager'
 
-const REDIRECT_URI = 'https://fgggfhnffjffiipdpipbkkceaengpeag.chromiumapp.org/'
+const REDIRECT_URI = 'https://gelnopmoeejcfahhcfjcmmgmmbbalpnm.chromiumapp.org/'
 
 export class OAuthFlowManager {
   private onAuthSuccess?: (platform: string) => Promise<void>

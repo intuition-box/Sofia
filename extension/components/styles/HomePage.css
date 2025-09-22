@@ -42,8 +42,8 @@
 
 /* Override button styles to match design */
 .connect-section button {
-  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary-dark) 100%) !important;
-  color: #2D1B0E !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
   border: none !important;
   padding: var(--spacing-xl) var(--spacing-6xl) !important;
   border-radius: var(--radius-md) !important;
@@ -53,23 +53,23 @@
   transition: var(--transition-normal) !important;
   text-transform: none !important;
   letter-spacing: 0.5px !important;
-  box-shadow: var(--shadow-button) !important;
+  box-shadow: var(--shadow-flat) !important;
   width: 290px !important;
   max-width: 100% !important;
 }
 
 .connect-section button:hover {
-  background: linear-gradient(135deg, var(--color-hover) 0%, var(--color-hover-light) 100%) !important;
+  background: var(--accent) !important;
   transform: translateY(-2px) !important;
-  box-shadow: var(--shadow-button-hover) !important;
+  box-shadow: var(--shadow-minimal) !important;
 }
 
 .connect-section button:disabled {
-  background: linear-gradient(135deg, #8A8A8A 0%, #6A6A6A 100%) !important;
-  color: #CCCCCC !important;
+  background: var(--muted) !important;
+  color: var(--muted-foreground) !important;
   cursor: not-allowed !important;
   transform: none !important;
-  box-shadow: var(--shadow-light) !important;
+  box-shadow: var(--shadow-none) !important;
 }
 
 .terms-section {
@@ -92,8 +92,8 @@
 .checkmark {
   width: 18px;
   height: 18px;
-  border: 2px solid var(--color-text-primary);
-  border-radius: 3px;
+  border: var(--border-standard);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,7 +107,7 @@
 
 .terms-checkbox input[type="checkbox"]:checked + .checkmark::after {
   content: "✓";
-  color: white;
+  color: var(--primary-foreground);
   font-size: var(--font-size-sm);
   font-weight: bold;
 }

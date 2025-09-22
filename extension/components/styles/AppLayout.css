@@ -3,6 +3,10 @@
   width: 100%;
   min-height: 100vh;
   font-family: var(--font-family-primary);
+  background-image: url('../layout/background/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .app-overlay {

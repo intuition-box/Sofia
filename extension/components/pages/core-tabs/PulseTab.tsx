@@ -209,7 +209,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                 return (
                   <div 
                     key={`${analysis.msgIndex}-${themeIndex}`}
-                    className="echo-card border-green"
+                    className="echo-card"
                     style={{ cursor: 'pointer' }}
                   >
                     <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>

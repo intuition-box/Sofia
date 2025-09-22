@@ -1,5 +1,4 @@
 import { useStorage } from "@plasmohq/storage/hook"
-import Background from './background'
 import { useRouter } from './RouterProvider'
 import '../styles/Global.css'
 import '../styles/AppLayout.css'
@@ -14,7 +13,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <div className="app-container">
-      <Background />
       {(account && currentPage !== 'home-connected') || (!account && currentPage === 'home') ? (
         <div className="app-overlay" />
       ) : null}

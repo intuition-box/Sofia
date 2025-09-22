@@ -250,7 +250,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               return (
                 <div 
                   key={tripletItem.id} 
-                  className={`echo-card ${selectedEchoes.has(tripletItem.id) ? 'border-blue' : 'border-green'}`}
+                  className="echo-card"
                   onClick={() => toggleEchoSelection(tripletItem.id)}
                   style={{ cursor: 'pointer' }}
                 >
@@ -293,7 +293,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">Source</h4>
                           <p className="triplet-detail-name">
-                            <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" style={{ color: 'white' }}>
+                            <a href={tripletItem.url} target="_blank" rel="noopener noreferrer">
                               {tripletItem.url}
                             </a>
                           </p>

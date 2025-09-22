@@ -1,54 +1,77 @@
 /* Styles globaux et communs à toute l'application */
 
+@import url('https://fonts.googleapis.com/css2?family=Overpass+Mono:wght@300;500;700&display=swap');
+
 :root {
-  /* Couleurs principales */
-  --color-primary: #C7866C;
-  --color-primary-dark: #372118;
-  --color-primary-light: #F2DED6;
-  --color-secondary: #945941;
-  --color-accent: #A6AF6B;
-  --color-hover: #FFB3C4;
-  --color-hover-light: #FFE078;
-  
+  /* Nouvelle palette de couleurs Chrome Extension */
+  --background: #FFFCF5; /* Couleur la plus claire pour les backgrounds */
+  --foreground: #4E4938; /* Couleur la plus foncée pour le texte */
 
-.figma-colors{
-  color : #372118, 50;
-  color : #945941, 700;
-  color : #C7866C, 500;
-  color : #F2DED6, 200;
-  color : #FBF7F5, 50;
-  color : #0E0E0E;
-  }
+  --card: #FFFCF5; /* Cards sur fond clair */
+  --card-foreground: #4E4938; /* Texte des cards */
 
-  /* Couleurs de texte */
-  --color-text-primary: #F2DED6;
-  --color-text-secondary: #FBF7F5;
-  --color-text-dark: #050505;
-  --color-text-muted: rgba(255, 255, 255, 0.8);
-  --color-text-very-muted: rgba(255, 255, 255, 0.6);
-  --color-text-placeholder: rgba(255, 255, 255, 0.5);
-  
+  --popover: #FFFCF5;
+  --popover-foreground: #4E4938;
+
+  --primary: #D7992E; /* Couleur principale (brun doré) */
+  --primary-foreground: #FFFCF5; /* Texte sur primary */
+
+  --secondary: #AAA292; /* Couleur secondaire */
+  --secondary-foreground: #4E4938; /* Texte sur secondary */
+
+  --muted: #AAA290; /* Couleur atténuée */
+  --muted-foreground: #4E4938; /* Plus foncé pour le contraste */
+
+  --accent: #D7992E; /* Accent identique au primary */
+  --accent-foreground: #FFFCF5;
+
+  --destructive: #C75454;
+  --destructive-foreground: #FFFCF5;
+
+  --border: #AAA292; /* Bordures */
+  --input: #AAA292;
+  --ring: #D7992E; /* Pour les focus states */
+
+  /* Design flat - variables standardisées */
+  --radius: 8px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 50%;
+
+  /* Bordures standardisées */
+  --border-width: 1px;
+  --border-style: solid;
+  --border-standard: var(--border-width) var(--border-style) var(--border);
+
+  /* Ombres flat design */
+  --shadow-none: none;
+  --shadow-flat: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-minimal: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+
   /* Couleurs de fond */
-  --color-bg-glass: rgba(0, 0, 0, 0.8);
-  --color-bg-glass-light: rgba(255, 255, 255, 0.05);
-  --color-bg-glass-lighter: rgba(255, 255, 255, 0.1);
-  --color-bg-dark: rgba(14, 14, 14, 0.15);
-  --color-bg-darker: rgba(10, 10, 10, 0.15);
-  --color-bg-black: rgba(0, 0, 0, 0.8);
-  --color-bg-overlay: rgba(26, 26, 26, 0.95);
-  
+  --color-bg-glass: rgba(170, 162, 146, 0.1);
+  --color-bg-glass-light: rgba(170, 162, 144, 0.05);
+  --color-bg-glass-lighter: rgba(170, 162, 144, 0.08);
+  --color-bg-dark: rgba(78, 73, 56, 0.15);
+  --color-bg-darker: rgba(78, 73, 56, 0.25);
+  --color-bg-black: rgba(78, 73, 56, 0.8);
+  --color-bg-overlay: rgba(78, 73, 56, 0.95);
+
   /* Bordures */
-  --color-border-glass: rgba(255, 255, 255, 0.08);
-  --color-border-light: rgba(255, 255, 255, 0.1);
-  --color-border-lighter: rgba(255, 255, 255, 0.125);
-  --color-border-very-light: rgba(255, 255, 255, 0.05);
-  --color-border-muted: rgba(242, 222, 214, 0.2);
+  --color-border-glass: rgba(170, 162, 146, 0.2);
+  --color-border-light: rgba(170, 162, 146, 0.3);
+  --color-border-lighter: rgba(170, 162, 146, 0.4);
+  --color-border-very-light: rgba(170, 162, 146, 0.1);
+  --color-border-muted: rgba(170, 162, 144, 0.2);
   
   /* Couleurs d'état */
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
-  --color-info: #60a5fa;
+  --color-success: #8DC25F;
+  --color-error: #C75454;
+  --color-warning: #CC8147;
+  --color-info: #58B3D1;
   
   /* Effets visuels */
   --backdrop-blur: blur(10px);
@@ -58,13 +81,13 @@
   
   /* Ombres */
   --shadow-glass: 0 4px 24px rgba(0, 0, 0, 0.2);
-  --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-heavy: 0 4px 16px rgba(0, 0, 0, 0.3);
   --shadow-light: 0 2px 6px rgba(0, 0, 0, 0.2);
   --shadow-primary: 0 4px 16px rgba(219, 107, 62, 0.3);
   --shadow-button: 0 4px 12px rgba(212, 165, 116, 0.3);
   --shadow-button-hover: 0 6px 16px rgba(212, 165, 116, 0.4);
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  --shadow-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-inset-light: inset 0 1px 0 var(--bg-overlay-light);
   
   /* Transitions */
   --transition-fast: all 0.2s ease;
@@ -97,8 +120,11 @@
   --size-nav-height: 60px;
   
   /* Typographie */
-  --font-family-primary: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'Gotu', cursive;
+  --font-family-primary: 'Overpass Mono', monospace;
+  --font-family-display: 'Overpass Mono', monospace;
+  --font-weight-light: 300;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
   --font-size-xs: 10px;
   --font-size-sm: 12px;
   --font-size-base: 14px;
@@ -119,13 +145,10 @@
 /* Container principal pour les pages */
 .page {
   padding: var(--spacing-xl);
-  background-color: var(--color-bg-glass);
-  margin: var(--spacing-sm);
+  background-color: var(--color-background);
   border-radius: var(--radius-xl);
   backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
   -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
-  border: 1px solid var(--color-border-glass);
-  box-shadow: var(--shadow-glass);
   transition: var(--transition-normal);
 }
 
@@ -134,6 +157,8 @@
   background-color: transparent;
   border: none;
   color: var(--color-text-primary);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-medium);
   font-size: var(--font-size-sm);
   cursor: pointer;
   margin-bottom: var(--spacing-xl);
@@ -155,9 +180,9 @@
 /* Titre de section */
 .section-title {
   font-family: var(--font-family-display);
+  font-weight: var(--font-weight-bold);
   font-size: var(--font-size-2xl);
-  font-weight: 600;
-  color: var(--color-text-dark);
+  color: var(--color-text-primary);
   margin-bottom: var(--spacing-lg);
 }
 
@@ -168,9 +193,11 @@
 
 /* État vide */
 .empty-state {
+  font-size: var(--font-size-lg);
   text-align: center;
-  color: var(--color-text-primary);
-  font-style: italic;
+  color: var(--background);
+  font-weight: var(--font-weight-medium);
+  font-style: normal;
   padding: var(--spacing-3xl);
 }
 

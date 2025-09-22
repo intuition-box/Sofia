@@ -87,7 +87,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
           return (
-            <div key={tripletItem.id} className={`echo-card border-green`}>
+            <div key={tripletItem.id} className={`echo-card`}>
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
                 
                 {/* Header avec badges et actions */}
