@@ -58,8 +58,8 @@ const ResonancePage = () => {
   }
 
   return (
-    <div className="triples-container">
-      <div className="search-content">
+    <div className="resonance-triples-container">
+      <div className="resonance-search-content">
         <div className="resonance-search-container">
           <img src={logoIcon} alt="Sofia" className="resonance-search-logo" />
           <input
@@ -78,7 +78,7 @@ const ResonancePage = () => {
             <p className="empty-subtext">
               {error}
             </p>
-            <button onClick={() => window.location.reload()} className="retry-button">
+            <button onClick={() => window.location.reload()} className="resonance-retry-button">
               Retry Connection
             </button>
           </div>
@@ -120,21 +120,21 @@ const ResonancePage = () => {
               const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
               return (
-                <div key={tripletItem.id} className="echo-card">
-                  <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
+                <div key={tripletItem.id} className="resonance-echo-card">
+                  <div className={`resonance-triplet-item ${isExpanded ? 'expanded' : ''}`}>
                     
-                    <div className="triplet-header">
+                    <div className="resonance-triplet-header">
                       {/* Triplet text */}
-                      <p className="triplet-text clickable" onClick={() => {
+                      <p className="resonance-triplet-text clickable" onClick={() => {
                         setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
                       }}>
-                        <span className="subject">
+                        <span className="resonance-subject">
                           {tripletItem.subjectData.label.startsWith('0x') 
                             ? formatWalletAddress(tripletItem.subjectData.label) 
                             : tripletItem.subjectData.label}
                         </span>
-                        <span className="action">{tripletItem.triplet.predicate}</span>
-                        <span className="object">
+                        <span className="resonance-action">{tripletItem.triplet.predicate}</span>
+                        <span className="resonance-object">
                           {tripletItem.objectData.label.startsWith('0x')
                             ? formatWalletAddress(tripletItem.objectData.label)
                             : tripletItem.objectData.label}
@@ -157,55 +157,55 @@ const ResonancePage = () => {
                       </div>
 
                     {isExpanded && (
-                      <div className="triplet-details">
+                      <div className="resonance-triplet-details">
                         {/* Market Cap and Support details */}
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">Market Metrics</h4>
-                          <p className="triplet-detail-name">
+                        <div className="resonance-triplet-detail-section">
+                          <h4 className="resonance-triplet-detail-title">Market Metrics</h4>
+                          <p className="resonance-triplet-detail-name">
                             Total Support Mkt Cap: {formatNumber(tripletItem.totalSupportMarketCap)} TTRUST
                           </p>
-                          <p className="triplet-detail-name">
+                          <p className="resonance-triplet-detail-name">
                             Total Users: {tripletItem.totalUsers}
                           </p>
-                          <p className="triplet-detail-name">
+                          <p className="resonance-triplet-detail-name">
                             Support Ratio: {Math.round(tripletItem.supportRatio * 100)}%
                           </p>
                           {tripletItem.vault && (
                             <>
-                              <p className="triplet-detail-name">
+                              <p className="resonance-triplet-detail-name">
                                 Support Positions: {formatNumber(tripletItem.vault.positionCount)}
                               </p>
                               {tripletItem.vault.sharePrice > 0 && (
-                                <p className="triplet-detail-name">
+                                <p className="resonance-triplet-detail-name">
                                   Share Price: {tripletItem.vault.sharePrice.toFixed(4)} TTRUST
                                 </p>
                               )}
                             </>
                           )}
                           {tripletItem.counterVault && (
-                            <p className="triplet-detail-name">
+                            <p className="resonance-triplet-detail-name">
                               Oppose Positions: {formatNumber(tripletItem.counterVault.positionCount)}
                             </p>
                           )}
                         </div>
 
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">Subject</h4>
-                          <p className="triplet-detail-name">
+                        <div className="resonance-triplet-detail-section">
+                          <h4 className="resonance-triplet-detail-title">Subject</h4>
+                          <p className="resonance-triplet-detail-name">
                             {tripletItem.subjectData.label.startsWith('0x')
                               ? formatWalletAddress(tripletItem.subjectData.label)
                               : tripletItem.subjectData.label}
                           </p>
                         </div>
 
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">Predicate</h4>
-                          <p className="triplet-detail-name">{tripletItem.triplet.predicate}</p>
+                        <div className="resonance-triplet-detail-section">
+                          <h4 className="resonance-triplet-detail-title">Predicate</h4>
+                          <p className="resonance-triplet-detail-name">{tripletItem.triplet.predicate}</p>
                         </div>
 
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">Object</h4>
-                          <p className="triplet-detail-name">
+                        <div className="resonance-triplet-detail-section">
+                          <h4 className="resonance-triplet-detail-title">Object</h4>
+                          <p className="resonance-triplet-detail-name">
                             {tripletItem.objectData.label.startsWith('0x')
                               ? formatWalletAddress(tripletItem.objectData.label)
                               : tripletItem.objectData.label}

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from '@plasmohq/storage/hook'
-import xIcon from '../../ui/icons/X_logo.svg'
 import searchIcon from '../../ui/icons/Icon=Search.svg'
 import connectButtonOn from '../../ui/icons/connectButtonOn.svg'
 import connectButtonOff from '../../ui/icons/connectButtonOff.svg'
@@ -47,32 +46,6 @@ const AccountTab = () => {
     chrome.storage.onChanged.addListener(handleStorageChange)
     return () => chrome.storage.onChanged.removeListener(handleStorageChange)
   }, [])
-
-  const mockUsers = [
-    { id: 1, name: 'Peggie', description: 'Web3 builder focused on decentralization and blockchain innovation', avatar: 'https://randomuser.me/api/portraits/women/1.jpg', isOnline: true, isFromX: false, username: undefined },
-    { id: 2, name: 'Eve', description: 'Crypto-economy specialist driving strategy and adoption', avatar: 'https://randomuser.me/api/portraits/women/2.jpg', isOnline: false, isFromX: false, username: undefined },
-    { id: 3, name: 'Betty', description: 'Solidity developer with expertise in DeFi, NFTs, and DAOs', avatar: 'https://randomuser.me/api/portraits/women/3.jpg', isOnline: true, isFromX: false, username: undefined },
-    { id: 4, name: 'Dianne', description: 'Web3 entrepreneur creating sustainable blockchain solutions', avatar: 'https://randomuser.me/api/portraits/women/4.jpg', isOnline: false, isFromX: false, username: undefined },
-    { id: 5, name: 'Sarah', description: 'Product manager in Web3, improving user experience and growth', avatar: 'https://randomuser.me/api/portraits/women/5.jpg', isOnline: false, isFromX: false, username: undefined },
-    { id: 6, name: 'Julie', description: 'NFT and metaverse strategist with strong community-building skills', avatar: 'https://randomuser.me/api/portraits/women/6.jpg', isOnline: true, isFromX: false, username: undefined }
-  ]
-
-  // Combiner les utilisateurs mockés et les follows X
-  const allUsers = [...mockUsers, ...xFollowing.map(follow => ({
-    id: follow.id,
-    name: follow.name,
-    description: follow.description || 'Utilisateur X',
-    avatar: follow.profile_image_url || 'https://via.placeholder.com/40x40/666/fff?text=' + follow.username.charAt(0).toUpperCase(),
-    isOnline: Math.random() > 0.5, // Random pour l'exemple
-    isFromX: true,
-    username: follow.username
-  }))]
-
-  const filteredUsers = allUsers.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (user.username && user.username.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
 
 
   // Fonction pour récupérer les follows X
