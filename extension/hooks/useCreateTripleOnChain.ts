@@ -2,36 +2,18 @@ import { useState } from 'react'
 import { getClients } from '../lib/clients/viemClients'
 import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
 import { SELECTED_CHAIN } from '../lib/config/config'
-import { useCreateAtom, type AtomIPFSData } from './useCreateAtom'
+import { useCreateAtom } from './useCreateAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'
 import { useStorage } from "@plasmohq/storage/hook"
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { stringToHex, keccak256 } from 'viem'
 import { sessionWallet } from '../lib/services/sessionWallet'
+import { BlockchainService } from '../lib/services/blockchainService'
+import { createHookLogger } from '../lib/utils/logger'
+import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
+import type { TripleOnChainResult, BatchTripleInput, BatchTripleResult, AtomIPFSData } from '../types/blockchain'
 
-export interface TripleOnChainResult {
-  success: boolean
-  tripleVaultId: string
-  txHash?: string
-  subjectVaultId: string
-  predicateVaultId: string
-  objectVaultId: string
-  source: 'created' | 'existing'
-  tripleHash: string
-}
-
-export interface BatchTripleInput {
-  predicateName: string
-  objectData: { name: string; description?: string; url: string }
-  customWeight?: bigint
-}
-
-export interface BatchTripleResult {
-  success: boolean
-  results: TripleOnChainResult[]
-  txHash?: string
-  failedTriples: { input: BatchTripleInput; error: string }[]
-}
+const logger = createHookLogger('useCreateTripleOnChain')
 
 
 export const useCreateTripleOnChain = () => {
@@ -121,33 +103,29 @@ export const useCreateTripleOnChain = () => {
         }
       } else {
         const { walletClient, publicClient } = await getClients()
-        const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
+        const contractAddress = BlockchainService.getContractAddress()
 
-        const tripleCost = customWeight || await publicClient.readContract({
-          address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'getTripleCost'
-        }) as bigint
+        const tripleCost = customWeight || await BlockchainService.getTripleCost()
 
         const subjectId = userAtom.vaultId as `0x${string}`
         const predicateId = predicateAtom.vaultId as `0x${string}`
         const objectId = objectAtom.vaultId as `0x${string}`
         
         const txParams = {
-          address: contractAddress,
+          address: contractAddress as `0x${string}`,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'createTriples',
           args: [
-            [subjectId],    // bytes32[]
-            [predicateId],  // bytes32[]
-            [objectId],     // bytes32[]
-            [tripleCost]    // uint256[]
+            [subjectId],
+            [predicateId],
+            [objectId],
+            [tripleCost]
           ],
           value: tripleCost,
           chain: SELECTED_CHAIN,
-          gas: 2000000n,
-          maxFeePerGas: 50000000000n,
-          maxPriorityFeePerGas: 10000000000n
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
         }
 
         const hash = await executeTransaction(txParams)
@@ -155,7 +133,7 @@ export const useCreateTripleOnChain = () => {
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
         
         if (receipt.status !== 'success') {
-          throw new Error(`Transaction failed with status: ${receipt.status}`)
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
         }
 
         // Simulate to get the result after successful transaction
@@ -183,8 +161,9 @@ export const useCreateTripleOnChain = () => {
         }
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      setError(new Error(`Triple creation failed: ${errorMessage}`))
+      logger.error('Triple creation failed', error)
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      setError(new Error(`${ERROR_MESSAGES.TRIPLE_CREATION_FAILED}: ${errorMessage}`))
       throw error
     } finally {
       setIsCreating(false)
@@ -198,8 +177,10 @@ export const useCreateTripleOnChain = () => {
     
     try {
       if (!address) {
-        throw new Error('No wallet connected')
+        throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
       }
+      
+      logger.debug('Starting batch triple creation', { count: inputs.length })
       const uniqueAtoms = new Map<string, { name: string; description?: string; url: string; type: string }>()
       
       // User atom (always needed)
@@ -267,6 +248,7 @@ export const useCreateTripleOnChain = () => {
             atomsToCreate.push({ key, atomData, ipfsUri, atomHash })
           }
         } catch (error) {
+          logger.error('Failed to prepare atom', { name: atomData.name, error })
           throw new Error(`Failed to prepare required atom: ${atomData.name}`)
         }
       }
@@ -309,7 +291,7 @@ export const useCreateTripleOnChain = () => {
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
         
         if (receipt.status !== 'success') {
-          throw new Error(`Batch atom transaction failed with status: ${receipt.status}`)
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
         }
 
         // Store the atom results using calculated hashes
@@ -421,7 +403,7 @@ export const useCreateTripleOnChain = () => {
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
         
         if (receipt.status !== 'success') {
-          throw new Error(`Batch transaction failed with status: ${receipt.status}`)
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
         }
 
         // Add successful results

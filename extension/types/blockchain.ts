@@ -56,6 +56,9 @@ export interface BatchTripleResult extends BlockchainResult {
   failedTriples: { input: BatchTripleInput; error: string }[]
 }
 
+// Export legacy types for compatibility
+export type { AtomIPFSData as AtomIPFSData }
+
 // Contract types
 export interface ContractConfig {
   address: `0x${string}`
