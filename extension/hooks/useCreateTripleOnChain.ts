@@ -43,8 +43,6 @@ export const useCreateTripleOnChain = () => {
   
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const [currentStep, setCurrentStep] = useState('')
-  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, phase: '' })
 
   // Helper function to determine which wallet to use
   const shouldUseSessionWallet = (transactionValue: bigint): boolean => {
@@ -62,12 +60,8 @@ export const useCreateTripleOnChain = () => {
     const canUseSession = shouldUseSessionWallet(txParams.value || 0n)
     
     if (canUseSession) {
-      console.log('🚀 Using session wallet for automatic transaction')
-      setCurrentStep('Executing automatic transaction...')
       return await sessionWallet.executeTransaction(txParams)
     } else {
-      console.log('🔄 Falling back to MetaMask')
-      setCurrentStep('Requesting MetaMask signature...')
       const { walletClient } = await getClients()
       return await walletClient.writeContract(txParams)
     }
@@ -82,17 +76,9 @@ export const useCreateTripleOnChain = () => {
     setError(null)
     
     try {
-      console.log('🔗 Starting triple creation on-chain...')
-      console.log('Predicate:', predicateName, 'Object:', objectData.name)
-      console.log('Connected wallet address:', address)
-      
       if (!address) {
         throw new Error('No wallet connected')
       }
-      
-      // 1. Create User atom (always create, let contract handle duplicates)
-      // NOTE: Atoms ALWAYS use default cost, customWeight is ONLY for the final triplet
-      setCurrentStep('Creating User atom...')
       
       const userAtomResult = await createAtomWithMultivault({
         name: address,
@@ -102,15 +88,9 @@ export const useCreateTripleOnChain = () => {
       
       const userAtom = {
         vaultId: userAtomResult.vaultId,
-        ipfsUri: '', // Set by createAtomWithMultivault
+        ipfsUri: '',
         name: address
       }
-      
-      console.log('👤 User atom VaultID:', userAtom.vaultId)
-      
-      // 2. Create Predicate atom (always create, let contract handle duplicates)
-      // NOTE: Atoms ALWAYS use default cost, customWeight is ONLY for the final triplet
-      setCurrentStep('Creating Predicate atom...')
       const predicateAtomResult = await createAtomWithMultivault({
         name: predicateName,
         description: `Predicate representing the relation "${predicateName}"`,
@@ -119,19 +99,10 @@ export const useCreateTripleOnChain = () => {
       
       const predicateAtom = {
         vaultId: predicateAtomResult.vaultId,
-        ipfsUri: '', // Set by createAtomWithMultivault
+        ipfsUri: '',
         name: predicateName
       }
-      console.log('🔗 Predicate atom VaultID:', predicateAtom.vaultId)
-      
-      // 3. Create Object atom (always create, let contract handle duplicates)
-      // NOTE: Atoms ALWAYS use default cost, customWeight is ONLY for the final triplet
-      setCurrentStep('Creating Object atom...')
       const objectAtom = await createAtomWithMultivault(objectData)
-      console.log('📄 Object atom VaultID:', objectAtom.vaultId)
-      
-      // 4. Check if triple already exists
-      setCurrentStep('Checking triple existence...')
       const tripleCheck = await checkTripleExists(
         userAtom.vaultId,
         predicateAtom.vaultId,
@@ -139,8 +110,6 @@ export const useCreateTripleOnChain = () => {
       )
       
       if (tripleCheck.exists) {
-        console.log('✅ Triple already exists! VaultID:', tripleCheck.tripleVaultId)
-        
         return {
           success: true,
           tripleVaultId: tripleCheck.tripleVaultId!,
@@ -151,52 +120,18 @@ export const useCreateTripleOnChain = () => {
           tripleHash: tripleCheck.tripleHash
         }
       } else {
-        // Create the triple
-        setCurrentStep('Creating triple on-chain...')
-        console.log('🆕 Creating new triple...')
-        
         const { walletClient, publicClient } = await getClients()
         const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
 
-        // Get triple cost (default or custom) - ONLY for the final triplet creation
-        let tripleCost: bigint
-        if (customWeight) {
-          tripleCost = customWeight
-          console.log('💰 Using custom triple weight (FINAL TRIPLET ONLY):', tripleCost.toString())
-        } else {
-          tripleCost = await publicClient.readContract({
-            address: contractAddress,
-            abi: MULTIVAULT_V2_ABI,
-            functionName: 'getTripleCost'
-          }) as bigint
-          console.log('💰 Using default triple cost (FINAL TRIPLET ONLY):', tripleCost.toString())
-        }
+        const tripleCost = customWeight || await publicClient.readContract({
+          address: contractAddress,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'getTripleCost'
+        }) as bigint
 
-        // V2 uses createTriples (plural) with bytes32[] arrays
         const subjectId = userAtom.vaultId as `0x${string}`
         const predicateId = predicateAtom.vaultId as `0x${string}`
         const objectId = objectAtom.vaultId as `0x${string}`
-        
-        console.log('🔗 Creating triple with V2:', { subjectId, predicateId, objectId })
-
-        // Simulate first to check for errors
-        const simulation = await publicClient.simulateContract({
-          address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'createTriples',
-          args: [
-            [subjectId],    // bytes32[]
-            [predicateId],  // bytes32[]
-            [objectId],     // bytes32[]
-            [tripleCost]    // uint256[]
-          ],
-          value: tripleCost,
-          account: walletClient.account
-        })
-
-
-        // Execute the transaction (automatic or MetaMask)
-        console.log('🚀 Sending triple transaction with value:', tripleCost.toString())
         
         const txParams = {
           address: contractAddress,
@@ -217,25 +152,24 @@ export const useCreateTripleOnChain = () => {
 
         const hash = await executeTransaction(txParams)
 
-        console.log('🔗 Transaction sent:', hash)
-
-        // Wait for transaction receipt
-        const receipt = await publicClient.waitForTransactionReceipt({
-          hash: hash
-        })
-
-        console.log('✅ Transaction confirmed:', receipt)
-        console.log('📋 Receipt status:', receipt.status)
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
         
         if (receipt.status !== 'success') {
           throw new Error(`Transaction failed with status: ${receipt.status}`)
         }
 
-        // V2 returns bytes32[] instead of uint256
-        const tripleIds = simulation.result as `0x${string}`[]
-        const tripleVaultId = tripleIds[0] // First triple ID
+        // Simulate to get the result after successful transaction
+        const simulation = await publicClient.simulateContract({
+          address: contractAddress,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'createTriples',
+          args: [[subjectId], [predicateId], [objectId], [tripleCost]],
+          value: tripleCost,
+          account: walletClient.account
+        })
 
-        console.log('✅ Triple created successfully!', { tripleVaultId, hash })
+        const tripleIds = simulation.result as `0x${string}`[]
+        const tripleVaultId = tripleIds[0]
         
         return {
           success: true,
@@ -249,23 +183,11 @@ export const useCreateTripleOnChain = () => {
         }
       }
     } catch (error) {
-      console.error('❌ Triple creation failed:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      
-      // Check if error is due to triple already existing (signature 0x22319959 = TripleAlreadyExists)
-      if (errorMessage.includes('0x22319959') || errorMessage.includes('TripleAlreadyExists')) {
-        console.log('✅ Triple already exists on chain, treating as existing')
-        
-        // Since we can't access userAtom, predicateAtom, objectAtom, or tripleCheck in the catch block,
-        // we'll throw an error that the calling code should handle by removing the triple from the list
-        throw new Error('TRIPLE_ALREADY_EXISTS')
-      }
-      
       setError(new Error(`Triple creation failed: ${errorMessage}`))
-      throw new Error(`Triple creation failed: ${errorMessage}`)
+      throw error
     } finally {
       setIsCreating(false)
-      setCurrentStep('')
     }
   }
 
@@ -273,18 +195,11 @@ export const useCreateTripleOnChain = () => {
   const createTriplesBatch = async (inputs: BatchTripleInput[]): Promise<BatchTripleResult> => {
     setIsCreating(true)
     setError(null)
-    setBatchProgress({ current: 0, total: 100, phase: 'starting' })
     
     try {
-      console.log(`🔗 Starting optimized batch creation of ${inputs.length} triples`)
-      
       if (!address) {
         throw new Error('No wallet connected')
       }
-
-      // Phase 1: Collect all unique atoms needed (0-10%)
-      setCurrentStep('Analyzing required atoms...')
-      setBatchProgress({ current: 5, total: 100, phase: 'analyzing' })
       const uniqueAtoms = new Map<string, { name: string; description?: string; url: string; type: string }>()
       
       // User atom (always needed)
@@ -314,11 +229,6 @@ export const useCreateTripleOnChain = () => {
         })
       }
 
-      console.log(`📋 Need ${uniqueAtoms.size} unique atoms`)
-
-      // Phase 2: Check existing atoms and prepare batch creation (10-30%)
-      setCurrentStep(`Checking ${uniqueAtoms.size} existing atoms...`)
-      setBatchProgress({ current: 15, total: 100, phase: 'checking_atoms' })
       const atomResults = new Map<string, string>() // key -> vaultId
       const atomsToCreate: { key: string; atomData: AtomIPFSData; ipfsUri: string; atomHash: string }[] = []
 
@@ -352,23 +262,16 @@ export const useCreateTripleOnChain = () => {
           }) as boolean
           
           if (atomExists) {
-            console.log(`✅ Atom exists: ${atomData.name}`)
             atomResults.set(key, atomHash)
           } else {
-            console.log(`🆕 Will create atom: ${atomData.name}`)
             atomsToCreate.push({ key, atomData, ipfsUri, atomHash })
           }
         } catch (error) {
-          console.error(`❌ Failed to prepare atom ${atomData.name}:`, error)
           throw new Error(`Failed to prepare required atom: ${atomData.name}`)
         }
       }
 
-      // Phase 2b: Create all missing atoms in ONE batch transaction (30-60%)
       if (atomsToCreate.length > 0) {
-        setCurrentStep(`Creating ${atomsToCreate.length} atoms on-chain...`)
-        setBatchProgress({ current: 35, total: 100, phase: 'creating_atoms' })
-        console.log(`🆕 Creating ${atomsToCreate.length} atoms in one transaction`)
 
         const { walletClient, publicClient } = await getClients()
         const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
@@ -385,10 +288,6 @@ export const useCreateTripleOnChain = () => {
         const atomCostsArray = atomsToCreate.map(() => atomCost)
         const totalValue = atomCost * BigInt(atomsToCreate.length)
 
-        console.log(`🚀 Sending batch atom transaction, value: ${totalValue.toString()}`)
-
-        setBatchProgress({ current: 45, total: 100, phase: 'sending_atoms' })
-        setCurrentStep('Sending atoms transaction...')
 
         // Create all atoms in one transaction (automatic or MetaMask)
         const atomsTxParams = {
@@ -406,11 +305,6 @@ export const useCreateTripleOnChain = () => {
 
         const hash = await executeTransaction(atomsTxParams)
 
-        console.log(`🔗 Batch atom transaction sent: ${hash}`)
-
-        setBatchProgress({ current: 55, total: 100, phase: 'confirming_atoms' })
-        setCurrentStep('Confirming atoms transaction...')
-
         // Wait for confirmation
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
         
@@ -423,13 +317,8 @@ export const useCreateTripleOnChain = () => {
           atomResults.set(atom.key, atom.atomHash)
         }
 
-        setBatchProgress({ current: 60, total: 100, phase: 'atoms_confirmed' })
-        console.log(`✅ Batch atom transaction confirmed: ${atomsToCreate.length} atoms created`)
       }
 
-      // Phase 3: Check existing triples and group new ones for batch creation (60-75%)
-      setCurrentStep('Verifying existing triples...')
-      setBatchProgress({ current: 65, total: 100, phase: 'checking_triples' })
       const results: TripleOnChainResult[] = []
       const triplesToCreate: {
         subjectId: string
@@ -451,7 +340,6 @@ export const useCreateTripleOnChain = () => {
         const tripleCheck = await checkTripleExists(userVaultId, predicateVaultId, objectVaultId)
         
         if (tripleCheck.exists) {
-          console.log(`✅ Triple already exists: ${input.predicateName}`)
           results.push({
             success: true,
             tripleVaultId: tripleCheck.tripleVaultId!,
@@ -478,17 +366,11 @@ export const useCreateTripleOnChain = () => {
               index: i,
               customWeight: input.customWeight
             })
-          } else {
-            console.log(`🔄 Skipping duplicate triple: ${input.predicateName} - ${input.objectData.name}`)
           }
         }
       }
 
-      // Phase 4: Create new triples in batch (if any) (75-100%)
       if (triplesToCreate.length > 0) {
-        setCurrentStep(`Creating ${triplesToCreate.length} triples on-chain...`)
-        setBatchProgress({ current: 75, total: 100, phase: 'creating_triples' })
-        console.log(`🔗 Creating ${triplesToCreate.length} new triples in batch`)
 
         const { walletClient, publicClient } = await getClients()
         const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
@@ -508,10 +390,6 @@ export const useCreateTripleOnChain = () => {
 
         const totalValue = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
 
-        console.log(`🚀 Sending batch triple transaction, value: ${totalValue.toString()}`)
-
-        setBatchProgress({ current: 85, total: 100, phase: 'sending_triples' })
-        setCurrentStep('Sending triples transaction...')
 
         // Simulate first
         const simulation = await publicClient.simulateContract({
@@ -539,11 +417,6 @@ export const useCreateTripleOnChain = () => {
 
         const hash = await executeTransaction(batchTxParams)
 
-        console.log(`🔗 Batch transaction sent: ${hash}`)
-
-        setBatchProgress({ current: 95, total: 100, phase: 'confirming_triples' })
-        setCurrentStep('Confirming triples transaction...')
-
         // Wait for confirmation
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
         
@@ -567,22 +440,8 @@ export const useCreateTripleOnChain = () => {
           })
         }
 
-        setBatchProgress({ current: 100, total: 100, phase: 'completed' })
-        console.log(`✅ Batch transaction confirmed: ${triplesToCreate.length} triples created`)
       }
 
-      setBatchProgress({ current: 100, total: 100, phase: 'finalizing' })
-      setCurrentStep('Batch completed successfully!')
-
-      const summary = {
-        total: inputs.length,
-        existing: results.filter(r => r.source === 'existing').length,
-        created: results.filter(r => r.source === 'created').length,
-        uniqueAtoms: uniqueAtoms.size,
-        batchTransactions: triplesToCreate.length > 0 ? 1 : 0
-      }
-
-      console.log(`✅ Optimized batch completed:`, summary)
       
       return {
         success: true,
@@ -592,18 +451,11 @@ export const useCreateTripleOnChain = () => {
       }
       
     } catch (error) {
-      console.error('❌ Optimized batch creation failed:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      setBatchProgress({ current: 0, total: 100, phase: 'error' })
-      setCurrentStep(`Batch failed: ${errorMessage}`)
       setError(new Error(`Batch creation failed: ${errorMessage}`))
-      throw new Error(`Batch creation failed: ${errorMessage}`)
+      throw error
     } finally {
       setIsCreating(false)
-      setTimeout(() => {
-        setCurrentStep('')
-        setBatchProgress({ current: 0, total: 0, phase: '' })
-      }, 3000) // Clear after 3 seconds
     }
   }
 
@@ -611,8 +463,6 @@ export const useCreateTripleOnChain = () => {
     createTripleOnChain,
     createTriplesBatch,
     isCreating, 
-    error,
-    currentStep,
-    batchProgress
+    error
   }
 }

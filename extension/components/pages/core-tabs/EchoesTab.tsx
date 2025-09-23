@@ -94,7 +94,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   })
 
   // Blockchain hook for current step display
-  const { currentStep, batchProgress } = useCreateTripleOnChain()
+  const { currentStep } = useCreateTripleOnChain()
 
   // Handle Amplify button click - always opens modal for weight selection
   const handleAmplifyClick = () => {
@@ -233,11 +233,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               {isProcessing && selectedEchoes.size > 1 && (
                 <div className="processing-message">
                   <div>{currentStep || 'Starting batch amplification...'}</div>
-                  {batchProgress.total > 0 && (
-                    <div className="empty-subtext">
-                      {batchProgress.phase} ({batchProgress.current}/{batchProgress.total})
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -281,11 +276,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                     {processingTripletId === tripletItem.id && (
                       <div className="processing-message">
                         <div>{currentStep || 'Amplifying echo...'}</div>
-                        {batchProgress.total > 0 && (
-                          <div className="empty-subtext">
-                            {batchProgress.phase}
-                          </div>
-                        )}
                       </div>
                     )}
 
