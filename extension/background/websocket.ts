@@ -3,6 +3,7 @@ import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS } from "./co
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { sofiaDB, STORES } from "../lib/database/indexedDB"
 import { processUrlsWithThemeAnalysis } from "./tripletProcessor"
+import { MessageBus } from "../lib/services/MessageBus"
 import { 
   sendBookmarksToThemeExtractor,
   sendHistoryToThemeExtractor,
@@ -115,13 +116,9 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
       data.senderId === CHATBOT_IDS.AGENT_ID
     ) {
       try {
-        chrome.runtime.sendMessage({
+        MessageBus.getInstance().sendMessageFireAndForget({
           type: "CHATBOT_RESPONSE",
           text: data.text
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            console.warn("⚠️ [websocket.ts] Failed to send CHATBOT_RESPONSE:", chrome.runtime.lastError.message)
-          }
         })
       } catch (error) {
         console.warn("⚠️ [websocket.ts] Error sending CHATBOT_RESPONSE:", error)

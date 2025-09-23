@@ -91,4 +91,8 @@ export const storageLogger = new Logger({ prefix: '💾 Storage' })
 export const createHookLogger = (hookName: string) => 
   new Logger({ prefix: `🪝 ${hookName}` })
 
+// Service-specific logger factory
+export const createServiceLogger = (serviceName: string) => 
+  new Logger({ prefix: `🔧 ${serviceName}` })
+
 export default logger
