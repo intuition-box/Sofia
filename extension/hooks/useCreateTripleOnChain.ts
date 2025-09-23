@@ -3,7 +3,6 @@ import { getClients } from '../lib/clients/viemClients'
 import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
-import { useCheckExistingTriple } from './useCheckExistingTriple'
 import { useStorage } from "@plasmohq/storage/hook"
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { stringToHex, keccak256 } from 'viem'
@@ -12,13 +11,13 @@ import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
 import type { TripleOnChainResult, BatchTripleInput, BatchTripleResult, AtomIPFSData } from '../types/blockchain'
+import type { Address, Hash, ContractWriteParams } from '../types/viem'
 
 const logger = createHookLogger('useCreateTripleOnChain')
 
 
 export const useCreateTripleOnChain = () => {
   const { createAtomWithMultivault } = useCreateAtom()
-  const { checkTripleExists } = useCheckExistingTriple()
   const { mutateAsync: pinThing } = usePinThingMutation()
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
@@ -38,7 +37,7 @@ export const useCreateTripleOnChain = () => {
   }
 
   // Helper function to execute transaction with appropriate wallet
-  const executeTransaction = async (txParams: any): Promise<string> => {
+  const executeTransaction = async (txParams: ContractWriteParams): Promise<Hash> => {
     const canUseSession = shouldUseSessionWallet(txParams.value || 0n)
     
     if (canUseSession) {
@@ -85,7 +84,7 @@ export const useCreateTripleOnChain = () => {
         name: predicateName
       }
       const objectAtom = await createAtomWithMultivault(objectData)
-      const tripleCheck = await checkTripleExists(
+      const tripleCheck = await BlockchainService.checkTripleExists(
         userAtom.vaultId,
         predicateAtom.vaultId,
         objectAtom.vaultId
@@ -107,12 +106,12 @@ export const useCreateTripleOnChain = () => {
 
         const tripleCost = customWeight || await BlockchainService.getTripleCost()
 
-        const subjectId = userAtom.vaultId as `0x${string}`
-        const predicateId = predicateAtom.vaultId as `0x${string}`
-        const objectId = objectAtom.vaultId as `0x${string}`
+        const subjectId = userAtom.vaultId as Address
+        const predicateId = predicateAtom.vaultId as Address
+        const objectId = objectAtom.vaultId as Address
         
         const txParams = {
-          address: contractAddress as `0x${string}`,
+          address: contractAddress as Address,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'createTriples',
           args: [
@@ -130,7 +129,7 @@ export const useCreateTripleOnChain = () => {
 
         const hash = await executeTransaction(txParams)
 
-        const receipt = await publicClient.waitForTransactionReceipt({ hash })
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: hash as Address })
         
         if (receipt.status !== 'success') {
           throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
@@ -138,7 +137,7 @@ export const useCreateTripleOnChain = () => {
 
         // Simulate to get the result after successful transaction
         const simulation = await publicClient.simulateContract({
-          address: contractAddress,
+          address: contractAddress as Address,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'createTriples',
           args: [[subjectId], [predicateId], [objectId], [tripleCost]],
@@ -146,7 +145,7 @@ export const useCreateTripleOnChain = () => {
           account: walletClient.account
         })
 
-        const tripleIds = simulation.result as `0x${string}`[]
+        const tripleIds = simulation.result as Address[]
         const tripleVaultId = tripleIds[0]
         
         return {
@@ -282,7 +281,7 @@ export const useCreateTripleOnChain = () => {
           chain: SELECTED_CHAIN,
           maxFeePerGas: 50000000000n,
           maxPriorityFeePerGas: 10000000000n,
-          account: address as `0x${string}`
+          account: address as Address
         }
 
         const hash = await executeTransaction(atomsTxParams)
@@ -319,7 +318,7 @@ export const useCreateTripleOnChain = () => {
         const objectVaultId = atomResults.get(`object:${input.objectData.name}`)!
 
         // Check if triple already exists
-        const tripleCheck = await checkTripleExists(userVaultId, predicateVaultId, objectVaultId)
+        const tripleCheck = await BlockchainService.checkTripleExists(userVaultId, predicateVaultId, objectVaultId)
         
         if (tripleCheck.exists) {
           results.push({
@@ -365,9 +364,9 @@ export const useCreateTripleOnChain = () => {
         }) as bigint
 
         // Prepare batch arrays with individual custom weights
-        const subjectIds = triplesToCreate.map(t => t.subjectId as `0x${string}`)
-        const predicateIds = triplesToCreate.map(t => t.predicateId as `0x${string}`)
-        const objectIds = triplesToCreate.map(t => t.objectId as `0x${string}`)
+        const subjectIds = triplesToCreate.map(t => t.subjectId as Address)
+        const predicateIds = triplesToCreate.map(t => t.predicateId as Address)
+        const objectIds = triplesToCreate.map(t => t.objectId as Address)
         const tripleCosts = triplesToCreate.map(t => t.customWeight || defaultTripleCost)
 
         const totalValue = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
@@ -394,7 +393,7 @@ export const useCreateTripleOnChain = () => {
           gas: 2000000n,
           maxFeePerGas: 50000000000n,
           maxPriorityFeePerGas: 10000000000n,
-          account: address as `0x${string}`
+          account: address as Address
         }
 
         const hash = await executeTransaction(batchTxParams)
@@ -407,7 +406,7 @@ export const useCreateTripleOnChain = () => {
         }
 
         // Add successful results
-        const tripleIds = simulation.result as `0x${string}`[]
+        const tripleIds = simulation.result as Address[]
         for (let i = 0; i < triplesToCreate.length; i++) {
           const triple = triplesToCreate[i]
           results.push({

@@ -3,7 +3,7 @@
  * Simplified publishing orchestration using existing blockchain hooks
  */
 
-import { useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
 import { elizaDataService } from '../lib/database/indexedDB-methods'
 import type { EchoTriplet } from '../types/blockchain'
@@ -21,6 +21,9 @@ interface UseEchoPublishingResult {
   publishSelected: (customWeights?: (bigint | null)[]) => Promise<void>
   isCreating: boolean
   error: Error | null
+  transactionStatus?: 'success' | 'failed'
+  transactionError?: string
+  clearTransactionStatus: () => void
 }
 
 export const useEchoPublishing = ({
@@ -32,6 +35,10 @@ export const useEchoPublishing = ({
 }: UseEchoPublishingParams): UseEchoPublishingResult => {
   
   const { createTripleOnChain, createTriplesBatch, isCreating, error } = useCreateTripleOnChain()
+  
+  // Local state for modal feedback
+  const [transactionStatus, setTransactionStatus] = useState<'success' | 'failed' | undefined>(undefined)
+  const [transactionError, setTransactionError] = useState<string | undefined>(undefined)
 
   const publishTriplet = useCallback(async (tripletId: string, customWeight?: bigint) => {
     const triplet = echoTriplets.find(t => t.id === tripletId)
@@ -71,10 +78,13 @@ export const useEchoPublishing = ({
       })
       
       onTripletsUpdate(echoTriplets.filter(t => t.id !== tripletId))
+      setTransactionStatus('success')
     } catch (error) {
+      setTransactionStatus('failed')
+      setTransactionError(error instanceof Error ? error.message : 'Unknown error')
       throw error
     }
-  }, [echoTriplets, address, isCreating, processingTripletId, createTripleOnChain, onTripletsUpdate])
+  }, [echoTriplets, address, isCreating, createTripleOnChain, onTripletsUpdate])
 
   const publishSelected = useCallback(async (customWeights?: (bigint | null)[]) => {
     if (selectedEchoes.size === 0 || isCreating) return
@@ -126,18 +136,32 @@ export const useEchoPublishing = ({
         
         const publishedIds = new Set(selectedTriplets.map(t => t.id))
         onTripletsUpdate(echoTriplets.filter(t => !publishedIds.has(t.id)))
+        setTransactionStatus('success')
+      } else {
+        setTransactionStatus('failed')
+        setTransactionError('Some triplets failed to publish')
       }
     } catch (error) {
+      setTransactionStatus('failed')
+      setTransactionError(error instanceof Error ? error.message : 'Unknown error')
       throw error
     } finally {
       clearSelection()
     }
   }, [selectedEchoes, echoTriplets, address, createTriplesBatch, onTripletsUpdate, clearSelection, isCreating])
 
+  const clearTransactionStatus = useCallback(() => {
+    setTransactionStatus(undefined)
+    setTransactionError(undefined)
+  }, [])
+
   return {
     publishTriplet,
     publishSelected,
     isCreating,
-    error
+    error,
+    transactionStatus,
+    transactionError,
+    clearTransactionStatus
   }
 }

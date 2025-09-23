@@ -7,6 +7,7 @@ import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import { useEchoSelection } from '../../../hooks/useEchoSelection'
 import { useStorage } from "@plasmohq/storage/hook"
 import WeightModal from '../../modals/WeightModal'
+import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
 
@@ -15,27 +16,6 @@ interface EchoesTabProps {
   setExpandedTriplet: (value: { msgIndex: number; tripletIndex: number } | null) => void
 }
 
-// Interface for local triplets in EchoesTab
-interface EchoTriplet {
-  id: string
-  triplet: {
-    subject: string
-    predicate: string
-    object: string
-  }
-  url: string
-  description: string
-  timestamp: number
-  sourceMessageId: string
-  status: 'available' | 'published'
-  // Blockchain data (filled after checks)
-  subjectVaultId?: string
-  predicateVaultId?: string
-  objectVaultId?: string
-  tripleVaultId?: string
-  txHash?: string
-  onChainStatus?: 'created' | 'existing'
-}
 
 const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Local state for EchoesTab
@@ -78,12 +58,12 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   // Publishing management hook
   const {
-    isProcessing,
-    processingTripletId,
-    transactionStatus,
-    transactionError,
+    isCreating,
+    error,
     publishTriplet,
     publishSelected,
+    transactionStatus,
+    transactionError,
     clearTransactionStatus
   } = useEchoPublishing({
     echoTriplets,
@@ -93,8 +73,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     clearSelection
   })
 
-  // Blockchain hook for current step display
-  const { currentStep } = useCreateTripleOnChain()
 
   // Handle Amplify button click - always opens modal for weight selection
   const handleAmplifyClick = () => {
@@ -127,7 +105,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const handleWeightModalClose = () => {
     setShowWeightModal(false)
     setSelectedTripletsForWeighting([])
-    clearTransactionStatus() // Clear transaction status
+    clearTransactionStatus()
     // Clear selection when user manually closes modal
     clearSelection()
   }
@@ -219,7 +197,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 <button 
                   className="batch-btn add-to-signals"
                   onClick={handleAmplifyClick}
-                  disabled={isProcessing}
+                  disabled={isCreating}
                 >
                   Amplify ({selectedEchoes.size})
                 </button>
@@ -230,9 +208,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                   Remove ({selectedEchoes.size})
                 </button>
               </div>
-              {isProcessing && selectedEchoes.size > 1 && (
+              {isCreating && selectedEchoes.size > 1 && (
                 <div className="processing-message">
-                  <div>{currentStep || 'Starting batch amplification...'}</div>
+                  <div>Processing batch amplification...</div>
                 </div>
               )}
             </div>
@@ -273,9 +251,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                     </div>
 
 
-                    {processingTripletId === tripletItem.id && (
+                    {isCreating && (
                       <div className="processing-message">
-                        <div>{currentStep || 'Amplifying echo...'}</div>
+                        <div>Amplifying echo...</div>
                       </div>
                     )}
 
@@ -329,7 +307,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       <WeightModal
         isOpen={showWeightModal}
         triplets={selectedTripletsForWeighting}
-        isProcessing={isProcessing}
+        isProcessing={isCreating}
         transactionStatus={transactionStatus}
         transactionError={transactionError}
         onClose={handleWeightModalClose}

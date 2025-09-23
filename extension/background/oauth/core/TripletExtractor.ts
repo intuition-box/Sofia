@@ -43,6 +43,7 @@ export class TripletExtractor {
       const parsedMessage = {
         intention: `OAuth connection to ${platform}`,
         triplets: triplets,
+        created_at: Date.now(),
         rawObjectUrl: specificUrl,
         rawObjectDescription: `Data from ${platform} OAuth connection`
       }

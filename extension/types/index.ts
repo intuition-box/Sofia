@@ -15,6 +15,21 @@ export * from './messaging';
 // Wallet integration types
 export * from './wallet';
 
+// Blockchain types
+export * from './blockchain';
+
+// Viem types
+export * from './viem';
+
+// Messages types
+export * from './messages';
+
+// Bookmarks types
+export * from './bookmarks';
+
+// Published triplets types
+export * from './published-triplets';
+
 // Utility types
 export type Timestamp = number;
 export type URL = string;
