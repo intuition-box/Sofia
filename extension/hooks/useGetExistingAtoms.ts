@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { getClients } from '../lib/clients/viemClients'
-import { keccak256, stringToHex } from 'viem'
-import { MULTIVAULT_V2_ABI, MULTIVAULT_ABI } from '../contracts/ABIs'
+import { BlockchainService } from '../lib/services/blockchainService'
+import { createHookLogger } from '../lib/utils/logger'
+import { ERROR_MESSAGES } from '../lib/config/constants'
 
 export interface ExistingAtom {
   vaultId: string
@@ -9,53 +9,36 @@ export interface ExistingAtom {
   name: string
 }
 
+const logger = createHookLogger('useGetExistingAtoms')
+
 export const useGetExistingAtoms = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
-  // Fonction simple pour récupérer un atom existant par son URI IPFS 
-  // (réutilise la même logique que useCheckExistingAtom ligne 44-61)
   const getAtomByIpfsUri = async (ipfsUri: string, atomName: string): Promise<ExistingAtom | null> => {
     try {
-      console.log(`🔍 Searching for existing atom "${atomName}" with URI:`, ipfsUri)
+      logger.debug('Searching for existing atom', { name: atomName, ipfsUri })
       
-      const { publicClient } = await getClients()
-      const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
-
-      // Hash the IPFS URI to check in contract (same as other hooks)
-      const atomHash = keccak256(stringToHex(ipfsUri))
-      console.log(`🔑 Generated atom hash for "${atomName}":`, atomHash)
+      const result = await BlockchainService.checkAtomExists(ipfsUri)
       
-      // Use direct ABI call to check if atom exists
-      console.log(`🔍 Checking contract ${contractAddress} for atom existence...`)
-      const atomExists = await publicClient.readContract({
-        address: contractAddress,
-        abi: MULTIVAULT_V2_ABI,
-        functionName: 'isTermCreated',
-        args: [atomHash]
-      }) as boolean
-      
-      console.log(`📊 Contract response for "${atomName}": ${atomExists}`)
-
-      if (atomExists) {
-        const result = {
-          vaultId: atomHash,
+      if (result.exists) {
+        const atom = {
+          vaultId: result.atomHash,
           ipfsUri,
           name: atomName
         }
-        console.log(`✅ Found existing atom "${atomName}":`, result)
-        return result
+        logger.debug('Found existing atom', atom)
+        return atom
       } else {
-        console.log(`❌ Atom "${atomName}" not found on-chain (hash: ${atomHash})`)
+        logger.debug('Atom not found on-chain', { name: atomName, hash: result.atomHash })
         return null
       }
     } catch (error) {
-      console.error(`❌ Error getting atom "${atomName}":`, error)
+      logger.error('Error getting atom', { name: atomName, error })
       throw error
     }
   }
 
-  // Fonction spécifique pour récupérer l'atom User
   const getUserAtom = async (userIpfsUri: string): Promise<ExistingAtom> => {
     setIsLoading(true)
     setError(null)
@@ -69,7 +52,7 @@ export const useGetExistingAtoms = () => {
       
       return userAtom
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
       setError(new Error(`Failed to get User atom: ${errorMessage}`))
       throw error
     } finally {
@@ -77,7 +60,6 @@ export const useGetExistingAtoms = () => {
     }
   }
 
-  // Fonction spécifique pour récupérer un predicate atom
   const getPredicateAtom = async (predicateIpfsUri: string, predicateName: string): Promise<ExistingAtom> => {
     setIsLoading(true)
     setError(null)
@@ -91,7 +73,7 @@ export const useGetExistingAtoms = () => {
       
       return predicateAtom
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
       setError(new Error(`Failed to get Predicate atom "${predicateName}": ${errorMessage}`))
       throw error
     } finally {
