@@ -9,8 +9,7 @@ export * from './history';
 // Storage and persistence types
 export * from './storage';
 
-// Message passing types
-export * from './messaging';
+// Message passing types (now consolidated in messages.ts)
 
 // Wallet integration types
 export * from './wallet';

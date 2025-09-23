@@ -3,7 +3,8 @@ import { sanitizeUrl, isSensitiveUrl } from "./utils/url"
 import { sendToAgent, clearOldSentMessages } from "./utils/buffer"
 import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { MessageBus } from "../lib/services/MessageBus"
-import type { ChromeMessage, PageData } from "./types"
+import type { ChromeMessage, MessageResponse } from "../types/messages"
+import type { PageData } from "./types"
 import { recordScroll, getScrollStats, clearScrolls } from "./behavior"
 import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis, getPulseSocket } from "./websocket"
 import { getAllBookmarks, getAllHistory, sendMessageToPulse } from "./messageSenders"
@@ -31,6 +32,19 @@ export async function updateEchoBadge(count: number) {
     console.log('🔔 [Badge] Updated echo count:', count)
   } catch (error) {
     console.error('❌ Failed to update badge:', error)
+  }
+}
+
+// Centralized badge update handler
+async function handleBadgeUpdate(sendResponse: (response: MessageResponse) => void): Promise<void> {
+  try {
+    const availableCount = await countAvailableEchoes()
+    await updateEchoBadge(availableCount)
+    console.log('🔔 [Badge] Updated:', availableCount)
+    sendResponse({ success: true, data: { count: availableCount } })
+  } catch (error) {
+    console.error('❌ Failed to update badge:', error)
+    sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
   }
 }
 
@@ -171,8 +185,8 @@ async function handlePageDataInline(data: any, pageLoadTime: number): Promise<vo
 async function handleDataExtraction(
   type: string,
   dataFetcher: () => Promise<{ success: boolean; urls?: string[]; error?: string }>,
-  processor: (urls: string[]) => Promise<any>,
-  sendResponse: (response: any) => void
+  processor: (urls: string[]) => Promise<{ success: boolean; message: string; themesExtracted?: number; triplesProcessed?: boolean; themes?: any[] }>,
+  sendResponse: (response: MessageResponse) => void
 ): Promise<void> {
   try {
     const result = await dataFetcher()
@@ -190,7 +204,7 @@ async function handleDataExtraction(
 }
 
 // Pulse analysis handler
-async function handlePulseAnalysis(sendResponse: (response: any) => void): Promise<void> {
+async function handlePulseAnalysis(sendResponse: (response: MessageResponse) => void): Promise<void> {
   try {
     console.log("🫀 [Pulse] Starting pulse analysis of all tabs")
     
@@ -299,7 +313,7 @@ async function sendPulseDataToAgent(pulseData: any[]): Promise<{success: boolean
 }
 
 // Separate handler for STORE_BOOKMARK_TRIPLETS
-async function handleStoreBookmarkTriplets(message: any, sendResponse: (response: any) => void): Promise<void> {
+async function handleStoreBookmarkTriplets(message: ChromeMessage, sendResponse: (response: MessageResponse) => void): Promise<void> {
   console.log('💾 [messageHandlers.ts] STORE_BOOKMARK_TRIPLETS request received')
   try {
     // Stocker le JSON de triplets directement dans IndexedDB (comme SofIA)
@@ -321,7 +335,7 @@ async function handleStoreBookmarkTriplets(message: any, sendResponse: (response
 }
 
 // Handler for STORE_DETECTED_TRIPLETS
-async function handleStoreDetectedTriplets(message: any, sendResponse: (response: any) => void): Promise<void> {
+async function handleStoreDetectedTriplets(message: ChromeMessage, sendResponse: (response: MessageResponse) => void): Promise<void> {
   console.log('🔍 [messageHandlers.ts] STORE_DETECTED_TRIPLETS request received')
   try {
     const { triplets, metadata } = message
@@ -454,7 +468,7 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true, data: rankings })
         } catch (error) {
           console.error("❌ GET_INTENTION_RANKING error:", error)
-          sendResponse({ success: false, error: error.message })
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
 
@@ -469,7 +483,7 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true, data: stats })
         } catch (error) {
           console.error("❌ GET_DOMAIN_INTENTIONS error:", error)
-          sendResponse({ success: false, error: error.message })
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
 
@@ -485,7 +499,7 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true })
         } catch (error) {
           console.error("❌ RECORD_PREDICATE error:", error)
-          sendResponse({ success: false, error: error.message })
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
 
@@ -503,7 +517,7 @@ export function setupMessageHandlers(): void {
           })
         } catch (error) {
           console.error("❌ GET_UPGRADE_SUGGESTIONS error:", error)
-          sendResponse({ success: false, error: error.message })
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
 
@@ -515,46 +529,19 @@ export function setupMessageHandlers(): void {
 
 
       case "UPDATE_ECHO_BADGE":
-        // Recalculate available echoes count and update badge
-        countAvailableEchoes().then(availableCount => {
-          updateEchoBadge(availableCount)
-          console.log('🔔 [Badge] Updated after new triplets stored:', availableCount)
-        }).catch(error => {
-          console.error('❌ Failed to update badge after storing triplets:', error)
-        })
-        sendResponse({ success: true })
+        handleBadgeUpdate(sendResponse)
         return true
 
       case "TRIPLET_PUBLISHED":
-        // Update badge when a triplet is published (becomes unavailable)
-        countAvailableEchoes().then(availableCount => {
-          updateEchoBadge(availableCount)
-        }).catch(error => {
-          console.error('❌ Failed to update badge after triplet published:', error)
-        })
-        sendResponse({ success: true })
+        handleBadgeUpdate(sendResponse)
         return true
 
       case "TRIPLETS_DELETED":
-        // Update badge when triplets are deleted from Echoes
-        countAvailableEchoes().then(availableCount => {
-          updateEchoBadge(availableCount)
-          console.log('🔔 [Badge] Updated after triplet deletion:', availableCount)
-        }).catch(error => {
-          console.error('❌ Failed to update badge after triplets deleted:', error)
-        })
-        sendResponse({ success: true })
+        handleBadgeUpdate(sendResponse)
         return true
 
       case "INITIALIZE_BADGE":
-        // Initialize badge count on extension startup
-        countAvailableEchoes().then(availableCount => {
-          updateEchoBadge(availableCount)
-          console.log('🔔 [Badge] Initialized with count:', availableCount)
-        }).catch(error => {
-          console.error('❌ Failed to initialize badge count:', error)
-        })
-        sendResponse({ success: true })
+        handleBadgeUpdate(sendResponse)
         return true
         
     }
