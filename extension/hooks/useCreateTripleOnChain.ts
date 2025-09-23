@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getClients } from '../lib/clients/viemClients'
 import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
-import { SELECTED_CHAIN } from '../lib/config/config'
+import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
 import { useCheckExistingTriple } from './useCheckExistingTriple'
 import { useStorage } from "@plasmohq/storage/hook"

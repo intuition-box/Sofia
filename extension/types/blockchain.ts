@@ -84,3 +84,18 @@ export interface TransactionResult {
   blockNumber?: bigint
   gasUsed?: bigint
 }
+
+// Echo Triplet types
+export interface EchoTriplet {
+  id: string
+  triplet: {
+    subject: string
+    predicate: string
+    object: string
+  }
+  url: string
+  description: string
+  timestamp: number
+  sourceMessageId: string
+  status: 'available' | 'published'
+}

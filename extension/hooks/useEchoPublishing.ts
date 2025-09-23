@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import { useCreateTripleOnChain, type BatchTripleInput } from './useCreateTripleOnChain'
+import { useCreateTripleOnChain} from './useCreateTripleOnChain'
 import { elizaDataService } from '../lib/database/indexedDB-methods'
 
 

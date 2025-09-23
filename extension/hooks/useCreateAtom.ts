@@ -3,7 +3,7 @@ import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/clients/viemClients'
 import { stringToHex } from 'viem'
 import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
-import { SELECTED_CHAIN } from '~lib/config/config'
+import { SELECTED_CHAIN } from '~lib/config/chainConfig'
 import { useStorage } from "@plasmohq/storage/hook"
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
