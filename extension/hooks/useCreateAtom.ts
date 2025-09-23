@@ -53,8 +53,11 @@ export const useCreateAtom = () => {
 
       console.log('💰 Atom cost (always default):', atomCost.toString())
       
-      // Check if atom already exists
-      const atomHash = keccak256(stringToHex(ipfsUri))
+      // Convert IPFS URI to bytes for V2
+      const encodedData = stringToHex(ipfsUri)
+      
+      // Check if atom already exists (using consistent calculation)
+      const atomHash = keccak256(encodedData)
       const atomExists = await publicClient.readContract({
         address: contractAddress,
         abi: MULTIVAULT_V2_ABI,
@@ -63,18 +66,11 @@ export const useCreateAtom = () => {
       }) as boolean
       
       if (atomExists) {
-        console.log('✅ Atom already exists:', atomHash)
         return {
           vaultId: atomHash,
           txHash: 'existing'
         }
       }
-      
-      console.log('🆕 Creating new atom with hash:', atomHash)
-
-      // Convert IPFS URI to bytes for V2
-      const encodedData = stringToHex(ipfsUri)
-      console.log('🔧 Encoded data:', encodedData)
       
       // Create atom with V2
       console.log('🚀 Sending transaction with args:', [[encodedData], [atomCost]], 'value:', atomCost.toString())
@@ -102,17 +98,8 @@ export const useCreateAtom = () => {
         throw new Error(`Transaction failed with status: ${receipt.status}`)
       }
 
-      // Extract the real atom ID from the transaction logs
-      // V2 MultiVault should emit an event with the atom ID
-      console.log('📜 Transaction logs:', receipt.logs)
-      
-      // For V2, we need to calculate the atom ID from the data
-      // Based on MultiVault code: atomId = keccak256(data)
-      const realAtomId = keccak256(encodedData)
-      console.log('🔑 Calculated atom ID:', realAtomId)
-
       return {
-        vaultId: realAtomId, // Real bytes32 atom ID
+        vaultId: atomHash, // Use already calculated atom ID
         txHash
       }
     } catch (error) {
