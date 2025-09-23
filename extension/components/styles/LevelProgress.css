@@ -1,22 +1,22 @@
 .level-progress-card {
   border-radius: var(--radius-xl);
-  background: #8d77457c;
+  background: #ffffff09;
   padding: 16px 20px;
-  color: white;
-  width: 80%;
+  color: var(--white);
+  width: 100%;
   box-shadow: var(--shadow-flat);
   position: relative;
 }
 
 .level-progress-header {
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 5px;
 }
 
 .level-progress-title {
   font-size: 16px;
   font-weight: 500;
-  color: var(--muted-foreground);
+  color: var(--white);
   letter-spacing: 0.02em;
 }
 
@@ -24,16 +24,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   gap: 12px;
 }
 
 .level-number {
   font-size: 48px;
   font-weight: bold;
-  color: white;
+  color: var(--white);
   line-height: 1;
-  text-shadow: 0 2px 8px var(--muted);
+  text-shadow: 0 2px 8px var(--grey);
 }
 
 .laurel-left,
@@ -43,7 +43,7 @@
 }
 
 .progress-section {
-  margin-top: 16px;
+  margin-top: -16px;
 }
 
 .progress-labels {
@@ -55,11 +55,11 @@
 }
 
 .current-xp {
-  color: white;
+  color: var(--white);
 }
 
 .next-level-xp {
-  color: var(--muted-foreground);
+  color: var(--semi-black);
 }
 
 .progress-bar-container {
@@ -79,7 +79,7 @@
 
 .progress-bar-fill {
   height: 6px;
-  background: var(--primary);
+  background: var(--yellow);
   border-radius: var(--radius-xl);
   position: relative;
   margin: 2px 0;
@@ -88,7 +88,7 @@
 .connect-hint {
   text-align: center;
   font-size: 11px;
-  color: var(--background);
+  color: var(--white);
   margin-top: 8px;
   opacity: 0.8;
 }

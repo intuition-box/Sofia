@@ -100,7 +100,7 @@ const ButtonShowcasePage = () => {
             <button className="btn-filter">Inactif</button>
             <button className="btn-filter">En attente</button>
           </div>
-          <p style={{marginTop: '16px', fontSize: '14px', color: 'var(--muted-foreground)'}}>
+          <p style={{marginTop: '16px', fontSize: '14px', color: 'var(--semi-black)'}}>
             All
           </p>
         </section>

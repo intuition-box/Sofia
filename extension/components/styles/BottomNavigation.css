@@ -9,7 +9,7 @@
   justify-content: space-around;
   align-items: center;
   z-index: 3;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--grey);
   box-shadow: var(--shadow-flat);
   transition: all 0.3s ease;
 }
@@ -17,7 +17,7 @@
 .nav-button {
   background-color: transparent;
   border: none;
-  color: var(--foreground);
+  color: var(--white);
   font-size: 10px;
   cursor: pointer;
   padding: 8px 4px;
@@ -31,7 +31,7 @@
 }
 
 .nav-button.active {
-  color: var(--foreground);
+  color: var(--white);
   font-weight: var(--font-weight-bold);
   background: var(--bg-overlay-light);
   backdrop-filter: blur(10px);

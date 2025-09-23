@@ -3,6 +3,7 @@ import { useStorage } from '@plasmohq/storage/hook'
 import searchIcon from '../../ui/icons/Icon=Search.svg'
 import connectButtonOn from '../../ui/icons/connectButtonOn.svg'
 import connectButtonOff from '../../ui/icons/connectButtonOff.svg'
+import '../../styles/AccountTab.css'
 
 const X_CLIENT_ID = process.env.PLASMO_PUBLIC_X_CLIENT_ID || "votre_client_id_x"
 
@@ -159,122 +160,47 @@ const AccountTab = () => {
 
       {/* Action Buttons */}
       <div className="action-buttons-container">
-        <button 
+        <button
           className="connect-button"
           onClick={() => oauthTokens.youtube ? disconnectOAuth('youtube') : connectOAuth('youtube')}
           style={{
-            backgroundImage: `url(${oauthTokens.youtube ? connectButtonOn : connectButtonOff})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: 'none',
-            width: '271px',
-            height: '67px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 20px',
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            marginBottom: '12px'
+            backgroundImage: `url(${oauthTokens.youtube ? connectButtonOn : connectButtonOff})`
           }}
         >
-          <div style={{ 
-            width: '24px', 
-            height: '24px', 
-            marginRight: '12px',
-            backgroundColor: '#ff0000',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px'
-          }}>
+          <div className="platform-icon youtube">
             YT
           </div>
-          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+          <span className="connect-button-text">
             {oauthTokens.youtube ? 'Disconnect YouTube' : 'Connect YouTube'}
           </span>
         </button>
 
-        <button 
+        <button
           className="connect-button"
           onClick={() => oauthTokens.spotify ? disconnectOAuth('spotify') : connectOAuth('spotify')}
           style={{
-            backgroundImage: `url(${oauthTokens.spotify ? connectButtonOn : connectButtonOff})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: 'none',
-            width: '271px',
-            height: '67px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 20px',
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            marginBottom: '12px'
+            backgroundImage: `url(${oauthTokens.spotify ? connectButtonOn : connectButtonOff})`
           }}
         >
-          <div style={{ 
-            width: '24px', 
-            height: '24px', 
-            marginRight: '12px',
-            backgroundColor: '#1db954',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px'
-          }}>
+          <div className="platform-icon spotify">
             ♪
           </div>
-          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+          <span className="connect-button-text">
             {oauthTokens.spotify ? 'Disconnect Spotify' : 'Connect Spotify'}
           </span>
         </button>
 
-        <button 
+        <button
           className="connect-button"
           onClick={() => oauthTokens.twitch ? disconnectOAuth('twitch') : connectOAuth('twitch')}
           style={{
-            backgroundImage: `url(${oauthTokens.twitch ? connectButtonOn : connectButtonOff})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: 'none',
-            width: '271px',
-            height: '67px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 20px',
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            marginBottom: '12px'
+            backgroundImage: `url(${oauthTokens.twitch ? connectButtonOn : connectButtonOff})`
           }}
         >
-          <div style={{ 
-            width: '24px', 
-            height: '24px', 
-            marginRight: '12px',
-            backgroundColor: '#9146ff',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px'
-          }}>
+          <div className="platform-icon twitch">
             TV
           </div>
-          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+          <span className="connect-button-text">
             {oauthTokens.twitch ? 'Disconnect Twitch' : 'Connect Twitch'}
           </span>
         </button>
@@ -291,39 +217,7 @@ const AccountTab = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="alias-input search-input-with-icon"
         />
-        <img src={searchIcon} alt="Search" className="search-icon" style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(0.6)' }} />
-      </div>
-
-      {/* User List */}
-      <div className="user-list-container">
-        {filteredUsers.map((user) => (
-          <div key={user.id} className="user-list-item">
-            <div className="user-avatar-container">
-              <div className="user-avatar-small">
-                <img 
-                  src={user.avatar}
-                  alt={user.name}
-                  className="profile-image"
-                />
-              </div>
-              {user.isOnline && <div className="online-status-indicator"></div>}
-            </div>
-            <div className="user-details-container">
-              <div className="user-left-content">
-                <div className="user-name-text">
-                  {user.name}
-                  {user.isFromX && <span style={{ marginLeft: '8px', fontSize: '10px', color: '#1da1f2' }}>X</span>}
-                </div>
-                <div className="user-description-text">
-                  {user.username && `@${user.username} - `}{user.description}
-                </div>
-              </div>
-              <div className="user-right-content">
-                <button className="follow-button">Add to my Circle</button>
-              </div>
-            </div>
-          </div>
-        ))}
+        <img src={searchIcon} alt="Search" className="search-icon" />
       </div>
     </div>
   )

@@ -24,13 +24,13 @@
   background: transparent;
   border: none;
   outline: none;
-  color: white;
+  color: var(--white);
   font-size: 14px;
   font-family: var(--font-family-primary);
 }
 
 .search-input::placeholder {
-  color: var(--muted-foreground);
+  color: var(--semi-black);
 }
 
 .search-logo {
@@ -58,7 +58,7 @@
 }
 
 .trending-section .section-title {
-  color: var(--foreground);
+  color: var(--white);
   font-size: 18px;
   font-weight: 600;
   text-align: left;

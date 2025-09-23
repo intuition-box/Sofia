@@ -1,7 +1,7 @@
 import { useStorage } from "@plasmohq/storage/hook"
 import { useRouter } from './RouterProvider'
-import sofiaIcon from '../ui/icons/navbar/Sofia.png'
-import resonanceIcon from '../ui/icons/navbar/ResonanceIcon.png'
+import sofiaIcon from '../ui/icons/navbar/Sofia.svg'
+import resonanceIcon from '../ui/icons/navbar/ResonanceIcon.svg'
 import personIcon from '../ui/icons/navbar/Profile.svg'
 import settingsIcon from '../ui/icons/navbar/Settings.svg'
 import '../styles/BottomNavigation.css'

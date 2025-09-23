@@ -13,13 +13,13 @@
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-3xl);
-  color: var(--foreground);
+  color: var(--white);
   margin-bottom: var(--spacing-sm);
 }
 
 .page-header p {
   font-size: var(--font-size-lg);
-  color: var(--muted-foreground);
+  color: var(--semi-black);
 }
 
 .button-sections {
@@ -31,7 +31,7 @@
 }
 
 .button-section {
-  background-color: var(--card);
+  background-color: var(--semi-black);
   border: var(--border-standard);
   border-radius: var(--radius-lg);
   padding: var(--spacing-2xl);
@@ -41,9 +41,9 @@
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-xl);
-  color: var(--foreground);
+  color: var(--white);
   margin-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--grey);
   padding-bottom: var(--spacing-sm);
 }
 

@@ -26,7 +26,7 @@
 }
 
 .description-paragraph {
-  color: var(--color-text-primary);
+  color: var(--white) ;
   font-size: 13px;
   line-height: 1.5;
   margin-bottom: var(--spacing-lg);
@@ -77,7 +77,7 @@
 
 .terms-checkbox input[type="checkbox"]:checked + .checkmark::after {
   content: "✓";
-  color: var(--primary-foreground);
+  color: var(--black);
   font-size: var(--font-size-sm);
   font-weight: bold;
 }

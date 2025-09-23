@@ -5,7 +5,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--muted); /* Overlay noir 18% */
+  background: var(--grey); /* Overlay noir 18% */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,7 +38,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 24px 24px 16px 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--grey);
 }
 
 .modal-title {
@@ -54,7 +54,7 @@
   display: flex;
   gap: 16px;
   padding: 16px;
-  background: var(--muted);
+  background: var(--grey);
   border-radius: var(--radius-lg);
   margin-bottom: 16px;
   backdrop-filter: blur(5px) saturate(100%);
@@ -73,19 +73,19 @@
   font-weight: 600;
   font-family: var(--font-family-display);
   font-weight: 700;
-  color: var(--background);
+  color: var(--white);
 }
 
 .stat-number.stat-created {
-  color: var(--primary); /* Sofia orange for created */
+  color: var(--yellow); /* Sofia orange for created */
 }
 
 .stat-number.stat-existing {
-  color: var(--primary); /* Sofia gold for existing */
+  color: var(--yellow); /* Sofia gold for existing */
 }
 
 .stat-number.stat-atom-only {
-  color: var(--muted-foreground); /* Neutral for atom-only */
+  color: var(--semi-black); /* Neutral for atom-only */
 }
 
 .stat-number.stat-on-chain {
@@ -94,7 +94,7 @@
 
 .stat-label {
   font-size: 12px;
-  color: var(--muted-foreground);
+  color: var(--semi-black);
   margin-top: 4px;
   font-family: var(--font-family-primary);
   font-weight: 500;
@@ -151,7 +151,7 @@
 .import-section {
   margin-bottom: 20px;
   padding: 16px;
-  background: var(--primary);
+  background: var(--yellow);
   border: 1px solid var(--ring);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(5px);
@@ -168,7 +168,7 @@
   margin: 0;
   font-family: var(--font-family-display);
   font-weight: 700;
-  color: var(--primary);
+  color: var(--yellow);
   font-size: 18px;
 }
 
@@ -180,7 +180,7 @@
   margin: 8px 0 16px 0;
   font-family: var(--font-family-primary);
   font-weight: 500;
-  color: var(--background);
+  color: var(--white);
   font-size: 14px;
 }
 
@@ -189,7 +189,7 @@
   text-align: center;
   margin-bottom: 24px;
   padding: 20px;
-  background: var(--muted);
+  background: var(--grey);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(5px);
 }
@@ -206,7 +206,7 @@
   margin: 0;
   font-family: var(--font-family-primary);
   font-weight: 500;
-  color: var(--muted-foreground);
+  color: var(--semi-black);
   font-size: 14px;
 }
 
@@ -242,21 +242,21 @@
 }
 
 .source-badge.badge-created {
-  background: var(--primary);
-  color: var(--primary);
-  border: 1px solid var(--primary);
+  background: var(--yellow);
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
 }
 
 .source-badge.badge-existing {
-  background: var(--primary);
-  color: var(--primary);
-  border: 1px solid var(--primary);
+  background: var(--yellow);
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
 }
 
 .status-badge.badge-atom-only {
-  background: var(--border);
-  color: var(--muted-foreground);
-  border: 1px solid var(--border);
+  background: var(--grey);
+  color: var(--semi-black);
+  border: 1px solid var(--grey);
 }
 
 .status-badge.badge-on-chain {
@@ -277,10 +277,10 @@
 .processing-message {
   margin-top: 8px;
   padding: 8px 12px;
-  background: var(--border);
+  background: var(--grey);
   border-radius: var(--radius-md);
   font-size: 12px;
-  color: var(--background);
+  color: var(--white);
   font-family: var(--font-family-primary);
   font-weight: 500;
   backdrop-filter: blur(8px);
@@ -296,7 +296,7 @@
 /* Timestamp styling */
 .triplet-detail-timestamp {
   font-size: 11px;
-  color: var(--muted-foreground);
+  color: var(--semi-black);
   margin-top: 4px;
   font-style: italic;
   font-family: var(--font-family-primary);
@@ -307,7 +307,7 @@
 .receipt-details {
   margin: 16px 0;
   padding: 16px;
-  background: var(--muted);
+  background: var(--grey);
   border-radius: var(--radius-md);
   backdrop-filter: blur(5px);
 }
@@ -317,31 +317,31 @@
   font-family: var(--font-family-primary);
   font-weight: 500;
   font-size: 14px;
-  color: var(--secondary);
+  color: var(--grey);
 }
 
 .detail-line strong {
-  color: var(--foreground);
+  color: var(--white);
   margin-right: 8px;
 }
 
 .detail-line code {
-  background: var(--muted);
+  background: var(--grey);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   font-family: var(--font-family-primary);
   font-size: 12px;
-  color: var(--secondary);
+  color: var(--grey);
   word-break: break-all;
 }
 
 .source-existing {
-  color: var(--primary);
+  color: var(--yellow);
   font-weight: 600;
 }
 
 .source-created {
-  color: var(--primary);
+  color: var(--yellow);
   font-weight: 600;
 }
 
@@ -349,7 +349,7 @@
   background: none;
   border: none;
   font-size: 24px;
-  color: var(--secondary);
+  color: var(--grey);
   cursor: pointer;
   padding: 4px;
   border-radius: var(--radius-sm);
@@ -357,8 +357,8 @@
 }
 
 .modal-close:hover:not(:disabled) {
-  background: var(--secondary);
-  color: var(--foreground);
+  background: var(--grey);
+  color: var(--white);
 }
 
 .modal-close:disabled {
@@ -389,7 +389,7 @@
   font-weight: 500;
   font-size: 14px;
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--white);
 }
 
 .form-input,
@@ -398,10 +398,10 @@
   font-weight: 500;
   font-size: 14px;
   padding: 12px 16px;
-  border: 2px solid var(--border);
+  border: 2px solid var(--grey);
   border-radius: var(--radius-lg);
   background: var(--background);
-  color: var(--foreground);
+  color: var(--white);
   transition: all 0.3s ease;
   backdrop-filter: blur(8px);
 }
@@ -409,9 +409,9 @@
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--yellow);
   background: var(--background);
-  box-shadow: 0 0 0 3px var(--primary);
+  box-shadow: 0 0 0 3px var(--yellow);
 }
 
 .form-input:disabled,
@@ -455,7 +455,7 @@
 .success-message h3 {
   font-family: var(--font-family-display);
   font-weight: 700;
-  color: var(--foreground);
+  color: var(--white);
   margin: 0 0 16px 0;
   font-size: 20px;
 }
@@ -464,13 +464,13 @@
   font-family: var(--font-family-primary);
   font-weight: 500;
   font-size: 12px;
-  color: var(--secondary);
+  color: var(--grey);
   margin: 12px 0;
   word-break: break-all;
 }
 
 .tx-hash code {
-  background: var(--secondary);
+  background: var(--grey);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   font-family: var(--font-family-primary);
@@ -480,7 +480,7 @@
   font-family: var(--font-family-primary);
   font-weight: 500;
   font-size: 14px;
-  color: var(--primary);
+  color: var(--yellow);
   margin-top: 16px;
   font-style: italic;
 }

@@ -28,7 +28,7 @@
 
 .modal-content h3 {
   margin: 0 0 20px 0;
-  color: var(--foreground);
+  color: var(--white);
   font-family: var(--font-family-display);
   font-weight: 700;
   font-size: 20px;
@@ -47,21 +47,21 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.4;
-  color: var(--foreground);
+  color: var(--white);
 }
 
 .modal-triplet-info .subject {
-  color: var(--muted);
+  color: var(--grey);
   font-weight: 600;
 }
 
 .modal-triplet-info .action {
-  color: var(--primary);
+  color: var(--yellow);
   font-weight: 600;
 }
 
 .modal-triplet-info .object {
-  color: var(--secondary);
+  color: var(--grey);
   font-weight: 600;
 }
 
@@ -71,14 +71,14 @@
 
 .modal-section label {
   display: block;
-  color: var(--foreground);
+  color: var(--white);
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 8px;
 }
 
 .modal-description {
-  color: var(--muted-foreground);
+  color: var(--semi-black);
   font-size: 12px;
   line-height: 1.5;
   margin: 6px 0 12px 0;
@@ -90,7 +90,7 @@
   border: 1px solid var(--color-border-lighter);
   border-radius: var(--radius-lg);
   background: var(--color-bg-glass-lighter);
-  color: var(--foreground);
+  color: var(--white);
   font-size: 14px;
   box-sizing: border-box;
   transition: all 0.2s ease;
@@ -98,13 +98,13 @@
 
 .weight-input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--yellow);
   box-shadow: 0 0 0 3px var(--ring);
   background: var(--background);
 }
 
 .weight-input::placeholder {
-  color: var(--muted-foreground);
+  color: var(--semi-black);
 }
 
 .modal-actions {
@@ -132,7 +132,7 @@
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border-top: 3px solid var(--primary);
+  border-top: 3px solid var(--yellow);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   flex-shrink: 0;
@@ -149,7 +149,7 @@
 
 .processing-title {
   margin: 0 0 4px 0;
-  color: var(--primary);
+  color: var(--yellow);
   font-family: var(--font-family-display);
   font-weight: 700;
   font-size: 16px;
@@ -158,7 +158,7 @@
 
 .processing-step {
   margin: 0;
-  color: var(--muted-foreground);
+  color: var(--semi-black);
   font-family: var(--font-family-primary);
   font-weight: 500;
   font-size: 14px;

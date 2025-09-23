@@ -49,71 +49,71 @@
 
 /* Bouton principal */
 .btn-primary {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+  background-color: var(--yellow);
+  color: var(--black);
 }
 
 .btn-primary:hover {
   background-color: #FFD87C;
-  color: var(--foreground);
+  color: var(--white);
   box-shadow: var(--shadow-button-hover);
 }
 
 .btn-primary:active {
-  background-color: var(--primary);
-  border-color: var(--primary);
+  background-color: var(--yellow);
+  border-color: var(--yellow);
   box-shadow: var(--shadow-flat);
   filter: brightness(0.8);
 }
 
 /* Bouton secondaire */
 .btn-secondary {
-  background-color: var(--secondary);
-  color: var(--background);
-  
+  background-color: var(--grey);
+  color: var(--semi-black);
+
 }
 
 .btn-secondary:hover {
-  background-color: var(--secondary);
+  background-color: var(--grey);
   filter: brightness(0.9);
 }
 
 .btn-secondary:active {
-  background-color: var(--secondary);
-  border-color: var(--secondary);
+  background-color: var(--grey);
+  border-color: var(--grey);
   filter: brightness(0.8);
 }
 
 /* Bouton outline */
 .btn-outline {
   background-color: transparent;
-  color: var(--primary);
-  border-color: var(--primary);
+  color: var(--yellow);
+  border-color: var(--yellow);
   box-shadow: none;
 }
 
 .btn-outline:hover {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+  background-color: var(--yellow);
+  color: var(--black);
 }
 
 .btn-outline:active {
-  background-color: var(--primary);
-  border-color: var(--primary);
+  background-color: var(--yellow);
+  border-color: var(--yellow);
   filter: brightness(0.8);
 }
 
 /* Bouton ghost */
 .btn-ghost {
   background-color: transparent;
-  color: var(--foreground);
+  color: var(--white);
   border-color: transparent;
   box-shadow: none;
 }
 
 .btn-ghost:hover {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--white);
+  color: var(--white);
 }
 
 .btn-ghost:active {
@@ -123,7 +123,7 @@
 /* Bouton destructif */
 .btn-destructive {
   background-color: var(--destructive);
-  color: var(--destructive-foreground);
+  color: var(--white);
   border-color: var(--destructive);
 }
 
@@ -211,8 +211,8 @@
 /* Boutons de filtre */
 .btn-filter {
   background-color: transparent;
-  color: var(--muted-foreground);
-  border: var(--border-width) solid var(--border);
+  color: var(--semi-black);
+  border: var(--border-width) solid var(--grey);
   border-radius: var(--radius-md);
   padding: var(--spacing-sm) var(--spacing-md);
   font-family: var(--font-family-primary);
@@ -231,8 +231,8 @@
 
 .btn-filter:hover {
   background-color: var(--color-bg-glass);
-  color: var(--foreground);
-  border-color: var(--primary);
+  color: var(--white);
+  border-color: var(--yellow);
 }
 
 .btn-filter:focus-visible {
@@ -241,14 +241,14 @@
 }
 
 .btn-filter.selected {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
+  background-color: var(--yellow);
+  color: var(--black);
+  border-color: var(--yellow);
   box-shadow: var(--shadow-flat);
 }
 
 .btn-filter.selected:hover {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+  background-color: var(--yellow);
+  color: var(--black);
   filter: brightness(1.1);
 }

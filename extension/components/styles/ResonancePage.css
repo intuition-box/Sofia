@@ -26,13 +26,13 @@
   background: transparent;
   border: none;
   outline: none;
-  color: var(--foreground);
+  color: var(--white);
   font-size: 14px;
   font-family: var(--font-family-primary);
 }
 
 .resonance-search-input::placeholder {
-  color: var(--muted);
+  color: var(--grey);
 }
 
 /* Search logo styles - renamed from search-logo */
@@ -53,7 +53,7 @@
 
 /* Section title styles - renamed from section-title */
 .resonance-section-title {
-  color: var(--foreground);
+  color: var(--white);
   font-size: 18px;
   font-weight: 600;
   text-align: left;
@@ -101,7 +101,7 @@
   background-color: transparent;
   border-radius: var(--radius-lg);
   padding: 16px;
-  border: 1px solid var(--foreground);
+  border: 1px solid var(--white);
   backdrop-filter: var(--backdrop-blur);
   -webkit-backdrop-filter: var(--backdrop-blur);
   transition: all 0.3s ease;
@@ -109,8 +109,9 @@
 }
 
 .resonance-echo-card:hover {
-  background-color: transparent;
-  border-color: var(--ring);
+  background: var(--card-glass-bg);
+  border: 2px solid;
+  border-image: var(--echo-card-ring) 1;
   transform: translateY(-2px);
   box-shadow: var(--shadow-heavy);
 }
@@ -126,7 +127,7 @@
 
 /* Triplet text - copied from CorePage.css */
 .resonance-triplet-text {
-  color: var(--secondary-foreground);
+  color: var(--black);
   font-size: 14px;
   line-height: 1.6;
   margin: 0;
@@ -151,7 +152,7 @@
 .resonance-triplet-text .resonance-subject {
   display: inline;
   font-weight: 600;
-  color: var(--secondary-foreground);
+  color: var(--black);
   margin-right: 4px;
 }
 
@@ -159,14 +160,14 @@
   display: inline;
   margin: 0;
   font-style: italic;
-  color: var(--primary);
+  color: var(--yellow);
   margin-right: 4px;
 }
 
 .resonance-triplet-text .resonance-object {
   display: inline;
   font-weight: 1000;
-  color: var(--primary);
+  color: var(--yellow);
   margin-left: 4px;
 }
 
@@ -202,7 +203,7 @@
   font-family: var(--font-family-display);
   font-weight: 700;
   font-size: 16px;
-  color: var(--primary);
+  color: var(--yellow);
   margin: 0;
   margin-bottom: 8px;
 }
@@ -211,7 +212,7 @@
   font-family: var(--font-family-primary);
   font-weight: 500;
   font-size: 14px;
-  color: var(--foreground);
+  color: var(--white);
   margin: 0;
   line-height: 1.5;
   margin-bottom: 4px;
@@ -219,8 +220,8 @@
 
 /* Retry button */
 .resonance-retry-button {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+  background-color: var(--yellow);
+  color: var(--black);
   border: none;
   padding: 8px 16px;
   border-radius: var(--radius-md);
@@ -232,7 +233,7 @@
 }
 
 .resonance-retry-button:hover {
-  background-color: var(--secondary);
+  background-color: var(--grey);
   transform: translateY(-1px);
   box-shadow: var(--shadow-light);
 }
@@ -247,8 +248,8 @@
 }
 
 .sentiment-metric {
-  background-color: var(--primary);
-  color: #ffffffff;
+  background-color: var(--yellow);
+  color: var(--black);
   padding: 2px 6px;
   border-radius: 12px;
   font-size: 11px;
@@ -256,11 +257,11 @@
 }
 
 .sentiment-metric.users {
-  background-color: var(--primary);
-  color: #ffffffff;
+  background-color: var(--yellow);
+  color: var(--black);
 }
 
 .sentiment-metric.ratio {
-  background-color: var(--primary);
-  color: #ffffffff;
+  background-color: var(--yellow);
+  color: var(--black);
 }

@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--grey);
   padding-bottom: 0.5rem;
 }
 
