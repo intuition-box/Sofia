@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { useLocalPublishedTriplets } from '../../../hooks/useLocalPublishedTriplets'
+import { useIntuitionTriplets } from '../../../hooks/useIntuitionTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import { useStorage } from "@plasmohq/storage/hook"
-import { formatEther } from 'viem'
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
@@ -14,10 +13,10 @@ interface SignalsTabProps {
 }
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
-  const { triplets, isLoading, error, refreshFromLocal } = useLocalPublishedTriplets()
+  const { triplets, isLoading, error, refreshFromAPI } = useIntuitionTriplets()
   const [address] = useStorage<string>("metamask-account")
   
-  // Display locally published triplets (already sorted by timestamp)
+  // Display triplets from Intuition indexer (already sorted by timestamp)
   const publishedTriplets = triplets
 
   // Format wallet address
@@ -33,8 +32,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       // Intuition Testnet explorer
       window.open(`https://testnet.explorer.intuition.systems/tx/${txHash}`, '_blank')
     } else if (vaultId) {
-      console.log('View vault:', vaultId)
-      // TODO: Link to vault explorer
+      // Link to triple vault explorer
+      window.open(`https://testnet.explorer.intuition.systems/triple/${vaultId}`, '_blank')
     }
   }
 
@@ -56,7 +55,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>Loading your published triplets...</p>
+          <p>Loading your published triplets from Intuition blockchain...</p>
           <p className="empty-subtext">
             Wallet: {address?.slice(0, 6)}...{address?.slice(-4)}
           </p>
@@ -69,9 +68,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>Error loading local triplets</p>
+          <p>Error loading triplets from Intuition indexer</p>
           <p className="empty-subtext">{error}</p>
-          <button onClick={refreshFromLocal} className="retry-button">
+          <button onClick={refreshFromAPI} className="retry-button">
             Retry Loading
           </button>
         </div>
@@ -115,10 +114,10 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       triplet={tripletItem.triplet}
                       sourceInfo={{
                         sourceType: 'published',
-                        sourceId: tripletItem.originalId,
+                        sourceId: tripletItem.id,
                         url: tripletItem.url,
                         description: tripletItem.description,
-                        sourceMessageId: tripletItem.sourceMessageId
+                        sourceMessageId: tripletItem.id
                       }}
                       size="small"
                     />
@@ -145,22 +144,24 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     </div>
 
                     <div className="triplet-detail-section">
-                      <h4 className="triplet-detail-title"> Source</h4>
+                      <h4 className="triplet-detail-title">Blockchain Info</h4>
                       <p className="triplet-detail-name">
-                        Published from Echoes Tab ({tripletItem.source === 'created' ? 'New Triple' : 'Existing Triple'})
+                        Source: Intuition Blockchain ({tripletItem.source})
                       </p>
                       <p className="triplet-detail-timestamp">
-                        {new Date(tripletItem.timestamp).toLocaleString()}
+                        Created: {new Date(tripletItem.timestamp).toLocaleString()}
                       </p>
                       <p className="triplet-detail-name">
-                        Creator: {address?.slice(0, 8)}...{address?.slice(-6)}
+                        Subject Vault: {tripletItem.subjectVaultId?.slice(0, 12)}...
                       </p>
                       <p className="triplet-detail-name">
-                        Original URL: <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" className="triplet-link">{tripletItem.url.slice(0, 50)}...</a>
+                        Triple Vault: {tripletItem.tripleVaultId?.slice(0, 12)}...
                       </p>
-                      {tripletItem.customWeight && (
+                      {tripletItem.url && (
                         <p className="triplet-detail-name">
-                          Weight: {formatEther(BigInt(tripletItem.customWeight))} TRUST
+                          <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" className="triplet-link">
+                            View on Explorer
+                          </a>
                         </p>
                       )}
                     </div>
@@ -174,11 +175,11 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         <div className="empty-state">
           <p>No Published Triplets Found</p>
           <p className="empty-subtext">
-            Triplets you publish from Echoes tab will appear here automatically.<br/>
-            Create some triplets to see them displayed with full blockchain details!
+            Triplets you publish to Intuition blockchain will appear here.<br/>
+            Create some triplets from Echoes tab to see them displayed with full on-chain data!
           </p>
-          <button onClick={refreshFromLocal} className="refresh-button">
-            Refresh Local Storage
+          <button onClick={refreshFromAPI} className="refresh-button">
+            Refresh from Blockchain
           </button>
         </div>
       )}

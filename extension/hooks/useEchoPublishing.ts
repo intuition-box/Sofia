@@ -55,27 +55,8 @@ export const useEchoPublishing = ({
         customWeight
       )
 
+      // Mark as published in local storage (to hide from EchoesTab)
       await elizaDataService.addPublishedTripletId(tripletId)
-      await elizaDataService.storePublishedTriplet({
-        originalId: tripletId,
-        triplet: {
-          subject: address,
-          predicate: triplet.triplet.predicate,
-          object: triplet.triplet.object
-        },
-        url: triplet.url,
-        description: triplet.description,
-        sourceMessageId: triplet.sourceMessageId,
-        tripleVaultId: result.tripleVaultId,
-        txHash: result.txHash || '',
-        subjectVaultId: result.subjectVaultId,
-        predicateVaultId: result.predicateVaultId,
-        objectVaultId: result.objectVaultId,
-        timestamp: Date.now(),
-        source: result.source,
-        id: result.tripleVaultId,
-        customWeight: customWeight?.toString()
-      })
       
       onTripletsUpdate(echoTriplets.filter(t => t.id !== tripletId))
       setTransactionStatus('success')
@@ -105,32 +86,13 @@ export const useEchoPublishing = ({
       const result = await createTriplesBatch(batchInput)
       
       if (result.success) {
+        // Mark all published triplets in local storage (to hide from EchoesTab)
         for (let i = 0; i < selectedTriplets.length; i++) {
           const triplet = selectedTriplets[i]
           const correspondingResult = result.results[i]
           
           if (correspondingResult) {
             await elizaDataService.addPublishedTripletId(triplet.id)
-            await elizaDataService.storePublishedTriplet({
-              originalId: triplet.id,
-              triplet: {
-                subject: address,
-                predicate: triplet.triplet.predicate,
-                object: triplet.triplet.object
-              },
-              url: triplet.url,
-              description: triplet.description,
-              sourceMessageId: triplet.sourceMessageId,
-              tripleVaultId: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`,
-              txHash: result.txHash || '',
-              subjectVaultId: correspondingResult.subjectVaultId || '',
-              predicateVaultId: correspondingResult.predicateVaultId || '',
-              objectVaultId: correspondingResult.objectVaultId || '',
-              timestamp: Date.now(),
-              source: correspondingResult.source || 'created',
-              id: correspondingResult.tripleVaultId || `temp_${Date.now()}_${i}`,
-              customWeight: customWeights?.[i]?.toString()
-            })
           }
         }
         

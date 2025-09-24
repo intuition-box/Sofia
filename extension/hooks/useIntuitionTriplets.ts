@@ -65,11 +65,6 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
         return
       }
 
-      const normalizedAccount = account.toLowerCase()
-      
-      // Format checksum exact trouvé sur l'explorer Intuition
-      const checksumAccount = '0x0B940A81271aD090AbD2C18d1a5873e5cb93D42a' // Format exact de l'explorer
-      const upperAccount = account.toUpperCase()
       
       console.log('🔍 [useIntuitionTriplets] Filtering triplets by subject.label:', account)
       
@@ -144,20 +139,14 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
           id: triple.term_id,
           triplet: {
             subject: triple.subject.label || 'Unknown',
-            predicate: triple.predicate.label || 'Unknown', 
+            predicate: triple.predicate.label || 'Unknown',
             object: triple.object.label || 'Unknown'
           },
           url: `https://testnet.explorer.intuition.systems/tx/${triple.transaction_hash}`,
           description: `${triple.subject.label || 'Unknown'} ${triple.predicate.label || 'Unknown'} ${triple.object.label || 'Unknown'}`,
           timestamp: timestamp,
-          source: 'intuition_api' as const,
-          confidence: 0.95,
-          txHash: triple.transaction_hash,
-          tripleVaultId: triple.term_id,
-          subjectVaultId: triple.subject.term_id,
-          predicateVaultId: triple.predicate.term_id,
-          atomVaultId: triple.object.term_id,
-          tripleStatus: 'on-chain' as const
+          blockNumber: 0,
+          source: 'intuition_api'
         }
 
         return resolvedTriplet
