@@ -52,3 +52,100 @@
   height: var(--size-icon-md);
   filter: brightness(0) invert(0.6);
 }
+
+/* Search functionality styles */
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-loading,
+.search-error,
+.search-no-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.search-loading {
+  color: var(--color-text-secondary);
+}
+
+.search-error {
+  color: var(--color-error);
+}
+
+.search-no-results {
+  color: var(--color-text-tertiary);
+}
+
+.search-results-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-item {
+  padding: var(--spacing-md);
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border-secondary);
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+  background-color: var(--color-surface-secondary);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.account-label {
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+}
+
+.account-details {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.account-id,
+.account-date {
+  font-family: 'Courier New', monospace;
+}
+
+.search-results-more {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  border-top: 1px solid var(--color-border-secondary);
+}

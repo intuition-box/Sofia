@@ -44,3 +44,7 @@ yarn-error.log*
 components/SplineBackground.tsx
 
 .eliza
+
+
+task
+.task
