@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/clients/viemClients'
-import { stringToHex, keccak256 } from 'viem'
+import { stringToHex } from 'viem'
 import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
-import { SELECTED_CHAIN } from '~lib/config/config'
+import { SELECTED_CHAIN } from '~lib/config/chainConfig'
 import { useStorage } from "@plasmohq/storage/hook"
+import { BlockchainService } from '../lib/services/blockchainService'
+import { createHookLogger } from '../lib/utils/logger'
+import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
+import type { AtomIPFSData, AtomCreationResult } from '../types/blockchain'
 
-export interface AtomIPFSData {
-  name: string
-  description?: string
-  url: string
-  image?: any
-}
+const logger = createHookLogger('useCreateAtom')
 
 export const useCreateAtom = () => {
   const { mutateAsync: pinThing } = usePinThingMutation()
@@ -19,107 +18,124 @@ export const useCreateAtom = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
-  const createAtomDirect = async (atomData: AtomIPFSData): Promise<{ vaultId: string; txHash: string }> => {
+  const createAtomDirect = async (atomData: AtomIPFSData): Promise<AtomCreationResult> => {
     setIsLoading(true)
     setError(null)
     
     try {
-      console.log('📌 Creating atom V2:', atomData.name)
+      logger.debug('Creating atom V2', { name: atomData.name })
       
       // Pin to IPFS first
-      const result = await pinThing({
+      const pinResult = await pinThing({
         name: atomData.name,
         description: atomData.description || "Contenu visité par l'utilisateur.",
         image: atomData.image || "",
         url: atomData.url
       })
 
-      if (!result.pinThing?.uri) {
-        throw new Error("Failed to pin atom metadata.")
+      if (!pinResult.pinThing?.uri) {
+        throw new Error(ERROR_MESSAGES.ATOM_CREATION_FAILED)
       }
 
-      const ipfsUri = result.pinThing.uri
-      console.log('📌 IPFS URI:', ipfsUri)
-
-      const { walletClient, publicClient } = await getClients()
-      const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
-
-      // Get atom cost (ALWAYS use default for atoms, never customWeight)
-      const atomCost = await publicClient.readContract({
-        address: contractAddress,
-        abi: MULTIVAULT_V2_ABI,
-        functionName: 'getAtomCost'
-      }) as bigint
-
-      console.log('💰 Atom cost (always default):', atomCost.toString())
+      const ipfsUri = pinResult.pinThing.uri
+      logger.debug('IPFS URI obtained', { ipfsUri })
       
-      // Check if atom already exists
-      const atomHash = keccak256(stringToHex(ipfsUri))
-      const atomExists = await publicClient.readContract({
-        address: contractAddress,
-        abi: MULTIVAULT_V2_ABI,
-        functionName: 'isTermCreated',
-        args: [atomHash]
-      }) as boolean
+      // Log IPFS details for verification
+      console.log('📍 ATOM IPFS DATA:', {
+        atomName: atomData.name,
+        ipfsUri: ipfsUri,
+        ipfsUriHex: stringToHex(ipfsUri),
+        ipfsUriBytes: [...Buffer.from(ipfsUri, 'utf8')],
+        ipfsUriLength: ipfsUri.length,
+        rawMetadata: {
+          name: atomData.name,
+          description: atomData.description || "Contenu visité par l'utilisateur.",
+          image: atomData.image || "",
+          url: atomData.url,
+          type: atomData.type
+        }
+      })
+
+      const { walletClient } = await getClients()
       
-      if (atomExists) {
-        console.log('✅ Atom already exists:', atomHash)
+      // Get atom cost using service
+      const atomCost = await BlockchainService.getAtomCost()
+      logger.debug('Atom cost retrieved', { cost: atomCost.toString() })
+      
+      // Check if atom already exists using service
+      const atomCheck = await BlockchainService.checkAtomExists(ipfsUri)
+      
+      if (atomCheck.exists) {
+        logger.debug('Atom already exists', { atomHash: atomCheck.atomHash })
         return {
-          vaultId: atomHash,
+          success: true,
+          vaultId: atomCheck.atomHash,
+          atomHash: atomCheck.atomHash,
           txHash: 'existing'
         }
       }
       
-      console.log('🆕 Creating new atom with hash:', atomHash)
-
       // Convert IPFS URI to bytes for V2
       const encodedData = stringToHex(ipfsUri)
-      console.log('🔧 Encoded data:', encodedData)
       
-      // Create atom with V2
-      console.log('🚀 Sending transaction with args:', [[encodedData], [atomCost]], 'value:', atomCost.toString())
-
-
+      console.log('📦 ENCODED DATA FOR CONTRACT:', {
+        atomName: atomData.name,
+        originalIpfsUri: ipfsUri,
+        encodedData: encodedData,
+        encodedDataLength: encodedData.length,
+        decodableBack: Buffer.from(encodedData.slice(2), 'hex').toString('utf8'),
+        contractAddress: BlockchainService.getContractAddress()
+      })
+      
+      logger.debug('Sending atom creation transaction', {
+        args: [[encodedData], [atomCost]],
+        value: atomCost.toString()
+      })
 
       const txHash = await walletClient.writeContract({
-        address: contractAddress,
+        address: BlockchainService.getContractAddress() as `0x${string}`,
         abi: MULTIVAULT_V2_ABI,
         functionName: 'createAtoms',
         args: [[encodedData], [atomCost]],
         value: atomCost,
-        gas: 2000000n,
+        gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
         chain: SELECTED_CHAIN,
         account: address as `0x${string}`
       })
 
-      console.log('🔗 Transaction:', txHash)
+      logger.debug('Transaction sent', { txHash })
 
       // Wait for confirmation
+      const { publicClient } = await getClients()
       const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
-      console.log('✅ Confirmed:', receipt.status === 'success')
+      logger.debug('Transaction confirmed', { status: receipt.status })
       
       if (receipt.status !== 'success') {
-        throw new Error(`Transaction failed with status: ${receipt.status}`)
+        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
       }
 
-      // Extract the real atom ID from the transaction logs
-      // V2 MultiVault should emit an event with the atom ID
-      console.log('📜 Transaction logs:', receipt.logs)
-      
-      // For V2, we need to calculate the atom ID from the data
-      // Based on MultiVault code: atomId = keccak256(data)
-      const realAtomId = keccak256(encodedData)
-      console.log('🔑 Calculated atom ID:', realAtomId)
-
-      return {
-        vaultId: realAtomId, // Real bytes32 atom ID
+      const result = {
+        success: true,
+        vaultId: atomCheck.atomHash,
+        atomHash: atomCheck.atomHash,
         txHash
       }
+      
+      console.log('✅ ATOM CREATION COMPLETED:', {
+        atomName: atomData.name,
+        ipfsUri: ipfsUri,
+        encodedData: encodedData,
+        vaultId: result.vaultId,
+        atomHash: result.atomHash,
+        txHash: result.txHash
+      })
+      
+      return result
     } catch (error) {
-      console.error('❌ Atom creation failed:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      setError(new Error(`Atom creation failed: ${errorMessage}`))
-      throw new Error(`Atom creation failed: ${errorMessage}`)
+      logger.error('Atom creation failed', error)
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      setError(new Error(`${ERROR_MESSAGES.ATOM_CREATION_FAILED}: ${errorMessage}`))
+      throw new Error(`${ERROR_MESSAGES.ATOM_CREATION_FAILED}: ${errorMessage}`)
     } finally {
       setIsLoading(false)
     }

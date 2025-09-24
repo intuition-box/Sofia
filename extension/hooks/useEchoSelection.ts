@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback } from 'react'
+import { MessageBus } from '~lib/services/MessageBus'
 
 interface EchoTriplet {
   id: string
@@ -127,7 +128,7 @@ export const useEchoSelection = ({
       
       // Notify background to update badge count after deletion
       try {
-        chrome.runtime.sendMessage({ type: 'TRIPLETS_DELETED' })
+        MessageBus.getInstance().sendMessageFireAndForget({ type: 'TRIPLETS_DELETED' })
         console.log('📤 Notified background of triplet deletion')
       } catch (error) {
         console.error('❌ Failed to notify background of triplet deletion:', error)

@@ -1,13 +1,13 @@
 import { initializeChatbotSocket , initializeSofiaSocket, initializeThemeExtractorSocket, initializePulseSocket} from "./websocket";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
+import { MessageBus } from "../lib/services/MessageBus";
 import "./oauth/index"; // Initialize OAuth service
 
 // Initialize badge count on startup
 async function initializeBadgeCount(): Promise<void> {
   try {
-    // Send message to messageHandlers to count and update badge
-    chrome.runtime.sendMessage({ type: 'INITIALIZE_BADGE' })
+    MessageBus.getInstance().sendMessageFireAndForget({ type: 'INITIALIZE_BADGE' })
   } catch (error) {
     console.error('❌ [index.ts] Failed to initialize badge count:', error)
   }

@@ -1,6 +1,6 @@
 import { generatePrivateKey, privateKeyToAccount, type LocalAccount } from 'viem/accounts'
 import { createWalletClient, createPublicClient, http, formatEther, parseEther, encodeFunctionData } from 'viem'
-import { SELECTED_CHAIN } from '../config/config'
+import { SELECTED_CHAIN } from '../config/chainConfig'
 import { getMetaProvider } from './metamask'
 import { getClients } from '../clients/viemClients'
 

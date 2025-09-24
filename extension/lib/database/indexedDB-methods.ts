@@ -3,6 +3,7 @@
  */
 
 import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord} from './indexedDB'
+import { MessageBus } from '../services/MessageBus'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
 import { parseSofiaMessage } from '../utils/parseSofiaMessage'
 import type { VisitData } from '~types/history'
@@ -179,7 +180,7 @@ export class ElizaDataService {
       
       // Notify background to update badge count
       try {
-        chrome.runtime.sendMessage({ type: 'TRIPLET_PUBLISHED' })
+        MessageBus.getInstance().sendMessageFireAndForget({ type: 'TRIPLET_PUBLISHED' })
       } catch (error) {
         console.error('❌ Failed to notify background of published triplet:', error)
       }

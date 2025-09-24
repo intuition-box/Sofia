@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
+import { createHookLogger } from '../lib/utils/logger'
 
 export interface HighValueTriplet {
   id: string
@@ -66,13 +67,15 @@ export const useHighValueTriplets = (): UseHighValueTripletsResult => {
   const [triplets, setTriplets] = useState<HighValueTriplet[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  const logger = createHookLogger('useHighValueTriplets')
 
   const refreshHighValueTriplets = async (): Promise<void> => {
     setIsLoading(true)
     setError(null)
 
     try {
-      console.log('🔄 [useHighValueTriplets] Fetching high-value triplets from indexer...')
+      logger.debug('Fetching high-value triplets from indexer')
 
       // First get all vaults sorted by total_assets (market cap) to find high-value triplets
       const vaultsQuery = `
@@ -91,11 +94,11 @@ export const useHighValueTriplets = (): UseHighValueTripletsResult => {
         }
       `
 
-      console.log('🔍 [useHighValueTriplets] First querying vaults by total_assets...')
+      logger.debug('Querying vaults by total_assets')
       const vaultsResponse = await intuitionGraphqlClient.request(vaultsQuery)
       
       if (!vaultsResponse?.vaults || vaultsResponse.vaults.length === 0) {
-        console.log('❌ [useHighValueTriplets] No high-value vaults found')
+        logger.warn('No high-value vaults found')
         setTriplets([])
         return
       }
@@ -103,7 +106,7 @@ export const useHighValueTriplets = (): UseHighValueTripletsResult => {
       const highValueVaults = vaultsResponse.vaults
       const vaultTermIds = highValueVaults.map(v => v.term_id)
       
-      console.log(`💰 [useHighValueTriplets] Found ${highValueVaults.length} high-value vaults, fetching corresponding triplets...`)
+      logger.debug('Found high-value vaults', { count: highValueVaults.length })
 
       // Now get the triplets for these high-value vaults
       const triplesQuery = `
@@ -138,16 +141,16 @@ export const useHighValueTriplets = (): UseHighValueTripletsResult => {
       const triplesResponse = await intuitionGraphqlClient.request(triplesQuery, {
         termIds: vaultTermIds
       })
-      console.log('📊 [useHighValueTriplets] Raw triples response:', triplesResponse)
+      logger.debug('Raw triples response received')
 
       if (!triplesResponse?.triples) {
-        console.log('❌ [useHighValueTriplets] No triples found in response')
+        logger.warn('No triples found in response')
         setTriplets([])
         return
       }
 
       const triples = triplesResponse.triples
-      console.log(`📈 [useHighValueTriplets] Found ${triples.length} triples, mapping with vault data...`)
+      logger.debug('Found triples, mapping with vault data', { count: triples.length })
 
       // Map triplets with their corresponding vault data 
       const processedTriplets: HighValueTriplet[] = triples.map((triple: any) => {
@@ -164,7 +167,8 @@ export const useHighValueTriplets = (): UseHighValueTripletsResult => {
             totalStake: parseFloat(vaultInfo.total_assets) || 0
           }
           
-          console.log(`💰 [useHighValueTriplets] Mapped vault data for ${triple.term_id}:`, {
+          logger.debug('Mapped vault data', {
+            termId: triple.term_id,
             positions: vaultData.positionCount,
             totalStake: vaultData.totalStake,
             sharePrice: vaultData.sharePrice
@@ -230,12 +234,12 @@ export const useHighValueTriplets = (): UseHighValueTripletsResult => {
         .sort((a, b) => b.totalSupportMarketCap - a.totalSupportMarketCap)
         .slice(0, 20) // Top 20 by Total Support Market Cap
 
-      console.log(`✅ [useHighValueTriplets] Successfully processed ${sortedTriplets.length} high-value triplets`)
+      logger.info('Successfully processed high-value triplets', { count: sortedTriplets.length })
       setTriplets(sortedTriplets)
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
-      console.error('❌ [useHighValueTriplets] Error fetching high-value triplets:', err)
+      logger.error('Error fetching high-value triplets', err)
       setError(`Failed to fetch high-value triplets: ${errorMessage}`)
       setTriplets([])
     } finally {
