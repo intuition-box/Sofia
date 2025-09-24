@@ -260,7 +260,10 @@ export const useCreateTripleOnChain = () => {
           args: [encodedDataArray, atomCostsArray],
           value: totalValue,
           gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS * BigInt(atomsToCreate.length),
-          account: address
+          account: address,
+          maxFeePerGas: 50000000000n,
+          maxPriorityFeePerGas: 10000000000n,
+          chain: undefined
         })
 
         // Wait for confirmation
