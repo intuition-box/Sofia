@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import searchIcon from '../../../assets/Icon=Search.svg'
-import connectButtonOn from '../../../assets/connectButtonOn.svg'
-import connectButtonOff from '../../../assets/connectButtonOff.svg'
+import searchIcon from '../../ui/icons/Icon=Search.svg'
+import connectButtonOn from '../../ui/icons/connectButtonOn.svg'
+import connectButtonOff from '../../ui/icons/connectButtonOff.svg'
+import '../../styles/AccountTab.css'
 
 const AccountTab = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -61,122 +62,47 @@ const AccountTab = () => {
 
       {/* Action Buttons */}
       <div className="action-buttons-container">
-        <button 
+        <button
           className="connect-button"
           onClick={() => oauthTokens.youtube ? disconnectOAuth('youtube') : connectOAuth('youtube')}
           style={{
-            backgroundImage: `url(${oauthTokens.youtube ? connectButtonOn : connectButtonOff})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: 'none',
-            width: '271px',
-            height: '67px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 20px',
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            marginBottom: '12px'
+            backgroundImage: `url(${oauthTokens.youtube ? connectButtonOn : connectButtonOff})`
           }}
         >
-          <div style={{ 
-            width: '24px', 
-            height: '24px', 
-            marginRight: '12px',
-            backgroundColor: '#ff0000',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px'
-          }}>
+          <div className="platform-icon youtube-icon">
             YT
           </div>
-          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+          <span className="connect-button-text">
             {oauthTokens.youtube ? 'Disconnect YouTube' : 'Connect YouTube'}
           </span>
         </button>
 
-        <button 
+        <button
           className="connect-button"
           onClick={() => oauthTokens.spotify ? disconnectOAuth('spotify') : connectOAuth('spotify')}
           style={{
-            backgroundImage: `url(${oauthTokens.spotify ? connectButtonOn : connectButtonOff})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: 'none',
-            width: '271px',
-            height: '67px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 20px',
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            marginBottom: '12px'
+            backgroundImage: `url(${oauthTokens.spotify ? connectButtonOn : connectButtonOff})`
           }}
         >
-          <div style={{ 
-            width: '24px', 
-            height: '24px', 
-            marginRight: '12px',
-            backgroundColor: '#1db954',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px'
-          }}>
+          <div className="platform-icon spotify-icon">
             ♪
           </div>
-          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+          <span className="connect-button-text">
             {oauthTokens.spotify ? 'Disconnect Spotify' : 'Connect Spotify'}
           </span>
         </button>
 
-        <button 
+        <button
           className="connect-button"
           onClick={() => oauthTokens.twitch ? disconnectOAuth('twitch') : connectOAuth('twitch')}
           style={{
-            backgroundImage: `url(${oauthTokens.twitch ? connectButtonOn : connectButtonOff})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: 'none',
-            width: '271px',
-            height: '67px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 20px',
-            cursor: 'pointer',
-            backgroundColor: 'transparent',
-            marginBottom: '12px'
+            backgroundImage: `url(${oauthTokens.twitch ? connectButtonOn : connectButtonOff})`
           }}
         >
-          <div style={{ 
-            width: '24px', 
-            height: '24px', 
-            marginRight: '12px',
-            backgroundColor: '#9146ff',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '12px'
-          }}>
+          <div className="platform-icon twitch-icon">
             TV
           </div>
-          <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>
+          <span className="connect-button-text">
             {oauthTokens.twitch ? 'Disconnect Twitch' : 'Connect Twitch'}
           </span>
         </button>
@@ -193,7 +119,7 @@ const AccountTab = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="alias-input search-input-with-icon"
         />
-        <img src={searchIcon} alt="Search" className="search-icon" style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(0.6)' }} />
+        <img src={searchIcon} alt="Search" className="search-icon" />
       </div>
 
     </div>

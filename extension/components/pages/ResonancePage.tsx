@@ -3,7 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useHighValueTriplets } from '../../hooks/useHighValueTriplets'
 import QuickActionButton from '../ui/QuickActionButton'
-import logoIcon from '../../assets/icon.png'
+import logoIcon from '../ui/icons/icon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 

@@ -97,7 +97,8 @@ export const useCreateTripleOnChain = () => {
       const userAtomResult = await createAtomWithMultivault({
         name: address,
         description: `User atom for wallet ${address}`,
-        url: `https://etherscan.io/address/${address}`
+        url: `https://etherscan.io/address/${address}`,
+        type:'account'
       })
       
       const userAtom = {
@@ -292,7 +293,7 @@ export const useCreateTripleOnChain = () => {
         name: address,
         description: `User atom for wallet ${address}`,
         url: `https://etherscan.io/address/${address}`,
-        type: 'user'
+        type: 'account'
       })
 
       // Collect unique predicates and objects
@@ -310,7 +311,7 @@ export const useCreateTripleOnChain = () => {
           name: input.objectData.name,
           description: input.objectData.description,
           url: input.objectData.url,
-          type: 'object'
+          type: 'thing'
         })
       }
 

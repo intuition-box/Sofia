@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch, type AtomSearchResult } from '../../hooks/useIntuitionSearch'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
+import '../styles/SearchResultPage.css'
 
 interface SearchResultPageProps {
   searchQuery?: string

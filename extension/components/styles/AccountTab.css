@@ -1,0 +1,54 @@
+.connect-button {
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: none;
+  width: 271px;
+  height: 67px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-xl);
+  cursor: pointer;
+  background-color: transparent;
+  margin-bottom: var(--spacing-md);
+}
+
+.platform-icon {
+  width: var(--size-icon-lg);
+  height: var(--size-icon-lg);
+  margin-right: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-weight: bold;
+  font-size: var(--font-size-sm);
+}
+
+.youtube-icon {
+  background-color: #ff0000;
+  border-radius: var(--radius-sm);
+}
+
+.spotify-icon {
+  background-color: #1db954;
+  border-radius: var(--radius-full);
+}
+
+.twitch-icon {
+  background-color: #9146ff;
+  border-radius: var(--radius-sm);
+}
+
+.connect-button-text {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+}
+
+.search-icon {
+  width: var(--size-icon-md);
+  height: var(--size-icon-md);
+  filter: brightness(0) invert(0.6);
+}
