@@ -292,7 +292,7 @@ export const useCreateTripleOnChain = () => {
       if (triplesToCreate.length > 0) {
 
         const { walletClient, publicClient } = await getClients()
-        const contractAddress = BlockchainService.getContractAddress()
+        const contractAddress: Address = BlockchainService.getContractAddress() as Address
 
         // Get default triple cost using service
         const defaultTripleCost = await BlockchainService.getTripleCost()
