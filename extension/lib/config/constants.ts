@@ -3,9 +3,11 @@
  * Centralized configuration to avoid hardcoded values
  */
 
+import { MULTIVAULT_CONTRACT_ADDRESS } from './chainConfig'
+
 // Blockchain Configuration
 export const BLOCKCHAIN_CONFIG = {
-  CONTRACT_ADDRESS: "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d",
+  CONTRACT_ADDRESS: MULTIVAULT_CONTRACT_ADDRESS,
   DEFAULT_GAS: 2000000n,
   MAX_FEE_PER_GAS: 50000000000n,
   MAX_PRIORITY_FEE_PER_GAS: 10000000000n,

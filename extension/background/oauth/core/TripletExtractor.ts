@@ -45,7 +45,7 @@ export class TripletExtractor {
         triplets: triplets,
         created_at: Date.now(),
         rawObjectUrl: specificUrl,
-        rawObjectDescription: `Data from ${platform} OAuth connection`
+        rawObjectDescription: ` ${platform}`
       }
 
       await elizaDataService.storeParsedMessage(parsedMessage, `oauth_${platform}_${Date.now()}`)

@@ -4,13 +4,11 @@ import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
 import { useStorage } from "@plasmohq/storage/hook"
-import { usePinThingMutation } from "@0xintuition/graphql"
-import { stringToHex, keccak256 } from 'viem'
 import { sessionWallet } from '../lib/services/sessionWallet'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
-import type { TripleOnChainResult, BatchTripleInput, BatchTripleResult, AtomIPFSData } from '../types/blockchain'
+import type { TripleOnChainResult, BatchTripleInput, BatchTripleResult } from '../types/blockchain'
 import type { Address, Hash, ContractWriteParams } from '../types/viem'
 
 const logger = createHookLogger('useCreateTripleOnChain')
@@ -18,7 +16,6 @@ const logger = createHookLogger('useCreateTripleOnChain')
 
 export const useCreateTripleOnChain = () => {
   const { createAtomWithMultivault } = useCreateAtom()
-  const { mutateAsync: pinThing } = usePinThingMutation()
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   
@@ -219,94 +216,26 @@ export const useCreateTripleOnChain = () => {
       }
 
       const atomResults = new Map<string, string>() // key -> vaultId
-      const atomsToCreate: { key: string; atomData: AtomIPFSData; ipfsUri: string; atomHash: string }[] = []
 
-      // Check each atom and prepare those that need creation
+      // Create each atom using the centralized service
       for (const [key, atomData] of uniqueAtoms) {
         try {
-          // Pin to IPFS first
-          const result = await pinThing({
+          logger.debug('Creating atom using centralized service', { key, name: atomData.name })
+          
+          const atomResult = await createAtomWithMultivault({
             name: atomData.name,
             description: atomData.description || "Contenu visité par l'utilisateur.",
-            image: "",
-            url: atomData.url
+            url: atomData.url,
+            type: atomData.type
           })
-
-          if (!result.pinThing?.uri) {
-            throw new Error(`Failed to pin atom metadata for ${atomData.name}`)
-          }
-
-          const ipfsUri = result.pinThing.uri
-          const atomHash = keccak256(stringToHex(ipfsUri))
-
-          // Check if atom already exists
-          const { publicClient } = await getClients()
-          const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
           
-          const atomExists = await publicClient.readContract({
-            address: contractAddress,
-            abi: MULTIVAULT_V2_ABI,
-            functionName: 'isTermCreated',
-            args: [atomHash]
-          }) as boolean
+          atomResults.set(key, atomResult.vaultId)
+          logger.debug('Atom created successfully', { key, vaultId: atomResult.vaultId })
           
-          if (atomExists) {
-            atomResults.set(key, atomHash)
-          } else {
-            atomsToCreate.push({ key, atomData, ipfsUri, atomHash })
-          }
         } catch (error) {
-          logger.error('Failed to prepare atom', { name: atomData.name, error })
-          throw new Error(`Failed to prepare required atom: ${atomData.name}`)
+          logger.error('Failed to create atom', { name: atomData.name, error })
+          throw new Error(`Failed to create required atom: ${atomData.name}`)
         }
-      }
-
-      if (atomsToCreate.length > 0) {
-
-        const { walletClient, publicClient } = await getClients()
-        const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
-
-        // Get atom cost
-        const atomCost = await publicClient.readContract({
-          address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'getAtomCost'
-        }) as bigint
-
-        // Prepare batch arrays
-        const encodedDataArray = atomsToCreate.map(atom => stringToHex(atom.ipfsUri))
-        const atomCostsArray = atomsToCreate.map(() => atomCost)
-        const totalValue = atomCost * BigInt(atomsToCreate.length)
-
-
-        // Create all atoms in one transaction (automatic or MetaMask)
-        const atomsTxParams = {
-          address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'createAtoms',
-          args: [encodedDataArray, atomCostsArray],
-          value: totalValue,
-          gas: 2000000n * BigInt(atomsToCreate.length), // Scale gas with number of atoms
-          chain: SELECTED_CHAIN,
-          maxFeePerGas: 50000000000n,
-          maxPriorityFeePerGas: 10000000000n,
-          account: address
-        }
-
-        const hash = await executeTransaction(atomsTxParams)
-
-        // Wait for confirmation
-        const receipt = await publicClient.waitForTransactionReceipt({ hash })
-        
-        if (receipt.status !== 'success') {
-          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
-        }
-
-        // Store the atom results using calculated hashes
-        for (const atom of atomsToCreate) {
-          atomResults.set(atom.key, atom.atomHash)
-        }
-
       }
 
       const results: TripleOnChainResult[] = []
@@ -363,14 +292,10 @@ export const useCreateTripleOnChain = () => {
       if (triplesToCreate.length > 0) {
 
         const { walletClient, publicClient } = await getClients()
-        const contractAddress = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
+        const contractAddress = BlockchainService.getContractAddress()
 
-        // Get default triple cost
-        const defaultTripleCost = await publicClient.readContract({
-          address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'getTripleCost'
-        }) as bigint
+        // Get default triple cost using service
+        const defaultTripleCost = await BlockchainService.getTripleCost()
 
         // Prepare batch arrays with individual custom weights
         const subjectIds = triplesToCreate.map(t => t.subjectId as Address)

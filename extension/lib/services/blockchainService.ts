@@ -2,13 +2,14 @@ import { getClients } from '../clients/viemClients'
 import { MULTIVAULT_V2_ABI } from '../../contracts/ABIs'
 import { stringToHex, keccak256 } from 'viem'
 import type { AtomCheckResult, TripleCheckResult } from '../../types/blockchain'
+import { MULTIVAULT_CONTRACT_ADDRESS } from '../config/chainConfig'
 
 /**
  * Centralized service for blockchain operations
  * Eliminates code duplication across multiple hooks
  */
 export class BlockchainService {
-  private static readonly CONTRACT_ADDRESS = "0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d"
+  private static readonly CONTRACT_ADDRESS = MULTIVAULT_CONTRACT_ADDRESS
 
   /**
    * Calculate atom hash from IPFS URI

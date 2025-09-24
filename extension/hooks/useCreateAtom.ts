@@ -26,19 +26,35 @@ export const useCreateAtom = () => {
       logger.debug('Creating atom V2', { name: atomData.name })
       
       // Pin to IPFS first
-      const result = await pinThing({
+      const pinResult = await pinThing({
         name: atomData.name,
         description: atomData.description || "Contenu visité par l'utilisateur.",
         image: atomData.image || "",
         url: atomData.url
       })
 
-      if (!result.pinThing?.uri) {
+      if (!pinResult.pinThing?.uri) {
         throw new Error(ERROR_MESSAGES.ATOM_CREATION_FAILED)
       }
 
-      const ipfsUri = result.pinThing.uri
+      const ipfsUri = pinResult.pinThing.uri
       logger.debug('IPFS URI obtained', { ipfsUri })
+      
+      // Log IPFS details for verification
+      console.log('📍 ATOM IPFS DATA:', {
+        atomName: atomData.name,
+        ipfsUri: ipfsUri,
+        ipfsUriHex: stringToHex(ipfsUri),
+        ipfsUriBytes: [...Buffer.from(ipfsUri, 'utf8')],
+        ipfsUriLength: ipfsUri.length,
+        rawMetadata: {
+          name: atomData.name,
+          description: atomData.description || "Contenu visité par l'utilisateur.",
+          image: atomData.image || "",
+          url: atomData.url,
+          type: atomData.type
+        }
+      })
 
       const { walletClient } = await getClients()
       
@@ -61,6 +77,15 @@ export const useCreateAtom = () => {
       
       // Convert IPFS URI to bytes for V2
       const encodedData = stringToHex(ipfsUri)
+      
+      console.log('📦 ENCODED DATA FOR CONTRACT:', {
+        atomName: atomData.name,
+        originalIpfsUri: ipfsUri,
+        encodedData: encodedData,
+        encodedDataLength: encodedData.length,
+        decodableBack: Buffer.from(encodedData.slice(2), 'hex').toString('utf8'),
+        contractAddress: BlockchainService.getContractAddress()
+      })
       
       logger.debug('Sending atom creation transaction', {
         args: [[encodedData], [atomCost]],
@@ -89,12 +114,23 @@ export const useCreateAtom = () => {
         throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
       }
 
-      return {
+      const result = {
         success: true,
         vaultId: atomCheck.atomHash,
         atomHash: atomCheck.atomHash,
         txHash
       }
+      
+      console.log('✅ ATOM CREATION COMPLETED:', {
+        atomName: atomData.name,
+        ipfsUri: ipfsUri,
+        encodedData: encodedData,
+        vaultId: result.vaultId,
+        atomHash: result.atomHash,
+        txHash: result.txHash
+      })
+      
+      return result
     } catch (error) {
       logger.error('Atom creation failed', error)
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR

@@ -1,10 +1,10 @@
 import type { Address } from 'viem'
 import { intuitionTestnet } from './config'
+import { MULTIVAULT_CONTRACT_ADDRESS } from './config/chainConfig'
 
 import logger from './logger'
 
 const intuitionRpcUrl = 'https://testnet.rpc.intuition.systems'
-const multiVaultContractAddressIntuition = '0x2b0241B559d78ECF360b7a3aC4F04E6E8eA2450d'
 
 type ChainId = typeof intuitionTestnet.id
 
@@ -25,19 +25,19 @@ export const getChainEnvConfig = (env: string): ChainConfig => {
             chainId: intuitionTestnet.id,
             name: intuitionTestnet.name,
             rpcUrl: intuitionRpcUrl,
-            contractAddress: multiVaultContractAddressIntuition as Address,
+            contractAddress: MULTIVAULT_CONTRACT_ADDRESS as Address,
         },
         staging: {
             chainId: intuitionTestnet.id,
             name: intuitionTestnet.name,
             rpcUrl: intuitionRpcUrl,
-            contractAddress: multiVaultContractAddressIntuition as Address,
+            contractAddress: MULTIVAULT_CONTRACT_ADDRESS as Address,
         },
         production: {
             chainId: intuitionTestnet.id,
             name: intuitionTestnet.name,
             rpcUrl: intuitionRpcUrl,
-            contractAddress: multiVaultContractAddressIntuition as Address,
+            contractAddress: MULTIVAULT_CONTRACT_ADDRESS as Address,
         },
     }
 
