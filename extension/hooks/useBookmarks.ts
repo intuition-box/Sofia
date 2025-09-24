@@ -54,7 +54,7 @@ export const useBookmarks = (): UseBookmarksResult => {
       await BookmarkService.deleteList(listId)
       // Update local state directly
       setLists(prev => prev.filter(list => list.id !== listId))
-      setTriplets(prev => prev.filter(triplet => !prev.find(l => l.id === listId)?.tripletIds.includes(triplet.id)))
+      setTriplets(prev => prev.filter(triplet => !lists.find(l => l.id === listId)?.tripletIds.includes(triplet.id)))
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete list'
       throw new Error(errorMessage)
@@ -83,9 +83,15 @@ export const useBookmarks = (): UseBookmarksResult => {
     sourceInfo: Pick<BookmarkedTriplet, 'sourceType' | 'sourceId' | 'url' | 'description' | 'sourceMessageId'>
   ): Promise<void> => {
     try {
-      const result = await BookmarkService.addTripletToList(listId, triplet, sourceInfo)
-      // Update local state directly
-      const newTriplet = { ...result.triplet, addedAt: Date.now() }
+      await BookmarkService.addTripletToList(listId, triplet, sourceInfo)
+      // Update local state directly - create triplet ID
+      const tripletId = `${triplet.subject}-${triplet.predicate}-${triplet.object}-${Date.now()}`
+      const newTriplet: BookmarkedTriplet = {
+        id: tripletId,
+        triplet,
+        ...sourceInfo,
+        addedAt: Date.now()
+      }
       setTriplets(prev => [...prev, newTriplet])
       setLists(prev => prev.map(list => 
         list.id === listId ? { ...list, tripletIds: [...list.tripletIds, newTriplet.id] } : list

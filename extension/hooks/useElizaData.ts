@@ -8,82 +8,45 @@ import { useState, useEffect, useCallback } from 'react'
 import { elizaDataService } from '~lib/database/indexedDB-methods'
 import { MessageBus } from '~lib/services/MessageBus'
 import type { ElizaRecord } from '~lib/database/indexedDB'
-import type { ParsedSofiaMessage, Message } from '~types/messages'
+import type { ParsedSofiaMessage, SofiaMessage } from '~types/messages'
 
 interface UseElizaDataResult {
-  // Data state
-  messages: ElizaRecord[]
-  parsedMessages: ElizaRecord[]
   allMessages: ElizaRecord[]
-  recentMessages: ElizaRecord[]
-  
-  // Actions
-  storeMessage: (message: Message, messageId?: string) => Promise<void>
+  storeMessage: (message: SofiaMessage, messageId?: string) => Promise<void>
   storeParsedMessage: (parsedMessage: ParsedSofiaMessage, messageId?: string) => Promise<void>
-  refreshMessages: () => Promise<void>
+  loadMessages: () => Promise<void>
   clearAllMessages: () => Promise<void>
   deleteOldMessages: (daysToKeep?: number) => Promise<number>
-  
-  // Filters and queries
   getMessagesByType: (type: 'message' | 'parsed_message' | 'triplet') => ElizaRecord[]
-  searchMessages: (searchTerm: string) => ElizaRecord[]
-  getMessagesInRange: (startDate: number, endDate: number) => ElizaRecord[]
+  getRecentMessages: (limit?: number) => ElizaRecord[]
 }
 
-interface UseElizaDataOptions {
-  autoRefresh?: boolean
-  refreshInterval?: number
-  maxRecentMessages?: number
-  enableSearch?: boolean
-}
 
 /**
  * Hook for managing Eliza data with IndexedDB
  */
-export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataResult => {
-  const {
-    autoRefresh = false,
-    refreshInterval = 30000, // 30 seconds
-    maxRecentMessages = 50,
-    enableSearch = true
-  } = options
+export const useElizaData = (): UseElizaDataResult => {
 
   // State
-  const [messages, setMessages] = useState<ElizaRecord[]>([])
-  const [parsedMessages, setParsedMessages] = useState<ElizaRecord[]>([])
   const [allMessages, setAllMessages] = useState<ElizaRecord[]>([])
-  const [recentMessages, setRecentMessages] = useState<ElizaRecord[]>([])
 
   /**
    * Load all messages from IndexedDB
    */
   const loadMessages = useCallback(async () => {
     try {
-      // Load all messages
       const allElizaMessages = await elizaDataService.getAllMessages()
       setAllMessages(allElizaMessages)
-
-      // Separate by type
-      const regularMessages = allElizaMessages.filter(msg => msg.type === 'message')
-      const parsedMsgs = allElizaMessages.filter(msg => msg.type === 'parsed_message')
-      
-      setMessages(regularMessages)
-      setParsedMessages(parsedMsgs)
-
-      // Get recent messages
-      const recent = await elizaDataService.getRecentMessages(maxRecentMessages)
-      setRecentMessages(recent)
-
     } catch (err) {
       console.error('❌ Error loading Eliza messages:', err)
       throw new Error(err instanceof Error ? err.message : 'Failed to load messages')
     }
-  }, [maxRecentMessages])
+  }, [])
 
   /**
    * Store a regular message from Eliza (auto-parsing handled by elizaDataService)
    */
-  const storeMessage = useCallback(async (message: Message, messageId?: string) => {
+  const storeMessage = useCallback(async (message: SofiaMessage, messageId?: string) => {
     try {
       // Store the raw message (elizaDataService handles auto-parsing)
       await elizaDataService.storeMessage(message, messageId)
@@ -124,12 +87,6 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
     }
   }, [loadMessages])
 
-  /**
-   * Refresh messages from IndexedDB
-   */
-  const refreshMessages = useCallback(async () => {
-    await loadMessages()
-  }, [loadMessages])
 
   /**
    * Clear all messages (with confirmation)
@@ -137,15 +94,8 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
   const clearAllMessages = useCallback(async () => {
     try {
       await elizaDataService.clearAll()
-      
-      // Clear local state
-      setMessages([])
-      setParsedMessages([])
       setAllMessages([])
-      setRecentMessages([])
-      
       console.log('🗑️ All Eliza messages cleared')
-
     } catch (err) {
       console.error('❌ Error clearing messages:', err)
       throw new Error(err instanceof Error ? err.message : 'Failed to clear messages')
@@ -171,63 +121,17 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
     }
   }, [loadMessages])
 
-  /**
-   * Get messages by type (filtered from current state)
-   */
   const getMessagesByType = useCallback((type: 'message' | 'parsed_message' | 'triplet') => {
     return allMessages.filter(msg => msg.type === type)
   }, [allMessages])
 
-  /**
-   * Search messages by content (if search enabled)
-   */
-  const searchMessages = useCallback((searchTerm: string): ElizaRecord[] => {
-    if (!enableSearch || !searchTerm.trim()) {
-      return []
-    }
-
-    const term = searchTerm.toLowerCase()
-    return allMessages.filter(msg => {
-      // Search in message content
-      if (msg.type === 'message' && 'content' in msg.content) {
-        const content = (msg.content as Message).content
-        if (typeof content.text === 'string' && content.text.toLowerCase().includes(term)) {
-          return true
-        }
-      }
-
-      // Search in parsed message intention and triplets
-      if (msg.type === 'parsed_message' && 'intention' in msg.content) {
-        const parsed = msg.content as ParsedSofiaMessage
-        
-        // Search intention
-        if (parsed.intention.toLowerCase().includes(term)) {
-          return true
-        }
-        
-        // Search triplets
-        const tripletMatch = parsed.triplets.some(triplet => 
-          triplet.subject.toLowerCase().includes(term) ||
-          triplet.predicate.toLowerCase().includes(term) ||
-          triplet.object.toLowerCase().includes(term)
-        )
-        if (tripletMatch) {
-          return true
-        }
-      }
-
-      return false
-    })
-  }, [allMessages, enableSearch])
-
-  /**
-   * Get messages in date range
-   */
-  const getMessagesInRange = useCallback((startDate: number, endDate: number): ElizaRecord[] => {
-    return allMessages.filter(msg => 
-      msg.timestamp >= startDate && msg.timestamp <= endDate
-    )
+  const getRecentMessages = useCallback((limit: number = 50) => {
+    return allMessages
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, limit)
   }, [allMessages])
+
+
 
   /**
    * Load messages on mount
@@ -236,124 +140,35 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
     loadMessages()
   }, [loadMessages])
 
-  /**
-   * Auto-refresh messages if enabled
-   */
-  useEffect(() => {
-    if (!autoRefresh || refreshInterval <= 0) {
-      return
-    }
-
-    const interval = setInterval(() => {
-      loadMessages()
-    }, refreshInterval)
-
-    return () => clearInterval(interval)
-  }, [autoRefresh, refreshInterval, loadMessages])
 
   return {
-    // Data state
-    messages,
-    parsedMessages,
     allMessages,
-    recentMessages,
-    
-    // Actions
     storeMessage,
     storeParsedMessage,
-    refreshMessages,
+    loadMessages,
     clearAllMessages,
     deleteOldMessages,
-    
-    // Filters and queries
     getMessagesByType,
-    searchMessages,
-    getMessagesInRange
+    getRecentMessages
   }
 }
 
-/**
- * Simple hook for just storing messages (write-only)
- */
 export const useElizaMessageStore = () => {
-  const [isStoring, setIsStoring] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const storeMessage = useCallback(async (message: Message, messageId?: string) => {
-    try {
-      setIsStoring(true)
-      setError(null)
-      await elizaDataService.storeMessage(message, messageId)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to store message')
-      throw err
-    } finally {
-      setIsStoring(false)
-    }
+  const storeMessage = useCallback(async (message: SofiaMessage, messageId?: string) => {
+    await elizaDataService.storeMessage(message, messageId)
   }, [])
 
   const storeParsedMessage = useCallback(async (parsedMessage: ParsedSofiaMessage, messageId?: string) => {
+    await elizaDataService.storeParsedMessage(parsedMessage, messageId)
+    
     try {
-      setIsStoring(true)
-      setError(null)
-      await elizaDataService.storeParsedMessage(parsedMessage, messageId)
-      
-      // Notify background to update badge count
-      try {
-        MessageBus.getInstance().sendMessageFireAndForget({ type: 'UPDATE_ECHO_BADGE' })
-      } catch (badgeError) {
-        console.error('❌ Failed to notify background of new triplets:', badgeError)
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to store parsed message')
-      throw err
-    } finally {
-      setIsStoring(false)
+      MessageBus.getInstance().sendMessageFireAndForget({ type: 'UPDATE_ECHO_BADGE' })
+    } catch (badgeError) {
+      console.error('❌ Failed to notify background of new triplets:', badgeError)
     }
   }, [])
 
-  return {
-    storeMessage,
-    storeParsedMessage,
-    isStoring,
-    error
-  }
-}
-
-/**
- * Hook for reading messages only (read-only, optimized)
- */
-export const useElizaMessages = (options: { 
-  type?: 'message' | 'parsed_message' | 'all'
-  limit?: number 
-  autoRefresh?: boolean 
-} = {}) => {
-  const { type = 'all', limit = 50, autoRefresh = false } = options
-  
-  const {
-    messages,
-    parsedMessages,
-    allMessages,
-    recentMessages,
-    isLoading,
-    error,
-    refreshMessages
-  } = useElizaData({ 
-    autoRefresh, 
-    maxRecentMessages: limit 
-  })
-
-  const filteredMessages = type === 'message' ? messages :
-                          type === 'parsed_message' ? parsedMessages :
-                          allMessages
-
-  return {
-    messages: filteredMessages.slice(0, limit),
-    recentMessages,
-    isLoading,
-    error,
-    refreshMessages
-  }
+  return { storeMessage, storeParsedMessage }
 }
 
 export default useElizaData
