@@ -1,5 +1,5 @@
-import { createWalletClient, custom, createPublicClient } from 'viem'
-import { SELECTED_CHAIN } from '../config/config'
+import { createWalletClient, custom, createPublicClient, http } from 'viem'
+import { SELECTED_CHAIN } from '../config/chainConfig'
 import { getMetaProvider } from '../services/metamask'
 
 export const getClients = async () => {
@@ -25,9 +25,10 @@ export const getClients = async () => {
         })
     }
 
+    // Use HTTP transport for public client to avoid MetaMask RPC issues
     const publicClient = createPublicClient({
         chain: SELECTED_CHAIN,
-        transport: custom(provider),
+        transport: http('https://testnet.rpc.intuition.systems'),
     })
 
     console.log("Clients ready.")

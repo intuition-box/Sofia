@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { elizaDataService } from '~lib/database/indexedDB-methods'
+import { MessageBus } from '~lib/services/MessageBus'
 import type { ElizaRecord } from '~lib/database/indexedDB'
 import type { ParsedSofiaMessage, Message } from '~types/messages'
 
@@ -129,7 +130,7 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
       
       // Notify background to update badge count
       try {
-        chrome.runtime.sendMessage({ type: 'UPDATE_ECHO_BADGE' })
+        MessageBus.getInstance().sendMessageFireAndForget({ type: 'UPDATE_ECHO_BADGE' })
       } catch (badgeError) {
         console.error('❌ Failed to notify background of new triplets:', badgeError)
       }
@@ -339,7 +340,7 @@ export const useElizaMessageStore = () => {
       
       // Notify background to update badge count
       try {
-        chrome.runtime.sendMessage({ type: 'UPDATE_ECHO_BADGE' })
+        MessageBus.getInstance().sendMessageFireAndForget({ type: 'UPDATE_ECHO_BADGE' })
       } catch (badgeError) {
         console.error('❌ Failed to notify background of new triplets:', badgeError)
       }

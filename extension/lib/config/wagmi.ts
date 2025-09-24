@@ -4,7 +4,7 @@ import type { Config } from 'wagmi'
 import { http } from 'viem'
 
 
-import { intuitionTestnet } from './config'
+import { intuitionTestnet } from './chainConfig'
 
 
 export const wagmiConfig: Config = createConfig({

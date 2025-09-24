@@ -8,7 +8,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 
 export interface IntuitionTriplet {
-  blockNumber: ReactNode
+  blockNumber: number
   id: string
   triplet: {
     subject: string

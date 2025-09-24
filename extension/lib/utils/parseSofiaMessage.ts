@@ -17,7 +17,8 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
     const parsedTriplets: Triplet[] = (jsonData.triplets || []).map((t: any) => ({
       subject: typeof t.subject === 'string' ? t.subject : (t.subject?.name || 'Unknown'),
       predicate: typeof t.predicate === 'string' ? t.predicate : (t.predicate?.name || 'did something'), 
-      object: typeof t.object === 'string' ? t.object : (t.object?.name || 'Unknown')
+      object: typeof t.object === 'string' ? t.object : (t.object?.name || 'Unknown'),
+      objectUrl: t.object?.url || ''
     }))
 
     // Extract URL and description from first triplet object for atom creation

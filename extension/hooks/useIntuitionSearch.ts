@@ -117,8 +117,8 @@ export function useIntuitionSearch() {
           description: extractDescription(atom.label),
           url: extractUrl(atom.label),
           email: extractEmail(atom.label),
-          attestations: Math.floor(Math.random() * 1000) + 100, // Score simulé pour l'instant
-          stake: Math.floor(Math.random() * 500) + 50, // Stake simulé pour l'instant
+          attestations: 0, // TODO: Récupérer les vraies données d'attestation
+          stake: 0, // TODO: Récupérer les vraies données de stake
           type: determineType(atom.label, atom.type),
           auditedBy: 'Intuition Network',
           relatedTriples: [], // Pas de triples liés pour simplifier
@@ -128,8 +128,10 @@ export function useIntuitionSearch() {
 
       setState(prev => ({ ...prev, isLoading: false }))
       
-      // Trier par score
-      return results.sort((a, b) => b.attestations - a.attestations)
+      // Trier par date de création (plus récent en premier) 
+      return results.sort((a, b) => 
+        new Date(b.rawData.created_at || 0).getTime() - new Date(a.rawData.created_at || 0).getTime()
+      )
 
     } catch (error) {
       console.error('❌ Intuition search failed:', error)
