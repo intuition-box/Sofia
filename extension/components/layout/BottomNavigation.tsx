@@ -37,6 +37,17 @@ const BottomNavigation = () => {
         />
         <span className="nav-text">Resonance</span>
       </button>
+      <button
+        onClick={() => currentPage === 'profile' ? navigateTo('home-connected') : navigateTo('profile')}
+        className={`nav-button ${currentPage === 'profile' ? 'active' : ''}`}
+      >
+        <img
+          src={personIcon}
+          alt="Profile"
+          className="nav-icon"
+        />
+        <span className="nav-text">Profile</span>
+      </button>
       <button 
         onClick={() => currentPage === 'settings' ? navigateTo('home-connected') : navigateTo('settings')}
         className={`nav-button ${currentPage === 'settings' ? 'active' : ''}`}
