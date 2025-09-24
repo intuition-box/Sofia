@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
-import logoIcon from '../../assets/icon.png'
+import logoIcon from '../../components/ui/icons/chatIcon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 
@@ -44,11 +44,6 @@ const ResonancePage = () => {
             onKeyDown={handleKeyDown}
           />
         </div>
-
-        <div className="search-hint">
-          Press Enter to search • {isReady ? 'Ready' : 'Initializing...'}
-        </div>
-
         <div className="empty-state">
           <p>🔍 Search Intuition Network</p>
           <p className="empty-subtext">

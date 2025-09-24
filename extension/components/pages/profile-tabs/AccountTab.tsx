@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import searchIcon from '../../ui/icons/Icon=Search.svg'
-import connectButtonOn from '../../ui/icons/connectButtonOn.svg'
-import connectButtonOff from '../../ui/icons/connectButtonOff.svg'
-import { useGetatomaccount, AccountAtom } from '../../../hooks/useGetatomaccount'
+import youtubeIcon from '../../ui/social/youtube.svg'
+import spotifyIcon from '../../ui/social/spotify.svg'
+import twitchIcon from '../../ui/social/twitch.svg'
+import { useGetAtomAccount, AccountAtom } from '../../../hooks/useGetAtomAccount'
 import '../../styles/AccountTab.css'
 
 const AccountTab = () => {
@@ -11,7 +12,7 @@ const AccountTab = () => {
   const [showResults, setShowResults] = useState(false)
 
   // Use the account atoms hook
-  const { accounts, isLoading, error, searchAccounts } = useGetatomaccount()
+  const { accounts, searchAccounts } = useGetAtomAccount()
 
   // OAuth connection states
   const [oauthTokens, setOauthTokens] = useState({
@@ -51,19 +52,48 @@ const AccountTab = () => {
 
   // Handle search input changes
   useEffect(() => {
-    if (searchQuery.trim()) {
-      const results = searchAccounts(searchQuery)
-      setSearchResults(results)
-      setShowResults(true)
-    } else {
-      setSearchResults([])
-      setShowResults(false)
+    const performAutoSearch = async () => {
+      if (searchQuery.trim()) {
+        const results = await searchAccounts(searchQuery)
+        setSearchResults(results)
+        setShowResults(true)
+      } else {
+        setSearchResults([])
+        setShowResults(false)
+      }
     }
+
+    performAutoSearch()
   }, [searchQuery, searchAccounts])
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
+  }
+
+  // Handle Enter key press to trigger search
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      performSearch()
+    }
+  }
+
+  // Perform search when Enter is pressed
+  const performSearch = async () => {
+    if (searchQuery.trim()) {
+      console.log('🔍 Search triggered for:', searchQuery)
+      console.log(`📊 Searching in ${accounts.length} total accounts`)
+      const results = await searchAccounts(searchQuery)
+      console.log('🔍 AccountTab - Search results:', results)
+      setSearchResults(results)
+      setShowResults(true)
+
+      // If only one result, auto-select it
+      if (results.length === 1) {
+        handleAccountSelect(results[0])
+      }
+    }
   }
 
   // Handle account selection
@@ -94,12 +124,13 @@ const AccountTab = () => {
         <button
           className="connect-button"
           onClick={() => oauthTokens.youtube ? disconnectOAuth('youtube') : connectOAuth('youtube')}
-          style={{
-            backgroundImage: `url(${oauthTokens.youtube ? connectButtonOn : connectButtonOff})`
-          }}
         >
           <div className="platform-icon youtube-icon">
-            YT
+            <img
+              src={youtubeIcon}
+              alt="YouTube"
+              className={oauthTokens.youtube ? 'platform-icon-connected' : 'platform-icon-disconnected'}
+            />
           </div>
           <span className="connect-button-text">
             {oauthTokens.youtube ? 'Disconnect YouTube' : 'Connect YouTube'}
@@ -109,12 +140,13 @@ const AccountTab = () => {
         <button
           className="connect-button"
           onClick={() => oauthTokens.spotify ? disconnectOAuth('spotify') : connectOAuth('spotify')}
-          style={{
-            backgroundImage: `url(${oauthTokens.spotify ? connectButtonOn : connectButtonOff})`
-          }}
         >
           <div className="platform-icon spotify-icon">
-            ♪
+            <img
+              src={spotifyIcon}
+              alt="Spotify"
+              className={oauthTokens.spotify ? 'platform-icon-connected' : 'platform-icon-disconnected'}
+            />
           </div>
           <span className="connect-button-text">
             {oauthTokens.spotify ? 'Disconnect Spotify' : 'Connect Spotify'}
@@ -124,12 +156,13 @@ const AccountTab = () => {
         <button
           className="connect-button"
           onClick={() => oauthTokens.twitch ? disconnectOAuth('twitch') : connectOAuth('twitch')}
-          style={{
-            backgroundImage: `url(${oauthTokens.twitch ? connectButtonOn : connectButtonOff})`
-          }}
         >
           <div className="platform-icon twitch-icon">
-            TV
+            <img
+              src={twitchIcon}
+              alt="Twitch"
+              className={oauthTokens.twitch ? 'platform-icon-connected' : 'platform-icon-disconnected'}
+            />
           </div>
           <span className="connect-button-text">
             {oauthTokens.twitch ? 'Disconnect Twitch' : 'Connect Twitch'}
@@ -147,23 +180,10 @@ const AccountTab = () => {
             placeholder="Search accounts..."
             value={searchQuery}
             onChange={handleSearchChange}
+            onKeyDown={handleKeyDown}
             className="alias-input search-input-with-icon"
           />
           <img src={searchIcon} alt="Search" className="search-icon" />
-
-          {/* Loading indicator */}
-          {isLoading && (
-            <div className="search-loading">
-              Loading accounts...
-            </div>
-          )}
-
-          {/* Error message */}
-          {error && (
-            <div className="search-error">
-              {error}
-            </div>
-          )}
 
           {/* Search Results Dropdown */}
           {showResults && searchResults.length > 0 && (
@@ -180,11 +200,6 @@ const AccountTab = () => {
                       {account.termId && (
                         <span className="account-id">ID: {account.termId.slice(0, 8)}...</span>
                       )}
-                      {account.createdAt && (
-                        <span className="account-date">
-                          Created: {new Date(account.createdAt).toLocaleDateString()}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -195,13 +210,6 @@ const AccountTab = () => {
                   +{searchResults.length - 10} more results
                 </div>
               )}
-            </div>
-          )}
-
-          {/* No results message */}
-          {showResults && searchQuery.trim() && searchResults.length === 0 && !isLoading && (
-            <div className="search-no-results">
-              No accounts found for "{searchQuery}"
             </div>
           )}
         </div>

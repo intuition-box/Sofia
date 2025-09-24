@@ -26,13 +26,6 @@ const ProfilePage = () => {
 
   return (
     <div className="page profile-page">
-      <div className="page-header">
-        <button onClick={goBack} className="back-button">
-          ← Back to Home
-        </button>
-        <h1 className="section-title">Profile</h1>
-      </div>
-
       <div className="tabs">
         <button
           className={`tab ${activeTab === 'account' ? 'active' : ''}`}

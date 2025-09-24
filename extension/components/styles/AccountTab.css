@@ -1,8 +1,15 @@
+.action-buttons-container {
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
 .connect-button {
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  border: none;
+  border: 1px solid #ccc;
   width: 271px;
   height: 67px;
   display: flex;
@@ -10,8 +17,9 @@
   justify-content: center;
   padding: 0 var(--spacing-xl);
   cursor: pointer;
-  background-color: transparent;
+  background: linear-gradient(135deg, #c7866c1a 0%,#c7866c0d 10%,#ffffff0d 50%);
   margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-md);
 }
 
 .platform-icon {
@@ -45,6 +53,30 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-base);
   font-weight: 500;
+}
+
+.platform-icon-connected {
+  width: 20px;
+  height: 20px;
+}
+
+.platform-icon-disconnected {
+  width: 20px;
+  height: 20px;
+  filter: grayscale(100%);
+}
+
+/* Specific connected filters for each platform */
+.youtube-icon .platform-icon-connected {
+  filter: brightness(0) saturate(100%) invert(12%) sepia(95%) hue-rotate(3deg) brightness(95%) contrast(118%);
+}
+
+.spotify-icon .platform-icon-connected {
+  filter: brightness(0) saturate(100%) invert(52%) sepia(98%) hue-rotate(91deg) brightness(94%) contrast(87%);
+}
+
+.twitch-icon .platform-icon-connected {
+  filter: brightness(0) saturate(100%) invert(37%) sepia(89%) hue-rotate(249deg) brightness(103%) contrast(102%);
 }
 
 .search-icon {
