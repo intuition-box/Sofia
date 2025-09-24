@@ -40,11 +40,18 @@ export const useCreateTripleOnChain = () => {
   const executeTransaction = async (txParams: ContractWriteParams): Promise<Hash> => {
     const canUseSession = shouldUseSessionWallet(txParams.value || 0n)
     
+    // Ensure proper Address typing for viem
+    const viemParams = {
+      ...txParams,
+      address: txParams.address as Address,
+      account: txParams.account as Address
+    }
+    
     if (canUseSession) {
-      return await sessionWallet.executeTransaction(txParams)
+      return await sessionWallet.executeTransaction(viemParams) as Hash
     } else {
       const { walletClient } = await getClients()
-      return await walletClient.writeContract(txParams)
+      return await walletClient.writeContract(viemParams)
     }
   }
 
@@ -64,7 +71,8 @@ export const useCreateTripleOnChain = () => {
       const userAtomResult = await createAtomWithMultivault({
         name: address,
         description: `User atom for wallet ${address}`,
-        url: `https://etherscan.io/address/${address}`
+        url: `https://etherscan.io/address/${address}`,
+        type :"account"
       })
       
       const userAtom = {
@@ -111,7 +119,7 @@ export const useCreateTripleOnChain = () => {
         const objectId = objectAtom.vaultId as Address
         
         const txParams = {
-          address: contractAddress as Address,
+          address: contractAddress,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'createTriples',
           args: [
@@ -124,7 +132,8 @@ export const useCreateTripleOnChain = () => {
           chain: SELECTED_CHAIN,
           gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address
         }
 
         const hash = await executeTransaction(txParams)
@@ -187,7 +196,7 @@ export const useCreateTripleOnChain = () => {
         name: address,
         description: `User atom for wallet ${address}`,
         url: `https://etherscan.io/address/${address}`,
-        type: 'user'
+        type: 'account'
       })
 
       // Collect unique predicates and objects
@@ -205,7 +214,7 @@ export const useCreateTripleOnChain = () => {
           name: input.objectData.name,
           description: input.objectData.description,
           url: input.objectData.url,
-          type: 'object'
+          type: 'thing'
         })
       }
 
@@ -281,7 +290,7 @@ export const useCreateTripleOnChain = () => {
           chain: SELECTED_CHAIN,
           maxFeePerGas: 50000000000n,
           maxPriorityFeePerGas: 10000000000n,
-          account: address as Address
+          account: address
         }
 
         const hash = await executeTransaction(atomsTxParams)
@@ -393,7 +402,7 @@ export const useCreateTripleOnChain = () => {
           gas: 2000000n,
           maxFeePerGas: 50000000000n,
           maxPriorityFeePerGas: 10000000000n,
-          account: address as Address
+          account: address
         }
 
         const hash = await executeTransaction(batchTxParams)

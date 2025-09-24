@@ -19,7 +19,7 @@ export interface TransactionRequest {
 }
 
 export interface ContractWriteParams {
-  address: Address
+  address: Address | string
   abi: any[]
   functionName: string
   args: any[]
@@ -28,7 +28,7 @@ export interface ContractWriteParams {
   maxFeePerGas: bigint
   maxPriorityFeePerGas: bigint
   chain: any
-  account?: Address
+  account: Address | string
 }
 
 export interface ContractReadParams {

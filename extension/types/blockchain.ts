@@ -16,6 +16,7 @@ export interface AtomIPFSData {
   description?: string
   url: string
   image?: any
+  type?: string
 }
 
 export interface AtomCheckResult {
@@ -57,7 +58,7 @@ export interface BatchTripleResult extends BlockchainResult {
 }
 
 // Export legacy types for compatibility
-export type { AtomIPFSData as AtomIPFSData }
+
 
 // Contract types
 export interface ContractConfig {
