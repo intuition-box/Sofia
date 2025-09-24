@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { getClients } from '../lib/clients/viemClients'
 import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
@@ -19,8 +18,7 @@ export const useCreateTripleOnChain = () => {
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   
-  const [isCreating, setIsCreating] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+  // State management removed - let components handle loading/error states
 
   // Helper function to determine which wallet to use
   const shouldUseSessionWallet = (transactionValue: bigint): boolean => {
@@ -57,8 +55,6 @@ export const useCreateTripleOnChain = () => {
     objectData: { name: string; description?: string; url: string },
     customWeight?: bigint // Optional custom weight/value for the triple
   ): Promise<TripleOnChainResult> => {
-    setIsCreating(true)
-    setError(null)
     
     try {
       if (!address) {
@@ -168,18 +164,12 @@ export const useCreateTripleOnChain = () => {
     } catch (error) {
       logger.error('Triple creation failed', error)
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
-      setError(new Error(`${ERROR_MESSAGES.TRIPLE_CREATION_FAILED}: ${errorMessage}`))
-      throw error
-    } finally {
-      setIsCreating(false)
+      throw new Error(`${ERROR_MESSAGES.TRIPLE_CREATION_FAILED}: ${errorMessage}`)
     }
   }
 
 
   const createTriplesBatch = async (inputs: BatchTripleInput[]): Promise<BatchTripleResult> => {
-    setIsCreating(true)
-    setError(null)
-    
     try {
       if (!address) {
         throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
@@ -367,17 +357,12 @@ export const useCreateTripleOnChain = () => {
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      setError(new Error(`Batch creation failed: ${errorMessage}`))
-      throw error
-    } finally {
-      setIsCreating(false)
+      throw new Error(`Batch creation failed: ${errorMessage}`)
     }
   }
 
   return { 
     createTripleOnChain,
-    createTriplesBatch,
-    isCreating, 
-    error
+    createTriplesBatch
   }
 }

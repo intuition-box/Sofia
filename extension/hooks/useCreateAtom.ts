@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/clients/viemClients'
 import { stringToHex } from 'viem'
@@ -15,13 +14,9 @@ const logger = createHookLogger('useCreateAtom')
 export const useCreateAtom = () => {
   const { mutateAsync: pinThing } = usePinThingMutation()
   const [address] = useStorage<string>("metamask-account")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+  // State management removed - let components handle loading/error states
 
   const createAtomDirect = async (atomData: AtomIPFSData): Promise<AtomCreationResult> => {
-    setIsLoading(true)
-    setError(null)
-    
     try {
       logger.debug('Creating atom V2', { name: atomData.name })
       
@@ -134,16 +129,11 @@ export const useCreateAtom = () => {
     } catch (error) {
       logger.error('Atom creation failed', error)
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
-      setError(new Error(`${ERROR_MESSAGES.ATOM_CREATION_FAILED}: ${errorMessage}`))
       throw new Error(`${ERROR_MESSAGES.ATOM_CREATION_FAILED}: ${errorMessage}`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return { 
-    createAtomWithMultivault: createAtomDirect,
-    isLoading, 
-    error 
+    createAtomWithMultivault: createAtomDirect
   }
 }

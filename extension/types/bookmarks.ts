@@ -24,8 +24,6 @@ export interface BookmarkedTriplet {
 export interface UseBookmarksResult {
   lists: BookmarkList[]
   triplets: BookmarkedTriplet[]
-  isLoading: boolean
-  error: string | null
   
   // Gestion des listes
   createList: (name: string, description?: string) => Promise<string>

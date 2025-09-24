@@ -17,11 +17,6 @@ interface UseElizaDataResult {
   allMessages: ElizaRecord[]
   recentMessages: ElizaRecord[]
   
-  // Loading states
-  isLoading: boolean
-  isStoring: boolean
-  error: string | null
-  
   // Actions
   storeMessage: (message: Message, messageId?: string) => Promise<void>
   storeParsedMessage: (parsedMessage: ParsedSofiaMessage, messageId?: string) => Promise<void>
@@ -58,18 +53,12 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
   const [parsedMessages, setParsedMessages] = useState<ElizaRecord[]>([])
   const [allMessages, setAllMessages] = useState<ElizaRecord[]>([])
   const [recentMessages, setRecentMessages] = useState<ElizaRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isStoring, setIsStoring] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   /**
    * Load all messages from IndexedDB
    */
   const loadMessages = useCallback(async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-
       // Load all messages
       const allElizaMessages = await elizaDataService.getAllMessages()
       setAllMessages(allElizaMessages)
@@ -85,12 +74,9 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
       const recent = await elizaDataService.getRecentMessages(maxRecentMessages)
       setRecentMessages(recent)
 
-
     } catch (err) {
       console.error('❌ Error loading Eliza messages:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load messages')
-    } finally {
-      setIsLoading(false)
+      throw new Error(err instanceof Error ? err.message : 'Failed to load messages')
     }
   }, [maxRecentMessages])
 
@@ -99,9 +85,6 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
    */
   const storeMessage = useCallback(async (message: Message, messageId?: string) => {
     try {
-      setIsStoring(true)
-      setError(null)
-
       // Store the raw message (elizaDataService handles auto-parsing)
       await elizaDataService.storeMessage(message, messageId)
       
@@ -112,9 +95,7 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
 
     } catch (err) {
       console.error('❌ Error storing message:', err)
-      setError(err instanceof Error ? err.message : 'Failed to store message')
-    } finally {
-      setIsStoring(false)
+      throw new Error(err instanceof Error ? err.message : 'Failed to store message')
     }
   }, [loadMessages])
 
@@ -123,9 +104,6 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
    */
   const storeParsedMessage = useCallback(async (parsedMessage: ParsedSofiaMessage, messageId?: string) => {
     try {
-      setIsStoring(true)
-      setError(null)
-
       await elizaDataService.storeParsedMessage(parsedMessage, messageId)
       
       // Notify background to update badge count
@@ -142,9 +120,7 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
 
     } catch (err) {
       console.error('❌ Error storing parsed message:', err)
-      setError(err instanceof Error ? err.message : 'Failed to store parsed message')
-    } finally {
-      setIsStoring(false)
+      throw new Error(err instanceof Error ? err.message : 'Failed to store parsed message')
     }
   }, [loadMessages])
 
@@ -160,9 +136,6 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
    */
   const clearAllMessages = useCallback(async () => {
     try {
-      setIsStoring(true)
-      setError(null)
-
       await elizaDataService.clearAll()
       
       // Clear local state
@@ -175,9 +148,7 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
 
     } catch (err) {
       console.error('❌ Error clearing messages:', err)
-      setError(err instanceof Error ? err.message : 'Failed to clear messages')
-    } finally {
-      setIsStoring(false)
+      throw new Error(err instanceof Error ? err.message : 'Failed to clear messages')
     }
   }, [])
 
@@ -186,9 +157,6 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
    */
   const deleteOldMessages = useCallback(async (daysToKeep: number = 30): Promise<number> => {
     try {
-      setIsStoring(true)
-      setError(null)
-
       const deletedCount = await elizaDataService.deleteOldMessages(daysToKeep)
       
       // Refresh data after cleanup
@@ -199,10 +167,7 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
 
     } catch (err) {
       console.error('❌ Error deleting old messages:', err)
-      setError(err instanceof Error ? err.message : 'Failed to delete old messages')
-      return 0
-    } finally {
-      setIsStoring(false)
+      throw new Error(err instanceof Error ? err.message : 'Failed to delete old messages')
     }
   }, [loadMessages])
 
@@ -292,11 +257,6 @@ export const useElizaData = (options: UseElizaDataOptions = {}): UseElizaDataRes
     parsedMessages,
     allMessages,
     recentMessages,
-    
-    // Loading states
-    isLoading,
-    isStoring,
-    error,
     
     // Actions
     storeMessage,

@@ -6,13 +6,9 @@ import type { Triplet } from '../../extension/types/messages'
 export const useBookmarks = (): UseBookmarksResult => {
   const [lists, setLists] = useState<BookmarkList[]>([])
   const [triplets, setTriplets] = useState<BookmarkedTriplet[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // State management removed - let components handle loading/error states
 
   const refreshFromLocal = async (): Promise<void> => {
-    setIsLoading(true)
-    setError(null)
-
     try {
       console.log('🔄 [useBookmarks] Loading bookmarks from IndexedDB...')
       
@@ -29,11 +25,9 @@ export const useBookmarks = (): UseBookmarksResult => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
       console.error('❌ [useBookmarks] Error loading bookmarks:', err)
-      setError(`Failed to load bookmarks: ${errorMessage}`)
       setLists([])
       setTriplets([])
-    } finally {
-      setIsLoading(false)
+      throw new Error(`Failed to load bookmarks: ${errorMessage}`)
     }
   }
 
@@ -51,7 +45,6 @@ export const useBookmarks = (): UseBookmarksResult => {
       return listId
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
@@ -64,7 +57,6 @@ export const useBookmarks = (): UseBookmarksResult => {
       setTriplets(prev => prev.filter(triplet => !prev.find(l => l.id === listId)?.tripletIds.includes(triplet.id)))
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
@@ -81,7 +73,6 @@ export const useBookmarks = (): UseBookmarksResult => {
       ))
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
@@ -101,7 +92,6 @@ export const useBookmarks = (): UseBookmarksResult => {
       ))
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to add triplet to list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
@@ -116,7 +106,6 @@ export const useBookmarks = (): UseBookmarksResult => {
       ))
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to remove triplet from list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
@@ -145,8 +134,6 @@ export const useBookmarks = (): UseBookmarksResult => {
   return {
     lists,
     triplets,
-    isLoading,
-    error,
     createList,
     deleteList,
     updateList,
