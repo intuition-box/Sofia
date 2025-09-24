@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
+import type { GraphQLAtomsResponse, IntuitionAtomResponse } from '../types/intuition'
 
 export interface AtomSearchResult {
   id: string
@@ -13,7 +14,7 @@ export interface AtomSearchResult {
   auditedBy?: string
   consensys?: string
   relatedTriples: TripleResult[]
-  rawData: any
+  rawData: IntuitionAtomResponse
 }
 
 export interface TripleResult {
@@ -45,11 +46,11 @@ export function useIntuitionSearch() {
 
     const response = await intuitionGraphqlClient.request(atomsQuery, {
       query: `%${query}%`
-    })
+    }) as GraphQLAtomsResponse
     
     if (!response?.atoms) return []
 
-    return response.atoms.map((atom: any) => ({
+    return response.atoms.map((atom: IntuitionAtomResponse) => ({
       id: atom.term_id,
       label: atom.label || 'Unnamed',
       description: `Atom: ${atom.label}`,

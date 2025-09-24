@@ -3,6 +3,8 @@ import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
 import { useStorage } from "@plasmohq/storage/hook"
+import { usePinThingMutation } from "@0xintuition/graphql"
+import { stringToHex } from 'viem'
 import { sessionWallet } from '../lib/services/sessionWallet'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
@@ -15,6 +17,7 @@ const logger = createHookLogger('useCreateTripleOnChain')
 
 export const useCreateTripleOnChain = () => {
   const { createAtomWithMultivault } = useCreateAtom()
+  const { mutateAsync: pinThing } = usePinThingMutation()
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   
@@ -205,27 +208,75 @@ export const useCreateTripleOnChain = () => {
         })
       }
 
-      const atomResults = new Map<string, string>() // key -> vaultId
+      const atomResults = new Map<string, string>() // key -> atomHash
+      const atomsToCreate: { key: string; ipfsUri: string; atomHash: string }[] = []
 
-      // Create each atom using the centralized service
+      // Check each atom and prepare those that need creation
       for (const [key, atomData] of uniqueAtoms) {
         try {
-          logger.debug('Creating atom using centralized service', { key, name: atomData.name })
-          
-          const atomResult = await createAtomWithMultivault({
+          // Pin to IPFS first
+          const result = await pinThing({
             name: atomData.name,
             description: atomData.description || "Contenu visité par l'utilisateur.",
-            url: atomData.url,
-            type: atomData.type
+            image: "",
+            url: atomData.url
           })
+
+          if (!result.pinThing?.uri) {
+            throw new Error(`Failed to pin atom metadata for ${atomData.name}`)
+          }
+
+          const ipfsUri = result.pinThing.uri
           
-          atomResults.set(key, atomResult.vaultId)
-          logger.debug('Atom created successfully', { key, vaultId: atomResult.vaultId })
+          // Check if atom already exists
+          const atomCheck = await BlockchainService.checkAtomExists(ipfsUri)
           
+          if (atomCheck.exists) {
+            atomResults.set(key, atomCheck.atomHash)
+            logger.debug('Atom already exists', { key, atomHash: atomCheck.atomHash })
+          } else {
+            atomsToCreate.push({ key, ipfsUri, atomHash: atomCheck.atomHash })
+            logger.debug('Atom needs creation', { key, atomHash: atomCheck.atomHash })
+          }
         } catch (error) {
-          logger.error('Failed to create atom', { name: atomData.name, error })
-          throw new Error(`Failed to create required atom: ${atomData.name}`)
+          logger.error('Failed to prepare atom', { name: atomData.name, error })
+          throw new Error(`Failed to prepare required atom: ${atomData.name}`)
         }
+      }
+
+      // Create missing atoms in batch if needed
+      if (atomsToCreate.length > 0) {
+        logger.debug('Creating atoms in batch', { count: atomsToCreate.length })
+        
+        const atomCost = await BlockchainService.getAtomCost()
+        const encodedDataArray = atomsToCreate.map(atom => stringToHex(atom.ipfsUri))
+        const atomCostsArray = atomsToCreate.map(() => atomCost)
+        const totalValue = atomCost * BigInt(atomsToCreate.length)
+
+        const txHash = await executeTransaction({
+          address: BlockchainService.getContractAddress(),
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'createAtoms',
+          args: [encodedDataArray, atomCostsArray],
+          value: totalValue,
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS * BigInt(atomsToCreate.length),
+          account: address
+        })
+
+        // Wait for confirmation
+        const { publicClient } = await getClients()
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+        
+        if (receipt.status !== 'success') {
+          throw new Error(`Atom batch creation failed: ${receipt.status}`)
+        }
+
+        // Store the atom hashes for created atoms
+        for (const atom of atomsToCreate) {
+          atomResults.set(atom.key, atom.atomHash)
+        }
+        
+        logger.debug('Batch atom creation completed', { txHash })
       }
 
       const results: TripleOnChainResult[] = []

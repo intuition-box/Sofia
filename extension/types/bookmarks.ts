@@ -25,17 +25,12 @@ export interface UseBookmarksResult {
   lists: BookmarkList[]
   triplets: BookmarkedTriplet[]
   
-  // Gestion des listes
   createList: (name: string, description?: string) => Promise<string>
-  deleteList: (listId: string) => Promise<void>
-  updateList: (listId: string, updates: Partial<Pick<BookmarkList, 'name' | 'description'>>) => Promise<void>
-  
-  // Gestion des triplets dans les listes
-  addTripletToList: (listId: string, triplet: Triplet, sourceInfo: Pick<BookmarkedTriplet, 'sourceType' | 'sourceId' | 'url' | 'description' | 'sourceMessageId'>) => Promise<void>
-  removeTripletFromList: (listId: string, tripletId: string) => Promise<void>
-  
-  // Utilitaires
+  deleteList: (listId: string) => Promise<boolean>
+  updateList: (listId: string, updates: Partial<Pick<BookmarkList, 'name' | 'description'>>) => Promise<BookmarkList>
+  addTripletToList: (listId: string, triplet: Triplet, sourceInfo: Pick<BookmarkedTriplet, 'sourceType' | 'sourceId' | 'url' | 'description' | 'sourceMessageId'>) => Promise<BookmarkedTriplet>
+  removeTripletFromList: (listId: string, tripletId: string) => Promise<boolean>
   getTripletsByList: (listId: string) => BookmarkedTriplet[]
   searchTriplets: (query: string) => BookmarkedTriplet[]
-  refreshFromLocal: () => Promise<void>
+  refreshFromLocal: () => Promise<{ lists: BookmarkList[], triplets: BookmarkedTriplet[] }>
 }

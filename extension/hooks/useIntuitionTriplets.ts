@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
+import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../types/intuition'
 
 export interface IntuitionTriplet {
   blockNumber: number
@@ -32,7 +33,7 @@ export interface IntuitionTriplet {
 
 interface UseIntuitionTripletsResult {
   triplets: IntuitionTriplet[]
-  refreshFromAPI: () => Promise<void>
+  refreshFromAPI: () => Promise<IntuitionTriplet[]>
 }
 
 /**
@@ -43,10 +44,10 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
   const [triplets, setTriplets] = useState<IntuitionTriplet[]>([])
   const [account] = useStorage<string>("metamask-account")
 
-  const refreshFromAPI = useCallback(async (): Promise<void> => {
+  const refreshFromAPI = useCallback(async (): Promise<IntuitionTriplet[]> => {
     if (!account) {
       setTriplets([])
-      return
+      return []
     }
 
     const triplesQuery = `
@@ -66,14 +67,14 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     
     const response = await intuitionGraphqlClient.request(triplesQuery, {
       walletAddress: account
-    })
+    }) as GraphQLTriplesResponse
     
     if (!response?.triples) {
       setTriplets([])
-      return
+      return []
     }
 
-    const mappedTriplets: IntuitionTriplet[] = response.triples.map((triple: any) => ({
+    const mappedTriplets: IntuitionTriplet[] = response.triples.map((triple: IntuitionTripleResponse) => ({
       id: triple.term_id,
       triplet: {
         subject: triple.subject.label || 'Unknown',
@@ -86,6 +87,7 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     }))
 
     setTriplets(mappedTriplets)
+    return mappedTriplets
   }, [account])
 
   useEffect(() => {

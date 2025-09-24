@@ -5,11 +5,7 @@
 
 import { useState, useCallback } from 'react'
 import { MessageBus } from '~lib/services/MessageBus'
-
-interface EchoTriplet {
-  id: string
-  status: 'available' | 'published'
-}
+import type { EchoTriplet, UseEchoSelectionProps } from '../types/hooks'
 
 interface UseEchoSelectionResult {
   // Selection state
@@ -21,18 +17,9 @@ interface UseEchoSelectionResult {
   toggleSelectAll: () => void
   clearSelection: () => void
   selectMultiple: (echoIds: string[]) => void
-  deleteSelected: () => Promise<void>
+  deleteSelected: () => Promise<{ deletedCount: number, remainingTriplets: EchoTriplet[] }>
 }
 
-interface UseEchoSelectionProps {
-  availableEchoes: EchoTriplet[]
-  echoTriplets: any[]
-  setEchoTriplets: (triplets: any[]) => void
-  refreshMessages: () => Promise<void>
-  elizaDataService: any
-  sofiaDB: any
-  STORES: any
-}
 
 export const useEchoSelection = ({
   availableEchoes,
@@ -83,23 +70,21 @@ export const useEchoSelection = ({
     setIsSelectAll(echoIds.length === availableEchoes.length)
   }, [availableEchoes.length])
 
-  const deleteSelected = useCallback(async () => {
-    if (selectedEchoes.size === 0) return
+  const deleteSelected = useCallback(async (): Promise<{ deletedCount: number, remainingTriplets: EchoTriplet[] }> => {
+    if (selectedEchoes.size === 0) {
+      return { deletedCount: 0, remainingTriplets: echoTriplets }
+    }
     
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
     const messageIdsToDelete = new Set<string>()
     
-    // Collect unique message IDs to delete
     selectedTriplets.forEach(triplet => {
       const messageId = triplet.sourceMessageId
       messageIdsToDelete.add(messageId)
     })
     
     try {
-      // Get all messages first 
       const messages = await elizaDataService.getAllMessages()
-      
-      // Prepare all delete operations in parallel
       const deleteOperations = []
       const messagesToDelete = []
       
@@ -111,32 +96,27 @@ export const useEchoSelection = ({
         }
       }
       
-      // Execute all database deletions in parallel
       await Promise.all(deleteOperations)
-      console.log(`🗑️ Deleted ${messagesToDelete.length} messages from IndexedDB`)
       
-      // Update local display only after database operations succeed
       const updatedTriplets = echoTriplets.filter(t => !selectedEchoes.has(t.id))
       setEchoTriplets(updatedTriplets)
       
-      // Clear selection
       setSelectedEchoes(new Set())
       setIsSelectAll(false)
       
-      // Refresh messages to ensure consistency (after local updates)
       await refreshMessages()
       
-      // Notify background to update badge count after deletion
       try {
         MessageBus.getInstance().sendMessageFireAndForget({ type: 'TRIPLETS_DELETED' })
-        console.log('📤 Notified background of triplet deletion')
       } catch (error) {
         console.error('❌ Failed to notify background of triplet deletion:', error)
       }
       
+      return { deletedCount: messagesToDelete.length, remainingTriplets: updatedTriplets }
+      
     } catch (error) {
       console.error('❌ Failed to delete selected messages:', error)
-      // Don't update local state if database operations failed
+      throw new Error('Failed to delete selected triplets')
     }
   }, [selectedEchoes, echoTriplets, setEchoTriplets, refreshMessages, elizaDataService, sofiaDB, STORES])
 

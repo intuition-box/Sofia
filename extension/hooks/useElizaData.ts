@@ -12,12 +12,11 @@ import type { ParsedSofiaMessage, SofiaMessage } from '~types/messages'
 
 interface UseElizaDataResult {
   allMessages: ElizaRecord[]
-  storeMessage: (message: SofiaMessage, messageId?: string) => Promise<void>
-  storeParsedMessage: (parsedMessage: ParsedSofiaMessage, messageId?: string) => Promise<void>
-  loadMessages: () => Promise<void>
-  clearAllMessages: () => Promise<void>
+  storeMessage: (message: SofiaMessage, messageId?: string) => Promise<ElizaRecord | null>
+  storeParsedMessage: (parsedMessage: ParsedSofiaMessage, messageId?: string) => Promise<ElizaRecord>
+  loadMessages: () => Promise<ElizaRecord[]>
+  clearAllMessages: () => Promise<boolean>
   deleteOldMessages: (daysToKeep?: number) => Promise<number>
-  getMessagesByType: (type: 'message' | 'parsed_message' | 'triplet') => ElizaRecord[]
   getRecentMessages: (limit?: number) => ElizaRecord[]
 }
 
@@ -33,10 +32,11 @@ export const useElizaData = (): UseElizaDataResult => {
   /**
    * Load all messages from IndexedDB
    */
-  const loadMessages = useCallback(async () => {
+  const loadMessages = useCallback(async (): Promise<ElizaRecord[]> => {
     try {
       const allElizaMessages = await elizaDataService.getAllMessages()
       setAllMessages(allElizaMessages)
+      return allElizaMessages
     } catch (err) {
       console.error('❌ Error loading Eliza messages:', err)
       throw new Error(err instanceof Error ? err.message : 'Failed to load messages')
@@ -46,16 +46,24 @@ export const useElizaData = (): UseElizaDataResult => {
   /**
    * Store a regular message from Eliza (auto-parsing handled by elizaDataService)
    */
-  const storeMessage = useCallback(async (message: SofiaMessage, messageId?: string) => {
+  const storeMessage = useCallback(async (message: SofiaMessage, messageId?: string): Promise<ElizaRecord | null> => {
     try {
-      // Store the raw message (elizaDataService handles auto-parsing)
-      await elizaDataService.storeMessage(message, messageId)
+      const recordId = await elizaDataService.storeMessage(message, messageId)
       
-      // Refresh data after storing
-      await loadMessages()
+      // If recordId is 0, message couldn't be parsed - that's normal
+      if (recordId === 0) {
+        console.log('ℹ️ Message not stored - no triplets found')
+        return null
+      }
       
+      const updatedMessages = await loadMessages()
+      const storedRecord = updatedMessages.find(record => record.id === recordId)
       console.log('✅ Message stored successfully')
-
+      
+      if (!storedRecord) {
+        throw new Error('Failed to retrieve stored message')
+      }
+      return storedRecord
     } catch (err) {
       console.error('❌ Error storing message:', err)
       throw new Error(err instanceof Error ? err.message : 'Failed to store message')
@@ -65,22 +73,23 @@ export const useElizaData = (): UseElizaDataResult => {
   /**
    * Store a parsed message with triplets
    */
-  const storeParsedMessage = useCallback(async (parsedMessage: ParsedSofiaMessage, messageId?: string) => {
+  const storeParsedMessage = useCallback(async (parsedMessage: ParsedSofiaMessage, messageId?: string): Promise<ElizaRecord> => {
     try {
-      await elizaDataService.storeParsedMessage(parsedMessage, messageId)
+      const recordId = await elizaDataService.storeParsedMessage(parsedMessage, messageId)
       
-      // Notify background to update badge count
       try {
         MessageBus.getInstance().sendMessageFireAndForget({ type: 'UPDATE_ECHO_BADGE' })
       } catch (badgeError) {
         console.error('❌ Failed to notify background of new triplets:', badgeError)
       }
       
-      // Refresh data after storing
-      await loadMessages()
-      
+      const updatedMessages = await loadMessages()
+      const storedRecord = updatedMessages.find(record => record.id === recordId)
       console.log('✅ Parsed message stored successfully')
-
+      if (!storedRecord) {
+        throw new Error('Failed to retrieve stored parsed message')
+      }
+      return storedRecord
     } catch (err) {
       console.error('❌ Error storing parsed message:', err)
       throw new Error(err instanceof Error ? err.message : 'Failed to store parsed message')
@@ -91,11 +100,12 @@ export const useElizaData = (): UseElizaDataResult => {
   /**
    * Clear all messages (with confirmation)
    */
-  const clearAllMessages = useCallback(async () => {
+  const clearAllMessages = useCallback(async (): Promise<boolean> => {
     try {
       await elizaDataService.clearAll()
       setAllMessages([])
       console.log('🗑️ All Eliza messages cleared')
+      return true
     } catch (err) {
       console.error('❌ Error clearing messages:', err)
       throw new Error(err instanceof Error ? err.message : 'Failed to clear messages')
@@ -121,10 +131,6 @@ export const useElizaData = (): UseElizaDataResult => {
     }
   }, [loadMessages])
 
-  const getMessagesByType = useCallback((type: 'message' | 'parsed_message' | 'triplet') => {
-    return allMessages.filter(msg => msg.type === type)
-  }, [allMessages])
-
   const getRecentMessages = useCallback((limit: number = 50) => {
     return allMessages
       .sort((a, b) => b.timestamp - a.timestamp)
@@ -148,7 +154,6 @@ export const useElizaData = (): UseElizaDataResult => {
     loadMessages,
     clearAllMessages,
     deleteOldMessages,
-    getMessagesByType,
     getRecentMessages
   }
 }
