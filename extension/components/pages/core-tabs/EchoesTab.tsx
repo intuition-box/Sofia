@@ -139,7 +139,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                     predicate: triplet.predicate,
                     object: triplet.object
                   },
-                  url: triplet.objectUrl || parsed.rawObjectUrl || '',
+                  url: triplet.object?.url || parsed.rawObjectUrl || '',
                   description: parsed.rawObjectDescription || parsed.intention,
                   timestamp: record.timestamp,
                   sourceMessageId: record.messageId,
