@@ -79,7 +79,6 @@
 
 .section-title {
   text-align: center;
-  margin: var(--spacing-3xl) 0 var(--spacing-xl) 0;
   font-family: var(--font-family-display);
   font-size: var(--font-size-2xl);
   font-weight: 500;

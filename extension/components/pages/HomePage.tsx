@@ -1,5 +1,5 @@
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
-import welcomeImage from '../ui/icons/Welcome.png'
+import welcomeLogo from '../ui/icons/Welcomelogo.png'
 import '../styles/HomePage.css'
 
 const HomePage = () => {
@@ -7,7 +7,7 @@ const HomePage = () => {
   return (
     <div className="home-page">
       <div className="welcome-header">
-        <img src={welcomeImage} alt="Welcome on SofIA" className="welcome-image" />
+        <img src={welcomeLogo} alt="Welcome on SofIA" className="welcome-image" />
       </div>
 
       <div className="description-sections">

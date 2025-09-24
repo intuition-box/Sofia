@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import logoIcon from '../ui/icons/icon.png'
+import logoIcon from '../ui/icons/chatIcon.png'
 import '../styles/ChatPage.css'
 import { getChatbotSocket, initializeChatbotSocket } from '../../background/websocket'
 import { sendMessageToChatbot } from '../../background/messageSenders'
