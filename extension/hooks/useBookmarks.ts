@@ -6,34 +6,25 @@ import type { Triplet } from '../../extension/types/messages'
 export const useBookmarks = (): UseBookmarksResult => {
   const [lists, setLists] = useState<BookmarkList[]>([])
   const [triplets, setTriplets] = useState<BookmarkedTriplet[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // State management removed - let components handle loading/error states
 
-  const refreshFromLocal = async (): Promise<void> => {
-    setIsLoading(true)
-    setError(null)
-
+  const refreshFromLocal = async (): Promise<{ lists: BookmarkList[], triplets: BookmarkedTriplet[] }> => {
     try {
-      console.log('🔄 [useBookmarks] Loading bookmarks from IndexedDB...')
-      
       const [storedLists, storedTriplets] = await Promise.all([
         BookmarkService.getAllLists(),
         BookmarkService.getAllTriplets()
       ])
-
-      console.log(`📋 [useBookmarks] Found ${storedLists.length} lists and ${storedTriplets.length} triplets`)
       
       setLists(storedLists)
       setTriplets(storedTriplets)
-
+      
+      return { lists: storedLists, triplets: storedTriplets }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
       console.error('❌ [useBookmarks] Error loading bookmarks:', err)
-      setError(`Failed to load bookmarks: ${errorMessage}`)
       setLists([])
       setTriplets([])
-    } finally {
-      setIsLoading(false)
+      throw new Error(`Failed to load bookmarks: ${errorMessage}`)
     }
   }
 
@@ -51,20 +42,18 @@ export const useBookmarks = (): UseBookmarksResult => {
       return listId
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
 
-  const deleteList = async (listId: string): Promise<void> => {
+  const deleteList = async (listId: string): Promise<boolean> => {
     try {
       await BookmarkService.deleteList(listId)
-      // Update local state directly
       setLists(prev => prev.filter(list => list.id !== listId))
-      setTriplets(prev => prev.filter(triplet => !prev.find(l => l.id === listId)?.tripletIds.includes(triplet.id)))
+      setTriplets(prev => prev.filter(triplet => !lists.find(l => l.id === listId)?.tripletIds.includes(triplet.id)))
+      return true
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
@@ -72,16 +61,16 @@ export const useBookmarks = (): UseBookmarksResult => {
   const updateList = async (
     listId: string, 
     updates: Partial<Pick<BookmarkList, 'name' | 'description'>>
-  ): Promise<void> => {
+  ): Promise<BookmarkList> => {
     try {
       await BookmarkService.updateList(listId, updates)
-      // Update local state directly
+      const updatedList = { ...lists.find(l => l.id === listId)!, ...updates, updatedAt: Date.now() }
       setLists(prev => prev.map(list => 
-        list.id === listId ? { ...list, ...updates, updatedAt: Date.now() } : list
+        list.id === listId ? updatedList : list
       ))
+      return updatedList
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
@@ -90,33 +79,37 @@ export const useBookmarks = (): UseBookmarksResult => {
     listId: string,
     triplet: Triplet,
     sourceInfo: Pick<BookmarkedTriplet, 'sourceType' | 'sourceId' | 'url' | 'description' | 'sourceMessageId'>
-  ): Promise<void> => {
+  ): Promise<BookmarkedTriplet> => {
     try {
-      const result = await BookmarkService.addTripletToList(listId, triplet, sourceInfo)
-      // Update local state directly
-      const newTriplet = { ...result.triplet, addedAt: Date.now() }
+      await BookmarkService.addTripletToList(listId, triplet, sourceInfo)
+      const tripletId = `${triplet.subject}-${triplet.predicate}-${triplet.object}-${Date.now()}`
+      const newTriplet: BookmarkedTriplet = {
+        id: tripletId,
+        triplet,
+        ...sourceInfo,
+        addedAt: Date.now()
+      }
       setTriplets(prev => [...prev, newTriplet])
       setLists(prev => prev.map(list => 
         list.id === listId ? { ...list, tripletIds: [...list.tripletIds, newTriplet.id] } : list
       ))
+      return newTriplet
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to add triplet to list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
 
-  const removeTripletFromList = async (listId: string, tripletId: string): Promise<void> => {
+  const removeTripletFromList = async (listId: string, tripletId: string): Promise<boolean> => {
     try {
       await BookmarkService.removeTripletFromList(listId, tripletId)
-      // Update local state directly
       setTriplets(prev => prev.filter(triplet => triplet.id !== tripletId))
       setLists(prev => prev.map(list => 
         list.id === listId ? { ...list, tripletIds: list.tripletIds.filter(id => id !== tripletId) } : list
       ))
+      return true
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to remove triplet from list'
-      setError(errorMessage)
       throw new Error(errorMessage)
     }
   }
@@ -145,8 +138,6 @@ export const useBookmarks = (): UseBookmarksResult => {
   return {
     lists,
     triplets,
-    isLoading,
-    error,
     createList,
     deleteList,
     updateList,

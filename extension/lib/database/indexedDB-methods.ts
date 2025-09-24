@@ -780,6 +780,4 @@ export const userSettingsService = UserSettingsService
 export const searchHistoryService = SearchHistoryService
 export const bookmarkService = BookmarkService
 
-// Export individual triplet functions for convenience
-export const storePublishedTriplet = ElizaDataService.storePublishedTriplet.bind(ElizaDataService)
-export const loadPublishedTriplets = ElizaDataService.loadPublishedTriplets.bind(ElizaDataService)
+// Published triplet storage exports removed - using Intuition indexer as single source of truth

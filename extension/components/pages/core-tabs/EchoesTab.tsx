@@ -27,13 +27,15 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [selectedTripletsForWeighting, setSelectedTripletsForWeighting] = useState<EchoTriplet[]>([])
 
-  // Hook IndexedDB pour les messages Eliza 
+  // Hook IndexedDB pour les messages Eliza parsés uniquement
   const { 
-    messages: rawMessages, 
-    parsedMessages,
-    isLoading: isLoadingEliza, 
-    refreshMessages 
-  } = useElizaData({ autoRefresh: true, refreshInterval: 5000 })
+    allMessages,
+    loadMessages
+  } = useElizaData()
+  
+  // Tous les messages sont déjà des parsed_message (pas de raw stockage)
+  const parsedMessages = allMessages
+  const refreshMessages = loadMessages
 
   // Available echoes for selection hook
   const availableEchoes = echoTriplets.filter(t => t.status === 'available')
@@ -58,13 +60,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   // Publishing management hook
   const {
-    isCreating,
-    error,
     publishTriplet,
-    publishSelected,
-    transactionStatus,
-    transactionError,
-    clearTransactionStatus
+    publishSelected
   } = useEchoPublishing({
     echoTriplets,
     selectedEchoes,
@@ -72,6 +69,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     onTripletsUpdate: setEchoTriplets,
     clearSelection
   })
+  
+  // Local state for UI feedback
+  const [isCreating, setIsCreating] = useState(false)
+  const [transactionSuccess, setTransactionSuccess] = useState(false)
+  const [transactionError, setTransactionError] = useState<string | null>(null)
 
 
   // Handle Amplify button click - always opens modal for weight selection
@@ -88,16 +90,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     if (selectedTripletsForWeighting.length === 0) return
     
     try {
-      // Use publishSelected with custom weights (it uses selectedEchoes automatically)
+      setIsCreating(true)
+      setTransactionError(null)
+      setTransactionSuccess(false)
+      
       await publishSelected(customWeights)
       
-      // Don't close modal automatically - let user see transaction status
-      // setShowWeightModal(false)
-      // setSelectedTripletsForWeighting([])
-      // clearSelection() is called automatically by publishSelected
+      setTransactionSuccess(true)
     } catch (error) {
       console.error('Failed to publish triplets with custom weights:', error)
-      // Don't close modal automatically on error either
+      setTransactionError(error instanceof Error ? error.message : 'Failed to publish')
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -105,8 +109,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const handleWeightModalClose = () => {
     setShowWeightModal(false)
     setSelectedTripletsForWeighting([])
-    clearTransactionStatus()
-    // Clear selection when user manually closes modal
+    setTransactionError(null)
+    setTransactionSuccess(false)
     clearSelection()
   }
 
@@ -168,7 +172,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const availableCount = echoTriplets.filter(t => t.status === 'available').length
 
   // Afficher le loading seulement au premier chargement
-  if (isLoadingEliza && !hasInitialLoad) {
+  if (!hasInitialLoad && parsedMessages.length === 0) {
     return (
       <div className="triples-container">
         <div className="empty-state">
@@ -308,7 +312,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         isOpen={showWeightModal}
         triplets={selectedTripletsForWeighting}
         isProcessing={isCreating}
-        transactionStatus={transactionStatus}
+        transactionSuccess={transactionSuccess}
         transactionError={transactionError}
         onClose={handleWeightModalClose}
         onSubmit={handleWeightSubmit}
