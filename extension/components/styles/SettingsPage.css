@@ -1,13 +1,13 @@
 .settings-page {
-  padding: 20px;
+  padding: var(--spacing-xl);
   background-color: rgba(255, 255, 255, 0.02);
-  margin: 10px;
-  border-radius: 20px;
-  backdrop-filter: blur(5px) saturate(100%);
-  -webkit-backdrop-filter: blur(5px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  margin: var(--spacing-sm);
+  border-radius: var(--radius-xl);
+  backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
+  -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
+  border: 1px solid var(--color-border-glass);
+  box-shadow: var(--shadow-glass);
+  transition: var(--transition-normal);
 }
 
 .back-button {
@@ -22,23 +22,23 @@
 }
 
 .section-title {
-  font-family: 'Gotu', cursive;
-  font-size: 24px;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
   font-weight: 600;
-  color: #FBF7F5;
-  margin-bottom: 15px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-lg);
 }
 
 .settings-section {
   background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 12px;
-  backdrop-filter: blur(10px) saturate(100%);
-  -webkit-backdrop-filter: blur(10px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.125);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  margin-bottom: 20px;
-  padding: 20px;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
+  -webkit-backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
+  border: 1px solid var(--color-border-lighter);
+  box-shadow: var(--shadow-heavy), var(--shadow-inset);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  transition: var(--transition-normal);
 }
 
 .settings-section-title {
@@ -54,10 +54,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 0;
-  color: #FBF7F5;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  padding: var(--spacing-lg) 0;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: var(--transition-normal);
 }
 
 .settings-item:last-child {
@@ -65,8 +65,8 @@
 }
 
 .settings-subtext {
-  font-size: 14px;
-  color: #F2DED6;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
 }
 
 .select {

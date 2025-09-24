@@ -2,14 +2,14 @@
   width: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.1) 0%, 
-    rgba(255, 255, 255, 0.05) 100%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg,
+    var(--color-bg-glass-lighter) 0%,
+    var(--color-bg-glass-light) 100%);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  margin: 16px 0;
+  margin: var(--spacing-lg) 0;
 }
 
 .liquid-glass-inner {
@@ -97,7 +97,7 @@
 .liquid-glass:hover {
   border-color: rgba(74, 144, 226, 0.3);
   box-shadow: 0 8px 32px rgba(74, 144, 226, 0.1);
-  transition: all 0.3s ease;
+  transition: var(--transition-normal);
 }
 
 .liquid-glass:hover .liquid-glass-wave {

@@ -68,7 +68,7 @@ export const useCreateTripleOnChain = () => {
         name: address,
         description: `User atom for wallet ${address}`,
         url: `https://etherscan.io/address/${address}`,
-        type :"account"
+        type:'account'
       })
       
       const userAtom = {
