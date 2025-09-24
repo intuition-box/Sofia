@@ -85,24 +85,17 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
             className="bookmark-modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 className="bookmark-modal-title" style={{ margin: 0 }}>
+            <div className="bookmark-modal-header">
+              <h3 className="bookmark-modal-title">
                 Add to Bookmark List
               </h3>
-              <button 
+              <button
+                className="bookmark-modal-close"
                 onClick={() => {
                   setShowModal(false)
                   setIsCreatingList(false)
                   setNewListName('')
                   setSelectedListId('')
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '20px',
-                  cursor: 'pointer',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  padding: '4px'
                 }}
               >
                 ✕

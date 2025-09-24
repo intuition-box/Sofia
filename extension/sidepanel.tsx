@@ -15,7 +15,6 @@ import { useWalletSync } from "./hooks/useWalletSync"
 import HomePage from "./components/pages/HomePage"
 import HomeConnectedPage from "./components/pages/HomeConnectedPage"
 import SettingsPage from "./components/pages/SettingsPage"
-import ProfilePage from "./components/pages/ProfilePage"
 import CorePage from "./components/pages/CorePage"
 import RecommendationsPage from "./components/pages/RecommendationsPage"
 import ResonancePage from "./components/pages/ResonancePage"
@@ -48,8 +47,6 @@ const SidePanelContent = () => {
         return <HomeConnectedPage />
       case 'settings':
         return <SettingsPage />
-      case 'profile':
-        return <ProfilePage />
       case 'Sofia':
         return <CorePage />
       case 'recommendations':
