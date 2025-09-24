@@ -1,0 +1,89 @@
+/* ProfilePage Styles */
+
+.profile-page {
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  padding: var(--spacing-xl);
+  background: var(--color-bg-glass);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-glass);
+  box-shadow: var(--shadow-glass);
+  margin: var(--spacing-sm);
+  backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
+  -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
+}
+
+.page-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.page-header .section-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: var(--spacing-lg) 0;
+  text-align: center;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-4xl);
+  margin-bottom: var(--spacing-4xl);
+  border-bottom: 2px solid var(--color-border-light);
+  padding-bottom: var(--spacing-xs);
+}
+
+.tab {
+  padding: var(--spacing-xs) 0;
+  background: none;
+  color: var(--color-text-very-muted);
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-lg);
+  font-weight: 400;
+  font-family: var(--font-family-display);
+  transition: var(--transition-normal);
+  position: relative;
+}
+
+.tab.active {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  font-family: 'Fraunces', serif;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+}
+
+.page-content {
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--backdrop-blur-heavy) var(--backdrop-saturate);
+  -webkit-backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
+  transition: var(--transition-normal);
+  padding: var(--spacing-xl);
+  background: var(--color-bg-glass-light);
+  border: 1px solid var(--color-border-glass);
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4xl);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+  background-color: var(--color-bg-glass-light);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
+  -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
+}

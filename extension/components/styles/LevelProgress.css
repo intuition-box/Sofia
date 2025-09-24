@@ -46,7 +46,7 @@
 }
 
 .progress-section {
-  margin-top: var(--spacing-lg);
+  margin-top: -20px;
 }
 
 .progress-labels {
