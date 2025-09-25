@@ -117,12 +117,12 @@ const AccountTab = () => {
 
 
   return (
-    <div className="profile-section">
+    <div className="profile-section account-tab">
 
       {/* Action Buttons */}
       <div className="action-buttons-container">
         <button
-          className="connect-button"
+          className="connect-button youtube"
           onClick={() => oauthTokens.youtube ? disconnectOAuth('youtube') : connectOAuth('youtube')}
         >
           <div className="platform-icon youtube-icon">
@@ -138,7 +138,7 @@ const AccountTab = () => {
         </button>
 
         <button
-          className="connect-button"
+          className="connect-button spotify"
           onClick={() => oauthTokens.spotify ? disconnectOAuth('spotify') : connectOAuth('spotify')}
         >
           <div className="platform-icon spotify-icon">
@@ -154,7 +154,7 @@ const AccountTab = () => {
         </button>
 
         <button
-          className="connect-button"
+          className="connect-button twitch"
           onClick={() => oauthTokens.twitch ? disconnectOAuth('twitch') : connectOAuth('twitch')}
         >
           <div className="platform-icon twitch-icon">
@@ -174,20 +174,22 @@ const AccountTab = () => {
 
       {/* Search Bar */}
       <div className="search-container">
-        <div className="search-input-wrapper">
+        <div className="search-input-container">
+          <img src={searchIcon} alt="Search" className="search-logo" />
           <input
             type="text"
             placeholder="Search accounts..."
             value={searchQuery}
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
-            className="alias-input search-input-with-icon"
+            className="search-input"
           />
-          <img src={searchIcon} alt="Search" className="search-icon" />
 
-          {/* Search Results Dropdown */}
-          {showResults && searchResults.length > 0 && (
-            <div className="search-results-dropdown">
+        </div>
+
+        {/* Search Results Dropdown */}
+        {showResults && searchResults.length > 0 && (
+          <div className="search-results-dropdown">
               {searchResults.slice(0, 10).map((account) => (
                 <div
                   key={account.id}
@@ -196,10 +198,62 @@ const AccountTab = () => {
                 >
                   <div className="account-info">
                     <div className="account-label">{account.label}</div>
-                    <div className="account-details">
-                      {account.termId && (
-                        <span className="account-id">ID: {account.termId.slice(0, 8)}...</span>
+                    <div className="account-meta">
+                      <span className="account-type">{account.atomType}</span>
+                      {account.createdAt && (
+                        <span className="account-date">
+                          {new Date(account.createdAt).toLocaleDateString()}
+                        </span>
                       )}
+                    </div>
+
+                    {/* Tags */}
+                    {account.tags && account.tags.length > 0 && (
+                      <div className="account-tags">
+                        <span className="tags-label">🏷️ Tags:</span>
+                        <div className="tags-list">
+                          {account.tags.slice(0, 3).map((tag, idx) => (
+                            <span key={idx} className="tag-item">{tag}</span>
+                          ))}
+                          {account.tags.length > 3 && (
+                            <span className="tag-more">+{account.tags.length - 3}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Interests */}
+                    {account.interests && account.interests.length > 0 && (
+                      <div className="account-interests">
+                        <span className="interests-label">💡 Interests:</span>
+                        <div className="interests-list">
+                          {account.interests.slice(0, 2).map((interest, idx) => (
+                            <span key={idx} className="interest-item">{interest}</span>
+                          ))}
+                          {account.interests.length > 2 && (
+                            <span className="interest-more">+{account.interests.length - 2}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Subscriptions */}
+                    {account.subscriptions && account.subscriptions.length > 0 && (
+                      <div className="account-subscriptions">
+                        <span className="subscriptions-label">📺 Subscriptions:</span>
+                        <div className="subscriptions-list">
+                          {account.subscriptions.slice(0, 3).map((sub, idx) => (
+                            <span key={idx} className="subscription-item">{sub}</span>
+                          ))}
+                          {account.subscriptions.length > 3 && (
+                            <span className="subscription-more">+{account.subscriptions.length - 3}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="account-details">
+                      <span className="account-id">ID: {account.termId.slice(0, 8)}...</span>
                     </div>
                   </div>
                 </div>
@@ -212,7 +266,6 @@ const AccountTab = () => {
               )}
             </div>
           )}
-        </div>
       </div>
 
     </div>

@@ -1,8 +1,14 @@
 **agent**
 web3-feature-implementer
 **Prompt**
-dans @useintuitiontriples il y a la requete triplesquery vers l'indexer qui permet de filtrer les atoms. 
-J'aimerais que tu implémente une requete dans @usergetatomaccount qui filtre les atom par type account. 
-Cette requete servira ensuite à la barre de recherche dans account tab pour que les utilisateurs puisse chercher d'autres utilisateur. 
+Implémenter un follow button dans chaque account-info dans @accounttab.tsx
+**Description**
+Intuition a déjà implémenter cette fonctionnalité sur leur site web. Sur github il y a un dossier qui contient tout ce qui concerne ce boutton follow : 
+https://github.com/0xIntuition/intuition-ts/tree/7020a518a237128e2f628e7aba60bb66d624d689/apps/portal/app/components/follow
+Analyse bien le code et implémente cette fonctionnalité. 
+**Comportement attendu**
+Lorsque l'utilisateur clique sur follow, un modal s'ouvre et lui demande combien il souhaite mettre en TRUST sur cette relation, ensuite un triples est créé (normalement ce triples devrait etre égale à Account follow account, mais vérifie)
+Ne me mens pas, vérifie bien ton travail, n'hallucine pas.
 
-Pose moi des questions si besoin ci dessus :
+
+

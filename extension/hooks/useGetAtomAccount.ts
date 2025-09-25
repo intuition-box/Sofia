@@ -12,6 +12,12 @@ export interface AccountAtom {
   termId: string
   description?: string
   type: 'Account'
+  createdAt: string
+  creatorId: string
+  atomType: string // Le vrai type de l'atom (Account, Thing, Caip10, etc.)
+  tags?: string[] // Tags associés à cet utilisateur
+  interests?: string[] // Intérêts de l'utilisateur
+  subscriptions?: string[] // Abonnements de l'utilisateur
 }
 
 interface UseGetAtomAccountResult {
@@ -115,6 +121,18 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
                 label
                 type
                 created_at
+                creator_id
+              }
+              triples(
+                where: {
+                  subject: { label: { _ilike: $searchTerm } }
+                }
+                limit: 50
+              ) {
+                subject { label }
+                predicate { label }
+                object { label }
+                created_at
               }
             }
           `,
@@ -132,15 +150,44 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
       }
 
       const atoms = jsonData.data?.atoms || []
-      console.log(`🔍 [searchAccounts] Found ${atoms.length} matching atoms`)
+      const triples = jsonData.data?.triples || []
+      console.log(`🔍 [searchAccounts] Found ${atoms.length} matching atoms and ${triples.length} triples`)
 
-      return atoms.map((atom: any) => ({
-        id: atom.term_id,
-        label: atom.label || 'Unknown',
-        termId: atom.term_id,
-        description: `${atom.type}: ${atom.label}`,
-        type: 'Account' as const,
-      }))
+      return atoms.map((atom: any) => {
+        // Grouper les triplets par utilisateur
+        const userTriples = triples.filter((triple: any) =>
+          triple.subject.label.toLowerCase() === atom.label.toLowerCase()
+        )
+
+        // Extraire les tags (has tag)
+        const tags = userTriples
+          .filter((triple: any) => triple.predicate.label === 'has tag')
+          .map((triple: any) => triple.object.label)
+
+        // Extraire les intérêts (are interested by)
+        const interests = userTriples
+          .filter((triple: any) => triple.predicate.label === 'are interested by')
+          .map((triple: any) => triple.object.label)
+
+        // Extraire les abonnements (subscribes_to)
+        const subscriptions = userTriples
+          .filter((triple: any) => triple.predicate.label === 'subscribes_to')
+          .map((triple: any) => triple.object.label)
+
+        return {
+          id: atom.term_id,
+          label: atom.label || 'Unknown',
+          termId: atom.term_id,
+          description: `${atom.type}: ${atom.label}`,
+          type: 'Account' as const,
+          createdAt: atom.created_at,
+          creatorId: atom.creator_id,
+          atomType: atom.type,
+          tags: tags.length > 0 ? tags : undefined,
+          interests: interests.length > 0 ? interests : undefined,
+          subscriptions: subscriptions.length > 0 ? subscriptions : undefined,
+        }
+      })
 
     } catch (err) {
       console.error('❌ [searchAccounts] Search error:', err)
