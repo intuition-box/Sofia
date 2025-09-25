@@ -4,12 +4,14 @@ import youtubeIcon from '../../ui/social/youtube.svg'
 import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
 import { useGetAtomAccount, AccountAtom } from '../../../hooks/useGetAtomAccount'
+import FollowButton from '../../ui/FollowButton'
 import '../../styles/AccountTab.css'
 
 const AccountTab = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<AccountAtom[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [followingAccounts, setFollowingAccounts] = useState<Set<string>>(new Set())
 
   // Use the account atoms hook
   const { accounts, searchAccounts } = useGetAtomAccount()
@@ -115,6 +117,25 @@ const AccountTab = () => {
     // Note: On garde le sync_info pour éviter de re-télécharger les données
   }
 
+  // Handle follow status change
+  const handleFollowChange = (accountId: string, isFollowing: boolean) => {
+    console.log('🔄 AccountTab - Follow status changed', {
+      accountId,
+      isFollowing,
+      previouslyFollowing: followingAccounts.has(accountId)
+    })
+
+    setFollowingAccounts(prev => {
+      const newSet = new Set(prev)
+      if (isFollowing) {
+        newSet.add(accountId)
+      } else {
+        newSet.delete(accountId)
+      }
+      return newSet
+    })
+  }
+
 
   return (
     <div className="profile-section account-tab">
@@ -194,10 +215,16 @@ const AccountTab = () => {
                 <div
                   key={account.id}
                   className="search-result-item"
-                  onClick={() => handleAccountSelect(account)}
                 >
                   <div className="account-info">
-                    <div className="account-label">{account.label}</div>
+                    <div className="account-header">
+                      <div className="account-label">{account.label}</div>
+                      <FollowButton
+                        account={account}
+                        isFollowing={followingAccounts.has(account.id)}
+                        onFollowChange={(isFollowing: boolean) => handleFollowChange(account.id, isFollowing)}
+                      />
+                    </div>
                     <div className="account-meta">
                       <span className="account-type">{account.atomType}</span>
                       {account.createdAt && (
@@ -206,52 +233,7 @@ const AccountTab = () => {
                         </span>
                       )}
                     </div>
-
-                    {/* Tags */}
-                    {account.tags && account.tags.length > 0 && (
-                      <div className="account-tags">
-                        <span className="tags-label">🏷️ Tags:</span>
-                        <div className="tags-list">
-                          {account.tags.slice(0, 3).map((tag, idx) => (
-                            <span key={idx} className="tag-item">{tag}</span>
-                          ))}
-                          {account.tags.length > 3 && (
-                            <span className="tag-more">+{account.tags.length - 3}</span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Interests */}
-                    {account.interests && account.interests.length > 0 && (
-                      <div className="account-interests">
-                        <span className="interests-label">💡 Interests:</span>
-                        <div className="interests-list">
-                          {account.interests.slice(0, 2).map((interest, idx) => (
-                            <span key={idx} className="interest-item">{interest}</span>
-                          ))}
-                          {account.interests.length > 2 && (
-                            <span className="interest-more">+{account.interests.length - 2}</span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Subscriptions */}
-                    {account.subscriptions && account.subscriptions.length > 0 && (
-                      <div className="account-subscriptions">
-                        <span className="subscriptions-label">📺 Subscriptions:</span>
-                        <div className="subscriptions-list">
-                          {account.subscriptions.slice(0, 3).map((sub, idx) => (
-                            <span key={idx} className="subscription-item">{sub}</span>
-                          ))}
-                          {account.subscriptions.length > 3 && (
-                            <span className="subscription-more">+{account.subscriptions.length - 3}</span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
+                    
                     <div className="account-details">
                       <span className="account-id">ID: {account.termId.slice(0, 8)}...</span>
                     </div>

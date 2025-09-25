@@ -235,11 +235,19 @@
   flex-direction: column;
   gap: var(--spacing-xs);
   border: 1px solid;
-  border-color: rgba(66, 66, 66, 0.63); 
+  border-color: rgba(66, 66, 66, 0.63);
   border-radius: 10px;
   padding: 5px;
   background-color: rgba(255, 255, 255, 0.13);
   box-shadow: 0 4px 12px #ffb74d21;
+}
+
+.account-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .account-label {
@@ -252,16 +260,15 @@
 .account-meta {
   display: flex;
   justify-content: space-evenly;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  align-items: center;
+  flex-flow: nowrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--spacing-md);
   font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-xs);
 }
 
 .account-type {
-  padding: 2px 6px;
   background: var(--color-surface-secondary);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);

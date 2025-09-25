@@ -11,13 +11,11 @@ export interface AccountAtom {
   label: string
   termId: string
   description?: string
-  type: 'Account'
+  type: string
   createdAt: string
   creatorId: string
   atomType: string // Le vrai type de l'atom (Account, Thing, Caip10, etc.)
-  tags?: string[] // Tags associés à cet utilisateur
-  interests?: string[] // Intérêts de l'utilisateur
-  subscriptions?: string[] // Abonnements de l'utilisateur
+  ipfsUri?: string // IPFS URI of the atom for triple creation
 }
 
 interface UseGetAtomAccountResult {
@@ -58,6 +56,7 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
                 label
                 type
                 created_at
+                data
               }
             }
           `,
@@ -78,7 +77,11 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
         label: atom.label || 'Unknown',
         termId: atom.term_id,
         description: `Account: ${atom.label}`,
-        type: 'account' as const,
+        type: 'Account' as const,
+        createdAt: atom.created_at,
+        creatorId: atom.creator_id || '',
+        atomType: atom.type,
+        ipfsUri: atom.data // This is the IPFS URI we need!
       }))
 
       setAccounts(mappedAccounts)
@@ -122,6 +125,7 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
                 type
                 created_at
                 creator_id
+                data
               }
               triples(
                 where: {
@@ -183,9 +187,7 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
           createdAt: atom.created_at,
           creatorId: atom.creator_id,
           atomType: atom.type,
-          tags: tags.length > 0 ? tags : undefined,
-          interests: interests.length > 0 ? interests : undefined,
-          subscriptions: subscriptions.length > 0 ? subscriptions : undefined,
+          ipfsUri: atom.data, // This is the IPFS URI we need!
         }
       })
 
