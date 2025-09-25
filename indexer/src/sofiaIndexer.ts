@@ -92,15 +92,26 @@ export class SofiaIndexer {
       console.log(`🔄 Checking blocks ${this.lastProcessedBlock + 1n} to ${currentBlock}`)
       
       try {
+        // Get TripleCreated event logs
         const logs = await this.client.getLogs({
           address: this.multivaultAddress,
+          event: {
+            type: 'event',
+            name: 'TripleCreated',
+            inputs: [
+              {type: 'address', name: 'creator', indexed: true},
+              {type: 'bytes32', name: 'termId', indexed: true},
+              {type: 'bytes32', name: 'subjectId', indexed: false},
+              {type: 'bytes32', name: 'predicateId', indexed: false},
+              {type: 'bytes32', name: 'objectId', indexed: false}
+            ]
+          },
           fromBlock: this.lastProcessedBlock + 1n,
-          toBlock: currentBlock,
-          // events: ['TripleCreated'] // Will need actual event signature
+          toBlock: currentBlock
         })
 
         for (const log of logs) {
-          await this.processTripleLog(log as TripleCreatedLog)
+          await this.processTripleLog(log)
         }
       } catch (error) {
         console.error('❌ Error fetching logs:', error)
@@ -113,12 +124,20 @@ export class SofiaIndexer {
   /**
    * Process a triple creation log
    */
-  private async processTripleLog(log: TripleCreatedLog): Promise<void> {
+  private async processTripleLog(log: any): Promise<void> {
     try {
       console.log('📝 Processing potential Sofia triple:', log.transactionHash)
       
-      // Placeholder for now - will implement IPFS fetching
-      await this.checkIfSofiaTriple(log)
+      // Decode the log to get triple details
+      const decodedLog = decodeEventLog({
+        abi: MULTIVAULT_COMPLETE_ABI,
+        data: log.data,
+        topics: log.topics
+      })
+
+      if (decodedLog.eventName === 'TripleCreated') {
+        await this.checkIfSofiaTriple(log, decodedLog.args)
+      }
       
     } catch (error) {
       console.error('❌ Error processing triple log:', error)
@@ -128,22 +147,61 @@ export class SofiaIndexer {
   /**
    * Check if a triple was created by Sofia by examining IPFS metadata
    */
-  private async checkIfSofiaTriple(log: TripleCreatedLog): Promise<void> {
+  private async checkIfSofiaTriple(log: any, args: any): Promise<void> {
     console.log('🔍 Checking if triple is from Sofia...')
+    console.log('Triple details:', {
+      creator: args.creator,
+      termId: args.termId,
+      subjectId: args.subjectId,
+      predicateId: args.predicateId,
+      objectId: args.objectId
+    })
     
-    // Placeholder implementation
-    const isSofiaTriple = await this.checkIPFSForSofiaSignature('placeholder-ipfs-uri')
+    // Check each atom for Sofia signature
+    const atomIds = [args.subjectId, args.predicateId, args.objectId]
+    let sofiaCount = 0
+    const atomMetadata: any = {}
     
-    if (isSofiaTriple) {
-      console.log('✅ Found Sofia triple!')
-      await this.handleSofiaTriple(log)
+    for (const [index, atomId] of atomIds.entries()) {
+      try {
+        const ipfsUri = await this.getAtomIPFS(atomId)
+        if (ipfsUri) {
+          const hasSofia = await this.checkIPFSForSofiaSignature(ipfsUri)
+          if (hasSofia) {
+            sofiaCount++
+            const metadata = await this.fetchIPFSMetadata(ipfsUri)
+            const atomType = ['subject', 'predicate', 'object'][index]
+            atomMetadata[atomType] = { ipfsUri, ...metadata }
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error checking atom ${atomId}:`, error)
+      }
+    }
+    
+    // If any atom has Sofia signature, consider it a Sofia triple
+    if (sofiaCount > 0) {
+      console.log(`✅ Found Sofia triple! (${sofiaCount}/3 atoms with Sofia signature)`)
+      await this.handleSofiaTriple(log, args, atomMetadata)
+    } else {
+      console.log('❌ Not a Sofia triple')
     }
   }
 
   /**
-   * Fetch IPFS metadata and check for Sofia signature
+   * Get IPFS URI for an atom ID (placeholder - needs AtomCreated events)
    */
-  private async checkIPFSForSofiaSignature(ipfsUri: string): Promise<boolean> {
+  private async getAtomIPFS(atomId: string): Promise<string | null> {
+    // For now, we need to store AtomCreated events to map atomId -> ipfsUri
+    // This is a placeholder that will return null
+    console.log(`🔍 Looking for IPFS URI for atom ${atomId}`)
+    return null
+  }
+
+  /**
+   * Fetch IPFS metadata 
+   */
+  private async fetchIPFSMetadata(ipfsUri: string): Promise<AtomMetadata | null> {
     try {
       // Convert IPFS URI to HTTP gateway URL
       const httpUrl = ipfsUri.replace('ipfs://', 'https://ipfs.io/ipfs/')
@@ -154,28 +212,35 @@ export class SofiaIndexer {
       }
       
       const metadata = await response.json() as AtomMetadata
-      
-      // Check if description contains Sofia signature
-      return metadata.description && metadata.description.includes('| Sofia')
+      return metadata
       
     } catch (error) {
       console.error('❌ Error fetching IPFS metadata:', error)
-      return false
+      return null
     }
+  }
+
+  /**
+   * Check if IPFS metadata contains Sofia signature
+   */
+  private async checkIPFSForSofiaSignature(ipfsUri: string): Promise<boolean> {
+    const metadata = await this.fetchIPFSMetadata(ipfsUri)
+    return metadata ? metadata.description.includes('| Sofia') : false
   }
 
   /**
    * Handle a detected Sofia triple with detailed console output
    */
-  private async handleSofiaTriple(log: TripleCreatedLog): Promise<void> {
+  private async handleSofiaTriple(log: any, args: any, atomMetadata: any): Promise<void> {
     const sofiaTriple: SofiaTriple = {
       transactionHash: log.transactionHash,
       blockNumber: log.blockNumber,
       timestamp: Date.now(),
-      tripleId: log.args?.tripleId,
-      subjectId: log.args?.subjectId,
-      predicateId: log.args?.predicateId,
-      objectId: log.args?.objectId
+      tripleId: args.termId,
+      subjectId: args.subjectId,
+      predicateId: args.predicateId,
+      objectId: args.objectId,
+      metadata: atomMetadata
     }
 
     this.sofiaTriples.set(log.transactionHash, sofiaTriple)
@@ -185,19 +250,24 @@ export class SofiaIndexer {
     console.log(`📧 TX Hash: ${sofiaTriple.transactionHash}`)
     console.log(`📦 Block: ${sofiaTriple.blockNumber}`)
     console.log(`⏰ Time: ${new Date(sofiaTriple.timestamp).toLocaleString()}`)
+    console.log(`👤 Creator: ${args.creator}`)
+    console.log(`🔗 Triple ID: ${sofiaTriple.tripleId}`)
     
-    if (sofiaTriple.tripleId) {
-      console.log(`🔗 Triple ID: ${sofiaTriple.tripleId}`)
-    }
+    console.log('📊 Atoms:')
+    console.log(`  Subject:   ${sofiaTriple.subjectId}`)
+    console.log(`  Predicate: ${sofiaTriple.predicateId}`)
+    console.log(`  Object:    ${sofiaTriple.objectId}`)
     
-    if (sofiaTriple.subjectId && sofiaTriple.predicateId && sofiaTriple.objectId) {
-      console.log('📊 Atoms:')
-      console.log(`  Subject:   ${sofiaTriple.subjectId}`)
-      console.log(`  Predicate: ${sofiaTriple.predicateId}`)
-      console.log(`  Object:    ${sofiaTriple.objectId}`)
-      
-      // Try to fetch atom metadata for display
-      await this.displayAtomMetadata(sofiaTriple)
+    // Display metadata for atoms with Sofia signature
+    if (Object.keys(atomMetadata).length > 0) {
+      console.log('\n📄 Sofia Atom Metadata:')
+      for (const [atomType, data] of Object.entries(atomMetadata)) {
+        console.log(`  ${atomType.toUpperCase()}:`)
+        console.log(`    Name: ${(data as any).name}`)
+        console.log(`    Description: ${(data as any).description}`)
+        console.log(`    URL: ${(data as any).url}`)
+        console.log(`    IPFS: ${(data as any).ipfsUri}`)
+      }
     }
     
     console.log(`📈 Total Sofia triplets: ${this.sofiaTriples.size}`)
