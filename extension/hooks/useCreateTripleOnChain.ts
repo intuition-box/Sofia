@@ -214,10 +214,18 @@ export const useCreateTripleOnChain = () => {
       // Check each atom and prepare those that need creation
       for (const [key, atomData] of uniqueAtoms) {
         try {
-          // Pin to IPFS first
-          const result = await pinThing({
+          // Pin to IPFS first - signature will be in the JSON metadata
+          const metadataWithSignature = {
             name: atomData.name,
             description: atomData.description || "Contenu visité par l'utilisateur.",
+            image: "",
+            url: atomData.url,
+            signature: "Sofia"
+          }
+          
+          const result = await pinThing({
+            name: atomData.name,
+            description: JSON.stringify(metadataWithSignature),
             image: "",
             url: atomData.url
           })

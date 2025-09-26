@@ -314,8 +314,23 @@ export class SofiaIndexer {
             if (hasSofia) {
               sofiaCount++
               const metadata = await this.fetchIPFSMetadata(ipfsUri)
+              
+              // Extract signature from description JSON
+              let extractedSignature = null
+              try {
+                const parsed = JSON.parse(metadata?.description || '{}')
+                extractedSignature = parsed.signature
+              } catch {
+                // Ignore parse errors
+              }
+              
               const atomType = ['subject', 'predicate', 'object'][index]
-              atomMetadata[atomType] = { hexData, ipfsUri, ...metadata }
+              atomMetadata[atomType] = { 
+                hexData, 
+                ipfsUri, 
+                ...metadata,
+                extractedSignature 
+              }
             }
           } catch (decodeError) {
             console.log(`⚠️  Could not decode hex for Sofia check on atom ${atomId}: ${hexData}`)
@@ -376,7 +391,16 @@ export class SofiaIndexer {
    */
   private async checkIPFSForSofiaSignature(ipfsUri: string): Promise<boolean> {
     const metadata = await this.fetchIPFSMetadata(ipfsUri)
-    return metadata ? metadata.description.includes('| Sofia') : false
+    if (!metadata) return false
+    
+    // Try to parse description as JSON to extract signature
+    try {
+      const parsed = JSON.parse(metadata.description)
+      return parsed.signature === 'Sofia'
+    } catch {
+      // Fallback: check for old format
+      return metadata.description?.includes('| Sofia') || false
+    }
   }
 
   /**
@@ -417,6 +441,7 @@ export class SofiaIndexer {
         console.log(`    Name: ${(data as any).name}`)
         console.log(`    Description: ${(data as any).description}`)
         console.log(`    URL: ${(data as any).url}`)
+        console.log(`    ✨ Signature: ${(data as any).extractedSignature || 'Not found'}`)
         console.log(`    Hex Data: ${(data as any).hexData}`)
         console.log(`    IPFS: ${(data as any).ipfsUri}`)
       }

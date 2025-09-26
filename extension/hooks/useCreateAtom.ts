@@ -20,10 +20,18 @@ export const useCreateAtom = () => {
     try {
       logger.debug('Creating atom V2', { name: atomData.name })
       
-      // Pin to IPFS first
-      const pinResult = await pinThing({
+      // Pin to IPFS first - signature will be in the JSON metadata
+      const metadataWithSignature = {
         name: atomData.name,
         description: atomData.description || "Contenu visité par l'utilisateur.",
+        image: atomData.image || "",
+        url: atomData.url,
+        signature: "Sofia"
+      }
+      
+      const pinResult = await pinThing({
+        name: atomData.name,
+        description: JSON.stringify(metadataWithSignature),
         image: atomData.image || "",
         url: atomData.url
       })
@@ -47,7 +55,8 @@ export const useCreateAtom = () => {
           description: atomData.description || "Contenu visité par l'utilisateur.",
           image: atomData.image || "",
           url: atomData.url,
-          type: atomData.type
+          type: atomData.type,
+          signature: "Sofia"
         }
       })
 
