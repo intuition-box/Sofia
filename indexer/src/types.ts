@@ -59,6 +59,7 @@ export interface TripleCreatedLog extends Log {
 export interface IndexerConfig {
   pollIntervalMs: number
   startBlock: bigint | 'latest'
+  lookbackBlocks?: number // How many blocks to scan backwards for atoms
   agentWebhookUrl?: string
   agentApiKey?: string
 }
