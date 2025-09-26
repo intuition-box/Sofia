@@ -45,6 +45,7 @@ components/SplineBackground.tsx
 
 .eliza
 
-
+.env
+ 
 task
 .task

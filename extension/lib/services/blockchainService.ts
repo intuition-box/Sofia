@@ -47,9 +47,18 @@ export class BlockchainService {
     predicateVaultId: string,
     objectVaultId: string
   ): Promise<TripleCheckResult> {
+    console.log('🔍 BlockchainService.checkTripleExists - Starting check', {
+      subjectVaultId,
+      predicateVaultId,
+      objectVaultId,
+      contractAddress: this.CONTRACT_ADDRESS
+    })
+
     const { publicClient } = await getClients()
 
     try {
+      console.log('🔍 BlockchainService.checkTripleExists - Calculating triple ID')
+
       // Calculate the triple ID
       const tripleId = await publicClient.readContract({
         address: this.CONTRACT_ADDRESS as `0x${string}`,
@@ -62,13 +71,24 @@ export class BlockchainService {
         ]
       }) as `0x${string}`
 
+      console.log('🔍 BlockchainService.checkTripleExists - Triple ID calculated', {
+        tripleId
+      })
+
       // Check if triple exists using getTriple
       try {
-        await publicClient.readContract({
+        console.log('🔍 BlockchainService.checkTripleExists - Calling getTriple')
+
+        const tripleData = await publicClient.readContract({
           address: this.CONTRACT_ADDRESS as `0x${string}`,
           abi: MULTIVAULT_V2_ABI,
           functionName: 'getTriple',
           args: [tripleId]
+        })
+
+        console.log('✅ BlockchainService.checkTripleExists - Triple exists!', {
+          tripleId,
+          tripleData
         })
 
         // If getTriple doesn't revert, the triple exists
@@ -78,6 +98,12 @@ export class BlockchainService {
           tripleHash: tripleId
         }
       } catch (getTripleError) {
+        console.log('❌ BlockchainService.checkTripleExists - getTriple failed', {
+          tripleId,
+          error: getTripleError,
+          errorMessage: getTripleError instanceof Error ? getTripleError.message : 'Unknown error'
+        })
+
         // getTriple reverts if triple doesn't exist
         return {
           exists: false,
@@ -85,6 +111,11 @@ export class BlockchainService {
         }
       }
     } catch (contractError) {
+      console.error('❌ BlockchainService.checkTripleExists - Contract error', {
+        error: contractError,
+        errorMessage: contractError instanceof Error ? contractError.message : 'Unknown error'
+      })
+
       // Return false if we can't check - let the contract handle duplicates
       return {
         exists: false,

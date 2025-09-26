@@ -1,22 +1,75 @@
-.connect-button {
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  border: none;
-  width: 271px;
-  height: 67px;
+.action-buttons-container {
+  padding: var(--spacing-md);
   display: flex;
-  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
   justify-content: center;
+}
+
+.connect-button.youtube {
+  border: 1px solid #cccccc5b;
+  width: 131px;
+  height: 57px;
+  justify-content: space-between;
+  display: flex;
+  align-content: stretch;
+  justify-content: flex-end;
+  align-items: center;
   padding: 0 var(--spacing-xl);
   cursor: pointer;
-  background-color: transparent;
+  background: red;
   margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-md);
+}
+
+.connect-button:hover{
+  background-color: rgb(255, 117, 117);
+  border-color: rgba(255, 0, 0, 0.164);
+}
+
+.connect-button.spotify {
+  border: 1px solid #cccccc5b;
+  width: 131px;
+  height: 57px;
+  justify-content: space-between;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 var(--spacing-xl);
+  cursor: pointer;
+  background: #12bf4f;
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-md);
+}
+
+.connect-button.spotify:hover {
+  background-color: #4ec477;
+  border-color: #1db95446;
+}
+
+.connect-button.twitch {
+  border: 1px solid #cccccc5b;
+  width: 131px;
+  height: 57px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 var(--spacing-xl);
+  cursor: pointer;
+  background: #9051f1;
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-md);
+}
+
+.connect-button.twitch:hover {
+  background-color: #af7cfc;
+  ;
+  border-color: #7b1fa250;
 }
 
 .platform-icon {
-  width: var(--size-icon-lg);
-  height: var(--size-icon-lg);
+  width: 40px;
+  height: 40px;
   margin-right: var(--spacing-md);
   display: flex;
   align-items: center;
@@ -27,24 +80,44 @@
 }
 
 .youtube-icon {
-  background-color: #ff0000;
-  border-radius: var(--radius-sm);
+  border-radius: 10px
 }
 
 .spotify-icon {
-  background-color: #1db954;
-  border-radius: var(--radius-full);
+  border-radius: 10px
 }
 
 .twitch-icon {
-  background-color: #9146ff;
-  border-radius: var(--radius-sm);
+  border-radius: 10px
 }
 
 .connect-button-text {
   color: var(--color-text-secondary);
-  font-size: var(--font-size-base);
-  font-weight: 500;
+  font-weight: 200;
+}
+
+.platform-icon-connected {
+  width: 40px;
+  height: 40px;
+}
+
+.platform-icon-disconnected {
+  width: 40px;
+  height: 40px;
+  filter: grayscale(100%);
+}
+
+/* Specific connected filters for each platform */
+.youtube-icon .platform-icon-connected {
+  filter: brightness(0) saturate(100%) invert(12%) sepia(95%) hue-rotate(3deg) brightness(95%) contrast(118%);
+}
+
+.spotify-icon .platform-icon-connected {
+  filter: brightness(0) saturate(100%) invert(52%) sepia(98%) hue-rotate(91deg) brightness(94%) contrast(87%);
+}
+
+.twitch-icon .platform-icon-connected {
+  filter: brightness(0) saturate(100%) invert(37%) sepia(89%) hue-rotate(249deg) brightness(103%) contrast(102%);
 }
 
 .search-icon {
@@ -53,8 +126,50 @@
   filter: brightness(0) invert(0.6);
 }
 
+/* Search bar styles specific to AccountTab */
+.account-tab .search-input-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+  margin-bottom: 5px;
+  margin-top: 0;
+  position: relative;
+  width: 100%;
+}
+
+.account-tab .search-input-container:focus-within {
+  border-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.account-tab .search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.account-tab .search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.account-tab .search-logo {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(50%) contrast(100%);
+}
+
 /* Search functionality styles */
-.search-input-wrapper {
+.search-container {
   position: relative;
   width: 100%;
 }
@@ -88,17 +203,15 @@
 }
 
 .search-results-dropdown {
-  position: absolute;
   top: 100%;
   left: 0;
   right: 0;
   background: var(--color-surface-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-md);
-  max-height: 300px;
   overflow-y: auto;
   z-index: 1000;
-  margin-top: 4px;
+  margin-top: 40px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -121,12 +234,172 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
+  border: 1px solid;
+  border-color: rgba(66, 66, 66, 0.63);
+  border-radius: 10px;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, 0.13);
+  box-shadow: 0 4px 12px #ffb74d21;
+}
+
+.account-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .account-label {
   font-weight: 500;
   color: var(--color-text-primary);
   font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-xs);
+}
+
+.account-meta {
+  display: flex;
+  justify-content: space-evenly;
+  flex-flow: nowrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.account-type {
+  background: var(--color-surface-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.account-date {
+  color: var(--color-text-tertiary);
+  font-family: 'Courier New', monospace;
+  font-size: var(--font-size-xs);
+}
+
+/* Tags styling */
+.account-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--spacing-xs);
+  text-align: left;
+}
+
+.tags-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.tags-list {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tag-item {
+  padding: 2px 6px;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.tag-more {
+  padding: 2px 6px;
+  background: var(--color-surface-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* Interests styling */
+.account-interests {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--spacing-xs);
+  text-align: left;
+}
+
+.interests-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.interests-list {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.interest-item {
+  padding: 2px 6px;
+  background: #f3e5f5;
+  border: 1px solid #ce93d8;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: #7b1fa2;
+  font-weight: 500;
+}
+
+.interest-more {
+  padding: 2px 6px;
+  background: var(--color-surface-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* Subscriptions styling */
+.account-subscriptions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.subscriptions-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-align: left;
+}
+
+.subscriptions-list {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.subscription-item {
+  padding: 2px 6px;
+  background: #fff3e0;
+  border: 1px solid #ffb74d;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: #f57c00;
+  font-weight: 500;
+}
+
+.subscription-more {
+  padding: 2px 6px;
+  background: var(--color-surface-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
 }
 
 .account-details {
@@ -134,6 +407,9 @@
   gap: var(--spacing-md);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+  padding-top: var(--spacing-xs);
+  border-top: 1px solid var(--color-border-secondary);
 }
 
 .account-id,

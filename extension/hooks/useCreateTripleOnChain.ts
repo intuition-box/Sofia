@@ -114,34 +114,6 @@ export const useCreateTripleOnChain = () => {
         const predicateId = predicateAtom.vaultId as Address
         const objectId = objectAtom.vaultId as Address
         
-        // Calculate expected tripleVaultId using contract's logic
-        const expectedTripleId = await publicClient.readContract({
-          address: contractAddress as Address,
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'calculateTripleId',
-          args: [subjectId, predicateId, objectId]
-        }) as Address
-
-        // Simulate to validate before paying gas fees
-        const simulation = await publicClient.simulateContract({
-          address: contractAddress as Address,
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'createTriples',
-          args: [[subjectId], [predicateId], [objectId], [tripleCost]],
-          value: tripleCost,
-          account: walletClient.account
-        })
-
-        // Verify simulation result matches expected calculation
-        const simulatedTripleIds = simulation.result as Address[]
-        const simulatedTripleId = simulatedTripleIds[0]
-        
-        if (simulatedTripleId !== expectedTripleId) {
-          throw new Error(`Triple ID mismatch: expected ${expectedTripleId}, got ${simulatedTripleId}`)
-        }
-
-        const tripleVaultId = expectedTripleId
-
         const txParams = {
           address: contractAddress,
           abi: MULTIVAULT_V2_ABI,
@@ -168,13 +140,18 @@ export const useCreateTripleOnChain = () => {
           throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
         }
 
-        console.log('✅ TRIPLE CREATION COMPLETED:', {
-          tripleVaultId: tripleVaultId,
-          txHash: hash,
-          subjectVaultId: userAtom.vaultId,
-          predicateVaultId: predicateAtom.vaultId,
-          objectVaultId: objectAtom.vaultId
+        // Simulate to get the result after successful transaction
+        const simulation = await publicClient.simulateContract({
+          address: contractAddress as Address,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'createTriples',
+          args: [[subjectId], [predicateId], [objectId], [tripleCost]],
+          value: tripleCost,
+          account: walletClient.account
         })
+
+        const tripleIds = simulation.result as Address[]
+        const tripleVaultId = tripleIds[0]
         
         return {
           success: true,
@@ -231,27 +208,78 @@ export const useCreateTripleOnChain = () => {
         })
       }
 
-      const atomResults = new Map<string, string>() // key -> vaultId
+      const atomResults = new Map<string, string>() // key -> atomHash
+      const atomsToCreate: { key: string; ipfsUri: string; atomHash: string }[] = []
 
-      // Create each atom using the working createAtomWithMultivault function
+      // Check each atom and prepare those that need creation
       for (const [key, atomData] of uniqueAtoms) {
         try {
-          logger.debug('Creating atom with multivault', { key, name: atomData.name })
-          
-          const atomResult = await createAtomWithMultivault({
+          // Pin to IPFS first
+          const result = await pinThing({
             name: atomData.name,
             description: atomData.description || "Contenu visité par l'utilisateur.",
-            url: atomData.url,
-            type: atomData.type
+            image: "",
+            url: atomData.url
           })
+
+          if (!result.pinThing?.uri) {
+            throw new Error(`Failed to pin atom metadata for ${atomData.name}`)
+          }
+
+          const ipfsUri = result.pinThing.uri
           
-          atomResults.set(key, atomResult.vaultId)
-          logger.debug('Atom created successfully', { key, vaultId: atomResult.vaultId })
+          // Check if atom already exists
+          const atomCheck = await BlockchainService.checkAtomExists(ipfsUri)
           
+          if (atomCheck.exists) {
+            atomResults.set(key, atomCheck.atomHash)
+            logger.debug('Atom already exists', { key, atomHash: atomCheck.atomHash })
+          } else {
+            atomsToCreate.push({ key, ipfsUri, atomHash: atomCheck.atomHash })
+            logger.debug('Atom needs creation', { key, atomHash: atomCheck.atomHash })
+          }
         } catch (error) {
-          logger.error('Failed to create atom', { name: atomData.name, error })
-          throw new Error(`Failed to create required atom: ${atomData.name}`)
+          logger.error('Failed to prepare atom', { name: atomData.name, error })
+          throw new Error(`Failed to prepare required atom: ${atomData.name}`)
         }
+      }
+
+      // Create missing atoms in batch if needed
+      if (atomsToCreate.length > 0) {
+        logger.debug('Creating atoms in batch', { count: atomsToCreate.length })
+        
+        const atomCost = await BlockchainService.getAtomCost()
+        const encodedDataArray = atomsToCreate.map(atom => stringToHex(atom.ipfsUri))
+        const atomCostsArray = atomsToCreate.map(() => atomCost)
+        const totalValue = atomCost * BigInt(atomsToCreate.length)
+
+        const txHash = await executeTransaction({
+          address: BlockchainService.getContractAddress(),
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'createAtoms',
+          args: [encodedDataArray, atomCostsArray],
+          value: totalValue,
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS * BigInt(atomsToCreate.length),
+          account: address,
+          maxFeePerGas: 50000000000n,
+          maxPriorityFeePerGas: 10000000000n,
+          chain: SELECTED_CHAIN
+        })
+
+        // Wait for confirmation
+        const { publicClient } = await getClients()
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+        
+        if (receipt.status !== 'success') {
+          throw new Error(`Atom batch creation failed: ${receipt.status}`)
+        }
+
+        // Store the atom hashes for created atoms
+        for (const atom of atomsToCreate) {
+          atomResults.set(atom.key, atom.atomHash)
+        }
+        
+        logger.debug('Batch atom creation completed', { txHash })
       }
 
       const results: TripleOnChainResult[] = []
@@ -357,11 +385,6 @@ export const useCreateTripleOnChain = () => {
 
         // Add successful results
         const tripleIds = simulation.result as Address[]
-        console.log('✅ BATCH TRIPLE CREATION COMPLETED:', {
-          count: triplesToCreate.length,
-          txHash: hash,
-          tripleIds: tripleIds
-        })
         for (let i = 0; i < triplesToCreate.length; i++) {
           const triple = triplesToCreate[i]
           results.push({

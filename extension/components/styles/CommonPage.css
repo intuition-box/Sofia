@@ -7,11 +7,11 @@
   gap: 12px;
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 25px;
+  border-radius: 12px;
   padding: 12px 16px;
   transition: all 0.3s ease;
   margin-bottom: 5px;
-  margin-top: 5px
+  margin-top: 28px
 }
 
 .search-input-container:focus-within {
