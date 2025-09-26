@@ -17,6 +17,7 @@ export class SofiaIndexer {
   private client: PublicClient
   private multivaultAddress: `0x${string}`
   private sofiaTriples: Map<string, SofiaTriple>
+  private atomMapping: Map<string, string> // atomId -> ipfsUri
   private lastProcessedBlock: bigint | null
   private config: IndexerConfig
 
@@ -37,11 +38,13 @@ export class SofiaIndexer {
     
     this.multivaultAddress = DEFAULT_CHAIN.multivaultAddress
     this.sofiaTriples = new Map()
+    this.atomMapping = new Map()
     this.lastProcessedBlock = null
     
     this.config = {
       pollIntervalMs: 10000,
       startBlock: 'latest',
+      lookbackBlocks: 1000, // Look back 1000 blocks for existing atoms
       ...config
     }
   }
@@ -63,8 +66,55 @@ export class SofiaIndexer {
     
     console.log(`📦 Starting from block: ${this.lastProcessedBlock}`)
     
+    // Load existing atoms from recent blocks
+    if (this.config.lookbackBlocks && this.config.lookbackBlocks > 0) {
+      console.log(`🔄 Loading existing atoms from last ${this.config.lookbackBlocks} blocks...`)
+      await this.loadExistingAtoms()
+    }
+    
     // Start monitoring loop
     this.monitorLoop()
+  }
+
+  /**
+   * Load existing atoms from recent blocks to build the mapping
+   */
+  private async loadExistingAtoms(): Promise<void> {
+    if (!this.lastProcessedBlock) return
+    
+    try {
+      const startBlock = this.lastProcessedBlock - BigInt(this.config.lookbackBlocks!)
+      const endBlock = this.lastProcessedBlock
+      
+      console.log(`📚 Scanning blocks ${startBlock} to ${endBlock} for existing atoms...`)
+      
+      const atomLogs = await this.client.getLogs({
+        address: this.multivaultAddress,
+        event: {
+          type: 'event',
+          name: 'AtomCreated',
+          inputs: [
+            {type: 'address', name: 'creator', indexed: true},
+            {type: 'bytes32', name: 'termId', indexed: true},
+            {type: 'bytes', name: 'atomData', indexed: false},
+            {type: 'address', name: 'atomWallet', indexed: false}
+          ]
+        },
+        fromBlock: startBlock,
+        toBlock: endBlock
+      })
+
+      console.log(`📚 Found ${atomLogs.length} existing atoms to process...`)
+      
+      for (const log of atomLogs) {
+        await this.processAtomLog(log)
+      }
+      
+      console.log(`✅ Loaded ${this.atomMapping.size} atoms into mapping`)
+      
+    } catch (error) {
+      console.error('❌ Error loading existing atoms:', error)
+    }
   }
 
   /**
@@ -92,8 +142,30 @@ export class SofiaIndexer {
       console.log(`🔄 Checking blocks ${this.lastProcessedBlock + 1n} to ${currentBlock}`)
       
       try {
-        // Get TripleCreated event logs
-        const logs = await this.client.getLogs({
+        // Get AtomCreated event logs first (to build atomId -> ipfsUri mapping)
+        const atomLogs = await this.client.getLogs({
+          address: this.multivaultAddress,
+          event: {
+            type: 'event',
+            name: 'AtomCreated',
+            inputs: [
+              {type: 'address', name: 'creator', indexed: true},
+              {type: 'bytes32', name: 'termId', indexed: true},
+              {type: 'bytes', name: 'atomData', indexed: false},
+              {type: 'address', name: 'atomWallet', indexed: false}
+            ]
+          },
+          fromBlock: this.lastProcessedBlock + 1n,
+          toBlock: currentBlock
+        })
+
+        // Process atom creations first
+        for (const log of atomLogs) {
+          await this.processAtomLog(log)
+        }
+
+        // Then get TripleCreated event logs
+        const tripleLogs = await this.client.getLogs({
           address: this.multivaultAddress,
           event: {
             type: 'event',
@@ -110,7 +182,8 @@ export class SofiaIndexer {
           toBlock: currentBlock
         })
 
-        for (const log of logs) {
+        // Process triple creations
+        for (const log of tripleLogs) {
           await this.processTripleLog(log)
         }
       } catch (error) {
@@ -118,6 +191,71 @@ export class SofiaIndexer {
       }
 
       this.lastProcessedBlock = currentBlock
+    }
+  }
+
+  /**
+   * Process an atom creation log
+   */
+  private async processAtomLog(log: any): Promise<void> {
+    try {
+      // Decode the log to get atom details
+      const decodedLog = decodeEventLog({
+        abi: MULTIVAULT_COMPLETE_ABI,
+        data: log.data,
+        topics: log.topics
+      })
+
+      if (decodedLog.eventName === 'AtomCreated') {
+        const { termId, atomData } = decodedLog.args as any
+        
+        try {
+          // Store the hex atomData directly as the identifier
+          let hexData: string
+          if (typeof atomData === 'string') {
+            hexData = atomData
+          } else {
+            hexData = atomData.toString()
+          }
+          
+          // Store mapping using termId as key and hex as value
+          this.atomMapping.set(termId, hexData)
+          
+          console.log(`📚 Atom mapping stored: ${termId} -> ${hexData}`)
+          
+          // For Sofia signature detection, we'll decode the hex to check IPFS content
+          try {
+            const hexString = hexData.replace('0x', '')
+            const bytes = new Uint8Array(hexString.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || [])
+            const ipfsUri = new TextDecoder().decode(bytes)
+            
+            // Only check for Sofia signature if it looks like an IPFS URI
+            if (ipfsUri.startsWith('ipfs://')) {
+              if (await this.checkIPFSForSofiaSignature(ipfsUri)) {
+                console.log(`✨ Sofia atom detected: ${termId}`)
+              } else {
+                // Remove from mapping if no Sofia signature
+                this.atomMapping.delete(termId)
+                console.log(`🚫 Atom ignored (no Sofia signature): ${termId}`)
+              }
+            } else {
+              // Remove from mapping if not IPFS URI
+              this.atomMapping.delete(termId)
+              console.log(`🚫 Atom ignored (not IPFS): ${termId}`)
+            }
+          } catch (decodeError) {
+            // Remove from mapping if can't decode
+            this.atomMapping.delete(termId)
+            console.log(`🚫 Atom ignored (decode error): ${termId}`)
+          }
+        } catch (error) {
+          console.error(`❌ Error processing atomData for ${termId}:`, error)
+          console.log('Raw atomData:', atomData)
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ Error processing atom log:', error)
     }
   }
 
@@ -164,14 +302,23 @@ export class SofiaIndexer {
     
     for (const [index, atomId] of atomIds.entries()) {
       try {
-        const ipfsUri = await this.getAtomIPFS(atomId)
-        if (ipfsUri) {
-          const hasSofia = await this.checkIPFSForSofiaSignature(ipfsUri)
-          if (hasSofia) {
-            sofiaCount++
-            const metadata = await this.fetchIPFSMetadata(ipfsUri)
-            const atomType = ['subject', 'predicate', 'object'][index]
-            atomMetadata[atomType] = { ipfsUri, ...metadata }
+        const hexData = await this.getAtomIPFS(atomId)
+        if (hexData) {
+          // Decode hex to get IPFS URI for Sofia signature check
+          try {
+            const hexString = hexData.replace('0x', '')
+            const bytes = new Uint8Array(hexString.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || [])
+            const ipfsUri = new TextDecoder().decode(bytes)
+            
+            const hasSofia = await this.checkIPFSForSofiaSignature(ipfsUri)
+            if (hasSofia) {
+              sofiaCount++
+              const metadata = await this.fetchIPFSMetadata(ipfsUri)
+              const atomType = ['subject', 'predicate', 'object'][index]
+              atomMetadata[atomType] = { hexData, ipfsUri, ...metadata }
+            }
+          } catch (decodeError) {
+            console.log(`⚠️  Could not decode hex for Sofia check on atom ${atomId}: ${hexData}`)
           }
         }
       } catch (error) {
@@ -189,13 +336,17 @@ export class SofiaIndexer {
   }
 
   /**
-   * Get IPFS URI for an atom ID (placeholder - needs AtomCreated events)
+   * Get hex data for an atom ID
    */
   private async getAtomIPFS(atomId: string): Promise<string | null> {
-    // For now, we need to store AtomCreated events to map atomId -> ipfsUri
-    // This is a placeholder that will return null
-    console.log(`🔍 Looking for IPFS URI for atom ${atomId}`)
-    return null
+    const hexData = this.atomMapping.get(atomId)
+    if (hexData) {
+      console.log(`✅ Found hex data for atom ${atomId}: ${hexData}`)
+      return hexData
+    } else {
+      console.log(`❌ No hex data found for atom ${atomId}`)
+      return null
+    }
   }
 
   /**
@@ -266,6 +417,7 @@ export class SofiaIndexer {
         console.log(`    Name: ${(data as any).name}`)
         console.log(`    Description: ${(data as any).description}`)
         console.log(`    URL: ${(data as any).url}`)
+        console.log(`    Hex Data: ${(data as any).hexData}`)
         console.log(`    IPFS: ${(data as any).ipfsUri}`)
       }
     }

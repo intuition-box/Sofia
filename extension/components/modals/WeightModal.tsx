@@ -24,14 +24,30 @@ interface WeightModalProps {
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
 
+type WeightOption = {
+  id: 'minimum' | 'default' | 'strong' | 'custom'
+  label: string
+  value: number | null
+  description: string
+}
+
+const weightOptions: WeightOption[] = [
+  { id: 'minimum', label: 'Minimum', value: 0.001, description: '0.001 TRUST - Light signal' },
+  { id: 'default', label: 'Default', value: 0.05, description: '0.05 TRUST - Standard weight' },
+  { id: 'strong', label: 'Strong', value: 0.1, description: '0.1 TRUST - High confidence' },
+  { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
+]
+
 const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, onClose, onSubmit }: WeightModalProps) => {
-  const [customWeights, setCustomWeights] = useState<string[]>([])
+  const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
+  const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
 
   // Initialize weights array when triplets change
   useEffect(() => {
     if (triplets.length > 0) {
-      setCustomWeights(new Array(triplets.length).fill(''))
+      setSelectedWeights(new Array(triplets.length).fill('default'))
+      setCustomValues(new Array(triplets.length).fill(''))
     }
   }, [triplets])
 
@@ -63,26 +79,50 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
 
   const handleSubmit = async () => {
     try {
-      // Convert string weights to bigint array with null for empty values
-      const weightBigIntArray: (bigint | null)[] = customWeights.map(weight => {
-        if (weight && weight.trim() !== '') {
-          // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
-          const trustValue = parseFloat(weight)
-          return BigInt(Math.floor(trustValue * 1e18))
+      // Convert selected weights to bigint array
+      const weightBigIntArray: (bigint | null)[] = selectedWeights.map((selectedWeight, index) => {
+        let trustValue: number
+        
+        if (selectedWeight === 'custom') {
+          const customValue = customValues[index]
+          if (customValue && customValue.trim() !== '') {
+            trustValue = parseFloat(customValue)
+          } else {
+            return null // Use default weight if custom is empty
+          }
+        } else {
+          const option = weightOptions.find(opt => opt.id === selectedWeight)
+          trustValue = option?.value || 0.05 // fallback to default
         }
-        return null // Use default weight
+        
+        // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
+        return BigInt(Math.floor(trustValue * 1e18))
       })
       
       await onSubmit(weightBigIntArray)
-      setCustomWeights(new Array(triplets.length).fill(''))
+      setSelectedWeights(new Array(triplets.length).fill('default'))
+      setCustomValues(new Array(triplets.length).fill(''))
     } catch (error) {
       console.error('Failed to submit weights:', error)
     }
   }
 
   const handleClose = () => {
-    setCustomWeights(new Array(triplets.length).fill(''))
+    setSelectedWeights(new Array(triplets.length).fill('default'))
+    setCustomValues(new Array(triplets.length).fill(''))
     onClose()
+  }
+
+  const handleWeightSelection = (tripletIndex: number, optionId: WeightOption['id']) => {
+    const newSelectedWeights = [...selectedWeights]
+    newSelectedWeights[tripletIndex] = optionId
+    setSelectedWeights(newSelectedWeights)
+  }
+
+  const handleCustomValueChange = (tripletIndex: number, value: string) => {
+    const newCustomValues = [...customValues]
+    newCustomValues[tripletIndex] = value
+    setCustomValues(newCustomValues)
   }
 
   return (
@@ -92,9 +132,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         
         <div className="modal-section">
           <p className="modal-description">
-            The weight represents the value you assign to this information. The more TRUST you deposit, 
-            the more you weight this signal as important and reliable according to you. 
-            Leave empty for default weight, or enter a custom amount (e.g., 0.001).
+            The weight represents the value you assign to this information. Choose how much TRUST to deposit for each signal.
           </p>
         </div>
         
@@ -108,20 +146,41 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   <span className="object">{triplet.triplet.object}</span>
                 </p>
               </div>
-              <input
-                type="number"
-                step="0.000001"
-                min="0"
-                placeholder="0.001 (or leave empty for default)"
-                value={customWeights[index] || ''}
-                onChange={(e) => {
-                  const newWeights = [...customWeights]
-                  newWeights[index] = e.target.value
-                  setCustomWeights(newWeights)
-                }}
-                className="weight-input"
-                disabled={isProcessing}
-              />
+              
+              <div className="weight-options">
+                {weightOptions.map((option) => (
+                  <div key={option.id} className="weight-option">
+                    <label className="weight-option-label">
+                      <input
+                        type="radio"
+                        name={`weight-${index}`}
+                        value={option.id}
+                        checked={selectedWeights[index] === option.id}
+                        onChange={() => handleWeightSelection(index, option.id)}
+                        disabled={isProcessing}
+                        className="weight-radio"
+                      />
+                      <span className="weight-radio-custom"></span>
+                      <div className="weight-option-content">
+                        <span className="weight-option-title">{option.label}</span>
+                        <span className="weight-option-description">{option.description}</span>
+                      </div>
+                    </label>
+                    {option.id === 'custom' && selectedWeights[index] === 'custom' && (
+                      <input
+                        type="number"
+                        step="0.000001"
+                        min="0"
+                        placeholder="Enter amount (e.g., 0.025)"
+                        value={customValues[index] || ''}
+                        onChange={(e) => handleCustomValueChange(index, e.target.value)}
+                        className="custom-weight-input"
+                        disabled={isProcessing}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
