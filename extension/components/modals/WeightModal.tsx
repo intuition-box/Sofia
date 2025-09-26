@@ -32,9 +32,9 @@ type WeightOption = {
 }
 
 const weightOptions: WeightOption[] = [
-  { id: 'minimum', label: 'Minimum', value: 0.001, description: '0.001 TRUST - Light signal' },
-  { id: 'default', label: 'Default', value: 0.05, description: '0.05 TRUST - Standard weight' },
-  { id: 'strong', label: 'Strong', value: 0.1, description: '0.1 TRUST - High confidence' },
+  { id: 'minimum', label: 'Minimum', value: 0.001, description: '0.001 TRUST' },
+  { id: 'default', label: 'Default', value: 0.05, description: '0.05 TRUST' },
+  { id: 'strong', label: 'Strong', value: 0.1, description: '0.1 TRUST' },
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
@@ -193,14 +193,14 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
             <div className="processing-text">
               {isProcessing && (
                 <>
-                  <p className="processing-title">Creating Your {triplets.length === 1 ? 'Triplet' : 'Triplets'}</p>
+                  <p className="processing-title">Creating</p>
                   <p className="processing-step">{processingStep}</p>
                 </>
               )}
               {transactionSuccess && (
                 <>
                   <p className="success-title">Transaction Validated</p>
-                  <p className="success-step">Your {triplets.length === 1 ? 'triplet has' : 'triplets have'} been successfully amplified!</p>
+                  <p className="success-step">Your claims has been successfully amplified!</p>
                 </>
               )}
               {transactionError && (
