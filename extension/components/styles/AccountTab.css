@@ -252,7 +252,7 @@
 
 .account-label {
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: white;
   font-size: var(--font-size-base);
   margin-bottom: var(--spacing-xs);
 }

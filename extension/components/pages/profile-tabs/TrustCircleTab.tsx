@@ -35,19 +35,28 @@ const TrustCircleTab = () => {
       // Query GraphQL API pour récupérer tous les triples où l'utilisateur suit quelqu'un
       const query = `
         query GetTrustCircle($userAddress: String!) {
-          triples(
+          atoms(
             where: {
-              _and: [
-                { subject: { label: { _eq: $userAddress } } },
-                { predicate: { label: { _eq: "follow" } } }
-              ]
+              type: { _eq: "Thing" }
             }
-            limit: 50
           ) {
-            subject { label, term_id }
-            predicate { label, term_id }
-            object { label, term_id }
-          }
+            term_id
+            label
+            as_subject_triples(
+              where: {
+                predicate: { label: { _eq: "follow" } },
+                creator_id: { _eq: $userAddress }
+              }
+            ) {
+              term_id
+              created_at
+              transaction_hash
+              creator_id
+              subject { label, term_id }
+              predicate { label, term_id }
+              object { label, term_id }
+            }
+              }
         }
       `
 
@@ -67,20 +76,30 @@ const TrustCircleTab = () => {
       const result = await response.json()
 
       console.log('✅ TrustCircleTab - GraphQL response', {
-        triplesFound: result.data?.triples?.length || 0,
-        triples: result.data?.triples || []
+        atomsFound: result.data?.atoms?.length || 0,
+        atoms: result.data?.atoms || []
       })
 
       if (result.errors) {
         throw new Error(result.errors[0]?.message || 'GraphQL query failed')
       }
 
-      const triples = result.data?.triples || []
-      const accounts: FollowedAccount[] = triples.map((triple, index) => ({
-        id: triple.object.term_id,
-        label: triple.object.label,
-        termId: triple.object.term_id
-      }))
+      const atoms = result.data?.atoms || []
+      const accounts: FollowedAccount[] = []
+
+      // Extract follow triples from Thing atom
+      atoms.forEach(atom => {
+        atom.as_subject_triples?.forEach(triple => {
+          accounts.push({
+            id: triple.object.term_id,
+            label: triple.object.label,
+            termId: triple.object.term_id,
+            tripleId: triple.term_id,
+            followDate: new Date(triple.created_at).toLocaleDateString(),
+            trustAmount: "0"
+          })
+        })
+      })
 
       setFollowedAccounts(accounts)
       console.log('✅ TrustCircleTab - Trust circle loaded', {
