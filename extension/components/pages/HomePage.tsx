@@ -1,5 +1,5 @@
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
-import welcomeLogo from '../ui/icons/Welcomelogo.png'
+import welcomeLogo from '../ui/icons/welcomeLogo.png'
 import '../styles/HomePage.css'
 
 const HomePage = () => {
