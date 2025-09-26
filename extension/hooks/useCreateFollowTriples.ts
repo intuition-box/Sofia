@@ -81,13 +81,44 @@ export const useCreateFollowTriples = () => {
         url: ''
       })
 
-      // Use the termId directly as it's the atom identifier in Intuition
-      const targetVaultId = targetUser.termId as Address
+      // Get publicClient for contract calls
+      const { publicClient } = await getClients()
 
-      console.log('🔗 createFollowTriple - Using termId directly as vaultId', {
-        targetTermId: targetUser.termId,
-        targetLabel: targetUser.label
-      })
+      // Check if target atom already exists using the original termId
+      let targetVaultId: Address
+
+      // First try to use the existing termId as vaultId (if it's already an atom)
+      const targetTermIdExists = await publicClient.readContract({
+        address: BlockchainService.getContractAddress() as Address,
+        abi: MULTIVAULT_V2_ABI,
+        functionName: 'isTermCreated',
+        args: [targetUser.termId as Address]
+      }) as boolean
+
+      if (targetTermIdExists) {
+        // Use existing atom
+        targetVaultId = targetUser.termId as Address
+        console.log('🔗 createFollowTriple - Using existing target atom', {
+          targetTermId: targetUser.termId,
+          targetLabel: targetUser.label,
+          targetVaultId: targetVaultId
+        })
+      } else {
+        // Create new atom for target user
+        const targetAtomResult = await createAtomWithMultivault({
+          name: targetUser.label,
+          description: `User atom for ${targetUser.label}`,
+          url: targetUser.ipfsUri || '',
+          type: 'account'
+        })
+
+        targetVaultId = targetAtomResult.vaultId as Address
+        console.log('🔗 createFollowTriple - Created new target user atom', {
+          targetTermId: targetUser.termId,
+          targetLabel: targetUser.label,
+          targetVaultId: targetVaultId
+        })
+      }
 
       console.log('🔗 createFollowTriple - Atom details', {
         userVaultId: userAtomResult.vaultId,
@@ -124,8 +155,7 @@ export const useCreateFollowTriples = () => {
         }
       }
 
-      // Get publicClient for transaction execution
-      const { publicClient } = await getClients()
+      // publicClient already obtained above
 
       // Verify that target atom exists on chain
       const targetExists = await publicClient.readContract({

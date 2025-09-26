@@ -234,11 +234,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
-  border: 1px solid;
-  border-color: rgba(66, 66, 66, 0.63);
+  border: 1px solid #42424252;
   border-radius: 10px;
   padding: 5px;
-  background-color: rgba(255, 255, 255, 0.13);
   box-shadow: 0 4px 12px #ffb74d21;
 }
 

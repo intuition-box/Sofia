@@ -34,29 +34,22 @@ const TrustCircleTab = () => {
 
       // Query GraphQL API pour récupérer tous les triples où l'utilisateur suit quelqu'un
       const query = `
-        query GetTrustCircle($userAddress: String!) {
-          atoms(
+        query GetFollowing($subjectId: String!, $predicateId: String!, $userAddress: String!) {
+          triples(
             where: {
-              type: { _eq: "Thing" }
+              _and: [
+                {subject_id: {_eq: $subjectId}},
+                {predicate_id: {_eq: $predicateId}},
+                {term: {vaults: {positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}}}
+              ]
             }
           ) {
             term_id
-            label
-            as_subject_triples(
-              where: {
-                predicate: { label: { _eq: "follow" } },
-                creator_id: { _eq: $userAddress }
-              }
-            ) {
-              term_id
-              created_at
-              transaction_hash
-              creator_id
-              subject { label, term_id }
-              predicate { label, term_id }
-              object { label, term_id }
-            }
-              }
+            created_at
+            subject { term_id label image }
+            predicate { term_id label }
+            object { term_id label image }
+          }
         }
       `
 
@@ -68,6 +61,8 @@ const TrustCircleTab = () => {
         body: JSON.stringify({
           query,
           variables: {
+            subjectId: "0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216",
+            predicateId: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a",
             userAddress: address
           }
         })
@@ -76,28 +71,26 @@ const TrustCircleTab = () => {
       const result = await response.json()
 
       console.log('✅ TrustCircleTab - GraphQL response', {
-        atomsFound: result.data?.atoms?.length || 0,
-        atoms: result.data?.atoms || []
+        triplesFound: result.data?.triples?.length || 0,
+        triples: result.data?.triples || []
       })
 
       if (result.errors) {
         throw new Error(result.errors[0]?.message || 'GraphQL query failed')
       }
 
-      const atoms = result.data?.atoms || []
+      const triples = result.data?.triples || []
       const accounts: FollowedAccount[] = []
 
-      // Extract follow triples from Thing atom
-      atoms.forEach(atom => {
-        atom.as_subject_triples?.forEach(triple => {
-          accounts.push({
-            id: triple.object.term_id,
-            label: triple.object.label,
-            termId: triple.object.term_id,
-            tripleId: triple.term_id,
-            followDate: new Date(triple.created_at).toLocaleDateString(),
-            trustAmount: "0"
-          })
+      // Extract follow triples
+      triples.forEach(triple => {
+        accounts.push({
+          id: triple.object.term_id,
+          label: triple.object.label,
+          termId: triple.object.term_id,
+          tripleId: triple.term_id,
+          followDate: new Date(triple.created_at).toLocaleDateString(),
+          trustAmount: "0"
         })
       })
 
@@ -161,7 +154,7 @@ const TrustCircleTab = () => {
     <div className="trust-circle-tab">
       <div className="trust-circle-header">
         <h2>Your Trust Circle</h2>
-        <p>Accounts you follow and trust with your TRUST tokens</p>
+        <p>Accounts you follow</p>
         <div className="stats">
           <span className="stat">
             <strong>{followedAccounts.length}</strong> following
@@ -184,15 +177,6 @@ const TrustCircleTab = () => {
                   <span className="follow-date">Followed on {account.followDate}</span>
                   <span className="trust-amount">TRUST: {account.trustAmount}</span>
                 </div>
-              </div>
-
-              <div className="account-actions">
-                <button
-                  className="unfollow-button"
-                  onClick={() => handleUnfollow(account)}
-                >
-                  Unfollow
-                </button>
               </div>
             </div>
           ))}
