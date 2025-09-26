@@ -82,9 +82,33 @@ export const useCreateAtom = () => {
         contractAddress: BlockchainService.getContractAddress()
       })
       
+      // Calculate expected vaultId locally (same as contract)
+      const expectedVaultId = BlockchainService.calculateAtomHash(ipfsUri)
+
+      // Simulate to validate before paying gas fees
+      const { publicClient } = await getClients()
+      const simulation = await publicClient.simulateContract({
+        address: BlockchainService.getContractAddress() as `0x${string}`,
+        abi: MULTIVAULT_V2_ABI,
+        functionName: 'createAtoms',
+        args: [[encodedData], [atomCost]],
+        value: atomCost,
+        account: walletClient.account
+      })
+
+      // Verify simulation result matches our local calculation
+      const simulatedVaultIds = simulation.result as `0x${string}`[]
+      const simulatedVaultId = simulatedVaultIds[0]
+      
+      if (simulatedVaultId !== expectedVaultId) {
+        throw new Error(`Hash mismatch: expected ${expectedVaultId}, got ${simulatedVaultId}`)
+      }
+
       logger.debug('Sending atom creation transaction', {
         args: [[encodedData], [atomCost]],
-        value: atomCost.toString()
+        value: atomCost.toString(),
+        expectedVaultId: expectedVaultId,
+        simulationConfirmed: true
       })
 
       const txHash = await walletClient.writeContract({
@@ -101,7 +125,6 @@ export const useCreateAtom = () => {
       logger.debug('Transaction sent', { txHash })
 
       // Wait for confirmation
-      const { publicClient } = await getClients()
       const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
       logger.debug('Transaction confirmed', { status: receipt.status })
       
@@ -111,8 +134,8 @@ export const useCreateAtom = () => {
 
       const result = {
         success: true,
-        vaultId: atomCheck.atomHash,
-        atomHash: atomCheck.atomHash,
+        vaultId: expectedVaultId,
+        atomHash: expectedVaultId,
         txHash
       }
       

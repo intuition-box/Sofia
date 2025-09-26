@@ -4,6 +4,9 @@ import type { Triplet } from './messages'
 export interface EchoTriplet {
   id: string
   triplet: Triplet
+  url: string
+  description: string
+  timestamp: number
   sourceMessageId: string
   status: 'available' | 'published'
 }
@@ -24,7 +27,7 @@ export interface UseEchoSelectionProps {
   availableEchoes: EchoTriplet[]
   echoTriplets: EchoTriplet[]
   setEchoTriplets: (triplets: EchoTriplet[]) => void
-  refreshMessages: () => Promise<void>
+  refreshMessages: () => Promise<ElizaRecord[]>
   elizaDataService: DatabaseServices['elizaDataService']
   sofiaDB: DatabaseServices['sofiaDB']
   STORES: DatabaseServices['STORES']

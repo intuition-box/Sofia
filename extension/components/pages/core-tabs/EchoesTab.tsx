@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
-import { useCreateTripleOnChain } from '../../../hooks/useCreateTripleOnChain'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import { useEchoSelection } from '../../../hooks/useEchoSelection'
 import { useStorage } from "@plasmohq/storage/hook"
