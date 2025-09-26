@@ -128,7 +128,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
   return (
     <div className={`modal-overlay ${isProcessing ? 'processing' : ''}`}>
       <div className="modal-content">
-        <h3>Amplify {triplets.length === 1 ? 'Triplet' : `${triplets.length} Triplets`}</h3>
+        <h3>Amplify</h3>
         
         <div className="modal-section">
           <p className="modal-description">
