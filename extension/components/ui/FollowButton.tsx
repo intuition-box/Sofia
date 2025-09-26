@@ -6,25 +6,22 @@ import type { AccountAtom } from '../../hooks/useGetAtomAccount'
 
 interface FollowButtonProps {
   account: AccountAtom
-  isFollowing?: boolean
-  onFollowChange?: (isFollowing: boolean) => void
+  onFollowSuccess?: () => void
 }
 
 const FollowButton = ({
   account,
-  isFollowing = false,
-  onFollowChange
+  onFollowSuccess
 }: FollowButtonProps) => {
   const [address] = useStorage<string>("metamask-account")
-  const { followAccount, unfollowAccount, isLoading } = useFollowAccount()
+  const { followAccount, isLoading } = useFollowAccount()
   const [showModal, setShowModal] = useState(false)
 
   const handleFollowClick = () => {
     console.log('🔄 FollowButton - Follow button clicked', {
       accountId: account.id,
       accountLabel: account.label,
-      userAddress: address,
-      currentlyFollowing: isFollowing
+      userAddress: address
     })
 
     if (!address) {
@@ -33,11 +30,7 @@ const FollowButton = ({
       return
     }
 
-    if (isFollowing) {
-      handleUnfollow()
-    } else {
-      setShowModal(true)
-    }
+    setShowModal(true)
   }
 
   const handleFollow = async (trustAmount: string) => {
@@ -57,39 +50,14 @@ const FollowButton = ({
           tripleVaultId: result.tripleVaultId
         })
 
-        onFollowChange?.(true)
         setShowModal(false)
+        onFollowSuccess?.()
       } else {
         console.error('❌ FollowButton - Follow transaction failed', result.error)
         // TODO: Show error message to user
       }
     } catch (error) {
       console.error('❌ FollowButton - Follow transaction failed', error)
-    }
-  }
-
-  const handleUnfollow = async () => {
-    console.log('🔄 FollowButton - Unfollow initiated', {
-      accountId: account.id,
-      accountLabel: account.label,
-      userAddress: address
-    })
-
-    try {
-      const result = await unfollowAccount(account)
-
-      if (result.success) {
-        console.log('✅ FollowButton - Unfollow transaction successful', {
-          transactionHash: result.transactionHash
-        })
-
-        onFollowChange?.(false)
-      } else {
-        console.error('❌ FollowButton - Unfollow transaction failed', result.error)
-        // TODO: Show error message to user
-      }
-    } catch (error) {
-      console.error('❌ FollowButton - Unfollow transaction failed', error)
     }
   }
 
@@ -101,7 +69,7 @@ const FollowButton = ({
   return (
     <>
       <button
-        className={`follow-button ${isFollowing ? 'following' : 'not-following'} ${isLoading ? 'loading' : ''}`}
+        className={`follow-button ${isLoading ? 'loading' : ''}`}
         onClick={handleFollowClick}
         disabled={isLoading || !address}
         style={{
@@ -112,12 +80,12 @@ const FollowButton = ({
           fontSize: '12px',
           fontWeight: '500',
           transition: 'all 0.2s ease',
-          backgroundColor: isFollowing ? '#ef4444' : '#3b82f6',
+          backgroundColor: '#3b82f6',
           color: 'white',
           opacity: isLoading || !address ? 0.6 : 1
         }}
       >
-        {isLoading ? '...' : isFollowing ? 'Unfollow' : 'Follow'}
+        {isLoading ? '...' : 'Follow'}
       </button>
 
       {showModal && (

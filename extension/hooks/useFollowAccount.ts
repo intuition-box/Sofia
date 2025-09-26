@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { parseEther } from 'viem'
 import { useCreateFollowTriples } from './useCreateFollowTriples'
 import { createHookLogger } from '../lib/utils/logger'
+import { useStorage } from "@plasmohq/storage/hook"
 import type { AccountAtom } from './useGetAtomAccount'
 
 const logger = createHookLogger('useFollowAccount')
@@ -15,7 +16,9 @@ export interface FollowResult {
 
 export const useFollowAccount = () => {
   const { createFollowTriple } = useCreateFollowTriples()
+  const [address] = useStorage<string>("metamask-account")
   const [isLoading, setIsLoading] = useState(false)
+
 
   const followAccount = async (
     account: AccountAtom,

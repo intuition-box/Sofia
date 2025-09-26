@@ -11,7 +11,6 @@ const AccountTab = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<AccountAtom[]>([])
   const [showResults, setShowResults] = useState(false)
-  const [followingAccounts, setFollowingAccounts] = useState<Set<string>>(new Set())
 
   // Use the account atoms hook
   const { accounts, searchAccounts } = useGetAtomAccount()
@@ -118,22 +117,8 @@ const AccountTab = () => {
   }
 
   // Handle follow status change
-  const handleFollowChange = (accountId: string, isFollowing: boolean) => {
-    console.log('🔄 AccountTab - Follow status changed', {
-      accountId,
-      isFollowing,
-      previouslyFollowing: followingAccounts.has(accountId)
-    })
-
-    setFollowingAccounts(prev => {
-      const newSet = new Set(prev)
-      if (isFollowing) {
-        newSet.add(accountId)
-      } else {
-        newSet.delete(accountId)
-      }
-      return newSet
-    })
+  const handleFollowSuccess = () => {
+    console.log('✅ AccountTab - Follow successful, user can check Trust Circle tab')
   }
 
 
@@ -221,8 +206,7 @@ const AccountTab = () => {
                       <div className="account-label">{account.label}</div>
                       <FollowButton
                         account={account}
-                        isFollowing={followingAccounts.has(account.id)}
-                        onFollowChange={(isFollowing: boolean) => handleFollowChange(account.id, isFollowing)}
+                        onFollowSuccess={handleFollowSuccess}
                       />
                     </div>
                     <div className="account-meta">

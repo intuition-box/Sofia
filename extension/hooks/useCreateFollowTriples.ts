@@ -103,8 +103,16 @@ export const useCreateFollowTriples = () => {
         targetVaultId
       )
 
+      console.log('🔍 createFollowTriple - Triple existence check', {
+        userVaultId: userAtomResult.vaultId,
+        predicateVaultId: predicateAtomResult.vaultId,
+        targetVaultId: targetVaultId,
+        tripleExists: tripleCheck.exists,
+        tripleVaultId: tripleCheck.tripleVaultId
+      })
+
       if (tripleCheck.exists) {
-        console.log('✅ createFollowTriple - Follow relationship already exists')
+        console.log('✅ createFollowTriple - Follow relationship already exists, returning existing triple')
         return {
           success: true,
           tripleVaultId: tripleCheck.tripleVaultId!,
