@@ -116,7 +116,10 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
             query SearchAtoms($searchTerm: String!) {
               atoms(
                 where: {
-                  label: { _ilike: $searchTerm }
+                  _and: [
+                    { label: { _ilike: $searchTerm } },
+                    { type: { _eq: "Account" } }
+                  ]
                 }
                 limit: 20
               ) {
