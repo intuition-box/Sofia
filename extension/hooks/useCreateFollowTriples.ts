@@ -1,7 +1,7 @@
 import { useCreateAtom } from './useCreateAtom'
 import { useStorage } from "@plasmohq/storage/hook"
 import { getClients } from '../lib/clients/viemClients'
-import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
+import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { sessionWallet } from '../lib/services/sessionWallet'
 import { BlockchainService } from '../lib/services/blockchainService'
@@ -130,7 +130,7 @@ export const useCreateFollowTriples = () => {
       // Verify that target atom exists on chain
       const targetExists = await publicClient.readContract({
         address: BlockchainService.getContractAddress() as Address,
-        abi: MULTIVAULT_V2_ABI,
+        abi: MultiVaultAbi,
         functionName: 'isTermCreated',
         args: [targetVaultId]
       }) as boolean
@@ -158,7 +158,7 @@ export const useCreateFollowTriples = () => {
 
       const txParams = {
         address: BlockchainService.getContractAddress() as Address,
-        abi: MULTIVAULT_V2_ABI,
+        abi: MultiVaultAbi,
         functionName: 'createTriples',
         args: [
           [userAtomResult.vaultId as Address],
@@ -184,7 +184,7 @@ export const useCreateFollowTriples = () => {
       // Simulate to get the result
       const simulation = await publicClient.simulateContract({
         address: BlockchainService.getContractAddress() as Address,
-        abi: MULTIVAULT_V2_ABI,
+        abi: MultiVaultAbi,
         functionName: 'createTriples',
         args: [[userAtomResult.vaultId as Address], [predicateAtomResult.vaultId as Address], [targetVaultId], [tripleCost]],
         value: tripleCost,
