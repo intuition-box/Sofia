@@ -11,7 +11,7 @@ const FollowModal: React.FC<FollowModalProps> = ({
   onFollow,
   onClose
 }) => {
-  const [trustAmount, setTrustAmount] = useState('0.001')
+  const [trustAmount, setTrustAmount] = useState('0.01')
   const [loading, setLoading] = useState(false)
 
   // Predefined amounts based on Intuition's follow-actions.tsx
@@ -41,9 +41,9 @@ const FollowModal: React.FC<FollowModalProps> = ({
     // Allow empty amount for default weight
     if (trustAmount.trim() !== '') {
       const amount = parseFloat(trustAmount)
-      if (amount < 0.001) {
+      if (amount < 0.01) {
         console.warn('⚠️ FollowModal - Amount too low', amount)
-        alert('Minimum amount is 0.001 TRUST')
+        alert('Minimum amount is 0.01 TRUST')
         return
       }
     }
@@ -162,8 +162,8 @@ const FollowModal: React.FC<FollowModalProps> = ({
           </label>
           <input
             type="number"
-            min="0.001"
-            step="0.001"
+            min="0.01"
+            step="0.01"
             value={trustAmount}
             onChange={handleCustomAmountChange}
             style={{
@@ -181,7 +181,7 @@ const FollowModal: React.FC<FollowModalProps> = ({
             fontSize: '12px',
             color: '#6b7280'
           }}>
-            Minimum: 0.001 TRUST
+            Minimum: 0.01 TRUST
           </p>
         </div>
 
@@ -207,7 +207,7 @@ const FollowModal: React.FC<FollowModalProps> = ({
           </button>
           <button
             onClick={handleConfirmFollow}
-            disabled={loading || parseFloat(trustAmount) < 0.001}
+            disabled={loading || parseFloat(trustAmount) < 0.01}
             style={{
               flex: 1,
               padding: '10px 16px',
@@ -215,10 +215,10 @@ const FollowModal: React.FC<FollowModalProps> = ({
               border: 'none',
               backgroundColor: '#3b82f6',
               color: 'white',
-              cursor: (loading || parseFloat(trustAmount) < 0.001) ? 'not-allowed' : 'pointer',
+              cursor: (loading || parseFloat(trustAmount) < 0.01) ? 'not-allowed' : 'pointer',
               fontSize: '14px',
               fontWeight: '500',
-              opacity: (loading || parseFloat(trustAmount) < 0.001) ? 0.6 : 1
+              opacity: (loading || parseFloat(trustAmount) < 0.01) ? 0.6 : 1
             }}
           >
             {loading ? 'Processing...' : `Follow with ${trustAmount} TRUST`}
