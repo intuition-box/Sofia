@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
-import { BlockchainService } from '../../lib/services/blockchainService'
-import { stringToHex } from 'viem'
 import '../../styles/TrustCircleTab.css'
 
 interface FollowedAccount {

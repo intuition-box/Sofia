@@ -6,11 +6,11 @@ interface FollowModalProps {
   onClose: () => void
 }
 
-const FollowModal: React.FC<FollowModalProps> = ({
+const FollowModal = ({
   accountLabel,
   onFollow,
   onClose
-}) => {
+}: FollowModalProps) => {
   const [trustAmount, setTrustAmount] = useState('0.01')
   const [loading, setLoading] = useState(false)
 
@@ -26,7 +26,7 @@ const FollowModal: React.FC<FollowModalProps> = ({
     setTrustAmount(amount)
   }
 
-  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCustomAmountChange = (e: any) => {
     const value = e.target.value
     console.log('💰 FollowModal - Custom amount entered', value)
     setTrustAmount(value)
@@ -58,7 +58,7 @@ const FollowModal: React.FC<FollowModalProps> = ({
     }
   }
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  const handleBackdropClick = (e: any) => {
     if (e.target === e.currentTarget) {
       console.log('🚪 FollowModal - Backdrop clicked, closing modal')
       onClose()
