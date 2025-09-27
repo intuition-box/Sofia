@@ -18,7 +18,7 @@ export const useCreateFollowTriples = () => {
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
 
-  // Utility function to create/get user atom (shared logic)
+  // Utility function to create/get user atom (same pattern as useCreateTripleOnChain)
   const getUserAtom = async () => {
     if (!address) {
       throw new Error('No wallet connected')
@@ -30,6 +30,11 @@ export const useCreateFollowTriples = () => {
       url: `https://etherscan.io/address/${address}`,
       type: 'account'
     })
+  }
+
+  // Use the official follow atom ID directly
+  const getFollowPredicateId = (): string => {
+    return '0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a'
   }
 
   // Helper function to determine which wallet to use
@@ -69,84 +74,43 @@ export const useCreateFollowTriples = () => {
         throw new Error('No wallet connected')
       }
 
-      if (!targetUser.ipfsUri) {
-        throw new Error('Target user IPFS URI is missing')
-      }
-
-      console.log('🔗 createFollowTriple - Creating User follow User triple', {
+      console.log('🔗 createFollowTriple - Creating User follow User triple (HYBRID OPTIMIZED)', {
         currentUser: address,
         targetUser: targetUser.label,
-        targetIpfsUri: targetUser.ipfsUri,
+        targetTermId: targetUser.termId,
         customWeight: customWeight.toString()
       })
 
-      // Create/get current user atom using utility function
+      // OPTIMIZED: Get user atom + use official follow atom ID directly + use indexer termId for target
+      console.log('🚀 createFollowTriple - Getting user atom and using official follow atom ID')
+      
       const userAtomResult = await getUserAtom()
+      const userTermId = userAtomResult.vaultId
+      const predicateTermId = getFollowPredicateId()
+      const targetTermId = targetUser.termId
 
-      // Create/get follow predicate atom
-      const predicateAtomResult = await createAtomWithMultivault({
-        name: 'follow',
-        description: 'Predicate representing the relation "follow"',
-        url: ''
+      console.log('🔗 createFollowTriple - All termIds obtained (optimized approach)', {
+        userTermId,
+        predicateTermId,
+        targetTermId,
+        userLabel: address,
+        predicateLabel: 'follow (official)',
+        targetLabel: targetUser.label,
+        userSource: userAtomResult.txHash === 'existing' ? 'existing' : 'created',
+        predicateSource: 'official_atom'
       })
 
-      // Get publicClient for contract calls
-      const { publicClient } = await getClients()
-
-      // Check if target atom already exists using the original termId
-      let targetVaultId: Address
-
-      // First try to use the existing termId as vaultId (if it's already an atom)
-      const targetTermIdExists = await publicClient.readContract({
-        address: BlockchainService.getContractAddress() as Address,
-        abi: MultiVaultAbi,
-        functionName: 'isTermCreated',
-        args: [targetUser.termId as Address]
-      }) as boolean
-
-      if (targetTermIdExists) {
-        // Use existing atom
-        targetVaultId = targetUser.termId as Address
-        console.log('🔗 createFollowTriple - Using existing target atom', {
-          targetTermId: targetUser.termId,
-          targetLabel: targetUser.label,
-          targetVaultId: targetVaultId
-        })
-      } else {
-        // Create new atom for target user
-        const targetAtomResult = await createAtomWithMultivault({
-          name: targetUser.label,
-          description: `User atom for ${targetUser.label}`,
-          url: targetUser.ipfsUri || '',
-          type: 'account'
-        })
-
-        targetVaultId = targetAtomResult.vaultId as Address
-        console.log('🔗 createFollowTriple - Created new target user atom', {
-          targetTermId: targetUser.termId,
-          targetLabel: targetUser.label,
-          targetVaultId: targetVaultId
-        })
-      }
-
-      console.log('🔗 createFollowTriple - Atom details', {
-        userVaultId: userAtomResult.vaultId,
-        predicateVaultId: predicateAtomResult.vaultId,
-        targetVaultId: targetVaultId,
-        targetTermId: targetUser.termId
-      })
-
-      // Check if follow relationship already exists
+      // Check if follow relationship already exists using termIds
       const tripleCheck = await BlockchainService.checkTripleExists(
-        userAtomResult.vaultId,
-        predicateAtomResult.vaultId,
-        targetVaultId
+        userTermId,
+        predicateTermId,
+        targetTermId
       )
 
       console.log('🔍 createFollowTriple - Triple existence check', {
-        userVaultId: userAtomResult.vaultId,
-        predicateVaultId: predicateAtomResult.vaultId,
-        targetVaultId: targetVaultId,
+        userTermId,
+        predicateTermId,
+        targetTermId,
         tripleExists: tripleCheck.exists,
         tripleVaultId: tripleCheck.tripleVaultId
       })
@@ -156,35 +120,16 @@ export const useCreateFollowTriples = () => {
         return {
           success: true,
           tripleVaultId: tripleCheck.tripleVaultId!,
-          subjectVaultId: userAtomResult.vaultId,
-          predicateVaultId: predicateAtomResult.vaultId,
-          objectVaultId: targetVaultId,
+          subjectVaultId: userTermId,
+          predicateVaultId: predicateTermId,
+          objectVaultId: targetTermId,
           source: 'existing',
           tripleHash: tripleCheck.tripleHash
         }
       }
 
-      // publicClient already obtained above
-
-      // Verify that target atom exists on chain
-      const targetExists = await publicClient.readContract({
-        address: BlockchainService.getContractAddress() as Address,
-        abi: MultiVaultAbi,
-        functionName: 'isTermCreated',
-        args: [targetVaultId]
-      }) as boolean
-
-      console.log('🔍 createFollowTriple - Target atom verification', {
-        targetTermId: targetVaultId,
-        targetExists,
-        targetLabel: targetUser.label
-      })
-
-      if (!targetExists) {
-        throw new Error(`Target user atom does not exist on MultiVault contract: ${targetUser.label} (${targetVaultId})`)
-      }
-
-      // Create the follow triple
+      // Create the follow triple using termIds directly
+      const { publicClient } = await getClients()
       const defaultCost = await BlockchainService.getTripleCost()
       const tripleCost = customWeight !== undefined ? customWeight : defaultCost
 
@@ -200,7 +145,7 @@ export const useCreateFollowTriples = () => {
         address: BlockchainService.getContractAddress() as Address,
         abi: MultiVaultAbi,
         functionName: 'createTriples',
-        args: [[userAtomResult.vaultId as Address], [predicateAtomResult.vaultId as Address], [targetVaultId], [tripleCost]],
+        args: [[userTermId as Address], [predicateTermId as Address], [targetTermId as Address], [tripleCost]],
         value: tripleCost,
         account: address as Address
       })
@@ -210,9 +155,9 @@ export const useCreateFollowTriples = () => {
         abi: MultiVaultAbi,
         functionName: 'createTriples',
         args: [
-          [userAtomResult.vaultId as Address],
-          [predicateAtomResult.vaultId as Address],
-          [targetVaultId],
+          [userTermId as Address],
+          [predicateTermId as Address],
+          [targetTermId as Address],
           [tripleCost]
         ],
         value: tripleCost,
@@ -234,18 +179,24 @@ export const useCreateFollowTriples = () => {
       const tripleIds = simulation.result as Address[]
       const tripleVaultId = tripleIds[0]
 
-      console.log('✅ createFollowTriple - Follow triple created successfully', {
+      const atomTransactions = userAtomResult.txHash === 'existing' ? 0 : 1
+      console.log('✅ createFollowTriple - Follow triple created successfully (FULLY OPTIMIZED)', {
         txHash: hash,
-        tripleVaultId: tripleVaultId
+        tripleVaultId: tripleVaultId,
+        atomTransactions: atomTransactions,
+        tripleTransactions: 1,
+        totalTransactions: atomTransactions + 1,
+        userAtomReused: userAtomResult.txHash === 'existing',
+        predicateAtomOfficial: true
       })
 
       return {
         success: true,
         tripleVaultId: tripleVaultId,
         txHash: hash,
-        subjectVaultId: userAtomResult.vaultId,
-        predicateVaultId: predicateAtomResult.vaultId,
-        objectVaultId: targetVaultId,
+        subjectVaultId: userTermId,
+        predicateVaultId: predicateTermId,
+        objectVaultId: targetTermId,
         source: 'created',
         tripleHash: tripleVaultId
       }

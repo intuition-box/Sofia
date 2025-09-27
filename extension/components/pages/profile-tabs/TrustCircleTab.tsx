@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
+import { BlockchainService } from '../../lib/services/blockchainService'
+import { stringToHex } from 'viem'
 import '../../styles/TrustCircleTab.css'
 
 interface FollowedAccount {
@@ -32,13 +34,21 @@ const TrustCircleTab = () => {
       setLoading(true)
       setError(null)
 
-      // Query GraphQL API pour récupérer tous les triples où l'utilisateur suit quelqu'un
-      const query = `
-        query GetFollowing($subjectId: String!, $predicateId: String!, $userAddress: String!) {
-          triples(
+      // Une seule requête combinée pour récupérer l'utilisateur et ses follows
+      const combinedQuery = `
+        query GetUserAndFollows($userLabel: String!, $predicateId: String!, $userAddress: String!) {
+          user_atoms: atoms(where: {
+            label: { _eq: $userLabel }
+          }, limit: 1) {
+            term_id
+            label
+            type
+          }
+          
+          all_user_triples: triples(
             where: {
               _and: [
-                {subject_id: {_eq: $subjectId}},
+                {subject: {label: {_eq: $userLabel}}},
                 {predicate_id: {_eq: $predicateId}},
                 {term: {vaults: {positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}}}
               ]
@@ -59,9 +69,9 @@ const TrustCircleTab = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query,
+          query: combinedQuery,
           variables: {
-            subjectId: "0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216",
+            userLabel: address,
             predicateId: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a",
             userAddress: address
           }
@@ -70,16 +80,42 @@ const TrustCircleTab = () => {
 
       const result = await response.json()
 
-      console.log('✅ TrustCircleTab - GraphQL response', {
-        triplesFound: result.data?.triples?.length || 0,
-        triples: result.data?.triples || []
+      console.log('✅ TrustCircleTab - Combined GraphQL response', {
+        userAtoms: result.data?.user_atoms || [],
+        allUserTriples: result.data?.all_user_triples || [],
+        triplesFound: result.data?.all_user_triples?.length || 0,
+        errors: result.errors
       })
 
       if (result.errors) {
         throw new Error(result.errors[0]?.message || 'GraphQL query failed')
       }
 
-      const triples = result.data?.triples || []
+      // Vérifier si l'utilisateur existe
+      const userAtoms = result.data?.user_atoms || []
+      if (userAtoms.length === 0) {
+        console.log('❌ TrustCircleTab - User atom not found:', address)
+        setFollowedAccounts([])
+        return
+      }
+
+      const userAtom = userAtoms[0]
+      console.log('✅ TrustCircleTab - User atom found:', {
+        termId: userAtom.term_id,
+        label: userAtom.label,
+        type: userAtom.type
+      })
+
+      const triples = result.data?.all_user_triples || []
+      console.log('🔍 TrustCircleTab - Analyzing triples:', {
+        totalTriples: triples.length,
+        triplesDetails: triples.map(t => ({
+          tripleId: t.term_id,
+          subjectId: t.subject.term_id,
+          predicateId: t.predicate.term_id,
+          objectLabel: t.object.label
+        }))
+      })
       const accounts: FollowedAccount[] = []
 
       // Extract follow triples
