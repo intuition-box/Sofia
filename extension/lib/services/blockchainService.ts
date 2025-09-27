@@ -84,18 +84,48 @@ export class BlockchainService {
           abi: MultiVaultAbi,
           functionName: 'getTriple',
           args: [tripleId]
-        })
+        }) as [string, string, string] // [subjectId, predicateId, objectId]
 
-        console.log('✅ BlockchainService.checkTripleExists - Triple exists!', {
+        console.log('🔍 BlockchainService.checkTripleExists - Triple data retrieved', {
           tripleId,
-          tripleData
+          tripleData,
+          expectedSubject: subjectVaultId,
+          expectedPredicate: predicateVaultId,
+          expectedObject: objectVaultId
         })
 
-        // If getTriple doesn't revert, the triple exists
-        return {
-          exists: true,
-          tripleVaultId: tripleId,
-          tripleHash: tripleId
+        // IMPORTANT: Validate that the retrieved triple data matches exactly what we're looking for
+        // This prevents hash collision false positives
+        const [retrievedSubject, retrievedPredicate, retrievedObject] = tripleData
+        
+        const exactMatch = 
+          retrievedSubject.toLowerCase() === subjectVaultId.toLowerCase() &&
+          retrievedPredicate.toLowerCase() === predicateVaultId.toLowerCase() &&
+          retrievedObject.toLowerCase() === objectVaultId.toLowerCase()
+
+        if (exactMatch) {
+          console.log('✅ BlockchainService.checkTripleExists - Exact triple match found!', {
+            tripleId,
+            retrievedData: tripleData
+          })
+
+          return {
+            exists: true,
+            tripleVaultId: tripleId,
+            tripleHash: tripleId
+          }
+        } else {
+          console.log('⚠️ BlockchainService.checkTripleExists - Hash collision detected!', {
+            tripleId,
+            expected: [subjectVaultId, predicateVaultId, objectVaultId],
+            retrieved: tripleData,
+            message: 'TripleId exists but with different vaultIds - treating as non-existent'
+          })
+
+          return {
+            exists: false,
+            tripleHash: tripleId
+          }
         }
       } catch (getTripleError) {
         console.log('❌ BlockchainService.checkTripleExists - getTriple failed', {
