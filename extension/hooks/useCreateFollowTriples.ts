@@ -18,6 +18,20 @@ export const useCreateFollowTriples = () => {
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
 
+  // Utility function to create/get user atom (shared logic)
+  const getUserAtom = async () => {
+    if (!address) {
+      throw new Error('No wallet connected')
+    }
+    
+    return await createAtomWithMultivault({
+      name: address,
+      description: `User atom for wallet ${address}`,
+      url: `https://etherscan.io/address/${address}`,
+      type: 'account'
+    })
+  }
+
   // Helper function to determine which wallet to use
   const shouldUseSessionWallet = (transactionValue: bigint): boolean => {
     if (!useSessionWallet) return false
@@ -66,13 +80,8 @@ export const useCreateFollowTriples = () => {
         customWeight: customWeight.toString()
       })
 
-      // Create/get current user atom
-      const userAtomResult = await createAtomWithMultivault({
-        name: address,
-        description: `User atom for wallet ${address}`,
-        url: `https://etherscan.io/address/${address}`,
-        type: 'account'
-      })
+      // Create/get current user atom using utility function
+      const userAtomResult = await getUserAtom()
 
       // Create/get follow predicate atom
       const predicateAtomResult = await createAtomWithMultivault({
@@ -176,14 +185,24 @@ export const useCreateFollowTriples = () => {
       }
 
       // Create the follow triple
-      const tripleCost = customWeight === 0n
-        ? await BlockchainService.getTripleCost()
-        : customWeight
+      const defaultCost = await BlockchainService.getTripleCost()
+      const tripleCost = customWeight !== undefined ? customWeight : defaultCost
 
       console.log('💰 createFollowTriple - Final amount calculation', {
-        customWeight: customWeight.toString(),
-        isUsingDefault: customWeight === 0n,
+        customWeight: customWeight?.toString(),
+        defaultCost: defaultCost.toString(),
+        isUsingDefault: customWeight === undefined,
         finalTripleCost: tripleCost.toString()
+      })
+
+      // Simulate first to validate and get the result
+      const simulation = await publicClient.simulateContract({
+        address: BlockchainService.getContractAddress() as Address,
+        abi: MultiVaultAbi,
+        functionName: 'createTriples',
+        args: [[userAtomResult.vaultId as Address], [predicateAtomResult.vaultId as Address], [targetVaultId], [tripleCost]],
+        value: tripleCost,
+        account: address as Address
       })
 
       const txParams = {
@@ -198,7 +217,7 @@ export const useCreateFollowTriples = () => {
         ],
         value: tripleCost,
         chain: SELECTED_CHAIN,
-        gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+        // Remove hardcoded gas - let Viem estimate automatically
         maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
         maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
         account: address
@@ -211,16 +230,7 @@ export const useCreateFollowTriples = () => {
         throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
       }
 
-      // Simulate to get the result
-      const simulation = await publicClient.simulateContract({
-        address: BlockchainService.getContractAddress() as Address,
-        abi: MultiVaultAbi,
-        functionName: 'createTriples',
-        args: [[userAtomResult.vaultId as Address], [predicateAtomResult.vaultId as Address], [targetVaultId], [tripleCost]],
-        value: tripleCost,
-        account: address as Address
-      })
-
+      // Use the simulation result (done before transaction)
       const tripleIds = simulation.result as Address[]
       const tripleVaultId = tripleIds[0]
 

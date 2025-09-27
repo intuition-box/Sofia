@@ -16,9 +16,9 @@ const FollowModal: React.FC<FollowModalProps> = ({
 
   // Predefined amounts based on Intuition's follow-actions.tsx
   const predefinedAmounts = [
-    { label: 'Minimum', value: '0.001' },
-    { label: 'Default', value: '0.01' },
-    { label: 'Strong', value: '0.05' }
+    { label: 'Minimum', value: '0.01' },
+    { label: 'Default', value: '0.05' },
+    { label: 'Strong', value: '1' }
   ]
 
   const handleAmountSelect = (amount: string) => {

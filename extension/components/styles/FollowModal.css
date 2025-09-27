@@ -1,0 +1,209 @@
+/* FollowModal styles - similar to WeightModal */
+.follow-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.follow-modal-content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.follow-modal-section {
+  margin-bottom: 20px;
+}
+
+.follow-modal-description {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.follow-weight-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.follow-weight-option {
+  position: relative;
+}
+
+.follow-weight-option-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.follow-weight-option-label:hover {
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+}
+
+.follow-weight-option-label.selected {
+  border-color: #000;
+  background-color: #f9fafb;
+}
+
+.follow-weight-radio {
+  display: none;
+}
+
+.follow-weight-radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  margin-right: 12px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.follow-weight-option-label.selected .follow-weight-radio-custom {
+  border-color: #000;
+  background-color: #000;
+}
+
+.follow-weight-radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: white;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.follow-weight-option-label.selected .follow-weight-radio-custom::after {
+  opacity: 1;
+}
+
+.follow-weight-option-content {
+  flex: 1;
+}
+
+.follow-weight-option-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.follow-weight-option-description {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.follow-custom-weight-input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.follow-custom-weight-input:focus {
+  border-color: #000;
+}
+
+.follow-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.follow-modal-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.follow-modal-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.follow-modal-btn.secondary {
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #374151;
+}
+
+.follow-modal-btn.secondary:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+.follow-modal-btn.primary {
+  border: none;
+  background-color: #000;
+  color: white;
+}
+
+.follow-modal-btn.primary:hover:not(:disabled) {
+  background-color: #1f2937;
+}
+
+.follow-processing-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.follow-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.follow-processing-text {
+  font-size: 14px;
+  color: #374151;
+}
+
+h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
