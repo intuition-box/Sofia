@@ -253,6 +253,19 @@ export const useCreateTripleOnChain = () => {
         const atomCostsArray = atomsToCreate.map(() => atomCost)
         const totalValue = atomCost * BigInt(atomsToCreate.length)
 
+        // Simulate first to get the returned vaultIds
+        const { publicClient } = await getClients()
+        const simulation = await publicClient.simulateContract({
+          address: BlockchainService.getContractAddress() as Address,
+          abi: MULTIVAULT_V2_ABI,
+          functionName: 'createAtoms',
+          args: [encodedDataArray, atomCostsArray],
+          value: totalValue,
+          account: address as Address
+        })
+        
+        const expectedVaultIds = simulation.result as Address[]
+
         const txHash = await executeTransaction({
           address: BlockchainService.getContractAddress(),
           abi: MULTIVAULT_V2_ABI,
@@ -267,16 +280,18 @@ export const useCreateTripleOnChain = () => {
         })
 
         // Wait for confirmation
-        const { publicClient } = await getClients()
         const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
         
         if (receipt.status !== 'success') {
           throw new Error(`Atom batch creation failed: ${receipt.status}`)
         }
 
-        // Store the atom hashes for created atoms
-        for (const atom of atomsToCreate) {
-          atomResults.set(atom.key, atom.atomHash)
+        // Store the REAL vaultIds returned by the contract (not atomHash!)
+        for (let i = 0; i < atomsToCreate.length; i++) {
+          const atom = atomsToCreate[i]
+          const realVaultId = expectedVaultIds[i]
+          atomResults.set(atom.key, realVaultId)
+          logger.debug('Atom created with real vaultId', { key: atom.key, vaultId: realVaultId })
         }
         
         logger.debug('Batch atom creation completed', { txHash })

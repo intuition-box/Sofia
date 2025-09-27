@@ -97,7 +97,7 @@ export const SessionWalletManager= () => {
         <span style={styles.warningIcon}>⚠️</span>
         <div style={styles.warningText}>
           <strong>Important:</strong> Session wallet funds are temporary. 
-          They will be lost if you close the browser or destroy the wallet.
+          They will be lost for ever .
         </div>
       </div>
 
