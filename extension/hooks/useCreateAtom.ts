@@ -1,7 +1,7 @@
 import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/clients/viemClients'
 import { stringToHex } from 'viem'
-import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
+import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SELECTED_CHAIN } from '~lib/config/chainConfig'
 import { useStorage } from "@plasmohq/storage/hook"
 import { BlockchainService } from '../lib/services/blockchainService'
@@ -89,7 +89,7 @@ export const useCreateAtom = () => {
       const { publicClient } = await getClients()
       const simulation = await publicClient.simulateContract({
         address: BlockchainService.getContractAddress() as `0x${string}`,
-        abi: MULTIVAULT_V2_ABI,
+        abi: MultiVaultAbi,
         functionName: 'createAtoms',
         args: [[encodedData], [atomCost]],
         value: atomCost,
@@ -113,7 +113,7 @@ export const useCreateAtom = () => {
 
       const txHash = await walletClient.writeContract({
         address: BlockchainService.getContractAddress() as `0x${string}`,
-        abi: MULTIVAULT_V2_ABI,
+        abi: MultiVaultAbi,
         functionName: 'createAtoms',
         args: [[encodedData], [atomCost]],
         value: atomCost,

@@ -1,5 +1,5 @@
 import { getClients } from '../lib/clients/viemClients'
-import { MULTIVAULT_V2_ABI } from '../contracts/ABIs'
+import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
 import { useStorage } from "@plasmohq/storage/hook"
@@ -21,7 +21,19 @@ export const useCreateTripleOnChain = () => {
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   
-  // State management removed - let components handle loading/error states
+  // Utility function to create/get user atom (shared between simple and batch)
+  const getUserAtom = async () => {
+    if (!address) {
+      throw new Error('No wallet connected')
+    }
+    
+    return await createAtomWithMultivault({
+      name: address,
+      description: `User atom for wallet ${address}`,
+      url: `https://etherscan.io/address/${address}`,
+      type: 'account'
+    })
+  }
 
   // Helper function to determine which wallet to use
   const shouldUseSessionWallet = (transactionValue: bigint): boolean => {
@@ -64,12 +76,7 @@ export const useCreateTripleOnChain = () => {
         throw new Error('No wallet connected')
       }
       
-      const userAtomResult = await createAtomWithMultivault({
-        name: address,
-        description: `User atom for wallet ${address}`,
-        url: `https://etherscan.io/address/${address}`,
-        type:'account'
-      })
+      const userAtomResult = await getUserAtom()
       
       const userAtom = {
         vaultId: userAtomResult.vaultId,
@@ -108,7 +115,8 @@ export const useCreateTripleOnChain = () => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress = BlockchainService.getContractAddress()
 
-        const tripleCost = customWeight || await BlockchainService.getTripleCost()
+        const defaultCost = await BlockchainService.getTripleCost()
+        const tripleCost = customWeight !== undefined ? customWeight : defaultCost
 
         const subjectId = userAtom.vaultId as Address
         const predicateId = predicateAtom.vaultId as Address
@@ -116,7 +124,7 @@ export const useCreateTripleOnChain = () => {
         
         const txParams = {
           address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
+          abi: MultiVaultAbi,
           functionName: 'createTriples',
           args: [
             [subjectId],
@@ -143,7 +151,7 @@ export const useCreateTripleOnChain = () => {
         // Simulate to get the result after successful transaction
         const simulation = await publicClient.simulateContract({
           address: contractAddress as Address,
-          abi: MULTIVAULT_V2_ABI,
+          abi: MultiVaultAbi,
           functionName: 'createTriples',
           args: [[subjectId], [predicateId], [objectId], [tripleCost]],
           value: tripleCost,
@@ -181,13 +189,8 @@ export const useCreateTripleOnChain = () => {
       logger.debug('Starting batch triple creation', { count: inputs.length })
       const uniqueAtoms = new Map<string, { name: string; description?: string; url: string; type: string }>()
       
-      // User atom (always needed)
-      uniqueAtoms.set(`user:${address}`, {
-        name: address,
-        description: `User atom for wallet ${address}`,
-        url: `https://etherscan.io/address/${address}`,
-        type: 'account'
-      })
+      // User atom (always needed) - will be created via getUserAtom utility
+      const userAtomKey = `user:${address}`
 
       // Collect unique predicates and objects
       for (const input of inputs) {
@@ -208,79 +211,46 @@ export const useCreateTripleOnChain = () => {
         })
       }
 
-      const atomResults = new Map<string, string>() // key -> atomHash
-      const atomsToCreate: { key: string; ipfsUri: string; atomHash: string }[] = []
+      const atomResults = new Map<string, string>() // key -> vaultId
 
-      // Check each atom and prepare those that need creation
-      for (const [key, atomData] of uniqueAtoms) {
+      // Create user atom first using utility function
+      const userAtomResult = await getUserAtom()
+      atomResults.set(userAtomKey, userAtomResult.vaultId)
+      
+      // Create other atoms in parallel for better performance
+      const atomPromises = Array.from(uniqueAtoms.entries()).map(async ([key, atomData]) => {
         try {
-          // Pin to IPFS first
-          const result = await pinThing({
+          logger.debug('Creating/getting atom', { key, name: atomData.name })
+          
+          const atomResult = await createAtomWithMultivault({
             name: atomData.name,
             description: atomData.description || "Contenu visité par l'utilisateur.",
             image: "",
-            url: atomData.url
+            url: atomData.url,
+            type: atomData.type
           })
 
-          if (!result.pinThing?.uri) {
-            throw new Error(`Failed to pin atom metadata for ${atomData.name}`)
+          if (!atomResult.success) {
+            throw new Error(`Failed to create/get atom for ${atomData.name}`)
           }
 
-          const ipfsUri = result.pinThing.uri
-          
-          // Check if atom already exists
-          const atomCheck = await BlockchainService.checkAtomExists(ipfsUri)
-          
-          if (atomCheck.exists) {
-            atomResults.set(key, atomCheck.atomHash)
-            logger.debug('Atom already exists', { key, atomHash: atomCheck.atomHash })
-          } else {
-            atomsToCreate.push({ key, ipfsUri, atomHash: atomCheck.atomHash })
-            logger.debug('Atom needs creation', { key, atomHash: atomCheck.atomHash })
-          }
+          logger.debug('Atom ready', { key, vaultId: atomResult.vaultId })
+          return { key, vaultId: atomResult.vaultId }
         } catch (error) {
           logger.error('Failed to prepare atom', { name: atomData.name, error })
           throw new Error(`Failed to prepare required atom: ${atomData.name}`)
         }
+      })
+
+      // Wait for all non-user atoms to be created/retrieved in parallel
+      const atomResultsArray = await Promise.all(atomPromises)
+      
+      // Populate the results map
+      for (const { key, vaultId } of atomResultsArray) {
+        atomResults.set(key, vaultId)
       }
 
-      // Create missing atoms in batch if needed
-      if (atomsToCreate.length > 0) {
-        logger.debug('Creating atoms in batch', { count: atomsToCreate.length })
-        
-        const atomCost = await BlockchainService.getAtomCost()
-        const encodedDataArray = atomsToCreate.map(atom => stringToHex(atom.ipfsUri))
-        const atomCostsArray = atomsToCreate.map(() => atomCost)
-        const totalValue = atomCost * BigInt(atomsToCreate.length)
-
-        const txHash = await executeTransaction({
-          address: BlockchainService.getContractAddress(),
-          abi: MULTIVAULT_V2_ABI,
-          functionName: 'createAtoms',
-          args: [encodedDataArray, atomCostsArray],
-          value: totalValue,
-          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS * BigInt(atomsToCreate.length),
-          account: address,
-          maxFeePerGas: 50000000000n,
-          maxPriorityFeePerGas: 10000000000n,
-          chain: SELECTED_CHAIN
-        })
-
-        // Wait for confirmation
-        const { publicClient } = await getClients()
-        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
-        
-        if (receipt.status !== 'success') {
-          throw new Error(`Atom batch creation failed: ${receipt.status}`)
-        }
-
-        // Store the atom hashes for created atoms
-        for (const atom of atomsToCreate) {
-          atomResults.set(atom.key, atom.atomHash)
-        }
-        
-        logger.debug('Batch atom creation completed', { txHash })
-      }
+      // All atoms are now created/retrieved individually above
 
       const results: TripleOnChainResult[] = []
       const triplesToCreate: {
@@ -291,6 +261,9 @@ export const useCreateTripleOnChain = () => {
         index: number
         customWeight?: bigint
       }[] = []
+      
+      // Use Set for O(1) deduplication instead of O(n) some() calls
+      const tripleKeysSet = new Set<string>()
 
       for (let i = 0; i < inputs.length; i++) {
         const input = inputs[i]
@@ -313,14 +286,11 @@ export const useCreateTripleOnChain = () => {
             tripleHash: tripleCheck.tripleHash
           })
         } else {
-          // Check if we already have this triple in our list to create
-          const tripleExists = triplesToCreate.some(t => 
-            t.subjectId === userVaultId && 
-            t.predicateId === predicateVaultId && 
-            t.objectId === objectVaultId
-          )
+          // Create unique key for deduplication (O(1) instead of O(n))
+          const tripleKey = `${userVaultId}-${predicateVaultId}-${objectVaultId}`
           
-          if (!tripleExists) {
+          if (!tripleKeysSet.has(tripleKey)) {
+            tripleKeysSet.add(tripleKey)
             triplesToCreate.push({
               subjectId: userVaultId,
               predicateId: predicateVaultId,
@@ -345,32 +315,31 @@ export const useCreateTripleOnChain = () => {
         const subjectIds = triplesToCreate.map(t => t.subjectId as Address)
         const predicateIds = triplesToCreate.map(t => t.predicateId as Address)
         const objectIds = triplesToCreate.map(t => t.objectId as Address)
-        const tripleCosts = triplesToCreate.map(t => t.customWeight || defaultTripleCost)
+        const tripleCosts = triplesToCreate.map(t => t.customWeight !== undefined ? t.customWeight : defaultTripleCost)
 
         const totalValue = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
 
-
-        // Simulate first
+        // Simulate first to validate and get gas estimation
         const simulation = await publicClient.simulateContract({
           address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
+          abi: MultiVaultAbi,
           functionName: 'createTriples',
           args: [subjectIds, predicateIds, objectIds, tripleCosts],
           value: totalValue,
           account: walletClient.account
         })
 
-        // Execute batch transaction (automatic or MetaMask)
+        // Execute batch transaction with automatic gas estimation
         const batchTxParams = {
           address: contractAddress,
-          abi: MULTIVAULT_V2_ABI,
+          abi: MultiVaultAbi,
           functionName: 'createTriples',
           args: [subjectIds, predicateIds, objectIds, tripleCosts],
           value: totalValue,
           chain: SELECTED_CHAIN,
-          gas: 2000000n,
-          maxFeePerGas: 50000000000n,
-          maxPriorityFeePerGas: 10000000000n,
+          // Remove hardcoded gas - let Viem estimate automatically
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
           account: address
         }
 

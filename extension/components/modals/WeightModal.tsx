@@ -32,7 +32,7 @@ type WeightOption = {
 }
 
 const weightOptions: WeightOption[] = [
-  { id: 'minimum', label: 'Minimum', value: 0.001, description: '0.001 TRUST' },
+  { id: 'minimum', label: 'Minimum', value: 0.01, description: '0.01 TRUST' },
   { id: 'default', label: 'Default', value: 0.05, description: '0.05 TRUST' },
   { id: 'strong', label: 'Strong', value: 0.1, description: '0.1 TRUST' },
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
@@ -88,7 +88,8 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
           if (customValue && customValue.trim() !== '') {
             trustValue = parseFloat(customValue)
           } else {
-            return null // Use default weight if custom is empty
+            // Return default weight when custom field is empty
+            trustValue = 0.05
           }
         } else {
           const option = weightOptions.find(opt => opt.id === selectedWeight)

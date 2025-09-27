@@ -1,5 +1,5 @@
 import { getClients } from '../clients/viemClients'
-import { MULTIVAULT_V2_ABI } from '../../contracts/ABIs'
+import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { stringToHex, keccak256 } from 'viem'
 import type { AtomCheckResult, TripleCheckResult } from '../../types/blockchain'
 import { MULTIVAULT_CONTRACT_ADDRESS } from '../config/chainConfig'
@@ -28,7 +28,7 @@ export class BlockchainService {
     
     const exists = await publicClient.readContract({
       address: this.CONTRACT_ADDRESS as `0x${string}`,
-      abi: MULTIVAULT_V2_ABI,
+      abi: MultiVaultAbi,
       functionName: 'isTermCreated',
       args: [atomHash as `0x${string}`]
     }) as boolean
@@ -62,7 +62,7 @@ export class BlockchainService {
       // Calculate the triple ID
       const tripleId = await publicClient.readContract({
         address: this.CONTRACT_ADDRESS as `0x${string}`,
-        abi: MULTIVAULT_V2_ABI,
+        abi: MultiVaultAbi,
         functionName: 'calculateTripleId',
         args: [
           subjectVaultId as `0x${string}`,
@@ -81,7 +81,7 @@ export class BlockchainService {
 
         const tripleData = await publicClient.readContract({
           address: this.CONTRACT_ADDRESS as `0x${string}`,
-          abi: MULTIVAULT_V2_ABI,
+          abi: MultiVaultAbi,
           functionName: 'getTriple',
           args: [tripleId]
         })
@@ -101,7 +101,8 @@ export class BlockchainService {
         console.log('❌ BlockchainService.checkTripleExists - getTriple failed', {
           tripleId,
           error: getTripleError,
-          errorMessage: getTripleError instanceof Error ? getTripleError.message : 'Unknown error'
+          errorMessage: getTripleError instanceof Error ? getTripleError.message : 'Unknown error',
+          errorSignature: (getTripleError as any)?.signature || 'no signature'
         })
 
         // getTriple reverts if triple doesn't exist
@@ -132,7 +133,7 @@ export class BlockchainService {
     
     return await publicClient.readContract({
       address: this.CONTRACT_ADDRESS as `0x${string}`,
-      abi: MULTIVAULT_V2_ABI,
+      abi: MultiVaultAbi,
       functionName: 'getAtomCost'
     }) as bigint
   }
@@ -145,7 +146,7 @@ export class BlockchainService {
     
     return await publicClient.readContract({
       address: this.CONTRACT_ADDRESS as `0x${string}`,
-      abi: MULTIVAULT_V2_ABI,
+      abi: MultiVaultAbi,
       functionName: 'getTripleCost'
     }) as bigint
   }
