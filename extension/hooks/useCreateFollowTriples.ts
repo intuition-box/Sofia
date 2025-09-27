@@ -90,7 +90,7 @@ export const useCreateFollowTriples = () => {
       // First try to use the existing termId as vaultId (if it's already an atom)
       const targetTermIdExists = await publicClient.readContract({
         address: BlockchainService.getContractAddress() as Address,
-        abi: MULTIVAULT_V2_ABI,
+        abi: MultiVaultAbi,
         functionName: 'isTermCreated',
         args: [targetUser.termId as Address]
       }) as boolean

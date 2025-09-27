@@ -24,7 +24,7 @@ export interface ContractWriteParams {
   functionName: string
   args: any[]
   value: bigint
-  gas: bigint
+  gas?: bigint
   maxFeePerGas: bigint
   maxPriorityFeePerGas: bigint
   chain: any
