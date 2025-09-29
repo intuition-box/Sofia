@@ -46,9 +46,8 @@ const TrustCircleTab = () => {
           all_user_triples: triples(
             where: {
               _and: [
-                {subject: {label: {_eq: $userLabel}}},
                 {predicate_id: {_eq: $predicateId}},
-                {term: {vaults: {positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}}}
+                {positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}
               ]
             }
           ) {
