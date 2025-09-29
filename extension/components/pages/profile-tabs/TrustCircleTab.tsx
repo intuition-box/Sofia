@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
+import { sessionWallet } from '../../../lib/services/sessionWallet'
 import '../../styles/TrustCircleTab.css'
 
 interface FollowedAccount {
@@ -9,10 +10,12 @@ interface FollowedAccount {
   tripleId: string
   followDate: string
   trustAmount: string
+  walletInfo?: { wallet: string; shares: string }[]
 }
 
 const TrustCircleTab = () => {
   const [address] = useStorage<string>("metamask-account")
+  const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   const [followedAccounts, setFollowedAccounts] = useState<FollowedAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -24,17 +27,32 @@ const TrustCircleTab = () => {
     }
 
     loadTrustCircle()
-  }, [address])
+  }, [address, useSessionWallet])
 
   const loadTrustCircle = async () => {
     try {
-      console.log('🔍 TrustCircleTab - Loading trust circle', { userAddress: address })
+      // Get session wallet address if enabled
+      const sessionStatus = sessionWallet.getStatus()
+      const sessionWalletAddress = useSessionWallet && sessionStatus.isReady ? sessionStatus.address : null
+
+      console.log('🔍 TrustCircleTab - Loading trust circle', {
+        userAddress: address,
+        sessionWalletAddress,
+        useSessionWallet
+      })
+
       setLoading(true)
       setError(null)
 
-      // Une seule requête combinée pour récupérer l'utilisateur et ses follows
+      // Create addresses array for positions search
+      const addressesToSearch = [address]
+      if (sessionWalletAddress && sessionWalletAddress !== address) {
+        addressesToSearch.push(sessionWalletAddress)
+      }
+
+      // Query to search positions in both wallets
       const combinedQuery = `
-        query GetUserAndFollows($userLabel: String!, $predicateId: String!, $userAddress: String!) {
+        query GetUserAndFollows($userLabel: String!, $predicateId: String!, $addresses: [String!]!) {
           user_atoms: atoms(where: {
             label: { _eq: $userLabel }
           }, limit: 1) {
@@ -42,12 +60,12 @@ const TrustCircleTab = () => {
             label
             type
           }
-          
+
           all_user_triples: triples(
             where: {
               _and: [
                 {predicate_id: {_eq: $predicateId}},
-                {positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}
+                {positions: {account_id: {_in: $addresses}, shares: {_gt: "0"}}}
               ]
             }
           ) {
@@ -56,6 +74,10 @@ const TrustCircleTab = () => {
             subject { term_id label image }
             predicate { term_id label }
             object { term_id label image }
+            positions(where: {account_id: {_in: $addresses}, shares: {_gt: "0"}}) {
+              account_id
+              shares
+            }
           }
         }
       `
@@ -70,7 +92,7 @@ const TrustCircleTab = () => {
           variables: {
             userLabel: address,
             predicateId: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a",
-            userAddress: address
+            addresses: addressesToSearch
           }
         })
       })
@@ -81,6 +103,8 @@ const TrustCircleTab = () => {
         userAtoms: result.data?.user_atoms || [],
         allUserTriples: result.data?.all_user_triples || [],
         triplesFound: result.data?.all_user_triples?.length || 0,
+        addressesToSearch,
+        sessionWalletAddress,
         errors: result.errors
       })
 
@@ -104,26 +128,44 @@ const TrustCircleTab = () => {
       })
 
       const triples = result.data?.all_user_triples || []
-      console.log('🔍 TrustCircleTab - Analyzing triples:', {
+      console.log('🔍 TrustCircleTab - Analyzing triples with positions:', {
         totalTriples: triples.length,
         triplesDetails: triples.map(t => ({
           tripleId: t.term_id,
           subjectId: t.subject.term_id,
           predicateId: t.predicate.term_id,
-          objectLabel: t.object.label
+          objectLabel: t.object.label,
+          positions: t.positions?.map(p => ({
+            account: p.account_id,
+            shares: p.shares,
+            isSessionWallet: p.account_id === sessionWalletAddress
+          }))
         }))
       })
+
       const accounts: FollowedAccount[] = []
 
-      // Extract follow triples
+      // Extract follow triples with position information
       triples.forEach(triple => {
+        // Calculate total trust amount from all positions
+        const totalShares = triple.positions?.reduce((sum, pos) => {
+          return sum + parseFloat(pos.shares || "0")
+        }, 0) || 0
+
+        // Determine which wallet has the position
+        const walletInfo = triple.positions?.map(pos => ({
+          wallet: pos.account_id === sessionWalletAddress ? 'Session' : 'Main',
+          shares: pos.shares
+        })) || []
+
         accounts.push({
           id: triple.object.term_id,
           label: triple.object.label,
           termId: triple.object.term_id,
           tripleId: triple.term_id,
           followDate: new Date(triple.created_at).toLocaleDateString(),
-          trustAmount: "0"
+          trustAmount: totalShares.toFixed(4),
+          walletInfo: walletInfo // Add wallet info for debugging
         })
       })
 

@@ -139,9 +139,34 @@ export const useCreateFollowTriples = () => {
   ): Promise<{ txHash: string }> => {
     const { publicClient } = await getClients()
 
+    // Determine which wallet/address will be used for the transaction
+    const canUseSession = shouldUseSessionWallet(depositAmount)
+    let receiverAddress: string
+    let accountForTx: string
+
+    if (canUseSession) {
+      // Use session wallet address as receiver
+      const sessionStatus = sessionWallet.getStatus()
+      receiverAddress = sessionStatus.address || address
+      accountForTx = receiverAddress
+      console.log('💰 makeDepositInTriple - Using session wallet', {
+        sessionAddress: receiverAddress,
+        mainAddress: address
+      })
+    } else {
+      // Use main wallet address
+      receiverAddress = address
+      accountForTx = address
+      console.log('💰 makeDepositInTriple - Using main wallet', {
+        mainAddress: address
+      })
+    }
+
     console.log('💰 makeDepositInTriple - Making deposit in existing triple', {
       tripleVaultId,
-      depositAmount: depositAmount.toString()
+      depositAmount: depositAmount.toString(),
+      receiverAddress,
+      usingSessionWallet: canUseSession
     })
 
     // Estimate gas for deposit
@@ -149,9 +174,9 @@ export const useCreateFollowTriples = () => {
       address: BlockchainService.getContractAddress() as Address,
       abi: MultiVaultAbi,
       functionName: 'deposit',
-      args: [address as Address, tripleVaultId as `0x${string}`, 1n, 0n],
+      args: [receiverAddress as Address, tripleVaultId as `0x${string}`, 1n, 0n],
       value: depositAmount,
-      account: address as Address
+      account: accountForTx as Address
     })
 
     const txParams = {
@@ -159,7 +184,7 @@ export const useCreateFollowTriples = () => {
       abi: MultiVaultAbi,
       functionName: 'deposit',
       args: [
-        address as Address,
+        receiverAddress as Address,
         tripleVaultId as `0x${string}`,
         1n,
         0n
@@ -169,7 +194,7 @@ export const useCreateFollowTriples = () => {
       gas: gasEstimate,
       maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
       maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-      account: address
+      account: accountForTx
     }
 
     const hash = await executeTransaction(txParams)
