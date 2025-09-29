@@ -236,8 +236,11 @@ export const useCreateFollowTriples = () => {
         customWeight: customWeight.toString()
       })
 
-      // Use the official Thing atom ID from working transaction
-      const thingAtomId = '0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216'
+      // OPTIMIZED: Get user atom + use official follow atom ID directly + use indexer termId for target
+      console.log('🚀 createFollowTriple - Getting user atom and using official follow atom ID')
+      
+    
+      const userTermId = "0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216"
       const predicateTermId = getFollowPredicateId()
       const targetTermId = targetUser.termId
 
@@ -245,7 +248,10 @@ export const useCreateFollowTriples = () => {
         thingAtomId,
         predicateTermId,
         targetTermId,
-        targetLabel: targetUser.label
+        userLabel: address,
+        predicateLabel: 'follow (official)',
+        targetLabel: targetUser.label,
+        predicateSource: 'official_atom'
       })
 
       // STEP 1: Vérification si le triple existe (selon task.md)
@@ -261,61 +267,69 @@ export const useCreateFollowTriples = () => {
         tripleVaultId: tripleCheck.tripleVaultId
       })
 
-      let tripleVaultId: string
-      let createTxHash: string | undefined
-
-      if (!tripleCheck.exists) {
-        // STEP 2: S'il n'existe pas, créer le triple (selon task.md)
-        console.log('🔨 STEP 2: Triple n\'existe pas, création du triple')
-
-        const creationResult = await createTripleOnly(
-          thingAtomId,
-          predicateTermId,
-          targetTermId
-        )
-
-        tripleVaultId = creationResult.tripleVaultId
-        createTxHash = creationResult.txHash
-
-        console.log('✅ STEP 2 COMPLETED: Triple créé avec succès', {
-          tripleVaultId,
-          createTxHash
-        })
-
-        // Wait a bit for the triple to be fully indexed on the blockchain
-        console.log('⏳ Waiting for triple to be indexed...')
-        await new Promise(resolve => setTimeout(resolve, 2000)) // 2 seconds delay
-
-      } else {
-        tripleVaultId = tripleCheck.tripleVaultId!
-        console.log('📋 Triple existe déjà, pas besoin de création', {
-          existingTripleVaultId: tripleVaultId
-        })
+      if (tripleCheck.exists) {
+        console.log('✅ createFollowTriple - Follow relationship already exists, returning existing triple')
+        return {
+          success: true,
+          tripleVaultId: tripleCheck.tripleVaultId!,
+          subjectVaultId: userTermId,
+          predicateVaultId: predicateTermId,
+          objectVaultId: targetTermId,
+          source: 'existing',
+          tripleHash: tripleCheck.tripleHash
+        }
       }
 
-      // STEP 3: Faire le deposit (selon task.md)
-      console.log('💰 STEP 3: Faire le deposit dans le triple', {
-        tripleVaultId,
-        depositAmount: customWeight.toString(),
-        wasJustCreated: !tripleCheck.exists
+      // Create the follow triple using termIds directly
+      const { publicClient } = await getClients()
+      const defaultCost = await BlockchainService.getTripleCost()
+      const tripleCost = customWeight !== undefined ? customWeight : defaultCost
+
+      console.log('💰 createFollowTriple - Final amount calculation', {
+        customWeight: customWeight?.toString(),
+        defaultCost: defaultCost.toString(),
+        isUsingDefault: customWeight === undefined,
+        finalTripleCost: tripleCost.toString()
       })
 
-      const depositResult = await makeDepositInTriple(
-        tripleVaultId,
-        customWeight
-      )
-
-      console.log('✅ STEP 3 COMPLETED: Deposit réalisé avec succès', {
-        depositTxHash: depositResult.txHash,
-        tripleVaultId
+      // Simulate first to validate and get the result
+      const simulation = await publicClient.simulateContract({
+        address: BlockchainService.getContractAddress() as Address,
+        abi: MultiVaultAbi,
+        functionName: 'createTriples',
+        args: [[userTermId as Address], [predicateTermId as Address], [targetTermId as Address], [tripleCost]],
+        value: tripleCost,
+        account: address as Address
       })
 
-      console.log('🎉 PROCESSUS TERMINÉ: Follow relationship établie selon task.md', {
-        tripleCreated: !tripleCheck.exists,
-        createTxHash: createTxHash || 'N/A (triple existait déjà)',
-        depositTxHash: depositResult.txHash,
-        finalTripleVaultId: tripleVaultId
-      })
+      const txParams = {
+        address: BlockchainService.getContractAddress() as Address,
+        abi: MultiVaultAbi,
+        functionName: 'createTriples',
+        args: [
+          [userTermId as Address],
+          [predicateTermId as Address],
+          [targetTermId as Address],
+          [tripleCost]
+        ],
+        value: tripleCost,
+        chain: SELECTED_CHAIN,
+        // Remove hardcoded gas - let Viem estimate automatically
+        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+        account: address
+      }
+
+      const hash = await executeTransaction(txParams)
+      const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+      if (receipt.status !== 'success') {
+        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+      }
+
+      // Use the simulation result (done before transaction)
+      const tripleIds = simulation.result as Address[]
+      const tripleVaultId = tripleIds[0]
 
       return {
         success: true,

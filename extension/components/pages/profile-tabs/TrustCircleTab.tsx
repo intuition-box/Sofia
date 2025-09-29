@@ -3,6 +3,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { sessionWallet } from '../../../lib/services/sessionWallet'
 import '../../styles/TrustCircleTab.css'
 
+
 interface FollowedAccount {
   id: string
   label: string
@@ -27,13 +28,13 @@ const TrustCircleTab = () => {
     }
 
     loadTrustCircle()
-  }, [address, useSessionWallet])
+  }, [address])
 
   const loadTrustCircle = async () => {
     try {
       // Get session wallet address if enabled
       const sessionStatus = sessionWallet.getStatus()
-      const sessionWalletAddress = useSessionWallet && sessionStatus.isReady ? sessionStatus.address : null
+      const sessionWalletAddress = useSessionWallet && sessionStatus.isReady ? sessionStatus.address : address
 
       console.log('🔍 TrustCircleTab - Loading trust circle', {
         userAddress: address,
@@ -49,12 +50,13 @@ const TrustCircleTab = () => {
       if (sessionWalletAddress && sessionWalletAddress !== address) {
         addressesToSearch.push(sessionWalletAddress)
       }
-
+      //TASK : CLEAN THE QUERY TO FILTER BY CREATOR_ID ON THE "I" ATOM
       // Query to search positions in both wallets
       const combinedQuery = `
-        query GetUserAndFollows($userLabel: String!, $predicateId: String!, $addresses: [String!]!) {
+        query GetUserAndFollows($address: String!, $predicateId: String!, $addresses: [String!]!) {
           user_atoms: atoms(where: {
-            label: { _eq: $userLabel }
+            label: { _eq: I }
+            creator_id: {_eq: $address}
           }, limit: 1) {
             term_id
             label
