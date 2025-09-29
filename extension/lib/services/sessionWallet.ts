@@ -192,11 +192,13 @@ export class SessionWallet {
       console.log('🔏 Transaction signed locally')
 
       // Envoyer la transaction signée
+      console.log('📤 Sending raw transaction to network...')
       const hash = await publicClient.sendRawTransaction({
         serializedTransaction: signedTransaction
       })
 
-      console.log('⚡ Raw transaction sent:', hash)
+      console.log('⚡ Raw transaction sent successfully:', hash)
+      console.log('🔗 You can check status at: https://testnet.explorer.intuition.systems/tx/' + hash)
       
       // Mettre à jour balance après transaction
       setTimeout(async () => {

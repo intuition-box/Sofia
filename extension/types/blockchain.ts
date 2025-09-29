@@ -41,7 +41,7 @@ export interface TripleOnChainResult extends BlockchainResult {
   subjectVaultId: string
   predicateVaultId: string
   objectVaultId: string
-  source: 'created' | 'existing'
+  source: 'created' | 'existing' | 'deposit'
   tripleHash: string
 }
 
