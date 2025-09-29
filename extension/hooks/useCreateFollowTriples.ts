@@ -84,8 +84,8 @@ export const useCreateFollowTriples = () => {
       // OPTIMIZED: Get user atom + use official follow atom ID directly + use indexer termId for target
       console.log('🚀 createFollowTriple - Getting user atom and using official follow atom ID')
       
-      const userAtomResult = await getUserAtom()
-      const userTermId = userAtomResult.vaultId
+    
+      const userTermId = "0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216"
       const predicateTermId = getFollowPredicateId()
       const targetTermId = targetUser.termId
 
@@ -96,7 +96,6 @@ export const useCreateFollowTriples = () => {
         userLabel: address,
         predicateLabel: 'follow (official)',
         targetLabel: targetUser.label,
-        userSource: userAtomResult.txHash === 'existing' ? 'existing' : 'created',
         predicateSource: 'official_atom'
       })
 
@@ -178,17 +177,6 @@ export const useCreateFollowTriples = () => {
       // Use the simulation result (done before transaction)
       const tripleIds = simulation.result as Address[]
       const tripleVaultId = tripleIds[0]
-
-      const atomTransactions = userAtomResult.txHash === 'existing' ? 0 : 1
-      console.log('✅ createFollowTriple - Follow triple created successfully (FULLY OPTIMIZED)', {
-        txHash: hash,
-        tripleVaultId: tripleVaultId,
-        atomTransactions: atomTransactions,
-        tripleTransactions: 1,
-        totalTransactions: atomTransactions + 1,
-        userAtomReused: userAtomResult.txHash === 'existing',
-        predicateAtomOfficial: true
-      })
 
       return {
         success: true,
