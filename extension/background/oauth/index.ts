@@ -53,6 +53,7 @@ export class OAuthService {
   }
 
   async syncPlatformData(platform: string): Promise<any> {
+    console.log(`🔍 [OAuth] Starting data sync for ${platform}`)
     const userData = await this.dataFetcher.fetchUserData(platform)
     // Les triplets sont maintenant extraits pendant le fetch
     console.log(`🔍 [OAuth] Total triplets extracted for ${platform}:`, userData.triplets.length)

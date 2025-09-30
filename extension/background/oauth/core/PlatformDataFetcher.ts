@@ -36,6 +36,7 @@ export class PlatformDataFetcher {
       accessToken = await this.tokenManager.getValidToken(platform)
     }
 
+
     const userData: UserData = {
       platform: platform,
       profile: null,
@@ -171,5 +172,6 @@ export class PlatformDataFetcher {
   private getNestedValue(obj: any, path: string): any {
     return path.split('.').reduce((current, key) => current?.[key], obj)
   }
+
 
 }

@@ -168,18 +168,6 @@ export class TripletExtractor {
           }
           return 'https://www.twitch.tv'
 
-        case 'twitter':
-          // Twitter API v2 returns data object with user info
-          const twitterProfile = profile?.data || profile
-          // Use username for URL
-          if (twitterProfile?.username) {
-            return `https://twitter.com/${twitterProfile.username}`
-          }
-          // Fallback using id
-          if (twitterProfile?.id) {
-            return `https://twitter.com/i/user/${twitterProfile.id}`
-          }
-          return 'https://twitter.com'
 
         default:
           return `https://${platform}.com`

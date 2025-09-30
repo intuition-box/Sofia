@@ -85,23 +85,6 @@ export class PlatformRegistry {
       requiresClientId: true
     })
 
-    // Twitter/X Configuration (Free tier - profile only)
-    this.platforms.set('twitter', {
-      name: 'Twitter/X',
-      clientId: oauthConfig.twitter.clientId,
-      clientSecret: oauthConfig.twitter.clientSecret,
-      flow: OAuthFlow.AUTHORIZATION_CODE,
-      scope: ['users.read'],
-      authUrl: 'https://twitter.com/i/oauth2/authorize',
-      tokenUrl: 'https://api.twitter.com/2/oauth2/token',
-      apiBaseUrl: 'https://api.twitter.com/2',
-      endpoints: {
-        profile: '/users/me?user.fields=id,name,username,description,profile_image_url,public_metrics',
-        data: []
-      },
-      dataStructure: 'data',
-      idField: 'id'
-    })
   }
 
   private initializeTripletRules() {
@@ -154,7 +137,5 @@ export class PlatformRegistry {
       }
     ])
 
-    // Twitter/X Triplet Rules (none - profile only)
-    this.tripletRules.set('twitter', [])
   }
 }
