@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
-import { sessionWallet } from '../../../lib/services/sessionWallet'
 import '../../styles/TrustCircleTab.css'
-
 
 interface FollowedAccount {
   id: string
@@ -16,7 +14,6 @@ interface FollowedAccount {
 
 const TrustCircleTab = () => {
   const [address] = useStorage<string>("metamask-account")
-  const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   const [followedAccounts, setFollowedAccounts] = useState<FollowedAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,51 +29,33 @@ const TrustCircleTab = () => {
 
   const loadTrustCircle = async () => {
     try {
-      // Get session wallet address if enabled
-      const sessionStatus = sessionWallet.getStatus()
-      const sessionWalletAddress = useSessionWallet && sessionStatus.isReady ? sessionStatus.address : address
-
       console.log('🔍 TrustCircleTab - Loading trust circle', {
-        userAddress: address,
-        sessionWalletAddress,
-        useSessionWallet
+        userAddress: address
       })
 
       setLoading(true)
       setError(null)
 
-      // Create addresses array for positions search
-      const addressesToSearch = [address]
-      if (sessionWalletAddress && sessionWalletAddress !== address) {
-        addressesToSearch.push(sessionWalletAddress)
-      }
-      //TASK : CLEAN THE QUERY TO FILTER BY CREATOR_ID ON THE "I" ATOM
-      // Query to search positions in both wallets
+      // Query to get triplets created by user, filtered by follow predicate and my positions
       const combinedQuery = `
-        query GetUserAndFollows($address: String!, $predicateId: String!, $addresses: [String!]!) {
-          user_atoms: atoms(where: {
-            label: { _eq: I }
-            creator_id: {_eq: $address}
-          }, limit: 1) {
-            term_id
-            label
-            type
-          }
-
-          all_user_triples: triples(
+        query GetMyTriples($walletAddress: String!) {
+          triples(
             where: {
               _and: [
-                {predicate_id: {_eq: $predicateId}},
-                {positions: {account_id: {_in: $addresses}, shares: {_gt: "0"}}}
+                { subject: { term_id: { _eq: "0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216" } } },
+                { predicate: { term_id: { _eq: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a" } } },
+                { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
               ]
-            }
+            },
+            order_by: { created_at: desc }
           ) {
+            subject { label, term_id }
+            predicate { label, term_id }
+            object { label, term_id }
             term_id
             created_at
-            subject { term_id label image }
-            predicate { term_id label }
-            object { term_id label image }
-            positions(where: {account_id: {_in: $addresses}, shares: {_gt: "0"}}) {
+            transaction_hash
+            positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
               account_id
               shares
             }
@@ -92,21 +71,16 @@ const TrustCircleTab = () => {
         body: JSON.stringify({
           query: combinedQuery,
           variables: {
-            address: address,
-            predicateId: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a",
-            addresses: addressesToSearch
+            walletAddress: address.toLowerCase()
           }
         })
       })
 
       const result = await response.json()
 
-      console.log('✅ TrustCircleTab - Combined GraphQL response', {
-        userAtoms: result.data?.user_atoms || [],
-        allUserTriples: result.data?.all_user_triples || [],
-        triplesFound: result.data?.all_user_triples?.length || 0,
-        addressesToSearch,
-        sessionWalletAddress,
+      console.log('✅ TrustCircleTab - GraphQL response', {
+        triples: result.data?.triples || [],
+        triplesFound: result.data?.triples?.length || 0,
         errors: result.errors
       })
 
@@ -114,65 +88,31 @@ const TrustCircleTab = () => {
         throw new Error(result.errors[0]?.message || 'GraphQL query failed')
       }
 
-      // Vérifier si l'utilisateur existe
-      const userAtoms = result.data?.user_atoms || []
-      if (userAtoms.length === 0) {
-        console.log('❌ TrustCircleTab - User atom not found:', address)
-        setFollowedAccounts([])
-        return
-      }
-
-      const userAtom = userAtoms[0]
-      console.log('✅ TrustCircleTab - User atom found:', {
-        termId: userAtom.term_id,
-        label: userAtom.label,
-        type: userAtom.type
-      })
-
-      const triples = result.data?.all_user_triples || []
-      console.log('🔍 TrustCircleTab - Analyzing triples with positions:', {
+      const triples = result.data?.triples || []
+      console.log('✅ TrustCircleTab - Follow triples found:', {
         totalTriples: triples.length,
-        triplesDetails: triples.map(t => ({
-          tripleId: t.term_id,
-          subjectId: t.subject.term_id,
-          predicateId: t.predicate.term_id,
-          objectLabel: t.object.label,
-          positions: t.positions?.map(p => ({
-            account: p.account_id,
-            shares: p.shares,
-            isSessionWallet: p.account_id === sessionWalletAddress
-          }))
+        triples: triples.map(triple => ({
+          termId: triple.term_id,
+          subject: triple.subject.label,
+          predicate: triple.predicate.label,
+          object: triple.object.label,
+          createdAt: triple.created_at
         }))
       })
 
-      const accounts: FollowedAccount[] = []
-
-      // Extract follow triples with position information
-      triples.forEach(triple => {
-        // Calculate total trust amount from all positions
-        const totalShares = triple.positions?.reduce((sum, pos) => {
-          return sum + parseFloat(pos.shares || "0")
-        }, 0) || 0
-
-        // Determine which wallet has the position
-        const walletInfo = triple.positions?.map(pos => ({
-          wallet: pos.account_id === sessionWalletAddress ? 'Session' : 'Main',
-          shares: pos.shares
-        })) || []
-
-        accounts.push({
-          id: triple.object.term_id,
-          label: triple.object.label,
-          termId: triple.object.term_id,
-          tripleId: triple.term_id,
-          followDate: new Date(triple.created_at).toLocaleDateString(),
-          trustAmount: totalShares.toFixed(4),
-          walletInfo: walletInfo // Add wallet info for debugging
-        })
-      })
+      // Convert triples to display format
+      const accounts: FollowedAccount[] = triples.map(triple => ({
+        id: triple.term_id,
+        label: triple.object.label,
+        termId: triple.object.term_id,
+        tripleId: triple.term_id,
+        followDate: new Date(triple.created_at).toLocaleDateString(),
+        trustAmount: "Follow",
+        walletInfo: []
+      }))
 
       setFollowedAccounts(accounts)
-      console.log('✅ TrustCircleTab - Trust circle loaded', {
+      console.log('✅ TrustCircleTab - Follow relationships loaded', {
         accountCount: accounts.length,
         accounts
       })
@@ -241,8 +181,8 @@ const TrustCircleTab = () => {
 
       {followedAccounts.length === 0 ? (
         <div className="empty-state">
-          <h3>No Trust Relationships Yet</h3>
-          <p>Start following accounts in the Account tab to build your trust circle.</p>
+          <h3>No Follow Relationships Yet</h3>
+          <p>You haven't followed anyone yet. Start following accounts to build your trust circle.</p>
         </div>
       ) : (
         <div className="followed-accounts">
