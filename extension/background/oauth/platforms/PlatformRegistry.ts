@@ -1,6 +1,7 @@
 // Platform configuration registry
 import { PlatformConfig, TripletRule, OAuthFlow } from '../types/interfaces'
 import { oauthConfig } from '../config/oauth-config'
+import { PREDICATE_NAMES } from '../../../lib/config/constants'
 
 export class PlatformRegistry {
   private platforms: Map<string, PlatformConfig> = new Map()
@@ -90,7 +91,7 @@ export class PlatformRegistry {
       clientId: oauthConfig.twitter.clientId,
       clientSecret: oauthConfig.twitter.clientSecret,
       flow: OAuthFlow.AUTHORIZATION_CODE,
-      scope: ['tweet.read', 'users.read', 'follows.read'],
+      scope: ['tweet.read', 'users.read', 'like.read', 'follows.read', 'offline.access'],
       authUrl: 'https://twitter.com/i/oauth2/authorize',
       tokenUrl: 'https://api.twitter.com/2/oauth2/token',
       apiBaseUrl: 'https://api.twitter.com/2',
@@ -98,7 +99,7 @@ export class PlatformRegistry {
         profile: '/users/me?user.fields=id,name,username,description,profile_image_url,public_metrics',
         data: [
           '/users/me/following?user.fields=name,username,description,public_metrics&max_results=100',
-          '/users/me/tweets?tweet.fields=created_at,public_metrics&max_results=100'
+          '/users/me/tweets?tweet.fields=created_at,public_metrics,text&max_results=100'
         ]
       },
       dataStructure: 'data',
@@ -127,7 +128,7 @@ export class PlatformRegistry {
     this.tripletRules.set('spotify', [
       {
         pattern: 'following',
-        predicate: 'follows',
+        predicate: PREDICATE_NAMES.FOLLOW,
         extractObject: (artist) => artist.name,
         extractObjectUrl: (artist) => artist.external_urls?.spotify,
         extractFromPath: 'artists.items'
@@ -150,7 +151,7 @@ export class PlatformRegistry {
     this.tripletRules.set('twitch', [
       {
         pattern: 'channels/followed',
-        predicate: 'follows',
+        predicate: PREDICATE_NAMES.FOLLOW,
         extractObject: (item) => item.broadcaster_name,
         extractObjectUrl: (item) => `https://www.twitch.tv/${item.broadcaster_login}`
       }
@@ -160,7 +161,7 @@ export class PlatformRegistry {
     this.tripletRules.set('twitter', [
       {
         pattern: 'following',
-        predicate: 'follows',
+        predicate: PREDICATE_NAMES.FOLLOW,
         extractObject: (user) => `@${user.username}`,
         extractObjectUrl: (user) => `https://twitter.com/${user.username}`
       },

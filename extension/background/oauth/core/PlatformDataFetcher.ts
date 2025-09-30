@@ -203,7 +203,7 @@ export class PlatformDataFetcher {
           data.artists.items.forEach((artist: any) => {
             triplets.push({
               subject: 'You',
-              predicate: 'follows',
+              predicate: 'follow',
               object: artist.name
             })
           })
@@ -235,7 +235,7 @@ export class PlatformDataFetcher {
           data.data.forEach((item: any) => {
             triplets.push({
               subject: 'You',
-              predicate: 'follows',
+              predicate: 'follow',
               object: item.broadcaster_name
             })
           })

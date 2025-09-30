@@ -48,8 +48,8 @@ const SettingsPage = () => {
 
       // Clear OAuth tokens and sync info
       await chrome.storage.local.remove([
-        'oauth_token_youtube', 'oauth_token_spotify', 'oauth_token_twitch',
-        'sync_info_youtube', 'sync_info_spotify', 'sync_info_twitch'
+        'oauth_token_youtube', 'oauth_token_spotify', 'oauth_token_twitch', 'oauth_token_twitter',
+        'sync_info_youtube', 'sync_info_spotify', 'sync_info_twitch', 'sync_info_twitter'
       ])
 
       alert('All storage cleared, OAuth disconnected, and wallet disconnected successfully!')

@@ -3,6 +3,7 @@ import searchIcon from '../../ui/icons/Icon=Search.svg'
 import youtubeIcon from '../../ui/social/youtube.svg'
 import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
+import twitterIcon from '../../ui/social/twitter.svg'
 import { useGetAtomAccount, AccountAtom } from '../../../hooks/useGetAtomAccount'
 import FollowButton from '../../ui/FollowButton'
 import '../../styles/AccountTab.css'
@@ -19,7 +20,8 @@ const AccountTab = () => {
   const [oauthTokens, setOauthTokens] = useState({
     youtube: false,
     spotify: false,
-    twitch: false
+    twitch: false,
+    twitter: false
   })
 
   // Check OAuth token status on component mount
@@ -28,13 +30,15 @@ const AccountTab = () => {
       const result = await chrome.storage.local.get([
         'oauth_token_youtube',
         'oauth_token_spotify', 
-        'oauth_token_twitch'
+        'oauth_token_twitch',
+        'oauth_token_twitter'
       ])
       
       setOauthTokens({
         youtube: !!result.oauth_token_youtube,
         spotify: !!result.oauth_token_spotify,
-        twitch: !!result.oauth_token_twitch
+        twitch: !!result.oauth_token_twitch,
+        twitter: !!result.oauth_token_twitter
       })
     }
     
@@ -42,7 +46,7 @@ const AccountTab = () => {
     
     // Listen for storage changes to update connection states
     const handleStorageChange = (changes: any) => {
-      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch) {
+      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch || changes.oauth_token_twitter) {
         checkOAuthTokens()
       }
     }
@@ -106,12 +110,12 @@ const AccountTab = () => {
   }
 
   // Fonction de connexion OAuth
-  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch') => {
+  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' | 'twitter') => {
     chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
   }
 
   // Fonction de déconnexion OAuth (soft - garde le sync)
-  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch') => {
+  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch' | 'twitter') => {
     await chrome.storage.local.remove(`oauth_token_${platform}`)
     // Note: On garde le sync_info pour éviter de re-télécharger les données
   }
@@ -172,6 +176,22 @@ const AccountTab = () => {
           </div>
           <span className="connect-button-text">
             {oauthTokens.twitch ? 'Disconnect Twitch' : 'Connect Twitch'}
+          </span>
+        </button>
+
+        <button
+          className="connect-button twitter"
+          onClick={() => oauthTokens.twitter ? disconnectOAuth('twitter') : connectOAuth('twitter')}
+        >
+          <div className="platform-icon twitter-icon">
+            <img
+              src={twitterIcon}
+              alt="Twitter/X"
+              className={oauthTokens.twitter ? 'platform-icon-connected' : 'platform-icon-disconnected'}
+            />
+          </div>
+          <span className="connect-button-text">
+            {oauthTokens.twitter ? 'Disconnect Twitter/X' : 'Connect Twitter/X'}
           </span>
         </button>
         

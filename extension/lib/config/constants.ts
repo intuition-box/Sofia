@@ -46,6 +46,17 @@ export const EXPLORER_URLS = {
   INTUITION: "https://testnet.explorer.intuition.systems"
 } as const
 
+// Predicate IDs
+export const PREDICATE_IDS = {
+  FOLLOW: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a",
+  USER_ID: "0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216"
+} as const
+
+// Predicate Names (for display)
+export const PREDICATE_NAMES = {
+  FOLLOW: "follow"
+} as const
+
 // Error Messages
 export const ERROR_MESSAGES = {
   WALLET_NOT_CONNECTED: "No wallet connected",
