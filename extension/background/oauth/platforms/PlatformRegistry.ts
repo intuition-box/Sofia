@@ -85,22 +85,19 @@ export class PlatformRegistry {
       requiresClientId: true
     })
 
-    // Twitter/X Configuration
+    // Twitter/X Configuration (Free tier - profile only)
     this.platforms.set('twitter', {
       name: 'Twitter/X',
       clientId: oauthConfig.twitter.clientId,
       clientSecret: oauthConfig.twitter.clientSecret,
       flow: OAuthFlow.AUTHORIZATION_CODE,
-      scope: ['tweet.read', 'users.read', 'like.read', 'follows.read', 'offline.access'],
+      scope: ['users.read'],
       authUrl: 'https://twitter.com/i/oauth2/authorize',
       tokenUrl: 'https://api.twitter.com/2/oauth2/token',
       apiBaseUrl: 'https://api.twitter.com/2',
       endpoints: {
         profile: '/users/me?user.fields=id,name,username,description,profile_image_url,public_metrics',
-        data: [
-          '/users/me/following?user.fields=name,username,description,public_metrics&max_results=100',
-          '/users/me/tweets?tweet.fields=created_at,public_metrics,text&max_results=100'
-        ]
+        data: []
       },
       dataStructure: 'data',
       idField: 'id'
@@ -157,20 +154,7 @@ export class PlatformRegistry {
       }
     ])
 
-    // Twitter/X Triplet Rules
-    this.tripletRules.set('twitter', [
-      {
-        pattern: 'following',
-        predicate: PREDICATE_NAMES.FOLLOW,
-        extractObject: (user) => `@${user.username}`,
-        extractObjectUrl: (user) => `https://twitter.com/${user.username}`
-      },
-      {
-        pattern: 'tweets',
-        predicate: 'tweeted',
-        extractObject: (tweet) => tweet.text?.substring(0, 100) + (tweet.text?.length > 100 ? '...' : ''),
-        extractObjectUrl: (tweet) => `https://twitter.com/user/status/${tweet.id}`
-      }
-    ])
+    // Twitter/X Triplet Rules (none - profile only)
+    this.tripletRules.set('twitter', [])
   }
 }

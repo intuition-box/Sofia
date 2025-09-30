@@ -39,16 +39,22 @@ export class TripletExtractor {
     console.log(`🔍 [OAuth] Storing ${triplets.length} triplets for ${platform}`)
 
     try {
-      const specificUrl = this.generateSpecificUrl(platform, userData)
-      const parsedMessage = {
-        intention: `OAuth connection to ${platform}`,
-        triplets: triplets,
-        created_at: Date.now(),
-        rawObjectUrl: specificUrl,
-        rawObjectDescription: ` ${platform}`
-      }
+      // Store each triplet individually with its own URL
+      for (let i = 0; i < triplets.length; i++) {
+        const triplet = triplets[i]
+        const tripletUrl = triplet.objectUrl || this.generateUserProfileUrl(platform, userData)
+        
+        const parsedMessage = {
+          intention: `OAuth connection to ${platform}`,
+          triplets: [triplet], // Store only one triplet per message
+          created_at: Date.now(),
+          rawObjectUrl: tripletUrl, // Use the specific URL for this triplet
+          rawObjectDescription: ` ${platform} - ${triplet.object}`
+        }
 
-      await elizaDataService.storeParsedMessage(parsedMessage, `oauth_${platform}_${Date.now()}`)
+        await elizaDataService.storeParsedMessage(parsedMessage, `oauth_${platform}_${Date.now()}_${i}`)
+      }
+      
       console.log(`✅ [OAuth] Triplets stored successfully for ${platform}`)
       
       // Update badge count after storing OAuth triplets

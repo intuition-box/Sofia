@@ -32,6 +32,29 @@ export const useCreateTripleOnChain = () => {
     })
   }
 
+  // Utility function to get predicate atom (shared between simple and batch)
+  const getPredicateAtom = async (predicateName: string) => {
+    if (predicateName === 'follow') {
+      return {
+        vaultId: PREDICATE_IDS.FOLLOW,
+        ipfsUri: '',
+        name: predicateName
+      }
+    } else {
+      const predicateAtomResult = await createAtomWithMultivault({
+        name: predicateName,
+        description: `Predicate representing the relation "${predicateName}"`,
+        url: ''
+      })
+      
+      return {
+        vaultId: predicateAtomResult.vaultId,
+        ipfsUri: '',
+        name: predicateName
+      }
+    }
+  }
+
   // Helper function to determine which wallet to use
   const shouldUseSessionWallet = (transactionValue: bigint): boolean => {
     if (!useSessionWallet) return false
@@ -80,27 +103,7 @@ export const useCreateTripleOnChain = () => {
         ipfsUri: '',
         name: address
       }
-      // Use existing vault ID for "follow" predicate, create new atom for others
-      let predicateAtom
-      if (predicateName === 'follow') {
-        predicateAtom = {
-          vaultId: PREDICATE_IDS.FOLLOW,
-          ipfsUri: '',
-          name: predicateName
-        }
-      } else {
-        const predicateAtomResult = await createAtomWithMultivault({
-          name: predicateName,
-          description: `Predicate representing the relation "${predicateName}"`,
-          url: ''
-        })
-        
-        predicateAtom = {
-          vaultId: predicateAtomResult.vaultId,
-          ipfsUri: '',
-          name: predicateName
-        }
-      }
+      const predicateAtom = await getPredicateAtom(predicateName)
       const objectAtom = await createAtomWithMultivault(objectData)
       const tripleCheck = await BlockchainService.checkTripleExists(
         userAtom.vaultId,
@@ -200,16 +203,10 @@ export const useCreateTripleOnChain = () => {
       const userAtomKey = `user:${address}`
 
       // Collect unique predicates and objects
+      const uniquePredicates = new Set<string>()
       for (const input of inputs) {
-        // Skip predicate atoms for "follow" since we'll use existing vault ID
-        if (input.predicateName !== 'follow') {
-          uniqueAtoms.set(`predicate:${input.predicateName}`, {
-            name: input.predicateName,
-            description: `Predicate representing the relation "${input.predicateName}"`,
-            url: '',
-            type: 'predicate'
-          })
-        }
+        // Collect unique predicates
+        uniquePredicates.add(input.predicateName)
         
         // Object atoms  
         uniqueAtoms.set(`object:${input.objectData.name}`, {
@@ -226,8 +223,11 @@ export const useCreateTripleOnChain = () => {
       const userAtomResult = await getUserAtom()
       atomResults.set(userAtomKey, userAtomResult.vaultId)
       
-      // Add existing "follow" predicate vault ID directly
-      atomResults.set('predicate:follow', PREDICATE_IDS.FOLLOW)
+      // Create/get all unique predicates using the SAME unified logic as simple function
+      for (const predicateName of uniquePredicates) {
+        const predicateAtom = await getPredicateAtom(predicateName)
+        atomResults.set(`predicate:${predicateName}`, predicateAtom.vaultId)
+      }
       
       // Create other atoms in parallel for better performance
       const atomPromises = Array.from(uniqueAtoms.entries()).map(async ([key, atomData]) => {
