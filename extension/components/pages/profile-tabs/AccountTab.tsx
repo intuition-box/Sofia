@@ -128,7 +128,7 @@ const AccountTab = () => {
       {/* Action Buttons */}
       <div className="action-buttons-container">
         <button
-          className="connect-button youtube"
+          className={`connect-button youtube ${oauthTokens.youtube ? 'connected' : ''}`}
           onClick={() => oauthTokens.youtube ? disconnectOAuth('youtube') : connectOAuth('youtube')}
         >
           <div className="platform-icon youtube-icon">
@@ -138,13 +138,10 @@ const AccountTab = () => {
               className={oauthTokens.youtube ? 'platform-icon-connected' : 'platform-icon-disconnected'}
             />
           </div>
-          <span className="connect-button-text">
-            {oauthTokens.youtube ? 'Disconnect YouTube' : 'Connect YouTube'}
-          </span>
         </button>
 
         <button
-          className="connect-button spotify"
+          className={`connect-button spotify ${oauthTokens.spotify ? 'connected' : ''}`}
           onClick={() => oauthTokens.spotify ? disconnectOAuth('spotify') : connectOAuth('spotify')}
         >
           <div className="platform-icon spotify-icon">
@@ -154,13 +151,10 @@ const AccountTab = () => {
               className={oauthTokens.spotify ? 'platform-icon-connected' : 'platform-icon-disconnected'}
             />
           </div>
-          <span className="connect-button-text">
-            {oauthTokens.spotify ? 'Disconnect Spotify' : 'Connect Spotify'}
-          </span>
         </button>
 
         <button
-          className="connect-button twitch"
+          className={`connect-button twitch ${oauthTokens.twitch ? 'connected' : ''}`}
           onClick={() => oauthTokens.twitch ? disconnectOAuth('twitch') : connectOAuth('twitch')}
         >
           <div className="platform-icon twitch-icon">
@@ -170,11 +164,8 @@ const AccountTab = () => {
               className={oauthTokens.twitch ? 'platform-icon-connected' : 'platform-icon-disconnected'}
             />
           </div>
-          <span className="connect-button-text">
-            {oauthTokens.twitch ? 'Disconnect Twitch' : 'Connect Twitch'}
-          </span>
         </button>
-        
+
       </div>
       
 

@@ -119,7 +119,7 @@
 /* Container principal pour les pages */
 .page {
   padding: var(--spacing-xl);
-  background-color: var(--color-bg-glass);
+  /* background-color: var(--color-bg-glass); */
   margin: var(--spacing-sm);
   border-radius: var(--radius-xl);
   backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);

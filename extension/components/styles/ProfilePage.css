@@ -4,7 +4,7 @@
   color: var(--color-text-primary);
   min-height: 100vh;
   padding: var(--spacing-xl);
-  background: var(--color-bg-glass);
+  /* background: var(--color-bg-glass); */
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-glass);
   box-shadow: var(--shadow-glass);
