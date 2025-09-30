@@ -130,17 +130,6 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
                 creator_id
                 data
               }
-              triples(
-                where: {
-                  subject: { label: { _ilike: $searchTerm } }
-                }
-                limit: 50
-              ) {
-                subject { label }
-                predicate { label }
-                object { label }
-                created_at
-              }
             }
           `,
           variables: {
@@ -157,42 +146,19 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
       }
 
       const atoms = jsonData.data?.atoms || []
-      const triples = jsonData.data?.triples || []
-      console.log(`🔍 [searchAccounts] Found ${atoms.length} matching atoms and ${triples.length} triples`)
+      console.log(`🔍 [searchAccounts] Found ${atoms.length} matching atoms`)
 
-      return atoms.map((atom: any) => {
-        // Grouper les triplets par utilisateur
-        const userTriples = triples.filter((triple: any) =>
-          triple.subject.label.toLowerCase() === atom.label.toLowerCase()
-        )
-
-        // Extraire les tags (has tag)
-        const tags = userTriples
-          .filter((triple: any) => triple.predicate.label === 'has tag')
-          .map((triple: any) => triple.object.label)
-
-        // Extraire les intérêts (are interested by)
-        const interests = userTriples
-          .filter((triple: any) => triple.predicate.label === 'are interested by')
-          .map((triple: any) => triple.object.label)
-
-        // Extraire les abonnements (subscribes_to)
-        const subscriptions = userTriples
-          .filter((triple: any) => triple.predicate.label === 'subscribes_to')
-          .map((triple: any) => triple.object.label)
-
-        return {
-          id: atom.term_id,
-          label: atom.label || 'Unknown',
-          termId: atom.term_id,
-          description: `${atom.type}: ${atom.label}`,
-          type: 'Account' as const,
-          createdAt: atom.created_at,
-          creatorId: atom.creator_id,
-          atomType: atom.type,
-          ipfsUri: atom.data, // This is the IPFS URI we need!
-        }
-      })
+      return atoms.map((atom: any) => ({
+        id: atom.term_id,
+        label: atom.label || 'Unknown',
+        termId: atom.term_id,
+        description: `${atom.type}: ${atom.label}`,
+        type: 'Account' as const,
+        createdAt: atom.created_at,
+        creatorId: atom.creator_id,
+        atomType: atom.type,
+        ipfsUri: atom.data
+      }))
 
     } catch (err) {
       console.error('❌ [searchAccounts] Search error:', err)

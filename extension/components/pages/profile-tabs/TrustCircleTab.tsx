@@ -92,7 +92,7 @@ const TrustCircleTab = () => {
         body: JSON.stringify({
           query: combinedQuery,
           variables: {
-            userLabel: address,
+            address: address,
             predicateId: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a",
             addresses: addressesToSearch
           }
