@@ -19,7 +19,7 @@ const AccountTab = () => {
   const [oauthTokens, setOauthTokens] = useState({
     youtube: false,
     spotify: false,
-    twitch: false
+    twitch: false,
   })
 
   // Check OAuth token status on component mount
@@ -28,13 +28,14 @@ const AccountTab = () => {
       const result = await chrome.storage.local.get([
         'oauth_token_youtube',
         'oauth_token_spotify', 
-        'oauth_token_twitch'
+        'oauth_token_twitch',
+        'oauth_token_twitter'
       ])
       
       setOauthTokens({
         youtube: !!result.oauth_token_youtube,
         spotify: !!result.oauth_token_spotify,
-        twitch: !!result.oauth_token_twitch
+        twitch: !!result.oauth_token_twitch,
       })
     }
     
@@ -42,7 +43,7 @@ const AccountTab = () => {
     
     // Listen for storage changes to update connection states
     const handleStorageChange = (changes: any) => {
-      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch) {
+      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch || changes.oauth_token_twitter) {
         checkOAuthTokens()
       }
     }
@@ -106,7 +107,7 @@ const AccountTab = () => {
   }
 
   // Fonction de connexion OAuth
-  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch') => {
+  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' ) => {
     chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
   }
 

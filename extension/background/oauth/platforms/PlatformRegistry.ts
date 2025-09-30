@@ -1,6 +1,7 @@
 // Platform configuration registry
 import { PlatformConfig, TripletRule, OAuthFlow } from '../types/interfaces'
 import { oauthConfig } from '../config/oauth-config'
+import { PREDICATE_NAMES } from '../../../lib/config/constants'
 
 export class PlatformRegistry {
   private platforms: Map<string, PlatformConfig> = new Map()
@@ -58,9 +59,9 @@ export class PlatformRegistry {
       endpoints: {
         profile: '/me',
         data: [
-          '/me/following?type=artist&limit=20',
-          '/me/top/tracks?limit=15',
-          '/me/top/artists?limit=15'
+          '/me/following?type=artist&limit=50',
+          '/me/top/tracks?limit=40',
+          '/me/top/artists?limit=40'
         ]
       },
       dataStructure: 'items',
@@ -83,6 +84,7 @@ export class PlatformRegistry {
       idField: 'broadcaster_id',
       requiresClientId: true
     })
+
   }
 
   private initializeTripletRules() {
@@ -106,7 +108,7 @@ export class PlatformRegistry {
     this.tripletRules.set('spotify', [
       {
         pattern: 'following',
-        predicate: 'follows',
+        predicate: PREDICATE_NAMES.FOLLOW,
         extractObject: (artist) => artist.name,
         extractObjectUrl: (artist) => artist.external_urls?.spotify,
         extractFromPath: 'artists.items'
@@ -129,10 +131,11 @@ export class PlatformRegistry {
     this.tripletRules.set('twitch', [
       {
         pattern: 'channels/followed',
-        predicate: 'follows',
+        predicate: PREDICATE_NAMES.FOLLOW,
         extractObject: (item) => item.broadcaster_name,
         extractObjectUrl: (item) => `https://www.twitch.tv/${item.broadcaster_login}`
       }
     ])
+
   }
 }

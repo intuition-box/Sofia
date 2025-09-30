@@ -3,12 +3,10 @@ import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
 import { useStorage } from "@plasmohq/storage/hook"
-import { usePinThingMutation } from "@0xintuition/graphql"
-import { stringToHex } from 'viem'
 import { sessionWallet } from '../lib/services/sessionWallet'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
-import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
+import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS } from '../lib/config/constants'
 import type { TripleOnChainResult, BatchTripleInput, BatchTripleResult } from '../types/blockchain'
 import type { Address, Hash, ContractWriteParams } from '../types/viem'
 
@@ -17,7 +15,6 @@ const logger = createHookLogger('useCreateTripleOnChain')
 
 export const useCreateTripleOnChain = () => {
   const { createAtomWithMultivault } = useCreateAtom()
-  const { mutateAsync: pinThing } = usePinThingMutation()
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   
@@ -33,6 +30,29 @@ export const useCreateTripleOnChain = () => {
       url: `https://etherscan.io/address/${address}`,
       type: 'account'
     })
+  }
+
+  // Utility function to get predicate atom (shared between simple and batch)
+  const getPredicateAtom = async (predicateName: string) => {
+    if (predicateName === 'follow') {
+      return {
+        vaultId: PREDICATE_IDS.FOLLOW,
+        ipfsUri: '',
+        name: predicateName
+      }
+    } else {
+      const predicateAtomResult = await createAtomWithMultivault({
+        name: predicateName,
+        description: `Predicate representing the relation "${predicateName}"`,
+        url: ''
+      })
+      
+      return {
+        vaultId: predicateAtomResult.vaultId,
+        ipfsUri: '',
+        name: predicateName
+      }
+    }
   }
 
   // Helper function to determine which wallet to use
@@ -83,17 +103,7 @@ export const useCreateTripleOnChain = () => {
         ipfsUri: '',
         name: address
       }
-      const predicateAtomResult = await createAtomWithMultivault({
-        name: predicateName,
-        description: `Predicate representing the relation "${predicateName}"`,
-        url: ''
-      })
-      
-      const predicateAtom = {
-        vaultId: predicateAtomResult.vaultId,
-        ipfsUri: '',
-        name: predicateName
-      }
+      const predicateAtom = await getPredicateAtom(predicateName)
       const objectAtom = await createAtomWithMultivault(objectData)
       const tripleCheck = await BlockchainService.checkTripleExists(
         userAtom.vaultId,
@@ -193,14 +203,10 @@ export const useCreateTripleOnChain = () => {
       const userAtomKey = `user:${address}`
 
       // Collect unique predicates and objects
+      const uniquePredicates = new Set<string>()
       for (const input of inputs) {
-        // Predicate atoms
-        uniqueAtoms.set(`predicate:${input.predicateName}`, {
-          name: input.predicateName,
-          description: `Predicate representing the relation "${input.predicateName}"`,
-          url: '',
-          type: 'predicate'
-        })
+        // Collect unique predicates
+        uniquePredicates.add(input.predicateName)
         
         // Object atoms  
         uniqueAtoms.set(`object:${input.objectData.name}`, {
@@ -216,6 +222,12 @@ export const useCreateTripleOnChain = () => {
       // Create user atom first using utility function
       const userAtomResult = await getUserAtom()
       atomResults.set(userAtomKey, userAtomResult.vaultId)
+      
+      // Create/get all unique predicates using the SAME unified logic as simple function
+      for (const predicateName of uniquePredicates) {
+        const predicateAtom = await getPredicateAtom(predicateName)
+        atomResults.set(`predicate:${predicateName}`, predicateAtom.vaultId)
+      }
       
       // Create other atoms in parallel for better performance
       const atomPromises = Array.from(uniqueAtoms.entries()).map(async ([key, atomData]) => {

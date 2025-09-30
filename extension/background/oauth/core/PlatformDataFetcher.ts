@@ -36,6 +36,7 @@ export class PlatformDataFetcher {
       accessToken = await this.tokenManager.getValidToken(platform)
     }
 
+
     const userData: UserData = {
       platform: platform,
       profile: null,
@@ -172,80 +173,5 @@ export class PlatformDataFetcher {
     return path.split('.').reduce((current, key) => current?.[key], obj)
   }
 
-  private extractTripletsFromEndpoint(platform: string, endpoint: string, data: any, profile: any): any[] {
-    const triplets = []
 
-    try {
-      if (platform === 'youtube') {
-        if (endpoint.includes('subscriptions') && data.items) {
-          data.items.forEach((item: any) => {
-            triplets.push({
-              subject: 'You',
-              predicate: 'subscribes_to',
-              object: item.snippet.title
-            })
-          })
-        }
-        
-        if (endpoint.includes('playlists') && data.items) {
-          data.items.forEach((item: any) => {
-            triplets.push({
-              subject: 'You',
-              predicate: 'created_playlist',
-              object: item.snippet.title
-            })
-          })
-        }
-      }
-      
-      if (platform === 'spotify') {
-        if (endpoint.includes('following') && data.artists && data.artists.items) {
-          data.artists.items.forEach((artist: any) => {
-            triplets.push({
-              subject: 'You',
-              predicate: 'follows',
-              object: artist.name
-            })
-          })
-        }
-        
-        if (endpoint.includes('top/tracks') && data.items) {
-          data.items.forEach((item: any) => {
-            triplets.push({
-              subject: 'You',
-              predicate: 'top_track',
-              object: `${item.name} by ${item.artists[0].name}`
-            })
-          })
-        }
-        
-        if (endpoint.includes('top/artists') && data.items) {
-          data.items.forEach((artist: any) => {
-            triplets.push({
-              subject: 'You',
-              predicate: 'top_artist',
-              object: artist.name
-            })
-          })
-        }
-      }
-      
-      if (platform === 'twitch') {
-        if (endpoint.includes('channels/followed') && data.data) {
-          data.data.forEach((item: any) => {
-            triplets.push({
-              subject: 'You',
-              predicate: 'follows',
-              object: item.broadcaster_name
-            })
-          })
-        }
-      }
-
-    } catch (error) {
-      console.error(`❌ [OAuth] Error extracting triplets from ${endpoint}:`, error)
-    }
-
-    return triplets
-  }
 }
