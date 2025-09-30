@@ -3,7 +3,6 @@ import searchIcon from '../../ui/icons/Icon=Search.svg'
 import youtubeIcon from '../../ui/social/youtube.svg'
 import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
-import twitterIcon from '../../ui/social/twitter.svg'
 import { useGetAtomAccount, AccountAtom } from '../../../hooks/useGetAtomAccount'
 import FollowButton from '../../ui/FollowButton'
 import '../../styles/AccountTab.css'
@@ -21,7 +20,6 @@ const AccountTab = () => {
     youtube: false,
     spotify: false,
     twitch: false,
-    twitter: false
   })
 
   // Check OAuth token status on component mount
@@ -38,7 +36,6 @@ const AccountTab = () => {
         youtube: !!result.oauth_token_youtube,
         spotify: !!result.oauth_token_spotify,
         twitch: !!result.oauth_token_twitch,
-        twitter: !!result.oauth_token_twitter
       })
     }
     
@@ -110,12 +107,12 @@ const AccountTab = () => {
   }
 
   // Fonction de connexion OAuth
-  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' | 'twitter') => {
+  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' ) => {
     chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
   }
 
   // Fonction de déconnexion OAuth (soft - garde le sync)
-  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch' | 'twitter') => {
+  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch') => {
     await chrome.storage.local.remove(`oauth_token_${platform}`)
     // Note: On garde le sync_info pour éviter de re-télécharger les données
   }
@@ -177,24 +174,7 @@ const AccountTab = () => {
           <span className="connect-button-text">
             {oauthTokens.twitch ? 'Disconnect Twitch' : 'Connect Twitch'}
           </span>
-        </button>
-
-        <button
-          className="connect-button twitter"
-          onClick={() => oauthTokens.twitter ? disconnectOAuth('twitter') : connectOAuth('twitter')}
-        >
-          <div className="platform-icon twitter-icon">
-            <img
-              src={twitterIcon}
-              alt="Twitter/X"
-              className={oauthTokens.twitter ? 'platform-icon-connected' : 'platform-icon-disconnected'}
-            />
-          </div>
-          <span className="connect-button-text">
-            {oauthTokens.twitter ? 'Disconnect Twitter/X' : 'Connect Twitter/X'}
-          </span>
-        </button>
-        
+        </button>       
       </div>
       
 
