@@ -41,8 +41,6 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
     setIsLoading(true)
 
     try {
-      console.log('🔄 [useGetAtomAccount] Fetching account atoms...')
-
       const response = await fetch('https://testnet.intuition.sh/v1/graphql', {
         method: 'POST',
         headers: {
@@ -70,7 +68,6 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
       }
 
       const atoms = jsonData.data?.atoms || []
-      console.log(`✅ [useGetAtomAccount] Loaded ${atoms.length} accounts`)
 
       const mappedAccounts: AccountAtom[] = atoms.map((atom: any) => ({
         id: atom.term_id,
@@ -87,7 +84,6 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
       setAccounts(mappedAccounts)
 
     } catch (err) {
-      console.error('❌ [useGetAtomAccount] Error:', err)
       setAccounts([])
     } finally {
       setIsLoading(false)
@@ -103,9 +99,6 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
     if (!query.trim()) return []
 
     try {
-      console.log('🔍 [searchAccounts] Searching blockchain for:', query)
-
-      // Recherche dans TOUTE la blockchain par label (case insensitive)
       const response = await fetch('https://testnet.intuition.sh/v1/graphql', {
         method: 'POST',
         headers: {
@@ -141,12 +134,10 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
       const jsonData = await response.json()
 
       if (jsonData.errors) {
-        console.error('❌ [searchAccounts] GraphQL error:', jsonData.errors)
         return []
       }
 
       const atoms = jsonData.data?.atoms || []
-      console.log(`🔍 [searchAccounts] Found ${atoms.length} matching atoms`)
 
       return atoms.map((atom: any) => ({
         id: atom.term_id,
@@ -161,7 +152,6 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
       }))
 
     } catch (err) {
-      console.error('❌ [searchAccounts] Search error:', err)
       return []
     }
   }, [])
