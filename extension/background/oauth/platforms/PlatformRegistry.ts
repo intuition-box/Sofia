@@ -58,9 +58,9 @@ export class PlatformRegistry {
       endpoints: {
         profile: '/me',
         data: [
-          '/me/following?type=artist&limit=20',
-          '/me/top/tracks?limit=15',
-          '/me/top/artists?limit=15'
+          '/me/following?type=artist&limit=50',
+          '/me/top/tracks?limit=40',
+          '/me/top/artists?limit=40'
         ]
       },
       dataStructure: 'items',
@@ -82,6 +82,27 @@ export class PlatformRegistry {
       dataStructure: 'data',
       idField: 'broadcaster_id',
       requiresClientId: true
+    })
+
+    // Twitter/X Configuration
+    this.platforms.set('twitter', {
+      name: 'Twitter/X',
+      clientId: oauthConfig.twitter.clientId,
+      clientSecret: oauthConfig.twitter.clientSecret,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: ['tweet.read', 'users.read', 'follows.read'],
+      authUrl: 'https://twitter.com/i/oauth2/authorize',
+      tokenUrl: 'https://api.twitter.com/2/oauth2/token',
+      apiBaseUrl: 'https://api.twitter.com/2',
+      endpoints: {
+        profile: '/users/me?user.fields=id,name,username,description,profile_image_url,public_metrics',
+        data: [
+          '/users/me/following?user.fields=name,username,description,public_metrics&max_results=100',
+          '/users/me/tweets?tweet.fields=created_at,public_metrics&max_results=100'
+        ]
+      },
+      dataStructure: 'data',
+      idField: 'id'
     })
   }
 
@@ -132,6 +153,22 @@ export class PlatformRegistry {
         predicate: 'follows',
         extractObject: (item) => item.broadcaster_name,
         extractObjectUrl: (item) => `https://www.twitch.tv/${item.broadcaster_login}`
+      }
+    ])
+
+    // Twitter/X Triplet Rules
+    this.tripletRules.set('twitter', [
+      {
+        pattern: 'following',
+        predicate: 'follows',
+        extractObject: (user) => `@${user.username}`,
+        extractObjectUrl: (user) => `https://twitter.com/${user.username}`
+      },
+      {
+        pattern: 'tweets',
+        predicate: 'tweeted',
+        extractObject: (tweet) => tweet.text?.substring(0, 100) + (tweet.text?.length > 100 ? '...' : ''),
+        extractObjectUrl: (tweet) => `https://twitter.com/user/status/${tweet.id}`
       }
     ])
   }
