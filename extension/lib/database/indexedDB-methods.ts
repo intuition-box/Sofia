@@ -275,7 +275,7 @@ export class ElizaDataService {
   }
 
   /**
-   * Delete a message by messageId
+   * Delete a message by messageId (searches by messageId field)
    */
   static async deleteMessage(messageId: string): Promise<void> {
     const allMessages = await this.getAllMessages()
@@ -286,6 +286,18 @@ export class ElizaDataService {
       console.log('🗑️ Eliza message deleted:', messageId)
     } else {
       console.warn('⚠️ Message not found for deletion:', messageId)
+    }
+  }
+
+  /**
+   * Delete a message by ID (direct IndexedDB ID)
+   */
+  static async deleteMessageById(id: number): Promise<void> {
+    try {
+      await sofiaDB.delete(STORES.ELIZA_DATA, id)
+      console.log('🗑️ Eliza message deleted by ID:', id)
+    } catch (error) {
+      console.warn('⚠️ Failed to delete message by ID:', id, error)
     }
   }
 

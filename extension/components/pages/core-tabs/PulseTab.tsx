@@ -41,14 +41,26 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
         const messages = await elizaDataService.getAllMessages()
         
         console.log("🫀 [PulseTab] Total messages in IndexedDB:", messages.length)
-        console.log("🫀 [PulseTab] All messages:", messages.map(m => ({ 
-          id: m.id, 
-          type: m.type, 
-          hasThemes: typeof m.content === 'object' && m.content && 'text' in m.content 
-            ? (typeof m.content.text === 'string' ? m.content.text.includes('themes') : false)
-            : false,
-          content: typeof m.content === 'object' && m.content && 'text' in m.content 
-            ? (typeof m.content.text === 'string' ? m.content.text.substring(0, 100) : 'N/A')
+        console.log("🫀 [PulseTab] Message types distribution:", messages.reduce((acc, m) => {
+          acc[m.type] = (acc[m.type] || 0) + 1
+          return acc
+        }, {} as Record<string, number>))
+        
+        // Check all message types that contain themes
+        const messagesWithThemes = messages.filter(m => {
+          const text = typeof m.content === 'object' && m.content && 'text' in m.content 
+            ? (typeof m.content.text === 'string' ? m.content.text : '')
+            : ''
+          return text.includes('themes') && text.includes('{')
+        })
+        
+        console.log("🫀 [PulseTab] Messages with themes by type:", messagesWithThemes.map(m => ({
+          id: m.id,
+          messageId: m.messageId,
+          type: m.type,
+          hasThemes: true,
+          contentPreview: typeof m.content === 'object' && m.content && 'text' in m.content 
+            ? (typeof m.content.text === 'string' ? m.content.text.substring(0, 200) : 'N/A')
             : 'N/A'
         })))
         
@@ -180,7 +192,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
       
       for (const sessionIndex of sortedIndices) {
         const analysisToDelete = pulseAnalyses[sessionIndex]
-        await elizaDataService.deleteMessage(analysisToDelete.messageId)
+        await elizaDataService.deleteMessageById(analysisToDelete.messageId)
       }
       
       // Remove from local state
