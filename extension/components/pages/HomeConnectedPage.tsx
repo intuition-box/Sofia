@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import chatIcon from '../../components/ui/icons/chatIcon.png'
 import LevelProgress from '../ui/LevelProgress'
 import PulseAnimation from '../ui/PulseAnimation'
+import CircularMenu from '../ui/CircularMenu'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
 

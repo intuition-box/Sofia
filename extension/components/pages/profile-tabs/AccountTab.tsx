@@ -29,7 +29,6 @@ const AccountTab = () => {
         'oauth_token_youtube',
         'oauth_token_spotify', 
         'oauth_token_twitch',
-        'oauth_token_twitter'
       ])
       
       setOauthTokens({
