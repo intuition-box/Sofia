@@ -40,7 +40,9 @@ const HomeConnectedPage = () => {
     const handleMessage = (message: any) => {
       if (message.type === 'PULSE_ANALYSIS_COMPLETE') {
         console.log('🫀 Pulse analysis completed, redirecting...')
-        handleAnalysisComplete()
+        setIsAnalyzing(false)
+        localStorage.setItem('targetTab', 'Pulse')
+        navigateTo('Sofia')
       }
     }
 
@@ -49,7 +51,7 @@ const HomeConnectedPage = () => {
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage)
     }
-  }, [navigateTo])
+  }, [])
 
   return (
     <>

@@ -257,7 +257,7 @@ export async function initializePulseSocket(): Promise<void> {
         
         // Notify UI that pulse analysis is complete
         try {
-          MessageBus.getInstance().sendMessageFireAndForget({
+          chrome.runtime.sendMessage({
             type: "PULSE_ANALYSIS_COMPLETE"
           })
           console.log("🫀 [websocket.ts] Sent PULSE_ANALYSIS_COMPLETE message")
