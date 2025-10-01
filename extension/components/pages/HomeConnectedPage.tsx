@@ -14,17 +14,35 @@ const HomeConnectedPage = () => {
   const [showMenu, setShowMenu] = useState(false)
   const { navigateTo } = useRouter()
 
-  const handleMenuAreaEnter = () => {
-    setShowMenu(true)
+  const handleOrbClick = () => {
+    setShowMenu(!showMenu)
   }
 
-  const handleMenuAreaLeave = () => {
+  const handleBackgroundClick = () => {
     setShowMenu(false)
   }
 
   return (
-    <div className="home-connected-page">
-      <div className="chat-section">
+    <>
+      {showMenu && (
+        <div 
+          className="page-blur-overlay"
+          onClick={handleBackgroundClick}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'radial-gradient(circle at center, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.05) 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            zIndex: 999
+          }}
+        />
+      )}
+      <div className="home-connected-page">
+        <div className="chat-section">
         <div className="chat-input-container">
           <img
             src={chatIcon}
@@ -64,18 +82,19 @@ const HomeConnectedPage = () => {
       <div className="pulse-animation-section">
         <div 
           className="pulse-with-menu"
-          onMouseEnter={handleMenuAreaEnter}
-          onMouseLeave={handleMenuAreaLeave}
           style={{
             position: 'relative',
             width: '400px',
             height: '400px',
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            zIndex: 1000
           }}
         >
-          <PulseAnimation size={120} />
+          <div onClick={handleOrbClick}>
+            <PulseAnimation size={120} />
+          </div>
           <CircularMenu 
             isVisible={showMenu} 
             onItemClick={(item) => {
@@ -85,7 +104,8 @@ const HomeConnectedPage = () => {
           />
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 

@@ -261,8 +261,7 @@ const PulseAnimation = ({ size = 150 }: PulseAnimationProps) => {
       setIsClicked(false)
     }, 600)
 
-    localStorage.setItem('targetTab', 'Pulse')
-    navigateTo('Sofia')
+    // Navigation supprimée - juste l'animation maintenant
   }
 
   return (

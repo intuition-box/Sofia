@@ -21,7 +21,10 @@
 }
 
 .arc-menu-button:hover {
-  transform: translate(-50%, -50%) scale(1.1);
+  transform: translate(-50%, -50%) scale(1.2);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .arc-menu-button svg {
@@ -208,10 +211,60 @@
   fill: #f0f0f0;
 }
 
+/* Tooltip styles */
+.menu-tooltip {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.menu-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid rgba(0, 0, 0, 0.9);
+}
+
+.arc-menu-button:hover .menu-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Enhanced hover effects */
+.arc-menu-button:hover svg {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
 /* Style responsive */
 @media (max-width: 768px) {
   .arc-menu-button {
     width: 35px;
     height: 35px;
+  }
+  
+  .menu-tooltip {
+    font-size: 12px;
+    padding: 6px 12px;
   }
 }
