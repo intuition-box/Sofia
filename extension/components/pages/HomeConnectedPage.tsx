@@ -55,10 +55,10 @@ const HomeConnectedPage = () => {
 
   return (
     <>
-      {showMenu && (
+      {(showMenu || isAnalyzing) && (
         <div 
           className="page-blur-overlay"
-          onClick={handleBackgroundClick}
+          onClick={isAnalyzing ? undefined : handleBackgroundClick}
           style={{
             position: 'fixed',
             top: 0,
@@ -68,11 +68,12 @@ const HomeConnectedPage = () => {
             background: 'radial-gradient(circle at center, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.05) 100%)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            zIndex: 999
+            zIndex: 999,
+            cursor: isAnalyzing ? 'wait' : 'pointer'
           }}
         />
       )}
-      <div className="home-connected-page">
+      <div className={`home-connected-page ${isAnalyzing ? 'home-analyzing' : ''}`}>
         <div className="chat-section">
         <div className="chat-input-container">
           <img

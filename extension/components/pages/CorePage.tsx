@@ -25,7 +25,7 @@ const CorePage = () => {
   }, [])
 
   return (
-    <div className={`page ${activeGraphTab === 'Pulse' ? 'pulse-active' : ''}`}>
+    <div className="page">
       <div className="tabs">
         {['Echoes', 'Signals', 'Pulse', 'Bookmarks'].map(tab => (
           <button
