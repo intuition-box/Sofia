@@ -11,7 +11,16 @@ const storage = new Storage()
 
 const HomeConnectedPage = () => {
   const [chatInput, setChatInput] = useState("")
+  const [showMenu, setShowMenu] = useState(false)
   const { navigateTo } = useRouter()
+
+  const handleMenuAreaEnter = () => {
+    setShowMenu(true)
+  }
+
+  const handleMenuAreaLeave = () => {
+    setShowMenu(false)
+  }
 
   return (
     <div className="home-connected-page">
@@ -53,7 +62,28 @@ const HomeConnectedPage = () => {
 
 
       <div className="pulse-animation-section">
-        <PulseAnimation size={120} />
+        <div 
+          className="pulse-with-menu"
+          onMouseEnter={handleMenuAreaEnter}
+          onMouseLeave={handleMenuAreaLeave}
+          style={{
+            position: 'relative',
+            width: '400px',
+            height: '400px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <PulseAnimation size={120} />
+          <CircularMenu 
+            isVisible={showMenu} 
+            onItemClick={(item) => {
+              console.log('Menu item clicked:', item)
+              setShowMenu(false)
+            }}
+          />
+        </div>
       </div>
     </div>
   )

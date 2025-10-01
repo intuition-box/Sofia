@@ -45,7 +45,7 @@ const ResonancePage = () => {
           />
         </div>
         <div className="empty-state">
-          <p>🔍 Search Intuition Network</p>
+          <p> Search Intuition Network</p>
           <p className="empty-subtext">
             Enter a search term above to find atoms and triplets on the Intuition blockchain
           </p>

@@ -238,85 +238,12 @@ const PulseAnimation = ({ size = 150 }: PulseAnimationProps) => {
 
   // Gestion des effets hover avec intensité variable
   useEffect(() => {
-    // Arrêter toute animation précédente
-    if (animationIdRef.current) {
-      cancelAnimationFrame(animationIdRef.current)
-      animationIdRef.current = null
-    }
-
     if (isHovered) {
-      // Effet de vitesse folle au hover avec variations aléatoires
-      const startTime = Date.now()
-
-      // Paramètres aléatoires pour chaque hover
-      const randomSeed1 = Math.random() * 10
-      const randomSeed2 = Math.random() * 10
-      const randomSeed3 = Math.random() * 10
-      const speedFreq1 = 3 + Math.random() * 3 // Entre 3 et 6
-      const speedFreq2 = 5 + Math.random() * 4 // Entre 5 et 9
-      const intensityFreq1 = 2 + Math.random() * 4 // Entre 2 et 6
-      const intensityFreq2 = 4 + Math.random() * 3 // Entre 4 et 7
-
-      const hyperAnimate = () => {
-        if (!isHovered) return // Vérification supplémentaire
-
-        const elapsed = Date.now() - startTime
-
-        if (elapsed < 500) {
-          // Hyper-dynamisme pendant 500ms avec variations aléatoires
-          const cycle = (elapsed % 500) / 500 // Cycle de 500ms
-
-          // Variations chaotiques uniques à chaque hover
-          const speedVariation = (1.5 +
-            Math.sin((cycle + randomSeed1) * Math.PI * speedFreq1) * 1.2 +
-            Math.cos((cycle + randomSeed2) * Math.PI * speedFreq2) * 0.6
-          ) * 0.8
-
-          const intensityVariation = 1 +
-            Math.sin((cycle + randomSeed3) * Math.PI * intensityFreq1) * 0.3 +
-            Math.cos((cycle + randomSeed1) * Math.PI * intensityFreq2) * 0
-
-          timeMultiplierRef.current = speedVariation
-          intensityMultiplierRef.current = intensityVariation
-        } else {
-          // Après 500ms, effet hover normal
-          timeMultiplierRef.current = 1.3
-          intensityMultiplierRef.current = 1.2
-        }
-
-        animationIdRef.current = requestAnimationFrame(hyperAnimate)
-      }
-
-      animationIdRef.current = requestAnimationFrame(hyperAnimate)
+      timeMultiplierRef.current = 1.3
+      intensityMultiplierRef.current = 1.2
     } else {
-      // Retour progressif à la normale
-      const smoothReturn = () => {
-        const currentIntensity = intensityMultiplierRef.current
-        const currentSpeed = timeMultiplierRef.current
-
-        const intensityDiff = 1 - currentIntensity
-        const speedDiff = 1 - currentSpeed
-
-        if (Math.abs(intensityDiff) > 0.01 || Math.abs(speedDiff) > 0.01) {
-          intensityMultiplierRef.current += intensityDiff * 0.2
-          timeMultiplierRef.current += speedDiff * 0.2
-          animationIdRef.current = requestAnimationFrame(smoothReturn)
-        } else {
-          intensityMultiplierRef.current = 1
-          timeMultiplierRef.current = 1
-          animationIdRef.current = null
-        }
-      }
-
-      animationIdRef.current = requestAnimationFrame(smoothReturn)
-    }
-
-    // Cleanup
-    return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current)
-        animationIdRef.current = null
-      }
+      timeMultiplierRef.current = 1
+      intensityMultiplierRef.current = 1
     }
   }, [isHovered])
 
@@ -357,43 +284,6 @@ const PulseAnimation = ({ size = 150 }: PulseAnimationProps) => {
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease'
       }}
     >
-      {/* Tooltip */}
-      {isHovered && (
-        <div
-          style={{
-            position: 'absolute',
-            top: -40,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: '500',
-            whiteSpace: 'nowrap',
-            zIndex: 1000,
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            animation: 'tooltipFadeIn 0.2s ease-out'
-          }}
-        >
-          Take your pulse
-          <div
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 0,
-              height: 0,
-              borderLeft: '4px solid transparent',
-              borderRight: '4px solid transparent',
-              borderTop: '4px solid rgba(0, 0, 0, 0.8)'
-            }}
-          />
-        </div>
-      )}
       {/* Flash effect au clic */}
       {isClicked && <div className="pulse-flash" />}
 
