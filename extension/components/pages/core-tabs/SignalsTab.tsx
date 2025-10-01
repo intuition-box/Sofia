@@ -50,6 +50,11 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     }
   }
 
+  const handleViewOnPortal = (tripletId: string) => {
+    // Redirect to Intuition Portal for this specific triplet
+    window.open(`https://portal.intuition.systems/app/triple/${tripletId}`, '_blank')
+  }
+
 
   if (!address) {
     return (
@@ -113,11 +118,35 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
 
                 </div>
-                {/* Right actions - scan/view and bookmark */}
+                {/* Right actions - view on portal and bookmark */}
                 <div
                   className="signal-actions"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  <button
+                    onClick={() => handleViewOnPortal(tripletItem.id)}
+                    className="portal-button"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '4px',
+                      color: 'white',
+                      padding: '4px 8px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      marginRight: '8px',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    }}
+                    title="View on Intuition Portal"
+                  >
+                    🌐 Portal
+                  </button>
                   <BookmarkButton
                     triplet={tripletItem.triplet}
                     sourceInfo={{
