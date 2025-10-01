@@ -7,8 +7,6 @@ const BookmarkTab = () => {
   const { 
     lists, 
     triplets,
-    isLoading, 
-    error, 
     createList, 
     deleteList, 
     updateList,
@@ -106,32 +104,6 @@ const BookmarkTab = () => {
       ? searchTriplets(searchQuery)
       : triplets
 
-  if (isLoading) {
-    return (
-      <div className="triples-container">
-        <div className="empty-state">
-          <p>Loading bookmarks...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="triples-container">
-        <div className="empty-state">
-          <p>Error loading bookmarks: {error}</p>
-          <button 
-            onClick={refreshFromLocal}
-            className="bookmark-button-primary"
-            style={{ marginTop: '10px' }}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   function removeTripletFromList(selectedListId: string, id: string): void {
     throw new Error('Function not implemented.')

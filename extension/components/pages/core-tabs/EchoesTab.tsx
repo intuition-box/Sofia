@@ -74,6 +74,19 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [transactionSuccess, setTransactionSuccess] = useState(false)
   const [transactionError, setTransactionError] = useState<string | null>(null)
 
+  // Function to get favicon URL from a website URL
+  const getFaviconUrl = (url: string): string => {
+    if (!url) return ''
+    
+    try {
+      const urlObj = new URL(url)
+      // Use Google's favicon service as fallback, it's very reliable
+      return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`
+    } catch {
+      return ''
+    }
+  }
+
 
   // Handle Amplify button click - always opens modal for weight selection
   const handleAmplifyClick = () => {
@@ -240,6 +253,24 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 >
                   <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}>
                     <div className="echo-header">
+                      {tripletItem.url && (
+                        <img 
+                          src={getFaviconUrl(tripletItem.url)} 
+                          alt="favicon"
+                          className="triplet-favicon"
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                            marginRight: '8px',
+                            borderRadius: '2px'
+                          }}
+                          onError={(e) => {
+                            // Fallback if Google's service fails
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                          }}
+                        />
+                      )}
                       <p
                         className="triplet-text clickable"
                         onClick={(e) => {
@@ -272,7 +303,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                             {new Date(tripletItem.timestamp).toLocaleString()}
                           </p>
                         </div>
-                      </div>
                     )}
                   </div>
                 </div>
@@ -289,7 +319,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             Your triplets will appear automatically 
           </p>
         </div>
-      ) : availableCount === 0 ? (
+      ) : availableEchoes.length === 0 ? (
         <div className="empty-state">
           <p>All echoes have been amplified!</p>
           <p className="empty-subtext">
