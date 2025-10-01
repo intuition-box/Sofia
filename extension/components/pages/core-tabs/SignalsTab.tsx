@@ -52,7 +52,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
   const handleViewOnPortal = (tripletId: string) => {
     // Redirect to Intuition Portal for this specific triplet
-    window.open(`https://portal.intuition.systems/app/triple/${tripletId}`, '_blank')
+    window.open(`https://portal.intuition.systems/explore/triple/${tripletId}?tab=positions`, '_blank')
   }
 
 
