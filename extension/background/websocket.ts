@@ -255,6 +255,16 @@ export async function initializePulseSocket(): Promise<void> {
         const result = await sofiaDB.put(STORES.ELIZA_DATA, pulseRecord)
         console.log("✅ [websocket.ts] Pulse analysis stored directly:", { id: result, type: pulseRecord.type })
         
+        // Notify UI that pulse analysis is complete
+        try {
+          MessageBus.getInstance().sendMessageFireAndForget({
+            type: "PULSE_ANALYSIS_COMPLETE"
+          })
+          console.log("🫀 [websocket.ts] Sent PULSE_ANALYSIS_COMPLETE message")
+        } catch (busError) {
+          console.warn("⚠️ [websocket.ts] Failed to send PULSE_ANALYSIS_COMPLETE:", busError)
+        }
+        
       } catch (error) {
         console.error("❌ [websocket.ts] Failed to store pulse analysis:", error)
       }

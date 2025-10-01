@@ -4,9 +4,10 @@ import './PulseAnimation.css'
 
 interface PulseAnimationProps {
   size?: number
+  isAnalyzing?: boolean
 }
 
-const PulseAnimation = ({ size = 150 }: PulseAnimationProps) => {
+const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const blurCanvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number | undefined>(undefined)
@@ -238,14 +239,17 @@ const PulseAnimation = ({ size = 150 }: PulseAnimationProps) => {
 
   // Gestion des effets hover avec intensité variable
   useEffect(() => {
-    if (isHovered) {
+    if (isAnalyzing) {
+      timeMultiplierRef.current = 2.5
+      intensityMultiplierRef.current = 2.0
+    } else if (isHovered) {
       timeMultiplierRef.current = 1.3
       intensityMultiplierRef.current = 1.2
     } else {
       timeMultiplierRef.current = 1
       intensityMultiplierRef.current = 1
     }
-  }, [isHovered])
+  }, [isHovered, isAnalyzing])
 
   // Effet de clic
   const handleClick = () => {
@@ -279,7 +283,7 @@ const PulseAnimation = ({ size = 150 }: PulseAnimationProps) => {
         alignItems: 'center',
         background: 'transparent',
         position: 'relative',
-        transform: `scale(${isHovered ? 1.1 : 1})`,
+        transform: `scale(${isAnalyzing ? 1.4 : isHovered ? 1.1 : 1})`,
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease'
       }}
     >
@@ -311,6 +315,30 @@ const PulseAnimation = ({ size = 150 }: PulseAnimationProps) => {
           borderRadius: '50%'
         }}
       />
+
+      {/* Texte "Analyzing..." pendant l'analyse */}
+      {isAnalyzing && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-50px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: '600',
+            background: 'rgba(0, 0, 0, 0.8)',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)',
+            animation: 'pulse-text 1.5s ease-in-out infinite',
+            zIndex: 10
+          }}
+        >
+          Analyzing...
+        </div>
+      )}
     </div>
   )
 }

@@ -5,9 +5,10 @@ import './CircularMenu.css'
 interface CircularMenuProps {
   isVisible: boolean
   onItemClick?: (item: string) => void
+  onStartAnalysis?: () => void
 }
 
-const CircularMenu = ({ isVisible, onItemClick }: CircularMenuProps) => {
+const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuProps) => {
   const { navigateTo } = useRouter()
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
 
@@ -31,9 +32,8 @@ const CircularMenu = ({ isVisible, onItemClick }: CircularMenuProps) => {
       action: () => {
         if (confirm('Collect pulse data from all open tabs?')) {
           chrome.runtime.sendMessage({ type: 'START_PULSE_ANALYSIS' })
+          onStartAnalysis?.() // Déclenche l'animation
         }
-        localStorage.setItem('targetTab', 'Pulse')
-        navigateTo('Sofia')
         onItemClick?.('pulse-tab')
       }
     },

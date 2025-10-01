@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import chatIcon from '../../components/ui/icons/chatIcon.png'
 import LevelProgress from '../ui/LevelProgress'
@@ -6,12 +6,14 @@ import PulseAnimation from '../ui/PulseAnimation'
 import CircularMenu from '../ui/CircularMenu'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
+import { MessageBus } from '../../lib/services/MessageBus'
 
 const storage = new Storage()
 
 const HomeConnectedPage = () => {
   const [chatInput, setChatInput] = useState("")
   const [showMenu, setShowMenu] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
   const { navigateTo } = useRouter()
 
   const handleOrbClick = () => {
@@ -21,6 +23,33 @@ const HomeConnectedPage = () => {
   const handleBackgroundClick = () => {
     setShowMenu(false)
   }
+
+  const handleStartAnalysis = () => {
+    setIsAnalyzing(true)
+    setShowMenu(false)
+  }
+
+  const handleAnalysisComplete = () => {
+    setIsAnalyzing(false)
+    localStorage.setItem('targetTab', 'Pulse')
+    navigateTo('Sofia')
+  }
+
+  // Listen for pulse analysis completion via Chrome runtime messages
+  useEffect(() => {
+    const handleMessage = (message: any) => {
+      if (message.type === 'PULSE_ANALYSIS_COMPLETE') {
+        console.log('🫀 Pulse analysis completed, redirecting...')
+        handleAnalysisComplete()
+      }
+    }
+
+    chrome.runtime.onMessage.addListener(handleMessage)
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleMessage)
+    }
+  }, [navigateTo])
 
   return (
     <>
@@ -93,7 +122,7 @@ const HomeConnectedPage = () => {
           }}
         >
           <div onClick={handleOrbClick}>
-            <PulseAnimation size={120} />
+            <PulseAnimation size={120} isAnalyzing={isAnalyzing} />
           </div>
           <CircularMenu 
             isVisible={showMenu} 
@@ -101,6 +130,7 @@ const HomeConnectedPage = () => {
               console.log('Menu item clicked:', item)
               setShowMenu(false)
             }}
+            onStartAnalysis={handleStartAnalysis}
           />
         </div>
       </div>
