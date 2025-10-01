@@ -252,25 +252,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}>
-                    <div className="echo-header">
-                      {tripletItem.url && (
-                        <img 
-                          src={getFaviconUrl(tripletItem.url)} 
-                          alt="favicon"
-                          className="triplet-favicon"
-                          style={{
-                            width: '16px',
-                            height: '16px',
-                            marginRight: '8px',
-                            borderRadius: '2px'
-                          }}
-                          onError={(e) => {
-                            // Fallback if Google's service fails
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                          }}
-                        />
-                      )}
+                    <div className="echo-header" style={{ position: 'relative' }}>
                       <p
                         className="triplet-text clickable"
                         onClick={(e) => {
@@ -282,6 +264,27 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         <span className="action">{tripletItem.triplet.predicate}</span>{' '}
                         <span className="object">{tripletItem.triplet.object}</span>
                       </p>
+                      {tripletItem.url && (
+                        <img 
+                          src={getFaviconUrl(tripletItem.url)} 
+                          alt="favicon"
+                          className="triplet-favicon"
+                          style={{
+                            position: 'absolute',
+                            right: '0',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '2px'
+                          }}
+                          onError={(e) => {
+                            // Fallback if Google's service fails
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                          }}
+                        />
+                      )}
                     </div>
 
 

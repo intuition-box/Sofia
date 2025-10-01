@@ -337,6 +337,7 @@
   object-fit: contain;
 }
 
+
 /* Ajustements spécifiques pour les nouveaux boutons */
 .quick-action-button[data-action="amplify"] .quick-action-icon {
   width: 90px;

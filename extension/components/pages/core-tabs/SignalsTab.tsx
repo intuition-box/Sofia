@@ -86,19 +86,28 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                 <div className="triplet-header">
 
 
-                  {/* Favicon et texte du triplet */}
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  {/* Texte du triplet avec favicon à droite */}
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <p className="triplet-text clickable" onClick={() => {
+                      setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
+                    }}>
+                      <span className="subject">{formatWalletAddress(tripletItem.triplet.subject)}</span><br />
+                      <span className="action">{tripletItem.triplet.predicate}</span><br />
+                      <span className="object">{tripletItem.triplet.object}</span>
+                    </p>
                     {tripletItem.url && (
                       <img 
                         src={getFaviconUrl(tripletItem.url)} 
                         alt="favicon"
                         className="triplet-favicon"
                         style={{
+                          position: 'absolute',
+                          right: '0',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
                           width: '16px',
                           height: '16px',
-                          borderRadius: '2px',
-                          marginTop: '2px',
-                          flexShrink: 0
+                          borderRadius: '2px'
                         }}
                         onError={(e) => {
                           // Fallback if Google's service fails
@@ -107,13 +116,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                         }}
                       />
                     )}
-                    <p className="triplet-text clickable" onClick={() => {
-                      setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
-                    }}>
-                      <span className="subject">{formatWalletAddress(tripletItem.triplet.subject)}</span><br />
-                      <span className="action">{tripletItem.triplet.predicate}</span><br />
-                      <span className="object">{tripletItem.triplet.object}</span>
-                    </p>
                   </div>
 
 

@@ -275,6 +275,21 @@ export class ElizaDataService {
   }
 
   /**
+   * Delete a message by messageId
+   */
+  static async deleteMessage(messageId: string): Promise<void> {
+    const allMessages = await this.getAllMessages()
+    const messageToDelete = allMessages.find(msg => msg.messageId === messageId)
+    
+    if (messageToDelete && messageToDelete.id) {
+      await sofiaDB.delete(STORES.ELIZA_DATA, messageToDelete.id)
+      console.log('🗑️ Eliza message deleted:', messageId)
+    } else {
+      console.warn('⚠️ Message not found for deletion:', messageId)
+    }
+  }
+
+  /**
    * Clear all Eliza data
    */
   static async clearAll(): Promise<void> {

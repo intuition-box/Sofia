@@ -20,6 +20,7 @@ interface PulseTheme {
 
 interface PulseAnalysis {
   msgIndex: number
+  messageId: string // Ajout de l'ID réel du message
   timestamp: number
   themes: PulseTheme[]
 }
@@ -30,6 +31,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
   const [loading, setLoading] = useState(true)
   const [expandedSessions, setExpandedSessions] = useState<Set<number>>(new Set())
   const [expandedTriplets, setExpandedTriplets] = useState<Set<string>>(new Set())
+  const [selectedSessions, setSelectedSessions] = useState<Set<number>>(new Set())
 
   // Fetch pulse analyses from IndexedDB
   useEffect(() => {
@@ -79,6 +81,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
             if (themes.length > 0) {
               analysisGroups.push({
                 msgIndex,
+                messageId: msg.id, // Utilisation de l'ID réel du message
                 timestamp: msg.timestamp, // Use timestamp from ElizaRecord
                 themes
               })
@@ -142,6 +145,59 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
     })
   }
 
+
+  const toggleSessionSelection = (sessionIndex: number) => {
+    setSelectedSessions(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(sessionIndex)) {
+        newSet.delete(sessionIndex)
+      } else {
+        newSet.add(sessionIndex)
+      }
+      return newSet
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedSessions.size === pulseAnalyses.length) {
+      setSelectedSessions(new Set())
+    } else {
+      setSelectedSessions(new Set(pulseAnalyses.map((_, index) => index)))
+    }
+  }
+
+  const deleteSelectedSessions = async () => {
+    if (selectedSessions.size === 0) return
+    
+    const sessionCount = selectedSessions.size
+    if (!confirm(`Are you sure you want to delete ${sessionCount} research session${sessionCount > 1 ? 's' : ''}? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      // Sort indices in descending order to avoid index shifting issues
+      const sortedIndices = Array.from(selectedSessions).sort((a, b) => b - a)
+      
+      for (const sessionIndex of sortedIndices) {
+        const analysisToDelete = pulseAnalyses[sessionIndex]
+        await elizaDataService.deleteMessage(analysisToDelete.messageId)
+      }
+      
+      // Remove from local state
+      setPulseAnalyses(prev => prev.filter((_, index) => !selectedSessions.has(index)))
+      
+      // Clear selections and expanded states
+      setSelectedSessions(new Set())
+      setExpandedSessions(new Set())
+      setExpandedTriplets(new Set())
+      
+      console.log(`🫀 [PulseTab] Deleted ${sessionCount} research sessions`)
+    } catch (error) {
+      console.error('🫀 [PulseTab] Error deleting selected sessions:', error)
+      alert('Failed to delete selected sessions. Please try again.')
+    }
+  }
+
   // Initialize sessions as expanded by default when data loads
   useEffect(() => {
     if (pulseAnalyses.length > 0 && expandedSessions.size === 0) {
@@ -177,26 +233,66 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
 
   return (
     <div className="triples-container">
+      {(selectedSessions.size > 0 || pulseAnalyses.length > 0) && (
+        <div className="selection-panel">
+          <div className="selection-info">
+            <label className="select-all-label">
+              <span onClick={toggleSelectAll} style={{cursor: 'pointer'}}>
+                {selectedSessions.size > 0 ? `${selectedSessions.size} selected` : 'Select All'}
+              </span>
+            </label>
+          </div>
+          
+          {selectedSessions.size > 0 && (
+            <div>
+              <div className="batch-actions">
+                <button 
+                  className="batch-btn delete-selected"
+                  onClick={deleteSelectedSessions}
+                >
+                  Remove ({selectedSessions.size})
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="triples-list">
         {pulseAnalyses.map((analysis, analysisIndex) => {
           const isSessionExpanded = expandedSessions.has(analysisIndex)
+          const isSelected = selectedSessions.has(analysisIndex)
           
           return (
-            <div key={analysis.msgIndex} className="pulse-analysis-group">
-              <div 
-                className="analysis-header clickable"
-                onClick={() => toggleSessionExpansion(analysisIndex)}
-                style={{ cursor: 'pointer' }}
-              >
-                <h4>
-                  <span style={{ marginRight: '8px' }}>
-                    {isSessionExpanded ? '▼' : '▶'}
-                  </span>
-                  Research Session #{analysisIndex + 1}
-                </h4>
-                <div className="analysis-meta">
-                  <span className="analysis-time">{formatTimestamp(analysis.timestamp)}</span>
-                  <span className="themes-count">{analysis.themes.length} patterns</span>
+            <div 
+              key={analysis.msgIndex} 
+              className={`echo-card ${isSelected ? 'border-blue' : 'border-green'}`}
+              onClick={() => toggleSessionSelection(analysisIndex)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className={`triplet-item ${isSessionExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}>
+                <div 
+                  className="analysis-header"
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <div
+                    className="clickable"
+                    onClick={(e) => {
+                      e.stopPropagation() // Prevent card selection
+                      toggleSessionExpansion(analysisIndex)
+                    }}
+                    style={{ cursor: 'pointer', flex: 1 }}
+                  >
+                  <h4>
+                    <span style={{ marginRight: '8px' }}>
+                      {isSessionExpanded ? '▼' : '▶'}
+                    </span>
+                    Research Session #{analysisIndex + 1}
+                  </h4>
+                  <div className="analysis-meta">
+                    <span className="analysis-time">{formatTimestamp(analysis.timestamp)}</span>
+                    <span className="themes-count">{analysis.themes.length} patterns</span>
+                  </div>
                 </div>
               </div>
               
@@ -262,6 +358,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                 })}
                 </div>
               )}
+              </div>
             </div>
           )
         })}
