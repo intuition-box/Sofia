@@ -261,14 +261,6 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                     )}
 
                     {isExpanded && (
-                      <div className="triplet-details">
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title"> Status</h4>
-                          <p className="triplet-detail-name">
-                            Status: Available for publication
-                          </p>
-                        </div>
-
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">Source</h4>
                           <p className="triplet-detail-name">
