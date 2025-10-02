@@ -32,6 +32,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
   const [expandedSessions, setExpandedSessions] = useState<Set<number>>(new Set())
   const [expandedTriplets, setExpandedTriplets] = useState<Set<string>>(new Set())
   const [selectedSessions, setSelectedSessions] = useState<Set<number>>(new Set())
+  const [selectedTriplets, setSelectedTriplets] = useState<Set<string>>(new Set()) // Format: "sessionIndex-tripletIndex"
 
   // Fetch pulse analyses from IndexedDB
   useEffect(() => {
@@ -170,8 +171,37 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
     })
   }
 
-  const toggleSelectAll = () => {
-    if (selectedSessions.size === pulseAnalyses.length) {
+  const toggleTripletSelection = (sessionIndex: number, tripletIndex: number) => {
+    const tripletId = `${sessionIndex}-${tripletIndex}`
+    setSelectedTriplets(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(tripletId)) {
+        newSet.delete(tripletId)
+      } else {
+        newSet.add(tripletId)
+      }
+      return newSet
+    })
+  }
+
+  const toggleSelectAllTriplets = () => {
+    if (selectedTriplets.size > 0) {
+      // Clear all triplet selections
+      setSelectedTriplets(new Set())
+    } else {
+      // Select all triplets from all sessions
+      const allTripletIds: string[] = []
+      pulseAnalyses.forEach((analysis, sessionIndex) => {
+        analysis.themes.forEach((_, tripletIndex) => {
+          allTripletIds.push(`${sessionIndex}-${tripletIndex}`)
+        })
+      })
+      setSelectedTriplets(new Set(allTripletIds))
+    }
+  }
+
+  const toggleSelectAllSessions = () => {
+    if (selectedSessions.size > 0) {
       setSelectedSessions(new Set())
     } else {
       setSelectedSessions(new Set(pulseAnalyses.map((_, index) => index)))
@@ -200,6 +230,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
       
       // Clear selections and expanded states
       setSelectedSessions(new Set())
+      setSelectedTriplets(new Set())
       setExpandedSessions(new Set())
       setExpandedTriplets(new Set())
       
@@ -245,28 +276,87 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
 
   return (
     <div className="triples-container">
-      {(selectedSessions.size > 0 || pulseAnalyses.length > 0) && (
+      {/* Button to select all triplets when none selected */}
+      {selectedTriplets.size === 0 && pulseAnalyses.length > 0 && (
         <div className="selection-panel">
           <div className="selection-info">
             <label className="select-all-label">
-              <span onClick={toggleSelectAll} style={{cursor: 'pointer'}}>
-                {selectedSessions.size > 0 ? `${selectedSessions.size} selected` : 'Select All'}
+              <span onClick={toggleSelectAllTriplets} style={{cursor: 'pointer'}}>
+                Select All Triplets for Publishing
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Panel for triplet selection and publishing */}
+      {selectedTriplets.size > 0 && (
+        <div className="selection-panel">
+          <div className="selection-info">
+            <label className="select-all-label">
+              <span style={{cursor: 'default'}}>
+                {selectedTriplets.size} triplets selected for publishing
               </span>
             </label>
           </div>
           
-          {selectedSessions.size > 0 && (
-            <div>
-              <div className="batch-actions">
-                <button 
-                  className="batch-btn delete-selected"
-                  onClick={deleteSelectedSessions}
-                >
-                  Remove ({selectedSessions.size})
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="batch-actions">
+            <button 
+              className="batch-btn add-to-signals"
+              onClick={() => console.log('Amplify selected triplets:', selectedTriplets)}
+            >
+              Amplify ({selectedTriplets.size})
+            </button>
+            <button 
+              className="batch-btn"
+              onClick={() => setSelectedTriplets(new Set())}
+              style={{ backgroundColor: '#666' }}
+            >
+              Clear Selection
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Button to select all sessions when none selected */}
+      {selectedSessions.size === 0 && pulseAnalyses.length > 0 && (
+        <div className="selection-panel" style={{ marginTop: selectedTriplets.size > 0 ? '10px' : '0' }}>
+          <div className="selection-info">
+            <label className="select-all-label">
+              <span onClick={toggleSelectAllSessions} style={{cursor: 'pointer'}}>
+                Select All Sessions for Deletion
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Panel for session selection and deletion */}
+      {selectedSessions.size > 0 && (
+        <div className="selection-panel" style={{ marginTop: selectedTriplets.size > 0 ? '10px' : '0' }}>
+          <div className="selection-info">
+            <label className="select-all-label">
+              <span style={{cursor: 'default'}}>
+                {selectedSessions.size} sessions selected for deletion
+              </span>
+            </label>
+          </div>
+          
+          <div className="batch-actions">
+            <button 
+              className="batch-btn delete-selected"
+              onClick={deleteSelectedSessions}
+            >
+              Remove Sessions ({selectedSessions.size})
+            </button>
+            <button 
+              className="batch-btn"
+              onClick={() => setSelectedSessions(new Set())}
+              style={{ backgroundColor: '#666' }}
+            >
+              Clear Selection
+            </button>
+          </div>
         </div>
       )}
 
@@ -279,33 +369,37 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
             <div 
               key={analysis.msgIndex} 
               className={`echo-card ${isSelected ? 'border-blue' : 'border-green'}`}
-              onClick={() => toggleSessionSelection(analysisIndex)}
-              style={{ cursor: 'pointer' }}
             >
               <div className={`triplet-item ${isSessionExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}>
                 <div 
                   className="analysis-header"
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <div
-                    className="clickable"
-                    onClick={(e) => {
-                      e.stopPropagation() // Prevent card selection
-                      toggleSessionExpansion(analysisIndex)
-                    }}
-                    style={{ cursor: 'pointer', flex: 1 }}
-                  >
-                  <h4>
-                    <span style={{ marginRight: '8px' }}>
-                      {isSessionExpanded ? '▼' : '▶'}
-                    </span>
-                    Research Session #{analysisIndex + 1}
-                  </h4>
-                  <div className="analysis-meta">
-                    <span className="analysis-time">{formatTimestamp(analysis.timestamp)}</span>
-                    <span className="themes-count">{analysis.themes.length} patterns</span>
+                  <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSessionSelection(analysisIndex)}
+                      style={{ marginRight: '12px', cursor: 'pointer' }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div
+                      className="clickable"
+                      onClick={() => toggleSessionExpansion(analysisIndex)}
+                      style={{ cursor: 'pointer', flex: 1 }}
+                    >
+                      <h4>
+                        <span style={{ marginRight: '8px' }}>
+                          {isSessionExpanded ? '▼' : '▶'}
+                        </span>
+                        Research Session #{analysisIndex + 1}
+                      </h4>
+                      <div className="analysis-meta">
+                        <span className="analysis-time">{formatTimestamp(analysis.timestamp)}</span>
+                        <span className="themes-count">{analysis.themes.length} patterns</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
               </div>
               
               {isSessionExpanded && (
@@ -313,18 +407,23 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
               {analysis.themes.map((theme, themeIndex) => {
                 const tripletId = `${analysisIndex}-${themeIndex}`
                 const isExpanded = expandedTriplets.has(tripletId)
+                const isSelected = selectedTriplets.has(tripletId)
                 
                 return (
                   <div 
                     key={`${analysis.msgIndex}-${themeIndex}`}
-                    className="echo-card border-green"
+                    className={`echo-card ${isSelected ? 'border-blue' : 'border-green'}`}
+                    onClick={() => toggleTripletSelection(analysisIndex, themeIndex)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
+                    <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}>
                       <div className="echo-header">
                         <p
                           className="triplet-text clickable"
-                          onClick={() => toggleTripletExpansion(analysisIndex, themeIndex)}
+                          onClick={(e) => {
+                            e.stopPropagation() // Prevent triplet selection
+                            toggleTripletExpansion(analysisIndex, themeIndex)
+                          }}
                         >
                           <span className="subject">You</span>{' '}
                           <span className="action">{theme.predicate}</span>{' '}
