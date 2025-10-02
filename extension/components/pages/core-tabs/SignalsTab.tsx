@@ -16,6 +16,10 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   const { triplets, refreshFromAPI } = useIntuitionTriplets()
   const [address] = useStorage<string>("metamask-account")
 
+  console.log('🎯 SignalsTab render - address:', address)
+  console.log('🎯 SignalsTab render - triplets:', triplets)
+  console.log('🎯 SignalsTab render - triplets.length:', triplets.length)
+
   // Display triplets from Intuition indexer (already sorted by timestamp)
   const publishedTriplets = triplets
 
@@ -79,7 +83,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
           return (
-            <div key={tripletItem.id} className={`echo-card border-green`}>
+            <div key={tripletItem.id} className={`echo-card border-green`} style={{ position: 'relative' }}>
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
 
                 {/* Header avec badges et actions */}
@@ -149,17 +153,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   >
                     🌐 Portal
                   </button>
-                  <BookmarkButton
-                    triplet={tripletItem.triplet}
-                    sourceInfo={{
-                      sourceType: 'published',
-                      sourceId: tripletItem.id,
-                      url: tripletItem.url,
-                      description: tripletItem.description,
-                      sourceMessageId: tripletItem.id
-                    }}
-                    size="small"
-                  />
                 </div>
                 {isExpanded && (() => {
                   console.log('tripletItem.url:', tripletItem.url, 'tripletItem:', tripletItem)
@@ -167,17 +160,61 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     <div className="triplet-detail-section">
                       <h4 className="triplet-detail-title">Source</h4>
                       <p className="triplet-detail-name">
-                        <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" style={{ color: 'white' }}>
-                          {tripletItem.url || 'URL non disponible'}
-                        </a>
+                        {tripletItem.url ? (
+                          <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" style={{ color: 'white' }}>
+                            {tripletItem.url}
+                          </a>
+                        ) : (
+                          <a 
+                            href={`https://portal.intuition.systems/explore/atom/${tripletItem.objectTermId}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            style={{ color: '#888', fontStyle: 'italic' }}
+                          >
+                            View "{tripletItem.triplet.object}" on Portal
+                          </a>
+                        )}
                       </p>
                       <p className="triplet-detail-timestamp">
                         {new Date(tripletItem.timestamp).toLocaleString()}
                       </p>
+                      <BookmarkButton
+                        triplet={tripletItem.triplet}
+                        sourceInfo={{
+                          sourceType: 'published',
+                          sourceId: tripletItem.id,
+                          url: tripletItem.url,
+                          description: tripletItem.description,
+                          sourceMessageId: tripletItem.id
+                        }}
+                        size="small"
+                      />
                     </div>
                   )
                 })()}
               </div>
+              
+              {/* Upvotes en bas à droite - fixe sur la card principale */}
+              {tripletItem.position && tripletItem.position.upvotes > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '8px',
+                  right: '8px',
+                  background: 'rgba(76, 175, 80, 0.1)',
+                  border: '1px solid rgba(0, 0, 0, 0.3)',
+                  borderRadius: '12px',
+                  padding: '4px 8px',
+                  fontSize: '12px',
+                  color: '#ffffffff',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '2px',
+                  zIndex: 10
+                }}>
+                  👍 {tripletItem.position.upvotes}
+                </div>
+              )}
             </div>
           );
         })
