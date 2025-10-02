@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
 import { elizaDataService } from '../../../lib/database/indexedDB-methods'
+import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
+import WeightModal from '../../modals/WeightModal'
+import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/CorePage.css'
 
 interface PulseTabProps {
@@ -33,6 +36,66 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
   const [expandedTriplets, setExpandedTriplets] = useState<Set<string>>(new Set())
   const [selectedSessions, setSelectedSessions] = useState<Set<number>>(new Set())
   const [selectedTriplets, setSelectedTriplets] = useState<Set<string>>(new Set()) // Format: "sessionIndex-tripletIndex"
+  
+  // Modal state for custom weighting
+  const [showWeightModal, setShowWeightModal] = useState(false)
+  const [selectedTripletsForWeighting, setSelectedTripletsForWeighting] = useState<EchoTriplet[]>([])
+  const [isCreating, setIsCreating] = useState(false)
+  const [transactionSuccess, setTransactionSuccess] = useState(false)
+  const [transactionError, setTransactionError] = useState<string | null>(null)
+
+  // Create EchoTriplets from selected pulse triplets for publishing
+  const createEchoTripletsFromSelection = (): EchoTriplet[] => {
+    if (selectedTriplets.size === 0 || pulseAnalyses.length === 0) {
+      return []
+    }
+    
+    const echoTriplets: EchoTriplet[] = []
+    
+    selectedTriplets.forEach(tripletId => {
+      const [sessionIndexStr, tripletIndexStr] = tripletId.split('-')
+      const sessionIndex = parseInt(sessionIndexStr)
+      const tripletIndex = parseInt(tripletIndexStr)
+      
+      const analysis = pulseAnalyses[sessionIndex]
+      if (!analysis || !analysis.themes) return
+      
+      const theme = analysis.themes[tripletIndex]
+      if (!theme) return
+      
+      const echoTriplet: EchoTriplet = {
+        id: `pulse_${tripletId}`,
+        triplet: {
+          subject: 'You',
+          predicate: theme.predicate,
+          object: theme.object
+        },
+        url: theme.urls?.[0] || '',
+        description: theme.name,
+        timestamp: analysis.timestamp,
+        sourceMessageId: analysis.messageId,
+        status: 'available'
+      }
+      echoTriplets.push(echoTriplet)
+    })
+    
+    return echoTriplets
+  }
+
+  // Dynamic EchoTriplets and selection for the hook
+  const pulseEchoTriplets = createEchoTripletsFromSelection()
+  const pulseSelectedEchoes = new Set(pulseEchoTriplets.map(t => t.id))
+
+  // Publishing hook with real EchoTriplets - same as EchoesTab
+  const {
+    publishSelected
+  } = useEchoPublishing({
+    echoTriplets: pulseEchoTriplets,
+    selectedEchoes: pulseSelectedEchoes,
+    address: address || '',
+    onTripletsUpdate: () => {},
+    clearSelection: () => setSelectedTriplets(new Set())
+  })
 
   // Fetch pulse analyses from IndexedDB
   useEffect(() => {
@@ -121,6 +184,46 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
 
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleString()
+  }
+
+
+  // Handle Amplify button click - opens modal for weight selection
+  const handleAmplifyClick = () => {
+    if (selectedTriplets.size > 0) {
+      setSelectedTripletsForWeighting(pulseEchoTriplets)
+      setShowWeightModal(true)
+    }
+  }
+
+  // Handle modal weight submission - exact same logic as EchoesTab
+  const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
+    if (selectedTripletsForWeighting.length === 0) return
+    
+    try {
+      setIsCreating(true)
+      setTransactionError(null)
+      setTransactionSuccess(false)
+      
+      // Use publishSelected with custom weights - same as EchoesTab
+      await publishSelected(customWeights)
+      
+      setTransactionSuccess(true)
+    } catch (error) {
+      console.error('Failed to publish triplets with custom weights:', error)
+      setTransactionError(error instanceof Error ? error.message : 'Failed to publish')
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  // Handle modal close - exact same logic as EchoesTab
+  const handleWeightModalClose = () => {
+    setShowWeightModal(false)
+    setSelectedTripletsForWeighting([])
+    setTransactionError(null)
+    setTransactionSuccess(false)
+    // Clear selection using the hook's clearSelection (same as EchoesTab)
+    setSelectedTriplets(new Set())
   }
 
   const toggleSessionExpansion = (sessionIndex: number) => {
@@ -303,7 +406,8 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
           <div className="batch-actions">
             <button 
               className="batch-btn add-to-signals"
-              onClick={() => console.log('Amplify selected triplets:', selectedTriplets)}
+              onClick={handleAmplifyClick}
+              disabled={isCreating}
             >
               Amplify ({selectedTriplets.size})
             </button>
@@ -474,6 +578,17 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
           )
         })}
       </div>
+
+      {/* Weight Selection Modal */}
+      <WeightModal
+        isOpen={showWeightModal}
+        triplets={selectedTripletsForWeighting}
+        isProcessing={isCreating}
+        transactionSuccess={transactionSuccess}
+        transactionError={transactionError}
+        onClose={handleWeightModalClose}
+        onSubmit={handleWeightSubmit}
+      />
     </div>
   )
 }
