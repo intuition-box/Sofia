@@ -58,17 +58,31 @@ export class OAuthFlowManager {
 
       console.log(`✅ [OAuth] Received callback URL: ${responseUrl}`)
 
-      // Extract code and state from the response URL
+      // Extract parameters based on OAuth flow type
       const urlObj = new URL(responseUrl)
-      const code = urlObj.searchParams.get('code')
-      const returnedState = urlObj.searchParams.get('state')
+      
+      if (config.flow === OAuthFlow.IMPLICIT) {
+        // Implicit flow - access_token is in URL fragment
+        const fragment = new URLSearchParams(urlObj.hash.substring(1))
+        const accessToken = fragment.get('access_token')
+        const returnedState = fragment.get('state')
 
-      if (!code || !returnedState) {
-        throw new Error('OAuth callback missing code or state')
+        if (!accessToken || !returnedState) {
+          throw new Error('OAuth implicit callback missing access_token or state')
+        }
+
+        await this.handleImplicitCallback(platform, accessToken, returnedState)
+      } else {
+        // Authorization code flow - code is in query parameters
+        const code = urlObj.searchParams.get('code')
+        const returnedState = urlObj.searchParams.get('state')
+
+        if (!code || !returnedState) {
+          throw new Error('OAuth callback missing code or state')
+        }
+
+        await this.handleCallback(platform, code, returnedState)
       }
-
-      // Process the OAuth callback immediately
-      await this.handleCallback(platform, code, returnedState)
       
       return responseUrl
     } catch (error) {

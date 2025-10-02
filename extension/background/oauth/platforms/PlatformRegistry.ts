@@ -73,7 +73,7 @@ export class PlatformRegistry {
       name: 'Twitch',
       clientId: oauthConfig.twitch.clientId,
       flow: OAuthFlow.IMPLICIT,
-      scope: ['user:read:follows', 'user:read:subscriptions', 'user:read:email'],
+      scope: ['user:read:follows', 'user:read:subscriptions'],
       authUrl: 'https://id.twitch.tv/oauth2/authorize',
       apiBaseUrl: 'https://api.twitch.tv/helix',
       endpoints: {
@@ -92,7 +92,7 @@ export class PlatformRegistry {
     this.tripletRules.set('youtube', [
       {
         pattern: 'subscriptions',
-        predicate: 'subscribes_to',
+        predicate: PREDICATE_NAMES.FOLLOW,
         extractObject: (item) => item.snippet.title,
         extractObjectUrl: (item) => `https://www.youtube.com/channel/${item.snippet.resourceId.channelId}`
       },

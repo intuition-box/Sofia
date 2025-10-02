@@ -272,7 +272,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                           style={{
                             position: 'absolute',
                             right: '0',
-                            top: '50%',
+                            top: '40%',
                             transform: 'translateY(-50%)',
                             width: '16px',
                             height: '16px',
