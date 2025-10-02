@@ -91,7 +91,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     <p className="triplet-text clickable" onClick={() => {
                       setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
                     }}>
-                      <span className="subject">{formatWalletAddress(tripletItem.triplet.subject)}</span><br />
+                      <span className="subject">I</span><br />
                       <span className="action">{tripletItem.triplet.predicate}</span><br />
                       <span className="object">{tripletItem.triplet.object}</span>
                     </p>

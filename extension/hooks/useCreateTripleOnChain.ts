@@ -6,7 +6,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { sessionWallet } from '../lib/services/sessionWallet'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
-import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS } from '../lib/config/constants'
+import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../lib/config/constants'
 import type { TripleOnChainResult, BatchTripleInput, BatchTripleResult } from '../types/blockchain'
 import type { Address, Hash, ContractWriteParams } from '../types/viem'
 
@@ -18,18 +18,19 @@ export const useCreateTripleOnChain = () => {
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   
-  // Utility function to create/get user atom (shared between simple and batch)
+  // Utility function to get the universal "I" subject atom (shared between simple and batch)
   const getUserAtom = async () => {
     if (!address) {
       throw new Error('No wallet connected')
     }
     
-    return await createAtomWithMultivault({
-      name: address,
-      description: `User atom for wallet ${address}`,
-      url: `https://etherscan.io/address/${address}`,
-      type: 'account'
-    })
+    // Return the pre-existing "I" subject atom instead of creating one for each wallet
+    return {
+      vaultId: SUBJECT_IDS.I,
+      success: true,
+      ipfsUri: '',
+      name: 'I'
+    }
   }
 
   // Utility function to get predicate atom (shared between simple and batch)
@@ -101,7 +102,7 @@ export const useCreateTripleOnChain = () => {
       const userAtom = {
         vaultId: userAtomResult.vaultId,
         ipfsUri: '',
-        name: address
+        name: 'I'  // Always "I" instead of wallet address
       }
       const predicateAtom = await getPredicateAtom(predicateName)
       const objectAtom = await createAtomWithMultivault(objectData)
@@ -199,8 +200,8 @@ export const useCreateTripleOnChain = () => {
       logger.debug('Starting batch triple creation', { count: inputs.length })
       const uniqueAtoms = new Map<string, { name: string; description?: string; url: string; type: string }>()
       
-      // User atom (always needed) - will be created via getUserAtom utility
-      const userAtomKey = `user:${address}`
+      // User atom (always needed) - will use the universal "I" subject
+      const userAtomKey = `user:I`
 
       // Collect unique predicates and objects
       const uniquePredicates = new Set<string>()
@@ -280,7 +281,7 @@ export const useCreateTripleOnChain = () => {
       for (let i = 0; i < inputs.length; i++) {
         const input = inputs[i]
         
-        const userVaultId = atomResults.get(`user:${address}`)!
+        const userVaultId = atomResults.get(`user:I`)!
         const predicateVaultId = atomResults.get(`predicate:${input.predicateName}`)!
         const objectVaultId = atomResults.get(`object:${input.objectData.name}`)!
 

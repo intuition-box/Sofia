@@ -66,7 +66,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
       const echoTriplet: EchoTriplet = {
         id: `pulse_${tripletId}`,
         triplet: {
-          subject: 'You',
+          subject: 'I',
           predicate: theme.predicate,
           object: theme.object
         },
@@ -529,7 +529,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                             toggleTripletExpansion(analysisIndex, themeIndex)
                           }}
                         >
-                          <span className="subject">You</span>{' '}
+                          <span className="subject">I</span>{' '}
                           <span className="action">{theme.predicate}</span>{' '}
                           <span className="object">{theme.object}</span>
                         </p>

@@ -142,7 +142,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
             <div key={triplet.id} className="modal-triplet-item">
               <div className="modal-triplet-info">
                 <p>
-                  <span className="subject">You</span>{' '}
+                  <span className="subject">I</span>{' '}
                   <span className="action">{triplet.triplet.predicate}</span>{' '}
                   <span className="object">{triplet.triplet.object}</span>
                 </p>

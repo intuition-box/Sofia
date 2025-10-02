@@ -260,7 +260,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                           setExpandedTriplet(isExpanded ? null : { msgIndex: 1, tripletIndex: index })
                         }}
                       >
-                        <span className="subject">{(tripletItem.triplet.subject === 'User' || tripletItem.triplet.subject === address) ? 'You' : tripletItem.triplet.subject}</span>{' '}
+                        <span className="subject">{(tripletItem.triplet.subject === 'User' || tripletItem.triplet.subject === 'I' || tripletItem.triplet.subject === address) ? 'I' : tripletItem.triplet.subject}</span>{' '}
                         <span className="action">{tripletItem.triplet.predicate}</span>{' '}
                         <span className="object">{tripletItem.triplet.object}</span>
                       </p>
