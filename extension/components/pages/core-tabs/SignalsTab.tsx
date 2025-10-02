@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useIntuitionTriplets } from '../../../hooks/useIntuitionTriplets'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
+import UpvoteModal from '../../modals/UpvoteModal'
 import { useStorage } from "@plasmohq/storage/hook"
 import '../../styles/AtomCreationModal.css'
 import '../../styles/CorePage.css'
@@ -15,6 +16,11 @@ interface SignalsTabProps {
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
   const { triplets, refreshFromAPI } = useIntuitionTriplets()
   const [address] = useStorage<string>("metamask-account")
+  
+  // Upvote modal state
+  const [selectedTriplet, setSelectedTriplet] = useState<typeof triplets[0] | null>(null)
+  const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
+  const [isProcessingUpvote, setIsProcessingUpvote] = useState(false)
 
   console.log('🎯 SignalsTab render - address:', address)
   console.log('🎯 SignalsTab render - triplets:', triplets)
@@ -57,6 +63,40 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   const handleViewOnPortal = (tripletId: string) => {
     // Redirect to Intuition Portal for this specific triplet
     window.open(`https://portal.intuition.systems/explore/triple/${tripletId}?tab=positions`, '_blank')
+  }
+
+  const handleUpvoteClick = (triplet: typeof triplets[0]) => {
+    setSelectedTriplet(triplet)
+    setIsUpvoteModalOpen(true)
+  }
+
+  const handleCloseUpvoteModal = () => {
+    setIsUpvoteModalOpen(false)
+    setSelectedTriplet(null)
+    setIsProcessingUpvote(false)
+  }
+
+  const handleUpvoteSubmit = async (newUpvotes: number) => {
+    if (!selectedTriplet || !address) return
+
+    try {
+      setIsProcessingUpvote(true)
+      
+      // TODO: Implement the actual blockchain transaction
+      // This will require integration with useCreateTripleOnChain or similar hook
+      console.log('Adjusting upvotes from', selectedTriplet.position?.upvotes || 0, 'to', newUpvotes)
+      
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Refresh the data after successful transaction
+      await refreshFromAPI()
+      
+      handleCloseUpvoteModal()
+    } catch (error) {
+      console.error('Failed to adjust upvotes:', error)
+      setIsProcessingUpvote(false)
+    }
   }
 
 
@@ -196,22 +236,39 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
               
               {/* Upvotes en bas à droite - fixe sur la card principale */}
               {tripletItem.position && tripletItem.position.upvotes > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: '8px',
-                  right: '8px',
-                  background: 'rgba(76, 175, 80, 0.1)',
-                  border: '1px solid rgba(0, 0, 0, 0.3)',
-                  borderRadius: '12px',
-                  padding: '4px 8px',
-                  fontSize: '12px',
-                  color: '#ffffffff',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '2px',
-                  zIndex: 10
-                }}>
+                <div 
+                  style={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    right: '8px',
+                    background: 'rgba(76, 175, 80, 0.1)',
+                    border: '1px solid rgba(0, 0, 0, 0.3)',
+                    borderRadius: '12px',
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    color: '#ffffffff',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    zIndex: 10,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleUpvoteClick(tripletItem)
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(76, 175, 80, 0.2)'
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(76, 175, 80, 0.1)'
+                    e.currentTarget.style.transform = 'scale(1)'
+                  }}
+                  title="Adjust upvotes"
+                >
                   👍 {tripletItem.position.upvotes}
                 </div>
               )}
@@ -229,6 +286,19 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
             Refresh from Blockchain
           </button>
         </div>
+      )}
+
+      {/* Upvote Modal */}
+      {selectedTriplet && (
+        <UpvoteModal
+          isOpen={isUpvoteModalOpen}
+          objectName={selectedTriplet.triplet.object}
+          objectType="Identity"
+          currentUpvotes={selectedTriplet.position?.upvotes || 0}
+          onClose={handleCloseUpvoteModal}
+          onSubmit={handleUpvoteSubmit}
+          isProcessing={isProcessingUpvote}
+        />
       )}
     </div>
   )
