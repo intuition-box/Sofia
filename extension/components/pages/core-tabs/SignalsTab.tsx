@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useIntuitionTriplets } from '../../../hooks/useIntuitionTriplets'
+import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import UpvoteModal from '../../modals/UpvoteModal'
@@ -15,6 +16,7 @@ interface SignalsTabProps {
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
   const { triplets, refreshFromAPI } = useIntuitionTriplets()
+  const { addWeight, removeWeight } = useWeightOnChain()
   const [address] = useStorage<string>("metamask-account")
   
   // Upvote modal state
@@ -82,20 +84,42 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     try {
       setIsProcessingUpvote(true)
       
-      // TODO: Implement the actual blockchain transaction
-      // This will require integration with useCreateTripleOnChain or similar hook
-      console.log('Adjusting upvotes from', selectedTriplet.position?.upvotes || 0, 'to', newUpvotes)
+      const currentUpvotes = selectedTriplet.position?.upvotes || 0
+      const difference = newUpvotes - currentUpvotes
       
-      // Simulate processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      console.log('Adjusting upvotes from', currentUpvotes, 'to', newUpvotes, 'difference:', difference)
       
-      // Refresh the data after successful transaction
-      await refreshFromAPI()
+      if (difference === 0) {
+        handleCloseUpvoteModal()
+        return
+      }
+
+      // Convert upvotes to Wei (1 upvote = 0.001 TRUST = 10^15 Wei)
+      const weightChange = BigInt(Math.abs(difference)) * BigInt(1e15)
       
-      handleCloseUpvoteModal()
+      let result
+      if (difference > 0) {
+        // Adding upvotes
+        result = await addWeight(selectedTriplet.id, weightChange)
+      } else {
+        // Removing upvotes  
+        result = await removeWeight(selectedTriplet.id, weightChange)
+      }
+
+      if (result.success) {
+        console.log('✅ Weight adjustment successful:', result.txHash)
+        
+        // Refresh the data after successful transaction
+        await refreshFromAPI()
+        
+        handleCloseUpvoteModal()
+      } else {
+        throw new Error(result.error || 'Transaction failed')
+      }
     } catch (error) {
       console.error('Failed to adjust upvotes:', error)
       setIsProcessingUpvote(false)
+      // Keep modal open to show error or allow retry
     }
   }
 
@@ -244,16 +268,19 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     background: 'rgba(76, 175, 80, 0.1)',
                     border: '1px solid rgba(0, 0, 0, 0.3)',
                     borderRadius: '12px',
-                    padding: '4px 8px',
+                    padding: '4px 10px',
                     fontSize: '12px',
                     color: '#ffffffff',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '2px',
+                    gap: '4px',
+                    minWidth: '60px',
+                    justifyContent: 'center',
                     zIndex: 10,
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    whiteSpace: 'nowrap'
                   }}
                   onClick={(e) => {
                     e.stopPropagation()
