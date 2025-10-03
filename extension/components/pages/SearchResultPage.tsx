@@ -173,7 +173,7 @@ const SearchResultPage = ({ searchQuery: propQuery }: SearchResultPageProps) => 
         {!isLoading && !error && results.length > 0 && activeTab !== 'more' && (
           <div className="trending-section">
             {topResults.map((result, index) => (
-              <div key={result.id || index} className="echo-card border-green">
+              <div key={result.id || index} className="echo-card border-default">
                 <div className="triplet-item">
                   <div className="triplet-header">
                     <p className="triplet-text">

@@ -549,6 +549,44 @@
   }
 }
 
+/* ========== PULSE TAB SPECIFIC STYLES ========== */
+
+/* Research Session Cards - moins transparentes */
+.triples-container .echo-card {
+  background-color: rgba(0, 0, 0, 0.3); /* Moins transparent que 0.14 par défaut */
+}
+
+/* Headers d'analyse de session */
+.analysis-header h4 {
+  color: #F2DED6 !important;
+  font-family: 'Gotu', cursive;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Meta informations des sessions */
+.analysis-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.analysis-time,
+.themes-count {
+  color: #F2DED6 !important;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Container des thèmes d'analyse */
+.analysis-themes {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* ========== SPECIAL ANIMATIONS ========== */
 
 .echo-card.entering {

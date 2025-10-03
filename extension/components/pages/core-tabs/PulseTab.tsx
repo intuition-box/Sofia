@@ -501,7 +501,6 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                       </h4>
                       <div className="analysis-meta">
                         <span className="analysis-time">{formatTimestamp(analysis.timestamp)}</span>
-                        <span className="themes-count">{analysis.themes.length} patterns</span>
                       </div>
                     </div>
                   </div>
