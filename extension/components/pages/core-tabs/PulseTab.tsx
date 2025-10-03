@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
 import { elizaDataService } from '../../../lib/database/indexedDB-methods'
+import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import WeightModal from '../../modals/WeightModal'
 import type { EchoTriplet } from '../../../types/blockchain'
@@ -94,6 +95,57 @@ const PulseTab = () => {
     clearSelection: () => setSelectedTriplets(new Set())
   })
 
+  // Helper function to parse themes from message content
+  const parseThemesFromMessage = (msg: any): PulseTheme[] => {
+    try {
+      const text = (typeof msg.content === 'object' && msg.content && 'text' in msg.content && typeof msg.content.text === 'string') 
+        ? msg.content.text 
+        : ''
+      
+      if (text && text.includes('{') && text.includes('themes')) {
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0])
+          return parsed.themes || []
+        }
+      }
+      return []
+    } catch (error) {
+      console.warn("🫀 [PulseTab] Failed to parse message:", error)
+      return []
+    }
+  }
+
+  // Helper function to update message themes in IndexedDB
+  const updateMessageThemes = async (messageId: number, newThemes: PulseTheme[]) => {
+    const allMessages = await elizaDataService.getAllMessages()
+    const originalMessage = allMessages.find(msg => msg.id === messageId)
+    if (!originalMessage || !originalMessage.content) return
+
+    const text = (typeof originalMessage.content === 'object' && originalMessage.content && 'text' in originalMessage.content && typeof originalMessage.content.text === 'string') 
+      ? originalMessage.content.text 
+      : ''
+    
+    if (text && text.includes('{') && text.includes('themes')) {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0])
+        parsed.themes = newThemes
+        const updatedText = text.replace(jsonMatch[0], JSON.stringify(parsed))
+        
+        const updatedMessage = {
+          ...originalMessage,
+          content: {
+            ...originalMessage.content,
+            text: updatedText
+          }
+        }
+        
+        await sofiaDB.put(STORES.ELIZA_DATA, updatedMessage)
+      }
+    }
+  }
+
   // Fetch pulse analyses from IndexedDB
   useEffect(() => {
     const fetchPulseAnalyses = async () => {
@@ -107,28 +159,8 @@ const PulseTab = () => {
           return acc
         }, {} as Record<string, number>))
         
-        // Check all message types that contain themes
-        const messagesWithThemes = messages.filter(m => {
-          const text = typeof m.content === 'object' && m.content && 'text' in m.content 
-            ? (typeof m.content.text === 'string' ? m.content.text : '')
-            : ''
-          return text.includes('themes') && text.includes('{')
-        })
-        
-        console.log("🫀 [PulseTab] Messages with themes by type:", messagesWithThemes.map(m => ({
-          id: m.id,
-          messageId: m.messageId,
-          type: m.type,
-          hasThemes: true,
-          contentPreview: typeof m.content === 'object' && m.content && 'text' in m.content 
-            ? (typeof m.content.text === 'string' ? m.content.text.substring(0, 200) : 'N/A')
-            : 'N/A'
-        })))
-        
-        // Filter messages that are pulse analyses (now stored with correct type)
-        const pulseMessages = messages.filter(msg => 
-          msg.type === 'pulse_analysis'
-        )
+        // Filter messages that are pulse analyses
+        const pulseMessages = messages.filter(msg => msg.type === 'pulse_analysis')
         
         console.log("🫀 [PulseTab] Found pulse messages:", pulseMessages.length)
         console.log("🫀 [PulseTab] Pulse messages details:", pulseMessages)
@@ -136,31 +168,14 @@ const PulseTab = () => {
         // Parse and group themes by message (analysis session)
         const analysisGroups: PulseAnalysis[] = []
         pulseMessages.forEach((msg, msgIndex) => {
-          try {
-            let themes: PulseTheme[] = []
-            const text = (typeof msg.content === 'object' && msg.content && 'text' in msg.content && typeof msg.content.text === 'string') 
-              ? msg.content.text 
-              : ''
-            
-            // Try to parse JSON from the text
-            if (text && text.includes('{') && text.includes('themes')) {
-              const jsonMatch = text.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                const parsed = JSON.parse(jsonMatch[0])
-                themes = parsed.themes || []
-              }
-            }
-            
-            if (themes.length > 0) {
-              analysisGroups.push({
-                msgIndex,
-                messageId: msg.id, // Utilisation de l'ID réel du message
-                timestamp: msg.timestamp, // Use timestamp from ElizaRecord
-                themes
-              })
-            }
-          } catch (error) {
-            console.warn("🫀 [PulseTab] Failed to parse message:", error)
+          const themes = parseThemesFromMessage(msg)
+          if (themes.length > 0) {
+            analysisGroups.push({
+              msgIndex,
+              messageId: msg.id,
+              timestamp: msg.timestamp,
+              themes
+            })
           }
         })
         
@@ -341,6 +356,59 @@ const PulseTab = () => {
     }
   }
 
+  // Function to delete selected triplets (removes them from their sessions)
+  const deleteSelectedTriplets = async () => {
+    if (selectedTriplets.size === 0) return
+    
+    try {
+      // Group triplets by session to update messages efficiently
+      const sessionUpdates = new Map()
+      
+      selectedTriplets.forEach(tripletId => {
+        const [sessionIndex, themeIndex] = tripletId.split('-').map(Number)
+        if (!sessionUpdates.has(sessionIndex)) {
+          sessionUpdates.set(sessionIndex, new Set())
+        }
+        sessionUpdates.get(sessionIndex).add(themeIndex)
+      })
+      
+      for (const [sessionIndex, themeIndicesToRemove] of sessionUpdates) {
+        const analysis = pulseAnalyses[sessionIndex]
+        const filteredThemes = analysis.themes.filter((_, index) => 
+          !themeIndicesToRemove.has(index)
+        )
+        
+        if (filteredThemes.length === 0) {
+          // Delete entire message if no themes left
+          await elizaDataService.deleteMessageById(analysis.messageId)
+        } else {
+          // Update message with filtered themes using helper function
+          await updateMessageThemes(analysis.messageId, filteredThemes)
+        }
+      }
+      
+      // Update local state to reflect the changes
+      setPulseAnalyses(prev => {
+        return prev.map((analysis, index) => {
+          if (sessionUpdates.has(index)) {
+            const themeIndicesToRemove = sessionUpdates.get(index)
+            const filteredThemes = analysis.themes.filter((_, index) => 
+              !themeIndicesToRemove.has(index)
+            )
+            return filteredThemes.length > 0 ? { ...analysis, themes: filteredThemes } : null
+          }
+          return analysis
+        }).filter(Boolean) as PulseAnalysis[]
+      })
+      setSelectedTriplets(new Set())
+      
+      console.log(`🫀 [PulseTab] Removed ${selectedTriplets.size} triplets from IndexedDB`)
+    } catch (error) {
+      console.error('🫀 [PulseTab] Error deleting selected triplets:', error)
+      alert('Failed to remove selected triplets. Please try again.')
+    }
+  }
+
   // Initialize sessions as expanded by default when data loads
   useEffect(() => {
     if (pulseAnalyses.length > 0 && expandedSessions.size === 0) {
@@ -372,7 +440,6 @@ const PulseTab = () => {
     )
   }
 
-  const totalThemes = pulseAnalyses.reduce((sum, analysis) => sum + analysis.themes.length, 0)
 
   return (
     <div className="triples-container">
@@ -409,10 +476,16 @@ const PulseTab = () => {
               Amplify ({selectedTriplets.size})
             </button>
             <button 
-              className="batch-btn bg-gray-600"
-              onClick={() => setSelectedTriplets(new Set())}
+              className="batch-btn delete-selected"
+              onClick={deleteSelectedTriplets}
             >
-              Clear Selection
+              Remove ({selectedTriplets.size})
+            </button>
+            <button 
+              className="batch-btn bg-gray-600"
+              onClick={toggleSelectAllTriplets}
+            >
+              {selectedTriplets.size > 0 ? `${selectedTriplets.size} selected` : 'Select All'}
             </button>
           </div>
         </div>
@@ -451,9 +524,9 @@ const PulseTab = () => {
             </button>
             <button 
               className="batch-btn bg-gray-600"
-              onClick={() => setSelectedSessions(new Set())}
+              onClick={toggleSelectAllSessions}
             >
-              Clear Selection
+              {selectedSessions.size > 0 ? `${selectedSessions.size} selected` : 'Select All'}
             </button>
           </div>
         </div>
@@ -480,9 +553,8 @@ const PulseTab = () => {
                       onClick={(e) => e.stopPropagation()}
                     />
                     <div
-                      className="clickable"
+                      className="clickable session-expand-content"
                       onClick={() => toggleSessionExpansion(analysisIndex)}
-                      className="session-expand-content"
                     >
                       <h4>
                         <span className="session-arrow">

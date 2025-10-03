@@ -4,7 +4,7 @@ import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
-import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS } from '../lib/config/constants'
+import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../lib/config/constants'
 import type { TripleOnChainResult } from '../types/blockchain'
 import type { Address } from 'viem'
 import type { AccountAtom } from './useGetAtomAccount'
@@ -18,7 +18,7 @@ export const useCreateFollowTriples = () => {
   const createFollowTriple = async (
     targetUser: AccountAtom,
     customWeight: bigint,
-    userTermId: string = PREDICATE_IDS.USER_ID,
+    userTermId: string = SUBJECT_IDS.I,
     predicateTermId: string = PREDICATE_IDS.FOLLOW
   ): Promise<TripleOnChainResult> => {
     try {

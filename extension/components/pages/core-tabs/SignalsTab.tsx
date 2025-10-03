@@ -281,7 +281,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                         }}
                       />
                     )}
-                    {tripletItem.position && tripletItem.position.upvotes > 0 && (
+                    {(
                       <div 
                         className="upvote-badge"
                         onClick={(e) => {
@@ -291,7 +291,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                         title="Adjust upvotes"
                         className="upvote-badge-relative"
                       >
-                        👍 {tripletItem.position.upvotes}
+                        👍 {tripletItem.position?.upvotes || 0}
                       </div>
                     )}
                   </div>

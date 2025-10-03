@@ -93,6 +93,7 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
             account { id }
             shares
             created_at
+            curve_id
           }
         }
       }
