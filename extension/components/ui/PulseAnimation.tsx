@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import './PulseAnimation.css'
+import '../styles/PulseAnimation.css'
 
 interface PulseAnimationProps {
   size?: number

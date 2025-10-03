@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import './CircularMenu.css'
+import '../styles/CircularMenu.css'
 
 interface CircularMenuProps {
   isVisible: boolean

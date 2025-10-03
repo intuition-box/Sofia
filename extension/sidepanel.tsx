@@ -3,7 +3,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { configureClient } from '@0xintuition/graphql'
-import "./style.css"
+import "./components/styles/Global.css"
 
 import { wagmiConfig } from "./lib/config/wagmi"
 import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
