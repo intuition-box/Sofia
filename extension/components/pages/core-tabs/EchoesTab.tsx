@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useElizaData } from '../../../hooks/useElizaData'
 import { elizaDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
@@ -25,6 +25,10 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Modal state for custom weighting
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [selectedTripletsForWeighting, setSelectedTripletsForWeighting] = useState<EchoTriplet[]>([])
+  
+  // Predicate filtering state
+  const [selectedPredicate, setSelectedPredicate] = useState<string>('all')
+  const [isPredicateDropdownOpen, setIsPredicateDropdownOpen] = useState(false)
 
   // Hook IndexedDB pour les messages Eliza parsés uniquement
   const { 
@@ -36,8 +40,27 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const parsedMessages = allMessages
   const refreshMessages = loadMessages
 
+  // Extract unique predicates from triplets
+  const uniquePredicates = useMemo(() => {
+    const predicates = new Set<string>()
+    echoTriplets.forEach(triplet => {
+      if (triplet.triplet.predicate) {
+        predicates.add(triplet.triplet.predicate)
+      }
+    })
+    return Array.from(predicates).sort()
+  }, [echoTriplets])
+
+  // Filter triplets by selected predicate
+  const filteredTriplets = useMemo(() => {
+    if (selectedPredicate === 'all') {
+      return echoTriplets
+    }
+    return echoTriplets.filter(triplet => triplet.triplet.predicate === selectedPredicate)
+  }, [echoTriplets, selectedPredicate])
+
   // Available echoes for selection hook
-  const availableEchoes = echoTriplets.filter(t => t.status === 'available')
+  const availableEchoes = filteredTriplets.filter(t => t.status === 'available')
   
   // Selection management hook
   const {
@@ -69,6 +92,32 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     clearSelection
   })
   
+  // Handle predicate filtering
+  const handlePredicateSelection = (predicate: string) => {
+    setSelectedPredicate(predicate)
+    setIsPredicateDropdownOpen(false)
+  }
+
+  const handlePredicateDropdownClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsPredicateDropdownOpen(!isPredicateDropdownOpen)
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setIsPredicateDropdownOpen(false)
+    }
+
+    if (isPredicateDropdownOpen) {
+      document.addEventListener('click', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [isPredicateDropdownOpen])
+  
   // Local state for UI feedback
   const [isCreating, setIsCreating] = useState(false)
   const [transactionSuccess, setTransactionSuccess] = useState(false)
@@ -90,7 +139,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
   // Handle Amplify button click - always opens modal for weight selection
   const handleAmplifyClick = () => {
-    const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
+    const selectedTriplets = filteredTriplets.filter(t => selectedEchoes.has(t.id))
     if (selectedTriplets.length > 0) {
       setSelectedTripletsForWeighting(selectedTriplets)
       setShowWeightModal(true)
@@ -181,7 +230,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   }, [parsedMessages])
 
   // Unused functions removed
-  const availableCount = echoTriplets.filter(t => t.status === 'available').length
+  const availableCount = filteredTriplets.filter(t => t.status === 'available').length
 
   // Afficher le loading seulement au premier chargement
   if (!hasInitialLoad && parsedMessages.length === 0) {
@@ -234,11 +283,48 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         </div>
       )}
 
+      {/* Predicate Filter */}
+      {echoTriplets.length > 0 && (
+        <div className="sort-controls">
+          <div className={`sort-dropdown ${isPredicateDropdownOpen ? 'open' : ''}`}>
+            <div 
+              className="sort-dropdown-trigger" 
+              onClick={handlePredicateDropdownClick}
+            >
+              <span>
+                {selectedPredicate === 'all' 
+                  ? `All Predicates (${availableCount})` 
+                  : `${selectedPredicate} (${availableCount})`
+                }
+              </span>
+              <span className="sort-dropdown-arrow">▼</span>
+            </div>
+            <div className={`sort-dropdown-menu ${isPredicateDropdownOpen ? 'open' : ''}`}>
+              <div
+                className={`sort-dropdown-option ${selectedPredicate === 'all' ? 'selected' : ''}`}
+                onClick={() => handlePredicateSelection('all')}
+              >
+                <span>All Predicates</span>
+              </div>
+              {uniquePredicates.map((predicate) => (
+                <div
+                  key={predicate}
+                  className={`sort-dropdown-option ${selectedPredicate === predicate ? 'selected' : ''}`}
+                  onClick={() => handlePredicateSelection(predicate)}
+                >
+                  <span>{predicate}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Liste des triplets disponibles pour publication */}
       {availableCount > 0 && (
         <div className="available-triplets-section">
           {/* <h4>🔗 Available for Publication ({availableCount})</h4> */}
-          {echoTriplets
+          {filteredTriplets
             .filter(t => t.status === 'available')
             .sort((a, b) => b.timestamp - a.timestamp)
             .map((tripletItem, index) => {

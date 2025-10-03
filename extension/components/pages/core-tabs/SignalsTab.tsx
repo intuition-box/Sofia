@@ -14,7 +14,7 @@ interface SignalsTabProps {
   setExpandedTriplet: (value: { tripletId: string } | null) => void
 }
 
-type SortOption = 'highest-shares' | 'lowest-shares' | 'newest' | 'oldest' | 'a-z' | 'z-a'
+type SortOption = 'highest-shares' | 'lowest-shares' | 'newest' | 'oldest' | 'a-z' | 'z-a' | 'platform'
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
   const { triplets, refreshFromAPI } = useIntuitionTriplets()
@@ -37,6 +37,17 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   // Display triplets from Intuition indexer (already sorted by timestamp)
   const publishedTriplets = triplets
 
+  // Extract platform from URL
+  const getPlatformFromUrl = (url: string): string => {
+    if (!url) return 'Unknown'
+    try {
+      const urlObj = new URL(url)
+      return urlObj.hostname.replace('www.', '')
+    } catch {
+      return 'Unknown'
+    }
+  }
+
   // Sorted triplets based on selected sort option
   const sortedTriplets = useMemo(() => {
     const sorted = [...publishedTriplets]
@@ -54,10 +65,16 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         return sorted.sort((a, b) => a.triplet.object.localeCompare(b.triplet.object))
       case 'z-a':
         return sorted.sort((a, b) => b.triplet.object.localeCompare(a.triplet.object))
+      case 'platform':
+        return sorted.sort((a, b) => {
+          const platformA = getPlatformFromUrl(a.url)
+          const platformB = getPlatformFromUrl(b.url)
+          return platformA.localeCompare(platformB)
+        })
       default:
         return sorted
     }
-  }, [publishedTriplets, sortBy])
+  }, [publishedTriplets, sortBy, getPlatformFromUrl])
 
   // Sort options configuration
   const sortOptions = [
@@ -66,7 +83,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     { value: 'newest', label: 'Newest' },
     { value: 'oldest', label: 'Oldest' },
     { value: 'a-z', label: 'A-Z' },
-    { value: 'z-a', label: 'Z-A' }
+    { value: 'z-a', label: 'Z-A' },
+    { value: 'platform', label: 'Platform' }
   ] as const
 
   // Handle sort selection
