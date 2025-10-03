@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
-import FollowModal from './FollowModal'
+import FollowModal from '../modals/FollowModal'
 import { useFollowAccount } from '../../hooks/useFollowAccount'
 import type { AccountAtom } from '../../hooks/useGetAtomAccount'
 

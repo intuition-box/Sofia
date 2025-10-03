@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import '../styles/WeightModal.css'
+import '../styles/Modal.css'
 
 interface Triplet {
   subject: string
@@ -129,18 +129,19 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
   return (
     <div className={`modal-overlay ${isProcessing ? 'processing' : ''}`}>
       <div className="modal-content">
-        <h3>Amplify</h3>
+        <div className="modal-header">
+          <div className="modal-title">Amplify</div>
+        </div>
         
-        <div className="modal-section">
+        <div className="modal-body">
           <p className="modal-description">
             The weight represents the value you assign to this information. Choose how much TRUST to deposit for each signal.
           </p>
-        </div>
         
-        <div className="triplets-list">
-          {triplets.map((triplet, index) => (
-            <div key={triplet.id} className="modal-triplet-item">
-              <div className="modal-triplet-info">
+          <div className="modal-triplets-list">
+            {triplets.map((triplet, index) => (
+              <div key={triplet.id} className="modal-triplet-item">
+                <div className="modal-triplet-info">
                 <p>
                   <span className="subject">I</span>{' '}
                   <span className="action">{triplet.triplet.predicate}</span>{' '}
@@ -148,98 +149,99 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 </p>
               </div>
               
-              <div className="weight-options">
-                {weightOptions.map((option) => (
-                  <div key={option.id} className="weight-option">
-                    <label className="weight-option-label">
-                      <input
-                        type="radio"
-                        name={`weight-${index}`}
-                        value={option.id}
-                        checked={selectedWeights[index] === option.id}
-                        onChange={() => handleWeightSelection(index, option.id)}
-                        disabled={isProcessing}
-                        className="weight-radio"
-                      />
-                      <span className="weight-radio-custom"></span>
-                      <div className="weight-option-content">
-                        <span className="weight-option-title">{option.label}</span>
-                        <span className="weight-option-description">{option.description}</span>
-                      </div>
-                    </label>
-                    {option.id === 'custom' && selectedWeights[index] === 'custom' && (
-                      <input
-                        type="number"
-                        step="0.000001"
-                        min="0"
-                        placeholder="Enter amount (e.g., 0.025)"
-                        value={customValues[index] || ''}
-                        onChange={(e) => handleCustomValueChange(index, e.target.value)}
-                        className="custom-weight-input"
-                        disabled={isProcessing}
-                      />
-                    )}
-                  </div>
-                ))}
+                <div className="modal-weight-options">
+                  {weightOptions.map((option) => (
+                    <div key={option.id} className="modal-weight-option">
+                      <label className="modal-weight-option-label">
+                        <input
+                          type="radio"
+                          name={`weight-${index}`}
+                          value={option.id}
+                          checked={selectedWeights[index] === option.id}
+                          onChange={() => handleWeightSelection(index, option.id)}
+                          disabled={isProcessing}
+                          className="modal-weight-radio"
+                        />
+                        <span className="modal-weight-radio-custom"></span>
+                        <div className="modal-weight-option-content">
+                          <span className="modal-weight-option-title">{option.label}</span>
+                          <span className="modal-weight-option-description">{option.description}</span>
+                        </div>
+                      </label>
+                      {option.id === 'custom' && selectedWeights[index] === 'custom' && (
+                        <input
+                          type="number"
+                          step="0.000001"
+                          min="0"
+                          placeholder="Enter amount (e.g., 0.025)"
+                          value={customValues[index] || ''}
+                          onChange={(e) => handleCustomValueChange(index, e.target.value)}
+                          className="modal-custom-input"
+                          disabled={isProcessing}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {(isProcessing || transactionSuccess || transactionError) && (
+            <div className="modal-processing-section">
+              {isProcessing && <div className="modal-loading-spinner"></div>}
+              {transactionSuccess && <div className="modal-success-icon">✅</div>}
+              {transactionError && <div className="modal-error-icon">❌</div>}
+              <div className="modal-processing-text">
+                {isProcessing && (
+                  <>
+                    <p className="modal-processing-title">Creating</p>
+                    <p className="modal-processing-step">{processingStep}</p>
+                  </>
+                )}
+                {transactionSuccess && (
+                  <>
+                    <p className="modal-success-title">Transaction Validated</p>
+                    <p className="modal-success-step">Your claims has been successfully amplified!</p>
+                  </>
+                )}
+                {transactionError && (
+                  <>
+                    <p className="modal-error-title">Transaction Failed</p>
+                    <p className="modal-error-step">{transactionError}</p>
+                  </>
+                )}
               </div>
             </div>
-          ))}
-        </div>
+          )}
 
-        {(isProcessing || transactionSuccess || transactionError) && (
-          <div className="processing-section">
-            {isProcessing && <div className="loading-spinner"></div>}
-            {transactionSuccess && <div className="success-icon">✅</div>}
-            {transactionError && <div className="error-icon">❌</div>}
-            <div className="processing-text">
-              {isProcessing && (
-                <>
-                  <p className="processing-title">Creating</p>
-                  <p className="processing-step">{processingStep}</p>
-                </>
-              )}
-              {transactionSuccess && (
-                <>
-                  <p className="success-title">Transaction Validated</p>
-                  <p className="success-step">Your claims has been successfully amplified!</p>
-                </>
-              )}
-              {transactionError && (
-                <>
-                  <p className="error-title">Transaction Failed</p>
-                  <p className="error-step">{transactionError}</p>
-                </>
-              )}
-            </div>
+          <div className="modal-actions">
+            <button 
+              className="modal-btn secondary"
+              onClick={handleClose}
+              disabled={isProcessing}
+            >
+              {(transactionSuccess || transactionError) ? 'Close' : 'Cancel'}
+            </button>
+            {!transactionSuccess && !transactionError && (
+              <button 
+                className="modal-btn primary"
+                onClick={handleSubmit}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Amplifying...' : 'Amplify'}
+              </button>
+            )}
+            {transactionError && (
+              <button 
+                className="modal-btn primary"
+                onClick={handleSubmit}
+                disabled={isProcessing}
+              >
+                Retry
+              </button>
+            )}
           </div>
-        )}
-
-        <div className="modal-actions">
-          <button 
-            className="modal-btn secondary"
-            onClick={handleClose}
-            disabled={isProcessing}
-          >
-            {(transactionSuccess || transactionError) ? 'Close' : 'Cancel'}
-          </button>
-          {!transactionSuccess && !transactionError && (
-            <button 
-              className="modal-btn primary"
-              onClick={handleSubmit}
-              disabled={isProcessing}
-            >
-              {isProcessing ? 'Amplifying...' : 'Amplify'}
-            </button>
-          )}
-          {transactionError && (
-            <button 
-              className="modal-btn primary"
-              onClick={handleSubmit}
-              disabled={isProcessing}
-            >
-              Retry
-            </button>
-          )}
         </div>
       </div>
     </div>

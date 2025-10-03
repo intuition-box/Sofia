@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import '../styles/UpvoteModal.css'
+import '../styles/Modal.css'
 
 interface UpvoteModalProps {
   isOpen: boolean
@@ -49,14 +49,14 @@ const UpvoteModal = ({
   const difference = upvotes - currentUpvotes
 
   return (
-    <div className="upvote-modal-overlay">
-      <div className="upvote-modal-content">
-        <div className="upvote-modal-header">
-          <div className="upvote-modal-title">
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <div className="modal-title">
             <span>👍 Upvote this Claims</span>
           </div>
           <button 
-            className="upvote-modal-close"
+            className="modal-close"
             onClick={onClose}
             disabled={isProcessing}
           >
@@ -64,44 +64,44 @@ const UpvoteModal = ({
           </button>
         </div>
 
-        <div className="upvote-modal-body">
-          <div className="upvote-identity-info">
-            <div className="upvote-avatar">
-              <span className="upvote-avatar-placeholder"></span>
+        <div className="modal-body">
+          <div className="modal-identity-info">
+            <div className="modal-avatar">
+              <span className="modal-avatar-placeholder"></span>
             </div>
-            <div className="upvote-identity-details">
-              <div className="upvote-identity-name">{objectName}</div>
-              <span className="upvote-identity-type">{objectType}</span>
+            <div className="modal-identity-details">
+              <div className="modal-identity-name">{objectName}</div>
+              <span className="modal-identity-type">{objectType}</span>
             </div>
           </div>
 
-          <p className="upvote-description">
+          <p className="modal-description">
             {currentUpvotes > 0 
               ? `You currently have ${currentUpvotes} upvote${currentUpvotes !== 1 ? 's' : ''} on this identity`
               : "Be the first to upvote this identity"
             }
           </p>
 
-          <p className="upvote-explanation">
+          <p className="modal-description">
             Upvoting is the lowest-risk way to attest, signal your support, and curate 
             the graph. Upvotes also earn trading fees from bonding-curve-related activities.
           </p>
 
-          <div className="upvote-controls">
-            <div className="upvote-counter">
+          <div className="modal-controls">
+            <div className="modal-counter">
               <button 
-                className="upvote-btn upvote-btn-minus"
+                className="modal-btn-round"
                 onClick={handleDecrement}
                 disabled={upvotes <= 0 || isProcessing}
               >
                 −
               </button>
               
-              <div className="upvote-input-section">
-                <div className="upvote-icon">👍</div>
+              <div className="modal-input-section">
+                <div className="modal-input-icon">👍</div>
                 <input
                   type="text"
-                  className="upvote-input"
+                  className="modal-input"
                   value={upvotes}
                   onChange={handleInputChange}
                   disabled={isProcessing}
@@ -110,7 +110,7 @@ const UpvoteModal = ({
               </div>
               
               <button 
-                className="upvote-btn upvote-btn-plus"
+                className="modal-btn-round"
                 onClick={handleIncrement}
                 disabled={isProcessing}
               >
@@ -118,13 +118,13 @@ const UpvoteModal = ({
               </button>
             </div>
 
-            <div className="upvote-trust-amount">
+            <div className="modal-trust-amount">
               = {trustAmount} TRUST
             </div>
           </div>
 
           {difference !== 0 && (
-            <div className="upvote-change-info">
+            <div className="modal-change-info">
               {difference > 0 
                 ? `Adding ${difference} upvote${difference !== 1 ? 's' : ''}`
                 : `Removing ${Math.abs(difference)} upvote${Math.abs(difference) !== 1 ? 's' : ''}`
@@ -133,7 +133,7 @@ const UpvoteModal = ({
           )}
 
           <button 
-            className="upvote-submit-btn"
+            className="modal-btn primary"
             onClick={handleSubmit}
             disabled={isProcessing || difference === 0}
           >
