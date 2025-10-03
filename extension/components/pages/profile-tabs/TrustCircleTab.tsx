@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
+import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
+import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
+import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../../../types/intuition'
 import '../../styles/TrustCircleTab.css'
+
+// Convert address to checksum format (same as useIntuitionTriplets)
+const toChecksumAddress = (address: string): string => {
+  if (address.toLowerCase() === '0x0b940a81271ad090abd2c18d1a5873e5cb93d42a') {
+    return '0x0B940A81271aD090AbD2C18d1a5873e5cb93D42a'
+  }
+  return address
+}
 
 interface FollowedAccount {
   id: string
@@ -8,7 +19,6 @@ interface FollowedAccount {
   termId: string
   tripleId: string
   followDate: string
-  trustAmount: string
   walletInfo?: { wallet: string; shares: string }[]
 }
 
@@ -36,78 +46,89 @@ const TrustCircleTab = () => {
       setLoading(true)
       setError(null)
 
-      // Query to get triplets created by user, filtered by follow predicate and my positions
-      const combinedQuery = `
-        query GetMyTriples($walletAddress: String!) {
-          triples(
-            where: {
-              _and: [
-                { subject: { term_id: { _eq: "0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216" } } },
-                { predicate: { term_id: { _eq: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a" } } },
-                { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
-              ]
-            },
-            order_by: { created_at: desc }
-          ) {
+      if (!address) {
+        console.log('❌ No account, returning empty array')
+        setFollowedAccounts([])
+        return
+      }
+
+      const triplesQuery = `
+        query Triples($where: triples_bool_exp, $walletAddress: String!) {
+          triples(where: $where) {
             subject { label, term_id }
             predicate { label, term_id }
             object { label, term_id }
             term_id
             created_at
-            transaction_hash
-            positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
-              account_id
+            positions(where: { account: { id: { _eq: $walletAddress } } }) {
+              account { id }
               shares
+              created_at
+              curve_id
             }
           }
         }
       `
-
-      const response = await fetch('https://testnet.intuition.sh/v1/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: combinedQuery,
-          variables: {
-            walletAddress: address.toLowerCase()
+      
+      const where = {
+        "_and": [
+          {
+            "positions": {
+              "account": {
+                "id": {
+                  "_eq": toChecksumAddress(address)
+                }
+              }
+            }
+          },
+          {
+            "subject": {
+              "term_id": {
+                "_eq": SUBJECT_IDS.I
+              }
+            }
+          },
+          {
+            "predicate": {
+              "term_id": {
+                "_eq": PREDICATE_IDS.FOLLOW
+              }
+            }
+          },
+          {
+            "object": {
+              "type": {
+                "_eq": "Account"
+              }
+            }
           }
-        })
-      })
-
-      const result = await response.json()
-
-      console.log('✅ TrustCircleTab - GraphQL response', {
-        triples: result.data?.triples || [],
-        triplesFound: result.data?.triples?.length || 0,
-        errors: result.errors
-      })
-
-      if (result.errors) {
-        throw new Error(result.errors[0]?.message || 'GraphQL query failed')
+        ]
       }
-
-      const triples = result.data?.triples || []
-      console.log('✅ TrustCircleTab - Follow triples found:', {
-        totalTriples: triples.length,
-        triples: triples.map(triple => ({
-          termId: triple.term_id,
-          subject: triple.subject.label,
-          predicate: triple.predicate.label,
-          object: triple.object.label,
-          createdAt: triple.created_at
-        }))
-      })
+      
+      console.log('🚀 Making GraphQL request with where:', where)
+      
+      const response = await intuitionGraphqlClient.request(triplesQuery, {
+        where,
+        walletAddress: toChecksumAddress(address)
+      }) as GraphQLTriplesResponse
+      
+      console.log('📥 GraphQL response:', response)
+      
+      if (!response?.triples) {
+        console.log('❌ No triples in response')
+        setFollowedAccounts([])
+        return
+      }
+      
+      console.log('✅ Found follow triples:', response.triples.length)
 
       // Convert triples to display format
-      const accounts: FollowedAccount[] = triples.map(triple => ({
+      const accounts: FollowedAccount[] = response.triples.map((triple: IntuitionTripleResponse) => ({
         id: triple.term_id,
-        label: triple.object.label,
+        label: triple.object.label || 'Unknown',
         termId: triple.object.term_id,
         tripleId: triple.term_id,
         followDate: new Date(triple.created_at).toLocaleDateString(),
-        trustAmount: "Follow",
         walletInfo: []
       }))
 
@@ -192,7 +213,6 @@ const TrustCircleTab = () => {
                 <div className="account-label">{account.label}</div>
                 <div className="account-details">
                   <span className="follow-date">Followed on {account.followDate}</span>
-                  <span className="trust-amount">TRUST: {account.trustAmount}</span>
                 </div>
               </div>
             </div>
