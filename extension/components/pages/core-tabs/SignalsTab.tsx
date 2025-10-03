@@ -5,7 +5,7 @@ import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import UpvoteModal from '../../modals/UpvoteModal'
 import { useStorage } from "@plasmohq/storage/hook"
-import '../../styles/AtomCreationModal.css'
+import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
 
@@ -147,14 +147,11 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
           return (
-            <div key={tripletItem.id} className={`echo-card border-green`} style={{ position: 'relative' }}>
+            <div key={tripletItem.id} className={`echo-card border-default`} style={{ position: 'relative' }}>
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
-
-                {/* Header avec badges et actions */}
-                <div className="triplet-header">
-
-
-                  {/* Texte du triplet avec favicon à droite */}
+                {/* Header avec favicon et upvotes alignés au texte */}
+                <div className="triplet-header" style={{ position: 'relative' }}>
+                  {/* Texte du triplet */}
                   <div style={{ position: 'relative', width: '100%' }}>
                     <p className="triplet-text clickable" onClick={() => {
                       setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
@@ -163,60 +160,48 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       <span className="action">{tripletItem.triplet.predicate}</span><br />
                       <span className="object">{tripletItem.triplet.object}</span>
                     </p>
+                  </div>
+                  
+                  {/* Favicon et Upvotes alignés avec le texte */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '0',
+                    right: '0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    zIndex: 10
+                  }}>
                     {tripletItem.url && (
                       <img 
                         src={getFaviconUrl(tripletItem.url)} 
                         alt="favicon"
-                        className="triplet-favicon"
                         style={{
-                          position: 'absolute',
-                          right: '0',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
                           width: '16px',
                           height: '16px',
-                          borderRadius: '2px'
+                          borderRadius: '2px',
+                          opacity: 0.8
                         }}
                         onError={(e) => {
-                          // Fallback if Google's service fails
                           const target = e.target as HTMLImageElement
                           target.style.display = 'none'
                         }}
                       />
                     )}
+                    {tripletItem.position && tripletItem.position.upvotes > 0 && (
+                      <div 
+                        className="upvote-badge"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleUpvoteClick(tripletItem)
+                        }}
+                        title="Adjust upvotes"
+                        style={{ position: 'relative', bottom: 'auto', right: 'auto' }}
+                      >
+                        👍 {tripletItem.position.upvotes}
+                      </div>
+                    )}
                   </div>
-
-
-                </div>
-                {/* Right actions - view on portal and bookmark */}
-                <div
-                  className="signal-actions"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={() => handleViewOnPortal(tripletItem.id)}
-                    className="portal-button"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '4px',
-                      color: 'white',
-                      padding: '4px 8px',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      marginRight: '8px',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                    }}
-                    title="View on Intuition Portal"
-                  >
-                    🌐 Portal
-                  </button>
                 </div>
                 {isExpanded && (() => {
                   console.log('tripletItem.url:', tripletItem.url, 'tripletItem:', tripletItem)
@@ -242,63 +227,32 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       <p className="triplet-detail-timestamp">
                         {new Date(tripletItem.timestamp).toLocaleString()}
                       </p>
-                      <BookmarkButton
-                        triplet={tripletItem.triplet}
-                        sourceInfo={{
-                          sourceType: 'published',
-                          sourceId: tripletItem.id,
-                          url: tripletItem.url,
-                          description: tripletItem.description,
-                          sourceMessageId: tripletItem.id
-                        }}
-                        size="small"
-                      />
+                      
+                      {/* Actions dans la section expanded */}
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '16px', alignItems: 'center' }}>
+                        <button
+                          onClick={() => handleViewOnPortal(tripletItem.id)}
+                          className="portal-button"
+                          title="View on Intuition Portal"
+                        >
+                          🌐 Portal
+                        </button>
+                        <BookmarkButton
+                          triplet={tripletItem.triplet}
+                          sourceInfo={{
+                            sourceType: 'published',
+                            sourceId: tripletItem.id,
+                            url: tripletItem.url,
+                            description: tripletItem.description,
+                            sourceMessageId: tripletItem.id
+                          }}
+                          size="small"
+                        />
+                      </div>
                     </div>
                   )
                 })()}
               </div>
-              
-              {/* Upvotes en bas à droite - fixe sur la card principale */}
-              {tripletItem.position && tripletItem.position.upvotes > 0 && (
-                <div 
-                  style={{
-                    position: 'absolute',
-                    bottom: '8px',
-                    right: '8px',
-                    background: 'rgba(76, 175, 80, 0.1)',
-                    border: '1px solid rgba(0, 0, 0, 0.3)',
-                    borderRadius: '12px',
-                    padding: '4px 10px',
-                    fontSize: '12px',
-                    color: '#ffffffff',
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    minWidth: '60px',
-                    justifyContent: 'center',
-                    zIndex: 10,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleUpvoteClick(tripletItem)
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(76, 175, 80, 0.2)'
-                    e.currentTarget.style.transform = 'scale(1.05)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(76, 175, 80, 0.1)'
-                    e.currentTarget.style.transform = 'scale(1)'
-                  }}
-                  title="Adjust upvotes"
-                >
-                  👍 {tripletItem.position.upvotes}
-                </div>
-              )}
             </div>
           );
         })

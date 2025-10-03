@@ -1,0 +1,578 @@
+/* 
+ * Core Components CSS - Based on SignalsTab and EchoesTab Design
+ * This file contains all the shared design patterns from the core tabs
+ */
+
+/* ========== CORE CONTAINERS ========== */
+
+.triples-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(600px, 100%);
+  margin: 0 auto;
+  text-align: left;
+  padding: 0 16px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* ========== CARD SYSTEM ========== */
+
+.echo-card {
+  background-color: rgba(0, 0, 0, 0.14);
+  border-radius: 12px;
+  padding: 6px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(50px) saturate(100%);
+  -webkit-backdrop-filter: blur(50px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 50px;
+}
+
+.echo-card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Card Border Variants */
+.border-default {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.border-default:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.border-blue {
+  border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.border-blue:hover {
+  border-color: rgba(33, 150, 243, 0.5);
+}
+
+/* ========== TRIPLET ITEMS ========== */
+
+.triplet-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  gap: 12px;
+  margin-bottom: 0px;
+}
+
+.triplet-item.selected {
+  background: rgba(199, 134, 108, 0.1);
+  border-color: rgba(199, 134, 108, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Selection state for the entire card */
+.echo-card.selected,
+.echo-card:has(.triplet-item.selected) {
+  background: rgba(199, 134, 108, 0.15);
+  border-color: rgba(199, 134, 108, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(199, 134, 108, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ========== TRIPLET HEADERS ========== */
+
+.triplet-header,
+.echo-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 0px;
+  position: relative;
+}
+
+/* ========== TRIPLET TEXT ========== */
+
+.triplet-text {
+  color: #F2DED6;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.triplet-text.clickable:hover {
+  opacity: 0.8;
+}
+
+/* Subject, Predicate, Object styles */
+.triplet-text .subject {
+  font-weight: 600;
+  color: #ffffff;
+  background: #2d2d2d;
+  padding: 6px 14px;
+  border-radius: 12px;
+}
+
+.triplet-text .action {
+  margin: 0 8px;
+  font-style: italic;
+  color: #ffffff;
+}
+
+.triplet-text .object {
+  font-weight: 500;
+  color: #fff;
+  background: #2d2d2d;
+  padding: 6px 14px;
+  border-radius: 12px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========== FAVICON SYSTEM ========== */
+
+.triplet-favicon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.triplet-favicon:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* ========== TRIPLET DETAILS ========== */
+
+.triplet-detail-section {
+  padding: 16px;
+  background-color: rgba(251, 247, 245, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(242, 222, 214, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;
+}
+
+.triplet-detail-section:hover {
+  background-color: rgba(251, 247, 245, 0.08);
+  border-color: rgba(199, 134, 108, 0.3);
+  transform: translateY(-1px);
+}
+
+.triplet-detail-title {
+  font-family: 'Gotu', cursive;
+  font-size: 16px;
+  font-weight: 600;
+  color: #C7866C;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.triplet-detail-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #FBF7F5;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+.triplet-detail-description {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #F2DED6;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.triplet-detail-timestamp {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: #F2DED6;
+  opacity: 0.7;
+  margin: 8px 0 0 0;
+}
+
+.triplet-detail-url {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: #F2DED6;
+  text-decoration: underline;
+  transition: all 0.3s ease;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  display: inline-block;
+  margin-top: 4px;
+  max-width: 100%;
+}
+
+.triplet-detail-url:hover {
+  color: #C7866C;
+  text-decoration: none;
+  transform: translateX(2px);
+}
+
+/* ========== SELECTION SYSTEM ========== */
+
+.selection-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #F2DED6;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.select-all-label:hover {
+  color: #FBF7F5;
+}
+
+.select-all-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #C7866C;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.select-all-checkbox:checked {
+  background: #C7866C;
+  border-color: #C7866C;
+}
+
+.select-all-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #FBF7F5;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Echo Checkbox (smaller version) */
+.echo-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(251, 247, 245, 0.3);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.echo-checkbox:checked {
+  background: #C7866C;
+  border-color: #C7866C;
+}
+
+.echo-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #FBF7F5;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.echo-checkbox:hover {
+  border-color: #C7866C;
+  transform: scale(1.1);
+}
+
+/* ========== BATCH ACTIONS ========== */
+
+.batch-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.batch-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.add-to-signals {
+  background: rgba(199, 134, 108, 0.2);
+  color: #C7866C;
+  border: 1px solid rgba(199, 134, 108, 0.3);
+}
+
+.add-to-signals:hover {
+  background: rgba(199, 134, 108, 0.3);
+  color: #FBF7F5;
+  transform: translateY(-1px);
+}
+
+.delete-selected {
+  background: rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.delete-selected:hover {
+  background: rgba(220, 38, 38, 0.3);
+  color: #FBF7F5;
+  transform: translateY(-1px);
+}
+
+/* ========== SIGNAL ACTIONS ========== */
+
+.signal-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+
+.portal-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+  fontSize: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+}
+
+.portal-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ========== UPVOTE BADGES ========== */
+
+.upvote-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+  justify-content: center;
+  z-index: 10;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.upvote-badge:hover {
+  background: rgba(76, 175, 80, 0.2);
+  transform: scale(1.05);
+}
+
+/* ========== EMPTY STATES ========== */
+
+.empty-state {
+  text-align: center;
+  color: var(--color-text-primary);
+  font-style: italic;
+  padding: var(--spacing-3xl);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(5px) saturate(100%);
+  -webkit-backdrop-filter: blur(5px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.empty-subtext {
+  font-size: 14px;
+  color: #C7866C;
+  font-style: normal;
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+.refresh-button {
+  background: rgba(199, 134, 108, 0.2);
+  color: #C7866C;
+  border: 1px solid rgba(199, 134, 108, 0.3);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.3s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+}
+
+.refresh-button:hover {
+  background: rgba(199, 134, 108, 0.3);
+  color: #FBF7F5;
+  transform: translateY(-1px);
+}
+
+/* ========== PROCESSING STATES ========== */
+
+.processing-message {
+  padding: 8px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  color: #60a5fa;
+  font-size: 13px;
+  margin-top: 8px;
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ========== MOBILE RESPONSIVENESS ========== */
+
+@media (max-width: 480px) {
+  .triples-container {
+    padding: 0 12px;
+  }
+
+  .selection-panel {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .batch-actions {
+    justify-content: center;
+  }
+  
+  .echo-header,
+  .triplet-header {
+    gap: 8px;
+  }
+  
+  .batch-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .triplet-text .object {
+    max-width: 150px;
+  }
+
+  .portal-button {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .upvote-badge {
+    padding: 3px 8px;
+    font-size: 11px;
+    min-width: 50px;
+  }
+
+  .triplet-detail-section {
+    padding: 12px;
+  }
+}
+
+/* ========== SPECIAL ANIMATIONS ========== */
+
+.echo-card.entering {
+  animation: cardEnter 0.3s ease-out;
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.echo-card.leaving {
+  animation: cardLeave 0.2s ease-in forwards;
+}
+
+@keyframes cardLeave {
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+}

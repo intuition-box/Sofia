@@ -7,7 +7,7 @@ import { useEchoSelection } from '../../../hooks/useEchoSelection'
 import { useStorage } from "@plasmohq/storage/hook"
 import WeightModal from '../../modals/WeightModal'
 import type { EchoTriplet } from '../../../types/blockchain'
-import '../../styles/AtomCreationModal.css'
+import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 
 interface EchoesTabProps {
@@ -247,7 +247,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               return (
                 <div 
                   key={tripletItem.id} 
-                  className={`echo-card ${selectedEchoes.has(tripletItem.id) ? 'border-blue' : 'border-green'}`}
+                  className={`echo-card ${selectedEchoes.has(tripletItem.id) ? 'border-blue' : 'border-default'}`}
                   onClick={() => toggleEchoSelection(tripletItem.id)}
                   style={{ cursor: 'pointer' }}
                 >

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useBookmarks } from '../../../hooks/useBookmarks'
+import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
 
@@ -117,8 +118,7 @@ const BookmarkTab = () => {
           <h3 className="bookmark-header-title">Bookmark Lists</h3>
           <button
             onClick={() => setIsCreatingList(true)}
-            className="bookmark-button-primary"
-            style={{ fontSize: '12px', padding: '6px 12px' }}
+            className="btn primary small"
           >
             + New List
           </button>
@@ -142,7 +142,7 @@ const BookmarkTab = () => {
               placeholder="Search bookmarked triplets..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bookmark-search-input"
+              className="input"
             />
           </div>
         )}
@@ -150,52 +150,56 @@ const BookmarkTab = () => {
 
       {/* Create/Edit List Modal */}
       {(isCreatingList || isEditingList) && (
-        <div className="bookmark-modal-overlay">
-          <div className="bookmark-modal-content">
-            <h3 className="bookmark-modal-title">
-              {isCreatingList ? 'Create New List' : 'Edit List'}
-            </h3>
-            
-            <div className="bookmark-form-group">
-              <label className="bookmark-label">
-                List Name
-              </label>
-              <input
-                type="text"
-                value={newListName}
-                onChange={(e) => setNewListName(e.target.value)}
-                placeholder="Enter list name..."
-                className="bookmark-input"
-              />
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <div className="modal-title">
+                {isCreatingList ? 'Create New List' : 'Edit List'}
+              </div>
             </div>
             
-            <div className="bookmark-form-group">
-              <label className="bookmark-label">
-                Description (optional)
-              </label>
-              <textarea
-                value={newListDescription}
-                onChange={(e) => setNewListDescription(e.target.value)}
-                placeholder="Enter description..."
-                rows={3}
-                className="bookmark-textarea"
-              />
-            </div>
-            
-            <div className="bookmark-button-group">
-              <button 
-                onClick={cancelEdit}
-                className="bookmark-button"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => isCreatingList ? handleCreateList() : handleUpdateList(isEditingList!)}
-                disabled={!newListName.trim()}
-                className={!newListName.trim() ? "bookmark-button-disabled" : "bookmark-button-primary"}
-              >
-                {isCreatingList ? 'Create' : 'Update'}
-              </button>
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="label">
+                  List Name
+                </label>
+                <input
+                  type="text"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder="Enter list name..."
+                  className="input"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="label">
+                  Description (optional)
+                </label>
+                <textarea
+                  value={newListDescription}
+                  onChange={(e) => setNewListDescription(e.target.value)}
+                  placeholder="Enter description..."
+                  rows={3}
+                  className="textarea"
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  onClick={cancelEdit}
+                  className="btn secondary"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => isCreatingList ? handleCreateList() : handleUpdateList(isEditingList!)}
+                  disabled={!newListName.trim()}
+                  className="btn primary"
+                >
+                  {isCreatingList ? 'Create' : 'Update'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -215,7 +219,7 @@ const BookmarkTab = () => {
           ) : (
             <div className="lists-grid">
               {lists.map((list) => (
-                <div key={list.id} className="echo-card border-green bookmark-card">
+                <div key={list.id} className="echo-card border-default bookmark-card">
                   <div className="triplet-item">
                     <div className="triplet-header">
                       <div className="bookmark-list-info">
@@ -233,19 +237,20 @@ const BookmarkTab = () => {
                     <div className="signal-actions">
                       <button
                         onClick={() => setSelectedListId(list.id)}
-                        className="bookmark-action-button primary"
+                        className="btn primary small"
                       >
                         View
                       </button>
                       <button
                         onClick={() => startEditingList(list.id)}
-                        className="bookmark-action-button"
+                        className="btn secondary small"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteList(list.id)}
-                        className="bookmark-action-button danger"
+                        className="batch-btn delete-selected"
+                        style={{ fontSize: '12px', padding: '4px 8px' }}
                       >
                         Delete
                       </button>
@@ -267,7 +272,7 @@ const BookmarkTab = () => {
           ) : (
             <div className="triplets-list">
               {displayedTriplets.map((bookmarkedTriplet) => (
-                <div key={bookmarkedTriplet.id} className="echo-card border-green bookmark-card">
+                <div key={bookmarkedTriplet.id} className="echo-card border-default bookmark-card">
                   <div className="triplet-item">
                     <div className="triplet-header">
                       <p className="triplet-text">
@@ -277,7 +282,8 @@ const BookmarkTab = () => {
                     <div className="signal-actions">
                       <button
                         onClick={() => removeTripletFromList(selectedListId, bookmarkedTriplet.id)}
-                        className="bookmark-action-button danger"
+                        className="batch-btn delete-selected"
+                        style={{ fontSize: '12px', padding: '4px 8px' }}
                       >
                         Remove
                       </button>

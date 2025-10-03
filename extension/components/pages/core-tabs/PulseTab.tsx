@@ -4,6 +4,7 @@ import { elizaDataService } from '../../../lib/database/indexedDB-methods'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import WeightModal from '../../modals/WeightModal'
 import type { EchoTriplet } from '../../../types/blockchain'
+import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 
 interface PulseTabProps {
@@ -472,7 +473,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
           return (
             <div 
               key={analysis.msgIndex} 
-              className={`echo-card ${isSelected ? 'border-blue' : 'border-green'}`}
+              className={`echo-card ${isSelected ? 'border-blue' : 'border-default'}`}
             >
               <div className={`triplet-item ${isSessionExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}>
                 <div 
@@ -516,7 +517,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                 return (
                   <div 
                     key={`${analysis.msgIndex}-${themeIndex}`}
-                    className={`echo-card ${isSelected ? 'border-blue' : 'border-green'}`}
+                    className={`echo-card ${isSelected ? 'border-blue' : 'border-default'}`}
                     onClick={() => toggleTripletSelection(analysisIndex, themeIndex)}
                     style={{ cursor: 'pointer' }}
                   >
