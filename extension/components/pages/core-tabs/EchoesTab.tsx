@@ -203,7 +203,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         <div className="selection-panel">
           <div className="selection-info">
             <label className="select-all-label">
-              <span onClick={toggleSelectAll} style={{cursor: 'pointer'}}>{selectedEchoes.size > 0 ? `${selectedEchoes.size} selected` : 'Select All'}</span>
+              <span onClick={toggleSelectAll} className="cursor-pointer">{selectedEchoes.size > 0 ? `${selectedEchoes.size} selected` : 'Select All'}</span>
             </label>
           </div>
           
@@ -236,7 +236,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
       {/* Liste des triplets disponibles pour publication */}
       {availableCount > 0 && (
-        <div style={{ marginBottom: '20px' }}>
+        <div className="available-triplets-section">
           {/* <h4>🔗 Available for Publication ({availableCount})</h4> */}
           {echoTriplets
             .filter(t => t.status === 'available')
@@ -247,12 +247,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               return (
                 <div 
                   key={tripletItem.id} 
-                  className={`echo-card ${selectedEchoes.has(tripletItem.id) ? 'border-blue' : 'border-default'}`}
+                  className={`echo-card cursor-pointer ${selectedEchoes.has(tripletItem.id) ? 'border-blue' : 'border-default'}`}
                   onClick={() => toggleEchoSelection(tripletItem.id)}
-                  style={{ cursor: 'pointer' }}
                 >
                   <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}>
-                    <div className="echo-header" style={{ position: 'relative' }}>
+                    <div className="echo-header position-relative">
                       <p
                         className="triplet-text clickable"
                         onClick={(e) => {
@@ -268,16 +267,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         <img 
                           src={getFaviconUrl(tripletItem.url)} 
                           alt="favicon"
-                          className="triplet-favicon"
-                          style={{
-                            position: 'absolute',
-                            right: '0',
-                            top: '40%',
-                            transform: 'translateY(-50%)',
-                            width: '16px',
-                            height: '16px',
-                            borderRadius: '2px'
-                          }}
+                          className="triplet-favicon triplet-favicon-positioned"
                           onError={(e) => {
                             // Fallback if Google's service fails
                             const target = e.target as HTMLImageElement
@@ -298,7 +288,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                         <div className="triplet-detail-section">
                           <h4 className="triplet-detail-title">Source</h4>
                           <p className="triplet-detail-name">
-                            <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" style={{ color: 'white' }}>
+                            <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" className="triplet-url-link">
                               {tripletItem.url}
                             </a>
                           </p>

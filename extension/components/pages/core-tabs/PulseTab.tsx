@@ -7,10 +7,6 @@ import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 
-interface PulseTabProps {
-  expandedTriplet: { msgIndex: number; tripletIndex: number } | null
-  setExpandedTriplet: (value: { msgIndex: number; tripletIndex: number } | null) => void
-}
 
 interface PulseTheme {
   name: string
@@ -24,12 +20,12 @@ interface PulseTheme {
 
 interface PulseAnalysis {
   msgIndex: number
-  messageId: string // Ajout de l'ID réel du message
+  messageId: number // ID réel du message (number)
   timestamp: number
   themes: PulseTheme[]
 }
 
-const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
+const PulseTab = () => {
   const [address] = useStorage<string>("metamask-account")
   const [pulseAnalyses, setPulseAnalyses] = useState<PulseAnalysis[]>([])
   const [loading, setLoading] = useState(true)
@@ -74,7 +70,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
         url: theme.urls?.[0] || '',
         description: theme.name,
         timestamp: analysis.timestamp,
-        sourceMessageId: analysis.messageId,
+        sourceMessageId: analysis.messageId.toString(),
         status: 'available'
       }
       echoTriplets.push(echoTriplet)
@@ -385,7 +381,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
         <div className="selection-panel">
           <div className="selection-info">
             <label className="select-all-label">
-              <span onClick={toggleSelectAllTriplets} style={{cursor: 'pointer'}}>
+              <span onClick={toggleSelectAllTriplets} className="cursor-pointer">
                 Select All Triplets for Publishing
               </span>
             </label>
@@ -398,7 +394,7 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
         <div className="selection-panel">
           <div className="selection-info">
             <label className="select-all-label">
-              <span style={{cursor: 'default'}}>
+              <span className="cursor-default">
                 {selectedTriplets.size} triplets selected for publishing
               </span>
             </label>
@@ -413,9 +409,8 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
               Amplify ({selectedTriplets.size})
             </button>
             <button 
-              className="batch-btn"
+              className="batch-btn bg-gray-600"
               onClick={() => setSelectedTriplets(new Set())}
-              style={{ backgroundColor: '#666' }}
             >
               Clear Selection
             </button>
@@ -425,10 +420,10 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
 
       {/* Button to select all sessions when none selected */}
       {selectedSessions.size === 0 && pulseAnalyses.length > 0 && (
-        <div className="selection-panel" style={{ marginTop: selectedTriplets.size > 0 ? '10px' : '0' }}>
+        <div className={`selection-panel ${selectedTriplets.size > 0 ? 'margin-top-conditional' : 'margin-top-none'}`}>
           <div className="selection-info">
             <label className="select-all-label">
-              <span onClick={toggleSelectAllSessions} style={{cursor: 'pointer'}}>
+              <span onClick={toggleSelectAllSessions} className="cursor-pointer">
                 Select All Sessions for Deletion
               </span>
             </label>
@@ -438,10 +433,10 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
 
       {/* Panel for session selection and deletion */}
       {selectedSessions.size > 0 && (
-        <div className="selection-panel" style={{ marginTop: selectedTriplets.size > 0 ? '10px' : '0' }}>
+        <div className={`selection-panel ${selectedTriplets.size > 0 ? 'margin-top-conditional' : 'margin-top-none'}`}>
           <div className="selection-info">
             <label className="select-all-label">
-              <span style={{cursor: 'default'}}>
+              <span className="cursor-default">
                 {selectedSessions.size} sessions selected for deletion
               </span>
             </label>
@@ -455,9 +450,8 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
               Remove Sessions ({selectedSessions.size})
             </button>
             <button 
-              className="batch-btn"
+              className="batch-btn bg-gray-600"
               onClick={() => setSelectedSessions(new Set())}
-              style={{ backgroundColor: '#666' }}
             >
               Clear Selection
             </button>
@@ -476,25 +470,22 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
               className={`echo-card ${isSelected ? 'border-blue' : 'border-default'}`}
             >
               <div className={`triplet-item ${isSessionExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}>
-                <div 
-                  className="analysis-header"
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                <div className="analysis-header flex-space-between">
+                  <div className="analysis-session-content">
                     <input
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleSessionSelection(analysisIndex)}
-                      style={{ marginRight: '12px', cursor: 'pointer' }}
+                      className="session-checkbox"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <div
                       className="clickable"
                       onClick={() => toggleSessionExpansion(analysisIndex)}
-                      style={{ cursor: 'pointer', flex: 1 }}
+                      className="session-expand-content"
                     >
                       <h4>
-                        <span style={{ marginRight: '8px' }}>
+                        <span className="session-arrow">
                           {isSessionExpanded ? '▼' : '▶'}
                         </span>
                         Research Session #{analysisIndex + 1}
@@ -516,9 +507,8 @@ const PulseTab = ({ expandedTriplet, setExpandedTriplet }: PulseTabProps) => {
                 return (
                   <div 
                     key={`${analysis.msgIndex}-${themeIndex}`}
-                    className={`echo-card ${isSelected ? 'border-blue' : 'border-default'}`}
+                    className={`echo-card triplet-card-pointer ${isSelected ? 'border-blue' : 'border-default'}`}
                     onClick={() => toggleTripletSelection(analysisIndex, themeIndex)}
-                    style={{ cursor: 'pointer' }}
                   >
                     <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}>
                       <div className="echo-header">

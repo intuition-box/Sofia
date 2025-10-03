@@ -113,8 +113,8 @@ const BookmarkTab = () => {
   return (
     <div className="triples-container">
       {/* Header with lists navigation */}
-      <div className="bookmark-header" style={{ padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+      <div className="bookmark-header">
+        <div className="bookmark-header-flex">
           <h3 className="bookmark-header-title">Bookmark Lists</h3>
           <button
             onClick={() => setIsCreatingList(true)}
@@ -136,7 +136,7 @@ const BookmarkTab = () => {
 
         {/* Search bar */}
         {!selectedListId && (
-          <div style={{ marginTop: '12px' }}>
+          <div className="bookmark-search-container">
             <input
               type="text"
               placeholder="Search bookmarked triplets..."
@@ -206,7 +206,7 @@ const BookmarkTab = () => {
       )}
 
       {/* Content */}
-      <div style={{ padding: '16px' }}>
+      <div className="bookmark-content-padding">
         {selectedListId === null ? (
           /* Show all lists as cards */
           lists.length === 0 ? (
@@ -249,8 +249,7 @@ const BookmarkTab = () => {
                       </button>
                       <button
                         onClick={() => handleDeleteList(list.id)}
-                        className="batch-btn delete-selected"
-                        style={{ fontSize: '12px', padding: '4px 8px' }}
+                        className="batch-btn delete-selected btn-small-custom"
                       >
                         Delete
                       </button>
@@ -282,8 +281,7 @@ const BookmarkTab = () => {
                     <div className="signal-actions">
                       <button
                         onClick={() => removeTripletFromList(selectedListId, bookmarkedTriplet.id)}
-                        className="batch-btn delete-selected"
-                        style={{ fontSize: '12px', padding: '4px 8px' }}
+                        className="batch-btn delete-selected btn-small-custom"
                       >
                         Remove
                       </button>

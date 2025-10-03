@@ -23,7 +23,7 @@
   background-color: rgba(0, 0, 0, 0.14);
   border-radius: 12px;
   padding: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 3px;
   backdrop-filter: blur(50px) saturate(100%);
   -webkit-backdrop-filter: blur(50px) saturate(100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -65,7 +65,7 @@
   justify-content: space-between;
   height: 100%;
   gap: 12px;
-  margin-bottom: 0px;
+  margin-bottom: 3px;
 }
 
 .triplet-item.selected {
@@ -90,7 +90,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-bottom: 0px;
+  margin-bottom: 3px;
   position: relative;
 }
 
@@ -426,7 +426,7 @@
   gap: 4px;
   min-width: 60px;
   justify-content: center;
-  z-index: 10;
+  z-index: 2;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -436,6 +436,95 @@
 .upvote-badge:hover {
   background: rgba(76, 175, 80, 0.2);
   transform: scale(1.05);
+}
+
+/* ========== UTILITY CLASSES ========== */
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.available-triplets-section {
+  margin-bottom: 20px;
+}
+
+.triplet-favicon-positioned {
+  position: absolute;
+  right: 0;
+  top: 40%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.triplet-url-link {
+  color: white;
+}
+
+.triplet-text-container {
+  position: relative;
+  width: 100%;
+}
+
+.triplet-actions-container {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.triplet-favicon-small {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.upvote-badge-relative {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.upvote-badge-relative:hover {
+  background: rgba(76, 175, 80, 0.2);
+  transform: scale(1.05);
+}
+
+.portal-fallback-link {
+  color: #888;
+  font-style: italic;
+}
+
+.triplet-detail-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  align-items: center;
 }
 
 /* ========== EMPTY STATES ========== */
@@ -613,4 +702,115 @@
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
   }
+}
+
+/* ========== PULSE TAB SPECIFIC CLASSES ========== */
+
+/* Cursor styles */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-default {
+  cursor: default;
+}
+
+/* Background color utilities */
+.bg-gray-600 {
+  background-color: #666;
+}
+
+/* Margin utilities */
+.margin-top-conditional {
+  margin-top: 10px;
+}
+
+.margin-top-none {
+  margin-top: 0;
+}
+
+.margin-right-8 {
+  margin-right: 8px;
+}
+
+.margin-right-12 {
+  margin-right: 12px;
+}
+
+/* Flex layout classes */
+.flex-space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-center-start {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.flex-pointer-full {
+  cursor: pointer;
+  flex: 1;
+}
+
+/* Analysis header specific styles */
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.analysis-session-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.session-checkbox {
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.session-expand-content {
+  cursor: pointer;
+  flex: 1;
+}
+
+.session-arrow {
+  margin-right: 8px;
+}
+
+.triplet-card-pointer {
+  cursor: pointer;
+}
+
+/* ========== BOOKMARK TAB SPECIFIC CLASSES ========== */
+
+/* Bookmark header styling */
+.bookmark-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.bookmark-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.bookmark-search-container {
+  margin-top: 12px;
+}
+
+.bookmark-content-padding {
+  padding: 16px;
+}
+
+/* Button size utilities */
+.btn-small-custom {
+  font-size: 12px;
+  padding: 4px 8px;
 }

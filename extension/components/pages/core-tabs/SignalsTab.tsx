@@ -147,12 +147,12 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
           return (
-            <div key={tripletItem.id} className={`echo-card border-default`} style={{ position: 'relative' }}>
+            <div key={tripletItem.id} className="echo-card border-default position-relative">
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
                 {/* Header avec favicon et upvotes alignés au texte */}
-                <div className="triplet-header" style={{ position: 'relative' }}>
+                <div className="triplet-header position-relative">
                   {/* Texte du triplet */}
-                  <div style={{ position: 'relative', width: '100%' }}>
+                  <div className="triplet-text-container">
                     <p className="triplet-text clickable" onClick={() => {
                       setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
                     }}>
@@ -163,25 +163,12 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                   </div>
                   
                   {/* Favicon et Upvotes alignés avec le texte */}
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '0',
-                    right: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    zIndex: 10
-                  }}>
+                  <div className="triplet-actions-container">
                     {tripletItem.url && (
                       <img 
                         src={getFaviconUrl(tripletItem.url)} 
                         alt="favicon"
-                        style={{
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '2px',
-                          opacity: 0.8
-                        }}
+                        className="triplet-favicon-small"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
                           target.style.display = 'none'
@@ -196,7 +183,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                           handleUpvoteClick(tripletItem)
                         }}
                         title="Adjust upvotes"
-                        style={{ position: 'relative', bottom: 'auto', right: 'auto' }}
+                        className="upvote-badge-relative"
                       >
                         👍 {tripletItem.position.upvotes}
                       </div>
@@ -210,7 +197,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       <h4 className="triplet-detail-title">Source</h4>
                       <p className="triplet-detail-name">
                         {tripletItem.url ? (
-                          <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" style={{ color: 'white' }}>
+                          <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" className="triplet-url-link">
                             {tripletItem.url}
                           </a>
                         ) : (
@@ -218,7 +205,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                             href={`https://portal.intuition.systems/explore/atom/${tripletItem.objectTermId}`} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            style={{ color: '#888', fontStyle: 'italic' }}
+                            className="portal-fallback-link"
                           >
                             View "{tripletItem.triplet.object}" on Portal
                           </a>
@@ -229,7 +216,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       </p>
                       
                       {/* Actions dans la section expanded */}
-                      <div style={{ display: 'flex', gap: '12px', marginTop: '16px', alignItems: 'center' }}>
+                      <div className="triplet-detail-actions">
                         <button
                           onClick={() => handleViewOnPortal(tripletItem.id)}
                           className="portal-button"
