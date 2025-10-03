@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "~*": ["./*"],
-      "@privy-io/wagmi": ["lib/utils/wagmi.ts"] // 👈 Ajout d'un alias personnalisé
+      "@privy-io/wagmi": ["lib/utils/wagmi.ts"] 
     },
     "types": [
       "chrome",

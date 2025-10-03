@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useIntuitionTriplets } from '../../../hooks/useIntuitionTriplets'
 import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
@@ -14,6 +14,8 @@ interface SignalsTabProps {
   setExpandedTriplet: (value: { tripletId: string } | null) => void
 }
 
+type SortOption = 'highest-shares' | 'lowest-shares' | 'newest' | 'oldest' | 'a-z' | 'z-a'
+
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
   const { triplets, refreshFromAPI } = useIntuitionTriplets()
   const { addWeight, removeWeight } = useWeightOnChain()
@@ -23,6 +25,10 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   const [selectedTriplet, setSelectedTriplet] = useState<typeof triplets[0] | null>(null)
   const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
   const [isProcessingUpvote, setIsProcessingUpvote] = useState(false)
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState<SortOption>('newest')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   console.log('🎯 SignalsTab render - address:', address)
   console.log('🎯 SignalsTab render - triplets:', triplets)
@@ -30,6 +36,65 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
   // Display triplets from Intuition indexer (already sorted by timestamp)
   const publishedTriplets = triplets
+
+  // Sorted triplets based on selected sort option
+  const sortedTriplets = useMemo(() => {
+    const sorted = [...publishedTriplets]
+    
+    switch (sortBy) {
+      case 'highest-shares':
+        return sorted.sort((a, b) => (b.position?.upvotes || 0) - (a.position?.upvotes || 0))
+      case 'lowest-shares':
+        return sorted.sort((a, b) => (a.position?.upvotes || 0) - (b.position?.upvotes || 0))
+      case 'newest':
+        return sorted.sort((a, b) => b.timestamp - a.timestamp)
+      case 'oldest':
+        return sorted.sort((a, b) => a.timestamp - b.timestamp)
+      case 'a-z':
+        return sorted.sort((a, b) => a.triplet.object.localeCompare(b.triplet.object))
+      case 'z-a':
+        return sorted.sort((a, b) => b.triplet.object.localeCompare(a.triplet.object))
+      default:
+        return sorted
+    }
+  }, [publishedTriplets, sortBy])
+
+  // Sort options configuration
+  const sortOptions = [
+    { value: 'highest-shares', label: 'Highest Shares' },
+    { value: 'lowest-shares', label: 'Lowest Shares' },
+    { value: 'newest', label: 'Newest' },
+    { value: 'oldest', label: 'Oldest' },
+    { value: 'a-z', label: 'A-Z' },
+    { value: 'z-a', label: 'Z-A' }
+  ] as const
+
+  // Handle sort selection
+  const handleSortSelection = (option: SortOption) => {
+    setSortBy(option)
+    setIsDropdownOpen(false)
+  }
+
+  // Close dropdown when clicking outside
+  const handleDropdownClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsDropdownOpen(!isDropdownOpen)
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setIsDropdownOpen(false)
+    }
+
+    if (isDropdownOpen) {
+      document.addEventListener('click', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [isDropdownOpen])
 
   // Format wallet address
   const formatWalletAddress = (address: string) => {
@@ -140,10 +205,33 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
   return (
     <div className="triples-container">
-
+      {publishedTriplets.length > 0 && (
+        <div className="sort-controls">
+          <div className={`sort-dropdown ${isDropdownOpen ? 'open' : ''}`}>
+            <div 
+              className="sort-dropdown-trigger" 
+              onClick={handleDropdownClick}
+            >
+              <span>{sortOptions.find(opt => opt.value === sortBy)?.label}</span>
+              <span className="sort-dropdown-arrow">▼</span>
+            </div>
+            <div className={`sort-dropdown-menu ${isDropdownOpen ? 'open' : ''}`}>
+              {sortOptions.map((option) => (
+                <div
+                  key={option.value}
+                  className={`sort-dropdown-option ${sortBy === option.value ? 'selected' : ''}`}
+                  onClick={() => handleSortSelection(option.value)}
+                >
+                  <span>{option.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {publishedTriplets.length > 0 ? (
-        publishedTriplets.map((tripletItem) => {
+        sortedTriplets.map((tripletItem) => {
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
           return (
