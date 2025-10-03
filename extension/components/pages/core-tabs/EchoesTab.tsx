@@ -293,7 +293,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             >
               <span>
                 {selectedPredicate === 'all' 
-                  ? `All Predicates (${availableCount})` 
+                  ? `All (${availableCount})` 
                   : `${selectedPredicate} (${availableCount})`
                 }
               </span>
@@ -304,7 +304,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 className={`sort-dropdown-option ${selectedPredicate === 'all' ? 'selected' : ''}`}
                 onClick={() => handlePredicateSelection('all')}
               >
-                <span>All Predicates</span>
+                <span>All</span>
               </div>
               {uniquePredicates.map((predicate) => (
                 <div
