@@ -369,6 +369,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                             sourceMessageId: tripletItem.id
                           }}
                           size="small"
+                          className="portal-button"
                         />
                       </div>
                     </div>

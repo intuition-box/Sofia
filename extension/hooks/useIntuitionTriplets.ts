@@ -88,18 +88,33 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
           object { label }
           term_id
           created_at
+          positions {
+            shares
+            created_at
+          }
         }
       }
     `
     
     const where = {
-      "positions": {
-        "account": {
-          "id": {
-            "_eq": checksumAddress
+      "_and": [
+        {
+          "positions": {
+            "account": {
+              "id": {
+                "_eq": checksumAddress
+              }
+            }
+          }
+        },
+        {
+          "subject": {
+            "term_id": {
+              "_eq": SUBJECT_IDS.I
+            }
           }
         }
-      }
+      ]
     }
     
     
@@ -171,8 +186,11 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     const mappedTriplets: IntuitionTriplet[] = response.triples.map((triple: IntuitionTripleResponse) => {
       const objectData = atomDataMap.get(triple.object.label)
       
-      // Pas de position data dans cette requête simplifiée
-      const position = undefined
+      // Get position data if available
+      const position = triple.positions && triple.positions.length > 0 ? {
+        upvotes: formatSharesAsUpvotes(triple.positions[0].shares),
+        created_at: triple.positions[0].created_at
+      } : undefined
       
       return {
         id: triple.term_id,

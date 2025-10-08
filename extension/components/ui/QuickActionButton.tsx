@@ -64,11 +64,15 @@ const QuickActionButton = ({
       onMouseLeave={() => setIsHovered(false)}
       disabled={disabled}
     >
-      <img 
-        src={getIcon()}
-        alt={`${action === 'scan' ? 'scan' : action === 'amplify' ? 'amplify' : action} action`}
-        className="quick-action-icon"
-      />
+      {className === 'portal-button' && action === 'add' ? (
+        '+'
+      ) : (
+        <img 
+          src={getIcon()}
+          alt={`${action === 'scan' ? 'scan' : action === 'amplify' ? 'amplify' : action} action`}
+          className="quick-action-icon"
+        />
+      )}
     </button>
   )
 }
