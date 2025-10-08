@@ -8,15 +8,9 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../lib/config/constants'
 import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../types/intuition'
+import { getAddress } from 'viem'
 
-// Convert address to checksum format (EIP-55)
-const toChecksumAddress = (address: string): string => {
-  // Simple approximation - use original Apollo format
-  if (address.toLowerCase() === '0x0b940a81271ad090abd2c18d1a5873e5cb93d42a') {
-    return '0x0B940A81271aD090AbD2C18d1a5873e5cb93D42a'
-  }
-  return address
-}
+
 
 // Convert shares from Wei to upvote count (1 upvote = 0.001 TRUST = 10^15 Wei)
 const formatSharesAsUpvotes = (shares: string): number => {
@@ -81,50 +75,41 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
         return []
       }
 
+      // Utiliser viem pour convertir l'adresse au format checksum EIP-55
+      const checksumAddress = getAddress(account)
+      console.log('🔄 Original account:', account)
+      console.log('🔄 Checksum address:', checksumAddress)
+
     const triplesQuery = `
-      query Triples($where: triples_bool_exp, $walletAddress: String!) {
+      query Query_root($where: triples_bool_exp) {
         triples(where: $where) {
-          subject { label, term_id }
-          predicate { label, term_id }
-          object { label, term_id }
+          subject { label }
+          predicate { label }
+          object { label }
           term_id
           created_at
-          positions(where: { account: { id: { _eq: $walletAddress } } }) {
-            account { id }
-            shares
-            created_at
-            curve_id
-          }
         }
       }
     `
     
     const where = {
-      "_and": [
-        {
-          "positions": {
-            "account": {
-              "id": {
-                "_eq": toChecksumAddress(account)
-              }
-            }
+      "positions": {
+        "account": {
+          "id": {
+            "_eq": checksumAddress
           }
-        }
-      ],
-      "subject": {
-        "term_id": {
-          "_eq": SUBJECT_IDS.I
         }
       }
     }
     
+    
     console.log('🚀 Making GraphQL request with where:', where)
     console.log('🚀 Query:', triplesQuery)
     console.log('🚀 Variables:', { where })
+    console.log('🚀 SUBJECT_IDS.I value:', SUBJECT_IDS.I)
     
     const response = await intuitionGraphqlClient.request(triplesQuery, {
-      where,
-      walletAddress: toChecksumAddress(account)
+      where
     }) as GraphQLTriplesResponse
     
     console.log('📥 GraphQL response:', response)
@@ -186,11 +171,8 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     const mappedTriplets: IntuitionTriplet[] = response.triples.map((triple: IntuitionTripleResponse) => {
       const objectData = atomDataMap.get(triple.object.label)
       
-      // Get position data if available
-      const position = triple.positions && triple.positions.length > 0 ? {
-        upvotes: formatSharesAsUpvotes(triple.positions[0].shares),
-        created_at: triple.positions[0].created_at
-      } : undefined
+      // Pas de position data dans cette requête simplifiée
+      const position = undefined
       
       return {
         id: triple.term_id,

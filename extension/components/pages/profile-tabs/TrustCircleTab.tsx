@@ -7,10 +7,22 @@ import '../../styles/TrustCircleTab.css'
 
 // Convert address to checksum format (same as useIntuitionTriplets)
 const toChecksumAddress = (address: string): string => {
-  if (address.toLowerCase() === '0x0b940a81271ad090abd2c18d1a5873e5cb93d42a') {
-    return '0x0B940A81271aD090AbD2C18d1a5873e5cb93D42a'
+  if (!address) return address
+  
+  // Remove 0x prefix and convert to lowercase
+  const addr = address.toLowerCase().replace('0x', '')
+  
+  // Simple checksum implementation
+  let checksumAddr = '0x'
+  for (let i = 0; i < addr.length; i++) {
+    if (parseInt(addr[i], 16) >= 8) {
+      checksumAddr += addr[i].toUpperCase()
+    } else {
+      checksumAddr += addr[i]
+    }
   }
-  return address
+  
+  return checksumAddr
 }
 
 interface FollowedAccount {

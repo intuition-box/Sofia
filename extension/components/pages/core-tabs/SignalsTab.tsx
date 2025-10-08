@@ -52,19 +52,22 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     }
   }
 
-  // Filter and sort triplets based on search query and sort option
+  // Sort triplets only (no search filter for debugging)
   const filteredAndSortedTriplets = useMemo(() => {
     let filtered = [...publishedTriplets]
     
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(triplet =>
-        triplet.triplet.object.toLowerCase().includes(query) ||
-        triplet.triplet.predicate.toLowerCase().includes(query) ||
-        (triplet.url && triplet.url.toLowerCase().includes(query))
-      )
-    }
+    // TEMPORARILY DISABLED: Apply search filter
+    // if (searchQuery.trim()) {
+    //   const query = searchQuery.toLowerCase()
+    //   filtered = filtered.filter(triplet =>
+    //     triplet.triplet.object.toLowerCase().includes(query) ||
+    //     triplet.triplet.predicate.toLowerCase().includes(query) ||
+    //     (triplet.url && triplet.url.toLowerCase().includes(query))
+    //   )
+    // }
+    
+    console.log('🔍 [DEBUG] publishedTriplets length:', publishedTriplets.length)
+    console.log('🔍 [DEBUG] filtered length after search:', filtered.length)
     
     // Apply sorting
     switch (sortBy) {
@@ -89,7 +92,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       default:
         return filtered
     }
-  }, [publishedTriplets, sortBy, getPlatformFromUrl, searchQuery])
+  }, [publishedTriplets, sortBy, getPlatformFromUrl])
 
   // Sort options configuration
   const sortOptions = [
@@ -277,7 +280,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         </div>
       )}
 
-      {publishedTriplets.length > 0 ? (
+      {filteredAndSortedTriplets.length > 0 ? (
         filteredAndSortedTriplets.map((tripletItem) => {
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
@@ -378,6 +381,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
             </div>
           );
         })
+      ) : publishedTriplets.length > 0 ? (
+        <div className="empty-state">
+          <p>No triplets match your search</p>
+          <p className="empty-subtext">
+            Try adjusting your search terms or clear the search to see all triplets.
+          </p>
+        </div>
       ) : (
         <div className="empty-state">
           <p>No Published Triplets Found</p>
