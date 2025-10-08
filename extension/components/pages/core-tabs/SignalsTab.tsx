@@ -5,6 +5,7 @@ import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import UpvoteModal from '../../modals/UpvoteModal'
 import { useStorage } from "@plasmohq/storage/hook"
+import logoIcon from '../../ui/icons/chatIcon.png'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
@@ -29,6 +30,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   // Sorting state
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('')
 
   console.log('🎯 SignalsTab render - address:', address)
   console.log('🎯 SignalsTab render - triplets:', triplets)
@@ -48,33 +52,44 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     }
   }
 
-  // Sorted triplets based on selected sort option
-  const sortedTriplets = useMemo(() => {
-    const sorted = [...publishedTriplets]
+  // Filter and sort triplets based on search query and sort option
+  const filteredAndSortedTriplets = useMemo(() => {
+    let filtered = [...publishedTriplets]
     
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(triplet =>
+        triplet.triplet.object.toLowerCase().includes(query) ||
+        triplet.triplet.predicate.toLowerCase().includes(query) ||
+        (triplet.url && triplet.url.toLowerCase().includes(query))
+      )
+    }
+    
+    // Apply sorting
     switch (sortBy) {
       case 'highest-shares':
-        return sorted.sort((a, b) => (b.position?.upvotes || 0) - (a.position?.upvotes || 0))
+        return filtered.sort((a, b) => (b.position?.upvotes || 0) - (a.position?.upvotes || 0))
       case 'lowest-shares':
-        return sorted.sort((a, b) => (a.position?.upvotes || 0) - (b.position?.upvotes || 0))
+        return filtered.sort((a, b) => (a.position?.upvotes || 0) - (b.position?.upvotes || 0))
       case 'newest':
-        return sorted.sort((a, b) => b.timestamp - a.timestamp)
+        return filtered.sort((a, b) => b.timestamp - a.timestamp)
       case 'oldest':
-        return sorted.sort((a, b) => a.timestamp - b.timestamp)
+        return filtered.sort((a, b) => a.timestamp - b.timestamp)
       case 'a-z':
-        return sorted.sort((a, b) => a.triplet.object.localeCompare(b.triplet.object))
+        return filtered.sort((a, b) => a.triplet.object.localeCompare(b.triplet.object))
       case 'z-a':
-        return sorted.sort((a, b) => b.triplet.object.localeCompare(a.triplet.object))
+        return filtered.sort((a, b) => b.triplet.object.localeCompare(a.triplet.object))
       case 'platform':
-        return sorted.sort((a, b) => {
+        return filtered.sort((a, b) => {
           const platformA = getPlatformFromUrl(a.url)
           const platformB = getPlatformFromUrl(b.url)
           return platformA.localeCompare(platformB)
         })
       default:
-        return sorted
+        return filtered
     }
-  }, [publishedTriplets, sortBy, getPlatformFromUrl])
+  }, [publishedTriplets, sortBy, getPlatformFromUrl, searchQuery])
 
   // Sort options configuration
   const sortOptions = [
@@ -223,6 +238,20 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
   return (
     <div className="triples-container">
+      {/* Search Bar */}
+      <div className="search-content">
+        <div className="search-input-container">
+          <img src={logoIcon} alt="Sofia" className="search-logo" />
+          <input
+            type="text"
+            placeholder="Search your triplets..."
+            className="search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
       {publishedTriplets.length > 0 && (
         <div className="sort-controls">
           <div className={`sort-dropdown ${isDropdownOpen ? 'open' : ''}`}>
@@ -249,7 +278,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       )}
 
       {publishedTriplets.length > 0 ? (
-        sortedTriplets.map((tripletItem) => {
+        filteredAndSortedTriplets.map((tripletItem) => {
           const isExpanded = expandedTriplet?.tripletId === tripletItem.id
 
           return (
