@@ -52,22 +52,19 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     }
   }
 
-  // Sort triplets only (no search filter for debugging)
+  // Filter and sort triplets based on search query and sort option
   const filteredAndSortedTriplets = useMemo(() => {
     let filtered = [...publishedTriplets]
     
-    // TEMPORARILY DISABLED: Apply search filter
-    // if (searchQuery.trim()) {
-    //   const query = searchQuery.toLowerCase()
-    //   filtered = filtered.filter(triplet =>
-    //     triplet.triplet.object.toLowerCase().includes(query) ||
-    //     triplet.triplet.predicate.toLowerCase().includes(query) ||
-    //     (triplet.url && triplet.url.toLowerCase().includes(query))
-    //   )
-    // }
-    
-    console.log('🔍 [DEBUG] publishedTriplets length:', publishedTriplets.length)
-    console.log('🔍 [DEBUG] filtered length after search:', filtered.length)
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(triplet =>
+        triplet.triplet.object.toLowerCase().includes(query) ||
+        triplet.triplet.predicate.toLowerCase().includes(query) ||
+        (triplet.url && triplet.url.toLowerCase().includes(query))
+      )
+    }
     
     // Apply sorting
     switch (sortBy) {
@@ -92,7 +89,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       default:
         return filtered
     }
-  }, [publishedTriplets, sortBy, getPlatformFromUrl])
+  }, [publishedTriplets, sortBy, getPlatformFromUrl, searchQuery])
 
   // Sort options configuration
   const sortOptions = [
