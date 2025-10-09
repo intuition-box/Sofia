@@ -15,6 +15,8 @@
     "@0xintuition/graphql": "1.0.0-alpha.0",
     "@0xintuition/protocol": "1.0.0-alpha.3",
     "@apollo/client": "^3.13.8",
+    "@elizaos/plugin-mcp": "^1.0.8",
+    "@modelcontextprotocol/sdk": "^1.19.1",
     "@plasmohq/storage": "^1.15.0",
     "@privy-io/react-auth": "^2.20.0",
     "@privy-io/wagmi": "^1.0.5",

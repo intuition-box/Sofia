@@ -44,7 +44,8 @@ function shouldIgnoreFrame(): boolean {
     "casalemedia.com",
     "ogs.google.com",
     "www.google.com",
-    "youtube.com"
+    "youtube.com",
+    "wallet",
   ]
 
   if (window !== window.top && ignoredDomains.some(domain => hostname.includes(domain))) {
