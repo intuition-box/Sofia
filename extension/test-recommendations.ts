@@ -8,9 +8,6 @@ import { OllamaService } from './lib/services/OllamaService';
 async function testRecommendations() {
   console.log('🚀 Testing AI Recommendations...\n');
 
-  // Test wallet address
-  const testWallet = '0xc634457aD68b037E2D5aA1C10c3930d7e4E2d551';
-
   try {
     // Check if services are running
     console.log('🔍 Checking services status...');
