@@ -190,6 +190,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             
             if (parsed && parsed.triplets && parsed.triplets.length > 0) {
               parsed.triplets.forEach((triplet, index) => {
+                console.log('🔍 Triplet structure:', triplet)
+                console.log('🔍 Triplet.object:', triplet.object)
+                console.log('🔍 parsed rawObjectUrl:', parsed.rawObjectUrl)
                 const tripletId = `${record.messageId}_${index}`
                 
                 // Skip if already published
@@ -345,7 +348,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                           setExpandedTriplet(isExpanded ? null : { msgIndex: 1, tripletIndex: index })
                         }}
                       >
-                        <span className="subject">{(tripletItem.triplet.subject === 'User' || tripletItem.triplet.subject === 'I' || tripletItem.triplet.subject === address) ? 'I' : tripletItem.triplet.subject}</span>{' '}
+                        <span className="subject">{(tripletItem.triplet.subject === 'User' || tripletItem.triplet.subject === 'I' || tripletItem.triplet.subject === address) ? 'You' : tripletItem.triplet.subject}</span>{' '}
                         <span className="action">{tripletItem.triplet.predicate}</span>{' '}
                         <span className="object">{tripletItem.triplet.object}</span>
                       </p>

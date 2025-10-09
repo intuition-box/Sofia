@@ -1,6 +1,6 @@
 import { logger, type IAgentRuntime, type Project, type ProjectAgent } from '@elizaos/core';
 import starterPlugin from './plugin.ts';
-import { gaianetPlugin } from '@elizaos/plugin-gaianet'
+import { gaianetPlugin } from '@elizaos/plugin-gaianet';
 import { character } from './character.ts';
 import { ProjectStarterTestSuite } from './__tests__/e2e/project-starter.e2e.ts';
 
