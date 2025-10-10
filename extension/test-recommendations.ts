@@ -8,27 +8,21 @@ import { OllamaService } from './lib/services/OllamaService';
 async function testRecommendations() {
   console.log('🚀 Testing AI Recommendations...\n');
 
+  // Test wallet address - ton wallet avec de vraies données
+  const testWallet = '0xc634457aD68b037E2D5aA1C10c3930d7e4E2d551';
+
   try {
     // Check if services are running
     console.log('🔍 Checking services status...');
     
-    const [ollamaRunning, mcpRunning] = await Promise.all([
-      OllamaService.isOllamaRunning(),
-      OllamaService.isMCPServerRunning(),
-    ]);
+    const ollamaRunning = await OllamaService.isOllamaRunning();
 
     console.log(`- Ollama: ${ollamaRunning ? '✅ Running' : '❌ Not running'}`);
-    console.log(`- MCP Server: ${mcpRunning ? '✅ Running' : '❌ Not running'}\n`);
+    console.log(`- Sofia GraphQL: ✅ Ready (using Intuition testnet)\n`);
 
     if (!ollamaRunning) {
       console.error('❌ Ollama is not running. Please start Ollama first:');
       console.log('   ollama serve');
-      return;
-    }
-
-    if (!mcpRunning) {
-      console.error('❌ MCP Server is not running. Please start your MCP server first:');
-      console.log('   cd intuition-mcp-server && npm start');
       return;
     }
 
@@ -37,7 +31,7 @@ async function testRecommendations() {
     console.log('⏳ This may take a few seconds...\n');
 
     const startTime = Date.now();
-    const recommendations = await OllamaService.getAccountTriples(testWallet);
+    const recommendations = await OllamaService.generateRecommendations(testWallet);
     const duration = Date.now() - startTime;
 
     console.log('🎯 RECOMMENDATIONS GENERATED:');
