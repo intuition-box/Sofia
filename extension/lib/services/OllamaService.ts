@@ -144,59 +144,78 @@ export class OllamaService {
         return "Aucune donnée trouvée pour ce wallet. Assurez-vous que l'adresse est correcte et qu'elle a de l'activité sur Intuition.";
       }
 
-      // Ask Ollama to generate recommendations based on real data
-      const messages: OllamaMessage[] = [
+      // PASS 1: Génération libre et naturelle
+      const freeGenerationMessages: OllamaMessage[] = [
         {
           role: 'system',
-          content: `Tu es un expert en recommandations Web3. Analyse les triples blockchain et retourne UNIQUEMENT un JSON valide avec ce format exact:
+          content: `Tu es un expert en recommandations Web3 et blockchain. Analyse les données du wallet et génère des recommandations naturelles.
+          
+          Format attendu par catégorie:
+          **[Catégorie] - Nouveaux projets similaires**
+          Pourquoi : [Raison basée sur les données]
+          Suggestions :
+          - [Nom]: [URL]
+          - [Nom]: [URL]
+          - [Nom]: [URL]
+          - [Nom]: [URL]
+          - [Nom]: [URL]
+          
+          Donne 5 suggestions par catégorie avec des URLs réelles.`,
+        },
+        {
+          role: 'user',
+          content: `Analyse ce profil wallet ${walletAddress} et génère des recommandations de NOUVEAUX projets similaires:
+          
+          Données trouvées: ${triplesData.triples.length} activités blockchain
+          Projets suivis: ${JSON.stringify(triplesData.triples.slice(0, 10), null, 2)}
+          
+          Instructions:
+          1. Identifie les catégories d'intérêt (psytrance, labels musicaux, outils, etc.)
+          2. Ne suggère PAS les mêmes projets que je suis déjà
+          3. Donne 5 nouveaux projets similaires par catégorie
+          4. Fournis des URLs réelles et accessibles`,
+        },
+      ];
 
+      console.log('🎯 PASS 1: Génération libre...');
+      const freeResponse = await this.chat(freeGenerationMessages);
+      console.log('✅ PASS 1 completed:', freeResponse.message.content.substring(0, 200) + '...');
+
+      // PASS 2: Reformatage en JSON strict
+      const formatMessages: OllamaMessage[] = [
+        {
+          role: 'system',
+          content: `Tu dois convertir cette réponse en JSON valide avec EXACTEMENT ce format:
 {
   "recommendations": [
     {
-      "category": "Labels Psytrance",
-      "title": "Nouveaux labels similaires", 
-      "reason": "Tu suis ResinaRecords et High Tone (labels psytrance)",
+      "category": "Nom de la catégorie",
+      "reason": "Raison basée sur les données",
       "suggestions": [
-        {"name": "Ektoplazm", "url": "https://ektoplazm.com/"},
-        {"name": "Sangoma Records", "url": "https://sangoma.bandcamp.com/"},
-        {"name": "Tip.World", "url": "http://tip.world/"}
+        {"name": "Nom du projet", "url": "URL complète"},
+        {"name": "Nom du projet", "url": "URL complète"}
       ]
     }
   ]
 }
 
-IMPORTANT: 
-- Retourne UNIQUEMENT du JSON valide, pas de texte avant/après
-- Maximum 3-5 suggestions par catégorie
-- URLs réelles et accessibles uniquement`,
+IMPORTANT: Réponds UNIQUEMENT avec le JSON, rien d'autre.`,
         },
         {
           role: 'user',
-          content: `Analyse ce profil wallet et génère des recommandations de NOUVEAUX projets similaires pour ${walletAddress}:
-          
-          Triples trouvés: ${triplesData.triples.length}
-          Données: ${JSON.stringify(triplesData, null, 2)}
-          
-          Instructions STRICTES:
-          1. Analyse les projets que je suis déjà : ResinaRecords, High Tone, looneymoonrecords, etc.
-          2. Identifie les catégories (psytrance, labels musicaux, outils, etc.)
-          3. NE PAS suggérer les mêmes projets que je suis déjà
-          4. Suggère 3-5 NOUVEAUX projets similaires dans chaque catégorie
-          5. Format: "Tu suis [projets existants], voici 5 autres [catégorie] similaires:"
-          6. Fournis des URLs réelles vers de nouveaux projets (pas ceux que je suis déjà)
-          
-          Exemple attendu:
-          🎯 **Labels Psytrance - Nouveaux labels similaires**
-          💡 **Pourquoi:** Tu suis ResinaRecords et High Tone (labels psytrance)
-          🔗 **Suggestion:** 5 autres labels psytrance qui pourraient t'intéresser:
-          - Ektoplazm: https://ektoplazm.com/
-          - Sangoma Records: https://sangoma.bandcamp.com/
-          - etc.`,
+          content: `Convertis cette réponse en JSON format strict:
+
+${freeResponse.message.content}
+
+Garde toutes les catégories et suggestions, mais formate en JSON valide.`,
         },
       ];
 
-      const ollamaResponse = await this.chat(messages);
-      return ollamaResponse.message.content;
+      console.log('🎯 PASS 2: Formatage JSON...');
+      const formatResponse = await this.chat(formatMessages);
+      console.log('✅ PASS 2 completed:', formatResponse.message.content.substring(0, 200) + '...');
+      
+      return formatResponse.message.content;
     } catch (error) {
       console.error('Error generating recommendations:', error);
       return `Erreur lors de la génération des recommandations pour ${walletAddress}: ${error}`;
@@ -210,18 +229,6 @@ IMPORTANT:
     try {
       const response = await fetch(`${this.OLLAMA_BASE_URL}/api/tags`);
       return response.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Check if MCP server is running
-   */
-  static async isMCPServerRunning(): Promise<boolean> {
-    try {
-      await this.initializeMCPClient();
-      return this.mcpClient !== null;
     } catch {
       return false;
     }

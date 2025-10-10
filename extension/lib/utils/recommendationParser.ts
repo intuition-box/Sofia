@@ -30,21 +30,75 @@ export const parseRecommendations = (response: string): Recommendation[] => {
     const parsed = JSON.parse(jsonString)
     console.log('✅ JSON parsed successfully:', parsed)
     
-    // Vérifier la structure
-    if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
-      console.warn('❌ Invalid JSON structure - missing recommendations array')
-      return []
-    }
+    // Vérifier la structure - format standard ou format Ollama
+    let recommendations: Recommendation[] = []
     
-    // Convertir en format Recommendation[]
-    const recommendations: Recommendation[] = parsed.recommendations.map((rec: any) => ({
-      category: rec.category || 'Unknown',
-      title: rec.title || 'Recommendations',
-      reason: rec.reason || 'Based on your activity',
-      suggestions: Array.isArray(rec.suggestions) ? rec.suggestions.filter((s: any) => 
-        s.name && s.url && s.url.startsWith('http')
-      ) : []
-    }))
+    if ((parsed.recommendations && Array.isArray(parsed.recommendations)) || 
+        (parsed.Recommendations && Array.isArray(parsed.Recommendations))) {
+      // Format standard : {"recommendations": [...]} ou {"Recommendations": [...]}
+      console.log('🎯 Format standard détecté')
+      const recs = parsed.recommendations || parsed.Recommendations
+      
+      recommendations = recs.map((rec: any) => {
+        let suggestions = []
+        
+        // Format suggestions comme array d'objets {name, url}
+        if (Array.isArray(rec.suggestions)) {
+          suggestions = rec.suggestions.filter((s: any) => 
+            s.name && s.url && s.url.startsWith('http')
+          )
+        }
+        // Format suggestions comme array d'objets {name, url} avec clé majuscule
+        else if (Array.isArray(rec.Suggestions)) {
+          // Si c'est des strings "Nom: URL", les convertir
+          if (typeof rec.Suggestions[0] === 'string') {
+            suggestions = rec.Suggestions
+              .filter((s: string) => s.includes(':') && s.includes('http'))
+              .map((s: string) => {
+                const parts = s.split(':')
+                const name = parts[0].trim()
+                const url = parts.slice(1).join(':').trim()
+                return { name, url }
+              })
+          } else {
+            suggestions = rec.Suggestions.filter((s: any) => 
+              s.name && s.url && s.url.startsWith('http')
+            )
+          }
+        }
+        
+        return {
+          category: rec.category || rec.Category || 'Unknown',
+          title: rec.title || 'Recommendations',
+          reason: rec.reason || rec.Why || 'Based on your activity',
+          suggestions
+        }
+      })
+    } else {
+      // Format Ollama : {"psytrance_projects": [...], "labels_musicaux": [...]}
+      console.log('🎯 Format Ollama détecté - conversion en cours')
+      
+      for (const [key, value] of Object.entries(parsed)) {
+        if (Array.isArray(value)) {
+          const categoryName = key.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2')
+          const suggestions = value
+            .filter((item: any) => item.title && item.url && item.url.startsWith('http'))
+            .map((item: any) => ({
+              name: item.title,
+              url: item.url
+            }))
+          
+          if (suggestions.length > 0) {
+            recommendations.push({
+              category: categoryName.charAt(0).toUpperCase() + categoryName.slice(1),
+              title: 'Nouveaux projets similaires',
+              reason: `Basé sur votre activité dans ${categoryName}`,
+              suggestions
+            })
+          }
+        }
+      }
+    }
     
     console.log('✅ Final recommendations:', recommendations.length)
     console.log('📋 Recommendations details:', recommendations)
@@ -71,7 +125,7 @@ function parseTextFallback(response: string): Recommendation[] {
     for (const line of lines) {
       const trimmed = line.trim()
       
-      if (trimmed.includes('**') && (trimmed.includes('Labels') || trimmed.includes('Outils') || trimmed.includes('Music'))) {
+      if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
         if (currentRec && currentRec.category) {
           recommendations.push(currentRec as Recommendation)
         }
@@ -88,16 +142,16 @@ function parseTextFallback(response: string): Recommendation[] {
           currentRec.reason = trimmed.replace('Pourquoi :', '').replace('Why:', '').trim()
         }
       }
-      else if (trimmed.includes('Suggestion :') || inSuggestions) {
+      else if (trimmed === 'Suggestions :') {
         inSuggestions = true
-        if (trimmed.startsWith('-') && trimmed.includes(':')) {
-          const parts = trimmed.substring(1).split(':')
-          if (parts.length >= 2) {
-            const name = parts[0].trim()
-            const url = parts.slice(1).join(':').trim()
-            if (currentRec && url.startsWith('http')) {
-              currentRec.suggestions?.push({ name, url })
-            }
+      }
+      else if (inSuggestions && trimmed.startsWith('-') && trimmed.includes(':')) {
+        const parts = trimmed.substring(1).split(':')
+        if (parts.length >= 2) {
+          const name = parts[0].trim()
+          const url = parts.slice(1).join(':').trim()
+          if (currentRec && url.startsWith('http')) {
+            currentRec.suggestions?.push({ name, url })
           }
         }
       }

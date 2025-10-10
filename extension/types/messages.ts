@@ -35,6 +35,7 @@ export type MessageType =
   | 'INITIALIZE_BADGE'
   | 'AGENT_RESPONSE'
   | 'METAMASK_RESULT'
+  | 'OLLAMA_REQUEST'
 
 // Specific message interfaces
 export interface ChromeMessage extends BaseMessage {
@@ -45,6 +46,7 @@ export interface ChromeMessage extends BaseMessage {
   triplets?: any[]
   metadata?: any
   timestamp?: number
+  payload?: any
 }
 
 export interface TripletMessage extends BaseMessage {
@@ -104,6 +106,7 @@ export interface MessageResponse {
   success: boolean
   data?: any
   error?: string
+  status?: number
   // Additional properties for specific responses
   id?: string
   count?: number
