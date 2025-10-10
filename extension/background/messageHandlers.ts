@@ -41,7 +41,67 @@ async function handleDataExtraction(
   }
 }
 
+// Enhanced Ollama request handler with better error handling
+async function handleOllamaRequest(payload: any, sendResponse: (response: MessageResponse) => void): Promise<void> {
+  try {
+    const url = "http://127.0.0.1:11434/api/chat";
+    
+    // Enhanced logging
+    console.log('[BG→Ollama] POST', url, {
+      model: payload.model,
+      stream: payload.stream,
+      messagesCount: Array.isArray(payload.messages) ? payload.messages.length : 0
+    });
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: payload.model ?? "llama3:latest",
+        messages: payload.messages ?? [],
+        stream: Boolean(payload.stream)
+      })
+    });
 
+    // Enhanced response handling with fallback parsing
+    const text = await response.text();
+    let data: any;
+    try { 
+      data = JSON.parse(text); 
+    } catch { 
+      data = { raw: text }; 
+    }
+
+    // Debug CORS headers
+    console.log('[BG→Ollama] status:', response.status,
+      'ACAO:', response.headers.get("access-control-allow-origin"),
+      'Vary:', response.headers.get("vary"));
+
+    if (!response.ok) {
+      console.log('❌ [Background] Ollama error:', response.status, response.statusText);
+      sendResponse({ 
+        success: false, 
+        status: response.status,
+        error: data?.error || text 
+      });
+      return;
+    }
+
+    console.log('✅ [Background] Ollama success');
+    sendResponse({ 
+      success: true, 
+      status: response.status,
+      data 
+    });
+    
+  } catch (error) {
+    console.error('[BG→Ollama] fetch error:', error);
+    sendResponse({ 
+      success: false, 
+      error: String(error) 
+    });
+  }
+}
 
 
 export function setupMessageHandlers(): void {
@@ -195,6 +255,10 @@ export function setupMessageHandlers(): void {
 
       case "INITIALIZE_BADGE":
         badgeService.handleBadgeUpdate(sendResponse)
+        return true
+
+      case "OLLAMA_REQUEST":
+        handleOllamaRequest(message.payload, sendResponse)
         return true
         
     }

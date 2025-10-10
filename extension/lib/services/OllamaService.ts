@@ -32,11 +32,11 @@ export interface MCPTool {
 
 export class OllamaService {
   private static readonly DEFAULT_MODEL = 'llama3:latest';
-  private static readonly OLLAMA_BASE_URL = 'http://localhost:11434';
+  private static readonly OLLAMA_BASE_URL = 'http://127.0.0.1:11434';
   private static readonly MCP_SERVER_URL = 'http://localhost:3001';
 
   /**
-   * Send a chat message to Ollama
+   * Send a chat message to Ollama directly from sidepanel
    */
   static async chat(
     messages: OllamaMessage[],
@@ -44,26 +44,27 @@ export class OllamaService {
     tools?: MCPTool[]
   ): Promise<OllamaResponse> {
     try {
-      const response = await fetch(`${this.OLLAMA_BASE_URL}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      console.log('🔗 [Background] Routing to Ollama via background script');
+      
+      const response = await chrome.runtime.sendMessage({
+        type: 'OLLAMA_REQUEST',
+        payload: {
           model,
           messages,
           stream: false,
-          tools: tools || [],
-        }),
+          tools: tools || []
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+      console.log('🔗 [Background] Ollama response:', response);
+
+      if (!response.success) {
+        throw new Error(`Ollama API error: ${response.status || ""} ${response.error || ""}`.trim());
       }
 
-      return await response.json();
+      return response.data;
     } catch (error) {
-      console.error('Error calling Ollama:', error);
+      console.error('Error calling Ollama via background:', error);
       throw error;
     }
   }
@@ -147,18 +148,27 @@ export class OllamaService {
       const messages: OllamaMessage[] = [
         {
           role: 'system',
-          content: `Tu es un expert en recommandations Web3 ultra-précises avec des liens directs. 
-          Analyse les triples blockchain pour identifier les préférences exactes et génère des recommandations actionables.
-          Format de réponse OBLIGATOIRE pour chaque recommandation:
-          
-          **🎯 [Catégorie] - [Titre précis]**
-          💡 **Pourquoi:** Tu as investi dans [triple exact] car tu "follow" [projet exact]
-          🔗 **Suggestion:** Voici [nombre] autres [type] qui pourraient t'intéresser:
-          - [Nom 1]: [URL directe]
-          - [Nom 2]: [URL directe]  
-          - [Nom 3]: [URL directe]
-          
-          Utilise UNIQUEMENT les données réelles fournies. Génère des URLs réelles vers des sites web existants.`,
+          content: `Tu es un expert en recommandations Web3. Analyse les triples blockchain et retourne UNIQUEMENT un JSON valide avec ce format exact:
+
+{
+  "recommendations": [
+    {
+      "category": "Labels Psytrance",
+      "title": "Nouveaux labels similaires", 
+      "reason": "Tu suis ResinaRecords et High Tone (labels psytrance)",
+      "suggestions": [
+        {"name": "Ektoplazm", "url": "https://ektoplazm.com/"},
+        {"name": "Sangoma Records", "url": "https://sangoma.bandcamp.com/"},
+        {"name": "Tip.World", "url": "http://tip.world/"}
+      ]
+    }
+  ]
+}
+
+IMPORTANT: 
+- Retourne UNIQUEMENT du JSON valide, pas de texte avant/après
+- Maximum 3-5 suggestions par catégorie
+- URLs réelles et accessibles uniquement`,
         },
         {
           role: 'user',

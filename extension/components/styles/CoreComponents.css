@@ -910,3 +910,147 @@
   font-size: 12px;
   padding: 4px 8px;
 }
+
+/* ========== RECOMMENDATIONS SECTION ========== */
+
+.recommendations-section {
+  margin: 32px 0;
+  width: 100%;
+}
+
+.recommendations-title {
+  color: #F2DED6;
+  font-family: 'Gotu', cursive;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.recommendation-card {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(100%);
+  -webkit-backdrop-filter: blur(20px) saturate(100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.recommendation-card:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-color: rgba(199, 134, 108, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.recommendation-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #C7866C, #8B5A3C);
+  border-radius: 16px 16px 0 0;
+}
+
+.recommendation-category {
+  color: #C7866C;
+  font-family: 'Gotu', cursive;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  padding-top: 8px;
+}
+
+.recommendation-reason {
+  color: #F2DED6;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+  opacity: 0.9;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.suggestion-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #F2DED6;
+  text-decoration: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.suggestion-link:hover {
+  background: rgba(199, 134, 108, 0.1);
+  border-color: rgba(199, 134, 108, 0.3);
+  color: #FBF7F5;
+  transform: translateX(4px);
+  text-decoration: none;
+}
+
+.suggestion-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #C7866C;
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.suggestion-link:hover::before {
+  transform: scaleY(1);
+}
+
+/* Mobile responsiveness for recommendations */
+@media (max-width: 768px) {
+  .recommendations-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .recommendation-card {
+    padding: 16px;
+  }
+  
+  .recommendations-title {
+    font-size: 20px;
+  }
+  
+  .recommendation-category {
+    font-size: 16px;
+  }
+}

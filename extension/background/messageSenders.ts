@@ -304,3 +304,32 @@ export function sendMessageToPulse(socketPulse: any, pulseData: any[]): void {
   })
   socketPulse.emit("message", payload)
 }
+
+// === Ollama requests via background ===
+export async function sendOllamaRequest(url: string, options: RequestInit): Promise<any> {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(
+      {
+        type: "OLLAMA_REQUEST",
+        data: { 
+          url: url,
+          method: options.method,
+          headers: options.headers,
+          body: options.body
+        }
+      },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+        
+        if (response.success) {
+          resolve(response.data);
+        } else {
+          reject(new Error(response.error));
+        }
+      }
+    );
+  });
+}
