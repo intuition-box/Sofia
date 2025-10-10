@@ -2,7 +2,7 @@
  * Specialized methods for SofIA IndexedDB operations
  */
 
-import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord} from './indexedDB'
+import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord} from './indexedDB'
 import { MessageBus } from '../services/MessageBus'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
 import { parseSofiaMessage } from '../utils/parseSofiaMessage'
@@ -799,6 +799,205 @@ export class BookmarkService {
   }
 }
 
+/**
+ * Recommendations Service Methods
+ */
+export class RecommendationsService {
+  /**
+   * Save recommendations for a wallet address
+   */
+  static async saveRecommendations(
+    walletAddress: string, 
+    rawResponse: string, 
+    parsedRecommendations: any[]
+  ): Promise<void> {
+    const record: RecommendationRecord = {
+      walletAddress: walletAddress.toLowerCase(),
+      rawResponse,
+      parsedRecommendations,
+      timestamp: Date.now(),
+      lastUpdated: Date.now()
+    }
+    
+    await sofiaDB.put(STORES.RECOMMENDATIONS, record)
+    console.log('💾 Recommendations saved for wallet:', walletAddress)
+  }
+
+  /**
+   * Get recommendations for a wallet address
+   */
+  static async getRecommendations(walletAddress: string): Promise<RecommendationRecord | null> {
+    const record = await sofiaDB.get<RecommendationRecord>(
+      STORES.RECOMMENDATIONS, 
+      walletAddress.toLowerCase()
+    )
+    return record || null
+  }
+
+  /**
+   * Check if cached recommendations are still valid (not expired)
+   */
+  static async areRecommendationsValid(walletAddress: string, maxAgeHours: number = 24): Promise<boolean> {
+    const record = await this.getRecommendations(walletAddress)
+    if (!record) return false
+    
+    const maxAge = maxAgeHours * 60 * 60 * 1000 // Convert hours to milliseconds
+    const isValid = Date.now() - record.lastUpdated < maxAge
+    
+    console.log('⏰ Recommendations cache check:', {
+      wallet: walletAddress,
+      age: `${Math.round((Date.now() - record.lastUpdated) / (60 * 60 * 1000))}h`,
+      valid: isValid
+    })
+    
+    return isValid
+  }
+
+  /**
+   * Update existing recommendations with new ones (merge and deduplicate)
+   */
+  static async updateRecommendations(
+    walletAddress: string,
+    newRawResponse: string,
+    newParsedRecommendations: any[]
+  ): Promise<void> {
+    const existingRecord = await this.getRecommendations(walletAddress)
+    
+    if (!existingRecord) {
+      // No existing data, just save new ones
+      await this.saveRecommendations(walletAddress, newRawResponse, newParsedRecommendations)
+      return
+    }
+
+    // Merge and deduplicate recommendations
+    const mergedRecommendations = this.mergeRecommendations(
+      existingRecord.parsedRecommendations,
+      newParsedRecommendations
+    )
+
+    // Update record
+    const updatedRecord: RecommendationRecord = {
+      ...existingRecord,
+      rawResponse: newRawResponse, // Keep the latest raw response
+      parsedRecommendations: mergedRecommendations,
+      lastUpdated: Date.now()
+    }
+
+    await sofiaDB.put(STORES.RECOMMENDATIONS, updatedRecord)
+    console.log('🔄 Recommendations updated for wallet:', walletAddress)
+  }
+
+  /**
+   * Merge two arrays of recommendations, removing duplicates by URL
+   */
+  private static mergeRecommendations(oldRecs: any[], newRecs: any[]): any[] {
+    // Create a Map to track suggestions by URL for deduplication
+    const suggestionMap = new Map<string, any>()
+    
+    // Add old suggestions first
+    oldRecs.forEach(rec => {
+      if (rec.suggestions && Array.isArray(rec.suggestions)) {
+        rec.suggestions.forEach((sug: any) => {
+          if (sug.url) {
+            suggestionMap.set(sug.url, {
+              ...sug,
+              category: rec.category,
+              reason: rec.reason
+            })
+          }
+        })
+      }
+    })
+    
+    // Add new suggestions (will overwrite duplicates with newer data)
+    newRecs.forEach(rec => {
+      if (rec.suggestions && Array.isArray(rec.suggestions)) {
+        rec.suggestions.forEach((sug: any) => {
+          if (sug.url) {
+            suggestionMap.set(sug.url, {
+              ...sug,
+              category: rec.category,
+              reason: rec.reason
+            })
+          }
+        })
+      }
+    })
+
+    // Group back by category
+    const categoryMap = new Map<string, any>()
+    
+    suggestionMap.forEach(suggestion => {
+      const category = suggestion.category || 'Unknown'
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, {
+          category,
+          title: 'Nouveaux projets similaires',
+          reason: suggestion.reason || `Basé sur votre activité dans ${category}`,
+          suggestions: []
+        })
+      }
+      categoryMap.get(category)!.suggestions.push({
+        name: suggestion.name,
+        url: suggestion.url
+      })
+    })
+
+    const result = Array.from(categoryMap.values())
+    console.log('🔄 Merged recommendations:', {
+      old: oldRecs.length,
+      new: newRecs.length, 
+      final: result.length,
+      totalSuggestions: result.reduce((sum, rec) => sum + rec.suggestions.length, 0)
+    })
+    
+    return result
+  }
+
+  /**
+   * Delete recommendations for a wallet address
+   */
+  static async deleteRecommendations(walletAddress: string): Promise<void> {
+    await sofiaDB.delete(STORES.RECOMMENDATIONS, walletAddress.toLowerCase())
+    console.log('🗑️ Recommendations deleted for wallet:', walletAddress)
+  }
+
+  /**
+   * Get all stored recommendations
+   */
+  static async getAllRecommendations(): Promise<RecommendationRecord[]> {
+    const records = await sofiaDB.getAll<RecommendationRecord>(STORES.RECOMMENDATIONS)
+    return records.sort((a, b) => b.lastUpdated - a.lastUpdated)
+  }
+
+  /**
+   * Clear all recommendations
+   */
+  static async clearAll(): Promise<void> {
+    await sofiaDB.clear(STORES.RECOMMENDATIONS)
+    console.log('🗑️ All recommendations cleared')
+  }
+
+  /**
+   * Clean up old recommendations (older than X days)
+   */
+  static async cleanupOldRecommendations(daysToKeep: number = 30): Promise<number> {
+    const cutoffDate = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000)
+    const allRecords = await this.getAllRecommendations()
+    
+    let deletedCount = 0
+    for (const record of allRecords) {
+      if (record.lastUpdated < cutoffDate) {
+        await this.deleteRecommendations(record.walletAddress)
+        deletedCount++
+      }
+    }
+    
+    console.log(`🧹 Deleted ${deletedCount} old recommendation records`)
+    return deletedCount
+  }
+}
+
 // Export all services
 export const elizaDataService = ElizaDataService
 export const navigationDataService = NavigationDataService  
@@ -806,5 +1005,6 @@ export const userProfileService = UserProfileService
 export const userSettingsService = UserSettingsService
 export const searchHistoryService = SearchHistoryService
 export const bookmarkService = BookmarkService
+export const recommendationsService = RecommendationsService
 
 // Published triplet storage exports removed - using Intuition indexer as single source of truth

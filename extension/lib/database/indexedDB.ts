@@ -10,7 +10,7 @@ import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
-const DB_VERSION = 4
+const DB_VERSION = 5
 
 // Object store names
 export const STORES = {
@@ -21,7 +21,8 @@ export const STORES = {
   SEARCH_HISTORY: 'search_history',
   BOOKMARK_LISTS: 'bookmark_lists',
   BOOKMARKED_TRIPLETS: 'bookmarked_triplets',
-  DOMAIN_INTENTIONS: 'domain_intentions'
+  DOMAIN_INTENTIONS: 'domain_intentions',
+  RECOMMENDATIONS: 'recommendations'
 } as const
 
 // Record types for IndexedDB
@@ -80,6 +81,14 @@ export interface DomainIntentionRecord {
   firstVisit: number
   predicates: Record<string, number>
   intentionScore: number
+}
+
+export interface RecommendationRecord {
+  walletAddress: string
+  rawResponse: string
+  parsedRecommendations: any[]
+  timestamp: number
+  lastUpdated: number
 }
 
 /**
@@ -206,6 +215,15 @@ export class SofiaIndexedDB {
       domainIntentionsStore.createIndex('visitCount', 'visitCount', { unique: false })
       domainIntentionsStore.createIndex('lastVisit', 'lastVisit', { unique: false })
       domainIntentionsStore.createIndex('intentionScore', 'intentionScore', { unique: false })
+    }
+
+    // Recommendations store
+    if (!db.objectStoreNames.contains(STORES.RECOMMENDATIONS)) {
+      const recommendationsStore = db.createObjectStore(STORES.RECOMMENDATIONS, {
+        keyPath: 'walletAddress'
+      })
+      recommendationsStore.createIndex('timestamp', 'timestamp', { unique: false })
+      recommendationsStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
     }
 
     console.log('✅ Object stores created successfully')

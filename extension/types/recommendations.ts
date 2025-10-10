@@ -15,5 +15,6 @@ export interface Recommendation {
 export interface UseRecommendationsResult {
   recommendations: Recommendation[]
   rawResponse: string | null
-  generateRecommendations: () => Promise<void>
+  generateRecommendations: (forceRefresh?: boolean) => Promise<void>
+  isLoading: boolean
 }
