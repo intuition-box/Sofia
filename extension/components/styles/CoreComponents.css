@@ -526,6 +526,13 @@
   align-items: center;
 }
 
+/* ========== SIGNALS TAB SEARCH ========== */
+
+.signals-search-input-container {
+  margin-bottom: 10px;
+  margin-top: 0px;
+}
+
 /* ========== SORT CONTROLS ========== */
 
 .sort-controls {
@@ -886,7 +893,6 @@
 
 /* Bookmark header styling */
 .bookmark-header {
-  padding: 16px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -902,7 +908,7 @@
 }
 
 .bookmark-content-padding {
-  padding: 16px;
+  margin-top: 10px;
 }
 
 /* Button size utilities */

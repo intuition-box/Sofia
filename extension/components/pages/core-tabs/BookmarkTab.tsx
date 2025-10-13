@@ -114,23 +114,14 @@ const BookmarkTab = () => {
     <div className="triples-container">
       {/* Header with lists navigation */}
       <div className="bookmark-header">
+        {/* New List Button - Full Width */}
         <div className="bookmark-header-flex">
-          <h3 className="bookmark-header-title">Bookmark Lists</h3>
           <button
             onClick={() => setIsCreatingList(true)}
-            className="btn primary small"
+            className="btn primary"
+            style={{ width: '100%' }}
           >
             + New List
-          </button>
-        </div>
-
-        {/* Lists navigation */}
-        <div className="bookmark-nav-wrapper">
-          <button
-            onClick={() => setSelectedListId(null)}
-            className={`bookmark-nav-button ${selectedListId === null ? 'active' : ''}`}
-          >
-            All ({triplets.length})
           </button>
         </div>
 
@@ -146,6 +137,16 @@ const BookmarkTab = () => {
             />
           </div>
         )}
+
+        {/* Lists navigation */}
+        <div className="bookmark-nav-wrapper">
+          <button
+            onClick={() => setSelectedListId(null)}
+            className={`bookmark-nav-button ${selectedListId === null ? 'active' : ''}`}
+          >
+            All ({triplets.length})
+          </button>
+        </div>
       </div>
 
       {/* Create/Edit List Modal */}

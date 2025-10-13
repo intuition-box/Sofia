@@ -72,8 +72,8 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
       />
 
       {showModal && createPortal(
-        <div 
-          className="bookmark-modal-overlay"
+        <div
+          className="modal-overlay"
           onClick={() => {
             setShowModal(false)
             setIsCreatingList(false)
@@ -81,129 +81,116 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
             setSelectedListId('')
           }}
         >
-          <div 
-            className="bookmark-modal-content"
+          <div
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bookmark-modal-header">
-              <h3 className="bookmark-modal-title">
+            <div className="modal-header">
+              <div className="modal-title">
                 Add to Bookmark List
-              </h3>
-              <button
-                className="bookmark-modal-close"
-                onClick={() => {
-                  setShowModal(false)
-                  setIsCreatingList(false)
-                  setNewListName('')
-                  setSelectedListId('')
-                }}
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Show triplet preview */}
-            <div className="bookmark-triplet-preview">
-              <div className="bookmark-triplet-preview-label">
-                Triplet to bookmark:
-              </div>
-              <div className="bookmark-triplet-preview-content">
-                <strong>{triplet.subject}</strong> → {triplet.predicate} → <strong>{triplet.object}</strong>
               </div>
             </div>
 
-            {!isCreatingList ? (
-              <>
-                {/* List selection */}
-                {lists.length > 0 ? (
-                  <div className="bookmark-form-group">
-                    <label className="bookmark-label">
-                      Select a list:
-                    </label>
-                    <select
-                      value={selectedListId}
-                      onChange={(e) => setSelectedListId(e.target.value)}
-                      className="bookmark-select"
+            <div className="modal-body">
+              {/* Show triplet preview */}
+              <div className="triplet-preview">
+                <div className="triplet-preview-label">
+                  Triplet to bookmark:
+                </div>
+                <div className="triplet-preview-content">
+                  <strong>{triplet.subject}</strong> → {triplet.predicate} → <strong>{triplet.object}</strong>
+                </div>
+              </div>
+
+              {!isCreatingList ? (
+                <>
+                  {/* List selection */}
+                  {lists.length > 0 ? (
+                    <div className="form-group">
+                      <label className="label">
+                        Select a list:
+                      </label>
+                      <select
+                        value={selectedListId}
+                        onChange={(e) => setSelectedListId(e.target.value)}
+                        className="select"
+                      >
+                        <option value="">Choose a list...</option>
+                        {lists.map(list => (
+                          <option key={list.id} value={list.id}>
+                            {list.name} ({list.tripletIds.length} triplets)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="empty-message">
+                      No bookmark lists found. Create your first list below!
+                    </div>
+                  )}
+
+                  {/* Create new list option */}
+                  <div className="form-group">
+                    <button
+                      onClick={() => setIsCreatingList(true)}
+                      className="btn secondary full-width"
                     >
-                      <option value="">Choose a list...</option>
-                      {lists.map(list => (
-                        <option key={list.id} value={list.id}>
-                          {list.name} ({list.tripletIds.length} triplets)
-                        </option>
-                      ))}
-                    </select>
+                      + Create New List
+                    </button>
                   </div>
-                ) : (
-                  <div className="bookmark-empty-message">
-                    No bookmark lists found. Create your first list below!
+                </>
+              ) : (
+                <>
+                  {/* Create new list form */}
+                  <div className="form-group">
+                    <label className="label">
+                      New list name:
+                    </label>
+                    <input
+                      type="text"
+                      value={newListName}
+                      onChange={(e) => setNewListName(e.target.value)}
+                      placeholder="Enter list name..."
+                      autoFocus
+                      className="input"
+                    />
                   </div>
-                )}
 
-                {/* Create new list option */}
-                <div className="bookmark-form-group">
-                  <button
-                    onClick={() => setIsCreatingList(true)}
-                    className="bookmark-button bookmark-button-full"
-                  >
-                    + Create New List
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Create new list form */}
-                <div className="bookmark-form-group">
-                  <label className="bookmark-label">
-                    New list name:
-                  </label>
-                  <input
-                    type="text"
-                    value={newListName}
-                    onChange={(e) => setNewListName(e.target.value)}
-                    placeholder="Enter list name..."
-                    autoFocus
-                    className="bookmark-input"
-                  />
-                </div>
-                
-                <div className="bookmark-form-group">
-                  <button
-                    onClick={() => {
-                      setIsCreatingList(false)
-                      setNewListName('')
-                    }}
-                    className="bookmark-button bookmark-button-full"
-                  >
-                    ← Back to List Selection
-                  </button>
-                </div>
-              </>
-            )}
+                  <div className="form-group">
+                    <button
+                      onClick={() => {
+                        setIsCreatingList(false)
+                        setNewListName('')
+                      }}
+                      className="btn secondary full-width"
+                    >
+                      ← Back to List Selection
+                    </button>
+                  </div>
+                </>
+              )}
 
-            {/* Action buttons */}
-            <div className="bookmark-button-group">
-              <button 
-                onClick={() => {
-                  setShowModal(false)
-                  setIsCreatingList(false)
-                  setNewListName('')
-                  setSelectedListId('')
-                }}
-                className="bookmark-button"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleAddToBookmark}
-                disabled={isCreatingList ? !newListName.trim() : !selectedListId}
-                className={
-                  (isCreatingList ? !newListName.trim() : !selectedListId) 
-                    ? "bookmark-button-disabled" 
-                    : "bookmark-button-primary"
-                }
-              >
-                {isCreatingList ? 'Create & Add' : 'Add to List'}
-              </button>
+              {/* Action buttons */}
+              <div className="form-actions">
+                <button
+                  onClick={() => {
+                    setShowModal(false)
+                    setIsCreatingList(false)
+                    setNewListName('')
+                    setSelectedListId('')
+                  }}
+                  className="btn secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddToBookmark}
+                  disabled={isCreatingList ? !newListName.trim() : !selectedListId}
+                  className="btn primary"
+                >
+                  {isCreatingList ? 'Create & Add' : 'Add to List'}
+                </button>
+              </div>
             </div>
           </div>
         </div>,

@@ -239,16 +239,14 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   return (
     <div className="triples-container">
       {/* Search Bar */}
-      <div className="search-content">
-        <div className="search-input-container">
-          <input
-            type="text"
-            placeholder="Search your triplets..."
-            className="search-input"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      <div className="signals-search-input-container">
+        <input
+          type="text"
+          placeholder="Search your triplets..."
+          className="input"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
       {publishedTriplets.length > 0 && (

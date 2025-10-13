@@ -141,6 +141,7 @@ body {
   border: 1px solid var(--color-border-glass);
   box-shadow: var(--shadow-glass);
   transition: var(--transition-normal);
+  min-height: 790px;
 }
 
 /* Bouton retour standard */
@@ -357,6 +358,34 @@ body {
 .btn.large {
   padding: var(--spacing-md) var(--spacing-2xl);
   font-size: var(--font-size-lg);
+}
+
+/* Triplet Preview */
+.triplet-preview {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-muted);
+}
+
+.triplet-preview-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xs);
+}
+
+.triplet-preview-content {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+/* Empty Message */
+.empty-message {
+  text-align: center;
+  padding: var(--spacing-md);
+  color: var(--color-text-muted);
+  font-style: italic;
 }
 
 /* Labels et Form Groups */
