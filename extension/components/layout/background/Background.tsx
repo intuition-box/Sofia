@@ -15,10 +15,10 @@ const Background = ({ className }: BackgroundProps) => {
         <PixelBlast
           variant="circle"
           pixelSize={4}
-          color="#969696"
+          color="#c2c2c2"
           patternScale={1}
           patternDensity={0.9}
-          pixelSizeJitter={0.2}
+          pixelSizeJitter={0}
           enableRipples={false}
           speed={0.9}
           edgeFade={0}
@@ -26,7 +26,6 @@ const Background = ({ className }: BackgroundProps) => {
           transparent={true}
         />
       </div>
-      <div className="background-blur-layer"></div>
     </>
   );
 };

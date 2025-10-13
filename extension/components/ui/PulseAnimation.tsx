@@ -284,7 +284,7 @@ const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps
           width: size * 1.3,
           height: size * 1.3,
           borderRadius: '50%',
-          filter: 'blur(8px) grayscale(10%)',
+          filter: `blur(8px) grayscale(${isHovered ? '10%' : '100%'})`,
           zIndex: -1,
           opacity: 0.6
         }}
@@ -298,7 +298,7 @@ const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps
           width: size,
           height: size,
           borderRadius: '50%',
-          filter: 'grayscale(80%)'
+          filter: `grayscale(${isHovered ? '50%' : '100%'})`,
         }}
       />
 
