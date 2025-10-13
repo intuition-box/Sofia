@@ -334,12 +334,12 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
               const isExpanded = expandedTriplet?.msgIndex === 1 && expandedTriplet?.tripletIndex === index
 
               return (
-                <div 
-                  key={tripletItem.id} 
-                  className={`echo-card cursor-pointer ${selectedEchoes.has(tripletItem.id) ? 'border-blue' : 'border-default'}`}
+                <div
+                  key={tripletItem.id}
+                  className={`echo-card cursor-pointer ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}
                   onClick={() => toggleEchoSelection(tripletItem.id)}
                 >
-                  <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}>
+                  <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
                     <div className="echo-header position-relative">
                       <p
                         className="triplet-text clickable"

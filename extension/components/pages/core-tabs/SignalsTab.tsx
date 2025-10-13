@@ -241,7 +241,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       {/* Search Bar */}
       <div className="search-content">
         <div className="search-input-container">
-          <img src={logoIcon} alt="Sofia" className="search-logo" />
           <input
             type="text"
             placeholder="Search your triplets..."
@@ -291,8 +290,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     <p className="triplet-text clickable" onClick={() => {
                       setExpandedTriplet(isExpanded ? null : { tripletId: tripletItem.id })
                     }}>
-                      <span className="subject">I</span><br />
-                      <span className="action">{tripletItem.triplet.predicate}</span><br />
+                      <span className="subject">I</span>{' '}
+                      <span className="action">{tripletItem.triplet.predicate}</span>{' '}
                       <span className="object">{tripletItem.triplet.object}</span>
                     </p>
                   </div>
