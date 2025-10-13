@@ -15,13 +15,13 @@ const Background = ({ className }: BackgroundProps) => {
         <PixelBlast
           variant="circle"
           pixelSize={4}
-          color="#c2c2c2"
+          color="#b0b0b0"
           patternScale={1}
-          patternDensity={0.9}
+          patternDensity={1.2}
           pixelSizeJitter={0}
           enableRipples={false}
           speed={0.9}
-          edgeFade={0}
+          edgeFade={0.1}
           liquid={false}
           transparent={true}
         />
