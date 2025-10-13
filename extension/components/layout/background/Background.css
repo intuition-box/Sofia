@@ -6,13 +6,33 @@
   height: 100%;
   overflow: hidden;
   z-index: -5;
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(130, 118, 237, 0.03) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(246, 66, 123, 0.02) 0%, transparent 65%),
-    radial-gradient(circle at center, #0f0f23 0%, #0a0a0a 100%);
+  background: radial-gradient(circle at center, #0f0f23 0%, #0a0a0a 100%);
   will-change: contents;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
+}
+
+.animated-background .pixel-blast-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Couche de flou au-dessus du background */
+.background-blur-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -4;
+  background: inherit;
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
+  pointer-events: none;
 }
 
 

@@ -7,6 +7,7 @@
   max-width: 100vw;
   box-sizing: border-box;
   position: relative;
+  background-color: #00000096
 }
 
 /* Animation pulse spéciale pour l'onglet Pulse */
