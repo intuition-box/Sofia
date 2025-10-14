@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
-import { useHistoryAnalysis } from '../../hooks/useHistoryAnalysis'
 import  TrackingStatus  from '../ui/TrackingStatus'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { SessionWalletManager } from '../ui/SessionWalletManager'
@@ -15,7 +14,6 @@ import '../styles/SettingsPage.css'
 const SettingsPage = () => {
   const { navigateTo } = useRouter()
   const { isTrackingEnabled, toggleTracking } = useTracking()
-  const { analysis, isLoading: isAnalyzing, analyzeHistory } = useHistoryAnalysis()
 
   // Local UI states
   const [isDataSharingEnabled, setIsDataSharingEnabled] = useState(false)
@@ -70,15 +68,8 @@ const SettingsPage = () => {
   }
 
   const handleImportHistory = async () => {
-    if (!confirm('Perform semantic analysis of your browsing history? This will generate behavioral insights.')) return
-    
-    try {
-      await analyzeHistory()
-      alert('Semantic analysis completed! Check the Echoes tab to see your behavioral insights.')
-    } catch (error) {
-      console.error('❌ History analysis failed:', error)
-      alert('Analysis failed. Please try again.')
-    }
+    if (!confirm('Analyze your browsing history?')) return
+    chrome.runtime.sendMessage({ type: 'GET_HISTORY' })
   }
 
   const handlePulseAnalysis = async () => {
@@ -147,10 +138,19 @@ const SettingsPage = () => {
             
             <button
               onClick={handleImportHistory}
-              className="btn"
-              style={{ backgroundColor: '#28a745', marginBottom: '8px' }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
+              }}
             >
-              🧠 Semantic Analysis
+              Analyze History
             </button>
 
             <button
