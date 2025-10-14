@@ -36,19 +36,19 @@ export interface IntentionRankingResult {
 // Predicate weights for score calculation
 const PREDICATE_WEIGHTS = {
   "has visited": 1.0,
-  "is interested by": 1.5,
+  "are interested by": 1.5,
   "likes": 2.0,
-  "trust": 2.5,
-  "loves": 3.0
+  "value": 2.5,
+  "master": 3.0
 };
 
 // Intention categories
 const INTENTION_CATEGORIES = {
   "has visited": "navigation",
-  "is interested by": "interest", 
+  "are interested by": "interest", 
   "likes": "interest",
-  "trust": "trust",
-  "loves": "emotional"
+  "value": "appreciation",
+  "master": "expertise"
 };
 
 class IntentionRankingSystem {
@@ -170,49 +170,52 @@ class IntentionRankingSystem {
     
     // Progression: has visited → likes → loves → trust
     
-    // Upgrade vers "trust" (depuis "loves")
-    if (intention.visitCount >= 25 && avgDurationMinutes > 5 && intention.maxAttentionScore > 0.9) {
-      if (intention.predicates["loves"] && !intention.predicates["trust"]) {
+    // Upgrade vers "master" (depuis "value")
+    if (intention.visitCount >= 100 && avgDurationMinutes > 8 && intention.maxAttentionScore > 0.95) {
+      const daysSinceFirstVisit = (Date.now() - intention.firstVisit.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceFirstVisit >= 30 && intention.predicates["value"] && !intention.predicates["master"]) {
         return {
-          fromPredicate: "loves",
-          toPredicate: "trust",
-          reason: `Confiance établie: ${intention.visitCount} visites, ${avgDurationMinutes.toFixed(1)}min moyenne, attention ${Math.round(intention.maxAttentionScore * 100)}%`,
+          fromPredicate: "value",
+          toPredicate: "master",
+          reason: `Maîtrise établie: ${intention.visitCount} visites, ${avgDurationMinutes.toFixed(1)}min moyenne, attention ${Math.round(intention.maxAttentionScore * 100)}%, ${Math.round(daysSinceFirstVisit)} jours d'usage`,
           confidence: 0.95
         };
       }
     }
     
-    // Upgrade vers "loves" (depuis "likes")
-    if (intention.visitCount >= 15 && avgDurationMinutes > 3 && intention.maxAttentionScore > 0.8) {
-      if (intention.predicates["likes"] && !intention.predicates["loves"]) {
+    // Upgrade vers "value" (depuis "likes")
+    if (intention.visitCount >= 50 && avgDurationMinutes > 6 && intention.maxAttentionScore > 0.85) {
+      const daysSinceFirstVisit = (Date.now() - intention.firstVisit.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceFirstVisit >= 14 && intention.predicates["likes"] && !intention.predicates["value"]) {
         return {
           fromPredicate: "likes",
-          toPredicate: "loves",
-          reason: `Très forte engagement: ${intention.visitCount} visites, ${avgDurationMinutes.toFixed(1)}min moyenne, attention ${Math.round(intention.maxAttentionScore * 100)}%`,
+          toPredicate: "value",
+          reason: `Valorise hautement: ${intention.visitCount} visites, ${avgDurationMinutes.toFixed(1)}min moyenne, attention ${Math.round(intention.maxAttentionScore * 100)}%`,
           confidence: 0.9
         };
       }
     }
     
     // Upgrade vers "likes" (depuis "has visited")
-    if (intention.visitCount >= 8 && avgDurationMinutes > 1.5 && intention.maxAttentionScore > 0.6) {
-      if (intention.predicates["has visited"] && !intention.predicates["likes"]) {
+    if (intention.visitCount >= 20 && avgDurationMinutes > 3 && intention.maxAttentionScore > 0.7) {
+      const daysSinceFirstVisit = (Date.now() - intention.firstVisit.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceFirstVisit >= 7 && intention.predicates["has visited"] && !intention.predicates["likes"]) {
         return {
           fromPredicate: "has visited",
           toPredicate: "likes",
-          reason: `Engagement régulier: ${intention.visitCount} visites, ${avgDurationMinutes.toFixed(1)}min moyenne`,
+          reason: `Engagement confirmé: ${intention.visitCount} visites, ${avgDurationMinutes.toFixed(1)}min moyenne`,
           confidence: 0.8
         };
       }
     }
     
-    // Upgrade vers "is interested by" (alternative path pour l'attention)
-    if (intention.visitCount >= 4 && intention.maxAttentionScore > 0.5) {
-      if (intention.predicates["has visited"] && !intention.predicates["is interested by"] && !intention.predicates["likes"]) {
+    // Upgrade vers "are interested by" (alternative path pour l'attention)
+    if (intention.visitCount >= 8 && intention.maxAttentionScore > 0.5) {
+      if (intention.predicates["has visited"] && !intention.predicates["are interested by"] && !intention.predicates["likes"]) {
         return {
           fromPredicate: "has visited",
-          toPredicate: "is interested by",
-          reason: `Attention élevée: score ${Math.round(intention.maxAttentionScore * 100)}%`,
+          toPredicate: "are interested by",
+          reason: `Attention soutenue: score ${Math.round(intention.maxAttentionScore * 100)}%`,
           confidence: 0.7
         };
       }
