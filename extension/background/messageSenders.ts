@@ -125,8 +125,12 @@ export async function sendHistoryToThemeExtractor(socketThemeExtractor: any, url
 export async function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
   try {
     const bookmarkTree = await chrome.bookmarks.getTree()
-    const urls = extractBookmarkUrls(bookmarkTree)
-    console.log(`📚 Extracted ${urls.length} bookmarks`)
+    const allUrls = extractBookmarkUrls(bookmarkTree)
+    
+    // Limit to 200 most recent bookmarks to avoid prompt being too long
+    const urls = allUrls.slice(0, 200)
+    
+    console.log(`📚 Extracted ${allUrls.length} bookmarks, using ${urls.length} (limited)`)
     
     return { success: true, urls }
   } catch (error) {

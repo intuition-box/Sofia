@@ -18,7 +18,7 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       subject: typeof t.subject === 'string' ? t.subject : (t.subject?.name || 'Unknown'),
       predicate: typeof t.predicate === 'string' ? t.predicate : (t.predicate?.name || 'did something'), 
       object: typeof t.object === 'string' ? t.object : (t.object?.name || 'Unknown'),
-      objectUrl: t.object?.url || ''
+      objectUrl: t.object?.url || (t.urls && t.urls.length > 0 ? t.urls[0] : '') || ''
     }))
 
     // Extract URL and description from first triplet object for atom creation
