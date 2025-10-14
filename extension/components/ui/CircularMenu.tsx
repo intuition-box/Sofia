@@ -63,7 +63,7 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuP
     {
       id: 'find-similar',
       title: 'Find Similar',
-      position: { left: 'calc(50% + 0px)', top: 'calc(50% + 140px)' },
+      position: { left: 'calc(50% + 0px)', top: 'calc(50% - 140px)' },
       icon: (
         <svg width="200px" height="200px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style={{display: 'block', maxWidth: 'none', maxHeight: 'none'}}>
           <g transform="translate(24, 24) scale(1.5) translate(-14, -14)">

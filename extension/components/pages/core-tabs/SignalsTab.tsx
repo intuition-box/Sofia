@@ -308,14 +308,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       />
                     )}
                     {(
-                      <div 
-                        className="upvote-badge"
+                      <div
+                        className="upvote-badge upvote-badge-relative"
                         onClick={(e) => {
                           e.stopPropagation()
                           handleUpvoteClick(tripletItem)
                         }}
                         title="Adjust upvotes"
-                        className="upvote-badge-relative"
                       >
                         👍 {tripletItem.position?.upvotes || 0}
                       </div>

@@ -242,30 +242,15 @@ const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps
     if (isAnalyzing) {
       timeMultiplierRef.current = 2.5
       intensityMultiplierRef.current = 2.0
-    } else if (isHovered) {
-      timeMultiplierRef.current = 1.3
-      intensityMultiplierRef.current = 1.2
     } else {
       timeMultiplierRef.current = 1
       intensityMultiplierRef.current = 1
     }
-  }, [isHovered, isAnalyzing])
+  }, [isAnalyzing])
 
-  // Effet de clic
+  // Effet de clic - simplifié sans hyperactivité
   const handleClick = () => {
-    setIsClicked(true)
-
-    // Animation de pulsation intense mais contrôlée
-    intensityMultiplierRef.current = 2
-    timeMultiplierRef.current = 1.8
-
-    setTimeout(() => {
-      intensityMultiplierRef.current = 1
-      timeMultiplierRef.current = 1
-      setIsClicked(false)
-    }, 600)
-
-    // Navigation supprimée - juste l'animation maintenant
+    // Pas d'animation au clic, juste la propagation de l'événement
   }
 
   return (
@@ -283,7 +268,7 @@ const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps
         alignItems: 'center',
         background: 'transparent',
         position: 'relative',
-        transform: `scale(${isAnalyzing ? 1.4 : isHovered ? 1.1 : 1})`,
+        transform: `scale(${isAnalyzing ? 1.4 : isHovered ? 0.9 : 1})`,
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease'
       }}
     >
@@ -299,7 +284,7 @@ const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps
           width: size * 1.3,
           height: size * 1.3,
           borderRadius: '50%',
-          filter: 'blur(8px)',
+          filter: `blur(8px) grayscale(${isHovered ? '10%' : '50%'})`,
           zIndex: -1,
           opacity: 0.6
         }}
@@ -312,7 +297,8 @@ const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps
         style={{
           width: size,
           height: size,
-          borderRadius: '50%'
+          borderRadius: '50%',
+          filter: `grayscale(${isHovered ? '50%' : '50%'})`,
         }}
       />
 
@@ -327,10 +313,7 @@ const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps
             color: 'white',
             fontSize: '16px',
             fontWeight: '600',
-            background: 'rgba(0, 0, 0, 0.8)',
             padding: '8px 16px',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
             backdropFilter: 'blur(10px)',
             animation: 'pulse-text 1.5s ease-in-out infinite',
             zIndex: 10
