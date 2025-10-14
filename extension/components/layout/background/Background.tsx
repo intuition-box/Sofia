@@ -14,13 +14,13 @@ const Background = ({ className }: BackgroundProps) => {
         <img className="fond" src={fondImage} alt="" />
         <PixelBlast
           variant="diamond"
-          pixelSize={4}
+          pixelSize={3}
           color="#b0b0b0"
-          patternScale={1}
-          patternDensity={1.2}
+          patternScale={2.5}
+          patternDensity={0}
           pixelSizeJitter={0}
           enableRipples={false}
-          speed={0.9}
+          speed={2}
           edgeFade={0.1}
           liquid={false}
           transparent={true}

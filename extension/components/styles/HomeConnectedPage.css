@@ -5,11 +5,14 @@
   backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
   -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
   transition: var(--transition-normal);
+  overflow: hidden;
+  height: 100vh;
+  box-sizing: border-box;
 }
 
 .pulse-animation-section {
   position: fixed;
-  bottom: 10px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

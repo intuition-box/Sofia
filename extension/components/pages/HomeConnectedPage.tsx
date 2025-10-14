@@ -112,12 +112,12 @@ const HomeConnectedPage = () => {
 
 
       <div className="pulse-animation-section">
-        <div 
+        <div
           className="pulse-with-menu"
           style={{
             position: 'relative',
-            width: '400px',
-            height: '400px',
+            width: '200px',
+            height: '200px',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -127,8 +127,8 @@ const HomeConnectedPage = () => {
           <div onClick={handleOrbClick}>
             <PulseAnimation size={120} isAnalyzing={isAnalyzing} />
           </div>
-          <CircularMenu 
-            isVisible={showMenu} 
+          <CircularMenu
+            isVisible={showMenu}
             onItemClick={(item) => {
               console.log('Menu item clicked:', item)
               setShowMenu(false)
