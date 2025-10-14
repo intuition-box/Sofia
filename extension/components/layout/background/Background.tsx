@@ -13,7 +13,7 @@ const Background = ({ className }: BackgroundProps) => {
       <div className={`animated-background ${className || ''}`}>
         <img className="fond" src={fondImage} alt="" />
         <PixelBlast
-          variant="circle"
+          variant="diamond"
           pixelSize={4}
           color="#b0b0b0"
           patternScale={1}

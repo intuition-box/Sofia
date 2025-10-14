@@ -313,10 +313,7 @@ const PulseAnimation = ({ size = 150, isAnalyzing = false }: PulseAnimationProps
             color: 'white',
             fontSize: '16px',
             fontWeight: '600',
-            background: 'rgba(0, 0, 0, 0.8)',
             padding: '8px 16px',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
             backdropFilter: 'blur(10px)',
             animation: 'pulse-text 1.5s ease-in-out infinite',
             zIndex: 10
