@@ -243,7 +243,7 @@
   padding: 8px;
   transition: all 0.3s ease;
   margin-bottom: 6px;
-  background: rgba(255, 255, 255, 0.02);
+  background: #14141475;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.05);
   min-height: 52px;
@@ -743,9 +743,9 @@
 
 /* ========== PULSE TAB SPECIFIC STYLES ========== */
 
-/* Research Session Cards - moins transparentes */
+
 .triples-container .echo-card {
-  background-color: rgba(0, 0, 0, 0.3); /* Moins transparent que 0.14 par défaut */
+  background-color: #1a1a1adb;
 }
 
 /* Headers d'analyse de session */
@@ -937,6 +937,12 @@
   gap: 12px;
 }
 
+.loading-indicator{ 
+  color : #F2DED6;
+  text-align : left;
+  display: flex;
+  justify-content: center;
+}
 .recommendations-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

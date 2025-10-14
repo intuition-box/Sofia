@@ -133,15 +133,13 @@ body {
 /* Container principal pour les pages */
 .page {
   padding: var(--spacing-xl);
-  /* background-color: var(--color-bg-glass); */
   margin: var(--spacing-sm);
   border-radius: var(--radius-xl);
-  backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
-  -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
   border: 1px solid var(--color-border-glass);
   box-shadow: var(--shadow-glass);
   transition: var(--transition-normal);
   min-height: 790px;
+
 }
 
 /* Bouton retour standard */
