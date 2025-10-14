@@ -2,8 +2,11 @@ import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { recordScroll } from "./behavior"
-import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis } from "./websocket"
+import { processBookmarksWithThemeAnalysis } from "./websocket"
 import { getAllBookmarks, getAllHistory } from "./messageSenders"
+import { convertThemesToTriplets } from "./tripletProcessor"
+import { convertHistoryThemesToTriplets } from "./historyTripletProcessor"
+import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordUserPredicate, 
   getTopIntentions, 
@@ -38,6 +41,74 @@ async function handleDataExtraction(
   } catch (error) {
     console.error(`❌ ${type} extraction error:`, error)
     sendResponse({ success: false, error: error.message })
+  }
+}
+
+// Simple history URLs fetcher - analysis will be done in extension context
+async function handleHistoryAnalysis(sendResponse: (response: MessageResponse) => void): Promise<void> {
+  try {
+    console.log('📚 Fetching history URLs for extension analysis')
+    
+    const result = await getAllHistory()
+    if (result.success && result.urls) {
+      console.log('✅ Sending', result.urls.length, 'URLs to extension for analysis')
+      sendResponse({ 
+        success: true, 
+        data: { urls: result.urls },
+        message: `Found ${result.urls.length} URLs for analysis`
+      })
+    } else {
+      sendResponse({ success: false, error: result.error })
+    }
+  } catch (error) {
+    console.error('❌ History URL fetch error:', error)
+    sendResponse({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'URL fetch failed'
+    })
+  }
+}
+
+// Save history analysis triplets to IndexedDB
+async function handleSaveHistoryTriplets(message: ChromeMessage, sendResponse: (response: MessageResponse) => void): Promise<void> {
+  try {
+    const { themes, urls } = message.data || {}
+    if (!themes || !Array.isArray(themes)) {
+      sendResponse({ success: false, error: 'No themes provided' })
+      return
+    }
+
+    console.log('💾 Saving', themes.length, 'history analysis triplets')
+
+    // Convert themes to triplets format using history-specific processor
+    const tripletsData = convertHistoryThemesToTriplets(themes)
+    
+    // Save as parsed message to IndexedDB
+    const messageId = `history_analysis_${Date.now()}`
+    const parsedMessage = {
+      triplets: tripletsData.triplets,
+      intention: `History analysis generated ${themes.length} behavioral insights`,
+      created_at: Date.now(),
+      rawObjectUrl: urls?.[0] || '',
+      rawObjectDescription: 'Semantic analysis of browsing history'
+    }
+    
+    await elizaDataService.storeParsedMessage(parsedMessage, messageId)
+    console.log('✅ History analysis triplets saved to IndexedDB')
+
+    sendResponse({ 
+      success: true, 
+      message: `Saved ${themes.length} semantic insights`,
+      themesExtracted: themes.length,
+      triplesProcessed: true
+    })
+    
+  } catch (error) {
+    console.error('❌ Save history triplets error:', error)
+    sendResponse({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Save failed'
+    })
   }
 }
 
@@ -162,7 +233,11 @@ export function setupMessageHandlers(): void {
         return true
 
       case "GET_HISTORY":
-        handleDataExtraction('history', getAllHistory, processHistoryWithThemeAnalysis, sendResponse)
+        handleHistoryAnalysis(sendResponse)
+        return true
+
+      case "SAVE_HISTORY_TRIPLETS":
+        handleSaveHistoryTriplets(message, sendResponse)
         return true
 
       case "STORE_BOOKMARK_TRIPLETS":
@@ -234,7 +309,6 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      // Discord and X/Twitter OAuth removed - not needed
 
       case "START_PULSE_ANALYSIS":
         pulseService.handlePulseAnalysis(sendResponse)
