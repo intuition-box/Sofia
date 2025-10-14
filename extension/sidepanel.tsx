@@ -17,7 +17,6 @@ import HomeConnectedPage from "./components/pages/HomeConnectedPage"
 import SettingsPage from "./components/pages/SettingsPage"
 import ProfilePage from "./components/pages/ProfilePage"
 import CorePage from "./components/pages/CorePage"
-import RecommendationsPage from "./components/pages/RecommendationsPage"
 import ResonancePage from "./components/pages/ResonancePage"
 import SearchResultPage from "./components/pages/SearchResultPage"
 import ChatPage from "./components/pages/ChatPage"
@@ -52,8 +51,6 @@ const SidePanelContent = () => {
         return <ProfilePage />
       case 'Sofia':
         return <CorePage />
-      case 'recommendations':
-        return <RecommendationsPage />
       case 'resonance':
         return <ResonancePage />
       case 'search-result':

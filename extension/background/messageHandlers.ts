@@ -4,6 +4,8 @@ import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { recordScroll } from "./behavior"
 import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis } from "./websocket"
 import { getAllBookmarks, getAllHistory } from "./messageSenders"
+import { convertThemesToTriplets } from "./tripletProcessor"
+import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { 
   recordUserPredicate, 
   getTopIntentions, 
@@ -40,6 +42,7 @@ async function handleDataExtraction(
     sendResponse({ success: false, error: error.message })
   }
 }
+
 
 // Enhanced Ollama request handler with better error handling
 async function handleOllamaRequest(payload: any, sendResponse: (response: MessageResponse) => void): Promise<void> {
@@ -234,7 +237,6 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      // Discord and X/Twitter OAuth removed - not needed
 
       case "START_PULSE_ANALYSIS":
         pulseService.handlePulseAnalysis(sendResponse)

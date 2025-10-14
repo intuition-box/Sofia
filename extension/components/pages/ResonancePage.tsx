@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useRecommendations } from '../../hooks/useRecommendations'
-import { parseRecommendations } from '../../lib/utils/recommendationParser'
 import logoIcon from '../../components/ui/icons/chatIcon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -11,15 +10,12 @@ import '../styles/CoreComponents.css'
 const ResonancePage = () => {
   const { navigateTo } = useRouter()
   const { isReady, searchAtoms } = useIntuitionSearch()
-  const { rawResponse } = useRecommendations()
+  const { recommendations, isLoading, generateRecommendations } = useRecommendations()
   const [searchQuery, setSearchQuery] = useState('')
   
   console.log('🏠 ResonancePage rendered')
-  console.log('📱 rawResponse from hook:', rawResponse?.length ? `${rawResponse.length} chars` : 'null/empty')
-  
-  // Parse les recommandations depuis la réponse brute
-  const recommendations = rawResponse ? parseRecommendations(rawResponse) : []
-  console.log('📋 Parsed recommendations:', recommendations.length, 'items')
+  console.log('📋 Recommendations from hook:', recommendations.length, 'items')
+  console.log('⏳ Loading state:', isLoading)
 
 
   const handleSearch = async () => {
@@ -56,10 +52,24 @@ const ResonancePage = () => {
           />
         </div>
         
-        {/* Grille de recommandations par thème */}
-        {recommendations.length > 0 && (
+        {/* Recommendations grid by theme */}
+        {isLoading && (
           <div className="recommendations-section">
-            <h2 className="recommendations-title">🎯 Recommandations Personnalisées</h2>
+            <h2 className="recommendations-title">Generating Personalized Recommendations...</h2>
+            <div className="loading-indicator">Analyzing your wallet activity...</div>
+          </div>
+        )}
+        
+        {!isLoading && recommendations.length > 0 && (
+          <div className="recommendations-section">
+            <button
+              onClick={() => generateRecommendations(true, true)}
+              disabled={isLoading}
+              className="btn"
+              style={{ marginBottom: '16px' }}
+            >
+              {isLoading ? '⏳ Generating...' : 'Get More'}
+            </button>
             <div className="recommendations-grid">
               {recommendations.map((rec, index) => (
                 <div key={index} className="recommendation-card">
@@ -83,14 +93,6 @@ const ResonancePage = () => {
             </div>
           </div>
         )}
-
-        <div className="empty-state">
-          <p> Search Intuition Network</p>
-          <p className="empty-subtext">
-            Enter a search term above to find atoms and triplets on the Intuition blockchain
-          </p>
-        </div>
-        
       </div>
     </div>
   )

@@ -1,21 +1,22 @@
 /**
  * Test script for AI Recommendations
- * Run this to test the Ollama + MCP integration
+ * Run this to test the new simplified AI architecture
  */
 
-import { OllamaService } from './lib/services/OllamaService';
+import { RecommendationService } from './lib/services/ai/RecommendationService';
+import { OllamaClient } from './lib/services/ai/OllamaClient';
 
 async function testRecommendations() {
   console.log('🚀 Testing AI Recommendations...\n');
 
-  // Test wallet address - ton wallet avec de vraies données
+  // Test wallet address - your wallet with real data
   const testWallet = '0xc634457aD68b037E2D5aA1C10c3930d7e4E2d551';
 
   try {
     // Check if services are running
     console.log('🔍 Checking services status...');
     
-    const ollamaRunning = await OllamaService.isOllamaRunning();
+    const ollamaRunning = await OllamaClient.isAvailable();
 
     console.log(`- Ollama: ${ollamaRunning ? '✅ Running' : '❌ Not running'}`);
     console.log(`- Sofia GraphQL: ✅ Ready (using Intuition testnet)\n`);
@@ -31,12 +32,20 @@ async function testRecommendations() {
     console.log('⏳ This may take a few seconds...\n');
 
     const startTime = Date.now();
-    const recommendations = await OllamaService.generateRecommendations(testWallet);
+    const recommendations = await RecommendationService.generateRecommendations(testWallet);
     const duration = Date.now() - startTime;
 
     console.log('🎯 RECOMMENDATIONS GENERATED:');
     console.log('=====================================');
-    console.log(recommendations);
+    console.log(`Found ${recommendations.length} recommendation categories:`);
+    recommendations.forEach((rec, i) => {
+      console.log(`\n${i + 1}. ${rec.category}`);
+      console.log(`   Reason: ${rec.reason}`);
+      console.log(`   Suggestions: ${rec.suggestions.length} items`);
+      rec.suggestions.forEach((sug, j) => {
+        console.log(`     ${j + 1}. ${sug.name} - ${sug.url}`);
+      });
+    });
     console.log('=====================================');
     console.log(`⚡ Generated in ${duration}ms\n`);
 
@@ -46,8 +55,8 @@ async function testRecommendations() {
     console.error('❌ Test failed:', error);
     console.log('\nTroubleshooting:');
     console.log('1. Make sure Ollama is running: ollama serve');
-    console.log('2. Make sure your MCP server is running on port 3001');
-    console.log('3. Check that qwen2.5 model is available: ollama list');
+    console.log('2. Make sure llama3 model is available: ollama list');
+    console.log('3. Check browser extension background script console');
   }
 }
 
