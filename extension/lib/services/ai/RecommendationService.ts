@@ -5,7 +5,7 @@
 
 import { OllamaClient } from './OllamaClient'
 import { StorageRecommendation } from '../../database/StorageRecommendation'
-import type { Recommendation, OllamaMessage, WalletData } from './types'
+import type { Recommendation, BentoSuggestion, OllamaMessage, WalletData } from './types'
 import { intuitionGraphqlClient } from '../../clients/graphql-client'
 import { SUBJECT_IDS } from '../../config/constants'
 import { getAddress } from 'viem'

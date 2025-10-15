@@ -17,6 +17,19 @@ const ResonancePage = () => {
   console.log('📋 Recommendations from hook:', recommendations.length, 'items')
   console.log('⏳ Loading state:', isLoading)
 
+  // Flatten recommendations into bento grid items with categories
+  const bentoItems = recommendations.flatMap((rec, recIndex) => 
+    rec.suggestions.map((suggestion, sugIndex) => ({
+      ...suggestion,
+      category: rec.category,
+      size: ['small', 'medium', 'large'][(recIndex + sugIndex) % 3] as 'small' | 'medium' | 'large'
+    }))
+  )
+
+  const handleBentoClick = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
 
   const handleSearch = async () => {
     if (searchQuery.trim() && isReady) {
@@ -60,7 +73,7 @@ const ResonancePage = () => {
           </div>
         )}
         
-        {!isLoading && recommendations.length > 0 && (
+        {!isLoading && bentoItems.length > 0 && (
           <div className="recommendations-section">
             <button
               onClick={() => generateRecommendations(true, true)}
@@ -70,24 +83,15 @@ const ResonancePage = () => {
             >
               {isLoading ? '⏳ Generating...' : 'Get More'}
             </button>
-            <div className="recommendations-grid">
-              {recommendations.map((rec, index) => (
-                <div key={index} className="recommendation-card">
-                  <h3 className="recommendation-category">{rec.category}</h3>
-                  <p className="recommendation-reason">{rec.reason}</p>
-                  <div className="suggestions-list">
-                    {rec.suggestions.map((suggestion, sugIndex) => (
-                      <a 
-                        key={sugIndex}
-                        href={suggestion.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="suggestion-link"
-                      >
-                        🔗 {suggestion.name}
-                      </a>
-                    ))}
-                  </div>
+            <div className="bento-grid">
+              {bentoItems.map((item, index) => (
+                <div 
+                  key={index} 
+                  className={`bento-card bento-${item.size}`}
+                  onClick={() => handleBentoClick(item.url)}
+                >
+                  <h3 className="bento-title">{item.name}</h3>
+                  <p className="bento-category">{item.category}</p>
                 </div>
               ))}
             </div>
