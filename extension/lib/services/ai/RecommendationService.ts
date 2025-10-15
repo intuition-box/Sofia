@@ -12,6 +12,7 @@ import { getAddress } from 'viem'
 
 export class RecommendationService {
   private static readonly CACHE_EXPIRY_HOURS = 24
+  private static readonly OG_IMAGE_CACHE = new Map<string, { image: string | null, timestamp: number }>()
 
   /**
    * Generate recommendations for a wallet
@@ -204,16 +205,21 @@ IMPORTANT: Respond ONLY with JSON, nothing else.`
         },
         {
           role: 'user',
-          content: `Analyze wallet ${walletData.address} and generate recommendations for NEW similar projects:
+          content: `Analyze wallet ${walletData.address} and generate comprehensive recommendations across multiple interest areas:
 
 Data: ${walletData.triples.length} blockchain activities
-Projects followed: ${JSON.stringify(walletData.triples.slice(0, 5), null, 2)}
+Projects followed: ${JSON.stringify(walletData.triples.slice(0, 8), null, 2)}
 
 Instructions:
-1. Identify interest categories
+1. Generate 5-7 diverse interest categories (Web3, DeFi, NFT, Art, Design, Culture, Gaming, Tech, etc.)
 2. Do NOT suggest same projects already followed
-3. Give 3-5 new similar projects per category
-4. Provide real and accessible URLs`
+3. Give 6-8 high-quality suggestions per category
+4. Include both Web3 and traditional web platforms
+5. Provide real, accessible URLs from well-known platforms
+6. Focus on popular, established sites with good SEO (likely to have og:image)
+7. Mix of: protocols, marketplaces, tools, communities, educational resources
+
+Generate 35-50 total suggestions across all categories.`
         }
       ]
 
@@ -260,7 +266,7 @@ Instructions:
           reason: rec.reason || 'Based on your activity',
           suggestions: rec.suggestions
             .filter((s: any) => s.name && s.url && s.url.startsWith('http'))
-            .slice(0, 5) // Max 5 suggestions per category
+            // No limit - take all valid suggestions
         }))
         .filter((rec: Recommendation) => rec.suggestions.length > 0)
       
@@ -271,5 +277,74 @@ Instructions:
       console.error('❌ [RecommendationService] Parse failed:', error)
       return []
     }
+  }
+
+  /**
+   * Get og:image from URL with cache (NO FALLBACK - if no og:image, site is considered dead)
+   */
+  static async getOgImage(url: string): Promise<string | null> {
+    try {
+      // Check cache first
+      const cached = this.OG_IMAGE_CACHE.get(url)
+      const now = Date.now()
+      
+      if (cached && (now - cached.timestamp) < (this.CACHE_EXPIRY_HOURS * 60 * 60 * 1000)) {
+        return cached.image
+      }
+
+      console.log('🖼️ [RecommendationService] Fetching og:image for:', url)
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Sofia-Bot/1.0)',
+        },
+        signal: AbortSignal.timeout(10000) // 10s timeout
+      })
+      
+      if (!response.ok) {
+        this.OG_IMAGE_CACHE.set(url, { image: null, timestamp: now })
+        return null
+      }
+      
+      const html = await response.text()
+      
+      // Look ONLY for og:image meta tag - no fallback
+      const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']*?)["'][^>]*>/i)
+      if (ogImageMatch && ogImageMatch[1]) {
+        const ogImage = ogImageMatch[1]
+        this.OG_IMAGE_CACHE.set(url, { image: ogImage, timestamp: now })
+        return ogImage
+      }
+      
+      // No og:image = dead site = cache null and return null
+      this.OG_IMAGE_CACHE.set(url, { image: null, timestamp: now })
+      return null
+      
+    } catch (error) {
+      console.log(`❌ [RecommendationService] Failed to get og:image for ${url}:`, error)
+      this.OG_IMAGE_CACHE.set(url, { image: null, timestamp: Date.now() })
+      return null
+    }
+  }
+
+  /**
+   * Get suggestions with og:images (filtered - only sites with og:image)
+   */
+  static async getSuggestionsWithPreviews(suggestions: { name: string, url: string, category: string, size: 'small' | 'medium' | 'large' }[]): Promise<Array<{ name: string, url: string, category: string, size: 'small' | 'medium' | 'large', ogImage: string }>> {
+    const validSuggestions = []
+    
+    for (const suggestion of suggestions) {
+      const ogImage = await this.getOgImage(suggestion.url)
+      if (ogImage) { // Only add if og:image exists
+        validSuggestions.push({
+          ...suggestion,
+          ogImage
+        })
+      }
+    }
+    
+    console.log(`✅ [RecommendationService] Filtered ${validSuggestions.length}/${suggestions.length} valid suggestions with og:image`)
+    return validSuggestions
   }
 }
