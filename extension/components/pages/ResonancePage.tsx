@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useRecommendations } from '../../hooks/useRecommendations'
-import { usePreviewImages } from '../../hooks/usePreviewImages'
+import { useResonanceService } from '../../hooks/useResonanceService'
+import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
 import { useAccount } from '../../hooks/useAccount'
 import logoIcon from '../../components/ui/icons/chatIcon.png'
 import '../styles/Global.css'
@@ -19,28 +20,16 @@ const ResonancePage = () => {
   console.log('📋 Recommendations from hook:', recommendations.length, 'items')
   console.log('⏳ Loading state:', isLoading)
 
-  // Flatten recommendations into bento grid items with asymmetric distribution
-  const bentoItems = recommendations.flatMap((rec, recIndex) => 
-    rec.suggestions.map((suggestion, sugIndex) => {
-      const totalIndex = recIndex * 10 + sugIndex
-      
-      // Bento distribution pour 2 colonnes: 60% tall, 30% mega, 10% small
-      let size: 'small' | 'tall' | 'mega'
-      const rand = totalIndex % 10
-      if (rand < 1) size = 'small'          // 10%
-      else if (rand < 7) size = 'tall'      // 60%
-      else size = 'mega'                    // 30%
-      
-      return {
-        ...suggestion,
-        category: rec.category,
-        size
-      }
-    })
-  )
+  // Passive observer of service state
+  const { validItems, isLoading: isLoadingPreviews, error: previewError } = useResonanceService()
 
-  // Use hook to get filtered items with og:images
-  const { validItems, isLoading: isLoadingPreviews, error: previewError } = usePreviewImages(bentoItems)
+  // Only update service when recommendations actually change (not on every mount)
+  useEffect(() => {
+    if (recommendations.length > 0) {
+      const service = GlobalResonanceService.getInstance()
+      service.updateRecommendations(recommendations)
+    }
+  }, [recommendations.length]) // Only when count changes, not object reference
 
   const handleBentoClick = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer')
@@ -133,7 +122,7 @@ const ResonancePage = () => {
               </div>
             )}
             
-            {!isLoadingPreviews && validItems.length === 0 && bentoItems.length > 0 && (
+            {!isLoadingPreviews && validItems.length === 0 && recommendations.length > 0 && (
               <div className="error-state">No valid sites found with preview images</div>
             )}
           </div>
