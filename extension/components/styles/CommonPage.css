@@ -21,7 +21,7 @@
 
 .search-input {
   flex: 1;
-  background: transparent;
+  backdrop-filter: blur(20px);
   border: none;
   outline: none;
   color: white;

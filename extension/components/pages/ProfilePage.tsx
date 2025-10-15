@@ -6,11 +6,12 @@ import '../styles/ProfilePage.css'
 
 // Lazy load tabs pour optimiser le chargement
 const AccountTab = lazy(() => import('./profile-tabs/AccountTab'))
+const FollowTab = lazy(() => import('./profile-tabs/FollowTab'))
 const TrustCircleTab = lazy(() => import('./profile-tabs/TrustCircleTab'))
 
 const ProfilePage = () => {
   const { goBack } = useRouter()
-  const [activeTab, setActiveTab] = useState<'account' | 'trust-circle' | 'bookmarks' | 'signals'>('account')
+  const [activeTab, setActiveTab] = useState<'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals'>('account')
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -18,6 +19,12 @@ const ProfilePage = () => {
         return (
           <Suspense fallback={<div className="loading-state">Loading...</div>}>
             <AccountTab />
+          </Suspense>
+        )
+      case 'follow':
+        return (
+          <Suspense fallback={<div className="loading-state">Loading...</div>}>
+            <FollowTab />
           </Suspense>
         )
       case 'trust-circle':
@@ -39,6 +46,12 @@ const ProfilePage = () => {
           onClick={() => setActiveTab('account')}
         >
           Account
+        </button>
+        <button
+          className={`tab ${activeTab === 'follow' ? 'active' : ''}`}
+          onClick={() => setActiveTab('follow')}
+        >
+          Follow
         </button>
         <button
           className={`tab ${activeTab === 'trust-circle' ? 'active' : ''}`}

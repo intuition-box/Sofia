@@ -11,7 +11,7 @@
 }
 
 .bookmark-header .btn.primary:hover:not(:disabled) {
-  background: var(--color-primary);
+  backdrop-filter: blur(20px);
   color: var(--color-text-secondary);
   border-color: var(--color-primary);
   box-shadow: var(--shadow-button-hover);

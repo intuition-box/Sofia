@@ -167,22 +167,7 @@ const AccountTab = () => {
         </button>
 
       </div>
-      
-
-      {/* Search Bar */}
-      <div className="search-container">
-        <div className="search-input-container">
-          <img src={searchIcon} alt="Search" className="search-logo" />
-          <input
-            type="text"
-            placeholder="Search accounts..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            onKeyDown={handleKeyDown}
-            className="search-input"
-          />
-
-        </div>
+    
 
         {/* Search Results Dropdown */}
         {showResults && searchResults.length > 0 && (
@@ -224,8 +209,6 @@ const AccountTab = () => {
             </div>
           )}
       </div>
-
-    </div>
   )
 }
 
