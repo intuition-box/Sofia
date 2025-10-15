@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useRecommendations } from '../../hooks/useRecommendations'
 import { usePreviewImages } from '../../hooks/usePreviewImages'
+import { useAccount } from '../../hooks/useAccount'
 import logoIcon from '../../components/ui/icons/chatIcon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -18,17 +19,17 @@ const ResonancePage = () => {
   console.log('📋 Recommendations from hook:', recommendations.length, 'items')
   console.log('⏳ Loading state:', isLoading)
 
-  // Flatten recommendations into bento grid items with smart size distribution
+  // Flatten recommendations into bento grid items with asymmetric distribution
   const bentoItems = recommendations.flatMap((rec, recIndex) => 
     rec.suggestions.map((suggestion, sugIndex) => {
       const totalIndex = recIndex * 10 + sugIndex
       
-      // Smart size distribution: 50% small, 30% medium, 20% large
-      let size: 'small' | 'medium' | 'large'
+      // Bento distribution pour 4 colonnes: 60% tall, 30% mega, 10% small
+      let size: 'small' | 'tall' | 'mega'
       const rand = totalIndex % 10
-      if (rand < 5) size = 'small'
-      else if (rand < 8) size = 'medium'
-      else size = 'large'
+      if (rand < 1) size = 'small'          // 10%
+      else if (rand < 7) size = 'tall'      // 60%
+      else size = 'mega'                    // 30%
       
       return {
         ...suggestion,

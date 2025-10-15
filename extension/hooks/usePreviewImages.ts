@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { RecommendationService } from '../lib/services/ai/RecommendationService'
 
 interface BentoItem {
@@ -26,6 +26,7 @@ export const usePreviewImages = (bentoItems: BentoItem[]): UsePreviewImagesRetur
   const [validItems, setValidItems] = useState<BentoItemWithImage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const processedUrls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const loadPreviewImages = async () => {
@@ -34,16 +35,31 @@ export const usePreviewImages = (bentoItems: BentoItem[]): UsePreviewImagesRetur
         return
       }
 
+      // Deduplicate items by URL to avoid "3x DeviantArt" 
+      const uniqueItems = bentoItems.filter((item, index, self) => 
+        index === self.findIndex(t => t.url === item.url)
+      )
+
+      // Check if we already processed these exact URLs
+      const currentUrls = new Set(uniqueItems.map(item => item.url))
+      const urlsString = Array.from(currentUrls).sort().join('|')
+      
+      if (processedUrls.current.has(urlsString)) {
+        console.log('🎯 [usePreviewImages] Skipping - already processed these URLs')
+        return
+      }
+
       setIsLoading(true)
       setError(null)
 
       try {
-        console.log('🖼️ [usePreviewImages] Loading previews for', bentoItems.length, 'items')
+        console.log('🖼️ [usePreviewImages] Loading previews for', uniqueItems.length, 'unique items')
         
-        // Use RecommendationService to get filtered suggestions with og:images
-        const validSuggestions = await RecommendationService.getSuggestionsWithPreviews(bentoItems)
+        // Use RecommendationService (which has IndexedDB cache for images)
+        const validSuggestions = await RecommendationService.getSuggestionsWithPreviews(uniqueItems)
         
         setValidItems(validSuggestions)
+        processedUrls.current.add(urlsString)
         console.log('✅ [usePreviewImages] Loaded', validSuggestions.length, 'valid items with images')
         
       } catch (err) {
@@ -56,7 +72,7 @@ export const usePreviewImages = (bentoItems: BentoItem[]): UsePreviewImagesRetur
     }
 
     loadPreviewImages()
-  }, [bentoItems.length]) // Only depend on length to avoid infinite re-renders
+  }, [bentoItems.length]) // Simple dependency
 
   return {
     validItems,

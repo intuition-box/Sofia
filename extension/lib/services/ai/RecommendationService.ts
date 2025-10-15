@@ -5,14 +5,15 @@
 
 import { OllamaClient } from './OllamaClient'
 import { StorageRecommendation } from '../../database/StorageRecommendation'
+import { StorageOgImage } from '../../database/StorageOgImage'
 import type { Recommendation, BentoSuggestion, OllamaMessage, WalletData } from './types'
 import { intuitionGraphqlClient } from '../../clients/graphql-client'
 import { SUBJECT_IDS } from '../../config/constants'
 import { getAddress } from 'viem'
 
 export class RecommendationService {
-  private static readonly CACHE_EXPIRY_HOURS = 24
-  private static readonly OG_IMAGE_CACHE = new Map<string, { image: string | null, timestamp: number }>()
+  private static readonly RECOMMENDATIONS_CACHE_HOURS = 24 * 7    // 7 jours
+  private static readonly OG_IMAGES_CACHE_HOURS = 24 * 30         // 30 jours
 
   /**
    * Generate recommendations for a wallet
@@ -97,7 +98,7 @@ export class RecommendationService {
    */
   static async getCachedRecommendations(walletAddress: string): Promise<Recommendation[]> {
     try {
-      const isValid = await StorageRecommendation.isValid(walletAddress, this.CACHE_EXPIRY_HOURS)
+      const isValid = await StorageRecommendation.isValid(walletAddress, this.RECOMMENDATIONS_CACHE_HOURS)
       if (!isValid) return []
 
       const cached = await StorageRecommendation.load(walletAddress)
@@ -280,16 +281,18 @@ Generate 35-50 total suggestions across all categories.`
   }
 
   /**
-   * Get og:image from URL with cache (NO FALLBACK - if no og:image, site is considered dead)
+   * Get og:image from URL with persistent cache (NO FALLBACK - if no og:image, site is considered dead)
    */
   static async getOgImage(url: string): Promise<string | null> {
     try {
-      // Check cache first
-      const cached = this.OG_IMAGE_CACHE.get(url)
-      const now = Date.now()
-      
-      if (cached && (now - cached.timestamp) < (this.CACHE_EXPIRY_HOURS * 60 * 60 * 1000)) {
-        return cached.image
+      // Check persistent cache first
+      const isValid = await StorageOgImage.isValid(url, this.OG_IMAGES_CACHE_HOURS)
+      if (isValid) {
+        const cached = await StorageOgImage.load(url)
+        if (cached !== null) {
+          console.log('💾 [RecommendationService] Using cached og:image for:', url)
+          return cached
+        }
       }
 
       console.log('🖼️ [RecommendationService] Fetching og:image for:', url)
@@ -303,7 +306,7 @@ Generate 35-50 total suggestions across all categories.`
       })
       
       if (!response.ok) {
-        this.OG_IMAGE_CACHE.set(url, { image: null, timestamp: now })
+        await StorageOgImage.save(url, null)
         return null
       }
       
@@ -313,17 +316,17 @@ Generate 35-50 total suggestions across all categories.`
       const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']*?)["'][^>]*>/i)
       if (ogImageMatch && ogImageMatch[1]) {
         const ogImage = ogImageMatch[1]
-        this.OG_IMAGE_CACHE.set(url, { image: ogImage, timestamp: now })
+        await StorageOgImage.save(url, ogImage)
         return ogImage
       }
       
       // No og:image = dead site = cache null and return null
-      this.OG_IMAGE_CACHE.set(url, { image: null, timestamp: now })
+      await StorageOgImage.save(url, null)
       return null
       
     } catch (error) {
       console.log(`❌ [RecommendationService] Failed to get og:image for ${url}:`, error)
-      this.OG_IMAGE_CACHE.set(url, { image: null, timestamp: Date.now() })
+      await StorageOgImage.save(url, null)
       return null
     }
   }
