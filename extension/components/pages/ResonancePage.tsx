@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useRecommendations } from '../../hooks/useRecommendations'
+import { usePreviewImages } from '../../hooks/usePreviewImages'
 import logoIcon from '../../components/ui/icons/chatIcon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -17,14 +18,28 @@ const ResonancePage = () => {
   console.log('📋 Recommendations from hook:', recommendations.length, 'items')
   console.log('⏳ Loading state:', isLoading)
 
-  // Flatten recommendations into bento grid items with categories
+  // Flatten recommendations into bento grid items with smart size distribution
   const bentoItems = recommendations.flatMap((rec, recIndex) => 
-    rec.suggestions.map((suggestion, sugIndex) => ({
-      ...suggestion,
-      category: rec.category,
-      size: ['small', 'medium', 'large'][(recIndex + sugIndex) % 3] as 'small' | 'medium' | 'large'
-    }))
+    rec.suggestions.map((suggestion, sugIndex) => {
+      const totalIndex = recIndex * 10 + sugIndex
+      
+      // Smart size distribution: 50% small, 30% medium, 20% large
+      let size: 'small' | 'medium' | 'large'
+      const rand = totalIndex % 10
+      if (rand < 5) size = 'small'
+      else if (rand < 8) size = 'medium'
+      else size = 'large'
+      
+      return {
+        ...suggestion,
+        category: rec.category,
+        size
+      }
+    })
   )
+
+  // Use hook to get filtered items with og:images
+  const { validItems, isLoading: isLoadingPreviews, error: previewError } = usePreviewImages(bentoItems)
 
   const handleBentoClick = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer')
@@ -73,28 +88,53 @@ const ResonancePage = () => {
           </div>
         )}
         
-        {!isLoading && bentoItems.length > 0 && (
+        {!isLoading && recommendations.length > 0 && (
           <div className="recommendations-section">
             <button
               onClick={() => generateRecommendations(true, true)}
-              disabled={isLoading}
+              disabled={isLoading || isLoadingPreviews}
               className="btn"
               style={{ marginBottom: '16px' }}
             >
-              {isLoading ? '⏳ Generating...' : 'Get More'}
+              {isLoading ? '⏳ Generating...' : isLoadingPreviews ? '🖼️ Loading images...' : 'Get More'}
             </button>
-            <div className="bento-grid">
-              {bentoItems.map((item, index) => (
-                <div 
-                  key={index} 
-                  className={`bento-card bento-${item.size}`}
-                  onClick={() => handleBentoClick(item.url)}
-                >
-                  <h3 className="bento-title">{item.name}</h3>
-                  <p className="bento-category">{item.category}</p>
-                </div>
-              ))}
-            </div>
+            
+            {isLoadingPreviews && (
+              <div className="loading-indicator">Loading preview images...</div>
+            )}
+            
+            {previewError && (
+              <div className="error-state">{previewError}</div>
+            )}
+            
+            {!isLoadingPreviews && validItems.length > 0 && (
+              <div className="bento-grid">
+                {validItems.map((item, index) => (
+                  <div 
+                    key={index} 
+                    className={`bento-card bento-${item.size}`}
+                    onClick={() => handleBentoClick(item.url)}
+                  >
+                    <div className="bento-image-container">
+                      <img 
+                        src={item.ogImage} 
+                        alt={item.name}
+                        className="bento-image"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="bento-content">
+                      <h3 className="bento-title">{item.name}</h3>
+                      <p className="bento-category">{item.category}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {!isLoadingPreviews && validItems.length === 0 && bentoItems.length > 0 && (
+              <div className="error-state">No valid sites found with preview images</div>
+            )}
           </div>
         )}
       </div>
