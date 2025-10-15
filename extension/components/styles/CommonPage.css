@@ -99,13 +99,13 @@
   box-shadow: 0 4px 20px rgba(74, 144, 226, 0.15);
 }
 
-/* Bento Grid Styles */
+/* Modern Bento Grid Styles */
 .bento-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   padding: 20px 0;
-  grid-auto-rows: 120px;
+  grid-auto-rows: 140px;
 }
 
 .bento-card {
@@ -191,49 +191,69 @@
   letter-spacing: 0.5px;
 }
 
-/* Different sizes for bento cards */
+/* Modern Bento Sizes */
 .bento-small {
   grid-column: span 1;
   grid-row: span 1;
 }
 
-.bento-medium {
-  grid-column: span 2;
-  grid-row: span 1;
-}
-
-.bento-large {
-  grid-column: span 2;
+.bento-tall {
+  grid-column: span 1;
   grid-row: span 2;
 }
 
-.bento-large .bento-title {
+
+
+.bento-mega {
+  grid-column: span 2;
+  grid-row: span 3;
+}
+
+/* Typography adjustments for larger cards */
+.bento-mega .bento-title {
   font-size: 16px;
 }
 
-.bento-large .bento-category {
+.bento-tall .bento-title {
+  font-size: 15px;
+}
+
+.bento-mega .bento-category {
   font-size: 11px;
+}
+
+.bento-mega .bento-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.bento-mega .bento-category {
+  font-size: 12px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .bento-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    grid-auto-rows: 100px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    grid-auto-rows: 130px;
   }
   
-  .bento-medium,
-  .bento-large {
-    grid-column: span 1;
+  .bento-mega {
+    grid-column: span 2;
     grid-row: span 1;
   }
   
-  .bento-title {
-    font-size: 14px;
+  .bento-tall {
+    grid-column: span 1;
+    grid-row: span 2;
   }
   
-  .bento-large .bento-title {
-    font-size: 16px;
+  .bento-title {
+    font-size: 12px;
+  }
+  
+  .bento-mega .bento-title {
+    font-size: 14px;
   }
 }
