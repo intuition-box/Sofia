@@ -334,7 +334,7 @@ Generate 35-50 total suggestions across all categories.`
   /**
    * Get suggestions with og:images (filtered - only sites with og:image)
    */
-  static async getSuggestionsWithPreviews(suggestions: { name: string, url: string, category: string, size: 'small' | 'medium' | 'large' }[]): Promise<Array<{ name: string, url: string, category: string, size: 'small' | 'medium' | 'large', ogImage: string }>> {
+  static async getSuggestionsWithPreviews(suggestions: { name: string, url: string, category: string, size: 'small' | 'tall' | 'mega' }[]): Promise<Array<{ name: string, url: string, category: string, size: 'small' | 'tall' | 'mega', ogImage: string }>> {
     const validSuggestions = []
     
     for (const suggestion of suggestions) {
