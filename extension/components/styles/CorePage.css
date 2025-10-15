@@ -69,7 +69,8 @@
   margin-bottom: 32px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 8px;
-  backdrop-filter: blur(11px);
+  border-radius: 29px;
+  backdrop-filter: blur(29px);
 }
 
 .tab {
@@ -102,7 +103,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background-color: #C7866C;
+  background-color: #897359;
 }
 
 /* Contenu des pages */
