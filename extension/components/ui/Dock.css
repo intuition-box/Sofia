@@ -13,14 +13,16 @@
 .dock-panel {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: space-around;
   width: 100%;
+  max-width: 100%;
   gap: 0.5rem;
   border-radius: 0;
   backdrop-filter: blur(11px);
   border-top: 1px solid #222;
   padding: 0.75rem 1rem;
   pointer-events: auto;
+  box-sizing: border-box;
 }
 
 .dock-item {
@@ -36,6 +38,8 @@
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   outline: none;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .dock-icon {

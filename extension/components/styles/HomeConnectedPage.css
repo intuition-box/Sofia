@@ -5,8 +5,10 @@
   backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
   -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
   transition: var(--transition-normal);
-  overflow: hidden;
-  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100vh - var(--size-nav-height));
+  max-height: calc(100vh - var(--size-nav-height));
   box-sizing: border-box;
 }
 

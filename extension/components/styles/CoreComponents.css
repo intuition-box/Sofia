@@ -10,6 +10,7 @@
   flex-direction: column;
   /* gap: 10px; */
   max-width: min(600px, 100%);
+  width: 100%;
   margin: 0 auto;
   text-align: left;
   padding: 0 16px;
@@ -243,9 +244,9 @@
   padding: 8px;
   transition: all 0.3s ease;
   margin-bottom: 6px;
-  background: #14141475;
+  backdrop-filter: blur(20px);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* border: 1px solid rgba(255, 255, 255, 0.05); */
   min-height: 52px;
 }
 
@@ -262,7 +263,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 500;
-  color: #F2DED6;
+  color: #fff;
   cursor: pointer;
   transition: color 0.3s ease;
 }

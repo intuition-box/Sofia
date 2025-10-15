@@ -2,10 +2,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
-  padding: var(--spacing-4xl) var(--spacing-xl);
+  justify-content: center;
+  min-height: calc(100vh - var(--size-nav-height));
+  padding: var(--spacing-xl);
+  padding-bottom: calc(var(--size-nav-height) + var(--spacing-xl));
+  margin: 0;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .welcome-header {
@@ -13,15 +16,16 @@
 }
 
 .welcome-image {
-  margin-top: var(--spacing-4xl);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
   max-width: 80%;
   height: auto;
-  max-height: 250px;
+  max-height: 200px;
   opacity: 90%;
 }
 
 .description-sections {
-  margin-bottom: var(--spacing-4xl);
+  margin-bottom: var(--spacing-xl);
   max-width: 320px;
   text-align: center;
 }
@@ -29,13 +33,13 @@
 .description-paragraph {
   color: var(--color-text-primary);
   font-size: 13px;
-  line-height: 1.5;
-  margin-bottom: var(--spacing-lg);
+  line-height: 1.4;
+  margin-bottom: var(--spacing-md);
   text-align: justify;
 }
 
 .connect-section {
-  margin-bottom: var(--spacing-3xl);
+  margin-bottom: var(--spacing-lg);
   width: 100%;
   display: flex;
   justify-content: center;

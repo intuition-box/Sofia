@@ -32,8 +32,7 @@
 .settings-section {
   background-color: rgba(0, 0, 0, 0.4);
   border-radius: var(--radius-lg);
-  backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
-  -webkit-backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--color-border-lighter);
   box-shadow: var(--shadow-heavy), var(--shadow-inset);
   margin-bottom: var(--spacing-xl);
