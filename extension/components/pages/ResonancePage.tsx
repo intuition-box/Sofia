@@ -24,7 +24,7 @@ const ResonancePage = () => {
     rec.suggestions.map((suggestion, sugIndex) => {
       const totalIndex = recIndex * 10 + sugIndex
       
-      // Bento distribution pour 4 colonnes: 60% tall, 30% mega, 10% small
+      // Bento distribution pour 2 colonnes: 60% tall, 30% mega, 10% small
       let size: 'small' | 'tall' | 'mega'
       const rand = totalIndex % 10
       if (rand < 1) size = 'small'          // 10%

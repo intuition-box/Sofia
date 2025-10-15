@@ -26,6 +26,9 @@ export * from './messages';
 // Bookmarks types
 export * from './bookmarks';
 
+// Bento grid types
+export * from './bento';
+
 // Published triplets types
 export * from './published-triplets';
 
