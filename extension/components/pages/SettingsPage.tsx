@@ -66,18 +66,6 @@ const SettingsPage = () => {
 
       <h2 className="section-title">Settings</h2>
 
-      {/* General Section */}
-      <div className="settings-section">
-        <h3 className="settings-section-title">General</h3>
-        <div className="settings-item">
-          <span>Language</span>
-          <select className="select">
-            <option>English</option>
-            {/* <option>Français</option> */}
-          </select>
-        </div>
-      </div>
-
       {/* Privacy Section */}
       <div className="settings-section">
         <h3 className="settings-section-title">Privacy</h3>

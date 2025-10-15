@@ -12,19 +12,15 @@ const HomePage = () => {
 
       <div className="description-sections">
         <p className="description-paragraph">
-          SofIA is an intelligent Chrome extension that helps you better use the internet every day. The system assists you by tracking your browsing and creates a secure digital memory that you fully control and share with anyone you wish.
+        Sofia is a decentralized, intelligent interface that captures your web navigation, transforms it into verifiable knowledge, and helps you better understand – and leverage – your digital self.
         </p>
 
         <p className="description-paragraph">
-          SofIA generates intelligent content and recommendations tailored to your tastes and visual context, while respecting your privacy.
+        Every visited page, every action, every interest becomes a signal (who/what you are – what you do – on what content) stored under your control. 
         </p>
 
         <p className="description-paragraph">
-          It's like a personal assistant connected to the web, supporting you in your research, learning, and projects, and helping you discover what really matters to you.
-        </p>
-
-        <p className="description-paragraph">
-          By combining personal history and decentralized certification via Intuition Systems, Sofia validates your browsing in the form of attested signals to provide reliable and verifiable recommendations.
+        This creates a living, semantic graph of your online activity, which you can enrich, share and get certified.
         </p>
 
         <p className="description-paragraph terms-text">For more details, please read and accept the <a href="../../docs/terms-and-conditions.md" target="_blank" rel="noopener noreferrer"><strong>Terms and Conditions</strong></a>.</p>

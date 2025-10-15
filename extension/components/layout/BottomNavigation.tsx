@@ -1,65 +1,53 @@
 import { useStorage } from "@plasmohq/storage/hook"
 import { useRouter } from './RouterProvider'
+import { Home } from 'lucide-react'
+import Dock, { DockItemData } from '../ui/Dock'
 import sofiaIcon from '../ui/icons/Icon=Sofia.svg'
 import resonanceIcon from '../ui/icons/ResonanceIcon.svg'
 import personIcon from '../ui/icons/Icon=person.svg'
 import settingsIcon from '../ui/icons/Icon=Settings.svg'
-import '../styles/BottomNavigation.css'
 
 const BottomNavigation = () => {
   const [account] = useStorage<string>("metamask-account")
-  const { currentPage, navigateTo } = useRouter()
+  const { navigateTo } = useRouter()
 
   if (!account) return null
 
+  const dockItems: DockItemData[] = [
+    {
+      icon: <Home size={24} />,
+      label: 'Home',
+      onClick: () => navigateTo('home-connected')
+    },
+    {
+      icon: <img src={sofiaIcon} alt="Sofia" style={{ width: '24px', height: '24px' }} />,
+      label: 'Sofia',
+      onClick: () => navigateTo('Sofia')
+    },
+    {
+      icon: <img src={resonanceIcon} alt="Resonance" style={{ width: '24px', height: '24px' }} />,
+      label: 'Resonance',
+      onClick: () => navigateTo('resonance')
+    },
+    {
+      icon: <img src={personIcon} alt="Profile" style={{ width: '24px', height: '24px' }} />,
+      label: 'Profile',
+      onClick: () => navigateTo('profile')
+    },
+    {
+      icon: <img src={settingsIcon} alt="Settings" style={{ width: '24px', height: '24px' }} />,
+      label: 'Settings',
+      onClick: () => navigateTo('settings')
+    }
+  ]
 
   return (
-    <div className="bottom-nav">
-      <button 
-        onClick={() => currentPage === 'Sofia' ? navigateTo('home-connected') : navigateTo('Sofia')}
-        className={`nav-button ${currentPage === 'Sofia' ? 'active' : ''}`}
-      >
-        <img 
-          src={sofiaIcon} 
-          alt="Sofia" 
-          className="nav-icon"
-        />
-        <span className="nav-text">Sofia</span>
-      </button>
-      <button 
-        onClick={() => currentPage === 'resonance' ? navigateTo('home-connected') : navigateTo('resonance')}
-        className={`nav-button ${currentPage === 'resonance' ? 'active' : ''}`}
-      >
-        <img 
-          src={resonanceIcon} 
-          alt="Resonance" 
-          className="nav-icon"
-        />
-        <span className="nav-text">Resonance</span>
-      </button>
-      <button
-        onClick={() => currentPage === 'profile' ? navigateTo('home-connected') : navigateTo('profile')}
-        className={`nav-button ${currentPage === 'profile' ? 'active' : ''}`}
-      >
-        <img
-          src={personIcon}
-          alt="Profile"
-          className="nav-icon"
-        />
-        <span className="nav-text">Profile</span>
-      </button>
-      <button 
-        onClick={() => currentPage === 'settings' ? navigateTo('home-connected') : navigateTo('settings')}
-        className={`nav-button ${currentPage === 'settings' ? 'active' : ''}`}
-      >
-        <img 
-          src={settingsIcon} 
-          alt="Settings" 
-          className="nav-icon"
-        />
-        <span className="nav-text">Settings</span>
-      </button>
-    </div>
+    <Dock
+      items={dockItems}
+      panelHeight={80}
+      baseItemSize={60}
+      magnification={60}
+    />
   )
 }
 
