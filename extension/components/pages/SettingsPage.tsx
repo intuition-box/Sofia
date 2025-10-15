@@ -8,6 +8,8 @@ import { Storage } from '@plasmohq/storage'
 import { disconnectWallet, cleanupProvider } from '../../lib/services/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
 import { elizaDataService } from '../../lib/database/indexedDB-methods'
+import { RecommendationService } from '../../lib/services/ai/RecommendationService'
+import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
 
@@ -52,7 +54,31 @@ const SettingsPage = () => {
         'sync_info_youtube', 'sync_info_spotify', 'sync_info_twitch', 'sync_info_twitter'
       ])
 
-      alert('All storage cleared, OAuth disconnected, and wallet disconnected successfully!')
+      // Clear recommendations cache (if user has account)
+      if (account) {
+        await RecommendationService.clearCache(account)
+        console.log('✅ Recommendations cache cleared for account:', account)
+      }
+
+      // Clear global resonance service state
+      const globalService = GlobalResonanceService.getInstance()
+      globalService.clearCache()
+      console.log('✅ Global resonance service cache cleared')
+
+      // Clear IndexedDB completely (recommendations + og:images)
+      const databases = await indexedDB.databases()
+      for (const db of databases) {
+        if (db.name) {
+          const deleteReq = indexedDB.deleteDatabase(db.name)
+          await new Promise((resolve, reject) => {
+            deleteReq.onsuccess = () => resolve(true)
+            deleteReq.onerror = () => reject(deleteReq.error)
+          })
+          console.log('✅ Deleted IndexedDB database:', db.name)
+        }
+      }
+
+      alert('All storage cleared: Plasmo, IndexedDB, OAuth, Wallet, Recommendations, and Images!')
     } catch (error) {
       console.error('❌ Failed to clear storage:', error)
       alert('Failed to clear storage. Please try again.')
