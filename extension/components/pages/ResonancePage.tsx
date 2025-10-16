@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useRouter } from '../layout/RouterProvider'
-import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useRecommendations } from '../../hooks/useRecommendations'
 import { useResonanceService } from '../../hooks/useResonanceService'
 import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
@@ -11,8 +9,6 @@ import '../styles/CommonPage.css'
 import '../styles/CoreComponents.css'
 
 const ResonancePage = () => {
-  const { navigateTo } = useRouter()
-  const { isReady, searchAtoms } = useIntuitionSearch()
   const { recommendations, isLoading, generateRecommendations } = useRecommendations()
   const [searchQuery, setSearchQuery] = useState('')
   const [account] = useStorage<string>("metamask-account")
@@ -24,6 +20,13 @@ const ResonancePage = () => {
 
   // Passive observer of service state
   const { validItems, isLoading: isLoadingPreviews, error: previewError } = useResonanceService()
+  
+  // Filter validItems based on search query
+  const filteredValidItems = validItems.filter(item => 
+    searchQuery.trim() === '' || 
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   // Initialize service for current wallet
   useEffect(() => {
@@ -53,24 +56,6 @@ const ResonancePage = () => {
   }
 
 
-  const handleSearch = async () => {
-    if (searchQuery.trim() && isReady) {
-      try {
-        const results = await searchAtoms(searchQuery.trim())
-        localStorage.setItem('searchQuery', searchQuery.trim())
-        localStorage.setItem('searchResults', JSON.stringify(results))
-        navigateTo('search-result')
-      } catch (error) {
-        console.error('Search failed:', error)
-      }
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch()
-    }
-  }
 
   return (
     <div className="triples-container">
@@ -79,11 +64,10 @@ const ResonancePage = () => {
           <img src={logoIcon} alt="Sofia" className="search-logo" />
           <input
             type="text"
-            placeholder="Search atoms in Intuition blockchain..."
+            placeholder="Search ..."
             className="search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
           />
         </div>
         
@@ -115,9 +99,9 @@ const ResonancePage = () => {
               <div className="error-state">{previewError}</div>
             )}
             
-            {validItems.length > 0 && (
+            {filteredValidItems.length > 0 && (
               <div className="bento-grid">
-                {validItems.map((item, index) => (
+                {filteredValidItems.map((item, index) => (
                   <div 
                     key={index} 
                     className={`bento-card bento-${item.size}`}
@@ -138,6 +122,10 @@ const ResonancePage = () => {
                   </div>
                 ))}
               </div>
+            )}
+            
+            {!isLoadingPreviews && filteredValidItems.length === 0 && validItems.length > 0 && (
+              <div className="error-state">No recommendations match your search</div>
             )}
             
             {!isLoadingPreviews && validItems.length === 0 && recommendations.length > 0 && (

@@ -18,7 +18,6 @@ import SettingsPage from "./components/pages/SettingsPage"
 import ProfilePage from "./components/pages/ProfilePage"
 import CorePage from "./components/pages/CorePage"
 import ResonancePage from "./components/pages/ResonancePage"
-import SearchResultPage from "./components/pages/SearchResultPage"
 import ChatPage from "./components/pages/ChatPage"
 
 
@@ -53,8 +52,6 @@ const SidePanelContent = () => {
         return <CorePage />
       case 'resonance':
         return <ResonancePage />
-      case 'search-result':
-        return <SearchResultPage />
       case 'chat':
         return <ChatPage />
       default:
