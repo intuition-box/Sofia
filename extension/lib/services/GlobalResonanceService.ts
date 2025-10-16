@@ -5,6 +5,7 @@
  */
 
 import { RecommendationService } from './ai/RecommendationService'
+import { StorageRecommendation } from '../database/StorageRecommendation'
 import type { BentoItem, BentoItemWithImage, BentoState, BentoStateListener } from '../../types/bento'
 import type { Recommendation } from './ai/types'
 
@@ -17,6 +18,7 @@ export class GlobalResonanceService {
     lastProcessedHash: null
   }
   private listeners: Set<BentoStateListener> = new Set()
+  private currentWallet: string | null = null
 
   private constructor() {}
 
