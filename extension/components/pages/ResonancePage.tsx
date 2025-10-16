@@ -16,6 +16,7 @@ const ResonancePage = () => {
   const { recommendations, isLoading, generateRecommendations } = useRecommendations()
   const [searchQuery, setSearchQuery] = useState('')
   const [account] = useStorage<string>("metamask-account")
+  const [isAdditive, setIsAdditive] = useState(false)
   
   console.log('🏠 ResonancePage rendered')
   console.log('📋 Recommendations from hook:', recommendations.length, 'items')
@@ -32,14 +33,20 @@ const ResonancePage = () => {
     }
   }, [account])
 
-  // Update service only when we have recommendations but no validItems yet
+  // Update service when we have recommendations (first time OR additive mode)
   useEffect(() => {
-    if (recommendations.length > 0 && account && validItems.length === 0) {
-      console.log('🔄 [ResonancePage] Processing recommendations - no validItems cached yet')
+    if (recommendations.length > 0 && account && (validItems.length === 0 || isAdditive)) {
+      const mode = validItems.length === 0 ? 'initial load' : 'additive mode'
+      console.log('🔄 [ResonancePage] Processing recommendations -', mode)
       const service = GlobalResonanceService.getInstance()
-      service.updateRecommendations(recommendations)
+      service.updateRecommendations(recommendations, isAdditive)
+      
+      // Reset additive flag after processing
+      if (isAdditive) {
+        setIsAdditive(false)
+      }
     }
-  }, [recommendations, account, validItems.length])
+  }, [recommendations, account, validItems.length, isAdditive])
 
   const handleBentoClick = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer')
@@ -90,7 +97,10 @@ const ResonancePage = () => {
         {(recommendations.length > 0 || validItems.length > 0) && (
           <div className="recommendations-section">
             <button
-              onClick={() => generateRecommendations(true, true)}
+              onClick={() => {
+                setIsAdditive(true)
+                generateRecommendations(true, true)
+              }}
               disabled={isLoading || isLoadingPreviews}
               className="btn"
               style={{ marginBottom: '16px' }}
