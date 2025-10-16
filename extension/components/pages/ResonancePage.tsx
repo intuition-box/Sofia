@@ -81,14 +81,13 @@ const ResonancePage = () => {
         </div>
         
         {/* Recommendations grid by theme */}
-        {isLoading && (
+        {isLoading && validItems.length === 0 && (
           <div className="recommendations-section">
-            <h2 className="recommendations-title">Generating Personalized Recommendations...</h2>
             <div className="loading-indicator">Analyzing your wallet activity...</div>
           </div>
         )}
         
-        {!isLoading && recommendations.length > 0 && (
+        {(recommendations.length > 0 || validItems.length > 0) && (
           <div className="recommendations-section">
             <button
               onClick={() => generateRecommendations(true, true)}
@@ -96,8 +95,12 @@ const ResonancePage = () => {
               className="btn"
               style={{ marginBottom: '16px' }}
             >
-              {isLoading ? '⏳ Generating...' : isLoadingPreviews ? '🖼️ Loading images...' : 'Get More'}
+              {isLoading ? 'Generating...' : isLoadingPreviews ? 'Loading ...' : 'Get More'}
             </button>
+            
+            {isLoading && validItems.length > 0 && (
+              <div className="loading-indicator">Analyzing your wallet activity...</div>
+            )}
             
             {isLoadingPreviews && (
               <div className="loading-indicator">Loading preview images...</div>
@@ -107,7 +110,7 @@ const ResonancePage = () => {
               <div className="error-state">{previewError}</div>
             )}
             
-            {!isLoadingPreviews && validItems.length > 0 && (
+            {validItems.length > 0 && (
               <div className="bento-grid">
                 {validItems.map((item, index) => (
                   <div 

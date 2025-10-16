@@ -212,7 +212,7 @@ export class StorageRecommendation {
       }
 
       const existingItems = await this.loadValidItems(walletAddress)
-      const mergedItems = [...existingItems, ...uniqueNewItems]
+      const mergedItems = [...uniqueNewItems, ...existingItems] // Nouveaux items en premier
       await this.saveValidItems(walletAddress, mergedItems)
       
       console.log('✅ [StorageRecommendation] Added', uniqueNewItems.length, 'new items. Total:', mergedItems.length)
