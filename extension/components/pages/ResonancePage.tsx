@@ -4,7 +4,7 @@ import { useIntuitionSearch } from '../../hooks/useIntuitionSearch'
 import { useRecommendations } from '../../hooks/useRecommendations'
 import { useResonanceService } from '../../hooks/useResonanceService'
 import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
-import { useAccount } from '../../hooks/useAccount'
+import { useStorage } from "@plasmohq/storage/hook"
 import logoIcon from '../../components/ui/icons/chatIcon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -15,6 +15,7 @@ const ResonancePage = () => {
   const { isReady, searchAtoms } = useIntuitionSearch()
   const { recommendations, isLoading, generateRecommendations } = useRecommendations()
   const [searchQuery, setSearchQuery] = useState('')
+  const [account] = useStorage<string>("metamask-account")
   
   console.log('🏠 ResonancePage rendered')
   console.log('📋 Recommendations from hook:', recommendations.length, 'items')
@@ -23,13 +24,22 @@ const ResonancePage = () => {
   // Passive observer of service state
   const { validItems, isLoading: isLoadingPreviews, error: previewError } = useResonanceService()
 
-  // Only update service when recommendations actually change (not on every mount)
+  // Initialize service for current wallet
   useEffect(() => {
-    if (recommendations.length > 0) {
+    if (account) {
+      const service = GlobalResonanceService.getInstance()
+      service.initializeForWallet(account)
+    }
+  }, [account])
+
+  // Update service only when we have recommendations but no validItems yet
+  useEffect(() => {
+    if (recommendations.length > 0 && account && validItems.length === 0) {
+      console.log('🔄 [ResonancePage] Processing recommendations - no validItems cached yet')
       const service = GlobalResonanceService.getInstance()
       service.updateRecommendations(recommendations)
     }
-  }, [recommendations.length]) // Only when count changes, not object reference
+  }, [recommendations, account, validItems.length])
 
   const handleBentoClick = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer')
