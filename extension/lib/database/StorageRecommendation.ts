@@ -110,34 +110,6 @@ export class StorageRecommendation {
     }
   }
 
-  /**
-   * Vérifie si le cache est valide
-   */
-  static async isValid(walletAddress: string, maxAgeHours: number = 24): Promise<boolean> {
-    try {
-      const db = await this.initDB()
-      const transaction = db.transaction([STORE_NAME], 'readonly')
-      const store = transaction.objectStore(STORE_NAME)
-
-      const cache = await new Promise<RecommendationCache | null>((resolve, reject) => {
-        const request = store.get(walletAddress)
-        request.onsuccess = () => resolve(request.result || null)
-        request.onerror = () => reject(request.error)
-      })
-
-      if (!cache) return false
-
-      const maxAge = maxAgeHours * 60 * 60 * 1000 // en millisecondes
-      const isValid = (Date.now() - cache.createdAt) < maxAge
-
-      console.log(`🕐 [StorageRecommendation] Cache for ${walletAddress} is ${isValid ? 'valid' : 'expired'}`)
-      return isValid
-
-    } catch (error) {
-      console.error('❌ [StorageRecommendation] Validation failed:', error)
-      return false
-    }
-  }
 
   /**
    * Supprime le cache d'un wallet

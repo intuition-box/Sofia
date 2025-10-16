@@ -12,7 +12,6 @@ import { SUBJECT_IDS } from '../../config/constants'
 import { getAddress } from 'viem'
 
 export class RecommendationService {
-  private static readonly RECOMMENDATIONS_CACHE_HOURS = 24 * 7    // 7 jours
   private static readonly OG_IMAGES_CACHE_HOURS = 24 * 30         // 30 jours
 
   /**
@@ -28,8 +27,8 @@ export class RecommendationService {
 
       // Check cache first (unless force refresh)
       if (!forceRefresh && !additive) {
-        const cached = await this.getCachedRecommendations(walletAddress)
-        if (cached.length > 0) {
+        const cached = await StorageRecommendation.load(walletAddress)
+        if (cached && cached.length > 0) {
           console.log('📋 [RecommendationService] Using cached recommendations')
           return cached
         }
@@ -48,7 +47,7 @@ export class RecommendationService {
       // Merge with existing recommendations if additive
       let finalRecommendations = newRecommendations
       if (additive) {
-        const existingRecommendations = await this.getCachedRecommendations(walletAddress)
+        const existingRecommendations = await StorageRecommendation.load(walletAddress) || []
         finalRecommendations = this.mergeRecommendations(existingRecommendations, newRecommendations)
         console.log('🔄 [RecommendationService] Merged', existingRecommendations.length, '+', newRecommendations.length, '=', finalRecommendations.length, 'recommendations')
       }
@@ -93,21 +92,6 @@ export class RecommendationService {
     return merged
   }
 
-  /**
-   * Get cached recommendations
-   */
-  static async getCachedRecommendations(walletAddress: string): Promise<Recommendation[]> {
-    try {
-      const isValid = await StorageRecommendation.isValid(walletAddress, this.RECOMMENDATIONS_CACHE_HOURS)
-      if (!isValid) return []
-
-      const cached = await StorageRecommendation.load(walletAddress)
-      return cached || []
-    } catch (error) {
-      console.error('❌ [RecommendationService] Cache load failed:', error)
-      return []
-    }
-  }
 
   /**
    * Clear wallet cache
