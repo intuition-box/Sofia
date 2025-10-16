@@ -3,7 +3,7 @@
  * Manages local storage of Eliza messages, navigation data, user profile, and settings
  */
 
-import type { ParsedSofiaMessage, Message } from '../../types/messages'
+import type { ParsedSofiaMessage} from '../../types/messages'
 import type { VisitData, DOMData } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
 import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
@@ -29,7 +29,7 @@ export const STORES = {
 export interface ElizaRecord {
   id?: number
   messageId: string
-  content: ParsedSofiaMessage | Message | any[] | string[]
+  content: ParsedSofiaMessage | any[] | string[]
   timestamp: number
   type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details' | 'pulse_analysis'
 }
