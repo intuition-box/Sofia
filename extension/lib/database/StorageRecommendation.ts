@@ -229,28 +229,43 @@ export class StorageRecommendation {
   }
 
   /**
-   * Ajoute de nouveaux items validés aux existants (avec déduplication par URL)
+   * Ajoute de nouveaux items validés aux existants (assume que la déduplication a déjà été faite)
    */
-  static async appendValidItems(walletAddress: string, newValidItems: BentoItemWithImage[]): Promise<void> {
+  static async appendValidItems(walletAddress: string, uniqueNewItems: BentoItemWithImage[]): Promise<BentoItemWithImage[]> {
     try {
-      const existingItems = await this.loadValidItems(walletAddress)
-      
-      // Déduplication simple par URL
-      const existingUrls = new Set(existingItems.map(item => item.url))
-      const uniqueNewItems = newValidItems.filter(item => !existingUrls.has(item.url))
-      
       if (uniqueNewItems.length === 0) {
-        console.log('🔄 [StorageRecommendation] No new unique items to add')
-        return
+        console.log('🔄 [StorageRecommendation] No new items to add')
+        const existing = await this.loadValidItems(walletAddress)
+        return existing
       }
 
+      const existingItems = await this.loadValidItems(walletAddress)
       const mergedItems = [...existingItems, ...uniqueNewItems]
       await this.saveValidItems(walletAddress, mergedItems)
       
       console.log('✅ [StorageRecommendation] Added', uniqueNewItems.length, 'new items. Total:', mergedItems.length)
+      return mergedItems
     } catch (error) {
       console.error('❌ [StorageRecommendation] Append valid items failed:', error)
       throw error
+    }
+  }
+
+  /**
+   * Déduplique les nouveaux items contre les existants (par URL)
+   */
+  static async deduplicateAgainstExisting(walletAddress: string, newItems: BentoItemWithImage[]): Promise<BentoItemWithImage[]> {
+    try {
+      const existingItems = await this.loadValidItems(walletAddress)
+      const existingUrls = new Set(existingItems.map(item => item.url))
+      
+      const uniqueNewItems = newItems.filter(item => !existingUrls.has(item.url))
+      
+      console.log('🔄 [StorageRecommendation] Deduplication:', newItems.length, 'new items →', uniqueNewItems.length, 'unique items')
+      return uniqueNewItems
+    } catch (error) {
+      console.error('❌ [StorageRecommendation] Deduplication failed:', error)
+      return newItems // Fallback to all items if deduplication fails
     }
   }
 }
