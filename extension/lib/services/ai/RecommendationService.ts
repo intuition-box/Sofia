@@ -253,25 +253,50 @@ Generate 35-50 total suggestions across all categories.`
       }
       
       const jsonString = cleanResponse.substring(jsonStart, jsonEnd)
+      console.log('🔍 [RecommendationService] Extracted JSON:', jsonString.substring(0, 200) + '...')
+      
       const parsed = JSON.parse(jsonString)
+      console.log('📦 [RecommendationService] Parsed object:', parsed)
       
       // Check structure
       const recommendations = parsed.recommendations || []
+      console.log('📋 [RecommendationService] Raw recommendations count:', recommendations.length)
+      
+      if (recommendations.length > 0) {
+        console.log('🔍 [RecommendationService] First recommendation sample:', recommendations[0])
+      }
       
       // Filter and validate
       const validRecommendations = recommendations
-        .filter((rec: any) => rec.category && rec.suggestions?.length > 0)
-        .map((rec: any) => ({
-          category: rec.category,
-          title: rec.title || 'Similar new projects',
-          reason: rec.reason || 'Based on your activity',
-          suggestions: rec.suggestions
-            .filter((s: any) => s.name && s.url && s.url.startsWith('http'))
-            // No limit - take all valid suggestions
-        }))
+        .filter((rec: any) => {
+          const isValid = rec.category && rec.suggestions?.length > 0
+          if (!isValid) {
+            console.log('❌ [RecommendationService] Invalid recommendation:', rec)
+          }
+          return isValid
+        })
+        .map((rec: any) => {
+          const validSuggestions = rec.suggestions
+            .filter((s: any) => {
+              const isValid = s.name && s.url && s.url.startsWith('http')
+              if (!isValid) {
+                console.log('❌ [RecommendationService] Invalid suggestion:', s)
+              }
+              return isValid
+            })
+          
+          console.log(`✅ [RecommendationService] Category "${rec.category}": ${rec.suggestions.length} → ${validSuggestions.length} valid suggestions`)
+          
+          return {
+            category: rec.category,
+            title: rec.title || 'Similar new projects',
+            reason: rec.reason || 'Based on your activity',
+            suggestions: validSuggestions
+          }
+        })
         .filter((rec: Recommendation) => rec.suggestions.length > 0)
       
-      console.log('✅ [RecommendationService] Parsed', validRecommendations.length, 'valid recommendations')
+      console.log('✅ [RecommendationService] Final result:', validRecommendations.length, 'valid recommendations')
       return validRecommendations
       
     } catch (error) {
@@ -333,21 +358,41 @@ Generate 35-50 total suggestions across all categories.`
 
   /**
    * Get suggestions with og:images (filtered - only sites with og:image)
+   * Optimized to reuse existing validItems when possible
    */
-  static async getSuggestionsWithPreviews(suggestions: { name: string, url: string, category: string, size: 'small' | 'tall' | 'mega' }[]): Promise<Array<{ name: string, url: string, category: string, size: 'small' | 'tall' | 'mega', ogImage: string }>> {
+  static async getSuggestionsWithPreviews(
+    suggestions: { name: string, url: string, category: string, size: 'small' | 'tall' | 'mega' }[], 
+    existingValidItems: Array<{ name: string, url: string, category: string, size: 'small' | 'tall' | 'mega', ogImage: string }> = []
+  ): Promise<Array<{ name: string, url: string, category: string, size: 'small' | 'tall' | 'mega', ogImage: string }>> {
     const validSuggestions = []
     
+    // Create a map of existing valid items for fast lookup
+    const existingMap = new Map(existingValidItems.map(item => [item.url, item.ogImage]))
+    
     for (const suggestion of suggestions) {
-      const ogImage = await this.getOgImage(suggestion.url)
-      if (ogImage) { // Only add if og:image exists
+      // Check if we already have this URL with og:image
+      const existingOgImage = existingMap.get(suggestion.url)
+      
+      if (existingOgImage) {
+        // Reuse existing og:image
         validSuggestions.push({
           ...suggestion,
-          ogImage
+          ogImage: existingOgImage
         })
+        console.log(`♻️ [RecommendationService] Reusing cached og:image for ${suggestion.url}`)
+      } else {
+        // Fetch new og:image
+        const ogImage = await this.getOgImage(suggestion.url)
+        if (ogImage) { // Only add if og:image exists
+          validSuggestions.push({
+            ...suggestion,
+            ogImage
+          })
+        }
       }
     }
     
-    console.log(`✅ [RecommendationService] Filtered ${validSuggestions.length}/${suggestions.length} valid suggestions with og:image`)
+    console.log(`✅ [RecommendationService] Filtered ${validSuggestions.length}/${suggestions.length} valid suggestions with og:image (${existingValidItems.length} reused)`)
     return validSuggestions
   }
 }
