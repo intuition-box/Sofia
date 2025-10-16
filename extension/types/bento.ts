@@ -17,7 +17,6 @@ export interface BentoState {
   validItems: BentoItemWithImage[]
   isLoading: boolean
   error: string | null
-  lastProcessedHash: string | null
 }
 
 export type BentoStateListener = (state: BentoState) => void

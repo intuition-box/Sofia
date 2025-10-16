@@ -14,8 +14,7 @@ export class GlobalResonanceService {
   private state: BentoState = {
     validItems: [],
     isLoading: false,
-    error: null,
-    lastProcessedHash: null
+    error: null
   }
   private listeners: Set<BentoStateListener> = new Set()
   private currentWallet: string | null = null
@@ -190,16 +189,9 @@ export class GlobalResonanceService {
     }
     this.setState({
       validItems: [],
-      error: null,
-      lastProcessedHash: null
+      error: null
     })
     this.currentWallet = null
   }
 
-  /**
-   * Reset loading state
-   */
-  resetLoading(): void {
-    this.setState({ isLoading: false })
-  }
 }
