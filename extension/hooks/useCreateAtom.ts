@@ -156,7 +156,143 @@ export const useCreateAtom = () => {
     }
   }
 
+  const createAtomsBatch = async (atomsData: AtomIPFSData[]): Promise<{ [key: string]: AtomCreationResult }> => {
+    try {
+      logger.debug('Creating atoms batch', { count: atomsData.length })
+      
+      if (atomsData.length === 0) {
+        return {}
+      }
+      
+      // Pin all atoms to IPFS in parallel
+      const pinPromises = atomsData.map(async (atomData) => {
+        const pinResult = await pinThing({
+          name: atomData.name,
+          description: atomData.description || "Contenu visité par l'utilisateur.",
+          image: atomData.image || "",
+          url: atomData.url
+        })
+        
+        if (!pinResult.pinThing?.uri) {
+          throw new Error(`Failed to pin atom: ${atomData.name}`)
+        }
+        
+        return {
+          atomData,
+          ipfsUri: pinResult.pinThing.uri
+        }
+      })
+      
+      const pinnedAtoms = await Promise.all(pinPromises)
+      logger.debug('All atoms pinned to IPFS', { count: pinnedAtoms.length })
+      
+      // Check which atoms already exist
+      const atomChecks = await Promise.all(
+        pinnedAtoms.map(async ({ atomData, ipfsUri }) => {
+          const atomCheck = await BlockchainService.checkAtomExists(ipfsUri)
+          return {
+            atomData,
+            ipfsUri,
+            exists: atomCheck.exists,
+            atomHash: atomCheck.atomHash
+          }
+        })
+      )
+      
+      // Separate existing and new atoms
+      const existingAtoms = atomChecks.filter(check => check.exists)
+      const newAtoms = atomChecks.filter(check => !check.exists)
+      
+      const results: { [key: string]: AtomCreationResult } = {}
+      
+      // Add existing atoms to results
+      for (const existingAtom of existingAtoms) {
+        results[existingAtom.atomData.name] = {
+          success: true,
+          vaultId: existingAtom.atomHash!,
+          atomHash: existingAtom.atomHash!,
+          txHash: 'existing'
+        }
+      }
+      
+      // Create new atoms in batch if any
+      if (newAtoms.length > 0) {
+        const { walletClient, publicClient } = await getClients()
+        const atomCost = await BlockchainService.getAtomCost()
+        
+        // Prepare batch data
+        const encodedDataArray = newAtoms.map(({ ipfsUri }) => stringToHex(ipfsUri))
+        const costsArray = newAtoms.map(() => atomCost)
+        const totalValue = atomCost * BigInt(newAtoms.length)
+        
+        logger.debug('Creating atoms batch transaction', {
+          count: newAtoms.length,
+          totalValue: totalValue.toString()
+        })
+        
+        // Simulate first
+        const simulation = await publicClient.simulateContract({
+          address: BlockchainService.getContractAddress() as `0x${string}`,
+          abi: MultiVaultAbi,
+          functionName: 'createAtoms',
+          args: [encodedDataArray, costsArray],
+          value: totalValue,
+          account: walletClient.account
+        })
+        
+        // Execute batch transaction
+        const txHash = await walletClient.writeContract({
+          address: BlockchainService.getContractAddress() as `0x${string}`,
+          abi: MultiVaultAbi,
+          functionName: 'createAtoms',
+          args: [encodedDataArray, costsArray],
+          value: totalValue,
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+          chain: SELECTED_CHAIN,
+          account: address as `0x${string}`
+        })
+        
+        logger.debug('Batch transaction sent', { txHash })
+        
+        // Wait for confirmation
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+        
+        if (receipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+        }
+        
+        // Get vault IDs from simulation result
+        const vaultIds = simulation.result as `0x${string}`[]
+        
+        // Add new atoms to results
+        for (let i = 0; i < newAtoms.length; i++) {
+          const newAtom = newAtoms[i]
+          results[newAtom.atomData.name] = {
+            success: true,
+            vaultId: vaultIds[i],
+            atomHash: vaultIds[i],
+            txHash
+          }
+        }
+        
+        logger.debug('Batch atom creation completed', { 
+          newCount: newAtoms.length,
+          existingCount: existingAtoms.length,
+          totalCount: Object.keys(results).length
+        })
+      }
+      
+      return results
+      
+    } catch (error) {
+      logger.error('Batch atom creation failed', error)
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      throw new Error(`${ERROR_MESSAGES.ATOM_CREATION_FAILED}: ${errorMessage}`)
+    }
+  }
+
   return { 
-    createAtomWithMultivault: createAtomDirect
+    createAtomWithMultivault: createAtomDirect,
+    createAtomsBatch
   }
 }

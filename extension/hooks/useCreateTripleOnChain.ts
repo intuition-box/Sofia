@@ -14,7 +14,7 @@ const logger = createHookLogger('useCreateTripleOnChain')
 
 
 export const useCreateTripleOnChain = () => {
-  const { createAtomWithMultivault } = useCreateAtom()
+  const { createAtomWithMultivault, createAtomsBatch } = useCreateAtom()
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   
@@ -198,23 +198,23 @@ export const useCreateTripleOnChain = () => {
       }
       
       logger.debug('Starting batch triple creation', { count: inputs.length })
-      const uniqueAtoms = new Map<string, { name: string; description?: string; url: string; type: string }>()
       
       // User atom (always needed) - will use the universal "I" subject
       const userAtomKey = `user:I`
 
       // Collect unique predicates and objects
       const uniquePredicates = new Set<string>()
+      const uniqueObjects = new Map<string, { name: string; description?: string; url: string }>()
+      
       for (const input of inputs) {
         // Collect unique predicates
         uniquePredicates.add(input.predicateName)
         
         // Object atoms  
-        uniqueAtoms.set(`object:${input.objectData.name}`, {
+        uniqueObjects.set(input.objectData.name, {
           name: input.objectData.name,
           description: input.objectData.description,
-          url: input.objectData.url,
-          type: 'thing'
+          url: input.objectData.url
         })
       }
 
@@ -230,40 +230,27 @@ export const useCreateTripleOnChain = () => {
         atomResults.set(`predicate:${predicateName}`, predicateAtom.vaultId)
       }
       
-      // Create other atoms in parallel for better performance
-      const atomPromises = Array.from(uniqueAtoms.entries()).map(async ([key, atomData]) => {
-        try {
-          logger.debug('Creating/getting atom', { key, name: atomData.name })
-          
-          const atomResult = await createAtomWithMultivault({
-            name: atomData.name,
-            description: atomData.description || "Contenu visité par l'utilisateur.",
-            image: "",
-            url: atomData.url,
-            type: atomData.type
-          })
-
-          if (!atomResult.success) {
-            throw new Error(`Failed to create/get atom for ${atomData.name}`)
-          }
-
-          logger.debug('Atom ready', { key, vaultId: atomResult.vaultId })
-          return { key, vaultId: atomResult.vaultId }
-        } catch (error) {
-          logger.error('Failed to prepare atom', { name: atomData.name, error })
-          throw new Error(`Failed to prepare required atom: ${atomData.name}`)
+      // Create all object atoms in a single batch transaction
+      if (uniqueObjects.size > 0) {
+        logger.debug('Creating object atoms in batch', { count: uniqueObjects.size })
+        
+        const atomsDataArray = Array.from(uniqueObjects.values()).map(objData => ({
+          name: objData.name,
+          description: objData.description || "Contenu visité par l'utilisateur.",
+          url: objData.url
+        }))
+        
+        const batchResults = await createAtomsBatch(atomsDataArray)
+        
+        // Map batch results to atomResults
+        for (const [objectName, atomResult] of Object.entries(batchResults)) {
+          atomResults.set(`object:${objectName}`, atomResult.vaultId)
         }
-      })
-
-      // Wait for all non-user atoms to be created/retrieved in parallel
-      const atomResultsArray = await Promise.all(atomPromises)
-      
-      // Populate the results map
-      for (const { key, vaultId } of atomResultsArray) {
-        atomResults.set(key, vaultId)
+        
+        logger.debug('Object atoms batch creation completed', { count: Object.keys(batchResults).length })
       }
 
-      // All atoms are now created/retrieved individually above
+      // All atoms are now created/retrieved in batches above
 
       const results: TripleOnChainResult[] = []
       const triplesToCreate: {
