@@ -111,11 +111,6 @@ const ResonancePage = () => {
             {isLoading && validItems.length > 0 && (
               <div className="loading-indicator">Analyzing your wallet activity...</div>
             )}
-            
-            {isLoadingPreviews && (
-              <div className="loading-indicator">Loading preview images...</div>
-            )}
-            
             {previewError && (
               <div className="error-state">{previewError}</div>
             )}

@@ -44,19 +44,24 @@ export class RecommendationService {
       // Generate with Ollama
       const newRecommendations = await this.generateWithOllama(walletData)
       
-      // Merge with existing recommendations if additive
-      let finalRecommendations = newRecommendations
+      // Handle additive mode: merge for storage but return only new ones
       if (additive) {
         const existingRecommendations = await StorageRecommendation.load(walletAddress) || []
-        finalRecommendations = this.mergeRecommendations(existingRecommendations, newRecommendations)
-        console.log('🔄 [RecommendationService] Merged', existingRecommendations.length, '+', newRecommendations.length, '=', finalRecommendations.length, 'recommendations')
+        const mergedRecommendations = this.mergeRecommendations(existingRecommendations, newRecommendations)
+        console.log('🔄 [RecommendationService] Merged', existingRecommendations.length, '+', newRecommendations.length, '=', mergedRecommendations.length, 'recommendations')
+        
+        // Save merged recommendations to cache
+        await StorageRecommendation.save(walletAddress, mergedRecommendations)
+        
+        // Return ONLY the new recommendations for UI processing
+        console.log('✅ [RecommendationService] Generated', newRecommendations.length, 'NEW recommendations (', mergedRecommendations.length, 'total in cache)')
+        return newRecommendations
+      } else {
+        // Non-additive mode: save and return all recommendations
+        await StorageRecommendation.save(walletAddress, newRecommendations)
+        console.log('✅ [RecommendationService] Generated', newRecommendations.length, 'recommendations')
+        return newRecommendations
       }
-      
-      // Save to cache
-      await StorageRecommendation.save(walletAddress, finalRecommendations)
-
-      console.log('✅ [RecommendationService] Generated', finalRecommendations.length, 'recommendations')
-      return finalRecommendations
 
     } catch (error) {
       console.error('❌ [RecommendationService] Generation failed:', error)
