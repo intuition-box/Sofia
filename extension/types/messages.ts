@@ -168,4 +168,5 @@ export interface MessageResponse {
   themes?: any[]
   message?: string
   url?: string
+  tabId?: number
 }

@@ -4,6 +4,7 @@ import chatIcon from '../../components/ui/icons/chatIcon.png'
 import LevelProgress from '../ui/LevelProgress'
 import PulseAnimation from '../ui/PulseAnimation'
 import CircularMenu from '../ui/CircularMenu'
+import PageBlockchainCard from '../ui/PageBlockchainCard'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
 import { MessageBus } from '../../lib/services/MessageBus'
@@ -109,6 +110,8 @@ const HomeConnectedPage = () => {
       <div className="level-progress-section">
         <LevelProgress />
       </div>
+
+      <PageBlockchainCard />
 
 
       <div className="pulse-animation-section">

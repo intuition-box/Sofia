@@ -262,6 +262,41 @@ export function setupMessageHandlers(): void {
       case "OLLAMA_REQUEST":
         handleOllamaRequest(message.payload, sendResponse)
         return true
+
+      case "GET_PAGE_BLOCKCHAIN_DATA":
+        try {
+          const url = message.data?.url
+          if (!url) {
+            sendResponse({ success: false, error: "URL parameter required" })
+            return true
+          }
+          // For now, just return success - the actual GraphQL query is handled in the frontend
+          sendResponse({ success: true, data: { url } })
+        } catch (error) {
+          console.error("❌ GET_PAGE_BLOCKCHAIN_DATA error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "PAGE_ANALYSIS":
+        try {
+          // Log page analysis data for debugging
+          console.log("📋 Page analysis received:", message.data)
+          // This is a fire-and-forget message, no response needed
+        } catch (error) {
+          console.error("❌ PAGE_ANALYSIS error:", error)
+        }
+        break
+
+      case "URL_CHANGED":
+        try {
+          // Log URL change for debugging
+          console.log("🔗 URL changed:", message.data)
+          // This is a fire-and-forget message, no response needed
+        } catch (error) {
+          console.error("❌ URL_CHANGED error:", error)
+        }
+        break
         
     }
 
