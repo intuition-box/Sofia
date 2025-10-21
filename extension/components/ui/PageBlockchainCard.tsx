@@ -149,7 +149,7 @@ const PageBlockchainCard = () => {
                         className="position-bar"
                         style={{
                           height: `${15 + (i * 3)}px`,
-                          backgroundColor: i < analysis.activeAttestations ? '#10B981' : '#4A5568',
+                          backgroundColor: i < analysis.activeAttestations ? '#A0AEC0' : '#4A5568',
                           opacity: 0.8 + (i / 20)
                         }}
                       />
@@ -172,8 +172,8 @@ const PageBlockchainCard = () => {
                   <svg width="60" height="40" viewBox="0 0 60 40">
                     <defs>
                       <linearGradient id="sharesGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.8"/>
-                        <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.2"/>
+                        <stop offset="0%" stopColor="#A0AEC0" stopOpacity="0.8"/>
+                        <stop offset="100%" stopColor="#4A5568" stopOpacity="0.2"/>
                       </linearGradient>
                     </defs>
                     {analysis.totalShares > 0 ? (
@@ -181,7 +181,7 @@ const PageBlockchainCard = () => {
                         <path
                           d={`M 5 35 Q 15 ${35 - (analysis.totalShares * 2)} 30 ${30 - (analysis.totalShares * 1.5)} Q 45 ${25 - analysis.totalShares} 55 ${20 - (analysis.totalShares * 0.5)}`}
                           fill="none"
-                          stroke="#3B82F6"
+                          stroke="#A0AEC0"
                           strokeWidth="2"
                         />
                         <path
