@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './Dock.css';
+import '../styles/NavigationBar.css';
 
 export type DockItemData = {
-  icon: React.ReactNode;
-  label: React.ReactNode;
+  icon: JSX.Element;
+  label: string;
   onClick: () => void;
   className?: string;
 };
@@ -20,8 +20,8 @@ export type DockProps = {
 
 type DockItemProps = {
   className?: string;
-  icon: React.ReactNode;
-  label: React.ReactNode;
+  icon: JSX.Element;
+  label: string;
   onClick?: () => void;
   mouseX: number;
   distance: number;

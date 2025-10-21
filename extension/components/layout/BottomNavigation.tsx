@@ -1,7 +1,7 @@
 import { useStorage } from "@plasmohq/storage/hook"
 import { useRouter } from './RouterProvider'
 import { Home } from 'lucide-react'
-import Dock, { DockItemData } from '../ui/Dock'
+import Dock, { DockItemData } from '../ui/NavigationBar'
 import sofiaIcon from '../ui/icons/Icon=Sofia.svg'
 import resonanceIcon from '../ui/icons/ResonanceIcon.svg'
 import personIcon from '../ui/icons/Icon=person.svg'

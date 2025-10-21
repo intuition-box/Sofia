@@ -10,8 +10,9 @@ export interface PageBlockchainTriplet {
   created_at: string
   positions?: Array<{
     shares: string
-    created_at: string
-    account: { id: string }
+    position_count?: number
+    created_at?: string
+    account?: { id: string }
   }>
 }
 

@@ -1,8 +1,9 @@
-import React, { FC, useState } from 'react'
+import React, { useState } from 'react'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import type { PageBlockchainTriplet } from '../../types/page'
+import '../styles/PageBlockchainCard.css'
 
-const PageBlockchainCard: React.FC = () => {
+const PageBlockchainCard = () => {
   const { triplets, loading, error, currentUrl, fetchDataForCurrentPage } = usePageBlockchainData()
   const [showDetails, setShowDetails] = useState(false)
 
@@ -101,41 +102,101 @@ const PageBlockchainCard: React.FC = () => {
               <span className="analysis-title" style={{ color: 'white' }}>Page Analysis</span>
             </div>
             
-            <div className="credibility-score">
-              <span className="score-label" style={{ color: 'white' }}>Credibility Score:</span>
-              <span className="score-value" style={{ color: 'white' }}>
-                {analysis.credibilityScore}/100 
-                <span 
-                  className="score-badge"
-                  style={{ 
-                    backgroundColor: analysis.scoreColor,
-                    color: 'white',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    marginLeft: '8px'
-                  }}
-                >
-                  {analysis.scoreLabel}
-                </span>
-              </span>
-            </div>
+            <div className="credibility-visual-metrics">
+              {/* Circular Credibility Score */}
+              <div className="credibility-circle-container">
+                <div className="credibility-circle">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="35"
+                      fill="none"
+                      stroke="#2D3748"
+                      strokeWidth="8"
+                    />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="35"
+                      fill="none"
+                      stroke={analysis.scoreColor}
+                      strokeWidth="8"
+                      strokeDasharray={`${(analysis.credibilityScore / 100) * 220} 220`}
+                      strokeDashoffset="0"
+                      transform="rotate(-90 40 40)"
+                    />
+                  </svg>
+                  <div className="circle-content">
+                    <div className="score-number">
+                      {analysis.credibilityScore}
+                    </div>
+                    <div className="score-label-mini" style={{ color: analysis.scoreColor }}>
+                      {analysis.scoreLabel}
+                    </div>
+                  </div>
+                </div>
+                <div className="metric-title">Credibility</div>
+              </div>
 
-            <div className="credibility-metrics">
-              <div className="metric">
-                <span className="metric-icon"></span>
-                <span className="metric-text" style={{ color: 'white' }}>{analysis.totalPositions} community positions</span>
+              {/* Triplets Count Bar */}
+              <div className="positions-container">
+                <div className="positions-bar">
+                  <div className="positions-icons">
+                    {Array.from({ length: Math.min(analysis.attestationsCount, 10) }).map((_, i) => (
+                      <div 
+                        key={i}
+                        className="position-bar"
+                        style={{
+                          height: `${15 + (i * 3)}px`,
+                          backgroundColor: i < analysis.activeAttestations ? '#10B981' : '#4A5568',
+                          opacity: 0.8 + (i / 20)
+                        }}
+                      />
+                    ))}
+                    {analysis.attestationsCount > 10 && (
+                      <span style={{ color: 'white', fontSize: '12px', marginLeft: '4px' }}>
+                        +{analysis.attestationsCount - 10}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="metric-title">
+                  Triplets ({analysis.attestationsCount})
+                </div>
               </div>
-              <div className="metric">
-                <span className="metric-icon"></span>
-                <span className="metric-text" style={{ color: 'white' }}>{analysis.totalShares.toFixed(3)} total shares staked</span>
-              </div>
-              <div className="metric">
-                <span className="metric-icon"></span>
-                <span className="metric-text" style={{ color: 'white' }}>
-                  {analysis.activeAttestations}/{analysis.attestationsCount} attestations have backing
-                </span>
+
+              {/* Shares Curve Chart */}
+              <div className="shares-container">
+                <div className="shares-curve">
+                  <svg width="60" height="40" viewBox="0 0 60 40">
+                    <defs>
+                      <linearGradient id="sharesGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.8"/>
+                        <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.2"/>
+                      </linearGradient>
+                    </defs>
+                    {analysis.totalShares > 0 ? (
+                      <>
+                        <path
+                          d={`M 5 35 Q 15 ${35 - (analysis.totalShares * 2)} 30 ${30 - (analysis.totalShares * 1.5)} Q 45 ${25 - analysis.totalShares} 55 ${20 - (analysis.totalShares * 0.5)}`}
+                          fill="none"
+                          stroke="#3B82F6"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d={`M 5 35 Q 15 ${35 - (analysis.totalShares * 2)} 30 ${30 - (analysis.totalShares * 1.5)} Q 45 ${25 - analysis.totalShares} 55 ${20 - (analysis.totalShares * 0.5)} L 55 35 L 5 35 Z`}
+                          fill="url(#sharesGradient)"
+                        />
+                      </>
+                    ) : (
+                      <line x1="5" y1="35" x2="55" y2="35" stroke="#4A5568" strokeWidth="2" />
+                    )}
+                  </svg>
+                </div>
+                <div className="metric-title">
+                  Shares ({analysis.totalShares.toFixed(3)})
+                </div>
               </div>
             </div>
 
