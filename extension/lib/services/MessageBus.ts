@@ -1,6 +1,6 @@
 /**
  * Centralized class to manage Chrome runtime messages
- * Provides type-safe messaging with proper error handling
+ * Provides safe messaging 
  */
 import type { 
   ChromeMessage, 
@@ -197,6 +197,29 @@ export class MessageBus {
 
   public async clearTrackingData(): Promise<MessageResponse | null> {
     return this.sendMessage({ type: 'CLEAR_TRACKING_DATA' });
+  }
+
+  // Page blockchain data operations
+  public async getPageBlockchainData(url: string): Promise<MessageResponse | null> {
+    return this.sendMessage({
+      type: 'GET_PAGE_BLOCKCHAIN_DATA',
+      data: { url }
+    });
+  }
+
+  public sendPageAnalysis(pageData: any): void {
+    this.sendMessageFireAndForget({
+      type: 'PAGE_ANALYSIS',
+      data: pageData
+    });
+  }
+
+  public async getPageData(): Promise<MessageResponse | null> {
+    return this.sendMessage({ type: 'GET_PAGE_DATA' });
+  }
+
+  public async getCleanUrl(): Promise<MessageResponse | null> {
+    return this.sendMessage({ type: 'GET_CLEAN_URL' });
   }
 }
 

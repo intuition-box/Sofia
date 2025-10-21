@@ -36,6 +36,10 @@ export type MessageType =
   | 'AGENT_RESPONSE'
   | 'METAMASK_RESULT'
   | 'OLLAMA_REQUEST'
+  | 'GET_PAGE_BLOCKCHAIN_DATA'
+  | 'PAGE_ANALYSIS'
+  | 'GET_PAGE_DATA'
+  | 'GET_CLEAN_URL'
 
 // Specific message interfaces
 export interface ChromeMessage extends BaseMessage {
@@ -101,6 +105,57 @@ export interface SofiaRecord {
   type: 'raw_message' | 'parsed_message'
 }
 
+// Page analysis types
+export interface PageMetadata {
+  title: string
+  description: string
+  keywords: string
+  ogTitle: string
+  ogDescription: string
+  ogType: string
+  canonical: string
+  h1: string
+}
+
+export interface PageAnalysisData {
+  rawUrl: string
+  cleanUrl: string
+  domain: string
+  pathname: string
+  metadata: PageMetadata
+  timestamp: number
+}
+
+export interface PageBlockchainData {
+  url: string
+  totalStaked: number
+  totalShares: number
+  tripletCount: number
+  lastActivity?: string
+  topPredicates: Array<{
+    predicate: string
+    count: number
+    value: number
+  }>
+  recentTriplets: Array<{
+    subject: string
+    predicate: string
+    object: string
+    timestamp: number
+    value: number
+  }>
+}
+
+export interface PageAnalysisMessage extends BaseMessage {
+  type: 'PAGE_ANALYSIS'
+  data: PageAnalysisData
+}
+
+export interface PageBlockchainMessage extends BaseMessage {
+  type: 'GET_PAGE_BLOCKCHAIN_DATA'
+  data: { url: string }
+}
+
 // Response types
 export interface MessageResponse {
   success: boolean
@@ -112,4 +167,5 @@ export interface MessageResponse {
   count?: number
   themes?: any[]
   message?: string
+  url?: string
 }
