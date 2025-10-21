@@ -61,6 +61,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const atomsQuery = `
         query AtomsByURL($likeStr: String!) {
           atoms: terms(
+            limit: 10000
             where: {
               _and: [
                 { type: { _eq: Atom } },
@@ -93,6 +94,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const triplesQuery = `
         query TriplesByURL($likeStr: String!) {
           triples: terms(
+            limit: 10000
             where: {
               _and: [
                 { type: { _eq: Triple } },

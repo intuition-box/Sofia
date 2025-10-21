@@ -148,6 +148,19 @@
   transition: all 0.3s ease;
 }
 
+.triplet-count-display {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.triplet-count-number {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
 /* Shares Curve */
 .shares-container {
   display: flex;
