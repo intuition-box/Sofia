@@ -22,4 +22,6 @@ export interface UsePageBlockchainDataResult {
   error: string | null
   currentUrl: string | null
   fetchDataForCurrentPage: () => Promise<void>
+  pauseRefresh: () => void
+  resumeRefresh: () => void
 }

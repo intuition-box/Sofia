@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
+import WeightModal from '../modals/WeightModal'
 import type { PageBlockchainTriplet } from '../../types/page'
 import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
-  const { triplets, loading, error, currentUrl, fetchDataForCurrentPage } = usePageBlockchainData()
+  const { triplets, loading, error, currentUrl, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
   const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError } = useTrustPage()
   const [showDetails, setShowDetails] = useState(false)
 
@@ -14,25 +15,62 @@ const PageBlockchainCard = () => {
   const [localTrustSuccess, setLocalTrustSuccess] = useState(false)
   const [localTrustError, setLocalTrustError] = useState<string | null>(null)
 
+  // Modal state
+  const [showWeightModal, setShowWeightModal] = useState(false)
+  const [modalTriplets, setModalTriplets] = useState<any[]>([])
+
   const handleRefresh = () => {
     fetchDataForCurrentPage()
   }
 
-  const handleTrustPage = async () => {
+  const handleTrustPage = () => {
     if (!currentUrl) return
+
+    // Extract domain from URL for display
+    const urlObj = new URL(currentUrl)
+    const domain = urlObj.hostname
+
+    // Prepare triplet for modal
+    const triplet = {
+      id: 'trust-page',
+      triplet: {
+        subject: 'I',
+        predicate: 'trust',
+        object: domain
+      },
+      description: `Trust ${domain}`,
+      url: currentUrl
+    }
+
+    setModalTriplets([triplet])
+    setShowWeightModal(true)
+  }
+
+  const handleModalSubmit = async (customWeights?: (bigint | null)[]) => {
+    if (!currentUrl || !customWeights || customWeights.length === 0) return
+
+    // PAUSE all auto-refreshes during transaction
+    pauseRefresh()
 
     setLocalTrustLoading(true)
     setLocalTrustError(null)
     setLocalTrustSuccess(false)
 
     try {
-      await trustPage(currentUrl)
+      const weight = customWeights[0] || undefined
+      await trustPage(currentUrl, weight as bigint | undefined)
       setLocalTrustSuccess(true)
+
+      // Close modal
+      setShowWeightModal(false)
 
       // Auto-hide success message after 3 seconds
       setTimeout(() => {
         setLocalTrustSuccess(false)
       }, 3000)
+
+      // RESUME auto-refreshes after transaction completes
+      resumeRefresh()
 
       // Refresh blockchain data to show new triple
       setTimeout(() => {
@@ -41,9 +79,17 @@ const PageBlockchainCard = () => {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create trust'
       setLocalTrustError(errorMessage)
+
+      // RESUME even on error
+      resumeRefresh()
     } finally {
       setLocalTrustLoading(false)
     }
+  }
+
+  const handleModalClose = () => {
+    setShowWeightModal(false)
+    setModalTriplets([])
   }
 
   const getTotalShares = (triplet: PageBlockchainTriplet) => {
@@ -157,7 +203,6 @@ const PageBlockchainCard = () => {
         <div className="credibility-content">
           <div className="credibility-analysis">
             <div className="credibility-header">
-              <span className="analysis-title" style={{ color: 'white' }}>Page Analysis</span>
             </div>
             
             <div className="credibility-visual-metrics">
@@ -281,6 +326,16 @@ const PageBlockchainCard = () => {
           )}
         </div>
       )}
+
+      <WeightModal
+        isOpen={showWeightModal}
+        triplets={modalTriplets}
+        isProcessing={localTrustLoading}
+        transactionSuccess={localTrustSuccess}
+        transactionError={localTrustError || undefined}
+        onClose={handleModalClose}
+        onSubmit={handleModalSubmit}
+      />
     </div>
   )
 }

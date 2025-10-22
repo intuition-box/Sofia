@@ -12,7 +12,7 @@ import type { Address, Hash } from '../types/viem'
 const logger = createHookLogger('useTrustPage')
 
 export interface TrustPageResult {
-  trustPage: (url: string) => Promise<void>
+  trustPage: (url: string, customWeight?: bigint) => Promise<void>
   loading: boolean
   error: string | null
   success: boolean
@@ -85,13 +85,13 @@ export const useTrustPage = (): TrustPageResult => {
     }
   }, [createAtomWithMultivault])
 
-  const trustPage = useCallback(async (url: string) => {
+  const trustPage = useCallback(async (url: string, customWeight?: bigint) => {
     try {
       if (!address) {
         throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
       }
 
-      logger.info('Creating trust triplet for URL', { url })
+      logger.info('Creating trust triplet for URL', { url, customWeight: customWeight?.toString() })
 
       // Update refs and state
       loadingRef.current = true
@@ -147,8 +147,9 @@ export const useTrustPage = (): TrustPageResult => {
       const { walletClient, publicClient } = await getClients()
       const contractAddress = BlockchainService.getContractAddress()
 
-      const tripleCost = await BlockchainService.getTripleCost()
-      logger.debug('Triple cost retrieved', { cost: tripleCost.toString() })
+      const defaultCost = await BlockchainService.getTripleCost()
+      const tripleCost = customWeight !== undefined ? customWeight : defaultCost
+      logger.debug('Triple cost retrieved', { cost: tripleCost.toString(), isCustom: customWeight !== undefined })
 
       const subjectId = userAtom.vaultId as Address
       const predicateId = trustPredicate.vaultId as Address

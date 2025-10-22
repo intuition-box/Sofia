@@ -3,7 +3,7 @@
  * Fetches blockchain data specific to the current page URL
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { messageBus } from '../lib/services/MessageBus'
@@ -15,6 +15,9 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [error, setError] = useState<string | null>(null)
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
   const [account] = useStorage<string>("metamask-account")
+
+  // Pause flag to prevent refreshes during transactions
+  const pauseRefreshRef = useRef(false)
 
   // Get current page URL - fallback to direct access if content script fails
   const getCurrentPageUrl = useCallback(async (): Promise<string | null> => {
@@ -87,30 +90,6 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
               position_count
               total_shares
             }
-            triples_as_subject: as_subject {
-              id
-              triple {
-                subject { term_id label }
-                predicate { term_id label }
-                object { term_id label }
-              }
-              vaults(where: { curve_id: { _eq: "1" } }) {
-                position_count
-                total_shares
-              }
-            }
-            triples_as_object: as_object {
-              id
-              triple {
-                subject { term_id label }
-                predicate { term_id label }
-                object { term_id label }
-              }
-              vaults(where: { curve_id: { _eq: "1" } }) {
-                position_count
-                total_shares
-              }
-            }
           }
         }
       `
@@ -124,7 +103,10 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
                 { type: { _eq: Triple } },
                 { _or: [
                   { triple: { subject: { label: { _ilike: $likeStr } } } },
-                  { triple: { object: { label: { _ilike: $likeStr } } } }
+                  { triple: { object: { label: { _ilike: $likeStr } } } },
+                  { triple: { object: { atom: { value: { thing: { url: { _ilike: $likeStr } } } } } } },
+                  { triple: { object: { atom: { value: { person: { url: { _ilike: $likeStr } } } } } } },
+                  { triple: { object: { atom: { value: { organization: { url: { _ilike: $likeStr } } } } } } }
                 ]}
               ]
             }
@@ -202,8 +184,25 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     }
   }, [])
 
+  // Function to pause/resume refreshes (exposed for external use)
+  const pauseRefresh = useCallback(() => {
+    pauseRefreshRef.current = true
+    console.log('🔍 [usePageBlockchainData] Refreshes PAUSED')
+  }, [])
+
+  const resumeRefresh = useCallback(() => {
+    pauseRefreshRef.current = false
+    console.log('🔍 [usePageBlockchainData] Refreshes RESUMED')
+  }, [])
+
   // Manual fetch function
   const fetchDataForCurrentPage = useCallback(async () => {
+    // Skip if paused (during transactions)
+    if (pauseRefreshRef.current) {
+      console.log('🔍 [usePageBlockchainData] Refresh skipped - paused')
+      return
+    }
+
     if (!account) {
       setTriplets([])
       setError('No account connected')
@@ -316,6 +315,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     loading,
     error,
     currentUrl,
-    fetchDataForCurrentPage
+    fetchDataForCurrentPage,
+    pauseRefresh,
+    resumeRefresh
   }
 }
