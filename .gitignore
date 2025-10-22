@@ -49,3 +49,9 @@ components/SplineBackground.tsx
  
 task
 .task
+
+/docs
+
+/docker-build
+
+build-docker.sh
