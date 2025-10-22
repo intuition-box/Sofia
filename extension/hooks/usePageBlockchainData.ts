@@ -87,6 +87,30 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
               position_count
               total_shares
             }
+            triples_as_subject: as_subject {
+              id
+              triple {
+                subject { term_id label }
+                predicate { term_id label }
+                object { term_id label }
+              }
+              vaults(where: { curve_id: { _eq: "1" } }) {
+                position_count
+                total_shares
+              }
+            }
+            triples_as_object: as_object {
+              id
+              triple {
+                subject { term_id label }
+                predicate { term_id label }
+                object { term_id label }
+              }
+              vaults(where: { curve_id: { _eq: "1" } }) {
+                position_count
+                total_shares
+              }
+            }
           }
         }
       `

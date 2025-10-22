@@ -1,14 +1,55 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
+import { useTrustPage } from '../../hooks/useTrustPage'
 import type { PageBlockchainTriplet } from '../../types/page'
 import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
   const { triplets, loading, error, currentUrl, fetchDataForCurrentPage } = usePageBlockchainData()
+  const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError } = useTrustPage()
   const [showDetails, setShowDetails] = useState(false)
+
+  // Use local state to preserve button state during re-renders
+  const [localTrustLoading, setLocalTrustLoading] = useState(false)
+  const [localTrustSuccess, setLocalTrustSuccess] = useState(false)
+  const [localTrustError, setLocalTrustError] = useState<string | null>(null)
 
   const handleRefresh = () => {
     fetchDataForCurrentPage()
+  }
+
+  const handleTrustPage = async () => {
+    if (currentUrl) {
+      setLocalTrustLoading(true)
+      setLocalTrustError(null)
+      setLocalTrustSuccess(false)
+
+      try {
+        await trustPage(currentUrl)
+
+        // Check if there was an error from the hook
+        if (trustError) {
+          setLocalTrustError(trustError)
+          setLocalTrustLoading(false)
+        } else {
+          setLocalTrustSuccess(true)
+          setLocalTrustLoading(false)
+
+          // Reset success after 3 seconds
+          setTimeout(() => {
+            setLocalTrustSuccess(false)
+          }, 3000)
+
+          // Refresh data after trusting to show new triplet
+          setTimeout(() => {
+            fetchDataForCurrentPage()
+          }, 2000)
+        }
+      } catch (error) {
+        setLocalTrustError(error instanceof Error ? error.message : 'Unknown error')
+        setLocalTrustLoading(false)
+      }
+    }
   }
 
   const getTotalShares = (triplet: PageBlockchainTriplet) => {
@@ -74,6 +115,39 @@ const PageBlockchainCard = () => {
       {currentUrl && (
         <div className="current-url-display">
           <small>{currentUrl}</small>
+        </div>
+      )}
+
+      {/* Trust Button */}
+      {currentUrl && (
+        <div className="trust-button-container">
+          <button
+            className={`trust-page-button ${localTrustSuccess ? 'success' : ''} ${localTrustLoading ? 'loading' : ''}`}
+            onClick={handleTrustPage}
+            disabled={localTrustLoading || !currentUrl}
+          >
+            {localTrustLoading ? (
+              <>
+                <span className="button-spinner"></span>
+                <span>Creating trust...</span>
+              </>
+            ) : localTrustSuccess ? (
+              <>
+                <span>✓</span>
+                <span>Trusted!</span>
+              </>
+            ) : (
+              <>
+                <span>🤝</span>
+                <span>Trust this page</span>
+              </>
+            )}
+          </button>
+          {localTrustError && (
+            <div className="trust-error">
+              <small>{localTrustError}</small>
+            </div>
+          )}
         </div>
       )}
 

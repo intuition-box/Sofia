@@ -268,13 +268,92 @@
   gap: 4px;
 }
 
+/* Trust Button */
+.trust-button-container {
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trust-page-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.trust-page-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.trust-page-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+}
+
+.trust-page-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.trust-page-button.loading {
+  background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+.trust-page-button.success {
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+  animation: successPulse 0.5s ease;
+}
+
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.button-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.trust-error {
+  padding: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+}
+
+.trust-error small {
+  color: #FCA5A5;
+  font-size: 11px;
+}
+
 /* Responsive Design */
 @media (max-width: 400px) {
   .credibility-visual-metrics {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .credibility-circle-container,
   .positions-container,
   .shares-container {
