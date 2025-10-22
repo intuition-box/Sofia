@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
 import type { PageBlockchainTriplet } from '../../types/page'
@@ -9,7 +9,7 @@ const PageBlockchainCard = () => {
   const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError } = useTrustPage()
   const [showDetails, setShowDetails] = useState(false)
 
-  // Use local state to preserve button state during re-renders
+  // Local state for button UI to prevent re-renders from affecting button
   const [localTrustLoading, setLocalTrustLoading] = useState(false)
   const [localTrustSuccess, setLocalTrustSuccess] = useState(false)
   const [localTrustError, setLocalTrustError] = useState<string | null>(null)
@@ -19,36 +19,30 @@ const PageBlockchainCard = () => {
   }
 
   const handleTrustPage = async () => {
-    if (currentUrl) {
-      setLocalTrustLoading(true)
-      setLocalTrustError(null)
-      setLocalTrustSuccess(false)
+    if (!currentUrl) return
 
-      try {
-        await trustPage(currentUrl)
+    setLocalTrustLoading(true)
+    setLocalTrustError(null)
+    setLocalTrustSuccess(false)
 
-        // Check if there was an error from the hook
-        if (trustError) {
-          setLocalTrustError(trustError)
-          setLocalTrustLoading(false)
-        } else {
-          setLocalTrustSuccess(true)
-          setLocalTrustLoading(false)
+    try {
+      await trustPage(currentUrl)
+      setLocalTrustSuccess(true)
 
-          // Reset success after 3 seconds
-          setTimeout(() => {
-            setLocalTrustSuccess(false)
-          }, 3000)
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => {
+        setLocalTrustSuccess(false)
+      }, 3000)
 
-          // Refresh data after trusting to show new triplet
-          setTimeout(() => {
-            fetchDataForCurrentPage()
-          }, 2000)
-        }
-      } catch (error) {
-        setLocalTrustError(error instanceof Error ? error.message : 'Unknown error')
-        setLocalTrustLoading(false)
-      }
+      // Refresh blockchain data to show new triple
+      setTimeout(() => {
+        fetchDataForCurrentPage()
+      }, 1000)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create trust'
+      setLocalTrustError(errorMessage)
+    } finally {
+      setLocalTrustLoading(false)
     }
   }
 
@@ -118,7 +112,6 @@ const PageBlockchainCard = () => {
         </div>
       )}
 
-      {/* Trust Button */}
       {currentUrl && (
         <div className="trust-button-container">
           <button
@@ -128,19 +121,13 @@ const PageBlockchainCard = () => {
           >
             {localTrustLoading ? (
               <>
-                <span className="button-spinner"></span>
-                <span>Creating trust...</span>
+                <div className="button-spinner"></div>
+                Creating trust...
               </>
             ) : localTrustSuccess ? (
-              <>
-                <span>✓</span>
-                <span>Trusted!</span>
-              </>
+              <>✓ Trusted!</>
             ) : (
-              <>
-                <span>🤝</span>
-                <span>Trust this page</span>
-              </>
+              <>Trust this page</>
             )}
           </button>
           {localTrustError && (

@@ -1,25 +1,15 @@
-/**
- * useTrustPage Hook
- * Creates "I trust [website]" triplets
- * Uses universal "I" subject and "trust" predicate for all users
- */
-
-import { useState, useCallback } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
-import { useCreateAtom } from './useCreateAtom'
+import { useState, useCallback, useRef } from 'react'
 import { getClients } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
-import { sessionWallet } from '../lib/services/sessionWallet'
+import { useCreateAtom } from './useCreateAtom'
+import { useStorage } from "@plasmohq/storage/hook"
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, SUBJECT_IDS } from '../lib/config/constants'
 import type { Address, Hash } from '../types/viem'
 
 const logger = createHookLogger('useTrustPage')
-
-// Predicate "trust" - will be created once and reused
-const TRUST_PREDICATE_NAME = 'trust'
 
 export interface TrustPageResult {
   trustPage: (url: string) => Promise<void>
@@ -30,118 +20,109 @@ export interface TrustPageResult {
 }
 
 export const useTrustPage = (): TrustPageResult => {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-  const [tripleVaultId, setTripleVaultId] = useState<string | null>(null)
-  const [account] = useStorage<string>("metamask-account")
-  const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
   const { createAtomWithMultivault } = useCreateAtom()
+  const [address] = useStorage<string>("metamask-account")
 
-  // Cache for trust predicate to avoid recreating
-  let trustPredicateVaultId: string | null = null
+  // Use refs to preserve state during re-renders from parent
+  const loadingRef = useRef(false)
+  const successRef = useRef(false)
+  const errorRef = useRef<string | null>(null)
+  const tripleVaultIdRef = useRef<string | null>(null)
 
-  // Get the universal "I" subject atom (same for all users)
+  // Local state for component updates
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [tripleVaultId, setTripleVaultId] = useState<string | null>(null)
+
+  // Cache for trust predicate atom - create once per session
+  const trustPredicateCache = useRef<string | null>(null)
+
+  // Get universal "I" subject atom (same for all users)
   const getUserAtom = useCallback(async () => {
-    if (!account) {
-      throw new Error('No wallet connected')
-    }
-
     return {
       vaultId: SUBJECT_IDS.I,
       success: true,
       ipfsUri: '',
       name: 'I'
     }
-  }, [account])
+  }, [])
 
-  // Get or create the "trust" predicate atom
+  // Get or create "trust" predicate atom
   const getTrustPredicateAtom = useCallback(async () => {
-    // Return cached if available
-    if (trustPredicateVaultId) {
-      return {
-        vaultId: trustPredicateVaultId,
-        ipfsUri: '',
-        name: TRUST_PREDICATE_NAME
+    try {
+      // Return cached if available
+      if (trustPredicateCache.current) {
+        logger.debug('Using cached trust predicate', { vaultId: trustPredicateCache.current })
+        return {
+          vaultId: trustPredicateCache.current,
+          ipfsUri: '',
+          name: 'trust'
+        }
       }
-    }
 
-    // Create trust predicate atom
-    const predicateAtomResult = await createAtomWithMultivault({
-      name: TRUST_PREDICATE_NAME,
-      description: `Predicate representing trust relationship`,
-      url: ''
-    })
+      logger.debug('Creating trust predicate atom')
 
-    trustPredicateVaultId = predicateAtomResult.vaultId
+      const predicateAtomResult = await createAtomWithMultivault({
+        name: 'trust',
+        description: 'Predicate representing trust relationship',
+        url: ''
+      })
 
-    return {
-      vaultId: predicateAtomResult.vaultId,
-      ipfsUri: '',
-      name: TRUST_PREDICATE_NAME
+      // Cache for reuse
+      trustPredicateCache.current = predicateAtomResult.vaultId
+
+      logger.debug('Trust predicate created', { vaultId: predicateAtomResult.vaultId })
+
+      return {
+        vaultId: predicateAtomResult.vaultId,
+        ipfsUri: '',
+        name: 'trust'
+      }
+    } catch (error) {
+      logger.error('Failed to get trust predicate', error)
+      throw error
     }
   }, [createAtomWithMultivault])
 
-  // Determine which wallet to use
-  const shouldUseSessionWallet = useCallback((transactionValue: bigint): boolean => {
-    if (!useSessionWallet) return false
-
-    const sessionStatus = sessionWallet.getStatus()
-    if (!sessionStatus.isReady) return false
-
-    return sessionWallet.canExecute(transactionValue)
-  }, [useSessionWallet])
-
-  // Execute transaction with appropriate wallet
-  const executeTransaction = useCallback(async (txParams: any): Promise<Hash> => {
-    const canUseSession = shouldUseSessionWallet(txParams.value || 0n)
-
-    const viemParams = {
-      ...txParams,
-      address: txParams.address as Address,
-      account: txParams.account as Address
-    }
-
-    if (canUseSession) {
-      return await sessionWallet.executeTransaction(viemParams) as Hash
-    } else {
-      const { walletClient } = await getClients()
-      return await walletClient.writeContract(viemParams)
-    }
-  }, [shouldUseSessionWallet])
-
   const trustPage = useCallback(async (url: string) => {
-    if (!account) {
-      setError('Please connect your wallet first')
-      return
-    }
-
-    if (!url) {
-      setError('No URL provided')
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-    setSuccess(false)
-    setTripleVaultId(null)
-
     try {
-      logger.info('Creating trust triplet for URL:', url)
+      if (!address) {
+        throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
+      }
 
-      // Extract domain for display name
-      const domain = new URL(url).hostname
+      logger.info('Creating trust triplet for URL', { url })
 
-      // Get atoms: I, trust, [website]
+      // Update refs and state
+      loadingRef.current = true
+      successRef.current = false
+      errorRef.current = null
+      setLoading(true)
+      setSuccess(false)
+      setError(null)
+
+      // Extract domain from URL for atom name
+      const urlObj = new URL(url)
+      const domain = urlObj.hostname
+
+      logger.debug('Step 1: Getting user atom (I)')
       const userAtom = await getUserAtom()
+      logger.debug('User atom obtained', { vaultId: userAtom.vaultId })
+
+      logger.debug('Step 2: Getting trust predicate atom')
       const trustPredicate = await getTrustPredicateAtom()
+      logger.debug('Trust predicate obtained', { vaultId: trustPredicate.vaultId })
+
+      logger.debug('Step 3: Creating website atom')
       const websiteAtom = await createAtomWithMultivault({
         name: domain,
         description: `Website: ${domain}`,
         url: url
       })
+      logger.debug('Website atom created', { vaultId: websiteAtom.vaultId })
 
       // Check if triple already exists
+      logger.debug('Step 4: Checking if triple exists')
       const tripleCheck = await BlockchainService.checkTripleExists(
         userAtom.vaultId,
         trustPredicate.vaultId,
@@ -149,24 +130,53 @@ export const useTrustPage = (): TrustPageResult => {
       )
 
       if (tripleCheck.exists) {
-        logger.info('Trust relationship already exists:', tripleCheck.tripleVaultId)
+        logger.info('Triple already exists', { tripleVaultId: tripleCheck.tripleVaultId })
+
+        loadingRef.current = false
+        successRef.current = true
+        tripleVaultIdRef.current = tripleCheck.tripleVaultId!
+
+        setLoading(false)
         setSuccess(true)
         setTripleVaultId(tripleCheck.tripleVaultId!)
-        setTimeout(() => setSuccess(false), 3000)
         return
       }
 
-      // Create the triple on-chain
+      // Create the triple
+      logger.debug('Step 5: Creating triple on-chain')
       const { walletClient, publicClient } = await getClients()
       const contractAddress = BlockchainService.getContractAddress()
+
       const tripleCost = await BlockchainService.getTripleCost()
+      logger.debug('Triple cost retrieved', { cost: tripleCost.toString() })
 
       const subjectId = userAtom.vaultId as Address
       const predicateId = trustPredicate.vaultId as Address
       const objectId = websiteAtom.vaultId as Address
 
-      const txParams = {
-        address: contractAddress,
+      // Simulate first to validate
+      logger.debug('Simulating transaction')
+      const simulation = await publicClient.simulateContract({
+        address: contractAddress as Address,
+        abi: MultiVaultAbi,
+        functionName: 'createTriples',
+        args: [
+          [subjectId],
+          [predicateId],
+          [objectId],
+          [tripleCost]
+        ],
+        value: tripleCost,
+        account: walletClient.account
+      })
+
+      const expectedTripleIds = simulation.result as Address[]
+      const expectedTripleVaultId = expectedTripleIds[0]
+      logger.debug('Simulation successful', { expectedTripleVaultId })
+
+      logger.debug('Sending transaction to MetaMask')
+      const hash = await walletClient.writeContract({
+        address: contractAddress as Address,
         abi: MultiVaultAbi,
         functionName: 'createTriples',
         args: [
@@ -180,62 +190,56 @@ export const useTrustPage = (): TrustPageResult => {
         gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
         maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
         maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-        account: account
-      }
+        account: address as Address
+      })
 
-      const hash = await executeTransaction(txParams)
-      logger.info('Trust triple transaction sent:', hash)
+      logger.debug('Transaction sent', { hash })
 
+      // Wait for confirmation
+      logger.debug('Waiting for transaction confirmation')
       const receipt = await publicClient.waitForTransactionReceipt({ hash: hash as Address })
 
       if (receipt.status !== 'success') {
         throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
       }
 
-      // Get the triple vault ID
-      const simulation = await publicClient.simulateContract({
-        address: contractAddress as Address,
-        abi: MultiVaultAbi,
-        functionName: 'createTriples',
-        args: [[subjectId], [predicateId], [objectId], [tripleCost]],
-        value: tripleCost,
-        account: walletClient.account
+      logger.info('✅ Trust triplet created successfully', {
+        tripleVaultId: expectedTripleVaultId,
+        txHash: hash
       })
 
-      const tripleIds = simulation.result as Address[]
-      const createdTripleVaultId = tripleIds[0]
+      loadingRef.current = false
+      successRef.current = true
+      tripleVaultIdRef.current = expectedTripleVaultId
 
-      logger.info('Trust triplet created successfully:', createdTripleVaultId)
+      setLoading(false)
       setSuccess(true)
-      setTripleVaultId(createdTripleVaultId)
-
-      // Reset success after 3 seconds
-      setTimeout(() => {
-        setSuccess(false)
-      }, 3000)
+      setTripleVaultId(expectedTripleVaultId)
 
     } catch (error) {
-      logger.error('Trust page failed:', error)
+      logger.error('Trust page creation failed', error)
 
-      // Check if error is "triple already exists" - treat as success
-      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+
+      // Check if error is due to triple already existing
       if (errorMessage.includes('MultiVault_TripleExists')) {
-        logger.info('Triple already exists (from transaction error), treating as success')
+        logger.info('Triple already exists (caught from transaction error), treating as success')
 
-        // Extract the triple ID from the error message (first 0x... hash)
-        const tripleIdMatch = errorMessage.match(/\(0x[a-fA-F0-9]{64}/)
-        const existingTripleId = tripleIdMatch ? tripleIdMatch[0].substring(1) : null
+        loadingRef.current = false
+        successRef.current = true
 
+        setLoading(false)
         setSuccess(true)
-        setTripleVaultId(existingTripleId)
-        setTimeout(() => setSuccess(false), 3000)
+        setError(null)
       } else {
+        loadingRef.current = false
+        errorRef.current = errorMessage
+
+        setLoading(false)
         setError(errorMessage)
       }
-    } finally {
-      setLoading(false)
     }
-  }, [account, getUserAtom, getTrustPredicateAtom, createAtomWithMultivault, executeTransaction])
+  }, [address, getUserAtom, getTrustPredicateAtom, createAtomWithMultivault])
 
   return {
     trustPage,
