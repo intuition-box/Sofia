@@ -27,7 +27,7 @@
       "@elizaos/core/*": ["../../core/src/*"]
     }
   },
-  "include": ["src/**/*.ts", "../plugins/**/*.ts"],
+  "include": ["src/**/*.ts", "plugins/**/*.ts"],
   "exclude": [
     "dist",
     "node_modules",
@@ -35,8 +35,8 @@
     "src/**/cypress/**/*",
     "**/*.test.ts",
     "**/*.spec.ts",
-    "../plugins/**/tsup.config.ts",
-    "../plugins/**/vite.config.ts",
-    "../plugins/**/webpack.config.ts"
+    "plugins/**/tsup.config.ts",
+    "plugins/**/vite.config.ts",
+    "plugins/**/webpack.config.ts"
   ]
 }
