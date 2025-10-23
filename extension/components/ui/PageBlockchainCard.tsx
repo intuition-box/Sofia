@@ -343,7 +343,6 @@ const PageBlockchainCard = () => {
       {loading && (
         <div className="loading-state">
           <div className="loading-spinner"></div>
-          <span>Loading blockchain data...</span>
         </div>
       )}
 
