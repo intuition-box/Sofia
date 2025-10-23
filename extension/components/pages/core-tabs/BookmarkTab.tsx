@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useBookmarks } from '../../../hooks/useBookmarks'
+import Iridescence from '../../ui/Iridescence'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
@@ -118,10 +119,21 @@ const BookmarkTab = () => {
         <div className="bookmark-header-flex">
           <button
             onClick={() => setIsCreatingList(true)}
-            className="btn primary"
+            className="btn iridescence-btn"
             style={{ width: '100%' }}
           >
-            + New List
+            <div className="iridescence-btn-background">
+              <Iridescence
+                color={[1, 0.4, 0.5]}
+                speed={0.3}
+                mouseReact={false}
+                amplitude={0.1}
+                zoom={0.05}
+              />
+            </div>
+            <span className="iridescence-btn-content">
+              + New List
+            </span>
           </button>
         </div>
 
@@ -221,8 +233,8 @@ const BookmarkTab = () => {
             <div className="lists-grid">
               {lists.map((list) => (
                 <div key={list.id} className="echo-card border-default bookmark-card">
-                  <div className="triplet-item">
-                    <div className="triplet-header">
+                  <div className="bookmark-item">
+                    <div className="bookmark-header-content">
                       <div className="bookmark-list-info">
                         <h4>{list.name}</h4>
                         {list.description && <p>{list.description}</p>}
@@ -273,9 +285,9 @@ const BookmarkTab = () => {
             <div className="triplets-list">
               {displayedTriplets.map((bookmarkedTriplet) => (
                 <div key={bookmarkedTriplet.id} className="echo-card border-default bookmark-card">
-                  <div className="triplet-item">
-                    <div className="triplet-header">
-                      <p className="triplet-text">
+                  <div className="bookmark-item">
+                    <div className="bookmark-header-content">
+                      <p className="bookmark-text">
                         <span className="object">{bookmarkedTriplet.triplet.object}</span>
                       </p>
                     </div>

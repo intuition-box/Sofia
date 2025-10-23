@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStorage } from "@plasmohq/storage/hook"
 import FollowModal from '../modals/FollowModal'
 import { useFollowAccount } from '../../hooks/useFollowAccount'
+import Iridescence from './Iridescence'
 import type { AccountAtom } from '../../hooks/useGetAtomAccount'
 
 interface FollowButtonProps {
@@ -69,7 +70,7 @@ const FollowButton = ({
   return (
     <>
       <button
-        className={`follow-button ${isLoading ? 'loading' : ''}`}
+        className={`follow-button iridescence-btn ${isLoading ? 'loading' : ''}`}
         onClick={handleFollowClick}
         disabled={isLoading || !address}
         style={{
@@ -80,12 +81,25 @@ const FollowButton = ({
           fontSize: '12px',
           fontWeight: '500',
           transition: 'all 0.2s ease',
-          backgroundColor: '#3b82f6',
+          backgroundColor: 'transparent',
           color: 'white',
-          opacity: isLoading || !address ? 0.6 : 1
+          opacity: isLoading || !address ? 0.6 : 1,
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        {isLoading ? '...' : 'Follow'}
+        <div className="iridescence-btn-background">
+          <Iridescence
+            color={[1, 0.4, 0.5]}
+            speed={0.3}
+            mouseReact={false}
+            amplitude={0.1}
+            zoom={0.05}
+          />
+        </div>
+        <span className="iridescence-btn-content">
+          {isLoading ? '...' : 'Follow'}
+        </span>
       </button>
 
       {showModal && (

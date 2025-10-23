@@ -3,6 +3,7 @@ import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
 import WeightModal from '../modals/WeightModal'
 import StarBorder from './StarBorder'
+import Iridescence from './Iridescence'
 import type { PageBlockchainTriplet } from '../../types/page'
 import '../styles/PageBlockchainCard.css'
 
@@ -165,17 +166,17 @@ const PageBlockchainCard = () => {
     })()
 
     const getScoreColor = (score: number) => {
-      if (score >= 70) return '#10B981'  // Green - High credibility
-      if (score >= 50) return '#3B82F6'  // Blue - Good credibility
-      if (score >= 30) return '#F59E0B'  // Orange - Moderate
-      if (score >= 15) return '#EF4444'  // Red - Low
-      return '#6B7280'                    // Gray - Minimal/None
+      if (score >= 70) return '#7fdf91'  // Green - High credibility
+      if (score >= 50) return '#6081fd'  // Blue - Good credibility
+      if (score >= 30) return '#d19661'  // Orange - Moderate
+      if (score >= 15) return '#f78e8e'  // Red - Low
+      return '#c8d1e1'                    // Gray - Minimal/None
     }
 
     const getScoreLabel = (score: number) => {
       if (score >= 70) return 'HIGH'
       if (score >= 50) return 'GOOD'
-      if (score >= 30) return 'MODERATE'
+      if (score >= 30) return 'MID'
       if (score >= 15) return 'LOW'
       return 'MINIMAL'
     }
@@ -278,16 +279,27 @@ const PageBlockchainCard = () => {
             onClick={handleTrustPage}
             disabled={localTrustLoading || !currentUrl}
           >
-            {localTrustLoading ? (
-              <>
-                <div className="button-spinner"></div>
-                Creating trust...
-              </>
-            ) : localTrustSuccess ? (
-              <>✓ Trusted!</>
-            ) : (
-              <>Trust this page</>
-            )}
+            <div className="trust-button-background">
+              <Iridescence
+                color={[1, 0.4, 0.5]}
+                speed={0.3}
+                mouseReact={false}
+                amplitude={0.1}
+                zoom={0.05}
+              />
+            </div>
+            <span className="trust-button-content">
+              {localTrustLoading ? (
+                <>
+                  <div className="button-spinner"></div>
+                  Creating trust...
+                </>
+              ) : localTrustSuccess ? (
+                <>✓ Trusted!</>
+              ) : (
+                <>Trust</>
+              )}
+            </span>
           </button>
 
           {/* Error Display */}
@@ -324,49 +336,18 @@ const PageBlockchainCard = () => {
                 {/* Metrics Section - Grid Layout */}
                 <div className="metrics-section">
                   {/* Credibility Score Card */}
-                  <div className="metric-item metric-item-credibility">
-                    <div className="credibility-circle-compact credibility-circle-grid">
-                      <svg width="70" height="70" viewBox="0 0 70 70">
-                        <circle
-                          cx="35"
-                          cy="35"
-                          r="30"
-                          fill="none"
-                          stroke="#2D3748"
-                          strokeWidth="6"
-                        />
-                        <circle
-                          cx="35"
-                          cy="35"
-                          r="30"
-                          fill="none"
-                          stroke={analysis.scoreColor}
-                          strokeWidth="6"
-                          strokeDasharray="188.4"
-                          strokeDashoffset={188.4 - (188.4 * analysis.credibilityScore / 100)}
-                          transform="rotate(-90 35 35)"
-                          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                        />
-                      </svg>
-                      <div className="circle-content-compact">
-                        <div className="score-number-compact">{analysis.credibilityScore}</div>
-                        <div className="score-label-compact" style={{ color: analysis.scoreColor }}>
-                          {analysis.scoreLabel}
-                        </div>
-                      </div>
+                  <div className="metric-item metric-item-credibility" style={{ borderColor: `${analysis.scoreColor}40` }}>
+                    <div className="metric-info">
+                      <div className="metric-value" style={{ color: analysis.scoreColor }}>{analysis.credibilityScore}</div>
+                      <div className="metric-label">Credibility Score</div>
                     </div>
-                    <div className="metric-label" style={{ marginTop: '8px' }}>Credibility Score</div>
                   </div>
 
-                  {/* Atoms Card */}
-                  <div
-                    className="metric-item clickable"
-                    onClick={() => setShowAtomsList(!showAtomsList)}
-                    style={{ cursor: 'pointer' }}
-                  >
+                  {/* Total Market Cap Card */}
+                  <div className="metric-item" style={{ borderColor: `${analysis.scoreColor}40` }}>
                     <div className="metric-info">
-                      <div className="metric-value">{(triplets as any)._counts?.atomsCount || 0}</div>
-                      <div className="metric-label">Atoms</div>
+                      <div className="metric-value" style={{ color: analysis.scoreColor }}>{analysis.totalShares.toFixed(3)}</div>
+                      <div className="metric-label">Market Cap</div>
                     </div>
                   </div>
 
@@ -374,21 +355,26 @@ const PageBlockchainCard = () => {
                   <div
                     className="metric-item clickable"
                     onClick={() => setShowTripletsList(!showTripletsList)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'pointer', borderColor: `${analysis.scoreColor}40` }}
                   >
                     <div className="metric-info">
-                      <div className="metric-value">{(triplets as any)._counts?.triplesCount || triplets.length}</div>
-                      <div className="metric-label">Triplets</div>
+                      <div className="metric-value" style={{ color: analysis.scoreColor }}>{(triplets as any)._counts?.triplesCount || triplets.length}</div>
+                      <div className="metric-label">Triples</div>
+                    </div>
+                  </div>
+                  
+                  {/* Atoms Card */}
+                  <div
+                    className="metric-item clickable"
+                    onClick={() => setShowAtomsList(!showAtomsList)}
+                    style={{ cursor: 'pointer', borderColor: `${analysis.scoreColor}40` }}
+                  >
+                    <div className="metric-info">
+                      <div className="metric-value" style={{ color: analysis.scoreColor }}>{(triplets as any)._counts?.atomsCount || 0}</div>
+                      <div className="metric-label">Atoms</div>
                     </div>
                   </div>
 
-                  {/* Total Market Cap Card */}
-                  <div className="metric-item">
-                    <div className="metric-info">
-                      <div className="metric-value">{analysis.totalShares.toFixed(3)}</div>
-                      <div className="metric-label">Market Cap</div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Atoms List Section - Collapsible */}

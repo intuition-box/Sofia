@@ -4,13 +4,13 @@
  */
 
 /* Bouton New List avec couleurs inversées */
-.bookmark-header .btn.primary {
+.bookmark-header .btn.primary:not(.iridescence-btn) {
   background: rgba(0, 0, 0, 0.3);
   color: var(--color-text-primary);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.bookmark-header .btn.primary:hover:not(:disabled) {
+.bookmark-header .btn.primary:not(.iridescence-btn):hover:not(:disabled) {
   backdrop-filter: blur(20px);
   color: var(--color-text-secondary);
   border-color: var(--color-primary);
@@ -224,6 +224,7 @@
 /* Header styles pour BookmarkTab */
 .bookmark-header {
   border-bottom: 1px solid var(--color-border-muted);
+  margin-top: 5px;
 }
 
 .bookmark-header-title {
@@ -414,4 +415,75 @@
 .bookmark-action-button.danger:hover {
   background: rgba(255, 0, 0, 0.1);
   border-color: rgba(255, 0, 0, 0.4);
+}
+
+/* ========== BOOKMARK CARD ITEM STRUCTURE ========== */
+
+.bookmark-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  gap: 12px;
+  margin-bottom: 3px;
+}
+
+.bookmark-item.selected {
+  border-color: rgba(199, 134, 108, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ========== BOOKMARK HEADERS ========== */
+
+.bookmark-header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 3px;
+  position: relative;
+}
+
+/* ========== BOOKMARK TEXT ========== */
+
+.bookmark-text {
+  color: #F2DED6;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bookmark-text.clickable:hover {
+  opacity: 0.8;
+}
+
+/* Subject, Predicate, Object styles for bookmarks */
+.bookmark-text .subject {
+  font-weight: 600;
+  color: #ffffff;
+  background: #2d2d2d;
+  padding: 6px 14px;
+  border-radius: 12px;
+}
+
+.bookmark-text .action {
+  margin: 0 8px;
+  font-style: italic;
+  color: #ffffff;
+}
+
+.bookmark-text .object {
+  font-weight: 500;
+  color: #fff;
+  background: #2d2d2d;
+  padding: 6px 14px;
+  border-radius: 12px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

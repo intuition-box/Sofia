@@ -111,9 +111,10 @@
   background: transparent;
   border: none;
   border-radius: 0;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: blur(10px);
   padding: 0;
+  height: 860px
+  max-height: 860px;
 }
 
 /* États de chargement - utilise .loading-state de CoreComponents.css comme base */

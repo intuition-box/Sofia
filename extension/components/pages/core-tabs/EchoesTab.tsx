@@ -6,6 +6,7 @@ import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import { useEchoSelection } from '../../../hooks/useEchoSelection'
 import { useStorage } from "@plasmohq/storage/hook"
 import WeightModal from '../../modals/WeightModal'
+import Iridescence from '../../ui/Iridescence'
 import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
@@ -262,12 +263,23 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
           {selectedEchoes.size > 0 && (
             <div>
               <div className="batch-actions">
-                <button 
-                  className="batch-btn add-to-signals"
+                <button
+                  className="batch-btn add-to-signals iridescence-btn"
                   onClick={handleAmplifyClick}
                   disabled={isCreating}
                 >
-                  Amplify ({selectedEchoes.size})
+                  <div className="iridescence-btn-background">
+                    <Iridescence
+                      color={[1, 0.4, 0.5]}
+                      speed={0.3}
+                      mouseReact={false}
+                      amplitude={0.1}
+                      zoom={0.05}
+                    />
+                  </div>
+                  <span className="iridescence-btn-content">
+                    Amplify ({selectedEchoes.size})
+                  </span>
                 </button>
                 <button 
                   className="batch-btn delete-selected"

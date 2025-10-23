@@ -307,7 +307,7 @@ body {
   gap: var(--spacing-xs);
 }
 
-.btn:hover:not(:disabled) {
+.btn:hover:not(:disabled):not(.iridescence-btn) {
   background: var(--color-bg-glass-lighter);
   border-color: var(--color-primary);
   transform: translateY(-1px);
@@ -319,13 +319,13 @@ body {
   transform: none;
 }
 
-.btn.primary {
+.btn.primary:not(.iridescence-btn) {
   background: var(--color-primary);
   color: var(--color-text-secondary);
   border-color: var(--color-primary);
 }
 
-.btn.primary:hover:not(:disabled) {
+.btn.primary:hover:not(:disabled):not(.iridescence-btn) {
   background: var(--color-primary-dark);
   box-shadow: var(--shadow-button-hover);
 }

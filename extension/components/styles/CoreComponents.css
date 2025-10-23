@@ -356,15 +356,48 @@
 }
 
 .add-to-signals {
-  background: rgba(199, 134, 108, 0.2);
+  background: transparent;
   color: #C7866C;
   border: 1px solid rgba(199, 134, 108, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
 .add-to-signals:hover {
-  background: rgba(199, 134, 108, 0.3);
   color: #FBF7F5;
   transform: translateY(-1px);
+}
+
+/* Iridescence button styles */
+.iridescence-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.iridescence-btn-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.iridescence-btn:hover:not(:disabled) .iridescence-btn-background {
+  opacity: 1;
+}
+
+.iridescence-btn-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .delete-selected {
