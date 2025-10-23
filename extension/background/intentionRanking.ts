@@ -168,7 +168,6 @@ class IntentionRankingSystem {
     // Determine current highest predicate
     const currentPredicates = Object.keys(intention.predicates);
     
-    // Progression: has visited → likes → loves → trust
     
     // Upgrade vers "master" (depuis "value")
     if (intention.visitCount >= 100 && avgDurationMinutes > 8 && intention.maxAttentionScore > 0.95) {
