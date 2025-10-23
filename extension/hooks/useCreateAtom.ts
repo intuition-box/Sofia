@@ -19,7 +19,12 @@ export const useCreateAtom = () => {
   const createAtomDirect = async (atomData: AtomIPFSData): Promise<AtomCreationResult> => {
     try {
       logger.debug('Creating atom V2', { name: atomData.name })
-      
+
+      // Check if pinThing is available
+      if (!pinThing) {
+        throw new Error('IPFS pinning service not available. Please try again.')
+      }
+
       // Pin to IPFS first
       const pinResult = await pinThing({
         name: atomData.name,
