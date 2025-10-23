@@ -11,17 +11,21 @@ export interface IntuitionTripleResponse {
   created_at: string
   transaction_hash: string
   subject: {
-    label: string
-    term_id: string
+    label: string | null
+    term_id: string | null
   }
   predicate: {
-    label: string
-    term_id: string
+    label: string | null
+    term_id: string | null
   }
   object: {
-    label: string
-    term_id: string
+    label: string | null
+    term_id: string | null
   }
+  positions?: Array<{
+    shares: string
+    created_at: string
+  }>
   creator_id?: string
 }
 

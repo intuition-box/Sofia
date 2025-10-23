@@ -139,8 +139,12 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     
     console.log('✅ Found triples:', response.triples.length)
 
-    // Extract unique object labels to fetch their IPFS data
-    const objectLabels = [...new Set(response.triples.map(triple => triple.object.label))]
+    // Extract unique object labels to fetch their IPFS data (filter out nulls for the query)
+    const objectLabels = [...new Set(
+      response.triples
+        .map(triple => triple.object?.label)
+        .filter((label): label is string => label != null)
+    )]
     
     // Fetch IPFS hashes for objects
     const atomsQuery = `
@@ -184,22 +188,23 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     }
 
     const mappedTriplets: IntuitionTriplet[] = response.triples.map((triple: IntuitionTripleResponse) => {
-      const objectData = atomDataMap.get(triple.object.label)
-      
+      const objectLabel = triple.object?.label || 'Unknown'
+      const objectData = atomDataMap.get(objectLabel)
+
       // Get position data if available
       const position = triple.positions && triple.positions.length > 0 ? {
         upvotes: formatSharesAsUpvotes(triple.positions[0].shares),
         created_at: triple.positions[0].created_at
       } : undefined
-      
+
       return {
         id: triple.term_id,
         triplet: {
-          subject: triple.subject.label || 'Unknown',
-          predicate: triple.predicate.label || 'Unknown',
-          object: triple.object.label || 'Unknown'
+          subject: triple.subject?.label || 'Unknown',
+          predicate: triple.predicate?.label || 'Unknown',
+          object: objectLabel
         },
-        objectTermId: triple.object.term_id,
+        objectTermId: triple.object?.term_id || undefined,
         url: objectData?.url,
         description: objectData?.description,
         timestamp: new Date(triple.created_at).getTime(),
