@@ -108,6 +108,11 @@ const PageBlockchainCard = () => {
     window.open(`https://portal.intuition.systems/explore/atom/${atomId}`, '_blank')
   }
 
+  const handleTripletClick = (tripletId: string) => {
+    // Redirect to Intuition Portal for this specific triplet
+    window.open(`https://portal.intuition.systems/explore/triple/${tripletId}?tab=positions`, '_blank')
+  }
+
   const getTotalShares = (triplet: PageBlockchainTriplet) => {
     if (!triplet.positions) return 0
     return triplet.positions.reduce((sum, pos) => {
@@ -379,7 +384,12 @@ const PageBlockchainCard = () => {
                         const positionCount = triplet.positions?.length || 0
 
                         return (
-                          <div key={triplet.term_id} className="triplet-item">
+                          <div
+                            key={triplet.term_id}
+                            className="triplet-item clickable"
+                            onClick={() => handleTripletClick(triplet.term_id)}
+                            style={{ cursor: 'pointer' }}
+                          >
                             <div className="triplet-text">
                               <span className="subject">{triplet.subject.label}</span>
                               <span className="predicate">{triplet.predicate.label}</span>
