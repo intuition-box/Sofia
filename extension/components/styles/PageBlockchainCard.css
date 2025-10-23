@@ -205,6 +205,71 @@
   color: #F59E0B;
 }
 
+/* Atoms Section */
+.atoms-section {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+}
+
+.atoms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.atom-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 3px solid #F59E0B;
+}
+
+.atom-text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.atom-label {
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.atom-type {
+  background: rgba(245, 158, 11, 0.2);
+  color: #FCD34D;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.atom-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: #CBD5E0;
+}
+
+.metric-item.clickable:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(2px);
+  transition: all 0.2s ease;
+}
+
+.atom-item.clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Triplets Section */
 .triplets-section {
   padding-top: 12px;

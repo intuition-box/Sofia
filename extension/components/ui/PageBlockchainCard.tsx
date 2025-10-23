@@ -21,6 +21,7 @@ const PageBlockchainCard = () => {
 
   // Extended panel state
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
+  const [showAtomsList, setShowAtomsList] = useState(false)
 
   const handleRefresh = () => {
     fetchDataForCurrentPage()
@@ -29,9 +30,15 @@ const PageBlockchainCard = () => {
   const handleTrustPage = () => {
     if (!currentUrl) return
 
-    // Extract domain from URL for display
+    // Extract domain and path from URL for display
     const urlObj = new URL(currentUrl)
     const domain = urlObj.hostname
+    const pathname = urlObj.pathname
+
+    // Create a more descriptive label: domain + path (without query params)
+    const pageLabel = pathname && pathname !== '/'
+      ? `${domain}${pathname}`
+      : domain
 
     // Prepare triplet for modal
     const triplet = {
@@ -39,9 +46,9 @@ const PageBlockchainCard = () => {
       triplet: {
         subject: 'I',
         predicate: 'trust',
-        object: domain
+        object: pageLabel
       },
-      description: `Trust ${domain}`,
+      description: `Trust ${pageLabel}`,
       url: currentUrl
     }
 
@@ -95,6 +102,11 @@ const PageBlockchainCard = () => {
     setModalTriplets([])
   }
 
+  const handleAtomClick = (atomId: string) => {
+    // Redirect to Intuition Portal for this specific atom
+    window.open(`https://portal.intuition.systems/explore/atom/${atomId}`, '_blank')
+  }
+
   const getTotalShares = (triplet: PageBlockchainTriplet) => {
     if (!triplet.positions) return 0
     return triplet.positions.reduce((sum, pos) => {
@@ -103,15 +115,20 @@ const PageBlockchainCard = () => {
   }
 
   const getCredibilityAnalysis = () => {
-    const totalPositions = triplets.reduce((sum, triplet) => {
+    const counts = (triplets as any)._counts || {}
+    const atomsList = (triplets as any)._atomsList || []
+
+    // Use metadata counts if available, otherwise fall back to calculation
+    const totalPositions = counts.totalPositions || triplets.reduce((sum, triplet) => {
       return sum + (triplet.positions?.reduce((posSum, pos) => posSum + (pos.position_count || 0), 0) || 0)
     }, 0)
-    const totalShares = triplets.reduce((sum, triplet) => sum + getTotalShares(triplet), 0)
+    const totalShares = counts.totalShares || triplets.reduce((sum, triplet) => sum + getTotalShares(triplet), 0)
+    const attestationsCount = counts.attestationsCount || triplets.length
     const tripletsWithPositions = triplets.filter(t => t.positions && t.positions.length > 0)
-    
-    const credibilityScore = triplets.length === 0 ? 0 : Math.min(100, Math.round(
-      (totalPositions * 10) + 
-      (totalShares * 5) + 
+
+    const credibilityScore = attestationsCount === 0 ? 0 : Math.min(100, Math.round(
+      (totalPositions * 10) +
+      (totalShares * 5) +
       (tripletsWithPositions.length * 15)
     ))
 
@@ -132,11 +149,12 @@ const PageBlockchainCard = () => {
     return {
       totalPositions,
       totalShares,
-      attestationsCount: triplets.length,
+      attestationsCount,
       activeAttestations: tripletsWithPositions.length,
       credibilityScore,
       scoreColor: getScoreColor(credibilityScore),
-      scoreLabel: getScoreLabel(credibilityScore)
+      scoreLabel: getScoreLabel(credibilityScore),
+      atomsList
     }
   }
 
@@ -147,7 +165,8 @@ const PageBlockchainCard = () => {
     activeAttestations: 0,
     credibilityScore: 0,
     scoreColor: '#6B7280',
-    scoreLabel: 'UNVERIFIED'
+    scoreLabel: 'UNVERIFIED',
+    atomsList: []
   }
 
   return (
@@ -276,6 +295,26 @@ const PageBlockchainCard = () => {
               <div className="extended-metrics-panel">
                 {/* Metrics Section */}
                 <div className="metrics-section">
+                  <div
+                    className="metric-item clickable"
+                    onClick={() => setShowAtomsList(!showAtomsList)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="metric-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="3" fill="#F59E0B"/>
+                        <circle cx="6" cy="6" r="2" fill="#F59E0B"/>
+                        <circle cx="18" cy="6" r="2" fill="#F59E0B"/>
+                        <circle cx="6" cy="18" r="2" fill="#F59E0B"/>
+                        <circle cx="18" cy="18" r="2" fill="#F59E0B"/>
+                      </svg>
+                    </div>
+                    <div className="metric-info">
+                      <div className="metric-label">Atoms on this page</div>
+                      <div className="metric-value">{(triplets as any)._counts?.atomsCount || 0}</div>
+                    </div>
+                  </div>
+
                   <div className="metric-item">
                     <div className="metric-icon">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -283,8 +322,8 @@ const PageBlockchainCard = () => {
                       </svg>
                     </div>
                     <div className="metric-info">
-                      <div className="metric-label">Total Triplets</div>
-                      <div className="metric-value">{analysis.attestationsCount}</div>
+                      <div className="metric-label">Triplets on this page</div>
+                      <div className="metric-value">{(triplets as any)._counts?.triplesCount || triplets.length}</div>
                     </div>
                   </div>
 
@@ -300,6 +339,43 @@ const PageBlockchainCard = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Atoms List Section - Collapsible */}
+                {showAtomsList && analysis.atomsList && analysis.atomsList.length > 0 && (
+                  <div className="atoms-section">
+                    <div className="section-title">Atoms on this page</div>
+                    <div className="atoms-list">
+                      {analysis.atomsList.map((atom: any) => {
+                        const totalShares = (atom.vaults || []).reduce((sum: number, vault: any) => {
+                          return sum + (Number(vault.total_shares || 0) / 1e18)
+                        }, 0)
+                        const positionCount = (atom.vaults || []).reduce((sum: number, vault: any) => {
+                          return sum + (Number(vault.position_count || 0))
+                        }, 0)
+
+                        return (
+                          <div
+                            key={atom.id}
+                            className="atom-item clickable"
+                            onClick={() => handleAtomClick(atom.id)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <div className="atom-text">
+                              <span className="atom-label">{atom.label}</span>
+                              <span className="atom-type">{atom.type}</span>
+                            </div>
+                            {positionCount > 0 && (
+                              <div className="atom-stats">
+                                <span className="positions">👥 {positionCount}</span>
+                                <span className="shares">💎 {totalShares.toFixed(3)} Market Cap</span>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Triplets Details Section */}
                 {triplets.length > 0 && (

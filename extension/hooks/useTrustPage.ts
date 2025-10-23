@@ -101,9 +101,16 @@ export const useTrustPage = (): TrustPageResult => {
       setSuccess(false)
       setError(null)
 
-      // Extract domain from URL for atom name
+      // Extract domain and path from URL for atom name
       const urlObj = new URL(url)
       const domain = urlObj.hostname
+      const pathname = urlObj.pathname
+
+      // Create a more descriptive label: domain + path (without query params)
+      // Example: "github.com/user/repo" instead of just "github.com"
+      const pageLabel = pathname && pathname !== '/'
+        ? `${domain}${pathname}`
+        : domain
 
       logger.debug('Step 1: Getting user atom (I)')
       const userAtom = await getUserAtom()
@@ -113,10 +120,10 @@ export const useTrustPage = (): TrustPageResult => {
       const trustPredicate = await getTrustPredicateAtom()
       logger.debug('Trust predicate obtained', { vaultId: trustPredicate.vaultId })
 
-      logger.debug('Step 3: Creating website atom')
+      logger.debug('Step 3: Creating website atom', { pageLabel })
       const websiteAtom = await createAtomWithMultivault({
-        name: domain,
-        description: `Website: ${domain}`,
+        name: pageLabel,
+        description: `Page: ${pageLabel}`,
         url: url
       })
       logger.debug('Website atom created', { vaultId: websiteAtom.vaultId })

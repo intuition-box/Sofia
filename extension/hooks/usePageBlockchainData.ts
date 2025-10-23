@@ -86,7 +86,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
                 organization { url name description }
               }
             }
-            vaults(where: { curve_id: { _eq: "1" } }) {
+            vaults {
+              curve_id
               position_count
               total_shares
             }
@@ -117,7 +118,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
               predicate { term_id label }
               object { term_id label }
             }
-            vaults(where: { curve_id: { _eq: "1" } }) {
+            vaults {
+              curve_id
               position_count
               total_shares
             }
@@ -134,32 +136,53 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       console.log('📥 Triples response:', triplesResponse)
 
       const allResults = []
+      const atomsList = []
+      let atomsCount = 0
+      let triplesCount = 0
+      let totalShares = 0
+      let totalPositions = 0
 
+      // Count atoms (for metrics) and store them for display
       if (atomsResponse.status === 'fulfilled') {
         const atoms = atomsResponse.value?.atoms || []
-        console.log('📥 Atoms found:', atoms.length)
-        allResults.push(...atoms.map((atom: any) => {
-          console.log('📊 Atom vaults:', atom.vaults)
-          return {
-            term_id: atom.id,
-            subject: { label: 'I', term_id: 'subject_id' },
-            predicate: { label: 'am interested in', term_id: 'predicate_id' },
-            object: { label: atom.atom?.label || 'Unknown', term_id: atom.id },
-            created_at: new Date().toISOString(),
-            positions: (atom.vaults || []).map((vault: any) => ({
-              shares: vault.total_shares || '0',
-              position_count: vault.position_count || 0
-            })),
-            source: 'atom'
+        atomsCount = atoms.length
+        console.log('📥 Atoms found (counted for metrics):', atomsCount)
+
+        // Store atoms for display and calculate shares
+        atoms.forEach((atom: any) => {
+          atomsList.push({
+            id: atom.id,
+            label: atom.atom?.label || 'Unknown',
+            type: atom.atom?.type || 'unknown',
+            vaults: atom.vaults || []
+          })
+
+          if (atom.vaults) {
+            atom.vaults.forEach((vault: any) => {
+              totalShares += Number(vault.total_shares || 0) / 1e18
+              totalPositions += Number(vault.position_count || 0)
+            })
           }
-        }))
+        })
       }
 
+      // Display ONLY real triplets in the list
       if (triplesResponse.status === 'fulfilled') {
         const triples = triplesResponse.value?.triples || []
-        console.log('📥 Triples found:', triples.length)
+        triplesCount = triples.length
+        console.log('📥 Triples found (displayed in list):', triplesCount)
+
         allResults.push(...triples.map((triple: any) => {
           console.log('📊 Triple vaults:', triple.vaults)
+
+          // Add triple shares to total
+          if (triple.vaults) {
+            triple.vaults.forEach((vault: any) => {
+              totalShares += Number(vault.total_shares || 0) / 1e18
+              totalPositions += Number(vault.position_count || 0)
+            })
+          }
+
           return {
             term_id: triple.id,
             subject: triple.triple?.subject || { label: 'Unknown', term_id: '' },
@@ -175,7 +198,20 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         }))
       }
 
-      console.log('📊 Total results found:', allResults.length)
+
+
+      // Store counts and totals in results metadata
+      (allResults as any)._counts = {
+        atomsCount,
+        triplesCount,
+        totalShares,
+        totalPositions,
+        attestationsCount: atomsCount + triplesCount
+      };
+
+      // Attach atomsList to results for external access
+      (allResults as any)._atomsList = atomsList;
+
       return allResults
 
     } catch (error) {
