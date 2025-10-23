@@ -22,6 +22,7 @@ const PageBlockchainCard = () => {
   // Extended panel state
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
   const [showAtomsList, setShowAtomsList] = useState(false)
+  const [showTripletsList, setShowTripletsList] = useState(false)
 
   const handleRefresh = () => {
     fetchDataForCurrentPage()
@@ -175,7 +176,11 @@ const PageBlockchainCard = () => {
       {currentUrl && (
         <div className="website-header-section">
           {/* Website Info Container with Icon + URL + Credibility Circle */}
-          <div className="website-info-container">
+          <div
+            className="website-info-container clickable"
+            onClick={() => setShowExtendedMetrics(!showExtendedMetrics)}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="website-icon-container">
               <svg className="website-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="4" fill="white"/>
@@ -273,23 +278,6 @@ const PageBlockchainCard = () => {
       {!loading && !error && analysis && (
         <div className="credibility-content">
           <div className="credibility-analysis">
-            {/* Unified Extended Panel Toggle Button */}
-            <button
-              className="extended-metrics-toggle"
-              onClick={() => setShowExtendedMetrics(!showExtendedMetrics)}
-            >
-              <span>{showExtendedMetrics ? 'Hide Details' : 'View Details'}</span>
-              <svg
-                className={`toggle-arrow ${showExtendedMetrics ? 'expanded' : ''}`}
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-              >
-                <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
-
             {/* Unified Extended Panel */}
             {showExtendedMetrics && (
               <div className="extended-metrics-panel">
@@ -315,7 +303,11 @@ const PageBlockchainCard = () => {
                     </div>
                   </div>
 
-                  <div className="metric-item">
+                  <div
+                    className="metric-item clickable"
+                    onClick={() => setShowTripletsList(!showTripletsList)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className="metric-icon">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M3 6h18M3 12h18M3 18h18" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
@@ -377,10 +369,10 @@ const PageBlockchainCard = () => {
                   </div>
                 )}
 
-                {/* Triplets Details Section */}
-                {triplets.length > 0 && (
+                {/* Triplets List Section - Collapsible */}
+                {showTripletsList && triplets.length > 0 && (
                   <div className="triplets-section">
-                    <div className="section-title">Detailed Triplets</div>
+                    <div className="section-title">Triplets on this page</div>
                     <div className="triplets-list">
                       {triplets.map((triplet: PageBlockchainTriplet) => {
                         const totalShares = getTotalShares(triplet)

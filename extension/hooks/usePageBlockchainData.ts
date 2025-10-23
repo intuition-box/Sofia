@@ -95,19 +95,27 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         }
       `
 
+      // First, fetch atoms to get their IDs
+      const atomsResponse = await intuitionGraphqlClient.request(atomsQuery, { likeStr: `%${url}%` })
+      console.log('📥 Atoms response:', atomsResponse)
+
+      const atoms = atomsResponse?.atoms || []
+      const atomIds = atoms.map((atom: any) => atom.id)
+
+      console.log('🔍 Found atom IDs:', atomIds)
+
+      // Now query triplets that contain any of these atoms
       const triplesQuery = `
-        query TriplesByURL($likeStr: String!) {
+        query TriplesByAtomIds($atomIds: [String!]!) {
           triples: terms(
             limit: 10000
             where: {
               _and: [
                 { type: { _eq: Triple } },
                 { _or: [
-                  { triple: { subject: { label: { _ilike: $likeStr } } } },
-                  { triple: { object: { label: { _ilike: $likeStr } } } },
-                  { triple: { object: { atom: { value: { thing: { url: { _ilike: $likeStr } } } } } } },
-                  { triple: { object: { atom: { value: { person: { url: { _ilike: $likeStr } } } } } } },
-                  { triple: { object: { atom: { value: { organization: { url: { _ilike: $likeStr } } } } } } }
+                  { triple: { subject: { term_id: { _in: $atomIds } } } },
+                  { triple: { predicate: { term_id: { _in: $atomIds } } } },
+                  { triple: { object: { term_id: { _in: $atomIds } } } }
                 ]}
               ]
             }
@@ -127,10 +135,14 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         }
       `
 
-      const [atomsResponse, triplesResponse] = await Promise.allSettled([
-        intuitionGraphqlClient.request(atomsQuery, { likeStr: `%${url}%` }),
-        intuitionGraphqlClient.request(triplesQuery, { likeStr: `%${url}%` })
-      ])
+      let triplesResponse
+      if (atomIds.length > 0) {
+        triplesResponse = await intuitionGraphqlClient.request(triplesQuery, { atomIds })
+        console.log('📥 Triples response:', triplesResponse)
+      } else {
+        console.log('📥 No atoms found, skipping triplets query')
+        triplesResponse = { triples: [] }
+      }
 
       console.log('📥 Atoms response:', atomsResponse)
       console.log('📥 Triples response:', triplesResponse)
@@ -143,60 +155,55 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       let totalPositions = 0
 
       // Count atoms (for metrics) and store them for display
-      if (atomsResponse.status === 'fulfilled') {
-        const atoms = atomsResponse.value?.atoms || []
-        atomsCount = atoms.length
-        console.log('📥 Atoms found (counted for metrics):', atomsCount)
+      atomsCount = atoms.length
+      console.log('📥 Atoms found (counted for metrics):', atomsCount)
 
-        // Store atoms for display and calculate shares
-        atoms.forEach((atom: any) => {
-          atomsList.push({
-            id: atom.id,
-            label: atom.atom?.label || 'Unknown',
-            type: atom.atom?.type || 'unknown',
-            vaults: atom.vaults || []
-          })
-
-          if (atom.vaults) {
-            atom.vaults.forEach((vault: any) => {
-              totalShares += Number(vault.total_shares || 0) / 1e18
-              totalPositions += Number(vault.position_count || 0)
-            })
-          }
+      // Store atoms for display and calculate shares
+      atoms.forEach((atom: any) => {
+        atomsList.push({
+          id: atom.id,
+          label: atom.atom?.label || 'Unknown',
+          type: atom.atom?.type || 'unknown',
+          vaults: atom.vaults || []
         })
-      }
+
+        if (atom.vaults) {
+          atom.vaults.forEach((vault: any) => {
+            totalShares += Number(vault.total_shares || 0) / 1e18
+            totalPositions += Number(vault.position_count || 0)
+          })
+        }
+      })
 
       // Display ONLY real triplets in the list
-      if (triplesResponse.status === 'fulfilled') {
-        const triples = triplesResponse.value?.triples || []
-        triplesCount = triples.length
-        console.log('📥 Triples found (displayed in list):', triplesCount)
+      const triples = triplesResponse?.triples || []
+      triplesCount = triples.length
+      console.log('📥 Triples found (displayed in list):', triplesCount)
 
-        allResults.push(...triples.map((triple: any) => {
-          console.log('📊 Triple vaults:', triple.vaults)
+      allResults.push(...triples.map((triple: any) => {
+        console.log('📊 Triple vaults:', triple.vaults)
 
-          // Add triple shares to total
-          if (triple.vaults) {
-            triple.vaults.forEach((vault: any) => {
-              totalShares += Number(vault.total_shares || 0) / 1e18
-              totalPositions += Number(vault.position_count || 0)
-            })
-          }
+        // Add triple shares to total
+        if (triple.vaults) {
+          triple.vaults.forEach((vault: any) => {
+            totalShares += Number(vault.total_shares || 0) / 1e18
+            totalPositions += Number(vault.position_count || 0)
+          })
+        }
 
-          return {
-            term_id: triple.id,
-            subject: triple.triple?.subject || { label: 'Unknown', term_id: '' },
-            predicate: triple.triple?.predicate || { label: 'Unknown', term_id: '' },
-            object: triple.triple?.object || { label: 'Unknown', term_id: '' },
-            created_at: new Date().toISOString(),
-            positions: (triple.vaults || []).map((vault: any) => ({
-              shares: vault.total_shares || '0',
-              position_count: vault.position_count || 0
-            })),
-            source: 'triple'
-          }
-        }))
-      }
+        return {
+          term_id: triple.id,
+          subject: triple.triple?.subject || { label: 'Unknown', term_id: '' },
+          predicate: triple.triple?.predicate || { label: 'Unknown', term_id: '' },
+          object: triple.triple?.object || { label: 'Unknown', term_id: '' },
+          created_at: new Date().toISOString(),
+          positions: (triple.vaults || []).map((vault: any) => ({
+            shares: vault.total_shares || '0',
+            position_count: vault.position_count || 0
+          })),
+          source: 'triple'
+        }
+      }));
 
 
 
