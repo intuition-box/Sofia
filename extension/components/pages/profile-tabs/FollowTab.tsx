@@ -8,6 +8,7 @@ import BookmarkButton from '../../ui/BookmarkButton'
 import searchIcon from '../../ui/icons/Icon=Search.svg'
 import { useGetAtomAccount, AccountAtom } from '../../../hooks/useGetAtomAccount'
 import FollowButton from '../../ui/FollowButton'
+import TrustAccountButton from '../../ui/TrustAccountButton'
 import '../../styles/CoreComponents.css'
 import '../../styles/FollowTab.css'
 
@@ -520,6 +521,11 @@ const FollowTab = () => {
               </div>
               <div className="account-right">
                 <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
+                <TrustAccountButton
+                  accountVaultId={account.termId}
+                  accountLabel={account.label}
+                  onSuccess={() => console.log('✅ Trust created for', account.label)}
+                />
               </div>
             </div>
           ))}

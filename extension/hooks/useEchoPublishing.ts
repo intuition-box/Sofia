@@ -67,15 +67,29 @@ export const useEchoPublishing = ({
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
     
     try {
-      const batchInput = selectedTriplets.map((triplet, index) => ({
-        predicateName: triplet.triplet.predicate,
-        objectData: {
-          name: triplet.triplet.object,
-          description: triplet.description,
-          url: triplet.url
-        },
-        customWeight: customWeights?.[index] || undefined
-      }))
+      const batchInput = selectedTriplets.map((triplet, index) => {
+        // Extract favicon from URL if available
+        let faviconUrl = ''
+        if (triplet.url) {
+          try {
+            const urlObj = new URL(triplet.url)
+            faviconUrl = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=128`
+          } catch {
+            // Invalid URL, skip favicon
+          }
+        }
+
+        return {
+          predicateName: triplet.triplet.predicate,
+          objectData: {
+            name: triplet.triplet.object,
+            description: triplet.description,
+            url: triplet.url,
+            image: faviconUrl
+          },
+          customWeight: customWeights?.[index] || undefined
+        }
+      })
       
       const result = await createTriplesBatch(batchInput)
       
