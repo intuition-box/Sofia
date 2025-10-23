@@ -19,6 +19,9 @@ const PageBlockchainCard = () => {
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [modalTriplets, setModalTriplets] = useState<any[]>([])
 
+  // Extended panel state
+  const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
+
   const handleRefresh = () => {
     fetchDataForCurrentPage()
   }
@@ -149,10 +152,10 @@ const PageBlockchainCard = () => {
 
   return (
     <div className="blockchain-card">
-      {/* Website Header Section - NEW DESIGN */}
+      {/* Website Header Section - COMPACT DESIGN */}
       {currentUrl && (
         <div className="website-header-section">
-          {/* Website Info Container with Icon + URL */}
+          {/* Website Info Container with Icon + URL + Credibility Circle */}
           <div className="website-info-container">
             <div className="website-icon-container">
               <svg className="website-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -170,6 +173,38 @@ const PageBlockchainCard = () => {
             <div className="website-url-container">
               <span className="website-url-text">{new URL(currentUrl).hostname}</span>
               <span className="website-url-full">{currentUrl}</span>
+            </div>
+
+            {/* Credibility Circle - Moved to Header */}
+            <div className="credibility-circle-compact">
+              <svg width="70" height="70" viewBox="0 0 70 70">
+                <circle
+                  cx="35"
+                  cy="35"
+                  r="30"
+                  fill="none"
+                  stroke="#2D3748"
+                  strokeWidth="6"
+                />
+                <circle
+                  cx="35"
+                  cy="35"
+                  r="30"
+                  fill="none"
+                  stroke={analysis.scoreColor}
+                  strokeWidth="6"
+                  strokeDasharray="188.4"
+                  strokeDashoffset={188.4 - (188.4 * analysis.credibilityScore / 100)}
+                  transform="rotate(-90 35 35)"
+                  style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                />
+              </svg>
+              <div className="circle-content-compact">
+                <div className="score-number-compact">{analysis.credibilityScore}</div>
+                <div className="score-label-compact" style={{ color: analysis.scoreColor }}>
+                  {analysis.scoreLabel}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -215,131 +250,88 @@ const PageBlockchainCard = () => {
       )}
 
 
+      {/* Extended Panel - Unified Metrics + Triplets */}
       {!loading && !error && analysis && (
         <div className="credibility-content">
           <div className="credibility-analysis">
-            <div className="credibility-header">
-            </div>
-            
-            <div className="credibility-visual-metrics">
-              {/* Circular Credibility Score */}
-              <div className="credibility-circle-container">
-                <div className="credibility-circle">
-                  <svg width="80" height="80" viewBox="0 0 80 80">
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="35"
-                      fill="none"
-                      stroke="#2D3748"
-                      strokeWidth="8"
-                    />
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="35"
-                      fill="none"
-                      stroke={analysis.scoreColor}
-                      strokeWidth="8"
-                      strokeDasharray={`${(analysis.credibilityScore / 100) * 220} 220`}
-                      strokeDashoffset="0"
-                      transform="rotate(-90 40 40)"
-                    />
-                  </svg>
-                  <div className="circle-content">
-                    <div className="score-number">
-                      {analysis.credibilityScore}
-                    </div>
-                    <div className="score-label-mini" style={{ color: analysis.scoreColor }}>
-                      {analysis.scoreLabel}
-                    </div>
-                  </div>
-                </div>
-                <div className="metric-title">Credibility</div>
-              </div>
-
-              {/* Triplets Count */}
-              <div className="positions-container">
-                <div className="positions-bar">
-                  <div className="triplet-count-display">
-                    <span className="triplet-count-number">{analysis.attestationsCount}</span>
-                  </div>
-                </div>
-                <div className="metric-title">
-                  Triplets
-                </div>
-              </div>
-
-              {/* Shares Curve Chart */}
-              <div className="shares-container">
-                <div className="shares-curve">
-                  <svg width="60" height="40" viewBox="0 0 60 40">
-                    <defs>
-                      <linearGradient id="sharesGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.8"/>
-                        <stop offset="100%" stopColor="#D97706" stopOpacity="0.2"/>
-                      </linearGradient>
-                    </defs>
-                    {analysis.totalShares > 0 ? (
-                      <>
-                        <path
-                          d={`M 5 35 Q 15 ${35 - (analysis.totalShares * 2)} 30 ${30 - (analysis.totalShares * 1.5)} Q 45 ${25 - analysis.totalShares} 55 ${20 - (analysis.totalShares * 0.5)}`}
-                          fill="none"
-                          stroke="#F59E0B"
-                          strokeWidth="2"
-                        />
-                        <path
-                          d={`M 5 35 Q 15 ${35 - (analysis.totalShares * 2)} 30 ${30 - (analysis.totalShares * 1.5)} Q 45 ${25 - analysis.totalShares} 55 ${20 - (analysis.totalShares * 0.5)} L 55 35 L 5 35 Z`}
-                          fill="url(#sharesGradient)"
-                        />
-                      </>
-                    ) : (
-                      <line x1="5" y1="35" x2="55" y2="35" stroke="#92400E" strokeWidth="2" />
-                    )}
-                  </svg>
-                </div>
-                <div className="metric-title">
-                  Total Market Cap ({analysis.totalShares.toFixed(3)})
-                </div>
-              </div>
-            </div>
-
-            <div className="details-toggle">
-              <button 
-                className="toggle-button"
-                onClick={() => setShowDetails(!showDetails)}
+            {/* Unified Extended Panel Toggle Button */}
+            <button
+              className="extended-metrics-toggle"
+              onClick={() => setShowExtendedMetrics(!showExtendedMetrics)}
+            >
+              <span>{showExtendedMetrics ? 'Hide Details' : 'View Details'}</span>
+              <svg
+                className={`toggle-arrow ${showExtendedMetrics ? 'expanded' : ''}`}
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
               >
-                {showDetails ? '- Hide detailed triplets' : '+ See detailed triplets'}
-              </button>
-            </div>
-          </div>
+                <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
 
-          {showDetails && (
-            <div className="triplets-details">
-              <div className="triplets-list">
-                {triplets.map((triplet: PageBlockchainTriplet) => {
-                  const totalShares = getTotalShares(triplet)
-                  const positionCount = triplet.positions?.length || 0
-
-                  return (
-                    <div key={triplet.term_id} className="triplet-item">
-                      <div className="triplet-text">
-                        <span className="subject">{triplet.subject.label}</span>
-                        <span className="predicate">{triplet.predicate.label}</span>
-                        <span className="object">{triplet.object.label}</span>
-                      </div>
-                      {positionCount > 0 && (
-                        <div className="triplet-stats">
-                          <span className="positions">👥 {positionCount}</span>
-                          <span className="shares">💎 {totalShares.toFixed(3)} Market Cap</span>
-                        </div>
-                      )}
+            {/* Unified Extended Panel */}
+            {showExtendedMetrics && (
+              <div className="extended-metrics-panel">
+                {/* Metrics Section */}
+                <div className="metrics-section">
+                  <div className="metric-item">
+                    <div className="metric-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6h18M3 12h18M3 18h18" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
                     </div>
-                  )
-                })}
+                    <div className="metric-info">
+                      <div className="metric-label">Total Triplets</div>
+                      <div className="metric-value">{analysis.attestationsCount}</div>
+                    </div>
+                  </div>
+
+                  <div className="metric-item">
+                    <div className="metric-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div className="metric-info">
+                      <div className="metric-label">Total Market Cap</div>
+                      <div className="metric-value">{analysis.totalShares.toFixed(3)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Triplets Details Section */}
+                {triplets.length > 0 && (
+                  <div className="triplets-section">
+                    <div className="section-title">Detailed Triplets</div>
+                    <div className="triplets-list">
+                      {triplets.map((triplet: PageBlockchainTriplet) => {
+                        const totalShares = getTotalShares(triplet)
+                        const positionCount = triplet.positions?.length || 0
+
+                        return (
+                          <div key={triplet.term_id} className="triplet-item">
+                            <div className="triplet-text">
+                              <span className="subject">{triplet.subject.label}</span>
+                              <span className="predicate">{triplet.predicate.label}</span>
+                              <span className="object">{triplet.object.label}</span>
+                            </div>
+                            {positionCount > 0 && (
+                              <div className="triplet-stats">
+                                <span className="positions">👥 {positionCount}</span>
+                                <span className="shares">💎 {totalShares.toFixed(3)} Market Cap</span>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
