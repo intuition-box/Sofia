@@ -149,17 +149,31 @@ const PageBlockchainCard = () => {
 
   return (
     <div className="blockchain-card">
-      <div className="blockchain-card-header">
-      </div>
-
+      {/* Website Header Section - NEW DESIGN */}
       {currentUrl && (
-        <div className="current-url-display">
-          <small>{currentUrl}</small>
-        </div>
-      )}
+        <div className="website-header-section">
+          {/* Website Info Container with Icon + URL */}
+          <div className="website-info-container">
+            <div className="website-icon-container">
+              <svg className="website-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="4" fill="white"/>
+                <circle cx="6" cy="6" r="2" fill="white"/>
+                <circle cx="18" cy="6" r="2" fill="white"/>
+                <circle cx="6" cy="18" r="2" fill="white"/>
+                <circle cx="18" cy="18" r="2" fill="white"/>
+                <line x1="12" y1="12" x2="6" y2="6" stroke="white" strokeWidth="1.5"/>
+                <line x1="12" y1="12" x2="18" y2="6" stroke="white" strokeWidth="1.5"/>
+                <line x1="12" y1="12" x2="6" y2="18" stroke="white" strokeWidth="1.5"/>
+                <line x1="12" y1="12" x2="18" y2="18" stroke="white" strokeWidth="1.5"/>
+              </svg>
+            </div>
+            <div className="website-url-container">
+              <span className="website-url-text">{new URL(currentUrl).hostname}</span>
+              <span className="website-url-full">{currentUrl}</span>
+            </div>
+          </div>
 
-      {currentUrl && (
-        <div className="trust-button-container">
+          {/* Trust Button */}
           <button
             className={`trust-page-button ${localTrustSuccess ? 'success' : ''} ${localTrustLoading ? 'loading' : ''}`}
             onClick={handleTrustPage}
@@ -176,6 +190,8 @@ const PageBlockchainCard = () => {
               <>Trust this page</>
             )}
           </button>
+
+          {/* Error Display */}
           {localTrustError && (
             <div className="trust-error">
               <small>{localTrustError}</small>
@@ -260,8 +276,8 @@ const PageBlockchainCard = () => {
                   <svg width="60" height="40" viewBox="0 0 60 40">
                     <defs>
                       <linearGradient id="sharesGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#A0AEC0" stopOpacity="0.8"/>
-                        <stop offset="100%" stopColor="#4A5568" stopOpacity="0.2"/>
+                        <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.8"/>
+                        <stop offset="100%" stopColor="#D97706" stopOpacity="0.2"/>
                       </linearGradient>
                     </defs>
                     {analysis.totalShares > 0 ? (
@@ -269,7 +285,7 @@ const PageBlockchainCard = () => {
                         <path
                           d={`M 5 35 Q 15 ${35 - (analysis.totalShares * 2)} 30 ${30 - (analysis.totalShares * 1.5)} Q 45 ${25 - analysis.totalShares} 55 ${20 - (analysis.totalShares * 0.5)}`}
                           fill="none"
-                          stroke="#A0AEC0"
+                          stroke="#F59E0B"
                           strokeWidth="2"
                         />
                         <path
@@ -278,7 +294,7 @@ const PageBlockchainCard = () => {
                         />
                       </>
                     ) : (
-                      <line x1="5" y1="35" x2="55" y2="35" stroke="#4A5568" strokeWidth="2" />
+                      <line x1="5" y1="35" x2="55" y2="35" stroke="#92400E" strokeWidth="2" />
                     )}
                   </svg>
                 </div>
