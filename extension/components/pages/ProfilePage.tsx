@@ -7,7 +7,7 @@ import '../styles/ProfilePage.css'
 // Lazy load tabs pour optimiser le chargement
 const AccountTab = lazy(() => import('./profile-tabs/AccountTab'))
 const FollowTab = lazy(() => import('./profile-tabs/FollowTab'))
-const TrustCircleTab = lazy(() => import('./profile-tabs/TrustCircleTab'))
+const TrustCircleTab = lazy(() => import('./profile-tabs/FeedTab'))
 
 const ProfilePage = () => {
   const { goBack } = useRouter()

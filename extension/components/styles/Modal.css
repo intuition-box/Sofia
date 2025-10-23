@@ -222,7 +222,7 @@
   font-size: 20px;
   font-weight: bold;
   text-align: center;
-  min-width: 2ch;
+  min-width: 4ch;
 }
 
 .modal-input::-webkit-outer-spin-button,

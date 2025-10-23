@@ -49,6 +49,7 @@ export const EXPLORER_URLS = {
 // Predicate IDs
 export const PREDICATE_IDS = {
   FOLLOW: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a",
+  TRUST: "0xeb0372e9e08097b1b2c4c4f7157a28584e77963ceb70e4654707ea60b247498d"
 } as const
 
 // Subject IDs - Using the same USER_ID atom as the universal "I" subject
