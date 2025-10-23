@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import '../styles/Modal.css'
 
 interface UpvoteModalProps {
@@ -48,7 +49,9 @@ const UpvoteModal = ({
   const trustAmount = (upvotes * 0.001).toFixed(3)
   const difference = upvotes - currentUpvotes
 
-  return (
+  if (!isOpen) return null
+
+  return createPortal(
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
@@ -144,7 +147,8 @@ const UpvoteModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
