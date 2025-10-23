@@ -131,26 +131,53 @@ const PageBlockchainCard = () => {
     }, 0)
     const totalShares = counts.totalShares || triplets.reduce((sum, triplet) => sum + getTotalShares(triplet), 0)
     const attestationsCount = counts.attestationsCount || triplets.length
+    const atomsCount = counts.atomsCount || 0
+    const triplesCount = counts.triplesCount || triplets.length
     const tripletsWithPositions = triplets.filter(t => t.positions && t.positions.length > 0)
 
-    const credibilityScore = attestationsCount === 0 ? 0 : Math.min(100, Math.round(
-      (totalPositions * 10) +
-      (totalShares * 5) +
-      (tripletsWithPositions.length * 15)
-    ))
+    // Advanced Credibility Score Calculation (v2.0)
+    const credibilityScore = (() => {
+      if (attestationsCount === 0) return 0
+
+      // 1. Diversity Score (0-30 points) - Rewards variety of attestations
+      const diversityScore = Math.min(30,
+        (Math.log10(atomsCount + 1) * 8) +
+        (Math.log10(triplesCount + 1) * 10)
+      )
+
+      // 2. Community Engagement Score (0-35 points) - Number of unique positions
+      const engagementScore = Math.min(35, Math.sqrt(totalPositions) * 3.5)
+
+      // 3. Economic Confidence Score (0-25 points) - Market cap investment
+      const economicScore = Math.min(25, Math.log10(totalShares + 1) * 12)
+
+      // 4. Activity Ratio (0-10 points) - Percentage of active attestations
+      const activityRatio = attestationsCount > 0
+        ? (tripletsWithPositions.length / attestationsCount) * 10
+        : 0
+
+      const rawScore = diversityScore + engagementScore + economicScore + activityRatio
+
+      // Sigmoid scaling with adjusted parameter (30) for better high-score distribution
+      const scaledScore = (rawScore / (rawScore + 30)) * 100
+
+      return Math.round(scaledScore)
+    })()
 
     const getScoreColor = (score: number) => {
-      if (score >= 80) return '#10B981'
-      if (score >= 60) return '#F59E0B'
-      if (score >= 40) return '#EF4444'
-      return '#6B7280'
+      if (score >= 70) return '#10B981'  // Green - High credibility
+      if (score >= 50) return '#3B82F6'  // Blue - Good credibility
+      if (score >= 30) return '#F59E0B'  // Orange - Moderate
+      if (score >= 15) return '#EF4444'  // Red - Low
+      return '#6B7280'                    // Gray - Minimal/None
     }
 
     const getScoreLabel = (score: number) => {
-      if (score >= 75) return 'HIGH'
-      if (score >= 40) return 'MEDIUM'
+      if (score >= 70) return 'HIGH'
+      if (score >= 50) return 'GOOD'
+      if (score >= 30) return 'MODERATE'
       if (score >= 15) return 'LOW'
-      return 'UNVERIFIED'
+      return 'MINIMAL'
     }
 
     return {

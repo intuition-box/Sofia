@@ -61,10 +61,32 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     try {
       console.log('🔍 Fetching blockchain data for URL:', url)
 
+      // Query to get total count of atoms
+      const atomsCountQuery = `
+        query AtomsCountByURL($likeStr: String!) {
+          atoms_aggregate: terms_aggregate(
+            where: {
+              _and: [
+                { type: { _eq: Atom } },
+                { _or: [
+                  { atom: { value: { thing: { url: { _ilike: $likeStr } } } } },
+                  { atom: { value: { person: { url: { _ilike: $likeStr } } } } },
+                  { atom: { value: { organization: { url: { _ilike: $likeStr } } } } }
+                ]}
+              ]
+            }
+          ) {
+            aggregate {
+              count
+            }
+          }
+        }
+      `
+
       const atomsQuery = `
         query AtomsByURL($likeStr: String!) {
           atoms: terms(
-            limit: 10000
+            limit: 100
             where: {
               _and: [
                 { type: { _eq: Atom } },
@@ -95,20 +117,48 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         }
       `
 
-      // First, fetch atoms to get their IDs
-      const atomsResponse = await intuitionGraphqlClient.request(atomsQuery, { likeStr: `%${url}%` })
-      console.log('📥 Atoms response:', atomsResponse)
+      // Fetch count and data in parallel
+      const [atomsCountResponse, atomsResponse] = await Promise.all([
+        intuitionGraphqlClient.request(atomsCountQuery, { likeStr: `%${url}%` }),
+        intuitionGraphqlClient.request(atomsQuery, { likeStr: `%${url}%` })
+      ])
+
+      const totalAtomsCount = atomsCountResponse?.atoms_aggregate?.aggregate?.count || 0
+      console.log('📥 Total atoms count:', totalAtomsCount)
+      console.log('📥 Atoms response (first 100):', atomsResponse)
 
       const atoms = atomsResponse?.atoms || []
       const atomIds = atoms.map((atom: any) => atom.id)
 
-      console.log('🔍 Found atom IDs:', atomIds)
+      console.log('🔍 Found atom IDs:', atomIds.length, '(displaying first 100)')
+
+      // Query to get total count of triplets
+      const triplesCountQuery = `
+        query TriplesCountByAtomIds($atomIds: [String!]!) {
+          triples_aggregate: terms_aggregate(
+            where: {
+              _and: [
+                { type: { _eq: Triple } },
+                { _or: [
+                  { triple: { subject: { term_id: { _in: $atomIds } } } },
+                  { triple: { predicate: { term_id: { _in: $atomIds } } } },
+                  { triple: { object: { term_id: { _in: $atomIds } } } }
+                ]}
+              ]
+            }
+          ) {
+            aggregate {
+              count
+            }
+          }
+        }
+      `
 
       // Now query triplets that contain any of these atoms
       const triplesQuery = `
         query TriplesByAtomIds($atomIds: [String!]!) {
           triples: terms(
-            limit: 10000
+            limit: 100
             where: {
               _and: [
                 { type: { _eq: Triple } },
@@ -136,27 +186,33 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       `
 
       let triplesResponse
+      let totalTriplesCount = 0
+
       if (atomIds.length > 0) {
-        triplesResponse = await intuitionGraphqlClient.request(triplesQuery, { atomIds })
-        console.log('📥 Triples response:', triplesResponse)
+        // Fetch count and data in parallel
+        const [triplesCountResponse, triplesDataResponse] = await Promise.all([
+          intuitionGraphqlClient.request(triplesCountQuery, { atomIds }),
+          intuitionGraphqlClient.request(triplesQuery, { atomIds })
+        ])
+
+        totalTriplesCount = triplesCountResponse?.triples_aggregate?.aggregate?.count || 0
+        triplesResponse = triplesDataResponse
+
+        console.log('📥 Total triples count:', totalTriplesCount)
+        console.log('📥 Triples response (first 100):', triplesResponse)
       } else {
         console.log('📥 No atoms found, skipping triplets query')
         triplesResponse = { triples: [] }
       }
 
-      console.log('📥 Atoms response:', atomsResponse)
-      console.log('📥 Triples response:', triplesResponse)
-
       const allResults = []
       const atomsList = []
-      let atomsCount = 0
-      let triplesCount = 0
       let totalShares = 0
       let totalPositions = 0
 
-      // Count atoms (for metrics) and store them for display
-      atomsCount = atoms.length
-      console.log('📥 Atoms found (counted for metrics):', atomsCount)
+      // Use real total counts (not just displayed ones)
+      console.log('📥 Total atoms (real count):', totalAtomsCount)
+      console.log('📥 Atoms displayed:', atoms.length)
 
       // Store atoms for display and calculate shares
       atoms.forEach((atom: any) => {
@@ -175,10 +231,10 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         }
       })
 
-      // Display ONLY real triplets in the list
+      // Display ONLY real triplets in the list (first 100)
       const triples = triplesResponse?.triples || []
-      triplesCount = triples.length
-      console.log('📥 Triples found (displayed in list):', triplesCount)
+      console.log('📥 Total triples (real count):', totalTriplesCount)
+      console.log('📥 Triples displayed:', triples.length)
 
       allResults.push(...triples.map((triple: any) => {
         console.log('📊 Triple vaults:', triple.vaults)
@@ -208,12 +264,15 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
 
       // Store counts and totals in results metadata
+      // Use REAL total counts for credibility calculation, not just displayed ones
       (allResults as any)._counts = {
-        atomsCount,
-        triplesCount,
+        atomsCount: totalAtomsCount,           // Real total count from aggregate
+        triplesCount: totalTriplesCount,       // Real total count from aggregate
+        displayedAtomsCount: atoms.length,     // How many we're showing
+        displayedTriplesCount: triples.length, // How many we're showing
         totalShares,
         totalPositions,
-        attestationsCount: atomsCount + triplesCount
+        attestationsCount: totalAtomsCount + totalTriplesCount
       };
 
       // Attach atomsList to results for external access
