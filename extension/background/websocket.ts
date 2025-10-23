@@ -1,10 +1,10 @@
 import { io, Socket } from "socket.io-client"
-import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS, RECOMMENDATION_IDS } from "./constants"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { sofiaDB, STORES } from "../lib/database/indexedDB"
 import { processUrlsWithThemeAnalysis } from "./tripletProcessor"
 import { MessageBus } from "../lib/services/MessageBus"
-import { 
+import {
   sendBookmarksToThemeExtractor,
   sendHistoryToThemeExtractor,
   handleThemeExtractorResponse,
@@ -14,12 +14,14 @@ let socketSofia: Socket
 let socketBot: Socket
 let socketThemeExtractor: Socket
 let socketPulse: Socket
+let socketRecommendation: Socket
 
 // Export sockets for direct access
 export function getSofiaSocket(): Socket { return socketSofia }
 export function getChatbotSocket(): Socket { return socketBot }
 export function getThemeExtractorSocket(): Socket { return socketThemeExtractor }
 export function getPulseSocket(): Socket { return socketPulse }
+export function getRecommendationSocket(): Socket { return socketRecommendation }
 
 // Common WebSocket configuration
 const commonSocketConfig = {
@@ -282,7 +284,112 @@ export async function initializePulseSocket(): Promise<void> {
       initializePulseSocket()
     }, 5000)
   })
-  
+
   console.log("🫀 [websocket.ts] PulseAgent socket initialization completed")
+}
+
+// === 5. Initialiser WebSocket pour RecommendationAgent ===
+// Global handler for RecommendationAgent responses
+let globalRecommendationHandler: ((recommendations: any) => void) | null = null
+
+export function handleRecommendationResponse(rawData: any): void {
+  if (globalRecommendationHandler) {
+    console.log("💎 [websocket.ts] Processing recommendation response")
+    globalRecommendationHandler(rawData)
+    globalRecommendationHandler = null
+  }
+}
+
+export async function initializeRecommendationSocket(): Promise<void> {
+  socketRecommendation = io("http://localhost:3000", commonSocketConfig)
+
+  socketRecommendation.on("connect", () => {
+    console.log("✅ [websocket.ts] Connected to RecommendationAgent, socket ID:", socketRecommendation.id)
+
+    const joinMessage = {
+      type: 1,
+      payload: {
+        roomId: RECOMMENDATION_IDS.ROOM_ID,
+        entityId: RECOMMENDATION_IDS.AUTHOR_ID
+      }
+    }
+
+    console.log("📨 [websocket.ts] Sending room join for RecommendationAgent:", joinMessage)
+    socketRecommendation.emit("message", joinMessage)
+    console.log("✅ [websocket.ts] Room join sent for RecommendationAgent")
+  })
+
+  socketRecommendation.on("messageBroadcast", async (data) => {
+    // DEBUG: Log ALL incoming messages
+    console.log("🔍 [websocket.ts] RecommendationAgent messageBroadcast received:", {
+      roomId: data.roomId,
+      channelId: data.channelId,
+      senderId: data.senderId,
+      expectedRoomId: RECOMMENDATION_IDS.ROOM_ID,
+      expectedChannelId: RECOMMENDATION_IDS.CHANNEL_ID,
+      expectedAgentId: RECOMMENDATION_IDS.AGENT_ID,
+      textPreview: data.text?.substring(0, 100)
+    })
+
+    if ((data.roomId === RECOMMENDATION_IDS.ROOM_ID || data.channelId === RECOMMENDATION_IDS.CHANNEL_ID) &&
+        data.senderId === RECOMMENDATION_IDS.AGENT_ID) {
+      console.log("📩 [websocket.ts] RecommendationAgent response received")
+      console.log("💎 [websocket.ts] RAW MESSAGE from RecommendationAgent:", data.text)
+
+      try {
+        // Parse recommendations from the response
+        let recommendations = null
+        try {
+          const parsed = JSON.parse(data.text)
+          recommendations = parsed // Pass raw parsed data to handler
+          console.log("💎 [websocket.ts] Parsed recommendations data:", recommendations)
+        } catch (parseError) {
+          console.warn("⚠️ [websocket.ts] Could not parse recommendations as JSON:", parseError)
+          recommendations = null
+        }
+
+        // Resolve the Promise so requester can continue
+        handleRecommendationResponse(recommendations)
+
+      } catch (error) {
+        console.error("❌ [websocket.ts] Failed to process RecommendationAgent response:", error)
+        handleRecommendationResponse(null)
+      }
+    }
+  })
+
+  socketRecommendation.on("connect_error", (error) => {
+    console.error("❌ [websocket.ts] RecommendationAgent connection error:", error)
+  })
+
+  socketRecommendation.on("disconnect", (reason) => {
+    console.warn("🔌 [websocket.ts] RecommendationAgent socket disconnected:", reason)
+    setTimeout(() => {
+      console.log("🔄 [websocket.ts] Attempting to reconnect RecommendationAgent...")
+      initializeRecommendationSocket()
+    }, 5000)
+  })
+
+  console.log("💎 [websocket.ts] RecommendationAgent socket initialization completed")
+}
+
+// Helper function to send recommendation request and wait for response
+export async function sendRecommendationRequest(walletData: any): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Timeout waiting for recommendations'))
+    }, 60000) // 60 seconds timeout
+
+    // Store resolver for when recommendations come back
+    globalRecommendationHandler = (recommendations) => {
+      clearTimeout(timeout)
+      resolve(recommendations || null)
+    }
+
+    // Send the request
+    const { sendRequestToRecommendation } = require('./messageSenders')
+    sendRequestToRecommendation(socketRecommendation, walletData)
+    console.log("📤 [websocket.ts] Sent recommendation request for wallet:", walletData.address)
+  })
 }
 
