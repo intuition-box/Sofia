@@ -297,7 +297,7 @@ const PageBlockchainCard = () => {
               ) : localTrustSuccess ? (
                 <>✓ Trusted!</>
               ) : (
-                <>Trust</>
+                <>TRUST</>
               )}
             </span>
           </button>
