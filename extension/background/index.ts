@@ -1,4 +1,4 @@
-import { initializeChatbotSocket , initializeSofiaSocket, initializeThemeExtractorSocket, initializePulseSocket} from "./websocket";
+import { initializeChatbotSocket , initializeSofiaSocket, initializeThemeExtractorSocket, initializePulseSocket, initializeRecommendationSocket} from "./websocket";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 import { MessageBus } from "../lib/services/MessageBus";
@@ -26,6 +26,8 @@ async function init(): Promise<void> {
   initializeThemeExtractorSocket()
   console.log("🫀 [index.ts] Initializing PulseAgent socket...")
   initializePulseSocket()
+  console.log("💎 [index.ts] Initializing RecommendationAgent socket...")
+  initializeRecommendationSocket()
   console.log("📨 [index.ts] Setting up message handlers...");
   setupMessageHandlers();
   console.log("🔔 [index.ts] Initializing badge count...");

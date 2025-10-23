@@ -2,13 +2,13 @@ import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { recordScroll } from "./behavior"
-import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis } from "./websocket"
+import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis, sendRecommendationRequest } from "./websocket"
 import { getAllBookmarks, getAllHistory } from "./messageSenders"
 import { convertThemesToTriplets } from "./tripletProcessor"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
-import { 
-  recordUserPredicate, 
-  getTopIntentions, 
+import {
+  recordUserPredicate,
+  getTopIntentions,
   getDomainIntentionStats,
   getPredicateUpgradeSuggestions,
   getIntentionGlobalStats
@@ -43,6 +43,43 @@ async function handleDataExtraction(
   }
 }
 
+
+// Handle recommendation generation via RecommendationAgent
+async function handleRecommendationGeneration(message: ChromeMessage, sendResponse: (response: MessageResponse) => void): Promise<void> {
+  try {
+    const walletData = message.data
+    if (!walletData || !walletData.address) {
+      sendResponse({ success: false, error: "Wallet data required" })
+      return
+    }
+
+    console.log('💎 [messageHandlers] Generating recommendations for wallet:', walletData.address)
+
+    // Send request and wait for response (imported at top)
+    const recommendationsData = await sendRecommendationRequest(walletData)
+
+    if (!recommendationsData) {
+      sendResponse({ success: false, error: "No recommendations received from agent" })
+      return
+    }
+
+    // Extract recommendations array from response
+    const recommendations = recommendationsData.recommendations || []
+
+    console.log('✅ [messageHandlers] Received', recommendations.length, 'recommendation categories')
+    sendResponse({
+      success: true,
+      recommendations
+    })
+
+  } catch (error) {
+    console.error('❌ [messageHandlers] Recommendation generation failed:', error)
+    sendResponse({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+}
 
 // Enhanced Ollama request handler with better error handling
 async function handleOllamaRequest(payload: any, sendResponse: (response: MessageResponse) => void): Promise<void> {
@@ -261,6 +298,10 @@ export function setupMessageHandlers(): void {
 
       case "OLLAMA_REQUEST":
         handleOllamaRequest(message.payload, sendResponse)
+        return true
+
+      case "GENERATE_RECOMMENDATIONS":
+        handleRecommendationGeneration(message, sendResponse)
         return true
 
       case "GET_PAGE_BLOCKCHAIN_DATA":

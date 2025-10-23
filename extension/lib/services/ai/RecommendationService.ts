@@ -41,8 +41,8 @@ export class RecommendationService {
         return []
       }
 
-      // Generate with Ollama
-      const newRecommendations = await this.generateWithOllama(walletData)
+      // Generate with RecommendationAgent
+      const newRecommendations = await this.generateWithAgent(walletData)
       
       // Handle additive mode: merge for storage but return only new ones
       if (additive) {
@@ -166,7 +166,86 @@ export class RecommendationService {
   }
 
   /**
-   * Generate recommendations with Ollama (SINGLE CALL)
+   * Generate recommendations with RecommendationAgent (ElizaOS)
+   */
+  private static async generateWithAgent(walletData: WalletData): Promise<Recommendation[]> {
+    try {
+      console.log('💎 [RecommendationService] Calling RecommendationAgent for recommendations')
+
+      return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+          {
+            type: 'GENERATE_RECOMMENDATIONS',
+            data: walletData
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              console.error('❌ [RecommendationService] Chrome runtime error:', chrome.runtime.lastError)
+              reject(new Error(chrome.runtime.lastError.message))
+              return
+            }
+
+            if (!response) {
+              console.error('❌ [RecommendationService] No response from background')
+              reject(new Error('No response from background script'))
+              return
+            }
+
+            if (response.success && response.recommendations) {
+              console.log('✅ [RecommendationService] Received', response.recommendations.length, 'recommendations from agent')
+              // Validate and filter recommendations
+              const validRecommendations = this.validateRecommendations(response.recommendations)
+              resolve(validRecommendations)
+            } else {
+              console.error('❌ [RecommendationService] Agent error:', response.error)
+              reject(new Error(response.error || 'Failed to generate recommendations'))
+            }
+          }
+        )
+      })
+
+    } catch (error) {
+      console.error('❌ [RecommendationService] Agent generation failed:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Validate and filter recommendations
+   */
+  private static validateRecommendations(recommendations: any[]): Recommendation[] {
+    return recommendations
+      .filter((rec: any) => {
+        const isValid = rec.category && rec.suggestions?.length > 0
+        if (!isValid) {
+          console.log('❌ [RecommendationService] Invalid recommendation:', rec)
+        }
+        return isValid
+      })
+      .map((rec: any) => {
+        const validSuggestions = rec.suggestions
+          .filter((s: any) => {
+            const isValid = s.name && s.url && s.url.startsWith('http')
+            if (!isValid) {
+              console.log('❌ [RecommendationService] Invalid suggestion:', s)
+            }
+            return isValid
+          })
+
+        console.log(`✅ [RecommendationService] Category "${rec.category}": ${rec.suggestions.length} → ${validSuggestions.length} valid suggestions`)
+
+        return {
+          category: rec.category,
+          title: rec.title || 'Similar new projects',
+          reason: rec.reason || 'Based on your activity',
+          suggestions: validSuggestions
+        }
+      })
+      .filter((rec: Recommendation) => rec.suggestions.length > 0)
+  }
+
+  /**
+   * Generate recommendations with Ollama (FALLBACK - keep for compatibility)
    */
   private static async generateWithOllama(walletData: WalletData): Promise<Recommendation[]> {
     try {
@@ -214,7 +293,7 @@ Generate 35-50 total suggestions across all categories.`
       ]
 
       const response = await OllamaClient.chat(messages)
-      return this.parseOllamaResponse(response)
+      return this.parseOllamaResponse(response) // Use old parsing for Ollama fallback
 
     } catch (error) {
       console.error('❌ [RecommendationService] Ollama generation failed:', error)

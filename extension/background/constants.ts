@@ -32,6 +32,14 @@ export const PULSEAGENT_IDS = {
   AUTHOR_ID: "613461d9-c0bb-439f-a628-bae1e7b7950c"
 }
 
+export const RECOMMENDATION_IDS = {
+  CHANNEL_ID: "d97bb3a1-6c64-4a46-906e-feddb5df6039",
+  ROOM_ID: "d97bb3a1-6c64-4a46-906e-feddb5df6039",
+  SERVER_ID: "00000000-0000-0000-0000-000000000000",
+  AGENT_ID: "92a956b2-ec82-0d31-8fc1-31c9e13836a3",
+  AUTHOR_ID: "613461d9-c0bb-439f-a628-bae1e7b7950c"
+}
+
 // --- Constants ---
 export const USER_NAME = "User";
 

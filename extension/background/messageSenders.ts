@@ -1,4 +1,4 @@
-import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS, EXCLUDED_URL_PATTERNS } from "./constants"
+import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS, RECOMMENDATION_IDS, EXCLUDED_URL_PATTERNS } from "./constants"
 import { isSensitiveUrl } from "./utils/url"
 
 
@@ -307,6 +307,64 @@ export function sendMessageToPulse(socketPulse: any, pulseData: any[]): void {
     sampleData: pulseData.slice(0, 2).map(d => ({ url: d.url, title: d.title?.slice(0, 30) }))
   })
   socketPulse.emit("message", payload)
+}
+
+// === Send recommendation request to RecommendationAgent ===
+export function sendRequestToRecommendation(socketRecommendation: any, walletData: any): void {
+  if (!socketRecommendation?.connected) {
+    console.warn("⚠️ RecommendationAgent socket not connected")
+    return
+  }
+
+  // Extract key interests from triplets (summarize to avoid token limit)
+  const interests = walletData.triples.map(t => ({
+    predicate: t.predicate.label,
+    object: t.object.label
+  }))
+
+  // Group by predicate for cleaner summary
+  const summary: Record<string, string[]> = {}
+  interests.forEach(i => {
+    if (!summary[i.predicate]) summary[i.predicate] = []
+    if (!summary[i.predicate].includes(i.object)) {
+      summary[i.predicate].push(i.object)
+    }
+  })
+
+  // Simple, compact message
+  const messageText = `Wallet: ${walletData.address}
+Total activities: ${walletData.triples.length}
+
+User interests summary:
+${Object.entries(summary).map(([pred, objects]) =>
+  `- ${pred}: ${objects.join(', ')}`
+).join('\n')}`
+
+  const payload = {
+    type: 2,
+    payload: {
+      senderId: RECOMMENDATION_IDS.AUTHOR_ID,
+      senderName: "Extension Recommendation",
+      message: messageText,
+      messageId: generateUUID(),
+      roomId: RECOMMENDATION_IDS.ROOM_ID,
+      channelId: RECOMMENDATION_IDS.CHANNEL_ID,
+      serverId: RECOMMENDATION_IDS.SERVER_ID,
+      source: "recommendation-generation",
+      attachments: [],
+      metadata: {
+        channelType: "DM",
+        isDm: true,
+        targetUserId: RECOMMENDATION_IDS.AGENT_ID
+      }
+    }
+  }
+
+  console.log("📤 Message to RecommendationAgent:", {
+    wallet: walletData.address,
+    triplesCount: walletData.triples.length
+  })
+  socketRecommendation.emit("message", payload)
 }
 
 // === Ollama requests via background ===

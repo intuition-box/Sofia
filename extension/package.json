@@ -32,6 +32,7 @@
     "lucide-react": "^0.525.0",
     "metamask-extension-provider": "^5.0.0",
     "node-fetch": "^3.3.2",
+    "ogl": "^1.0.11",
     "plasmo": "0.90.5",
     "postprocessing": "^6.37.8",
     "react": "18.2.0",
