@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTrustAccount } from '../../hooks/useTrustAccount'
 import WeightModal from '../modals/WeightModal'
 import type { EchoTriplet } from '../../types/blockchain'
@@ -63,33 +64,36 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
   return (
     <>
       <button
-        className="trust-account-btn iridescence-btn"
+        className={`trust-page-button ${loading ? 'loading' : ''} ${transactionSuccess ? 'success' : ''}`}
         onClick={handleButtonClick}
         disabled={loading}
       >
-        <div className="iridescence-btn-background">
+        <div className="trust-button-background">
           <Iridescence
-            color={[0.2, 0.8, 1]}
+            color={[1, 0.4, 0.5]}
             speed={0.3}
             mouseReact={false}
             amplitude={0.1}
             zoom={0.05}
           />
         </div>
-        <span className="iridescence-btn-content">
+        <span className="trust-button-content">
           {loading ? 'Processing...' : 'TRUST'}
         </span>
       </button>
 
-      <WeightModal
-        isOpen={showWeightModal}
-        triplets={[mockTriplet]}
-        isProcessing={loading}
-        transactionSuccess={transactionSuccess}
-        transactionError={transactionError || error}
-        onClose={handleModalClose}
-        onSubmit={handleWeightSubmit}
-      />
+      {showWeightModal && createPortal(
+        <WeightModal
+          isOpen={showWeightModal}
+          triplets={[mockTriplet]}
+          isProcessing={loading}
+          transactionSuccess={transactionSuccess}
+          transactionError={transactionError || error}
+          onClose={handleModalClose}
+          onSubmit={handleWeightSubmit}
+        />,
+        document.body
+      )}
     </>
   )
 }

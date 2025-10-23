@@ -521,11 +521,13 @@ const FollowTab = () => {
               </div>
               <div className="account-right">
                 <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
-                <TrustAccountButton
-                  accountVaultId={account.termId}
-                  accountLabel={account.label}
-                  onSuccess={() => console.log('✅ Trust created for', account.label)}
-                />
+                {filterType === 'following' && (
+                  <TrustAccountButton
+                    accountVaultId={account.termId}
+                    accountLabel={account.label}
+                    onSuccess={() => console.log('✅ Trust created for', account.label)}
+                  />
+                )}
               </div>
             </div>
           ))}

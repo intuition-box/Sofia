@@ -190,24 +190,6 @@
   font-weight: 500;
 }
 
-/* Trust Account Button */
-.trust-account-btn {
-  position: relative;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  overflow: hidden;
-}
-
-.trust-account-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* Loading, Error, Empty states */
 .loading-state,
 .error-state,
