@@ -121,12 +121,17 @@ export const useTrustPage = (): TrustPageResult => {
       logger.debug('Trust predicate obtained', { vaultId: trustPredicate.vaultId })
 
       logger.debug('Step 3: Creating website atom', { pageLabel })
+
+      // Get favicon URL from Google's service
+      const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+
       const websiteAtom = await createAtomWithMultivault({
         name: pageLabel,
         description: `Page: ${pageLabel}`,
-        url: url
+        url: url,
+        image: faviconUrl
       })
-      logger.debug('Website atom created', { vaultId: websiteAtom.vaultId })
+      logger.debug('Website atom created', { vaultId: websiteAtom.vaultId, favicon: faviconUrl })
 
       // Check if triple already exists
       logger.debug('Step 4: Checking if triple exists')

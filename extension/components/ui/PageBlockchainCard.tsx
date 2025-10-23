@@ -26,6 +26,27 @@ const PageBlockchainCard = () => {
   const [showAtomsList, setShowAtomsList] = useState(false)
   const [showTripletsList, setShowTripletsList] = useState(false)
 
+  // Favicon state
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(null)
+  const [faviconError, setFaviconError] = useState(false)
+
+  // Load favicon when URL changes
+  React.useEffect(() => {
+    if (!currentUrl) {
+      setFaviconUrl(null)
+      return
+    }
+
+    try {
+      const urlObj = new URL(currentUrl)
+      // Use Google's favicon service - always shows favicon (or globe if none exists)
+      const faviconPath = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`
+      setFaviconUrl(faviconPath)
+    } catch (error) {
+      setFaviconUrl(null)
+    }
+  }, [currentUrl])
+
   const handleRefresh = () => {
     fetchDataForCurrentPage()
   }
@@ -222,17 +243,25 @@ const PageBlockchainCard = () => {
               style={{ cursor: 'pointer' }}
             >
               <div className="website-icon-container">
-                <svg className="website-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="4" fill="white"/>
-                  <circle cx="6" cy="6" r="2" fill="white"/>
-                  <circle cx="18" cy="6" r="2" fill="white"/>
-                  <circle cx="6" cy="18" r="2" fill="white"/>
-                  <circle cx="18" cy="18" r="2" fill="white"/>
-                  <line x1="12" y1="12" x2="6" y2="6" stroke="white" strokeWidth="1.5"/>
-                  <line x1="12" y1="12" x2="18" y2="6" stroke="white" strokeWidth="1.5"/>
-                  <line x1="12" y1="12" x2="6" y2="18" stroke="white" strokeWidth="1.5"/>
-                  <line x1="12" y1="12" x2="18" y2="18" stroke="white" strokeWidth="1.5"/>
-                </svg>
+                {faviconUrl ? (
+                  <img
+                    src={faviconUrl}
+                    alt="Site favicon"
+                    className="website-icon website-favicon"
+                  />
+                ) : (
+                  <svg className="website-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="4" fill="white"/>
+                    <circle cx="6" cy="6" r="2" fill="white"/>
+                    <circle cx="18" cy="6" r="2" fill="white"/>
+                    <circle cx="6" cy="18" r="2" fill="white"/>
+                    <circle cx="18" cy="18" r="2" fill="white"/>
+                    <line x1="12" y1="12" x2="6" y2="6" stroke="white" strokeWidth="1.5"/>
+                    <line x1="12" y1="12" x2="18" y2="6" stroke="white" strokeWidth="1.5"/>
+                    <line x1="12" y1="12" x2="6" y2="18" stroke="white" strokeWidth="1.5"/>
+                    <line x1="12" y1="12" x2="18" y2="18" stroke="white" strokeWidth="1.5"/>
+                  </svg>
+                )}
               </div>
               <div className="website-url-container">
                 <span className="website-url-text">{new URL(currentUrl).hostname}</span>

@@ -51,6 +51,11 @@
   opacity: 0.9;
 }
 
+.website-favicon {
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 .website-url-container {
   flex: 1;
   display: flex;
