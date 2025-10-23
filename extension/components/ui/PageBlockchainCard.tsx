@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
 import WeightModal from '../modals/WeightModal'
+import StarBorder from './StarBorder'
 import type { PageBlockchainTriplet } from '../../types/page'
 import '../styles/PageBlockchainCard.css'
 
@@ -181,61 +182,68 @@ const PageBlockchainCard = () => {
       {currentUrl && (
         <div className="website-header-section">
           {/* Website Info Container with Icon + URL + Credibility Circle */}
-          <div
-            className="website-info-container clickable"
-            onClick={() => setShowExtendedMetrics(!showExtendedMetrics)}
-            style={{ cursor: 'pointer' }}
+          <StarBorder
+            as="div"
+            color={analysis.scoreColor}
+            speed="10s"
+            thickness={5}
           >
-            <div className="website-icon-container">
-              <svg className="website-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="4" fill="white"/>
-                <circle cx="6" cy="6" r="2" fill="white"/>
-                <circle cx="18" cy="6" r="2" fill="white"/>
-                <circle cx="6" cy="18" r="2" fill="white"/>
-                <circle cx="18" cy="18" r="2" fill="white"/>
-                <line x1="12" y1="12" x2="6" y2="6" stroke="white" strokeWidth="1.5"/>
-                <line x1="12" y1="12" x2="18" y2="6" stroke="white" strokeWidth="1.5"/>
-                <line x1="12" y1="12" x2="6" y2="18" stroke="white" strokeWidth="1.5"/>
-                <line x1="12" y1="12" x2="18" y2="18" stroke="white" strokeWidth="1.5"/>
-              </svg>
-            </div>
-            <div className="website-url-container">
-              <span className="website-url-text">{new URL(currentUrl).hostname}</span>
-              <span className="website-url-full">{currentUrl}</span>
-            </div>
+            <div
+              className="website-info-container clickable"
+              onClick={() => setShowExtendedMetrics(!showExtendedMetrics)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="website-icon-container">
+                <svg className="website-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="4" fill="white"/>
+                  <circle cx="6" cy="6" r="2" fill="white"/>
+                  <circle cx="18" cy="6" r="2" fill="white"/>
+                  <circle cx="6" cy="18" r="2" fill="white"/>
+                  <circle cx="18" cy="18" r="2" fill="white"/>
+                  <line x1="12" y1="12" x2="6" y2="6" stroke="white" strokeWidth="1.5"/>
+                  <line x1="12" y1="12" x2="18" y2="6" stroke="white" strokeWidth="1.5"/>
+                  <line x1="12" y1="12" x2="6" y2="18" stroke="white" strokeWidth="1.5"/>
+                  <line x1="12" y1="12" x2="18" y2="18" stroke="white" strokeWidth="1.5"/>
+                </svg>
+              </div>
+              <div className="website-url-container">
+                <span className="website-url-text">{new URL(currentUrl).hostname}</span>
+                <span className="website-url-full">{currentUrl}</span>
+              </div>
 
-            {/* Credibility Circle - Moved to Header */}
-            <div className="credibility-circle-compact">
-              <svg width="70" height="70" viewBox="0 0 70 70">
-                <circle
-                  cx="35"
-                  cy="35"
-                  r="30"
-                  fill="none"
-                  stroke="#2D3748"
-                  strokeWidth="6"
-                />
-                <circle
-                  cx="35"
-                  cy="35"
-                  r="30"
-                  fill="none"
-                  stroke={analysis.scoreColor}
-                  strokeWidth="6"
-                  strokeDasharray="188.4"
-                  strokeDashoffset={188.4 - (188.4 * analysis.credibilityScore / 100)}
-                  transform="rotate(-90 35 35)"
-                  style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                />
-              </svg>
-              <div className="circle-content-compact">
-                <div className="score-number-compact">{analysis.credibilityScore}</div>
-                <div className="score-label-compact" style={{ color: analysis.scoreColor }}>
-                  {analysis.scoreLabel}
+              {/* Credibility Circle - Moved to Header */}
+              <div className="credibility-circle-compact">
+                <svg width="70" height="70" viewBox="0 0 70 70">
+                  <circle
+                    cx="35"
+                    cy="35"
+                    r="30"
+                    fill="none"
+                    stroke="#2D3748"
+                    strokeWidth="6"
+                  />
+                  <circle
+                    cx="35"
+                    cy="35"
+                    r="30"
+                    fill="none"
+                    stroke={analysis.scoreColor}
+                    strokeWidth="6"
+                    strokeDasharray="188.4"
+                    strokeDashoffset={188.4 - (188.4 * analysis.credibilityScore / 100)}
+                    transform="rotate(-90 35 35)"
+                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                  />
+                </svg>
+                <div className="circle-content-compact">
+                  <div className="score-number-compact">{analysis.credibilityScore}</div>
+                  <div className="score-label-compact" style={{ color: analysis.scoreColor }}>
+                    {analysis.scoreLabel}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </StarBorder>
 
           {/* Trust Button */}
           <button
@@ -286,53 +294,72 @@ const PageBlockchainCard = () => {
             {/* Unified Extended Panel */}
             {showExtendedMetrics && (
               <div className="extended-metrics-panel">
-                {/* Metrics Section */}
+                {/* Metrics Section - Grid Layout */}
                 <div className="metrics-section">
+                  {/* Credibility Score Card */}
+                  <div className="metric-item metric-item-credibility">
+                    <div className="credibility-circle-compact credibility-circle-grid">
+                      <svg width="70" height="70" viewBox="0 0 70 70">
+                        <circle
+                          cx="35"
+                          cy="35"
+                          r="30"
+                          fill="none"
+                          stroke="#2D3748"
+                          strokeWidth="6"
+                        />
+                        <circle
+                          cx="35"
+                          cy="35"
+                          r="30"
+                          fill="none"
+                          stroke={analysis.scoreColor}
+                          strokeWidth="6"
+                          strokeDasharray="188.4"
+                          strokeDashoffset={188.4 - (188.4 * analysis.credibilityScore / 100)}
+                          transform="rotate(-90 35 35)"
+                          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                        />
+                      </svg>
+                      <div className="circle-content-compact">
+                        <div className="score-number-compact">{analysis.credibilityScore}</div>
+                        <div className="score-label-compact" style={{ color: analysis.scoreColor }}>
+                          {analysis.scoreLabel}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="metric-label" style={{ marginTop: '8px' }}>Credibility Score</div>
+                  </div>
+
+                  {/* Atoms Card */}
                   <div
                     className="metric-item clickable"
                     onClick={() => setShowAtomsList(!showAtomsList)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className="metric-icon">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="3" fill="#F59E0B"/>
-                        <circle cx="6" cy="6" r="2" fill="#F59E0B"/>
-                        <circle cx="18" cy="6" r="2" fill="#F59E0B"/>
-                        <circle cx="6" cy="18" r="2" fill="#F59E0B"/>
-                        <circle cx="18" cy="18" r="2" fill="#F59E0B"/>
-                      </svg>
-                    </div>
                     <div className="metric-info">
-                      <div className="metric-label">Atoms on this page</div>
                       <div className="metric-value">{(triplets as any)._counts?.atomsCount || 0}</div>
+                      <div className="metric-label">Atoms</div>
                     </div>
                   </div>
 
+                  {/* Triplets Card */}
                   <div
                     className="metric-item clickable"
                     onClick={() => setShowTripletsList(!showTripletsList)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className="metric-icon">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M3 6h18M3 12h18M3 18h18" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
-                    </div>
                     <div className="metric-info">
-                      <div className="metric-label">Triplets on this page</div>
                       <div className="metric-value">{(triplets as any)._counts?.triplesCount || triplets.length}</div>
+                      <div className="metric-label">Triplets</div>
                     </div>
                   </div>
 
+                  {/* Total Market Cap Card */}
                   <div className="metric-item">
-                    <div className="metric-icon">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
                     <div className="metric-info">
-                      <div className="metric-label">Total Market Cap</div>
                       <div className="metric-value">{analysis.totalShares.toFixed(3)}</div>
+                      <div className="metric-label">Market Cap</div>
                     </div>
                   </div>
                 </div>

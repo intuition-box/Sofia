@@ -5,6 +5,7 @@ import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
 import { useGetAtomAccount, AccountAtom } from '../../../hooks/useGetAtomAccount'
 import FollowButton from '../../ui/FollowButton'
+import LevelProgress from '../../ui/LevelProgress'
 import '../../styles/AccountTab.css'
 
 const AccountTab = () => {
@@ -124,6 +125,11 @@ const AccountTab = () => {
 
   return (
     <div className="profile-section account-tab">
+
+      {/* Level Progress Section */}
+      <div className="level-progress-section">
+        <LevelProgress />
+      </div>
 
       {/* Action Buttons */}
       <div className="action-buttons-container">
