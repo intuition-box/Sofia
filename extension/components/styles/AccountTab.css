@@ -1,24 +1,141 @@
-.action-buttons-container {
-  padding: var(--spacing-md);
-  display:flex;
-  align-content: center;
+/* ========== PROFILE HEADER ========== */
+.profile-header {
+  display: flex;
   align-items: center;
-  justify-content: space-between;
-  
+  padding: 20px 16px;
+  margin-bottom:-20px;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-family: 'Gotu', cursive;
+  font-size: 20px;
+  font-weight: 600;
+  color: #FBF7F5;
+  margin: 0 0 4px 0;
+}
+
+.profile-email {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========== STATS SECTION ========== */
+.stats-section {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.stat-value {
+  font-family: 'Gotu', cursive;
+  font-size: 28px;
+  font-weight: 700;
+  color: #FBF7F5;
+  line-height: 1;
+  margin-bottom: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.stat-label {
+  font-family: 'Gotu', cursive;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.stat-sublabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+.stat-icons-with-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.stat-icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.stat-icon:hover {
+  opacity: 1;
+}
+
+/* ========== SEPARATOR ========== */
+.section-separator {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  margin: 20px 16px;
+}
+
+/* ========== PLATFORM ICONS ========== */
+.platform-icons-container {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  padding: 16px;
+  margin-bottom: 20px;
 }
 
 .connect-button {
   backdrop-filter: blur(20px);
   border: 1px solid #ffffff1a;
   border-radius: 12px;
-  width: 100px;
-  height: 57px;
+  width: 70px;
+  height: 37px;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 0 var(--spacing-xl);
   cursor: pointer;
-  margin-bottom: var(--spacing-md);
+  transition: all 0.3s ease;
 }
 
 .connect-button.youtube:hover {
@@ -63,15 +180,15 @@
 }
 
 .youtube-icon {
-  border-radius: 10px
+  border-radius: 10px;
 }
 
 .spotify-icon {
-  border-radius: 10px
+  border-radius: 10px;
 }
 
 .twitch-icon {
-  border-radius: 10px
+  border-radius: 10px;
 }
 
 .connect-button-text {
@@ -79,6 +196,85 @@
   font-weight: 200;
 }
 
+
+/* ========== QUESTS SECTION ========== */
+.quests-section {
+  padding: 0 16px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quest-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.quest-item:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.quest-progress {
+  flex-shrink: 0;
+}
+
+.quest-details {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quest-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #FBF7F5;
+  margin: 0;
+}
+
+.quest-progress-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.quest-status {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.quest-action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(111, 68, 220, 0.2);
+  border: none;
+  color: #9f7aea;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.quest-action-btn:hover {
+  background: rgba(111, 68, 220, 0.3);
+  transform: translateX(2px);
+}
 
 .search-icon {
   width: var(--size-icon-md);

@@ -27,12 +27,15 @@
 }
 
 .tabs {
-  display: flex;
+  backdrop-filter: blur(29px);
+  border-bottom: 2px solid #ffffff1a;
+  border-radius: 29px;
   justify-content: center;
-  gap: var(--spacing-4xl);
-  margin-bottom: var(--spacing-4xl);
-  border-bottom: 2px solid var(--color-border-light);
-  padding-bottom: var(--spacing-xs);
+  gap: 82px;
+  margin-bottom: 32px;
+  padding-bottom: 8px;
+  display: flex;
+  margin-left: 33px;
 }
 
 .tab {

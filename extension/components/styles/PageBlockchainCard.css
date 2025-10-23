@@ -1,6 +1,6 @@
 /* Page Blockchain Card Styles */
 .blockchain-card {
-  background: linear-gradient(to bottom, #060504, #101010);
+  background:  #02021483;
   border-radius: 24px;
   padding: 20px;
   margin: 12px 0;
@@ -231,6 +231,7 @@
 }
 
 .metric-label {
+  font-family: 'Gotu', cursive;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
@@ -240,6 +241,7 @@
 }
 
 .metric-value {
+  font-family: 'Gotu', cursive;
   font-size: 32px;
   font-weight: 700;
   line-height: 1;
@@ -613,6 +615,7 @@
   border: 1px solid rgba(217, 119, 6, 0.3);
   border-radius: 12px;
   color: white;
+  font-family: 'Gotu', cursive;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

@@ -410,7 +410,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         <div className="empty-state">
           <p>Continue to navigate</p>
           <p className="empty-subtext">
-            Your triplets will appear automatically 
+            Your triples will appear automatically 
           </p>
         </div>
       ) : availableEchoes.length === 0 ? (
