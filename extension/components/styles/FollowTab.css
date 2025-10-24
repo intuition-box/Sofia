@@ -146,6 +146,19 @@
   border-color: #2a2a2a;
 }
 
+.account-link {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  min-width: 0;
+}
+
+.account-link:hover .account-label {
+  color: #c7866c;
+  text-decoration: underline;
+}
+
 .account-left {
   display: flex;
   align-items: center;
@@ -181,6 +194,7 @@
 .account-right {
   display: flex;
   align-items: center;
+  gap: 16px;
 }
 
 .trust-amount {

@@ -1,0 +1,265 @@
+.feed-tab {
+  padding: 20px;
+  max-width: 100%;
+}
+
+.feed-header {
+  margin-bottom: 24px;
+}
+
+.feed-header h2 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.feed-subtitle {
+  color: #9ca3af;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Feed Items */
+.feed-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feed-item-container {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.feed-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.feed-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.feed-item-clickable {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+}
+
+.feed-item-clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(199, 134, 108, 0.3);
+  transform: translateY(-1px);
+}
+
+.feed-item-clickable:hover .feed-details {
+  color: #c7866c;
+}
+
+/* Join Button */
+.feed-join-button {
+  padding: 8px 16px;
+  background: #c7866c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  align-self: center;
+  min-width: 80px;
+}
+
+.feed-join-button:hover:not(:disabled) {
+  background: #d4956f;
+  transform: translateY(-1px);
+}
+
+.feed-join-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feed-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.feed-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.feed-item-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.feed-account-name {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-timestamp {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.feed-item-content {
+  padding-left: 52px;
+}
+
+.feed-description {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.feed-icon {
+  font-size: 18px;
+}
+
+.feed-action {
+  color: #9ca3af;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.feed-details {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.5;
+  word-break: break-word;
+  transition: color 0.2s ease;
+}
+
+.feed-shares {
+  color: #c7866c;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-state h3 {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: #9ca3af;
+  font-size: 14px;
+  margin: 0;
+}
+
+.empty-subtext {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-state p {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Error State */
+.error-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.error-state h3 {
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.error-state p {
+  color: #9ca3af;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.retry-button {
+  padding: 10px 20px;
+  background: #c7866c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #d4956f;
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .feed-tab {
+    padding: 16px;
+  }
+
+  .feed-item {
+    padding: 12px;
+  }
+
+  .feed-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .feed-item-content {
+    padding-left: 48px;
+  }
+}

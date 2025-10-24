@@ -8,6 +8,9 @@ import BookmarkButton from '../../ui/BookmarkButton'
 import searchIcon from '../../ui/icons/Icon=Search.svg'
 import { useGetAtomAccount, AccountAtom } from '../../../hooks/useGetAtomAccount'
 import FollowButton from '../../ui/FollowButton'
+import TrustAccountButton from '../../ui/TrustAccountButton'
+import UpvoteModal from '../../modals/UpvoteModal'
+import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import '../../styles/CoreComponents.css'
 import '../../styles/FollowTab.css'
 
@@ -30,7 +33,7 @@ const FollowTab = () => {
   const [followedAccounts, setFollowedAccounts] = useState<FollowedAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [filterType, setFilterType] = useState<'followers' | 'following'>('followers')
+  const [filterType, setFilterType] = useState<'followers' | 'following' | 'trust-circle'>('followers')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'highest-stake' | 'lowest-stake' | 'recent'>('highest-stake')
 
@@ -38,6 +41,12 @@ const FollowTab = () => {
   const { searchAccounts } = useGetAtomAccount()
   const [searchResults, setSearchResults] = useState<AccountAtom[]>([])
   const [showSearchResults, setShowSearchResults] = useState(false)
+
+  // Upvote modal state for Trust Circle
+  const [selectedAccount, setSelectedAccount] = useState<FollowedAccount | null>(null)
+  const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
+  const [isProcessingUpvote, setIsProcessingUpvote] = useState(false)
+  const { addWeight, removeWeight } = useWeightOnChain()
 
   // Generate avatar color from label
   const getAvatarColor = (label: string) => {
@@ -112,6 +121,63 @@ const FollowTab = () => {
     loadFollows()
   }
 
+  // Handle upvote click for Trust Circle
+  const handleUpvoteClick = (account: FollowedAccount) => {
+    setSelectedAccount(account)
+    setIsUpvoteModalOpen(true)
+  }
+
+  const handleCloseUpvoteModal = () => {
+    setIsUpvoteModalOpen(false)
+    setSelectedAccount(null)
+    setIsProcessingUpvote(false)
+  }
+
+  const handleUpvoteSubmit = async (newUpvotes: number) => {
+    if (!selectedAccount || !address) return
+
+    try {
+      setIsProcessingUpvote(true)
+
+      const currentUpvotes = Math.round(selectedAccount.trustAmount * 1000) // Convert TRUST to upvotes
+      const difference = newUpvotes - currentUpvotes
+
+      console.log('Adjusting upvotes from', currentUpvotes, 'to', newUpvotes, 'difference:', difference)
+
+      if (difference === 0) {
+        handleCloseUpvoteModal()
+        return
+      }
+
+      // Convert upvotes to Wei (1 upvote = 0.001 TRUST = 10^15 Wei)
+      const weightChange = BigInt(Math.abs(difference)) * BigInt(1e15)
+
+      let result
+      if (difference > 0) {
+        // Adding upvotes
+        result = await addWeight(selectedAccount.tripleId, weightChange)
+      } else {
+        // Removing upvotes
+        result = await removeWeight(selectedAccount.tripleId, weightChange)
+      }
+
+      if (result.success) {
+        console.log('✅ Weight adjustment successful:', result.txHash)
+
+        // Refresh the data after successful transaction
+        await loadFollows()
+
+        handleCloseUpvoteModal()
+      } else {
+        throw new Error(result.error || 'Transaction failed')
+      }
+    } catch (error) {
+      console.error('Failed to adjust upvotes:', error)
+      setIsProcessingUpvote(false)
+      // Keep modal open to show error or allow retry
+    }
+  }
+
   const loadFollows = async () => {
     try {
       console.log('🔍 FollowTab - Loading', filterType, {
@@ -134,8 +200,8 @@ const FollowTab = () => {
 
       let response: GraphQLTriplesResponse
 
-      if (filterType === 'following') {
-        // FOLLOWING: Keep the original working query
+      if (filterType === 'following' || filterType === 'trust-circle') {
+        // FOLLOWING or TRUST CIRCLE: Query triples where I have a position
         const triplesQuery = `
           query Triples($where: triples_bool_exp, $walletAddress: String!) {
             triples(where: $where) {
@@ -153,6 +219,9 @@ const FollowTab = () => {
             }
           }
         `
+
+        // Use TRUST or FOLLOW predicate depending on filter type
+        const predicateId = filterType === 'trust-circle' ? PREDICATE_IDS.TRUST : PREDICATE_IDS.FOLLOW
 
         const where = {
           "_and": [
@@ -172,7 +241,7 @@ const FollowTab = () => {
             },
             {
               "predicate_id": {
-                "_eq": PREDICATE_IDS.FOLLOW
+                "_eq": predicateId
               }
             },
             {
@@ -185,7 +254,7 @@ const FollowTab = () => {
           ]
         }
 
-        console.log('🚀 Making GraphQL request (following) with where:', where)
+        console.log(`🚀 Making GraphQL request (${filterType}) with where:`, where)
 
         response = await intuitionGraphqlClient.request(triplesQuery, {
           where,
@@ -334,8 +403,8 @@ const FollowTab = () => {
       // Convert triples to display format
       let accounts: FollowedAccount[] = []
 
-      if (filterType === 'following') {
-        // Following: Each triple represents one account I follow
+      if (filterType === 'following' || filterType === 'trust-circle') {
+        // Following or Trust Circle: Each triple represents one account I follow/trust
         accounts = response.triples.map((triple: any) => {
           const account = triple.object
           const accountData = atomDataMap.get(account.label)
@@ -435,6 +504,12 @@ const FollowTab = () => {
         >
           Following
         </button>
+        <button
+          className={`filter-btn ${filterType === 'trust-circle' ? 'active' : ''}`}
+          onClick={() => setFilterType('trust-circle')}
+        >
+          Trust Circle
+        </button>
       </div>
 
       {/* Search and Sort */}
@@ -508,22 +583,68 @@ const FollowTab = () => {
         <div className="followed-accounts">
           {filteredAccounts.map((account, index) => (
             <div key={account.id} className="followed-account-card">
-              <div className="account-left">
-                <span className="account-number">{index + 1}</span>
-                <div
-                  className="account-avatar"
-                  style={{ backgroundColor: getAvatarColor(account.label) }}
-                >
-                  {account.label.slice(0, 2).toUpperCase()}
+              <a
+                href={`https://portal.intuition.systems/explore/atom/${account.termId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="account-link"
+                onClick={(e) => {
+                  // Allow button clicks to not trigger the link
+                  if ((e.target as HTMLElement).closest('.trust-account-btn, .upvote-badge')) {
+                    e.preventDefault()
+                  }
+                }}
+              >
+                <div className="account-left">
+                  <span className="account-number">{index + 1}</span>
+                  <div
+                    className="account-avatar"
+                    style={{ backgroundColor: getAvatarColor(account.label) }}
+                  >
+                    {account.label.slice(0, 2).toUpperCase()}
+                  </div>
+                  <span className="account-label">{account.label}</span>
                 </div>
-                <span className="account-label">{account.label}</span>
-              </div>
+              </a>
               <div className="account-right">
                 <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
+                {filterType === 'following' && (
+                  <TrustAccountButton
+                    accountVaultId={account.termId}
+                    accountLabel={account.label}
+                    onSuccess={() => console.log('✅ Trust created for', account.label)}
+                  />
+                )}
+                {filterType === 'trust-circle' && (
+                  <div
+                    className="upvote-badge upvote-badge-relative"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleUpvoteClick(account)
+                    }}
+                    title="Adjust trust weight"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    👍 {Math.round(account.trustAmount * 1000)}
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Upvote Modal for Trust Circle */}
+      {selectedAccount && (
+        <UpvoteModal
+          isOpen={isUpvoteModalOpen}
+          objectName={selectedAccount.label}
+          objectType="Account"
+          currentUpvotes={Math.round(selectedAccount.trustAmount * 1000)}
+          onClose={handleCloseUpvoteModal}
+          onSubmit={handleUpvoteSubmit}
+          isProcessing={isProcessingUpvote}
+        />
       )}
     </div>
   )

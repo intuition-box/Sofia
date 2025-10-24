@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
 import WeightModal from '../modals/WeightModal'
@@ -481,15 +482,18 @@ const PageBlockchainCard = () => {
         </div>
       )}
 
-      <WeightModal
-        isOpen={showWeightModal}
-        triplets={modalTriplets}
-        isProcessing={localTrustLoading}
-        transactionSuccess={localTrustSuccess}
-        transactionError={localTrustError || undefined}
-        onClose={handleModalClose}
-        onSubmit={handleModalSubmit}
-      />
+      {showWeightModal && createPortal(
+        <WeightModal
+          isOpen={showWeightModal}
+          triplets={modalTriplets}
+          isProcessing={localTrustLoading}
+          transactionSuccess={localTrustSuccess}
+          transactionError={localTrustError || undefined}
+          onClose={handleModalClose}
+          onSubmit={handleModalSubmit}
+        />,
+        document.body
+      )}
     </div>
   )
 }
