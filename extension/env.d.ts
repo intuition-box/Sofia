@@ -1,9 +1,7 @@
-/// <reference types="vite/client" />
+/// <reference types="plasmo" />
 
-interface ImportMetaEnv {
-  readonly VITE_SOFIA_SERVER_URL: string
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv
+declare namespace NodeJS {
+  interface ProcessEnv {
+    readonly PLASMO_PUBLIC_SOFIA_SERVER_URL: string
+  }
 }

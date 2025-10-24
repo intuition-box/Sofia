@@ -10,9 +10,9 @@
  * - Production: pnpm build (uses .env.production)
  */
 
-// Get URL from Vite environment variable
+// Get URL from Plasmo environment variable
 // Falls back to localhost if variable is not defined
-export const SOFIA_SERVER_URL = import.meta.env.VITE_SOFIA_SERVER_URL || "http://localhost:3000"
+export const SOFIA_SERVER_URL = process.env.PLASMO_PUBLIC_SOFIA_SERVER_URL || "http://localhost:3000"
 
 // Log the URL being used (useful for debugging)
 console.log(`[Sofia Config] Using server URL: ${SOFIA_SERVER_URL}`)
