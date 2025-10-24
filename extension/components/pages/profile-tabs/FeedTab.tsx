@@ -12,19 +12,18 @@ interface TrustCircleAccount {
   wallet: string
 }
 
-interface FeedTriplet {
+interface FeedEvent {
   id: string
-  subject: { label: string; term_id: string }
-  predicate: { label: string; term_id: string }
-  object: { label: string; term_id: string }
+  type: string
   created_at: string
   accountLabel: string
-  shares: string
+  description: string
+  details: string
 }
 
 const FeedTab = () => {
   const [address] = useStorage<string>("metamask-account")
-  const [feedItems, setFeedItems] = useState<FeedTriplet[]>([])
+  const [feedItems, setFeedItems] = useState<FeedEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,19 +50,12 @@ const FeedTab = () => {
 
       // Step 1: Get all accounts in my Trust Circle
       const trustCircleQuery = `
-        query GetTrustCircle($where: triples_bool_exp, $walletAddress: String!) {
+        query GetTrustCircle($where: triples_bool_exp) {
           triples(where: $where) {
             object {
               label
               term_id
               type
-              atom {
-                value {
-                  thing { url }
-                  person { url }
-                  organization { url }
-                }
-              }
             }
           }
         }
@@ -101,33 +93,38 @@ const FeedTab = () => {
       }
 
       const trustCircleResponse = await intuitionGraphqlClient.request(trustCircleQuery, {
-        where: trustCircleWhere,
-        walletAddress: checksumAddress
+        where: trustCircleWhere
       }) as { triples: Array<{ object: any }> }
 
-      // Extract wallet addresses from Account atoms
-      const trustCircleAccounts: TrustCircleAccount[] = []
-
-      for (const triple of trustCircleResponse.triples || []) {
-        const obj = triple.object
-        // Account atoms store wallet address in their data
-        let walletAddr = ''
-
-        // Try to extract wallet from atom value
-        if (obj.atom?.value?.thing?.url) {
-          walletAddr = obj.atom.value.thing.url
-        } else if (obj.atom?.value?.person?.url) {
-          walletAddr = obj.atom.value.person.url
-        } else if (obj.atom?.value?.organization?.url) {
-          walletAddr = obj.atom.value.organization.url
-        }
-
-        trustCircleAccounts.push({
-          termId: obj.term_id,
-          label: obj.label,
-          wallet: walletAddr || obj.label
-        })
+      if (!trustCircleResponse.triples || trustCircleResponse.triples.length === 0) {
+        setFeedItems([])
+        setLoading(false)
+        return
       }
+
+      // Get wallet addresses for these Account atoms via separate query
+      const accountTermIds = trustCircleResponse.triples.map(t => t.object.term_id)
+
+      const atomsQuery = `
+        query GetAccountAtoms($termIds: [String!]!) {
+          atoms(where: { term_id: { _in: $termIds } }) {
+            term_id
+            label
+            data
+          }
+        }
+      `
+
+      const atomsResponse = await intuitionGraphqlClient.request(atomsQuery, {
+        termIds: accountTermIds
+      }) as { atoms: Array<{ term_id: string; label: string; data: string }> }
+
+      // Extract wallet addresses from Account atoms
+      const trustCircleAccounts: TrustCircleAccount[] = atomsResponse.atoms?.map(atom => ({
+        termId: atom.term_id,
+        label: atom.label,
+        wallet: atom.data || atom.label // data contains the wallet address
+      })) || []
 
       console.log('📊 Trust Circle accounts:', trustCircleAccounts)
 
@@ -137,56 +134,84 @@ const FeedTab = () => {
         return
       }
 
-      // Step 2: Get all positions (triplets) that these accounts have staked on
-      // We need to query by wallet addresses in the positions
+      // Step 2: Get all activity events from these accounts using the events table
       const walletAddresses = trustCircleAccounts
+        .map(acc => acc.wallet.toLowerCase())
+        .filter(w => w.startsWith('0x'))
+
       if (walletAddresses.length === 0) {
         setFeedItems([])
         setLoading(false)
         return
       }
 
+      // Use the events table to get all activity from Trust Circle accounts
       const feedQuery = `
-        query GetTrustCircleFeed($walletAddresses: [String!]!) {
-          triples: terms(
+        query TrustCircleActivity($walletAddresses: [String!]!, $limit: Int = 50) {
+          events(
+            limit: $limit
+            order_by: {created_at: desc}
             where: {
-                {
-                  term: {
-                    vaults: {
-                      positions: {
-                        account: {
-                          id: { _in: $walletAddresses }
-                        }
-                      }
-                    }
-                  }
-                }
-            },
-            order_by: { created_at: desc },
-            limit: 100
+              _and: [
+                {type: {_neq: "FeesTransfered"}},
+                {_not: {_and: [{type: {_eq: "Deposited"}}, {deposit: {assets_after_fees: {_eq: 0}}}]}},
+                {_or: [
+                  {_and: [{type: {_eq: "AtomCreated"}}, {atom: {creator: {id: {_in: $walletAddresses}}}}]},
+                  {_and: [{type: {_eq: "TripleCreated"}}, {triple: {creator: {id: {_in: $walletAddresses}}}}]},
+                  {_and: [{type: {_eq: "Deposited"}}, {deposit: {sender: {id: {_in: $walletAddresses}}}}]},
+                  {_and: [{type: {_eq: "Redeemed"}}, {redemption: {sender: {id: {_in: $walletAddresses}}}}]}
+                ]}
+              ]
+            }
           ) {
             id
+            created_at
+            type
+            transaction_hash
+            atom {
+              term_id
+              label
+              type
+              image
+              creator {
+                id
+                label
+              }
+            }
             triple {
+              term_id
+              creator {
+                id
+                label
+              }
               subject { term_id, label }
               predicate { term_id, label }
               object { term_id, label }
             }
-            created_at
-            term {
-              vaults(where: { curve_id: { _eq: "1" } }) {
-                positions(where: { account: { id: { _in: $walletAddresses } } }) {
-                  account { id, label }
-                  shares
-                  created_at
-                }
+            deposit {
+              sender {
+                id
+                label
               }
+              shares
+              assets_after_fees
+            }
+            redemption {
+              sender {
+                id
+                label
+              }
+              shares
+              assets
             }
           }
         }
       `
 
       const feedResponse = await intuitionGraphqlClient.request(feedQuery, {
-      }) as { triples: Array<any> }
+        walletAddresses,
+        limit: 50
+      }) as { events: Array<any> }
 
       console.log('📊 Feed response:', feedResponse)
 
@@ -195,32 +220,45 @@ const FeedTab = () => {
         trustCircleAccounts.map(acc => [acc.wallet.toLowerCase(), acc.label])
       )
 
-      const feedItems: FeedTriplet[] = []
+      const feedEvents: FeedEvent[] = []
 
-      for (const triple of feedResponse.triples || []) {
-        // Get all positions from accounts in trust circle
-        const positions = triple.term?.vaults?.[0]?.positions || []
+      for (const event of feedResponse.events || []) {
+        let accountLabel = ''
+        let description = ''
+        let details = ''
 
-        for (const position of positions) {
-          const walletAddr = position.account.id.toLowerCase()
-          const accountLabel = walletToLabel.get(walletAddr) || position.account.label
+        // Determine account and data based on event type
+        if (event.type === 'AtomCreated' && event.atom) {
+          accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
+          description = 'created atom'
+          details = event.atom.label
+        } else if (event.type === 'TripleCreated' && event.triple) {
+          accountLabel = walletToLabel.get(event.triple.creator.id.toLowerCase()) || event.triple.creator.label
+          description = 'created claim'
+          details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
+        } else if (event.type === 'Deposited' && event.deposit) {
+          accountLabel = walletToLabel.get(event.deposit.sender.id.toLowerCase()) || event.deposit.sender.label
+          description = 'staked'
+          details = `${(parseFloat(event.deposit.shares) / 1e18).toFixed(3)} shares`
+        } else if (event.type === 'Redeemed' && event.redemption) {
+          accountLabel = walletToLabel.get(event.redemption.sender.id.toLowerCase()) || event.redemption.sender.label
+          description = 'redeemed'
+          details = `${(parseFloat(event.redemption.shares) / 1e18).toFixed(3)} shares`
+        }
 
-          feedItems.push({
-            id: `${triple.id}-${position.account.id}`,
-            subject: triple.triple.subject,
-            predicate: triple.triple.predicate,
-            object: triple.triple.object,
-            created_at: position.created_at || triple.created_at,
+        if (accountLabel) {
+          feedEvents.push({
+            id: event.id,
+            type: event.type,
+            created_at: event.created_at,
             accountLabel,
-            shares: position.shares
+            description,
+            details
           })
         }
       }
 
-      // Sort by date
-      feedItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-
-      setFeedItems(feedItems)
+      setFeedItems(feedEvents)
 
     } catch (error) {
       console.error('❌ Failed to load Trust Circle feed:', error)
@@ -252,6 +290,16 @@ const FeedTab = () => {
     ]
     const hash = label.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
     return colors[hash % colors.length]
+  }
+
+  const getEventIcon = (type: string) => {
+    switch (type) {
+      case 'AtomCreated': return '✨'
+      case 'TripleCreated': return '🔗'
+      case 'Deposited': return '📈'
+      case 'Redeemed': return '📉'
+      default: return '•'
+    }
   }
 
   if (!address) {
@@ -315,14 +363,11 @@ const FeedTab = () => {
                 </div>
               </div>
               <div className="feed-item-content">
-                <p className="feed-triplet">
-                  <span className="subject">{item.subject.label}</span>{' '}
-                  <span className="predicate">{item.predicate.label}</span>{' '}
-                  <span className="object">{item.object.label}</span>
+                <p className="feed-description">
+                  <span className="feed-icon">{getEventIcon(item.type)}</span>
+                  <span className="feed-action">{item.description}</span>
                 </p>
-                <div className="feed-shares">
-                  💎 {(parseFloat(item.shares) / 1e18).toFixed(3)} shares
-                </div>
+                <p className="feed-details">{item.details}</p>
               </div>
             </div>
           ))}
@@ -331,7 +376,7 @@ const FeedTab = () => {
         <div className="empty-state">
           <p>No activity yet</p>
           <p className="empty-subtext">
-            Accounts in your Trust Circle haven't staked on any triplets yet.
+            Accounts in your Trust Circle haven't had any activity yet.
           </p>
         </div>
       )}
