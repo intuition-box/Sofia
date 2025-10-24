@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import '../styles/Modal.css'
 
 interface Triplet {
@@ -60,22 +61,20 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         'Publishing to blockchain...',
         'Confirming transaction...'
       ]
-      
+
       let stepIndex = 0
       setProcessingStep(steps[0])
-      
+
       const interval = setInterval(() => {
         stepIndex = (stepIndex + 1) % steps.length
         setProcessingStep(steps[stepIndex])
       }, 2000)
-      
+
       return () => clearInterval(interval)
     } else {
       setProcessingStep('')
     }
   }, [isProcessing])
-
-  if (!isOpen || triplets.length === 0) return null
 
   const handleSubmit = async () => {
     try {
@@ -126,7 +125,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     setCustomValues(newCustomValues)
   }
 
-  return (
+  if (!isOpen || triplets.length === 0) return null
+
+  return createPortal(
     <div className={`modal-overlay ${isProcessing ? 'processing' : ''}`}>
       <div className="modal-content">
         <div className="modal-header">
@@ -244,7 +245,8 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
