@@ -58,7 +58,7 @@ task
 
 #Docs
 TESTING_PRODUCTION.md
-DEPLOYMENT.md
+DEVELOPMENT_WORKFLOW.md
 
 #Version
 sofia-agent-latest.tar.gz
