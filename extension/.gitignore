@@ -35,6 +35,7 @@ yarn-error.log*
 out/
 build/
 dist/
+releases/
 
 # plasmo
 .plasmo
