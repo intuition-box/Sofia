@@ -35,6 +35,10 @@ echo "Adding PulseAgent..."
 $ELIZAOS agent start --path config/PulseAgent.json
 sleep 2
 
+echo "Adding RecommendationAgent..."
+$ELIZAOS agent start --path config/RecommendationAgent.json
+sleep 2
+
 echo ""
 echo "✅ All 4 agents added to ElizaOS server"
 echo "   Server PID: $SERVER_PID"
