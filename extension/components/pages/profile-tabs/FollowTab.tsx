@@ -11,6 +11,7 @@ import FollowButton from '../../ui/FollowButton'
 import TrustAccountButton from '../../ui/TrustAccountButton'
 import UpvoteModal from '../../modals/UpvoteModal'
 import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
+import Avatar from '../../ui/Avatar'
 import '../../styles/CoreComponents.css'
 import '../../styles/FollowTab.css'
 
@@ -22,6 +23,7 @@ interface FollowedAccount {
   termId: string
   tripleId: string
   followDate: string
+  image?: string
   url?: string
   description?: string
   walletInfo?: { wallet: string; shares: string }[]
@@ -48,21 +50,6 @@ const FollowTab = () => {
   const [isProcessingUpvote, setIsProcessingUpvote] = useState(false)
   const { addWeight, removeWeight } = useWeightOnChain()
 
-  // Generate avatar color from label
-  const getAvatarColor = (label: string) => {
-    const colors = [
-      '#10b981', // green
-      '#3b82f6', // blue
-      '#f59e0b', // amber
-      '#ef4444', // red
-      '#8b5cf6', // purple
-      '#ec4899', // pink
-      '#14b8a6', // teal
-      '#f97316', // orange
-    ]
-    const hash = label.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    return colors[hash % colors.length]
-  }
 
   // Filter and sort accounts
   const getFilteredAccounts = () => {
@@ -207,7 +194,7 @@ const FollowTab = () => {
             triples(where: $where) {
               subject { label, term_id, type }
               predicate { label, term_id }
-              object { label, term_id, type }
+              object { label, term_id, type, image }
               term_id
               created_at
               positions(where: { account: { id: { _eq: $walletAddress } } }) {
@@ -422,6 +409,7 @@ const FollowTab = () => {
             termId: account.term_id,
             tripleId: triple.term_id,
             followDate: new Date(triple.created_at).toLocaleDateString(),
+            image: account.image,
             url: accountData?.url,
             description: accountData?.description,
             walletInfo: [],
@@ -445,6 +433,7 @@ const FollowTab = () => {
               termId: position.account.id,
               tripleId: triple.term_id,
               followDate: new Date(triple.created_at).toLocaleDateString(),
+              image: position.account.image,
               url: undefined,
               description: undefined,
               walletInfo: [],
@@ -534,12 +523,12 @@ const FollowTab = () => {
               >
                 <div className="account-left">
                   <span className="account-number">{index + 1}</span>
-                  <div
-                    className="account-avatar"
-                    style={{ backgroundColor: getAvatarColor(account.label) }}
-                  >
-                    {account.label.slice(0, 2).toUpperCase()}
-                  </div>
+                  <Avatar
+                    imgSrc={account.image}
+                    name={account.label}
+                    avatarClassName="account-avatar"
+                    size="medium"
+                  />
                   <span className="account-label">{account.label}</span>
                 </div>
                 <div className="account-right">
@@ -590,24 +579,26 @@ const FollowTab = () => {
                 className="account-link"
                 onClick={(e) => {
                   // Allow button clicks to not trigger the link
-                  if ((e.target as HTMLElement).closest('.trust-account-btn, .upvote-badge')) {
+                  if ((e.target as HTMLElement).closest('.trust-account-btn, .upvote-badge, .follow-button')) {
                     e.preventDefault()
                   }
                 }}
               >
                 <div className="account-left">
                   <span className="account-number">{index + 1}</span>
-                  <div
-                    className="account-avatar"
-                    style={{ backgroundColor: getAvatarColor(account.label) }}
-                  >
-                    {account.label.slice(0, 2).toUpperCase()}
+                  <Avatar
+                    imgSrc={account.image}
+                    name={account.label}
+                    avatarClassName="account-avatar"
+                    size="medium"
+                  />
+                  <div className="account-info">
+                    <span className="account-label">{account.label}</span>
+                    <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
                   </div>
-                  <span className="account-label">{account.label}</span>
                 </div>
               </a>
               <div className="account-right">
-                <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
                 {filterType === 'following' && (
                   <TrustAccountButton
                     accountVaultId={account.termId}

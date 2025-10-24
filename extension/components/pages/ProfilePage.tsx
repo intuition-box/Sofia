@@ -57,7 +57,7 @@ const ProfilePage = () => {
           className={`tab ${activeTab === 'trust-circle' ? 'active' : ''}`}
           onClick={() => setActiveTab('trust-circle')}
         >
-          Trust Circle
+          Activity
         </button>
       </div>
 

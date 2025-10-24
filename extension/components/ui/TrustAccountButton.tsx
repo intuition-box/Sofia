@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { useTrustAccount } from '../../hooks/useTrustAccount'
 import WeightModal from '../modals/WeightModal'
 import type { EchoTriplet } from '../../types/blockchain'
-import Iridescence from './Iridescence'
 
 interface TrustAccountButtonProps {
   accountVaultId: string
@@ -64,19 +63,10 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
   return (
     <>
       <button
-        className={`trust-page-button ${loading ? 'loading' : ''} ${transactionSuccess ? 'success' : ''}`}
+        className={`trust-page-button salmon-gradient-button ${loading ? 'loading' : ''} ${transactionSuccess ? 'success' : ''}`}
         onClick={handleButtonClick}
         disabled={loading}
       >
-        <div className="trust-button-background">
-          <Iridescence
-            color={[1, 0.4, 0.5]}
-            speed={0.3}
-            mouseReact={false}
-            amplitude={0.1}
-            zoom={0.05}
-          />
-        </div>
         <span className="trust-button-content">
           {loading ? 'Processing...' : 'TRUST'}
         </span>

@@ -163,6 +163,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 1;
+  min-width: 0;
 }
 
 .account-number {
@@ -170,6 +172,7 @@
   font-size: 14px;
   min-width: 20px;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .account-avatar {
@@ -185,22 +188,36 @@
   flex-shrink: 0;
 }
 
+.account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
 .account-label {
   color: #fff;
   font-size: 14px;
   font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .account-right {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .trust-amount {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
+  color: #6b7280;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Loading, Error, Empty states */

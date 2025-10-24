@@ -1,0 +1,50 @@
+/* Follow Button Styles */
+.follow-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: 0.2s;
+  color: white;
+  opacity: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.follow-button.salmon-gradient-button {
+  background: linear-gradient(135deg, #ff8a65 0%, #ff6e40 50%, #ff8a65 100%);
+  background-size: 200% 200%;
+  animation: salmon-gradient 3s ease infinite;
+  box-shadow: 0 2px 8px rgba(255, 110, 64, 0.3);
+}
+
+@keyframes salmon-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.follow-button.salmon-gradient-button:hover:not(:disabled) {
+  box-shadow: 0 4px 16px rgba(255, 110, 64, 0.5);
+  transform: translateY(-2px);
+}
+
+.follow-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.follow-button.loading {
+  opacity: 0.8;
+}

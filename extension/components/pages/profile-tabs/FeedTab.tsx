@@ -5,7 +5,9 @@ import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
 import { getAddress } from 'viem'
 import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import UpvoteModal from '../../modals/UpvoteModal'
+import Avatar from '../../ui/Avatar'
 import '../../styles/CoreComponents.css'
+import '../../styles/PageBlockchainCard.css'
 import '../../styles/FeedTab.css'
 
 interface TrustCircleAccount {
@@ -19,6 +21,8 @@ interface FeedEvent {
   type: string
   created_at: string
   accountLabel: string
+  accountWallet: string
+  accountImage?: string
   description: string
   details: string
   portalLink?: string
@@ -32,7 +36,9 @@ const FeedTab = () => {
   const [selectedEvent, setSelectedEvent] = useState<FeedEvent | null>(null)
   const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [declinedEvents, setDeclinedEvents] = useStorage<string[]>("declined-feed-events", [])
   const { addWeight, removeWeight } = useWeightOnChain()
+
 
   useEffect(() => {
     if (!address) {
@@ -196,6 +202,7 @@ const FeedTab = () => {
               creator {
                 id
                 label
+                image
               }
             }
             triple {
@@ -203,6 +210,7 @@ const FeedTab = () => {
               creator {
                 id
                 label
+                image
               }
               subject { term_id, label }
               predicate { term_id, label }
@@ -212,6 +220,7 @@ const FeedTab = () => {
               sender {
                 id
                 label
+                image
               }
               shares
               assets_after_fees
@@ -220,6 +229,7 @@ const FeedTab = () => {
               sender {
                 id
                 label
+                image
               }
               shares
               assets
@@ -247,23 +257,31 @@ const FeedTab = () => {
       for (const event of feedResponse.events || []) {
         console.log('📊 Processing event:', event.type, event)
         let accountLabel = ''
+        let accountWallet = ''
+        let accountImage = ''
         let description = ''
         let details = ''
 
         // Determine account and data based on event type
         let portalLink = ''
         if (event.type === 'AtomCreated' && event.atom) {
+          accountWallet = event.atom.creator.id
           accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
+          accountImage = event.atom.creator.image
           description = 'created identity'
           details = event.atom.label
           portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
         } else if (event.type === 'TripleCreated' && event.triple) {
+          accountWallet = event.triple.creator.id
           accountLabel = walletToLabel.get(event.triple.creator.id.toLowerCase()) || event.triple.creator.label
+          accountImage = event.triple.creator.image
           description = 'created claim'
           details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
           portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
         } else if (event.type === 'Deposited' && event.deposit) {
+          accountWallet = event.deposit.sender.id
           accountLabel = walletToLabel.get(event.deposit.sender.id.toLowerCase()) || event.deposit.sender.label
+          accountImage = event.deposit.sender.image
           const amount = (parseFloat(event.deposit.assets_after_fees) / 1e18).toFixed(4)
 
           if (event.atom) {
@@ -279,7 +297,9 @@ const FeedTab = () => {
             details = `${amount} WETH`
           }
         } else if (event.type === 'Redeemed' && event.redemption) {
+          accountWallet = event.redemption.sender.id
           accountLabel = walletToLabel.get(event.redemption.sender.id.toLowerCase()) || event.redemption.sender.label
+          accountImage = event.redemption.sender.image
           const amount = (parseFloat(event.redemption.assets) / 1e18).toFixed(4)
 
           if (event.atom) {
@@ -296,13 +316,15 @@ const FeedTab = () => {
           }
         }
 
-        if (accountLabel) {
-          console.log('✅ Adding feed event:', { accountLabel, description, details })
+        if (accountLabel && accountWallet) {
+          console.log('✅ Adding feed event:', { accountLabel, accountWallet, accountImage, description, details })
           feedEvents.push({
             id: event.id,
             type: event.type,
             created_at: event.created_at,
             accountLabel,
+            accountWallet,
+            accountImage,
             description,
             details,
             portalLink
@@ -338,21 +360,20 @@ const FeedTab = () => {
     return date.toLocaleDateString()
   }
 
-  const getAvatarColor = (label: string) => {
-    const colors = [
-      '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
-      '#8b5cf6', '#ec4899', '#14b8a6', '#f97316',
-    ]
-    const hash = label.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    return colors[hash % colors.length]
-  }
-
   const handleJoinClick = (item: FeedEvent, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
     setSelectedEvent(item)
     setIsUpvoteModalOpen(true)
+  }
+
+  const handleDeclineClick = (itemId: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Add this event to the declined list
+    setDeclinedEvents((prev) => [...(prev || []), itemId])
   }
 
   const handleCloseModal = () => {
@@ -452,62 +473,79 @@ const FeedTab = () => {
   return (
     <div className="feed-tab">
       <div className="feed-header">
-        <h2>Trust Circle Activity</h2>
         <p className="feed-subtitle">
-          Recent activity from accounts you trust
         </p>
       </div>
 
       {feedItems.length > 0 ? (
         <div className="feed-items">
-          {feedItems.map((item) => {
-            const FeedItemWrapper = item.portalLink ? 'a' : 'div'
-            const wrapperProps = item.portalLink ? {
-              href: item.portalLink,
-              target: '_blank',
-              rel: 'noopener noreferrer',
-              className: 'feed-item feed-item-clickable'
-            } : {
-              className: 'feed-item'
-            }
+          {feedItems
+            .filter((item) => !declinedEvents?.includes(item.id))
+            .map((item) => {
+              // Can only join on deposits/redemptions (vault already exists with liquidity)
+              // Cannot join on newly created atoms/triples (no initial deposit yet)
+              const canJoin = item.portalLink && (item.type === 'Deposited' || item.type === 'Redeemed')
 
-            // Can only join on deposits/redemptions (vault already exists with liquidity)
-            // Cannot join on newly created atoms/triples (no initial deposit yet)
-            const canJoin = item.portalLink && (item.type === 'Deposited' || item.type === 'Redeemed')
+              // Determine category based on type
+              let category = 'Activity'
+              if (item.type === 'AtomCreated') category = 'Identity'
+              else if (item.type === 'TripleCreated') category = 'Claim'
+              else if (item.type === 'Deposited') category = 'Deposit'
+              else if (item.type === 'Redeemed') category = 'Redemption'
 
-            return (
-              <div key={item.id} className="feed-item-container">
-                <FeedItemWrapper {...wrapperProps}>
-                  <div className="feed-item-header">
-                    <div
-                      className="feed-avatar"
-                      style={{ backgroundColor: getAvatarColor(item.accountLabel) }}
-                    >
-                      {item.accountLabel.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="feed-item-meta">
+              return (
+                <div key={item.id} className="feed-item-container">
+                  <Avatar
+                    imgSrc={item.accountImage}
+                    name={item.accountWallet}
+                    avatarClassName="feed-avatar"
+                    size="medium"
+                  />
+
+                  <div className="feed-content">
+                    <div className="feed-text">
                       <span className="feed-account-name">{item.accountLabel}</span>
-                      <span className="feed-timestamp">{formatTimestamp(item.created_at)}</span>
-                    </div>
-                  </div>
-                  <div className="feed-item-content">
-                    <p className="feed-description">
+                      {' '}
                       <span className="feed-action">{item.description}</span>
-                    </p>
-                    <p className="feed-details">{item.details}</p>
+                      {' '}
+                      {item.portalLink ? (
+                        <a
+                          href={item.portalLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="feed-details-link"
+                        >
+                          {item.details}
+                        </a>
+                      ) : (
+                        <span className="feed-details-text">{item.details}</span>
+                      )}
+                    </div>
+                    <div className="feed-meta">
+                      <span className="feed-timestamp">{formatTimestamp(item.created_at)}</span>
+                      <span className="feed-separator">·</span>
+                      <span className="feed-category">{category}</span>
+                    </div>
+                    {canJoin && (
+                      <div className="feed-actions">
+                        <button
+                          className="trust-page-button join-button-css"
+                          onClick={(e) => handleJoinClick(item, e)}
+                        >
+                          <span className="trust-button-content">Join</span>
+                        </button>
+                        <button
+                          className="feed-decline-button"
+                          onClick={(e) => handleDeclineClick(item.id, e)}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </FeedItemWrapper>
-                {canJoin && (
-                  <button
-                    className="feed-join-button"
-                    onClick={(e) => handleJoinClick(item, e)}
-                  >
-                    JOIN
-                  </button>
-                )}
-              </div>
-            )
-          })}
+                </div>
+              )
+            })}
         </div>
       ) : (
         <div className="empty-state">

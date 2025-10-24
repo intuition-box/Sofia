@@ -16,6 +16,8 @@ export interface AccountAtom {
   creatorId: string
   atomType: string // Le vrai type de l'atom (Account, Thing, Caip10, etc.)
   ipfsUri?: string // IPFS URI of the atom for triple creation
+  image?: string // ENS avatar image URL
+  data?: string // Wallet address for Account atoms
 }
 
 interface UseGetAtomAccountResult {
@@ -55,6 +57,7 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
                 type
                 created_at
                 data
+                image
               }
             }
           `,
@@ -78,7 +81,9 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
         createdAt: atom.created_at,
         creatorId: atom.creator_id || '',
         atomType: atom.type,
-        ipfsUri: atom.data // This is the IPFS URI we need!
+        ipfsUri: atom.data, // This is the IPFS URI we need!
+        image: atom.image,
+        data: atom.data
       }))
 
       setAccounts(mappedAccounts)
@@ -122,6 +127,7 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
                 created_at
                 creator_id
                 data
+                image
               }
             }
           `,
@@ -148,7 +154,9 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
         createdAt: atom.created_at,
         creatorId: atom.creator_id,
         atomType: atom.type,
-        ipfsUri: atom.data
+        ipfsUri: atom.data,
+        image: atom.image,
+        data: atom.data
       }))
 
     } catch (err) {

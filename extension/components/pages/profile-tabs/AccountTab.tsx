@@ -5,10 +5,14 @@ import twitchIcon from '../../ui/social/twitch.svg'
 import leftSideIcon from '../../ui/icons/left side.svg'
 import rightSideIcon from '../../ui/icons/right side.svg'
 import { useStorage } from "@plasmohq/storage/hook"
+import { getAddress } from 'viem'
+import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
+import Avatar from '../../ui/Avatar'
 import '../../styles/AccountTab.css'
 
 const AccountTab = () => {
   const [walletAddress] = useStorage<string>("metamask-account")
+  const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
 
   // OAuth connection states
   const [oauthTokens, setOauthTokens] = useState({
@@ -17,35 +21,6 @@ const AccountTab = () => {
     twitch: false,
   })
 
-  // User avatar state - ENS avatar or fallback
-  const [userAvatar, setUserAvatar] = useState<string>('')
-
-  // Load ENS avatar
-  useEffect(() => {
-    const loadENSAvatar = async () => {
-      if (!walletAddress) return
-
-      const addressLower = walletAddress.toLowerCase()
-
-      try {
-        // Use metadata.ens.domains API to get ENS avatar (same as Intuition)
-        const response = await fetch(`https://metadata.ens.domains/mainnet/avatar/${addressLower}`)
-        if (response.ok && response.url && !response.url.includes('metadata.ens.domains')) {
-          // Valid ENS avatar found
-          setUserAvatar(response.url)
-        } else {
-          // Fallback to Ethereum Blockies style avatar (used by MetaMask, Intuition, etc)
-          setUserAvatar(`https://effigy.im/a/${addressLower}.png`)
-        }
-      } catch (error) {
-        console.error('Error loading ENS avatar:', error)
-        // Fallback to Ethereum Blockies style avatar
-        setUserAvatar(`https://effigy.im/a/${addressLower}.png`)
-      }
-    }
-
-    loadENSAvatar()
-  }, [walletAddress])
 
   // Mock data for user profile
   const userProfile = {
@@ -90,6 +65,45 @@ const AccountTab = () => {
       statusColor: '#48bb78'
     }
   ]
+
+  // Load user avatar from GraphQL
+  useEffect(() => {
+    const loadUserAvatar = async () => {
+      if (!walletAddress) return
+
+      try {
+        const checksumAddress = getAddress(walletAddress)
+
+        const query = `
+          query GetAccountProfile($id: String!) {
+            accounts_by_pk(id: $id) {
+              id
+              label
+              image
+              atom {
+                id
+                label
+                image
+                data
+              }
+            }
+          }
+        `
+
+        const response = await intuitionGraphqlClient.request(query, {
+          id: checksumAddress
+        }) as { accounts_by_pk: { image?: string; atom?: { image?: string } } | null }
+
+        // Try to get image from account or atom
+        const avatarUrl = response?.accounts_by_pk?.image || response?.accounts_by_pk?.atom?.image
+        setUserAvatar(avatarUrl)
+      } catch (error) {
+        console.error('Error loading user avatar:', error)
+      }
+    }
+
+    loadUserAvatar()
+  }, [walletAddress])
 
   // Check OAuth token status on component mount
   useEffect(() => {
@@ -142,9 +156,12 @@ const AccountTab = () => {
 
       {/* Profile Header */}
       <div className="profile-header">
-        <div className="profile-avatar">
-          <img src={userAvatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${walletAddress?.toLowerCase()}`} alt={walletAddress?.toLowerCase() || 'User'} />
-        </div>
+        <Avatar
+          imgSrc={userAvatar}
+          name={walletAddress}
+          avatarClassName="profile-avatar"
+          size="large"
+        />
         <div className="profile-info">
           <h2 className="profile-name">
             {walletAddress ? `${walletAddress.toLowerCase().slice(0, 6)}...${walletAddress.toLowerCase().slice(-4)}` : 'Connect Wallet'}

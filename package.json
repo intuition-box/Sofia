@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@dicebear/collection": "^9.2.4",
+    "@dicebear/core": "^9.2.4",
     "metamask-extension-provider": "^5.0.0",
     "ogl": "^1.0.11"
   },
