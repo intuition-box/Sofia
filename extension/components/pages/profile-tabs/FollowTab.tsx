@@ -583,16 +583,29 @@ const FollowTab = () => {
         <div className="followed-accounts">
           {filteredAccounts.map((account, index) => (
             <div key={account.id} className="followed-account-card">
-              <div className="account-left">
-                <span className="account-number">{index + 1}</span>
-                <div
-                  className="account-avatar"
-                  style={{ backgroundColor: getAvatarColor(account.label) }}
-                >
-                  {account.label.slice(0, 2).toUpperCase()}
+              <a
+                href={`https://portal.intuition.systems/explore/atom/${account.termId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="account-link"
+                onClick={(e) => {
+                  // Allow button clicks to not trigger the link
+                  if ((e.target as HTMLElement).closest('.trust-account-btn, .upvote-badge')) {
+                    e.preventDefault()
+                  }
+                }}
+              >
+                <div className="account-left">
+                  <span className="account-number">{index + 1}</span>
+                  <div
+                    className="account-avatar"
+                    style={{ backgroundColor: getAvatarColor(account.label) }}
+                  >
+                    {account.label.slice(0, 2).toUpperCase()}
+                  </div>
+                  <span className="account-label">{account.label}</span>
                 </div>
-                <span className="account-label">{account.label}</span>
-              </div>
+              </a>
               <div className="account-right">
                 <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
                 {filterType === 'following' && (

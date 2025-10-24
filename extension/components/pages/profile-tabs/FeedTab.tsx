@@ -19,6 +19,7 @@ interface FeedEvent {
   accountLabel: string
   description: string
   details: string
+  portalLink?: string
 }
 
 const FeedTab = () => {
@@ -135,11 +136,28 @@ const FeedTab = () => {
       }
 
       // Step 2: Get all activity events from these accounts using the events table
-      const walletAddresses = trustCircleAccounts
+      // Include both lowercase and checksum versions
+      const walletAddressesLower = trustCircleAccounts
         .map(acc => acc.wallet.toLowerCase())
         .filter(w => w.startsWith('0x'))
 
+      const walletAddressesChecksum = trustCircleAccounts
+        .map(acc => {
+          try {
+            return getAddress(acc.wallet)
+          } catch {
+            return acc.wallet
+          }
+        })
+        .filter(w => w.startsWith('0x'))
+
+      // Combine both to cover all cases
+      const walletAddresses = [...new Set([...walletAddressesLower, ...walletAddressesChecksum])]
+
+      console.log('📊 Wallet addresses for feed query (combined):', walletAddresses)
+
       if (walletAddresses.length === 0) {
+        console.log('⚠️ No valid wallet addresses found')
         setFeedItems([])
         setLoading(false)
         return
@@ -152,15 +170,11 @@ const FeedTab = () => {
             limit: $limit
             order_by: {created_at: desc}
             where: {
-              _and: [
-                {type: {_neq: "FeesTransfered"}},
-                {_not: {_and: [{type: {_eq: "Deposited"}}, {deposit: {assets_after_fees: {_eq: 0}}}]}},
-                {_or: [
-                  {_and: [{type: {_eq: "AtomCreated"}}, {atom: {creator: {id: {_in: $walletAddresses}}}}]},
-                  {_and: [{type: {_eq: "TripleCreated"}}, {triple: {creator: {id: {_in: $walletAddresses}}}}]},
-                  {_and: [{type: {_eq: "Deposited"}}, {deposit: {sender: {id: {_in: $walletAddresses}}}}]},
-                  {_and: [{type: {_eq: "Redeemed"}}, {redemption: {sender: {id: {_in: $walletAddresses}}}}]}
-                ]}
+              _or: [
+                {atom: {creator: {id: {_in: $walletAddresses}}}},
+                {triple: {creator: {id: {_in: $walletAddresses}}}},
+                {deposit: {sender: {id: {_in: $walletAddresses}}}},
+                {redemption: {sender: {id: {_in: $walletAddresses}}}}
               ]
             }
           ) {
@@ -214,6 +228,8 @@ const FeedTab = () => {
       }) as { events: Array<any> }
 
       console.log('📊 Feed response:', feedResponse)
+      console.log('📊 Events count:', feedResponse.events?.length || 0)
+      console.log('📊 Events:', feedResponse.events)
 
       // Create wallet to label mapping
       const walletToLabel = new Map(
@@ -223,41 +239,74 @@ const FeedTab = () => {
       const feedEvents: FeedEvent[] = []
 
       for (const event of feedResponse.events || []) {
+        console.log('📊 Processing event:', event.type, event)
         let accountLabel = ''
         let description = ''
         let details = ''
 
         // Determine account and data based on event type
+        let portalLink = ''
         if (event.type === 'AtomCreated' && event.atom) {
           accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
-          description = 'created atom'
+          description = 'created identity'
           details = event.atom.label
+          portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
         } else if (event.type === 'TripleCreated' && event.triple) {
           accountLabel = walletToLabel.get(event.triple.creator.id.toLowerCase()) || event.triple.creator.label
           description = 'created claim'
           details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
+          portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
         } else if (event.type === 'Deposited' && event.deposit) {
           accountLabel = walletToLabel.get(event.deposit.sender.id.toLowerCase()) || event.deposit.sender.label
-          description = 'staked'
-          details = `${(parseFloat(event.deposit.shares) / 1e18).toFixed(3)} shares`
+          const amount = (parseFloat(event.deposit.assets_after_fees) / 1e18).toFixed(4)
+
+          if (event.atom) {
+            description = 'deposited on'
+            details = `${event.atom.label} (${amount} WETH)`
+            portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
+          } else if (event.triple) {
+            description = 'deposited on'
+            details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label} (${amount} WETH)`
+            portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
+          } else {
+            description = 'deposited'
+            details = `${amount} WETH`
+          }
         } else if (event.type === 'Redeemed' && event.redemption) {
           accountLabel = walletToLabel.get(event.redemption.sender.id.toLowerCase()) || event.redemption.sender.label
-          description = 'redeemed'
-          details = `${(parseFloat(event.redemption.shares) / 1e18).toFixed(3)} shares`
+          const amount = (parseFloat(event.redemption.assets) / 1e18).toFixed(4)
+
+          if (event.atom) {
+            description = 'redeemed from'
+            details = `${event.atom.label} (${amount} WETH)`
+            portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
+          } else if (event.triple) {
+            description = 'redeemed from'
+            details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label} (${amount} WETH)`
+            portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
+          } else {
+            description = 'redeemed'
+            details = `${amount} WETH`
+          }
         }
 
         if (accountLabel) {
+          console.log('✅ Adding feed event:', { accountLabel, description, details })
           feedEvents.push({
             id: event.id,
             type: event.type,
             created_at: event.created_at,
             accountLabel,
             description,
-            details
+            details,
+            portalLink
           })
+        } else {
+          console.log('⚠️ Skipping event - no accountLabel:', event.type)
         }
       }
 
+      console.log('📊 Total feed events:', feedEvents.length)
       setFeedItems(feedEvents)
 
     } catch (error) {
@@ -292,15 +341,6 @@ const FeedTab = () => {
     return colors[hash % colors.length]
   }
 
-  const getEventIcon = (type: string) => {
-    switch (type) {
-      case 'AtomCreated': return '✨'
-      case 'TripleCreated': return '🔗'
-      case 'Deposited': return '📈'
-      case 'Redeemed': return '📉'
-      default: return '•'
-    }
-  }
 
   if (!address) {
     return (
@@ -348,29 +388,40 @@ const FeedTab = () => {
 
       {feedItems.length > 0 ? (
         <div className="feed-items">
-          {feedItems.map((item) => (
-            <div key={item.id} className="feed-item">
-              <div className="feed-item-header">
-                <div
-                  className="feed-avatar"
-                  style={{ backgroundColor: getAvatarColor(item.accountLabel) }}
-                >
-                  {item.accountLabel.slice(0, 2).toUpperCase()}
+          {feedItems.map((item) => {
+            const FeedItemWrapper = item.portalLink ? 'a' : 'div'
+            const wrapperProps = item.portalLink ? {
+              href: item.portalLink,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              className: 'feed-item feed-item-clickable'
+            } : {
+              className: 'feed-item'
+            }
+
+            return (
+              <FeedItemWrapper key={item.id} {...wrapperProps}>
+                <div className="feed-item-header">
+                  <div
+                    className="feed-avatar"
+                    style={{ backgroundColor: getAvatarColor(item.accountLabel) }}
+                  >
+                    {item.accountLabel.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="feed-item-meta">
+                    <span className="feed-account-name">{item.accountLabel}</span>
+                    <span className="feed-timestamp">{formatTimestamp(item.created_at)}</span>
+                  </div>
                 </div>
-                <div className="feed-item-meta">
-                  <span className="feed-account-name">{item.accountLabel}</span>
-                  <span className="feed-timestamp">{formatTimestamp(item.created_at)}</span>
+                <div className="feed-item-content">
+                  <p className="feed-description">
+                    <span className="feed-action">{item.description}</span>
+                  </p>
+                  <p className="feed-details">{item.details}</p>
                 </div>
-              </div>
-              <div className="feed-item-content">
-                <p className="feed-description">
-                  <span className="feed-icon">{getEventIcon(item.type)}</span>
-                  <span className="feed-action">{item.description}</span>
-                </p>
-                <p className="feed-details">{item.details}</p>
-              </div>
-            </div>
-          ))}
+              </FeedItemWrapper>
+            )
+          })}
         </div>
       ) : (
         <div className="empty-state">
