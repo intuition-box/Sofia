@@ -38,24 +38,47 @@ Docker Container (sofia-agent:latest)
 
 ## Current Status
 
-### ✅ Completed
+**Dernière mise à jour:** 2025-10-24
+
+### ✅ Phase 1 & 2 - COMPLÉTÉES
+
+**Infrastructure:**
 - [x] Docker infrastructure ready
 - [x] `Dockerfile` and build script (`build-docker.sh`)
-- [x] 4 agents running in single ElizaOS instance
+- [x] 5 agents running in single ElizaOS instance (SofIA, ChatBot, ThemeExtractor, PulseAgent, RecommendationAgent)
 - [x] SQLite database with relative paths
 - [x] Socket.IO server on port 3000
 - [x] Local testing successful
 - [x] Git branch `dockerStart` merged to `dev`
 
-### 🚧 In Progress
-- [ ] Extension modifications
-- [ ] Hetzner server setup
-- [ ] Production configuration
+**Serveur Hetzner (Production):**
+- [x] Serveur créé et configuré (IP: 65.109.142.174)
+- [x] Ubuntu 24.04 LTS installé
+- [x] Docker installé et fonctionnel
+- [x] Firewall UFW configuré (ports 22, 80, 443)
+- [x] Firewall Hetzner configuré
+- [x] Nginx installé et configuré comme reverse proxy
+- [x] Container Docker déployé et actif 24/7
+- [x] 5 agents opérationnels sur le serveur
 
-### ⏳ Pending
-- [ ] HTTPS/SSL setup
-- [ ] Extension production build
-- [ ] Alpha release
+**Extension Chrome:**
+- [x] Configuration centralisée créée (`extension/config.ts`)
+- [x] Variable `SOFIA_SERVER_URL` pour basculer local/production
+- [x] WebSocket configuré pour pointer vers le serveur Hetzner
+- [x] Guide de test créé (`TESTING_PRODUCTION.md`)
+
+### 🚧 Phase 4 - EN COURS
+- [ ] Builder l'extension pour production
+- [ ] Tester l'extension avec le serveur Hetzner
+- [ ] Valider toutes les fonctionnalités en conditions réelles
+
+### ⏳ Phase 3 & 5 - EN ATTENTE
+- [ ] Nom de domaine (optionnel pour alpha, requis pour production)
+- [ ] HTTPS/SSL setup (optionnel pour alpha, requis pour Chrome Web Store)
+- [ ] Alpha release (GitHub Releases)
+- [ ] Beta testing (Chrome Web Store unlisted)
+
+**Note:** Pour tester en alpha privé avec quelques utilisateurs, HTTP suffit. SSL/HTTPS ne sera nécessaire que pour la publication publique sur Chrome Web Store.
 
 ---
 

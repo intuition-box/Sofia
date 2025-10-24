@@ -56,4 +56,11 @@ task
 /docker-build/agent/
 /docker-build/plugins/
 
+#Docs
+TESTING_PRODUCTION.md
+DEPLOYMENT.md
+
+#Version
+sofia-agent-latest.tar.gz
+
 
