@@ -9,6 +9,7 @@ import {
   sendHistoryToThemeExtractor,
   handleThemeExtractorResponse,
 } from "./messageSenders"
+import { SOFIA_SERVER_URL } from "../config"
 
 let socketSofia: Socket
 let socketBot: Socket
@@ -36,7 +37,7 @@ const commonSocketConfig = {
 
 // === 1. Initialiser WebSocket pour SofIA ===
 export async function initializeSofiaSocket(): Promise<void> {
-  socketSofia = io("http://localhost:3000", commonSocketConfig)
+  socketSofia = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketSofia.on("connect", () => {
     console.log("✅ Connected to Eliza (SofIA), socket ID:", socketSofia.id)
@@ -90,7 +91,7 @@ export async function initializeSofiaSocket(): Promise<void> {
 
 // === 2. Initialiser WebSocket pour Chatbot ===
 export async function initializeChatbotSocket(onReady?: () => void): Promise<void> {
-  socketBot = io("http://localhost:3000", commonSocketConfig)
+  socketBot = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketBot.on("connect", () => {
     console.log("🤖 Connected to Chatbot, socket ID:", socketBot.id)
@@ -157,7 +158,7 @@ export async function processHistoryWithThemeAnalysis(urls: string[]): Promise<{
 
 // === 3. Initialiser WebSocket pour ThemeExtractor ===
 export async function initializeThemeExtractorSocket(): Promise<void> {
-  socketThemeExtractor = io("http://localhost:3000", commonSocketConfig)
+  socketThemeExtractor = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketThemeExtractor.on("connect", () => {
     console.log("✅ [websocket.ts] Connected to ThemeExtractor, socket ID:", socketThemeExtractor.id)
@@ -220,7 +221,7 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
 
 // === 4. Initialiser WebSocket pour PulseAgent ===
 export async function initializePulseSocket(): Promise<void> {
-  socketPulse = io("http://localhost:3000", commonSocketConfig)
+  socketPulse = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketPulse.on("connect", () => {
     console.log("✅ [websocket.ts] Connected to PulseAgent, socket ID:", socketPulse.id)
@@ -301,7 +302,7 @@ export function handleRecommendationResponse(rawData: any): void {
 }
 
 export async function initializeRecommendationSocket(): Promise<void> {
-  socketRecommendation = io("http://localhost:3000", commonSocketConfig)
+  socketRecommendation = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketRecommendation.on("connect", () => {
     console.log("✅ [websocket.ts] Connected to RecommendationAgent, socket ID:", socketRecommendation.id)
