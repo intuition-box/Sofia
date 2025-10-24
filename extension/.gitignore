@@ -25,6 +25,12 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+
+# Keep .env.development and .env.production in git
+!.env.development
+!.env.production
+!.env.example
 
 out/
 build/
@@ -37,7 +43,6 @@ dist/
 .tsbuildinfo
 
 .claude
-.env
 
 my-agent/.env
 
