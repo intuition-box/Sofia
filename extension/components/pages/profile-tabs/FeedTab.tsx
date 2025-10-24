@@ -3,6 +3,8 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
 import { getAddress } from 'viem'
+import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
+import UpvoteModal from '../../modals/UpvoteModal'
 import '../../styles/CoreComponents.css'
 import '../../styles/FeedTab.css'
 
@@ -27,6 +29,10 @@ const FeedTab = () => {
   const [feedItems, setFeedItems] = useState<FeedEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<FeedEvent | null>(null)
+  const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const { addWeight, removeWeight } = useWeightOnChain()
 
   useEffect(() => {
     if (!address) {
@@ -341,6 +347,72 @@ const FeedTab = () => {
     return colors[hash % colors.length]
   }
 
+  const handleJoinClick = (item: FeedEvent, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    setSelectedEvent(item)
+    setIsUpvoteModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsUpvoteModalOpen(false)
+    setSelectedEvent(null)
+  }
+
+  const handleSubmit = async (newUpvotes: number) => {
+    if (!selectedEvent) return
+
+    // Determine the vault ID (term_id) to deposit on
+    let vaultId: string | null = null
+
+    // For AtomCreated or deposits/redemptions on atoms, use atom term_id
+    if (selectedEvent.type === 'AtomCreated' || (selectedEvent.portalLink?.includes('/atom/'))) {
+      const match = selectedEvent.portalLink?.match(/\/atom\/(.+)$/)
+      vaultId = match ? match[1] : null
+    }
+    // For TripleCreated or deposits/redemptions on triples, use triple term_id
+    else if (selectedEvent.type === 'TripleCreated' || (selectedEvent.portalLink?.includes('/triple/'))) {
+      const match = selectedEvent.portalLink?.match(/\/triple\/(.+)$/)
+      vaultId = match ? match[1] : null
+    }
+
+    if (!vaultId) {
+      console.error('No vault ID found for this event')
+      return
+    }
+
+    try {
+      setIsProcessing(true)
+
+      // Convert upvotes to Wei: 1 upvote = 0.001 ETH = 10^15 Wei
+      const depositAmount = BigInt(Math.floor(newUpvotes)) * BigInt(10 ** 15)
+
+      console.log('💰 Deposit calculation:', {
+        upvotes: newUpvotes,
+        depositAmount: depositAmount.toString(),
+        depositInETH: (Number(depositAmount) / 10**18).toFixed(4)
+      })
+
+      const result = await addWeight(vaultId, depositAmount)
+
+      if (result.success) {
+        console.log('✅ Successfully joined:', result.txHash)
+        handleCloseModal()
+        // Refresh the feed after successful deposit
+        await loadTrustCircleFeed()
+      } else {
+        console.error('❌ Failed to join:', result.error)
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error('❌ Error joining:', error)
+      throw error
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
 
   if (!address) {
     return (
@@ -399,27 +471,41 @@ const FeedTab = () => {
               className: 'feed-item'
             }
 
+            // Can only join on deposits/redemptions (vault already exists with liquidity)
+            // Cannot join on newly created atoms/triples (no initial deposit yet)
+            const canJoin = item.portalLink && (item.type === 'Deposited' || item.type === 'Redeemed')
+
             return (
-              <FeedItemWrapper key={item.id} {...wrapperProps}>
-                <div className="feed-item-header">
-                  <div
-                    className="feed-avatar"
-                    style={{ backgroundColor: getAvatarColor(item.accountLabel) }}
+              <div key={item.id} className="feed-item-container">
+                <FeedItemWrapper {...wrapperProps}>
+                  <div className="feed-item-header">
+                    <div
+                      className="feed-avatar"
+                      style={{ backgroundColor: getAvatarColor(item.accountLabel) }}
+                    >
+                      {item.accountLabel.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="feed-item-meta">
+                      <span className="feed-account-name">{item.accountLabel}</span>
+                      <span className="feed-timestamp">{formatTimestamp(item.created_at)}</span>
+                    </div>
+                  </div>
+                  <div className="feed-item-content">
+                    <p className="feed-description">
+                      <span className="feed-action">{item.description}</span>
+                    </p>
+                    <p className="feed-details">{item.details}</p>
+                  </div>
+                </FeedItemWrapper>
+                {canJoin && (
+                  <button
+                    className="feed-join-button"
+                    onClick={(e) => handleJoinClick(item, e)}
                   >
-                    {item.accountLabel.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="feed-item-meta">
-                    <span className="feed-account-name">{item.accountLabel}</span>
-                    <span className="feed-timestamp">{formatTimestamp(item.created_at)}</span>
-                  </div>
-                </div>
-                <div className="feed-item-content">
-                  <p className="feed-description">
-                    <span className="feed-action">{item.description}</span>
-                  </p>
-                  <p className="feed-details">{item.details}</p>
-                </div>
-              </FeedItemWrapper>
+                    JOIN
+                  </button>
+                )}
+              </div>
             )
           })}
         </div>
@@ -431,6 +517,16 @@ const FeedTab = () => {
           </p>
         </div>
       )}
+
+      <UpvoteModal
+        isOpen={isUpvoteModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmit}
+        objectName={selectedEvent ? selectedEvent.details : ''}
+        objectType={selectedEvent?.type === 'AtomCreated' ? 'Identity' : 'Claim'}
+        currentUpvotes={0}
+        isProcessing={isProcessing}
+      />
     </div>
   )
 }

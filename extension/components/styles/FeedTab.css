@@ -27,7 +27,15 @@
   gap: 12px;
 }
 
+.feed-item-container {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
 .feed-item {
+  flex: 1;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
@@ -55,6 +63,32 @@
 
 .feed-item-clickable:hover .feed-details {
   color: #c7866c;
+}
+
+/* Join Button */
+.feed-join-button {
+  padding: 8px 16px;
+  background: #c7866c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  align-self: center;
+  min-width: 80px;
+}
+
+.feed-join-button:hover:not(:disabled) {
+  background: #d4956f;
+  transform: translateY(-1px);
+}
+
+.feed-join-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .feed-item-header {
