@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  sofia-agent:
+    image: maximesaintjoannis/sofia-agent:latest
+    container_name: sofia-container
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - sofia-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  sofia-network:
+    driver: bridge

@@ -16,7 +16,8 @@ SERVER_PID=$!
 
 # Wait for server to be ready
 echo "Waiting for server to initialize..."
-sleep 10
+sleep 100
+
 
 # Add each agent to the running server
 echo "Adding SofIA agent..."
