@@ -205,6 +205,28 @@
   gap: 12px;
 }
 
+.quests-loading,
+.quests-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+}
+
+.quests-loading {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .quest-item {
   display: flex;
   align-items: center;

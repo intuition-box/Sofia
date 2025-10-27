@@ -27,4 +27,5 @@
   overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
+  padding-bottom: 100px; /* Space for fixed bottom navigation bar */
 }
