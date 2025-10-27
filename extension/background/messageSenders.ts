@@ -1,4 +1,5 @@
-import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS, RECOMMENDATION_IDS, EXCLUDED_URL_PATTERNS } from "./constants"
+import { EXCLUDED_URL_PATTERNS } from "./constants"
+import { getUserAgentIdsCache } from "./websocket"
 import { isSensitiveUrl } from "./utils/url"
 
 
@@ -19,22 +20,31 @@ export function sendMessageToSofia(socketSofia: any, text: string): void {
     return
   }
 
+  // 🆕 Récupérer les IDs depuis le cache
+  const agentIds = getUserAgentIdsCache()
+  if (!agentIds?.sofia) {
+    console.error("❌ User agent IDs not initialized")
+    return
+  }
+
+  const sofiaIds = agentIds.sofia
+
   const payload = {
     type: 2,
     payload: {
-      senderId: SOFIA_IDS.AUTHOR_ID,
+      senderId: sofiaIds.AUTHOR_ID,        // ✅ Dynamique
       senderName: "Extension User",
       message: text,
       messageId: generateUUID(),
-      roomId: SOFIA_IDS.ROOM_ID,
-      channelId: SOFIA_IDS.CHANNEL_ID,
-      serverId: SOFIA_IDS.SERVER_ID,
+      roomId: sofiaIds.ROOM_ID,            // ✅ Dynamique
+      channelId: sofiaIds.CHANNEL_ID,      // ✅ Dynamique
+      serverId: sofiaIds.SERVER_ID,
       source: "extension",
       attachments: [],
       metadata: {
         channelType: "DM",
         isDm: true,
-        targetUserId: SOFIA_IDS.AGENT_ID
+        targetUserId: sofiaIds.AGENT_ID
       }
     }
   }
@@ -50,22 +60,31 @@ export function sendMessageToChatbot(socketBot: any, text: string): void {
     return
   }
 
+  // 🆕 Récupérer les IDs depuis le cache
+  const agentIds = getUserAgentIdsCache()
+  if (!agentIds?.chatbot) {
+    console.error("❌ User agent IDs not initialized")
+    return
+  }
+
+  const chatbotIds = agentIds.chatbot
+
   const payload = {
     type: 2,
     payload: {
-      senderId: CHATBOT_IDS.AUTHOR_ID,
+      senderId: chatbotIds.AUTHOR_ID,
       senderName: "Chat User",
       message: text,
       messageId: generateUUID(),
-      roomId: CHATBOT_IDS.ROOM_ID,
-      channelId: CHATBOT_IDS.CHANNEL_ID,
-      serverId: CHATBOT_IDS.SERVER_ID,
+      roomId: chatbotIds.ROOM_ID,
+      channelId: chatbotIds.CHANNEL_ID,
+      serverId: chatbotIds.SERVER_ID,
       source: "Chat",
       attachments: [],
       metadata: {
         channelType: "DM",
         isDm: true,
-        targetUserId: CHATBOT_IDS.AGENT_ID
+        targetUserId: chatbotIds.AGENT_ID
       }
     }
   }
@@ -210,22 +229,31 @@ class ThemeExtractorProcessor {
         reject(new Error(`Timeout waiting for themes from ${this.type}`))
       }, THEME_EXTRACTOR_TIMEOUT)
 
+      // 🆕 Récupérer les IDs depuis le cache
+      const agentIds = getUserAgentIdsCache()
+      if (!agentIds?.themeExtractor) {
+        reject(new Error("User agent IDs not initialized"))
+        return
+      }
+
+      const themeExtractorIds = agentIds.themeExtractor
+
       const payload = {
         type: 2,
         payload: {
-          senderId: THEMEEXTRACTOR_IDS.AUTHOR_ID,
+          senderId: themeExtractorIds.AUTHOR_ID,
           senderName: "Extension",
           message: JSON.stringify({ urls }),
           messageId: generateUUID(),
-          roomId: THEMEEXTRACTOR_IDS.ROOM_ID,
-          channelId: THEMEEXTRACTOR_IDS.CHANNEL_ID,
-          serverId: THEMEEXTRACTOR_IDS.SERVER_ID,
+          roomId: themeExtractorIds.ROOM_ID,
+          channelId: themeExtractorIds.CHANNEL_ID,
+          serverId: themeExtractorIds.SERVER_ID,
           source: "theme-extraction",
           attachments: [],
           metadata: {
             channelType: "DM",
             isDm: true,
-            targetUserId: THEMEEXTRACTOR_IDS.AGENT_ID
+            targetUserId: themeExtractorIds.AGENT_ID
           }
         }
       }
@@ -235,7 +263,7 @@ class ThemeExtractorProcessor {
         clearTimeout(timeout)
         resolve(themes || [])
       }
-      
+
       this.socket.emit("message", payload)
       console.log(`📤 Sent ${this.type} request with ${urls.length} URLs`)
     })
@@ -282,22 +310,31 @@ export function sendMessageToPulse(socketPulse: any, pulseData: any[]): void {
     return
   }
 
+  // 🆕 Récupérer les IDs depuis le cache
+  const agentIds = getUserAgentIdsCache()
+  if (!agentIds?.pulse) {
+    console.error("❌ User agent IDs not initialized")
+    return
+  }
+
+  const pulseIds = agentIds.pulse
+
   const payload = {
     type: 2,
     payload: {
-      senderId: PULSEAGENT_IDS.AUTHOR_ID,
+      senderId: pulseIds.AUTHOR_ID,
       senderName: "Extension Pulse",
       message: `Analyze current pulse data:\n${JSON.stringify(pulseData)}`,
       messageId: generateUUID(),
-      roomId: PULSEAGENT_IDS.ROOM_ID,
-      channelId: PULSEAGENT_IDS.CHANNEL_ID,
-      serverId: PULSEAGENT_IDS.SERVER_ID,
+      roomId: pulseIds.ROOM_ID,
+      channelId: pulseIds.CHANNEL_ID,
+      serverId: pulseIds.SERVER_ID,
       source: "pulse-analysis",
       attachments: [],
       metadata: {
         channelType: "DM",
         isDm: true,
-        targetUserId: PULSEAGENT_IDS.AGENT_ID
+        targetUserId: pulseIds.AGENT_ID
       }
     }
   }
@@ -316,15 +353,24 @@ export function sendRequestToRecommendation(socketRecommendation: any, walletDat
     return
   }
 
+  // 🆕 Récupérer les IDs depuis le cache
+  const agentIds = getUserAgentIdsCache()
+  if (!agentIds?.recommendation) {
+    console.error("❌ User agent IDs not initialized")
+    return
+  }
+
+  const recommendationIds = agentIds.recommendation
+
   // Extract key interests from triplets (summarize to avoid token limit)
-  const interests = walletData.triples.map(t => ({
+  const interests = walletData.triples.map((t: any) => ({
     predicate: t.predicate.label,
     object: t.object.label
   }))
 
   // Group by predicate for cleaner summary
   const summary: Record<string, string[]> = {}
-  interests.forEach(i => {
+  interests.forEach((i: any) => {
     if (!summary[i.predicate]) summary[i.predicate] = []
     if (!summary[i.predicate].includes(i.object)) {
       summary[i.predicate].push(i.object)
@@ -343,19 +389,19 @@ ${Object.entries(summary).map(([pred, objects]) =>
   const payload = {
     type: 2,
     payload: {
-      senderId: RECOMMENDATION_IDS.AUTHOR_ID,
+      senderId: recommendationIds.AUTHOR_ID,
       senderName: "Extension Recommendation",
       message: messageText,
       messageId: generateUUID(),
-      roomId: RECOMMENDATION_IDS.ROOM_ID,
-      channelId: RECOMMENDATION_IDS.CHANNEL_ID,
-      serverId: RECOMMENDATION_IDS.SERVER_ID,
+      roomId: recommendationIds.ROOM_ID,
+      channelId: recommendationIds.CHANNEL_ID,
+      serverId: recommendationIds.SERVER_ID,
       source: "recommendation-generation",
       attachments: [],
       metadata: {
         channelType: "DM",
         isDm: true,
-        targetUserId: RECOMMENDATION_IDS.AGENT_ID
+        targetUserId: recommendationIds.AGENT_ID
       }
     }
   }

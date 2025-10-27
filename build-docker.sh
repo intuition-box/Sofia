@@ -4,7 +4,7 @@ set -e
 echo "🚀 Building Sofia Agent Docker Image"
 echo "====================================="
 
-PROJECT_ROOT="/home/max/Project/sofia-core/core"
+PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 AGENT_SOURCE="$PROJECT_ROOT/agent"
 DOCKER_BUILD="$PROJECT_ROOT/docker-build"
 IMAGE_NAME="sofia-agent"
