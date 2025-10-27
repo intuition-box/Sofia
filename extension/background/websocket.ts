@@ -1,5 +1,12 @@
 import { io, Socket } from "socket.io-client"
-import { SOFIA_IDS, CHATBOT_IDS, THEMEEXTRACTOR_IDS, PULSEAGENT_IDS, RECOMMENDATION_IDS } from "./constants"
+import {
+  SOFIA_BASE_IDS,
+  CHATBOT_BASE_IDS,
+  THEMEEXTRACTOR_BASE_IDS,
+  PULSEAGENT_BASE_IDS,
+  RECOMMENDATION_BASE_IDS
+} from "./constants"
+import { getUserAgentIds, type AgentIds } from "../lib/services/UserSessionManager"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
 import { sofiaDB, STORES } from "../lib/database/indexedDB"
 import { processUrlsWithThemeAnalysis } from "./tripletProcessor"
@@ -16,6 +23,37 @@ let socketBot: Socket
 let socketThemeExtractor: Socket
 let socketPulse: Socket
 let socketRecommendation: Socket
+
+// Cache des IDs utilisateur (généré une fois au démarrage)
+let userAgentIds: {
+  sofia: AgentIds
+  chatbot: AgentIds
+  themeExtractor: AgentIds
+  pulse: AgentIds
+  recommendation: AgentIds
+} | null = null
+
+/**
+ * Initialize user agent IDs (called once at extension startup)
+ */
+export async function initializeUserAgentIds(): Promise<void> {
+  userAgentIds = {
+    sofia: await getUserAgentIds("SofIA", SOFIA_BASE_IDS.AGENT_ID),
+    chatbot: await getUserAgentIds("ChatBot", CHATBOT_BASE_IDS.AGENT_ID),
+    themeExtractor: await getUserAgentIds("ThemeExtractor", THEMEEXTRACTOR_BASE_IDS.AGENT_ID),
+    pulse: await getUserAgentIds("PulseAgent", PULSEAGENT_BASE_IDS.AGENT_ID),
+    recommendation: await getUserAgentIds("RecommendationAgent", RECOMMENDATION_BASE_IDS.AGENT_ID)
+  }
+
+  console.log("✅ User agent IDs initialized:", userAgentIds)
+}
+
+/**
+ * Export pour utilisation dans d'autres fichiers
+ */
+export function getUserAgentIdsCache() {
+  return userAgentIds
+}
 
 // Export sockets for direct access
 export function getSofiaSocket(): Socket { return socketSofia }
@@ -37,24 +75,34 @@ const commonSocketConfig = {
 
 // === 1. Initialiser WebSocket pour SofIA ===
 export async function initializeSofiaSocket(): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const sofiaIds = userAgentIds!.sofia
+
   socketSofia = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketSofia.on("connect", () => {
     console.log("✅ Connected to Eliza (SofIA), socket ID:", socketSofia.id)
+    console.log("🔑 Using user-specific IDs:", sofiaIds)
 
+    // 🆕 Utiliser les IDs dynamiques
     socketSofia.emit("message", {
       type: 1,
       payload: {
-        roomId: SOFIA_IDS.ROOM_ID,
-        entityId: SOFIA_IDS.AUTHOR_ID
+        roomId: sofiaIds.ROOM_ID,
+        entityId: sofiaIds.AUTHOR_ID
       }
     })
 
-    console.log("📨 Sent room join for SofIA:", SOFIA_IDS.ROOM_ID)
+    console.log("📨 Sent room join for SofIA:", sofiaIds.ROOM_ID)
   })
 
   socketSofia.on("messageBroadcast", async (data) => {
-    if ((data.roomId === SOFIA_IDS.ROOM_ID || data.channelId === SOFIA_IDS.CHANNEL_ID) && data.senderId === SOFIA_IDS.AGENT_ID) {
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if ((data.roomId === sofiaIds.ROOM_ID || data.channelId === sofiaIds.CHANNEL_ID) && data.senderId === sofiaIds.AGENT_ID) {
       console.log("📩 Message SofIA:", data)
 
       try {
@@ -91,21 +139,29 @@ export async function initializeSofiaSocket(): Promise<void> {
 
 // === 2. Initialiser WebSocket pour Chatbot ===
 export async function initializeChatbotSocket(onReady?: () => void): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const chatbotIds = userAgentIds!.chatbot
+
   socketBot = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketBot.on("connect", () => {
     console.log("🤖 Connected to Chatbot, socket ID:", socketBot.id)
+    console.log("🔑 Using user-specific IDs:", chatbotIds)
 
-    // Send "room join"
+    // 🆕 Utiliser les IDs dynamiques
     socketBot.emit("message", {
       type: 1,
       payload: {
-        roomId: CHATBOT_IDS.ROOM_ID,
-        entityId: CHATBOT_IDS.AUTHOR_ID
+        roomId: chatbotIds.ROOM_ID,
+        entityId: chatbotIds.AUTHOR_ID
       }
     })
 
-    console.log("📨 Sent room join for Chatbot:", CHATBOT_IDS.ROOM_ID)
+    console.log("📨 Sent room join for Chatbot:", chatbotIds.ROOM_ID)
 
     // ✅ Notification that socket is ready
     if (typeof onReady === "function") {
@@ -114,13 +170,14 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
   })
 
   socketBot.on("messageBroadcast", (data) => {
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
     if (
-      (data.roomId === CHATBOT_IDS.ROOM_ID || data.channelId === CHATBOT_IDS.CHANNEL_ID) &&
-      data.senderId === CHATBOT_IDS.AGENT_ID
+      (data.roomId === chatbotIds.ROOM_ID || data.channelId === chatbotIds.CHANNEL_ID) &&
+      data.senderId === chatbotIds.AGENT_ID
     ) {
       try {
         MessageBus.getInstance().sendMessageFireAndForget({
-          type: "CHATBOT_RESPONSE",
+          type: "AGENT_MESSAGE",
           text: data.text
         })
       } catch (error) {
@@ -158,27 +215,37 @@ export async function processHistoryWithThemeAnalysis(urls: string[]): Promise<{
 
 // === 3. Initialiser WebSocket pour ThemeExtractor ===
 export async function initializeThemeExtractorSocket(): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const themeExtractorIds = userAgentIds!.themeExtractor
+
   socketThemeExtractor = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketThemeExtractor.on("connect", () => {
     console.log("✅ [websocket.ts] Connected to ThemeExtractor, socket ID:", socketThemeExtractor.id)
+    console.log("🔑 Using user-specific IDs:", themeExtractorIds)
 
+    // 🆕 Utiliser les IDs dynamiques
     const joinMessage = {
       type: 1,
       payload: {
-        roomId: THEMEEXTRACTOR_IDS.ROOM_ID,
-        entityId: THEMEEXTRACTOR_IDS.AUTHOR_ID
+        roomId: themeExtractorIds.ROOM_ID,
+        entityId: themeExtractorIds.AUTHOR_ID
       }
     }
-    
+
     console.log("📨 [websocket.ts] Sending room join for ThemeExtractor:", joinMessage)
     socketThemeExtractor.emit("message", joinMessage)
     console.log("✅ [websocket.ts] Room join sent for ThemeExtractor")
   })
 
   socketThemeExtractor.on("messageBroadcast", async (data) => {
-    if ((data.roomId === THEMEEXTRACTOR_IDS.ROOM_ID || data.channelId === THEMEEXTRACTOR_IDS.CHANNEL_ID) && 
-        data.senderId === THEMEEXTRACTOR_IDS.AGENT_ID) {
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if ((data.roomId === themeExtractorIds.ROOM_ID || data.channelId === themeExtractorIds.CHANNEL_ID) &&
+        data.senderId === themeExtractorIds.AGENT_ID) {
       console.log("📩 ThemeExtractor response received")
       console.log("🔍 RAW MESSAGE from ThemeExtractor:", data.text)
       
@@ -221,27 +288,37 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
 
 // === 4. Initialiser WebSocket pour PulseAgent ===
 export async function initializePulseSocket(): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const pulseIds = userAgentIds!.pulse
+
   socketPulse = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketPulse.on("connect", () => {
     console.log("✅ [websocket.ts] Connected to PulseAgent, socket ID:", socketPulse.id)
+    console.log("🔑 Using user-specific IDs:", pulseIds)
 
+    // 🆕 Utiliser les IDs dynamiques
     const joinMessage = {
       type: 1,
       payload: {
-        roomId: PULSEAGENT_IDS.ROOM_ID,
-        entityId: PULSEAGENT_IDS.AUTHOR_ID
+        roomId: pulseIds.ROOM_ID,
+        entityId: pulseIds.AUTHOR_ID
       }
     }
-    
+
     console.log("📨 [websocket.ts] Sending room join for PulseAgent:", joinMessage)
     socketPulse.emit("message", joinMessage)
     console.log("✅ [websocket.ts] Room join sent for PulseAgent")
   })
 
   socketPulse.on("messageBroadcast", async (data) => {
-    if ((data.roomId === PULSEAGENT_IDS.ROOM_ID || data.channelId === PULSEAGENT_IDS.CHANNEL_ID) && 
-        data.senderId === PULSEAGENT_IDS.AGENT_ID) {
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if ((data.roomId === pulseIds.ROOM_ID || data.channelId === pulseIds.CHANNEL_ID) &&
+        data.senderId === pulseIds.AGENT_ID) {
       console.log("📩 PulseAgent response received")
       console.log("🫀 RAW MESSAGE from PulseAgent:", data.text)
       
@@ -302,16 +379,25 @@ export function handleRecommendationResponse(rawData: any): void {
 }
 
 export async function initializeRecommendationSocket(): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const recommendationIds = userAgentIds!.recommendation
+
   socketRecommendation = io(SOFIA_SERVER_URL, commonSocketConfig)
 
   socketRecommendation.on("connect", () => {
     console.log("✅ [websocket.ts] Connected to RecommendationAgent, socket ID:", socketRecommendation.id)
+    console.log("🔑 Using user-specific IDs:", recommendationIds)
 
+    // 🆕 Utiliser les IDs dynamiques
     const joinMessage = {
       type: 1,
       payload: {
-        roomId: RECOMMENDATION_IDS.ROOM_ID,
-        entityId: RECOMMENDATION_IDS.AUTHOR_ID
+        roomId: recommendationIds.ROOM_ID,
+        entityId: recommendationIds.AUTHOR_ID
       }
     }
 
@@ -326,14 +412,15 @@ export async function initializeRecommendationSocket(): Promise<void> {
       roomId: data.roomId,
       channelId: data.channelId,
       senderId: data.senderId,
-      expectedRoomId: RECOMMENDATION_IDS.ROOM_ID,
-      expectedChannelId: RECOMMENDATION_IDS.CHANNEL_ID,
-      expectedAgentId: RECOMMENDATION_IDS.AGENT_ID,
+      expectedRoomId: recommendationIds.ROOM_ID,
+      expectedChannelId: recommendationIds.CHANNEL_ID,
+      expectedAgentId: recommendationIds.AGENT_ID,
       textPreview: data.text?.substring(0, 100)
     })
 
-    if ((data.roomId === RECOMMENDATION_IDS.ROOM_ID || data.channelId === RECOMMENDATION_IDS.CHANNEL_ID) &&
-        data.senderId === RECOMMENDATION_IDS.AGENT_ID) {
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if ((data.roomId === recommendationIds.ROOM_ID || data.channelId === recommendationIds.CHANNEL_ID) &&
+        data.senderId === recommendationIds.AGENT_ID) {
       console.log("📩 [websocket.ts] RecommendationAgent response received")
       console.log("💎 [websocket.ts] RAW MESSAGE from RecommendationAgent:", data.text)
 
