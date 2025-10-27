@@ -310,22 +310,31 @@ export function sendMessageToPulse(socketPulse: any, pulseData: any[]): void {
     return
   }
 
+  // 🆕 Récupérer les IDs depuis le cache
+  const agentIds = getUserAgentIdsCache()
+  if (!agentIds?.pulse) {
+    console.error("❌ User agent IDs not initialized")
+    return
+  }
+
+  const pulseIds = agentIds.pulse
+
   const payload = {
     type: 2,
     payload: {
-      senderId: PULSEAGENT_IDS.AUTHOR_ID,
+      senderId: pulseIds.AUTHOR_ID,
       senderName: "Extension Pulse",
       message: `Analyze current pulse data:\n${JSON.stringify(pulseData)}`,
       messageId: generateUUID(),
-      roomId: PULSEAGENT_IDS.ROOM_ID,
-      channelId: PULSEAGENT_IDS.CHANNEL_ID,
-      serverId: PULSEAGENT_IDS.SERVER_ID,
+      roomId: pulseIds.ROOM_ID,
+      channelId: pulseIds.CHANNEL_ID,
+      serverId: pulseIds.SERVER_ID,
       source: "pulse-analysis",
       attachments: [],
       metadata: {
         channelType: "DM",
         isDm: true,
-        targetUserId: PULSEAGENT_IDS.AGENT_ID
+        targetUserId: pulseIds.AGENT_ID
       }
     }
   }
@@ -344,15 +353,24 @@ export function sendRequestToRecommendation(socketRecommendation: any, walletDat
     return
   }
 
+  // 🆕 Récupérer les IDs depuis le cache
+  const agentIds = getUserAgentIdsCache()
+  if (!agentIds?.recommendation) {
+    console.error("❌ User agent IDs not initialized")
+    return
+  }
+
+  const recommendationIds = agentIds.recommendation
+
   // Extract key interests from triplets (summarize to avoid token limit)
-  const interests = walletData.triples.map(t => ({
+  const interests = walletData.triples.map((t: any) => ({
     predicate: t.predicate.label,
     object: t.object.label
   }))
 
   // Group by predicate for cleaner summary
   const summary: Record<string, string[]> = {}
-  interests.forEach(i => {
+  interests.forEach((i: any) => {
     if (!summary[i.predicate]) summary[i.predicate] = []
     if (!summary[i.predicate].includes(i.object)) {
       summary[i.predicate].push(i.object)
@@ -371,19 +389,19 @@ ${Object.entries(summary).map(([pred, objects]) =>
   const payload = {
     type: 2,
     payload: {
-      senderId: RECOMMENDATION_IDS.AUTHOR_ID,
+      senderId: recommendationIds.AUTHOR_ID,
       senderName: "Extension Recommendation",
       message: messageText,
       messageId: generateUUID(),
-      roomId: RECOMMENDATION_IDS.ROOM_ID,
-      channelId: RECOMMENDATION_IDS.CHANNEL_ID,
-      serverId: RECOMMENDATION_IDS.SERVER_ID,
+      roomId: recommendationIds.ROOM_ID,
+      channelId: recommendationIds.CHANNEL_ID,
+      serverId: recommendationIds.SERVER_ID,
       source: "recommendation-generation",
       attachments: [],
       metadata: {
         channelType: "DM",
         isDm: true,
-        targetUserId: RECOMMENDATION_IDS.AGENT_ID
+        targetUserId: recommendationIds.AGENT_ID
       }
     }
   }
