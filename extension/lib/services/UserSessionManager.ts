@@ -7,7 +7,6 @@
  */
 
 import { Storage } from "@plasmohq/storage"
-import { createHash } from "crypto"
 
 const storage = new Storage()
 
@@ -15,12 +14,25 @@ const storage = new Storage()
 const GLOBAL_SERVER_ID = "00000000-0000-0000-0000-000000000000"
 
 /**
+ * Simple hash function for strings (deterministic)
+ */
+async function simpleHash(str: string): Promise<string> {
+  // Use Web Crypto API (available in browser)
+  const encoder = new TextEncoder()
+  const data = encoder.encode(str)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  return hashHex
+}
+
+/**
  * Generates a deterministic UUID v4 from any input string
  * Same input always produces the same UUID
  */
-export function generateDeterministicUUID(input: string): string {
-  // Create SHA-256 hash from input
-  const hash = createHash("sha256").update(input).digest("hex")
+export async function generateDeterministicUUID(input: string): Promise<string> {
+  // Create SHA-256 hash from input using Web Crypto API
+  const hash = await simpleHash(input)
 
   // Format as UUID v4: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
   const uuid = [
@@ -70,7 +82,7 @@ export async function getUserId(): Promise<string> {
     const walletAddress = await getWalletAddress()
 
     // Generate deterministic UUID from wallet address
-    const userId = generateDeterministicUUID(`user:${walletAddress.toLowerCase()}`)
+    const userId = await generateDeterministicUUID(`user:${walletAddress.toLowerCase()}`)
 
     // Store mapping for debugging
     const mapping = await storage.get("user-wallet-mapping") || {}
@@ -90,10 +102,10 @@ export async function getUserId(): Promise<string> {
  * @param agentId Agent UUID from constants.ts
  * @returns Room UUID
  */
-export function createUserAgentRoomId(userId: string, agentId: string): string {
+export async function createUserAgentRoomId(userId: string, agentId: string): Promise<string> {
   // Combine user UUID + agent UUID to create unique room
   const roomInput = `room:${userId}:${agentId}`
-  return generateDeterministicUUID(roomInput)
+  return await generateDeterministicUUID(roomInput)
 }
 
 /**
@@ -124,7 +136,7 @@ export async function getUserAgentIds(
     const userId = await getUserId()
 
     // Generate room UUID from user + agent
-    const roomId = createUserAgentRoomId(userId, baseAgentId)
+    const roomId = await createUserAgentRoomId(userId, baseAgentId)
 
     const agentIds: AgentIds = {
       AUTHOR_ID: userId,           // User UUID (dynamic)
