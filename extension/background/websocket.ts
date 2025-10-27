@@ -170,15 +170,27 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
   })
 
   socketBot.on("messageBroadcast", (data) => {
+    console.log("📡 [Chatbot] messageBroadcast received:", {
+      roomId: data.roomId,
+      channelId: data.channelId,
+      senderId: data.senderId,
+      expectedRoomId: chatbotIds.ROOM_ID,
+      expectedChannelId: chatbotIds.CHANNEL_ID,
+      match: (data.roomId === chatbotIds.ROOM_ID || data.channelId === chatbotIds.CHANNEL_ID) && data.senderId === chatbotIds.AGENT_ID
+    })
+
     // 🆕 Utiliser les IDs dynamiques pour filtrer
     if (
       (data.roomId === chatbotIds.ROOM_ID || data.channelId === chatbotIds.CHANNEL_ID) &&
       data.senderId === chatbotIds.AGENT_ID
     ) {
       try {
-        MessageBus.getInstance().sendMessageFireAndForget({
-          type: "AGENT_MESSAGE",
+        // Envoyer directement via chrome.runtime.sendMessage (pas via MessageBus)
+        chrome.runtime.sendMessage({
+          type: "CHATBOT_RESPONSE",
           text: data.text
+        }).catch((error) => {
+          console.warn("⚠️ [websocket.ts] Error sending CHATBOT_RESPONSE:", error)
         })
       } catch (error) {
         console.warn("⚠️ [websocket.ts] Error sending CHATBOT_RESPONSE:", error)
