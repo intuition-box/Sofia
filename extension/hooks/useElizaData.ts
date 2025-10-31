@@ -1,7 +1,7 @@
 /**
  * useElizaData Hook
  * Replaces Eliza message storage with IndexedDB
- * Manages Sofia messages, parsed messages, and triplets from Eliza
+ * Manages Sofia messages, parsed messages, and triples from Eliza
  */
 
 import { useState, useEffect, useCallback } from 'react'
@@ -52,7 +52,7 @@ export const useElizaData = (): UseElizaDataResult => {
       
       // If recordId is 0, message couldn't be parsed - that's normal
       if (recordId === 0) {
-        console.log('ℹ️ Message not stored - no triplets found')
+        console.log('ℹ️ Message not stored - no triples found')
         return null
       }
       
@@ -71,7 +71,7 @@ export const useElizaData = (): UseElizaDataResult => {
   }, [loadMessages])
 
   /**
-   * Store a parsed message with triplets
+   * Store a parsed message with triples
    */
   const storeParsedMessage = useCallback(async (parsedMessage: ParsedSofiaMessage, messageId?: string): Promise<ElizaRecord> => {
     try {
@@ -80,7 +80,7 @@ export const useElizaData = (): UseElizaDataResult => {
       try {
         MessageBus.getInstance().sendMessageFireAndForget({ type: 'UPDATE_ECHO_BADGE' })
       } catch (badgeError) {
-        console.error('❌ Failed to notify background of new triplets:', badgeError)
+        console.error('❌ Failed to notify background of new triples:', badgeError)
       }
       
       const updatedMessages = await loadMessages()
@@ -169,7 +169,7 @@ export const useElizaMessageStore = () => {
     try {
       MessageBus.getInstance().sendMessageFireAndForget({ type: 'UPDATE_ECHO_BADGE' })
     } catch (badgeError) {
-      console.error('❌ Failed to notify background of new triplets:', badgeError)
+      console.error('❌ Failed to notify background of new triples:', badgeError)
     }
   }, [])
 

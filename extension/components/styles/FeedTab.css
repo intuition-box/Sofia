@@ -123,17 +123,21 @@
   display: flex;
   gap: 8px;
   margin-top: 4px;
+  width: 100%;
 }
 
 .feed-actions button {
-  padding: 6px 95px;
+  flex: 1;
+  padding: 8px 16px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 900;
   transition: 0.2s;
-  color: white;
+  color: rgb(0, 0, 14);
+  min-width: 0;
+  white-space: nowrap;
 }
 
 /* Join Button */
@@ -155,11 +159,13 @@
 
 /* Decline Button */
 .feed-decline-button {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.219);
+  color: white !important;
+  font-family: 'Gotu', cursive;
 }
 
 .feed-decline-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 0, 0, 0.144);
 }
 
 /* Empty State */
