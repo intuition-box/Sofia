@@ -55,12 +55,16 @@
     ],
     "knowledge": [],
     "plugins": [
+        "@elizaos/plugin-bootstrap",
         "@elizaos/plugin-sql",
         "@elizaos/plugin-gaianet",
-        "@elizaos/plugin-bootstrap",
         "@elizaos/plugin-mcp"
     ],
     "settings": {
+        "model": "Qwen2.5-72B-Instruct",
+        "temperature": 0.3,
+        "maxTokens": 4096,
+        "responseTimeout": 30000
     },
     "style": {
         "all": [],

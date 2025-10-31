@@ -47,14 +47,15 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "dotenv-cli": "^11.0.0",
     "prettier": "3.5.3",
     "tsup": "8.5.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.1"
   },
   "scripts": {
-    "start": "elizaos start",
-    "dev": "elizaos dev",
+    "start": "dotenv -e .env -- elizaos start",
+    "dev": "dotenv -e .env -- elizaos dev",
     "build": "tsc --noEmit && vite build && tsup",
     "lint": "prettier --write ./src",
     "type-check": "tsc --noEmit",

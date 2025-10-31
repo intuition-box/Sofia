@@ -41,11 +41,15 @@
   ],
   "knowledge": [],
   "plugins": [
+    "@elizaos/plugin-bootstrap",
     "@elizaos/plugin-sql",
-    "@elizaos/plugin-gaianet",
-    "@elizaos/plugin-bootstrap"
+    "@elizaos/plugin-gaianet"
   ],
   "settings": {
+    "model": "Qwen2.5-72B-Instruct",
+    "temperature": 0.5,
+    "maxTokens": 4096,
+    "responseTimeout": 30000
   },
   
   "style": {
