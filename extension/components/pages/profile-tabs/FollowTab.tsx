@@ -12,6 +12,9 @@ import TrustAccountButton from '../../ui/TrustAccountButton'
 import UpvoteModal from '../../modals/UpvoteModal'
 import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import Avatar from '../../ui/Avatar'
+import AccountStats from '../../ui/AccountStats'
+import UserAtomStats from '../../ui/UserAtomStats'
+import { useRouter } from '../../layout/RouterProvider'
 import '../../styles/CoreComponents.css'
 import '../../styles/FollowTab.css'
 
@@ -28,6 +31,7 @@ interface FollowedAccount {
   description?: string
   walletInfo?: { wallet: string; shares: string }[]
   trustAmount: number
+  walletAddress?: string // Wallet address for stats lookup
 }
 
 const FollowTab = () => {
@@ -39,10 +43,23 @@ const FollowTab = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'highest-stake' | 'lowest-stake' | 'recent'>('highest-stake')
 
+  // Router for navigation
+  const { navigateTo, searchContext, setSearchContext } = useRouter()
+
   // Search functionality
   const { searchAccounts } = useGetAtomAccount()
   const [searchResults, setSearchResults] = useState<AccountAtom[]>([])
   const [showSearchResults, setShowSearchResults] = useState(false)
+
+  // Restore search context when coming back from user profile
+  useEffect(() => {
+    if (searchContext) {
+      setSearchQuery(searchContext.query)
+      setShowSearchResults(searchContext.showResults)
+      // Clear the context after restoring
+      setSearchContext(null)
+    }
+  }, [searchContext, setSearchContext])
 
   // Upvote modal state for Trust Circle
   const [selectedAccount, setSelectedAccount] = useState<FollowedAccount | null>(null)
@@ -106,6 +123,44 @@ const FollowTab = () => {
   const handleFollowSuccess = () => {
     console.log('✅ FollowTab - Follow successful, refreshing list')
     loadFollows()
+  }
+
+  // Handle navigation to user profile
+  const handleNavigateToUserProfile = (account: FollowedAccount) => {
+    // Save search context before navigating
+    if (searchQuery || showSearchResults) {
+      setSearchContext({
+        query: searchQuery,
+        showResults: showSearchResults
+      })
+    }
+
+    navigateTo('user-profile', {
+      termId: account.termId,
+      label: account.label,
+      image: account.image,
+      walletAddress: account.walletAddress,
+      url: account.url,
+      description: account.description
+    })
+  }
+
+  // Handle navigation to search result profile
+  const handleNavigateToSearchResult = (account: AccountAtom) => {
+    // Save search context before navigating
+    setSearchContext({
+      query: searchQuery,
+      showResults: showSearchResults
+    })
+
+    navigateTo('user-profile', {
+      termId: account.id,
+      label: account.label,
+      image: account.image,
+      walletAddress: account.data,
+      url: undefined,
+      description: undefined
+    })
   }
 
   // Handle upvote click for Trust Circle
@@ -194,7 +249,7 @@ const FollowTab = () => {
             triples(where: $where) {
               subject { label, term_id, type }
               predicate { label, term_id }
-              object { label, term_id, type, image }
+              object { label, term_id, type, image, data }
               term_id
               created_at
               positions(where: { account: { id: { _eq: $walletAddress } } }) {
@@ -311,6 +366,9 @@ const FollowTab = () => {
                       id
                       label
                       image
+                      atom {
+                        data
+                      }
                     }
                     shares
                   }
@@ -403,6 +461,18 @@ const FollowTab = () => {
 
           const trustAmount = trustAmountWei / 1e18
 
+          // Extract wallet address from data field or use label if it's an address
+          let walletAddress: string | undefined = undefined
+          if (account.data) {
+            // If data starts with 0x, it's a wallet address
+            if (typeof account.data === 'string' && account.data.startsWith('0x')) {
+              walletAddress = account.data
+            }
+          } else if (account.label?.startsWith('0x')) {
+            // Label might be the wallet address
+            walletAddress = account.label
+          }
+
           return {
             id: triple.term_id,
             label: account.label || 'Unknown',
@@ -413,7 +483,8 @@ const FollowTab = () => {
             url: accountData?.url,
             description: accountData?.description,
             walletInfo: [],
-            trustAmount
+            trustAmount,
+            walletAddress
           }
         })
       } else {
@@ -427,6 +498,16 @@ const FollowTab = () => {
             const trustAmountWei = parseFloat(position.shares || '0')
             const trustAmount = trustAmountWei / 1e18
 
+            // Extract wallet address from account.id or account.atom.data
+            let walletAddress: string | undefined = undefined
+            if (position.account.id?.startsWith('0x')) {
+              walletAddress = position.account.id
+            } else if (position.account.atom?.data && typeof position.account.atom.data === 'string' && position.account.atom.data.startsWith('0x')) {
+              walletAddress = position.account.atom.data
+            } else if (position.account.label?.startsWith('0x')) {
+              walletAddress = position.account.label
+            }
+
             return {
               id: position.account.id,
               label: position.account.label || position.account.id,
@@ -437,7 +518,8 @@ const FollowTab = () => {
               url: undefined,
               description: undefined,
               walletInfo: [],
-              trustAmount
+              trustAmount,
+              walletAddress
             }
           }) || []
         }
@@ -520,6 +602,7 @@ const FollowTab = () => {
               <div
                 key={account.id}
                 className="search-result-card"
+                onClick={() => handleNavigateToSearchResult(account)}
               >
                 <div className="account-left">
                   <span className="account-number">{index + 1}</span>
@@ -529,9 +612,12 @@ const FollowTab = () => {
                     avatarClassName="account-avatar"
                     size="medium"
                   />
-                  <span className="account-label">{account.label}</span>
+                  <div className="search-account-info">
+                    <span className="account-label">{account.label}</span>
+                    <UserAtomStats termId={account.id} accountAddress={account.data} compact={true} />
+                  </div>
                 </div>
-                <div className="account-right">
+                <div className="account-right" onClick={(e) => e.stopPropagation()}>
                   <FollowButton
                     account={account}
                     onFollowSuccess={handleFollowSuccess}
@@ -571,34 +657,27 @@ const FollowTab = () => {
       {!loading && !error && (
         <div className="followed-accounts">
           {filteredAccounts.map((account, index) => (
-            <div key={account.id} className="followed-account-card">
-              <a
-                href={`https://portal.intuition.systems/explore/atom/${account.termId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="account-link"
-                onClick={(e) => {
-                  // Allow button clicks to not trigger the link
-                  if ((e.target as HTMLElement).closest('.trust-account-btn, .upvote-badge, .follow-button')) {
-                    e.preventDefault()
-                  }
-                }}
-              >
-                <div className="account-left">
-                  <span className="account-number">{index + 1}</span>
-                  <Avatar
-                    imgSrc={account.image}
-                    name={account.label}
-                    avatarClassName="account-avatar"
-                    size="medium"
-                  />
-                  <div className="account-info">
-                    <span className="account-label">{account.label}</span>
-                    <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
-                  </div>
+            <div
+              key={account.id}
+              className="followed-account-card"
+              onClick={() => handleNavigateToUserProfile(account)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="account-left">
+                <span className="account-number">{index + 1}</span>
+                <Avatar
+                  imgSrc={account.image}
+                  name={account.label}
+                  avatarClassName="account-avatar"
+                  size="medium"
+                />
+                <div className="account-info">
+                  <span className="account-label">{account.label}</span>
+                  <UserAtomStats termId={account.termId} accountAddress={account.walletAddress} compact={true} />
+                  <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
                 </div>
-              </a>
-              <div className="account-right">
+              </div>
+              <div className="account-right" onClick={(e) => e.stopPropagation()}>
                 {filterType === 'following' && (
                   <TrustAccountButton
                     accountVaultId={account.termId}

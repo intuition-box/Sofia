@@ -48,13 +48,13 @@ export const EXPLORER_URLS = {
 
 // Predicate IDs
 export const PREDICATE_IDS = {
-  FOLLOW: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a",
+  FOLLOW: "0xffd07650dc7ab341184362461ebf52144bf8bcac5a19ef714571de15f1319260",
   TRUST: "0xeb0372e9e08097b1b2c4c4f7157a28584e77963ceb70e4654707ea60b247498d"
 } as const
 
 // Subject IDs - Using the same USER_ID atom as the universal "I" subject
 export const SUBJECT_IDS = {
-  I: "0x8d61ecf6e15472e15b1a0f63cd77f62aa57e6edcd3871d7a841f1056fb42b216" // Same as USER_ID - represents "I" for all triplets
+  I: "0x7ab197b346d386cd5926dbfeeb85dade42f113c7ed99ff2046a5123bb5cd016b" // Same as USER_ID - represents "I" for all triplets
 } as const
 
 // Predicate Names (for display)

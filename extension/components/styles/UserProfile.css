@@ -1,0 +1,431 @@
+/* ========== USER PROFILE PAGE ========== */
+.user-profile-page {
+  padding-bottom: 80px;
+}
+
+/* ========== BACK BUTTON ========== */
+.user-profile-back-button {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #FBF7F5;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.user-profile-back-button:hover {
+  background: rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ========== PROFILE HEADER ========== */
+.user-profile-header {
+  align-items: center;
+  margin-bottom: -20px;
+  padding: 20px 16px;
+  display: flex ;
+  position: relative;
+  flex-direction: column;
+  margin-top: 45px;
+}
+
+
+.user-profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-profile-info {
+  flex: 1;
+}
+
+.user-profile-name {
+  font-family: 'Gotu', cursive;
+  font-size: 20px;
+  font-weight: 600;
+  color: #FBF7F5;
+  margin: 0 0 4px 0;
+}
+
+.user-profile-wallet {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========== STATS SECTION ========== */
+.user-profile-stats-section {
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.user-profile-stats-grid {
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.user-profile-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.user-profile-stat-value {
+  font-family: 'Gotu', cursive;
+  font-size: 28px;
+  font-weight: 700;
+  color: #FBF7F5;
+  line-height: 1;
+  margin-bottom: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.user-profile-stat-label {
+  font-family: 'Gotu', cursive;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.user-profile-stats-loading,
+.user-profile-stats-error {
+  text-align: center;
+  padding: 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+}
+
+.user-profile-stats-loading {
+  color: rgba(255, 255, 255, 0.6);
+  animation: user-profile-pulse 2s ease-in-out infinite;
+}
+
+.user-profile-stats-error {
+  color: #ff6b6b;
+}
+
+/* ========== SEPARATOR ========== */
+.user-profile-separator {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  margin: 20px 16px;
+}
+
+/* ========== SECTIONS ========== */
+.user-profile-section {
+  padding: 0 16px;
+  margin-bottom: 24px;
+}
+
+.user-profile-section-title {
+  font-family: 'Gotu', cursive;
+  font-size: 18px;
+  font-weight: 600;
+  color: #FBF7F5;
+  margin: 0 0 16px 0;
+}
+
+/* ========== SIGNALS SECTION ========== */
+.user-profile-signals-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-profile-signal-card {
+  backdrop-filter: blur(21px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.user-profile-signal-card:hover {
+  border-color: rgba(255, 156, 109, 0.575);
+  transform: translateY(-2px);
+}
+
+.user-profile-signal-triple {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.user-profile-signal-atom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.user-profile-signal-atom-image {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.user-profile-signal-atom-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  color: #FBF7F5;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-profile-signal-predicate {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.user-profile-signal-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.user-profile-signal-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-profile-signal-stat-label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.user-profile-signal-stat-value {
+  color: #FBF7F5;
+  font-weight: 600;
+}
+
+/* ========== LISTS SECTION ========== */
+.user-profile-lists-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-profile-list-card {
+  backdrop-filter: blur(21px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.user-profile-list-card:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 156, 109, 0.575);
+  transform: translateY(-2px);
+}
+
+.user-profile-list-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.user-profile-list-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-profile-list-info {
+  flex: 1;
+}
+
+.user-profile-list-label {
+  font-family: 'Gotu', cursive;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FBF7F5;
+  margin: 0 0 4px 0;
+}
+
+.user-profile-list-predicate {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.user-profile-list-preview {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.user-profile-list-preview::-webkit-scrollbar {
+  height: 4px;
+}
+
+.user-profile-list-preview::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.user-profile-list-preview::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.user-profile-list-preview-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+}
+
+.user-profile-list-preview-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-profile-list-preview-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-profile-list-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.user-profile-list-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-profile-list-stat-label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.user-profile-list-stat-value {
+  color: #FBF7F5;
+  font-weight: 600;
+}
+
+/* ========== LOADING & EMPTY STATES ========== */
+.user-profile-loading,
+.user-profile-error,
+.user-profile-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+}
+
+.user-profile-loading {
+  animation: user-profile-pulse 2s ease-in-out infinite;
+}
+
+@keyframes user-profile-pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.user-profile-error {
+  color: #ff6b6b;
+}
+
+/* ========== LOAD MORE BUTTON ========== */
+.user-profile-load-more {
+  margin: 16px auto;
+  padding: 12px 24px;
+  background: rgba(111, 68, 220, 0.2);
+  border: 1px solid rgba(111, 68, 220, 0.3);
+  border-radius: 8px;
+  color: #9f7aea;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  width: fit-content;
+}
+
+.user-profile-load-more:hover {
+  background: rgba(111, 68, 220, 0.3);
+  border-color: rgba(111, 68, 220, 0.5);
+}
+
+.user-profile-load-more:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

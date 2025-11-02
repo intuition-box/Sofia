@@ -1,0 +1,45 @@
+.account-stats-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #FF6B4A;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.account-stats-container.account-stats-compact {
+  font-size: 11px;
+  gap: 6px;
+}
+
+.account-stats-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.account-stats-label {
+  color: #999;
+  font-weight: 500;
+}
+
+.account-stats-value {
+  color: #ffbfb1;
+  font-weight: 400;
+  font-family: 'Gotu', cursive;
+  font-size: 10px;
+  line-height: 1;
+  margin-left: 4px;
+}
+
+.account-stats-separator {
+  color: #666;
+  font-weight: 300;
+}
+
+.account-stats-loading-text {
+  color: #666;
+  font-size: 11px;
+  font-style: italic;
+}

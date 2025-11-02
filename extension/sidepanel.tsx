@@ -19,6 +19,7 @@ import ProfilePage from "./components/pages/ProfilePage"
 import CorePage from "./components/pages/CorePage"
 import ResonancePage from "./components/pages/ResonancePage"
 import ChatPage from "./components/pages/ChatPage"
+import UserProfilePage from "./components/pages/UserProfilePage"
 
 
 const SidePanelContent = () => {
@@ -39,7 +40,7 @@ const SidePanelContent = () => {
 
   const renderCurrentPage = () => {
     if (!account) return <HomePage />
-    
+
     switch (currentPage) {
       case 'home':
       case 'home-connected':
@@ -54,6 +55,8 @@ const SidePanelContent = () => {
         return <ResonancePage />
       case 'chat':
         return <ChatPage />
+      case 'user-profile':
+        return <UserProfilePage />
       default:
         return <HomeConnectedPage />
     }
