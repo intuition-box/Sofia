@@ -19,6 +19,26 @@ export const intuitionTestnet = defineChain({
   },
 })
 
+// Définir le mainnet Intuition
+export const intuitionMainnet = defineChain({
+  id: 1155, // Intuition mainnet chain ID
+  name: 'Intuition Mainnet',
+  network: 'intuition-mainnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Trust',
+    symbol: 'TRUST',
+  },
+  rpcUrls: {
+    public: { http: ['https://rpc.intuition.systems'], webSocket: ['wss://rpc.intuition.systems'] },
+    default: { http: ['https://rpc.intuition.systems'], webSocket: ['wss://rpc.intuition.systems'] },
+  },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://explorer.intuition.systems' },
+  },
+})
+
 export const SELECTED_CHAIN = intuitionTestnet
 export const DEFAULT_CHAIN_ID = SELECTED_CHAIN.id.toString()
 export const MULTIVAULT_CONTRACT_ADDRESS = "0xB92EA1B47E4ABD0a520E9138BB59dBd1bC6C475B"
+export const MULTIVAULT_CONTRACT_ADDRESS_MAINNET = "0x6E35cF57A41fA15eA0EaE9C33e751b01A784Fe7e"
