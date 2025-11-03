@@ -25,7 +25,8 @@
   font-family: var(--font-family-display);
   font-size: var(--font-size-2xl);
   font-weight: 600;
-  color: var(--color-text-secondary);
+  font-size: 18px;
+  color: white;
   margin-bottom: var(--spacing-lg);
 }
 
@@ -592,4 +593,169 @@
   font-size: 13px;
   color: #F2DED6;
   line-height: 1.4;
+}
+
+/* Settings Item Content (for Data Tracking with description) */
+.settings-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.settings-item-title {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.settings-item-description {
+  font-size: 12px;
+  color: rgba(242, 222, 214, 0.7);
+  line-height: 1.4;
+}
+
+/* Wallet Address Display */
+.wallet-address-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #F2DED6;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.wallet-address-display:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Status Button with Animation */
+.available-for-btn {
+  --animation: 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  column-gap: 2px;
+  color: #178d00;
+  background-color: #e1f9dc;
+  border-radius: 100px;
+  padding: 0.4rem 0.8rem 0.4rem 0.3rem;
+  outline: none;
+  border: none;
+  font-weight: 600;
+  font-size: 13px;
+  height: 36px;
+  position: relative;
+  transition: 0.2s ease-in-out;
+  cursor: pointer;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.available-for-btn:hover {
+  background-color: #ffffff;
+}
+
+.available-for-btn:active {
+  background-color: #e1f9dc;
+  border: solid 2px #178d00;
+}
+
+.circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border: solid 2px #178d00;
+  border-radius: 50%;
+  margin: 0 8px;
+  background-color: transparent;
+  animation: circle-keys var(--animation);
+  flex-shrink: 0;
+}
+
+.circle .dot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #178d00;
+  animation: dot-keys var(--animation);
+}
+
+.circle .outline {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  animation: outline-keys var(--animation);
+}
+
+.circle:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.circle:nth-child(2) .dot {
+  animation-delay: 0.3s;
+}
+
+.circle:nth-child(1) .outline {
+  animation-delay: 0.9s;
+}
+
+.circle:nth-child(2) .outline {
+  animation-delay: 1.2s;
+}
+
+@keyframes circle-keys {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dot-keys {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes outline-keys {
+  0% {
+    transform: scale(0);
+    outline: solid 20px #178d00;
+    outline-offset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    outline: solid 0 transparent;
+    outline-offset: 20px;
+    opacity: 0;
+  }
 }

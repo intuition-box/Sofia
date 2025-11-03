@@ -3,7 +3,6 @@ import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
-import { SessionWalletManager } from '../ui/SessionWalletManager'
 import { Storage } from '@plasmohq/storage'
 import { disconnectWallet, cleanupProvider } from '../../lib/services/metamask'
 import { useStorage } from '@plasmohq/storage/hook'
@@ -92,17 +91,52 @@ const SettingsPage = () => {
 
       <h2 className="section-title">Settings</h2>
 
-      {/* Privacy Section */}
+      {/* Settings Section */}
       <div className="settings-section">
-        <h3 className="settings-section-title">Privacy</h3>
 
-        {/* Toggle for tracking */}
+        {/* Connected Wallet */}
+        {account && (
+          <div className="settings-item">
+            <span>Connected Wallet</span>
+            <div className="wallet-address-display">
+              {account.slice(0, 6)}...{account.slice(-4)}
+            </div>
+          </div>
+        )}
+
+        {/* Data Tracking */}
         <div className="settings-item">
-          <span>Data Tracking</span>
+          <div className="settings-item-content">
+            <span>Data Tracking</span>
+            <span className="settings-item-description">Enable or disable Sofia's data tracking</span>
+          </div>
           <SwitchButton isEnabled={isTrackingEnabled} onToggle={toggleTracking} />
         </div>
 
-        {/* Clear all data section */}
+        {/* Status */}
+        <div className="settings-item">
+          <span>Status</span>
+          <a
+            href="https://stats.intuition.sh/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="available-for-btn"
+          >
+            <div className="circle">
+              <div className="dot"></div>
+              <div className="outline"></div>
+            </div>
+            View Mainnet Status
+          </a>
+        </div>
+
+        {/* Wallet Connection */}
+        <div className="settings-item">
+          <span>Wallet Connection</span>
+          <WalletConnectionButton />
+        </div>
+
+        {/* Clear All Data */}
         <div className="settings-item">
           <span>Clear All Data</span>
           <button
@@ -119,37 +153,6 @@ const SettingsPage = () => {
           </button>
         </div>
       </div>
-
-      {/* Blockchain Integration Section */}
-      <div className="settings-section">
-        <h3 className="settings-section-title">Blockchain Integration</h3>
-        <div className="settings-item">
-          <span>Wallet Connection</span>
-          <WalletConnectionButton />
-        </div>
-        <div className="settings-item">
-          <span>Status</span>
-          <a
-            href="https://stats.intuition.sh/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="available-for-btn"
-          >
-            <div className="circle">
-              <div className="dot"></div>
-              <div className="outline"></div>
-            </div>
-            View Mainnet Status
-          </a>
-        </div>
-      </div>
-
-      {/* Session Wallet Section - Test Mode */}
-      {account && (
-        <div className="settings-section">
-          <SessionWalletManager />
-        </div>
-      )}
     </div>
   )
 }
