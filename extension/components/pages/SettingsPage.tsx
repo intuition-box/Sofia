@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
-import  TrackingStatus  from '../ui/TrackingStatus'
+import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { SessionWalletManager } from '../ui/SessionWalletManager'
 import { Storage } from '@plasmohq/storage'
@@ -12,13 +12,13 @@ import { RecommendationService } from '../../lib/services/ai/RecommendationServi
 import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
+import '../styles/Modal.css'
 
 const SettingsPage = () => {
   const { navigateTo } = useRouter()
   const { isTrackingEnabled, toggleTracking } = useTracking()
 
   // Local UI states
-  const [isDataSharingEnabled, setIsDataSharingEnabled] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
 
   // Plasmo storage 
@@ -99,37 +99,23 @@ const SettingsPage = () => {
         {/* Toggle for tracking */}
         <div className="settings-item">
           <span>Data Tracking</span>
-          <TrackingStatus isEnabled={isTrackingEnabled} onToggle={toggleTracking} />
+          <SwitchButton isEnabled={isTrackingEnabled} onToggle={toggleTracking} />
         </div>
 
-        {/* Toggle for sharing */}
-        <div className="settings-item">
-          <span>Data Sharing</span>
-          <TrackingStatus
-            isEnabled={isDataSharingEnabled}
-            onToggle={() => setIsDataSharingEnabled(!isDataSharingEnabled)}
-          />
-        </div>
         {/* Clear all data section */}
         <div className="settings-item">
           <span>Clear All Data</span>
           <button
             onClick={handleClearStorage}
             disabled={isClearing}
-            className="clear-storage-button"
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: isClearing ? 'not-allowed' : 'pointer',
-              opacity: isClearing ? 0.6 : 1,
-              fontSize: '14px',
-              fontWeight: '500'
-            }}
+            className="delete-button noselect"
           >
-            {isClearing ? 'Clearing...' : 'Clear Storage'}
+            <span className="text">{isClearing ? 'Clearing...' : 'Delete'}</span>
+            <span className="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"></path>
+              </svg>
+            </span>
           </button>
         </div>
       </div>
@@ -140,6 +126,21 @@ const SettingsPage = () => {
         <div className="settings-item">
           <span>Wallet Connection</span>
           <WalletConnectionButton />
+        </div>
+        <div className="settings-item">
+          <span>Status</span>
+          <a
+            href="https://stats.intuition.sh/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="available-for-btn"
+          >
+            <div className="circle">
+              <div className="dot"></div>
+              <div className="outline"></div>
+            </div>
+            View Mainnet Status
+          </a>
         </div>
       </div>
 

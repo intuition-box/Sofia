@@ -215,3 +215,381 @@
 .cancel-button:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* Delete Button Styles */
+.delete-button {
+  width: 100px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background: #e62222;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+.delete-button, .delete-button span {
+  transition: 200ms;
+}
+
+.delete-button .text {
+  transform: translateX(20px);
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.delete-button .icon {
+  position: absolute;
+  border-left: 1px solid #c41b1b;
+  right: 0;
+  height: 28px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-button svg {
+  width: 12px;
+  fill: #eee;
+}
+
+.delete-button:hover {
+  background: #ff3636;
+}
+
+.delete-button:hover .text {
+  color: transparent;
+}
+
+.delete-button:hover .icon {
+  width: 100px;
+  border-left: none;
+  left: 0;
+  right: 0;
+}
+
+.delete-button:focus {
+  outline: none;
+}
+
+.delete-button:active .icon svg {
+  transform: scale(0.8);
+}
+
+.delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.delete-button:disabled:hover {
+  background: #e62222;
+}
+
+.delete-button:disabled:hover .text {
+  color: white;
+}
+
+.delete-button:disabled:hover .icon {
+  width: 28px;
+  border-left: 1px solid #c41b1b;
+  left: auto;
+  right: 0;
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Status Button Styles */
+.available-for-btn {
+  --animation: 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  column-gap: 2px;
+  color: #178d00;
+  background-color: #e1f9dc;
+  border-radius: 100px;
+  padding: 0.4rem 0.8rem 0.4rem 0.3rem;
+  outline: none;
+  border: none;
+  font-weight: 600;
+  font-size: 13px;
+  height: 36px;
+  position: relative;
+  transition: 0.2s ease-in-out;
+  cursor: pointer;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.available-for-btn:hover {
+  background-color: #ffffff;
+}
+
+.available-for-btn:active {
+  background-color: #e1f9dc;
+  border: solid 2px #178d00;
+}
+
+.circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border: solid 2px #178d00;
+  border-radius: 50%;
+  margin: 0 8px;
+  background-color: transparent;
+  animation: circle-keys var(--animation);
+  flex-shrink: 0;
+}
+
+.circle .dot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #178d00;
+  animation: dot-keys var(--animation);
+}
+
+.circle .outline {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  animation: outline-keys var(--animation);
+}
+
+.circle:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.circle:nth-child(2) .dot {
+  animation-delay: 0.3s;
+}
+
+.circle:nth-child(1) .outline {
+  animation-delay: 0.9s;
+}
+
+.circle:nth-child(2) .outline {
+  animation-delay: 1.2s;
+}
+
+@keyframes circle-keys {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dot-keys {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes outline-keys {
+  0% {
+    transform: scale(0);
+    outline: solid 20px #178d00;
+    outline-offset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    outline: solid 0 transparent;
+    outline-offset: 20px;
+    opacity: 0;
+  }
+}
+
+/* Session Wallet Manager Styles */
+.session-wallet-container {
+  padding: 20px;
+}
+
+.session-wallet-title {
+  font-family: 'Gotu', cursive;
+  font-size: 18px;
+  font-weight: 500;
+  color: #FBF7F5;
+  margin-bottom: 10px;
+  margin-top: 0;
+}
+
+.session-wallet-description {
+  font-size: 14px;
+  color: #F2DED6;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.session-wallet-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  color: #FBF7F5;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.wallet-status {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+.wallet-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.wallet-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #FBF7F5;
+}
+
+.wallet-active-indicator {
+  font-size: 12px;
+  color: #28a745;
+}
+
+.wallet-details {
+  font-size: 12px;
+  color: #F2DED6;
+}
+
+.wallet-address-text {
+  font-family: monospace;
+  margin-bottom: 4px;
+}
+
+.wallet-balance-text {
+  font-weight: 500;
+}
+
+.wallet-refill-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.wallet-refill-input-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.wallet-refill-input {
+  background-color: rgba(251, 247, 245, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: #FBF7F5;
+  width: 80px;
+  font-size: 12px;
+}
+
+.wallet-action-button {
+  background-color: rgba(199, 134, 108, 0.8);
+  color: #FBF7F5;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.wallet-action-buttons-container {
+  display: flex;
+  gap: 8px;
+}
+
+.wallet-refresh-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #FBF7F5;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.wallet-destroy-button {
+  background-color: rgba(220, 53, 69, 0.8);
+  color: #FBF7F5;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.wallet-warning-box {
+  background-color: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.wallet-warning-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.wallet-warning-text {
+  font-size: 13px;
+  color: #F2DED6;
+  line-height: 1.4;
+}

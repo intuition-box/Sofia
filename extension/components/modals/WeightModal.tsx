@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import Iridescence from '../ui/Iridescence'
 import '../styles/Modal.css'
 
 interface Triplet {
@@ -225,21 +226,43 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               {(transactionSuccess || transactionError) ? 'Close' : 'Cancel'}
             </button>
             {!transactionSuccess && !transactionError && (
-              <button 
+              <button
                 className="modal-btn primary"
                 onClick={handleSubmit}
                 disabled={isProcessing}
               >
-                {isProcessing ? 'Amplifying...' : 'Amplify'}
+                <div className="modal-btn-background">
+                  <Iridescence
+                    color={[1, 0.4, 0.5]}
+                    speed={0.3}
+                    mouseReact={false}
+                    amplitude={0.1}
+                    zoom={0.05}
+                  />
+                </div>
+                <div className="modal-btn-content">
+                  {isProcessing ? 'Amplifying...' : 'Amplify'}
+                </div>
               </button>
             )}
             {transactionError && (
-              <button 
+              <button
                 className="modal-btn primary"
                 onClick={handleSubmit}
                 disabled={isProcessing}
               >
-                Retry
+                <div className="modal-btn-background">
+                  <Iridescence
+                    color={[1, 0.4, 0.5]}
+                    speed={0.3}
+                    mouseReact={false}
+                    amplitude={0.1}
+                    zoom={0.05}
+                  />
+                </div>
+                <div className="modal-btn-content">
+                  Retry
+                </div>
               </button>
             )}
           </div>

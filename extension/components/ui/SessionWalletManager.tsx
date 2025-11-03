@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { sessionWallet } from '../../lib/services/sessionWallet'
 import { useStorage } from "@plasmohq/storage/hook"
-import TrackingStatus from './TrackingStatus'
+import SwitchButton from './SwitchButton'
+import '../styles/SettingsPage.css'
 
 interface SessionWalletStatus {
   isReady: boolean
@@ -86,39 +87,39 @@ export const SessionWalletManager= () => {
   }
 
   return (
-    <div style={styles.container}>
-      <h3 style={styles.title}>Embeded Wallet</h3>
-      <div style={styles.description}>
+    <div className="session-wallet-container">
+      <h3 className="session-wallet-title">Embeded Wallet</h3>
+      <div className="session-wallet-description">
         Transactions without MetaMask interaction. Preview of future Sofia experience.
       </div>
-      
+
       {/* Important Warning */}
-      <div style={styles.warningBox}>
-        <span style={styles.warningIcon}>⚠️</span>
-        <div style={styles.warningText}>
-          <strong>Important:</strong> Session wallet funds are temporary. 
+      <div className="wallet-warning-box">
+        <span className="wallet-warning-icon">⚠️</span>
+        <div className="wallet-warning-text">
+          <strong>Important:</strong> Session wallet funds are temporary.
           They will be lost for ever .
         </div>
       </div>
 
       {/* Toggle principal */}
-      <div style={styles.settingsItem}>
+      <div className="session-wallet-item">
         <span>Enable automatic mode</span>
-        <TrackingStatus isEnabled={useSessionWallet} onToggle={toggleSessionWallet} />
+        <SwitchButton isEnabled={useSessionWallet} onToggle={toggleSessionWallet} />
       </div>
 
       {/* Wallet Status */}
       {status.isReady && (
-        <div style={styles.walletStatus}>
-          <div style={styles.statusHeader}>
-            <span style={styles.walletLabel}>Session Wallet</span>
-            <span style={styles.activeIndicator}>● Active</span>
+        <div className="wallet-status">
+          <div className="wallet-status-header">
+            <span className="wallet-label">Session Wallet</span>
+            <span className="wallet-active-indicator">● Active</span>
           </div>
-          <div style={styles.walletDetails}>
-            <div style={styles.addressText}>
+          <div className="wallet-details">
+            <div className="wallet-address-text">
               {status.address?.slice(0, 6)}...{status.address?.slice(-4)}
             </div>
-            <div style={styles.balanceText}>
+            <div className="wallet-balance-text">
               Balance: {parseFloat(status.balance || '0').toFixed(4)} TRUST
             </div>
           </div>
@@ -127,10 +128,10 @@ export const SessionWalletManager= () => {
 
       {/* Refill Section */}
       {status.isReady && (
-        <div style={styles.settingsItem}>
-          <div style={styles.refillContainer}>
+        <div className="session-wallet-item">
+          <div className="wallet-refill-container">
             <span>Refill</span>
-            <div style={styles.refillInputContainer}>
+            <div className="wallet-refill-input-container">
               <input
                 type="number"
                 value={refillAmount}
@@ -138,13 +139,13 @@ export const SessionWalletManager= () => {
                 placeholder="0.1"
                 step="0.01"
                 min="0"
-                style={styles.refillInput}
+                className="wallet-refill-input"
               />
               <button
                 onClick={handleRefill}
                 disabled={isRefilling}
+                className="wallet-action-button"
                 style={{
-                  ...styles.actionButton,
                   backgroundColor: isRefilling ? 'rgba(40, 167, 69, 0.5)' : 'rgba(40, 167, 69, 0.8)'
                 }}
               >
@@ -157,13 +158,13 @@ export const SessionWalletManager= () => {
 
       {/* Actions */}
       {status.isReady && (
-        <div style={styles.settingsItem}>
+        <div className="session-wallet-item">
           <span>Actions</span>
-          <div style={styles.actionButtonsContainer}>
-            <button onClick={updateStatus} style={styles.refreshButton}>
+          <div className="wallet-action-buttons-container">
+            <button onClick={updateStatus} className="wallet-refresh-button">
               ↻
             </button>
-            <button onClick={handleDestroyWallet} style={styles.destroyButton}>
+            <button onClick={handleDestroyWallet} className="wallet-destroy-button">
               🗑️
             </button>
           </div>
@@ -172,13 +173,13 @@ export const SessionWalletManager= () => {
 
       {/* Create Wallet Button */}
       {!status.isReady && useSessionWallet && (
-        <div style={styles.settingsItem}>
+        <div className="session-wallet-item">
           <span>Wallet not created</span>
           <button
             onClick={handleCreateWallet}
             disabled={isCreating}
+            className="wallet-action-button"
             style={{
-              ...styles.actionButton,
               backgroundColor: isCreating ? 'rgba(199, 134, 108, 0.5)' : 'rgba(199, 134, 108, 0.8)'
             }}
           >
@@ -188,148 +189,4 @@ export const SessionWalletManager= () => {
       )}
     </div>
   )
-}
-
-const styles = {
-  container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: '12px',
-    backdropFilter: 'blur(10px) saturate(100%)',
-    WebkitBackdropFilter: 'blur(10px) saturate(100%)',
-    border: '1px solid rgba(255, 255, 255, 0.125)',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    padding: '20px',
-    transition: 'all 0.3s ease'
-  },
-  title: {
-    fontFamily: "'Gotu', cursive",
-    fontSize: '18px',
-    fontWeight: '500',
-    color: '#FBF7F5',
-    marginBottom: '10px',
-    marginTop: '0'
-  },
-  description: {
-    fontSize: '14px',
-    color: '#F2DED6',
-    marginBottom: '20px',
-    lineHeight: '1.4'
-  },
-  settingsItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '15px 0',
-    color: '#FBF7F5',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    transition: 'all 0.3s ease'
-  },
-  walletStatus: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    padding: '12px',
-    marginBottom: '10px',
-    border: '1px solid rgba(255, 255, 255, 0.125)'
-  },
-  statusHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '8px'
-  },
-  walletLabel: {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#FBF7F5'
-  },
-  activeIndicator: {
-    fontSize: '12px',
-    color: '#28a745'
-  },
-  walletDetails: {
-    fontSize: '12px',
-    color: '#F2DED6'
-  },
-  addressText: {
-    fontFamily: 'monospace',
-    marginBottom: '4px'
-  },
-  balanceText: {
-    fontWeight: '500'
-  },
-  refillContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    width: '100%',
-    justifyContent: 'space-between'
-  },
-  refillInputContainer: {
-    display: 'flex',
-    gap: '8px',
-    alignItems: 'center'
-  },
-  refillInput: {
-    backgroundColor: 'rgba(251, 247, 245, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.125)',
-    padding: '6px 8px',
-    borderRadius: '6px',
-    color: '#FBF7F5',
-    width: '80px',
-    fontSize: '12px'
-  },
-  actionButton: {
-    backgroundColor: 'rgba(199, 134, 108, 0.8)',
-    color: '#FBF7F5',
-    padding: '6px 12px',
-    borderRadius: '6px',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: '500',
-    transition: 'all 0.3s ease'
-  },
-  actionButtonsContainer: {
-    display: 'flex',
-    gap: '8px'
-  },
-  refreshButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    color: '#FBF7F5',
-    padding: '6px 10px',
-    borderRadius: '6px',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '14px',
-    transition: 'all 0.3s ease'
-  },
-  destroyButton: {
-    backgroundColor: 'rgba(220, 53, 69, 0.8)',
-    color: '#FBF7F5',
-    padding: '6px 10px',
-    borderRadius: '6px',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '12px',
-    transition: 'all 0.3s ease'
-  },
-  warningBox: {
-    backgroundColor: 'rgba(255, 193, 7, 0.1)',
-    border: '1px solid rgba(255, 193, 7, 0.3)',
-    borderRadius: '8px',
-    padding: '12px',
-    marginBottom: '15px',
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '10px'
-  },
-  warningIcon: {
-    fontSize: '16px',
-    flexShrink: 0
-  },
-  warningText: {
-    fontSize: '13px',
-    color: '#F2DED6',
-    lineHeight: '1.4'
-  }
 }

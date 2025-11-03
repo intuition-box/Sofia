@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import Iridescence from '../ui/Iridescence'
 import '../styles/Modal.css'
 
 interface FollowModalProps {
@@ -136,7 +137,18 @@ const FollowModal = ({
               disabled={loading || parseFloat(trustAmount) < 0.01}
               className="modal-btn primary"
             >
-              {loading ? 'Processing...' : `Follow with ${trustAmount} TRUST`}
+              <div className="modal-btn-background">
+                <Iridescence
+                  color={[1, 0.4, 0.5]}
+                  speed={0.3}
+                  mouseReact={false}
+                  amplitude={0.1}
+                  zoom={0.05}
+                />
+              </div>
+              <div className="modal-btn-content">
+                {loading ? 'Processing...' : `Follow with ${trustAmount} TRUST`}
+              </div>
             </button>
           </div>
         </div>
