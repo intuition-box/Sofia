@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
-import { useRouter } from '../layout/RouterProvider'
-import '../styles/CircularMenu.css'
+import { useRouter } from '../../layout/RouterProvider'
+import './CircularMenu.css'
 
 interface CircularMenuProps {
   isVisible: boolean
@@ -10,16 +9,15 @@ interface CircularMenuProps {
 
 const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuProps) => {
   const { navigateTo } = useRouter()
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
 
   const menuItems = [
     {
       id: 'pulse-tab',
       title: 'Pulse Analysis',
-      description: 'Analyze browsing patterns from all open tabs',
-      position: { left: 'calc(50% - 140px)', top: 'calc(50% - 80px)' },
+      gradient: 'linear-gradient(45deg, #62daca, #10d4a9)',
+      position: 0,
       icon: (
-        <svg width="200px" height="200px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style={{display: 'block', maxWidth: 'none', maxHeight: 'none'}}>
+        <svg width="30px" height="30px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
           <g transform="translate(24, 24) scale(2) translate(-12, -12)">
             <path d="M17 3h2a2 2 0 0 1 2 2v2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             <path d="M21 17v2a2 2 0 0 1-2 2h-2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -32,7 +30,7 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuP
       action: () => {
         if (confirm('Collect pulse data from all open tabs?')) {
           chrome.runtime.sendMessage({ type: 'START_PULSE_ANALYSIS' })
-          onStartAnalysis?.() // Déclenche l'animation
+          onStartAnalysis?.()
         }
         onItemClick?.('pulse-tab')
       }
@@ -40,10 +38,10 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuP
     {
       id: 'import-data',
       title: 'Import Data',
-      description: 'Import and extract interest from your browser bookmarks',
-      position: { left: 'calc(50% + 140px)', top: 'calc(50% - 80px)' },
+      gradient: 'linear-gradient(45deg, #f97d98, #d41f46)',
+      position: 1,
       icon: (
-        <svg width="200px" height="200px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style={{display: 'block', maxWidth: 'none', maxHeight: 'none'}}>
+        <svg width="30px" height="30px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
           <g transform="translate(24, 24) scale(2) translate(-12, -12)">
             <path d="M12 3v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             <path d="m8 11 4 4 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -63,9 +61,10 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuP
     {
       id: 'find-similar',
       title: 'Find Similar',
-      position: { left: 'calc(50% + 0px)', top: 'calc(50% - 140px)' },
+      gradient: 'linear-gradient(45deg, aliceblue, #d169d1)',
+      position: 2,
       icon: (
-        <svg width="200px" height="200px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style={{display: 'block', maxWidth: 'none', maxHeight: 'none'}}>
+        <svg width="30px" height="30px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
           <g transform="translate(24, 24) scale(1.5) translate(-14, -14)">
             <circle cx="14" cy="14" r="5.05" stroke="white" strokeWidth="1.9" fill="none"/>
             <circle cx="14" cy="14" r="9.05" stroke="white" strokeOpacity="0.5" strokeWidth="1.9" fill="none"/>
@@ -87,27 +86,31 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuP
   if (!isVisible) return null
 
   return (
-    <div className="circular-menu">
+    <aside className="menu-tooltip-container">
+      <input type="checkbox" id="menu-toggle" checked={isVisible} readOnly />
       {menuItems.map((item) => (
-        <button
+        <li
           key={item.id}
-          className="arc-menu-button secondary-button"
-          style={{
-            left: item.position.left,
-            top: item.position.top,
-            transform: 'translate(-50%, -50%)'
-          }}
-          onMouseEnter={() => setHoveredItem(item.id)}
-          onMouseLeave={() => setHoveredItem(null)}
-          onClick={() => handleItemClick(item)}
+          style={{ '--i': item.position } as React.CSSProperties}
+          className="circle-box"
         >
-          {item.icon}
-          <div className="menu-tooltip">
-            {item.title}
-          </div>
-        </button>
+          <a
+            href="#"
+            className="anchor"
+            onClick={(e) => {
+              e.preventDefault()
+              handleItemClick(item)
+            }}
+            style={{
+              background: item.gradient
+            }}
+            title={item.title}
+          >
+            {item.icon}
+          </a>
+        </li>
       ))}
-    </div>
+    </aside>
   )
 }
 

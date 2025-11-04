@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import chatIcon from '../../components/ui/icons/chatIcon.png'
-import PulseAnimation from '../ui/PulseAnimation'
-import CircularMenu from '../ui/CircularMenu'
+import PulseAnimation from '../ui/orbanimation/PulseAnimation'
+import CircularMenu from '../ui/orbanimation/CircularMenu'
 import PageBlockchainCard from '../ui/PageBlockchainCard'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
@@ -122,9 +122,12 @@ const HomeConnectedPage = () => {
             zIndex: 1000
           }}
         >
-          <div onClick={handleOrbClick}>
-            <PulseAnimation size={120} isAnalyzing={isAnalyzing} />
-          </div>
+          <PulseAnimation
+            size={120}
+            isAnalyzing={isAnalyzing}
+            onToggleMenu={handleOrbClick}
+            showMenu={showMenu}
+          />
           <CircularMenu
             isVisible={showMenu}
             onItemClick={(item) => {

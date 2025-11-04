@@ -1,0 +1,105 @@
+.menu-tooltip-container {
+  --toggle-color: #fff;
+  --item-1-gradient: linear-gradient(45deg, #62daca, #10d4a9);
+  --item-2-gradient: linear-gradient(45deg, #f97d98, #d41f46);
+  --item-3-gradient: linear-gradient(45deg, aliceblue, #d169d1);
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+}
+
+#menu-toggle {
+  appearance: none;
+  visibility: hidden;
+}
+
+#menu-toggle:checked ~ .circle-box {
+  transform: rotate(calc(45deg + 360deg / 8 * var(--i)));
+  pointer-events: auto;
+}
+
+.circle-box {
+  position: absolute;
+  left: 0;
+  list-style-type: none;
+  transition: 0.5s;
+  transform-origin: 100px;
+  transition-delay: calc(0.1s * var(--i));
+  transform: rotate(0deg) translateX(50px);
+  pointer-events: none;
+}
+
+.circle-box:nth-of-type(1) .anchor {
+  background: var(--item-1-gradient);
+}
+
+.circle-box:nth-of-type(2) .anchor {
+  background: var(--item-2-gradient);
+}
+
+.circle-box:nth-of-type(3) .anchor {
+  background: var(--item-3-gradient);
+}
+
+.circle-box:nth-of-type(4),
+.circle-box:nth-of-type(5),
+.circle-box:nth-of-type(6),
+.circle-box:nth-of-type(7) {
+  visibility: hidden;
+}
+
+.anchor {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 50px;
+  border-radius: 50%;
+  font-size: 1.5em;
+  text-decoration: none;
+  transform: rotate(calc(-1 * (45deg + 360deg / 8 * var(--i))));
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+
+.anchor:hover::before {
+  inset: -7px;
+}
+
+.anchor::before {
+  content: "";
+  position: absolute;
+  inset: 0px;
+  background-image: inherit;
+  border-radius: inherit;
+  z-index: -1;
+  filter: blur(30px) saturate(900%);
+  transition: inset 0.2s ease;
+}
+
+/* Animation d'apparition du menu */
+.menu-tooltip-container {
+  animation: menuFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes menuFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
