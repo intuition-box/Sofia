@@ -16,10 +16,10 @@
 }
 
 .input-orb:checked ~ .orb {
-  filter: drop-shadow(0 0 12px rgba(145, 71, 255, 0.3))
-    drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
+  filter: drop-shadow(0 0 8px rgba(145, 71, 255, 0.4));
   transform-origin: center center;
   transform: translate(-50%, -50%) scale(0.9);
+  will-change: transform;
 }
 
 .input-orb:checked ~ .orb .icons .svg {
@@ -52,11 +52,10 @@
 }
 
 .input-orb:not(:checked) ~ .orb {
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255))
-    drop-shadow(0 0 12px rgba(255, 255, 255))
-    drop-shadow(0 0 12px rgba(145, 71, 255, 0.3))
-    drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6))
+    drop-shadow(0 0 15px rgba(145, 71, 255, 0.4));
   transform: scale(1.2) translate(-50%, -50%);
+  will-change: transform;
 }
 
 .input-orb:not(:checked) ~ .orb .ball {
@@ -65,11 +64,8 @@
 
 .input-orb:not(:checked) ~ .orb:hover {
   transform: scale(1.4) translate(-50%, -50%);
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255))
-    drop-shadow(0 0 8px rgba(255, 255, 255))
-    drop-shadow(0 0 12px rgba(255, 255, 255))
-    drop-shadow(0 0 10px rgba(145, 71, 255, 0.3))
-    drop-shadow(0 6px 26px rgba(255, 0, 0, 0.3));
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8))
+    drop-shadow(0 2px 20px rgba(145, 71, 255, 0.5));
 }
 
 .input-orb:not(:checked) ~ .orb:hover .icons .svg {
@@ -80,11 +76,8 @@
 
 .input-orb:not(:checked) ~ .orb:active {
   transform: scale(1.2) translate(-50%, -50%);
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255))
-    drop-shadow(0 0 8px rgba(255, 255, 255))
-    drop-shadow(0 0 12px rgba(255, 255, 255))
-    drop-shadow(0 0 10px rgba(145, 71, 255, 0.3))
-    drop-shadow(0 6px 26px rgba(255, 0, 0, 0.3));
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6))
+    drop-shadow(0 0 15px rgba(145, 71, 255, 0.4));
 }
 
 .input-orb:not(:checked) ~ .orb * {
@@ -167,7 +160,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) translateZ(0);
   width: 100px;
   height: 100px;
   background-image: radial-gradient(
@@ -187,8 +180,9 @@
     25% 42%,
     35% 30%
   );
-  animation: animation-ball 15s both ease;
+  animation: animation-ball 20s both ease infinite;
   pointer-events: none;
+  will-change: clip-path;
 }
 
 @keyframes animation-ball {
@@ -288,6 +282,7 @@
   position: absolute;
   inset: 0;
   perspective: 11rem;
+  transform: translateZ(0);
 }
 
 .container-rings::before,
@@ -305,14 +300,15 @@
     border-box;
   mask-composite: exclude;
   -webkit-mask-composite: xor;
+  will-change: transform;
 }
 
 .container-rings::before {
-  animation: ring180 10s linear infinite;
+  animation: ring180 15s linear infinite;
 }
 
 .container-rings::after {
-  animation: ring90 10s linear infinite;
+  animation: ring90 15s linear infinite;
 }
 
 @keyframes ring180 {
