@@ -1,7 +1,6 @@
 import React from "react"
 import { connectWallet, disconnectWallet } from "../../lib/services/metamask"
 import { useStorage } from "@plasmohq/storage/hook"
-import { PowerOff } from 'lucide-react'
 import Iridescence from './Iridescence'
 
 interface WalletConnectionButtonProps {
@@ -10,7 +9,6 @@ interface WalletConnectionButtonProps {
 
 const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProps) => {
   const [account, setAccount] = useStorage<string>("metamask-account")
-  const [isDisconnectHovered, setIsDisconnectHovered] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
 
   const handleConnect = async () => {
@@ -30,21 +28,6 @@ const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProp
   const handleDisconnect = () => {
     setAccount("");
     disconnectWallet()
-  }
-
-  const disconnectButtonStyle = {
-    padding: '4px',
-    backgroundColor: 'transparent',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'color 0.2s ease',
-    color: isDisconnectHovered ? '#dc3545' : '#6c757d'
-  }
-
-  const iconStyle = {
-    height: '16px',
-    width: '16px'
   }
 
   return (
@@ -76,17 +59,12 @@ const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProp
           </span>
         </button>
       ) : (
-        <div>
-          <button
-            title="Disconnect"
-            onClick={handleDisconnect}
-            style={disconnectButtonStyle}
-            onMouseEnter={() => setIsDisconnectHovered(true)}
-            onMouseLeave={() => setIsDisconnectHovered(false)}
-          >
-            <PowerOff style={iconStyle}/>
-          </button>
-        </div>
+        <button
+          className="disconnect-button-3d noselect"
+          onClick={handleDisconnect}
+        >
+          Disconnect
+        </button>
       )}
     </div>
   )

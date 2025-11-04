@@ -36,7 +36,7 @@
 
 .echo-card:hover {
   background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-primary);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -47,7 +47,7 @@
 }
 
 .border-default:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-primary);
 }
 
 .border-blue {
@@ -66,11 +66,11 @@
   justify-content: space-between;
   height: 100%;
   gap: 12px;
-  margin-bottom: 3px;
+  margin-bottom: -7px;
 }
 
 .triplet-item.selected {
-  border-color: rgba(199, 134, 108, 0.3);
+  border-color: #c7866c99;
   transform: translateY(-2px);
 }
 
@@ -87,10 +87,10 @@
 .triplet-header,
 .echo-header {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   gap: 8px;
   margin-bottom: 3px;
-  position: relative;
 }
 
 /* ========== TRIPLET TEXT ========== */
@@ -485,13 +485,15 @@
 }
 
 .triplet-favicon-positioned {
-  position: absolute;
-  right: 0;
-  top: 40%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  border-radius: 2px;
+  position: relative;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: contain;
+  flex-shrink: 0;
+  order: -1;
+  margin-right: 8px;
 }
 
 .triplet-url-link {
@@ -504,13 +506,12 @@
 }
 
 .triplet-actions-container {
-  position: absolute;
-  bottom: 0;
-  right: 0;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 10;
+  margin-top: 8px;
+  justify-content: flex-end;
 }
 
 .triplet-favicon-small {

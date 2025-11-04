@@ -317,8 +317,8 @@
   display: flex;
   align-items: center;
   column-gap: 2px;
-  color: #178d00;
-  background-color: #e1f9dc;
+  color: #ffffff;
+  background-color: #020c00;
   border-radius: 100px;
   padding: 0.4rem 0.8rem 0.4rem 0.3rem;
   outline: none;
@@ -758,4 +758,286 @@
     outline-offset: 20px;
     opacity: 0;
   }
+}
+/* 3D Button Styles (Dark Mode) */
+.button-3d {
+  font: inherit;
+  background-color: #2a2a2a;
+  border: 0;
+  color: #e0e0e0;
+  border-radius: 0.5em;
+  font-size: 1.35rem;
+  padding: 0.375em 1em;
+  font-weight: 600;
+  text-shadow: 0 0.0625em 0 #000;
+  box-shadow:
+    inset 0 0.0625em 0 0 #3a3a3a,
+    0 0.0625em 0 0 #252525,
+    0 0.125em 0 0 #202020,
+    0 0.25em 0 0 #1c1c1c,
+    0 0.3125em 0 0 #181818,
+    0 0.375em 0 0 #141414,
+    0 0.425em 0 0 #101010,
+    0 0.425em 0.5em 0 #0a0a0a;
+  transition: 0.15s ease;
+  cursor: pointer;
+  min-width: 120px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.button-3d:hover:not(:disabled) {
+  background-color: #333333;
+}
+
+.button-3d:active:not(:disabled) {
+  translate: 0 0.225em;
+  box-shadow:
+    inset 0 0.03em 0 0 #3a3a3a,
+    0 0.03em 0 0 #252525,
+    0 0.0625em 0 0 #202020,
+    0 0.125em 0 0 #1c1c1c,
+    0 0.125em 0 0 #181818,
+    0 0.2em 0 0 #141414,
+    0 0.225em 0 0 #101010,
+    0 0.225em 0.375em 0 #0a0a0a;
+}
+
+.button-3d:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Connect Button Variant (with Iridescence) */
+.wallet-connect-button {
+  font: inherit;
+  background-color: #2a2a2a;
+  border: 0;
+  color: #e0e0e0;
+  border-radius: 0.5em;
+  font-size: 1.35rem;
+  padding: 0.375em 1em;
+  font-weight: 600;
+  text-shadow: 0 0.0625em 0 #000;
+  box-shadow:
+    inset 0 0.0625em 0 0 #3a3a3a,
+    0 0.0625em 0 0 #252525,
+    0 0.125em 0 0 #202020,
+    0 0.25em 0 0 #1c1c1c,
+    0 0.3125em 0 0 #181818,
+    0 0.375em 0 0 #141414,
+    0 0.425em 0 0 #101010,
+    0 0.425em 0.5em 0 #0a0a0a;
+  transition: 0.15s ease;
+  cursor: pointer;
+  min-width: 120px;
+  font-family: 'Montserrat', sans-serif;
+  position: relative;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.wallet-connect-button:hover:not(:disabled) {
+  background-color: #333333;
+}
+
+.wallet-connect-button:active:not(:disabled) {
+  translate: 0 0.225em;
+  box-shadow:
+    inset 0 0.03em 0 0 #3a3a3a,
+    0 0.03em 0 0 #252525,
+    0 0.0625em 0 0 #202020,
+    0 0.125em 0 0 #1c1c1c,
+    0 0.125em 0 0 #181818,
+    0 0.2em 0 0 #141414,
+    0 0.225em 0 0 #101010,
+    0 0.225em 0.375em 0 #0a0a0a;
+}
+
+.wallet-connect-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wallet-button-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  border-radius: 0.5em;
+  overflow: hidden;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.wallet-connect-button:hover:not(:disabled) .wallet-button-background {
+  opacity: 1;
+}
+
+.wallet-button-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Disconnect Button (PowerOff Icon) */
+.disconnect-icon-button {
+  padding: 8px;
+  background-color: #2a2a2a;
+  border: 0;
+  border-radius: 0.4em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow:
+    inset 0 0.0625em 0 0 #3a3a3a,
+    0 0.0625em 0 0 #252525,
+    0 0.125em 0 0 #202020,
+    0 0.25em 0 0 #1c1c1c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disconnect-icon-button:hover {
+  background-color: #dc3545;
+}
+
+.disconnect-icon-button:active {
+  translate: 0 0.125em;
+  box-shadow:
+    inset 0 0.03em 0 0 #3a3a3a,
+    0 0.03em 0 0 #252525,
+    0 0.0625em 0 0 #202020;
+}
+
+/* Delete Button 3D Style (Black with red hover) */
+.delete-button-3d {
+  font: inherit;
+  background-color: #2a2a2a;
+  border: 0;
+  color: #e0e0e0;
+  border-radius: 0.5em;
+  font-size: 14px;
+  padding: 0.375em 1em;
+  font-weight: 600;
+  text-shadow: 0 0.0625em 0 #000;
+  box-shadow:
+    inset 0 0.0625em 0 0 #3a3a3a,
+    0 0.0625em 0 0 #252525,
+    0 0.125em 0 0 #202020,
+    0 0.25em 0 0 #1c1c1c,
+    0 0.3125em 0 0 #181818,
+    0 0.375em 0 0 #141414,
+    0 0.425em 0 0 #101010,
+    0 0.425em 0.5em 0 #0a0a0a;
+  transition: 0.15s ease;
+  cursor: pointer;
+  min-width: 120px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.delete-button-3d:hover:not(:disabled) {
+  background-color: #e62222;
+  box-shadow:
+    inset 0 0.0625em 0 0 #ff3636,
+    0 0.0625em 0 0 #c41b1b,
+    0 0.125em 0 0 #b01818,
+    0 0.25em 0 0 #9c1515,
+    0 0.3125em 0 0 #881212,
+    0 0.375em 0 0 #741010,
+    0 0.425em 0 0 #600d0d,
+    0 0.425em 0.5em 0 #4c0a0a;
+}
+
+.delete-button-3d:active:not(:disabled) {
+  translate: 0 0.225em;
+  box-shadow:
+    inset 0 0.03em 0 0 #ff3636,
+    0 0.03em 0 0 #c41b1b,
+    0 0.0625em 0 0 #b01818,
+    0 0.125em 0 0 #9c1515,
+    0 0.125em 0 0 #881212,
+    0 0.2em 0 0 #741010,
+    0 0.225em 0 0 #600d0d,
+    0 0.225em 0.375em 0 #4c0a0a;
+}
+
+.delete-button-3d:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Disconnect Button 3D Style (Red hover) */
+.disconnect-button-3d {
+  font: inherit;
+  background-color: #2a2a2a;
+  border: 0;
+  color: #e0e0e0;
+  border-radius: 0.5em;
+  font-size: 14px;
+  padding: 0.375em 1em;
+  font-weight: 600;
+  text-shadow: 0 0.0625em 0 #000;
+  box-shadow:
+    inset 0 0.0625em 0 0 #3a3a3a,
+    0 0.0625em 0 0 #252525,
+    0 0.125em 0 0 #202020,
+    0 0.25em 0 0 #1c1c1c,
+    0 0.3125em 0 0 #181818,
+    0 0.375em 0 0 #141414,
+    0 0.425em 0 0 #101010,
+    0 0.425em 0.5em 0 #0a0a0a;
+  transition: 0.15s ease;
+  cursor: pointer;
+  min-width: 120px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.disconnect-button-3d:hover:not(:disabled) {
+  background-color: #e62222;
+  box-shadow:
+    inset 0 0.0625em 0 0 #ff3636,
+    0 0.0625em 0 0 #c41b1b,
+    0 0.125em 0 0 #b01818,
+    0 0.25em 0 0 #9c1515,
+    0 0.3125em 0 0 #881212,
+    0 0.375em 0 0 #741010,
+    0 0.425em 0 0 #600d0d,
+    0 0.425em 0.5em 0 #4c0a0a;
+}
+
+.disconnect-button-3d:active:not(:disabled) {
+  translate: 0 0.225em;
+  box-shadow:
+    inset 0 0.03em 0 0 #ff3636,
+    0 0.03em 0 0 #c41b1b,
+    0 0.0625em 0 0 #b01818,
+    0 0.125em 0 0 #9c1515,
+    0 0.125em 0 0 #881212,
+    0 0.2em 0 0 #741010,
+    0 0.225em 0 0 #600d0d,
+    0 0.225em 0.375em 0 #4c0a0a;
+}
+
+.disconnect-button-3d:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

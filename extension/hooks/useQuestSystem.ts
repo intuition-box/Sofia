@@ -279,7 +279,7 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       // Determine quest status
       let status: Quest['status'] = 'locked'
-      let statusColor = '#4a5568' // gray for locked
+      let statusColor = '#6ACC93' // gray for locked
 
       const isCompleted = completedQuestIds.has(questDef.id)
 
@@ -294,7 +294,7 @@ export const useQuestSystem = (): QuestSystemResult => {
       } else if (current > 0 || questDef.milestone === 1) {
         // Quest is active if user has started progress or it's a first-time quest
         status = 'active'
-        statusColor = '#9f7aea' // purple
+        statusColor = '#EAB67A' // purple
       }
 
       return {

@@ -266,9 +266,9 @@
 }
 
 .modal-amount-option.selected {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
   background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
+  color: var(--color-primary);
 }
 
 .modal-amount-option:hover:not(.selected) {
@@ -735,6 +735,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-family: Gotu, cursive;
+  font-size: 14px;
 }
 
 .modal-btn.primary:hover:not(:disabled) {
