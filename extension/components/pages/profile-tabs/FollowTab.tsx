@@ -56,10 +56,18 @@ const FollowTab = () => {
     if (searchContext) {
       setSearchQuery(searchContext.query)
       setShowSearchResults(searchContext.showResults)
+
+      // Re-trigger search with the restored query
+      if (searchContext.query.trim()) {
+        searchAccounts(searchContext.query).then(results => {
+          setSearchResults(results)
+        })
+      }
+
       // Clear the context after restoring
       setSearchContext(null)
     }
-  }, [searchContext, setSearchContext])
+  }, [searchContext, setSearchContext, searchAccounts])
 
   // Upvote modal state for Trust Circle
   const [selectedAccount, setSelectedAccount] = useState<FollowedAccount | null>(null)

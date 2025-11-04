@@ -26,7 +26,7 @@
   text-align: center;
 }
 
-.tabs {
+.profile-page .tabs {
   backdrop-filter: blur(29px);
   border-bottom: 2px solid #ffffff1a;
   border-radius: 29px;
@@ -37,7 +37,7 @@
   display: flex;
 }
 
-.tab {
+.profile-page .tab {
   padding: var(--spacing-xs) 0;
   background: none;
   color: var(--color-text-very-muted);
@@ -48,15 +48,17 @@
   font-family: var(--font-family-display);
   transition: var(--transition-normal);
   position: relative;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.tab.active {
+.profile-page .tab.active {
   color: var(--color-text-primary);
   font-weight: 500;
   font-family: 'Fraunces', serif;
 }
 
-.tab.active::after {
+.profile-page .tab.active::after {
   content: '';
   position: absolute;
   bottom: -12px;

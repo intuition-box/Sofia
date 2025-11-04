@@ -75,6 +75,10 @@
   white-space: nowrap;
 }
 
+.user-profile-header .follow-button {
+  margin-top: 16px;
+}
+
 /* ========== STATS SECTION ========== */
 .user-profile-stats-section {
   padding: 16px;

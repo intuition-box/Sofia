@@ -25,6 +25,8 @@ interface RouterContextType {
   setUserProfileData: (data: UserProfileData | null) => void
   searchContext: SearchContext | null
   setSearchContext: (context: SearchContext | null) => void
+  activeProfileTab: string | null
+  setActiveProfileTab: (tab: string | null) => void
 }
 
 const RouterContext = createContext<RouterContextType | undefined>(undefined)
@@ -42,6 +44,7 @@ export const RouterProvider = ({
   const [history, setHistory] = useState<Page[]>([initialPage])
   const [userProfileData, setUserProfileData] = useState<UserProfileData | null>(null)
   const [searchContext, setSearchContext] = useState<SearchContext | null>(null)
+  const [activeProfileTab, setActiveProfileTab] = useState<string | null>(null)
 
   const navigateTo = (page: Page, data?: any) => {
     setCurrentPage(page)
@@ -78,7 +81,9 @@ export const RouterProvider = ({
     userProfileData,
     setUserProfileData,
     searchContext,
-    setSearchContext
+    setSearchContext,
+    activeProfileTab,
+    setActiveProfileTab
   }
 
   return (

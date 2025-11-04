@@ -13,6 +13,7 @@
   justify-content: center;
   z-index: 10000;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .modal-overlay.processing {
@@ -28,6 +29,9 @@
   max-height: 90vh;
   overflow-y: auto;
   animation: modalAppear 0.2s ease-out;
+  margin: auto;
+  position: relative;
+  pointer-events: auto;
 }
 
 @keyframes modalAppear {

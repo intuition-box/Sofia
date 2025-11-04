@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import Iridescence from '../ui/Iridescence'
 import '../styles/Modal.css'
 
@@ -67,7 +68,7 @@ const FollowModal = ({
     }
   }
 
-  return (
+  return createPortal(
     <div
       className="modal-overlay"
       onClick={handleBackdropClick}
@@ -77,7 +78,7 @@ const FollowModal = ({
           <div className="modal-title">
             Follow {accountLabel}
           </div>
-          <button 
+          <button
             className="modal-close"
             onClick={onClose}
             disabled={loading}
@@ -153,7 +154,8 @@ const FollowModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

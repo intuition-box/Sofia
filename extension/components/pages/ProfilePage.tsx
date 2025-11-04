@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -10,8 +10,23 @@ const FollowTab = lazy(() => import('./profile-tabs/FollowTab'))
 const TrustCircleTab = lazy(() => import('./profile-tabs/FeedTab'))
 
 const ProfilePage = () => {
-  const { goBack } = useRouter()
-  const [activeTab, setActiveTab] = useState<'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals'>('account')
+  const { goBack, activeProfileTab, setActiveProfileTab } = useRouter()
+  const [activeTab, setActiveTab] = useState<'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals'>(
+    (activeProfileTab as 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals') || 'account'
+  )
+
+  // Sync local tab state with router context
+  const handleTabChange = (tab: 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals') => {
+    setActiveTab(tab)
+    setActiveProfileTab(tab)
+  }
+
+  // Restore active tab when coming back from user profile
+  useEffect(() => {
+    if (activeProfileTab) {
+      setActiveTab(activeProfileTab as 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals')
+    }
+  }, [activeProfileTab])
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -43,19 +58,19 @@ const ProfilePage = () => {
       <div className="tabs">
         <button
           className={`tab ${activeTab === 'account' ? 'active' : ''}`}
-          onClick={() => setActiveTab('account')}
+          onClick={() => handleTabChange('account')}
         >
           Account
         </button>
         <button
           className={`tab ${activeTab === 'follow' ? 'active' : ''}`}
-          onClick={() => setActiveTab('follow')}
+          onClick={() => handleTabChange('follow')}
         >
           Follow
         </button>
         <button
           className={`tab ${activeTab === 'trust-circle' ? 'active' : ''}`}
-          onClick={() => setActiveTab('trust-circle')}
+          onClick={() => handleTabChange('trust-circle')}
         >
           Activity
         </button>

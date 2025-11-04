@@ -3,6 +3,7 @@ import Avatar from '../ui/Avatar'
 import { useUserSignals } from '../../hooks/useUserSignals'
 import { useUserLists } from '../../hooks/useUserLists'
 import { useUserAtomStats } from '../../hooks/useUserAtomStats'
+import FollowButton from '../ui/FollowButton'
 import '../styles/UserProfile.css'
 
 const UserProfilePage = () => {
@@ -76,6 +77,21 @@ const UserProfilePage = () => {
             </p>
           )}
         </div>
+        {userProfileData.termId && userProfileData.walletAddress && (
+          <FollowButton
+            account={{
+              id: userProfileData.termId,
+              label: userProfileData.label,
+              termId: userProfileData.termId,
+              type: 'Account',
+              createdAt: new Date().toISOString(),
+              creatorId: '',
+              atomType: 'Account',
+              image: userProfileData.image,
+              data: userProfileData.walletAddress
+            }}
+          />
+        )}
       </div>
 
       {/* Stats Section */}
