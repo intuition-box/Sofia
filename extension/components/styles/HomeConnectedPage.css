@@ -14,7 +14,7 @@
 
 .pulse-animation-section {
   position: fixed;
-  bottom: 80px;
+  bottom: 140px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
