@@ -35,8 +35,10 @@ export const useFollowAccount = () => {
         trustAmountWei = parseEther(trustAmount)
       }
 
-      if (!account.ipfsUri) {
-        throw new Error(`Target user ${account.label} is missing IPFS URI`)
+      // Note: ipfsUri is not needed here as we use the existing atom's termId
+      // The atom must already exist in the blockchain
+      if (!account.termId) {
+        throw new Error(`Target user ${account.label} is missing term ID`)
       }
 
       const result = await createFollowTriple(account, trustAmountWei)

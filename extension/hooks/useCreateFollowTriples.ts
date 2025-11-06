@@ -27,23 +27,11 @@ export const useCreateFollowTriples = () => {
       }
 
       const targetTermId = targetUser.termId
-      const tripleCheck = await BlockchainService.checkTripleExists(
-        userTermId,
-        predicateTermId,
-        targetTermId
-      )
 
-      if (tripleCheck.exists) {
-        return {
-          success: true,
-          tripleVaultId: tripleCheck.tripleVaultId!,
-          subjectVaultId: userTermId,
-          predicateVaultId: predicateTermId,
-          objectVaultId: targetTermId,
-          source: 'existing',
-          tripleHash: tripleCheck.tripleHash
-        }
-      }
+      // Note: We always call createTriples even if the triple exists
+      // The contract will handle it correctly:
+      // - If triple doesn't exist: creates it with our position
+      // - If triple exists: just adds our position to the existing vault
 
       const { publicClient } = await getClients()
       const defaultCost = await BlockchainService.getTripleCost()

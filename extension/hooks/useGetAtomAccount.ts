@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { API_CONFIG } from '../lib/config/chainConfig'
 
 export interface AccountAtom {
   id: string
@@ -43,7 +44,7 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
     setIsLoading(true)
 
     try {
-      const response = await fetch('https://testnet.intuition.sh/v1/graphql', {
+      const response = await fetch(API_CONFIG.GRAPHQL_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ export const useGetAtomAccount = (): UseGetAtomAccountResult => {
     if (!query.trim()) return []
 
     try {
-      const response = await fetch('https://testnet.intuition.sh/v1/graphql', {
+      const response = await fetch(API_CONFIG.GRAPHQL_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

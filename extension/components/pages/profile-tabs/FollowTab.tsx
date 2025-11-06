@@ -270,8 +270,8 @@ const FollowTab = () => {
           }
         `
 
-        // Use TRUST or FOLLOW predicate depending on filter type
-        const predicateId = filterType === 'trust-circle' ? PREDICATE_IDS.TRUST : PREDICATE_IDS.FOLLOW
+        // Use TRUSTS or FOLLOW predicate depending on filter type
+        const predicateId = filterType === 'trust-circle' ? PREDICATE_IDS.TRUSTS : PREDICATE_IDS.FOLLOW
 
         const where = {
           "_and": [

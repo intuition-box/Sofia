@@ -1,10 +1,14 @@
-// Configuration for Intuition testnet
-export const INTUITION_GRAPHQL_ENDPOINT = 'https://testnet.intuition.sh/v1/graphql'
+import { API_CONFIG } from '../config/chainConfig'
+
+// GraphQL endpoint is now dynamically configured based on environment
+// - pnpm dev → testnet
+// - pnpm build → mainnet
+export const INTUITION_GRAPHQL_ENDPOINT = API_CONFIG.GRAPHQL_ENDPOINT
 
 // Simple GraphQL client for queries
 export const intuitionGraphqlClient = {
   request: async (query: string, variables?: any) => {
-    const response = await fetch(INTUITION_GRAPHQL_ENDPOINT, {
+    const response = await fetch(API_CONFIG.GRAPHQL_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

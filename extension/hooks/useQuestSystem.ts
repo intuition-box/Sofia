@@ -206,7 +206,7 @@ export const useQuestSystem = (): QuestSystemResult => {
       const trustResponse = await intuitionGraphqlClient.request(followQuery, {
         accountId: checksumAddress,
         subjectId: SUBJECT_IDS.I,
-        predicateId: PREDICATE_IDS.TRUST
+        predicateId: PREDICATE_IDS.TRUSTS
       }) as { triples: Array<{ term_id: string }> }
 
       const trustedUsers = trustResponse?.triples?.length || 0

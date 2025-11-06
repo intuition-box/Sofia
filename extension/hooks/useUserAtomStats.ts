@@ -158,11 +158,15 @@ export const useUserAtomStats = (
 
         if (response.followers_count.nodes.length > 0) {
           const followerNode = response.followers_count.nodes[0]
-          followersMarketCap = followerNode.term.total_market_cap || '0'
 
-          // Get position count from the vault
-          if (followerNode.term.vaults && followerNode.term.vaults.length > 0) {
-            followersCount = followerNode.term.vaults[0].position_count || 0
+          // Check if term exists before accessing it
+          if (followerNode.term) {
+            followersMarketCap = followerNode.term.total_market_cap || '0'
+
+            // Get position count from the vault
+            if (followerNode.term.vaults && followerNode.term.vaults.length > 0) {
+              followersCount = followerNode.term.vaults[0].position_count || 0
+            }
           }
         }
 

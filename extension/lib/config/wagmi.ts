@@ -3,16 +3,14 @@ import { injected } from '@wagmi/connectors'
 import type { Config } from 'wagmi'
 import { http } from 'viem'
 
-
-import { intuitionTestnet } from './chainConfig'
-
+import { SELECTED_CHAIN } from './chainConfig'
 
 export const wagmiConfig: Config = createConfig({
-  chains: [intuitionTestnet],
+  chains: [SELECTED_CHAIN],
   connectors: [
     injected()
   ],
   transports: {
-    [intuitionTestnet.id]: http('https://testnet.rpc.intuition.systems')
+    [SELECTED_CHAIN.id]: http(SELECTED_CHAIN.rpcUrls.default.http[0])
   },
 })
