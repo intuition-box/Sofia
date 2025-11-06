@@ -92,7 +92,7 @@ const FeedTab = () => {
           },
           {
             "predicate_id": {
-              "_eq": PREDICATE_IDS.TRUST
+              "_eq": PREDICATE_IDS.TRUSTS
             }
           },
           {

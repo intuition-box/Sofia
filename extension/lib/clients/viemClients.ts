@@ -26,9 +26,10 @@ export const getClients = async () => {
     }
 
     // Use HTTP transport for public client to avoid MetaMask RPC issues
+    // Automatically uses the correct RPC based on SELECTED_CHAIN (testnet or mainnet)
     const publicClient = createPublicClient({
         chain: SELECTED_CHAIN,
-        transport: http('https://testnet.rpc.intuition.systems'),
+        transport: http(SELECTED_CHAIN.rpcUrls.default.http[0]),
     })
 
     console.log("Clients ready.")
