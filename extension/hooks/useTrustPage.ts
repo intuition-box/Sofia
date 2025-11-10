@@ -6,8 +6,8 @@ import { useCreateAtom } from './useCreateAtom'
 import { useStorage } from "@plasmohq/storage/hook"
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
-import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, SUBJECT_IDS } from '../lib/config/constants'
-import type { Address, Hash } from '../types/viem'
+import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
+import type { Address } from '../types/viem'
 
 const logger = createHookLogger('useTrustPage')
 
@@ -35,9 +35,6 @@ export const useTrustPage = (): TrustPageResult => {
   const [error, setError] = useState<string | null>(null)
   const [tripleVaultId, setTripleVaultId] = useState<string | null>(null)
 
-  // Cache for trust predicate atom - create once per session
-  const trustPredicateCache = useRef<string | null>(null)
-
   // Get universal "I" subject atom (same for all users)
   const getUserAtom = useCallback(async () => {
     return {
@@ -48,42 +45,15 @@ export const useTrustPage = (): TrustPageResult => {
     }
   }, [])
 
-  // Get or create "trust" predicate atom
+  // Get the existing "trusts" predicate atom (no need to create, it already exists on-chain)
   const getTrustPredicateAtom = useCallback(async () => {
-    try {
-      // Return cached if available
-      if (trustPredicateCache.current) {
-        logger.debug('Using cached trust predicate', { vaultId: trustPredicateCache.current })
-        return {
-          vaultId: trustPredicateCache.current,
-          ipfsUri: '',
-          name: 'trust'
-        }
-      }
-
-      logger.debug('Creating trust predicate atom')
-
-      const predicateAtomResult = await createAtomWithMultivault({
-        name: 'trust',
-        description: 'Predicate representing trust relationship',
-        url: ''
-      })
-
-      // Cache for reuse
-      trustPredicateCache.current = predicateAtomResult.vaultId
-
-      logger.debug('Trust predicate created', { vaultId: predicateAtomResult.vaultId })
-
-      return {
-        vaultId: predicateAtomResult.vaultId,
-        ipfsUri: '',
-        name: 'trust'
-      }
-    } catch (error) {
-      logger.error('Failed to get trust predicate', error)
-      throw error
+    // Use the existing TRUSTS predicate from the blockchain
+    return {
+      vaultId: PREDICATE_IDS.TRUSTS,
+      ipfsUri: '',
+      name: 'trusts'
     }
-  }, [createAtomWithMultivault])
+  }, [])
 
   const trustPage = useCallback(async (url: string, customWeight?: bigint) => {
     try {
@@ -160,8 +130,23 @@ export const useTrustPage = (): TrustPageResult => {
       const contractAddress = BlockchainService.getContractAddress()
 
       const defaultCost = await BlockchainService.getTripleCost()
-      const tripleCost = customWeight !== undefined ? customWeight : defaultCost
-      logger.debug('Triple cost retrieved', { cost: tripleCost.toString(), isCustom: customWeight !== undefined })
+
+      // For createTriples, we need MORE than defaultCost to get shares after fees
+      // defaultCost covers creation fees, we need to add deposit amount on top
+      const minimumDeposit = defaultCost * 2n // 0.2 TRUST minimum to ensure we get shares
+      const tripleCost = customWeight !== undefined && customWeight > minimumDeposit ? customWeight : minimumDeposit
+
+      logger.debug('Triple cost retrieved', {
+        cost: tripleCost.toString(),
+        costInTRUST: Number(tripleCost) / 1e18,
+        isCustom: customWeight !== undefined,
+        defaultCost: defaultCost.toString(),
+        defaultCostInTRUST: Number(defaultCost) / 1e18,
+        minimumDeposit: minimumDeposit.toString(),
+        minimumDepositInTRUST: Number(minimumDeposit) / 1e18,
+        customWeight: customWeight?.toString(),
+        customWeightInTRUST: customWeight ? Number(customWeight) / 1e18 : 'none'
+      })
 
       const subjectId = userAtom.vaultId as Address
       const predicateId = trustPredicate.vaultId as Address

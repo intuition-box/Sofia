@@ -101,18 +101,24 @@ export const useCreateAtom = () => {
         account: walletClient.account
       })
 
-      // Verify simulation result matches our local calculation
+      // Get the actual vault ID from simulation
+      // If atom already exists, contract returns existing ID (which may differ from our calculation)
       const simulatedVaultIds = simulation.result as `0x${string}`[]
-      const simulatedVaultId = simulatedVaultIds[0]
-      
-      if (simulatedVaultId !== expectedVaultId) {
-        throw new Error(`Hash mismatch: expected ${expectedVaultId}, got ${simulatedVaultId}`)
+      const actualVaultId = simulatedVaultIds[0]
+
+      if (actualVaultId !== expectedVaultId) {
+        logger.info('Hash mismatch - atom may already exist with different data', {
+          expectedVaultId,
+          actualVaultId,
+          atomName: atomData.name
+        })
       }
 
       logger.debug('Sending atom creation transaction', {
         args: [[encodedData], [atomCost]],
         value: atomCost.toString(),
         expectedVaultId: expectedVaultId,
+        actualVaultId: actualVaultId,
         simulationConfirmed: true
       })
 
@@ -139,11 +145,11 @@ export const useCreateAtom = () => {
 
       const result = {
         success: true,
-        vaultId: expectedVaultId,
-        atomHash: expectedVaultId,
+        vaultId: actualVaultId,
+        atomHash: actualVaultId,
         txHash
       }
-      
+
       console.log('✅ ATOM CREATION COMPLETED:', {
         atomName: atomData.name,
         ipfsUri: ipfsUri,
