@@ -28,50 +28,114 @@ export const useCreateFollowTriples = () => {
 
       const targetTermId = targetUser.termId
 
-      // Note: We always call createTriples even if the triple exists
-      // The contract will handle it correctly:
-      // - If triple doesn't exist: creates it with our position
-      // - If triple exists: just adds our position to the existing vault
-
-      const { publicClient } = await getClients()
+      const { publicClient, walletClient } = await getClients()
+      const contractAddress = BlockchainService.getContractAddress()
       const defaultCost = await BlockchainService.getTripleCost()
-      const tripleCost = customWeight !== undefined ? customWeight : defaultCost
 
-      const simulation = await publicClient.simulateContract({
-        address: BlockchainService.getContractAddress() as Address,
-        abi: MultiVaultAbi,
-        functionName: 'createTriples',
-        args: [[userTermId as Address], [predicateTermId as Address], [targetTermId as Address], [tripleCost]],
-        value: tripleCost,
-        account: address as Address
+      // Determine the amount to use
+      const depositAmount = customWeight !== undefined && customWeight > 0n ? customWeight : defaultCost
+
+      console.log('[Follow] Starting follow process:', {
+        defaultCost: defaultCost.toString(),
+        defaultCostInTRUST: Number(defaultCost) / 1e18,
+        customWeight: customWeight?.toString(),
+        depositAmount: depositAmount.toString(),
+        depositAmountInTRUST: Number(depositAmount) / 1e18
       })
 
-      const { walletClient } = await getClients()
-      const hash = await walletClient.writeContract({
-        address: BlockchainService.getContractAddress() as Address,
-        abi: MultiVaultAbi,
-        functionName: 'createTriples',
-        args: [
-          [userTermId as Address],
-          [predicateTermId as Address],
-          [targetTermId as Address],
-          [tripleCost]
-        ],
-        value: tripleCost,
-        chain: SELECTED_CHAIN,
-        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-        account: address as Address
+      // Check if the triple already exists
+      const tripleCheck = await BlockchainService.checkTripleExists(
+        userTermId,
+        predicateTermId,
+        targetTermId
+      )
+
+      console.log('[Follow] Triple existence check:', {
+        exists: tripleCheck.exists,
+        tripleVaultId: tripleCheck.tripleVaultId
       })
-      
+
+      let hash: Address
+      let tripleVaultId: Address
+
+      if (tripleCheck.exists && tripleCheck.tripleVaultId) {
+        // Triple exists - use deposit() which allows any amount >= 0.01
+        console.log('[Follow] Triple exists, using deposit() with amount:', depositAmount.toString())
+
+        const curveId = 1 // Default curve ID for triples
+
+        hash = await walletClient.writeContract({
+          address: contractAddress as Address,
+          abi: MultiVaultAbi,
+          functionName: 'deposit',
+          args: [
+            address as Address, // receiver
+            tripleCheck.tripleVaultId as Address, // termId (triple vault ID)
+            curveId, // curveId
+            0n // minShares (0 for no slippage protection)
+          ],
+          value: depositAmount, // Amount sent in value, not args!
+          chain: SELECTED_CHAIN,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address as Address
+        })
+
+        tripleVaultId = tripleCheck.tripleVaultId as Address
+      } else {
+        // Triple doesn't exist - use createTriples() with minimum amount
+        console.log('[Follow] Triple does not exist, using createTriples()')
+
+        // For createTriples, we must use at least defaultCost
+        const createAmount = depositAmount > defaultCost ? depositAmount : defaultCost
+
+        console.log('[Follow] Using createTriples with amount:', {
+          createAmount: createAmount.toString(),
+          createAmountInTRUST: Number(createAmount) / 1e18
+        })
+
+        // Simulate first
+        const simulation = await publicClient.simulateContract({
+          address: contractAddress as Address,
+          abi: MultiVaultAbi,
+          functionName: 'createTriples',
+          args: [[userTermId as Address], [predicateTermId as Address], [targetTermId as Address], [createAmount]],
+          value: createAmount,
+          account: address as Address
+        })
+
+        hash = await walletClient.writeContract({
+          address: contractAddress as Address,
+          abi: MultiVaultAbi,
+          functionName: 'createTriples',
+          args: [
+            [userTermId as Address],
+            [predicateTermId as Address],
+            [targetTermId as Address],
+            [createAmount]
+          ],
+          value: createAmount,
+          chain: SELECTED_CHAIN,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address as Address
+        })
+
+        const tripleIds = simulation.result as Address[]
+        tripleVaultId = tripleIds[0]
+      }
+
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
 
       if (receipt.status !== 'success') {
         throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
       }
 
-      const tripleIds = simulation.result as Address[]
-      const tripleVaultId = tripleIds[0]
+      console.log('[Follow] Transaction successful:', {
+        hash,
+        tripleVaultId,
+        method: tripleCheck.exists ? 'deposit' : 'createTriples'
+      })
 
       return {
         success: true,
@@ -80,7 +144,7 @@ export const useCreateFollowTriples = () => {
         subjectVaultId: userTermId,
         predicateVaultId: predicateTermId,
         objectVaultId: targetTermId,
-        source: 'created',
+        source: tripleCheck.exists ? 'existing' : 'created',
         tripleHash: tripleVaultId
       }
 

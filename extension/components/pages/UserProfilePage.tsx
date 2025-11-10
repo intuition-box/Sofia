@@ -3,11 +3,16 @@ import Avatar from '../ui/Avatar'
 import { useUserSignals } from '../../hooks/useUserSignals'
 import { useUserLists } from '../../hooks/useUserLists'
 import { useUserAtomStats } from '../../hooks/useUserAtomStats'
+import { useCheckFollowStatus } from '../../hooks/useCheckFollowStatus'
 import FollowButton from '../ui/FollowButton'
+import TrustAccountButton from '../ui/TrustAccountButton'
 import '../styles/UserProfile.css'
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
+
+  // Check if we already follow/trust this account
+  const followStatus = useCheckFollowStatus(userProfileData?.termId)
 
   // Get detailed stats using the correct query
   const atomStats = useUserAtomStats(
@@ -78,19 +83,44 @@ const UserProfilePage = () => {
           )}
         </div>
         {userProfileData.termId && userProfileData.walletAddress && (
-          <FollowButton
-            account={{
-              id: userProfileData.termId,
-              label: userProfileData.label,
-              termId: userProfileData.termId,
-              type: 'Account',
-              createdAt: new Date().toISOString(),
-              creatorId: '',
-              atomType: 'Account',
-              image: userProfileData.image,
-              data: userProfileData.walletAddress
-            }}
-          />
+          <>
+            {followStatus.loading ? (
+              <button className="follow-button salmon-gradient-button" disabled>
+                Loading...
+              </button>
+            ) : followStatus.isTrusting ? (
+              <button className="follow-button salmon-gradient-button" disabled>
+                Trusted ✓
+              </button>
+            ) : followStatus.isFollowing ? (
+              <TrustAccountButton
+                accountVaultId={userProfileData.termId}
+                accountLabel={userProfileData.label}
+                onSuccess={() => {
+                  console.log('✅ Trust created, refetching status')
+                  followStatus.refetch()
+                }}
+              />
+            ) : (
+              <FollowButton
+                account={{
+                  id: userProfileData.termId,
+                  label: userProfileData.label,
+                  termId: userProfileData.termId,
+                  type: 'Account',
+                  createdAt: new Date().toISOString(),
+                  creatorId: '',
+                  atomType: 'Account',
+                  image: userProfileData.image,
+                  data: userProfileData.walletAddress
+                }}
+                onFollowSuccess={() => {
+                  console.log('✅ Follow created, refetching status')
+                  followStatus.refetch()
+                }}
+              />
+            )}
+          </>
         )}
       </div>
 
@@ -264,7 +294,7 @@ const UserProfilePage = () => {
                 {/* Preview of triplets */}
                 {list.triplets.length > 0 && (
                   <div className="user-profile-list-preview">
-                    {list.triplets.map((triplet, index) => (
+                    {list.triplets.map((triplet) => (
                       <div key={triplet.subjectTermId} className="user-profile-list-preview-item">
                         {triplet.subjectImage && (
                           <img

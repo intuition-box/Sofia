@@ -35,6 +35,15 @@ export const useFollowAccount = () => {
         trustAmountWei = parseEther(trustAmount)
       }
 
+      // Debug logging
+      console.log('[FollowAccount] Processing follow with:', {
+        trustAmount,
+        trustAmountWei: trustAmountWei.toString(),
+        trustAmountInTRUST: Number(trustAmountWei) / 1e18,
+        accountLabel: account.label,
+        accountTermId: account.termId
+      })
+
       // Note: ipfsUri is not needed here as we use the existing atom's termId
       // The atom must already exist in the blockchain
       if (!account.termId) {

@@ -173,12 +173,20 @@ export class BlockchainService {
    */
   static async getTripleCost(): Promise<bigint> {
     const { publicClient } = await getClients()
-    
-    return await publicClient.readContract({
+
+    const cost = await publicClient.readContract({
       address: this.CONTRACT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
       functionName: 'getTripleCost'
     }) as bigint
+
+    console.log('[BlockchainService] getTripleCost returned:', {
+      cost: cost.toString(),
+      costInTRUST: Number(cost) / 1e18,
+      contractAddress: this.CONTRACT_ADDRESS
+    })
+
+    return cost
   }
 
   /**

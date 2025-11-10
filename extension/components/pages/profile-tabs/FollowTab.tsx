@@ -375,6 +375,7 @@ const FollowTab = () => {
                       label
                       image
                       atom {
+                        term_id
                         data
                       }
                     }
@@ -519,7 +520,7 @@ const FollowTab = () => {
             return {
               id: position.account.id,
               label: position.account.label || position.account.id,
-              termId: position.account.id,
+              termId: position.account.atom?.term_id || position.account.id, // Use atom's term_id if available, fallback to account.id
               tripleId: triple.term_id,
               followDate: new Date(triple.created_at).toLocaleDateString(),
               image: position.account.image,
