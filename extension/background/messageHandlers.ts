@@ -2,7 +2,7 @@ import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { recordScroll } from "./behavior"
-import { processBookmarksWithThemeAnalysis, processHistoryWithThemeAnalysis, sendRecommendationRequest } from "./websocket"
+import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./websocket"
 import { getAllBookmarks, getAllHistory } from "./messageSenders"
 import { convertThemesToTriplets } from "./tripletProcessor"
 import { elizaDataService } from "../lib/database/indexedDB-methods"
@@ -146,6 +146,8 @@ async function handleOllamaRequest(payload: any, sendResponse: (response: Messag
 
 export function setupMessageHandlers(): void {
   chrome.runtime.onMessage.addListener((message: ChromeMessage, _sender, sendResponse) => {
+    // Handle async operations
+    (async () => {
     switch (message.type) {
       case "GET_TAB_ID":
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -166,6 +168,18 @@ export function setupMessageHandlers(): void {
         pageDataService.handleScrollData(message)
         break
 
+
+      case "SEND_CHATBOT_MESSAGE":
+        // Handle chatbot message from sidepanel (ChatPage)
+        // Socket runs in service worker context, not in sidepanel context
+        try {
+          await sendMessage('CHATBOT', message.text)
+          sendResponse({ success: true })
+        } catch (error) {
+          console.error("❌ Failed to send chatbot message:", error)
+          sendResponse({ success: false, error: error.message })
+        }
+        return true
 
       case "CONNECT_TO_METAMASK":
         connectToMetamask()
@@ -198,11 +212,27 @@ export function setupMessageHandlers(): void {
         break
 
       case "GET_BOOKMARKS":
-        handleDataExtraction('bookmarks', getAllBookmarks, processBookmarksWithThemeAnalysis, sendResponse)
+        handleDataExtraction('bookmarks', getAllBookmarks, async (urls: string[]) => {
+          const themes = await sendThemeExtractionRequest(urls)
+          return {
+            success: true,
+            message: 'Bookmark analysis completed',
+            themesExtracted: themes?.length || 0,
+            triplesProcessed: true
+          }
+        }, sendResponse)
         return true
 
       case "GET_HISTORY":
-        handleDataExtraction('history', getAllHistory, processHistoryWithThemeAnalysis, sendResponse)
+        handleDataExtraction('history', getAllHistory, async (urls: string[]) => {
+          const themes = await sendThemeExtractionRequest(urls)
+          return {
+            success: true,
+            message: 'History analysis completed',
+            themesExtracted: themes?.length || 0,
+            triplesProcessed: true
+          }
+        }, sendResponse)
         return true
 
       case "STORE_BOOKMARK_TRIPLETS":
@@ -338,10 +368,14 @@ export function setupMessageHandlers(): void {
           console.error("❌ URL_CHANGED error:", error)
         }
         break
-        
+
     }
 
     sendResponse({ success: true })
+    })().catch(error => {
+      console.error("❌ Message handler error:", error)
+      sendResponse({ success: false, error: error.message })
+    })
     return true
   })
 }

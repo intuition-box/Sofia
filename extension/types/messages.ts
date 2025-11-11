@@ -11,11 +11,12 @@ export interface BaseMessage {
 }
 
 // Chrome runtime message types
-export type MessageType = 
+export type MessageType =
   | 'GET_TAB_ID'
   | 'PAGE_DATA'
   | 'PAGE_DURATION'
   | 'SCROLL_DATA'
+  | 'SEND_CHATBOT_MESSAGE'
   | 'CONNECT_TO_METAMASK'
   | 'GET_METAMASK_ACCOUNT'
   | 'GET_TRACKING_STATS'

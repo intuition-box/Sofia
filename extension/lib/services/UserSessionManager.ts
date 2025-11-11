@@ -96,25 +96,14 @@ export async function getUserId(): Promise<string> {
   }
 }
 
-/**
- * Creates a deterministic room UUID from user ID + agent ID
- * @param userId User UUID (AUTHOR_ID)
- * @param agentId Agent UUID from constants.ts
- * @returns Room UUID
- */
-export async function createUserAgentRoomId(userId: string, agentId: string): Promise<string> {
-  // Combine user UUID + agent UUID to create unique room
-  const roomInput = `room:${userId}:${agentId}`
-  return await generateDeterministicUUID(roomInput)
-}
 
 /**
  * Interface for agent IDs configuration
  */
 export interface AgentIds {
   AUTHOR_ID: string    // User UUID (from wallet)
-  ROOM_ID: string      // Room UUID (hash of user + agent)
-  CHANNEL_ID: string   // Same as ROOM_ID
+  ROOM_ID: string      // Room/Channel ID (set after REST API channel creation)
+  CHANNEL_ID: string   // Same as ROOM_ID (set after REST API channel creation)
   AGENT_ID: string     // Agent UUID (from constants.ts - UNCHANGED)
   SERVER_ID: string    // Global server ID
   AGENT_NAME: string   // Agent name for logging
@@ -135,14 +124,11 @@ export async function getUserAgentIds(
     // Get user UUID from wallet
     const userId = await getUserId()
 
-    // Generate room UUID from user + agent
-    const roomId = await createUserAgentRoomId(userId, baseAgentId)
-
     const agentIds: AgentIds = {
-      AUTHOR_ID: userId,           // User UUID (dynamic)
-      ROOM_ID: roomId,              // Room UUID (dynamic)
-      CHANNEL_ID: roomId,           // Same as ROOM_ID
-      AGENT_ID: baseAgentId,        // Agent UUID (UNCHANGED from constants.ts)
+      AUTHOR_ID: userId,           // User UUID (from wallet)
+      ROOM_ID: "",                  // Will be set after REST API channel creation
+      CHANNEL_ID: "",               // Will be set after REST API channel creation
+      AGENT_ID: baseAgentId,        // Agent UUID (from constants.ts - UNCHANGED)
       SERVER_ID: GLOBAL_SERVER_ID,  // Global
       AGENT_NAME: agentName         // For logging
     }
@@ -150,7 +136,6 @@ export async function getUserAgentIds(
     console.log(`🔑 Generated IDs for ${agentName}:`, {
       wallet: await getWalletAddress(),
       userId: userId.substring(0, 8) + "...",
-      roomId: roomId.substring(0, 8) + "...",
       agentId: baseAgentId.substring(0, 8) + "..."
     })
 

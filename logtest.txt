@@ -1,0 +1,121 @@
+maximesaint-joannis@MacBook-Pro-de-maxime Sofia % node test-channel-setup.js
+
+
+Starting test in 2 seconds...
+
+============================================================
+ElizaOS Channel Setup Test
+============================================================
+
+Configuration:
+  API URL: http://localhost:3000
+  User ID: c89710c9-057e-43cc-a1ef-73de724a332c
+  Agent ID: 582f4e58-1285-004d-8ef6-1e6301f3d646
+  Server ID: 00000000-0000-0000-0000-000000000000
+
+============================================================
+
+
+=== Starting ensureChannelWithAgent ===
+
+[ChannelUtils] Checking for existing DM channel...
+  URL: http://localhost:3000/api/messaging/dm-channel?currentUserId=c89710c9-057e-43cc-a1ef-73de724a332c&targetUserId=582f4e58-1285-004d-8ef6-1e6301f3d646&dmServerId=00000000-0000-0000-0000-000000000000
+[ChannelUtils] DM channel response: {"success":true,"data":{"id":"43acc128-e08a-4435-b433-cdff7eadfc6c","messageServerId":"00000000-0000-0000-0000-000000000000","name":"DM-582f4e58-1285-004d-8ef6-1e6301f3d646-c89710c9-057e-43cc-a1ef-73de724a332c","type":"DM","metadata":{"user1":"582f4e58-1285-004d-8ef6-1e6301f3d646","user2":"c89710c9-057e-43cc-a1ef-73de724a332c"},"createdAt":"2025-11-07T19:16:22.995Z","updatedAt":"2025-11-07T19:16:22.995Z"}}
+[ChannelUtils] ✅ Found existing DM channel: 43acc128-e08a-4435-b433-cdff7eadfc6c
+
+[ensureChannelWithAgent] Channel ready: 43acc128-e08a-4435-b433-cdff7eadfc6c
+
+[ensureChannelWithAgent] Now adding agent to channel...
+
+[ChannelUtils] Adding agent 582f4e58-1285-004d-8ef6-1e6301f3d646 to channel 43acc128-e08a-4435-b433-cdff7eadfc6c...
+[ChannelUtils] Add agent response (201): {"success":true,"data":{"channelId":"43acc128-e08a-4435-b433-cdff7eadfc6c","agentId":"582f4e58-1285-004d-8ef6-1e6301f3d646","message":"Agent added to channel successfully"}}
+[ChannelUtils] ✅ Successfully added agent to channel
+
+=== ✅ SUCCESS: Channel setup complete ===
+
+============================================================
+TEST RESULT: ✅ SUCCESS
+============================================================
+
+Channel Info:
+{
+  "id": "43acc128-e08a-4435-b433-cdff7eadfc6c",
+  "messageServerId": "00000000-0000-0000-0000-000000000000",
+  "name": "DM-582f4e58-1285-004d-8ef6-1e6301f3d646-c89710c9-057e-43cc-a1ef-73de724a332c",
+  "type": "DM",
+  "metadata": {
+    "user1": "582f4e58-1285-004d-8ef6-1e6301f3d646",
+    "user2": "c89710c9-057e-43cc-a1ef-73de724a332c"
+  },
+  "createdAt": "2025-11-07T19:16:22.995Z",
+  "updatedAt": "2025-11-07T19:16:22.995Z"
+}
+
+============================================================
+Next Steps:
+  1. Check server logs for "Agent added to channel"
+  2. Verify no "no entity" warnings appear
+  3. Test sending messages via Socket.IO
+============================================================
+
+maximesaint-joannis@MacBook-Pro-de-maxime Sofia % node test-channel-setup.js
+
+
+Starting test in 2 seconds...
+
+============================================================
+ElizaOS Channel Setup Test
+============================================================
+
+Configuration:
+  API URL: http://localhost:3000
+  User ID: c89710c9-057e-43cc-a1ef-73de724a332c
+  Agent ID: 582f4e58-1285-004d-8ef6-1e6301f3d646
+  Server ID: 00000000-0000-0000-0000-000000000000
+
+============================================================
+
+
+=== Starting ensureChannelWithAgent ===
+
+[ChannelUtils] Checking for existing DM channel...
+  URL: http://localhost:3000/api/messaging/dm-channel?currentUserId=c89710c9-057e-43cc-a1ef-73de724a332c&targetUserId=582f4e58-1285-004d-8ef6-1e6301f3d646&dmServerId=00000000-0000-0000-0000-000000000000
+[ChannelUtils] DM channel response: {"success":true,"data":{"id":"467e22d2-f8c3-4511-8999-ca07ab1710bc","messageServerId":"00000000-0000-0000-0000-000000000000","name":"DM-582f4e58-1285-004d-8ef6-1e6301f3d646-c89710c9-057e-43cc-a1ef-73de724a332c","type":"DM","metadata":{"user1":"582f4e58-1285-004d-8ef6-1e6301f3d646","user2":"c89710c9-057e-43cc-a1ef-73de724a332c"},"createdAt":"2025-11-07T19:18:37.903Z","updatedAt":"2025-11-07T19:18:37.903Z"}}
+[ChannelUtils] ✅ Found existing DM channel: 467e22d2-f8c3-4511-8999-ca07ab1710bc
+
+[ensureChannelWithAgent] Channel ready: 467e22d2-f8c3-4511-8999-ca07ab1710bc
+
+[ensureChannelWithAgent] Now adding agent to channel...
+
+[ChannelUtils] Adding agent 582f4e58-1285-004d-8ef6-1e6301f3d646 to channel 467e22d2-f8c3-4511-8999-ca07ab1710bc...
+[ChannelUtils] Add agent response (201): {"success":true,"data":{"channelId":"467e22d2-f8c3-4511-8999-ca07ab1710bc","agentId":"582f4e58-1285-004d-8ef6-1e6301f3d646","message":"Agent added to channel successfully"}}
+[ChannelUtils] ✅ Successfully added agent to chùannel
+
+=== ✅ SUCCESS: Channel setup complete ===
+
+============================================================
+TEST RESULT: ✅ SUCCESS
+============================================================
+
+Channel Info:
+{
+  "id": "467e22d2-f8c3-4511-8999-ca07ab1710bc",
+  "messageServerId": "00000000-0000-0000-0000-000000000000",
+  "name": "DM-582f4e58-1285-004d-8ef6-1e6301f3d646-c89710c9-057e-43cc-a1ef-73de724a332c",
+  "type": "DM",
+  "metadata": {
+    "user1": "582f4e58-1285-004d-8ef6-1e6301f3d646",
+    "user2": "c89710c9-057e-43cc-a1ef-73de724a332c"
+  },
+  "createdAt": "2025-11-07T19:18:37.903Z",
+  "updatedAt": "2025-11-07T19:18:37.903Z"
+}
+
+============================================================
+Next Steps:
+  1. Check server logs for "Agent added to channel"
+  2. Verify no "no entity" warnings appear
+  3. Test sending messages via Socket.IO
+============================================================
+
+maximesaint-joannis@MacBook-Pro-de-maxime Sofia % mp

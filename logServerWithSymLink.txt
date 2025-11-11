@@ -1,0 +1,220 @@
+maximesaint-joannis@MacBook-Pro-de-maxime tee-agent % clear
+maximesaint-joannis@MacBook-Pro-de-maxime tee-agent % elizaos start
+ Info       Using local @elizaos/cli installation
+error: ENOENT reading "/Users/maximesaint-joannis/VScode/SOFIA/Sofia/tee-agent/node_modules/@elizaos/cli/node_modules/@elizaos/core"
+
+Bun v1.2.19 (macOS arm64)
+maximesaint-joannis@MacBook-Pro-de-maxime tee-agent % elizaos start
+ Info       Using local @elizaos/cli installation
+
+────────────────────────────────────────────────────────────────────
+│ Update available: 1.6.3 → 1.6.4                                  │
+│ Run bun i -g @elizaos/cli@latest to get the latest features      │
+────────────────────────────────────────────────────────────────────
+
+
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⣐⣿⣿⢰⡀⠀⠀⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⣴⠤⠾⠛⠛⣿⣶⣇⠀⠀⡆ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢰⣋⡳⡄⠀⢨⣭⡀⠀⡤⠀⣀⣝⢿⣶⣿⡅ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢸⣯⠀⣇⠀⣼⣿⣿⣆⢷⣴⣿⣿⡏⣛⡉⠀ ⢸⣿⣿⣿⣿⣿⣿⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⣾⣿⣿⣧⠀⠀⠀⢸⠟⢀⣴⣿⣿⣿⣿⣦⡀⣠⣾⣿⣿⣿⣿⣦⡙⢿
+⠀⠙⢷⣮⢸⣿⣿⣿⣿⣷⣯⣟⣏⣼⣷⣅⠾ ⢸⣿⣇⣀⣀⣀⠀⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⠀⠀⣠⣿⣿⠟⠁⠀⠀⣼⣿⡟⣿⣿⣆⠀⠀⠀⠀⣿⣿⠋⠀⠈⠻⣿⡇⣿⣿⣅⣀⣀⡛⠛⠃⠀
+⠀⠀⠀⠁⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠋⠀ ⢸⣿⡿⠿⠿⠿⠀⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⣠⣾⣿⠟⠁⠀⠀⠀⣰⣿⣿⣁⣸⣿⣿⡄⠀⠀⠀⣿⣿ ⠀⠀ ⣿⣿⢈⣛⠿⠿⠿⣿⣷⡄⠀
+⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣉⡟⠀⠀ ⢸⣿⣧⣤⣤⣤⣤⢸⣿⣿⣦⣤⣤⣤⡄⣿⣿⡇⣾⣿⣿⣧⣤⣤⣤⡄⢰⣿⣿⠟⠛⠛⠻⣿⣿⡄⢠⡀⠻⣿⣿⣦⣴⣿⣿⠇⢿⣿⣦⣤⣤⣿⣿⠇⣠
+⠀⠀⠀⠀⢰⡈⠛⠿⣿⣿⣿⣿⣿⠋⠀   ⠘⠛⠛⠛⠛⠛⠛⠈⠛⠛⠛⠛⠛⠛⠃⠛⠛⠃⠛⠛⠛⠛⠛⠛⠛⠃⠛⠛⠃⠀⠀⠀⠀⠙⠛⠃⠘⠛⠀⠈⠛⠛⠛⠛⠁⠀⠀⠙⠛⠛⠛⠛⠁⠚⠛
+⠀⠀⠀⠀⢸⣿⡦⠀⠀⠉⠛⠿⠃⠀⠀⠀  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+
+Version: 1.6.3
+
+────────────────────────────────────────────────────────────────────
+│ Update available: 1.6.3 → 1.6.4                                  │
+│ Run bun i -g @elizaos/cli@latest to get the latest features      │
+────────────────────────────────────────────────────────────────────
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+│
+◇  ✓ Project built successfully
+ Info       No character files specified, attempting to load project agents...
+ Info       Loaded project from /Users/maximesaint-joannis/VScode/SOFIA/Sofia/tee-agent/dist/index.js
+ Info       Found 1 agent(s) in project configuration
+ Info       Loaded character: SofIA-Chat
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+ Info       [INIT] Database Dir for SQL plugin: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/tee-agent/.eliza/.elizadb
+ Info       [INIT] Created database directory: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/tee-agent/.eliza
+ Info       [INIT] Running database migrations for messaging tables...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       Discovered 1 plugin schemas out of 1 plugins
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Executing 61 SQL statements for @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Recorded migration 0000_@elizaos/plugin-sql_mhuuoolx for @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Migration completed successfully for @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       [INIT] Ensuring default server exists...
+ Info       [AgentServer] Checking for server 00000000-0000-0000-0000-000000000000...
+ Info       [AgentServer] Creating server with UUID 00000000-0000-0000-0000-000000000000...
+ Info       [INIT] Server uses temporary adapter for migrations only
+ Info       [INIT] Initializing ElizaOS...
+ Info       [MessageBusService] Global ElizaOS instance set
+ Info       [MessageBusService] Global AgentServer instance set
+ Info       [Sentry] Initialized Sentry for @elizaos/server
+ Info       Public health check endpoints enabled: /healthz and /health (rate limited: 100 req/min)
+ Warn       Server authentication is disabled. Set ELIZA_SERVER_AUTH_TOKEN environment variable to enable.
+ Info       Web UI enabled
+ Info       [STATIC] Found client files at: /Users/maximesaint-joannis/VScode/eliza/packages/server/dist/client
+ Info       [STATIC] Serving static files from: /Users/maximesaint-joannis/VScode/eliza/packages/server/dist/client
+ Info       [Jobs API] Started job cleanup interval
+ Info       [SocketIO] Router initialized with 0 agents
+ Info       [SocketIO] Setting up Socket.IO event listeners
+ Info       [SocketIO] Registered message types: 1: ROOM_JOINING, 2: SEND_MESSAGE, 3: MESSAGE, 4: ACK, 5: THINKING, 6: CONTROL, ROOM_JOINING: 1, SEND_MESSAGE: 2, MESSAGE: 3, ACK: 4, THINKING: 5, CONTROL: 6
+AgentServer is listening on port 3000
+ Warn       SECRET_SALT is not set or using default value
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "mr-tee-starter-plugin" ],
+}
+ Info       plugin-sql init starting...
+ Info       Database adapter created and registered
+ Info       *** Initializing Mr. TEE plugin ***
+ Info       #SofIA-Chat  Running plugin migrations...
+ Info       #SofIA-Chat  Found 1 plugins with schemas to migrate.
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] No actionable changes for @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #SofIA-Chat  Plugin migrations completed successfully.
+ Info       #SofIA-Chat  Plugin migrations completed.
+ Warn       #SofIA-Chat  [AgentRuntime][SofIA-Chat] No TEXT_EMBEDDING model registered. Skipping embedding dimension setup.
+ Info       [EmbeddingService] Starting embedding generation service
+ Warn       [EmbeddingService] No TEXT_EMBEDDING model registered. Embedding service will not be initialized.
+ Info       *** Starting Mr. TEE's custom service (Functional) ***
+ Info       Initializing character: SofIA-Chat (79c0c83b-2bd2-042f-a534-952c58a1024d)
+ Info       [AgentServer] Registered MessageBusConnector for agent SofIA-Chat
+ Info       [SofIA-Chat] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent SofIA-Chat with server ID: 00000000-0000-0000-0000-000000000000
+ Info       Started 1 agents
+ Warn       TEE daemon not available - running in non-TEE mode for testing
+ Warn       To run with TEE, ensure tappd is running at /var/run/tappd.sock
+ Info       [SofIA-Chat] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [SofIA-Chat] MessageBusService: Fetched 0 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [SofIA-Chat] MessageBusService: Loaded 0 valid channel IDs from 1 servers (including default server)
+ Info       [SocketIO] New connection: NZCQDGoj01lesUsUAAAB
+ Info       [Messages Router] Added agent 582f4e58-1285-004d-8ef6-1e6301f3d646 to channel e6964df8-6044-4a35-b678-f2c62adbf04f
+ Info       [SocketIO] New connection: 02nJFgfkjIiKflHSAAAD
+ Info       [Messages Router] Added agent 79c0c83b-2bd2-042f-a534-952c58a1024d to channel a47f9a5d-4643-4e14-877a-2f6db57bbd88
+ Info       [SocketIO] New connection: FUcpPDKDeJn_hEBEAAAF
+ Info       [Messages Router] Added agent 7dad3d3a-db1a-08a2-9dda-182d98b6cf2b to channel 5abf4575-cc67-4d7d-9937-93aff5007d45
+ Info       [SocketIO] New connection: BUW2Pekjbn2Urq9bAAAH
+ Info       [Messages Router] Added agent 8afb486a-3c96-0569-b112-4a7f465862b2 to channel 343fd6b1-040e-4859-bbcf-dd35250df832
+ Info       [SocketIO] New connection: mOcND5Um7lRamkO9AAAJ
+ Info       [Messages Router] Added agent 92a956b2-ec82-0d31-8fc1-31c9e13836a3 to channel 52453790-22f3-4b57-a1a6-022c6865e099
+ Info       [SocketIO DEBUG 02nJFgfkjIiKflHSAAAD] Event 'message': [{"type":2,"payload":{"channelId":"a47f9a5d-4643-4e14-877a-2f6db57bbd88","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"test 30","metadata":{"source":"extension","timestamp":1762882454220,"user_display_name":"User"}}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"a47f9a5d-4643-4e14-877a-2f6db57bbd88","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"test 30","metadata":{"source":"extension","timestamp":1762882454220,"user_display_name":"User"}}} (SocketID: 02nJFgfkjIiKflHSAAAD)
+ Info       [SocketIO 02nJFgfkjIiKflHSAAAD] Handling message sending via 'message' event
+ Info       [SocketIO 02nJFgfkjIiKflHSAAAD] Received SEND_MESSAGE for central submission: channel a47f9a5d-4643-4e14-877a-2f6db57bbd88 from c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO 02nJFgfkjIiKflHSAAAD] Full payload for debugging: {
+  "channelId": "a47f9a5d-4643-4e14-877a-2f6db57bbd88",
+  "serverId": "00000000-0000-0000-0000-000000000000",
+  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
+  "message": "test 30",
+  "metadata": {
+    "source": "extension",
+    "timestamp": 1762882454220,
+    "user_display_name": "User"
+  }
+}
+ Info       [SocketIO 02nJFgfkjIiKflHSAAAD] Checking if channel a47f9a5d-4643-4e14-877a-2f6db57bbd88 exists before creating message
+ Info       [SocketIO 02nJFgfkjIiKflHSAAAD] Channel a47f9a5d-4643-4e14-877a-2f6db57bbd88 exists: true
+ Info       [SocketIO 02nJFgfkjIiKflHSAAAD] Channel a47f9a5d-4643-4e14-877a-2f6db57bbd88 already exists, proceeding with message creation
+ Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"889aea75-bfdf-412f-9583-aef6e0889ae6"}
+ Info       [AgentServer] Published message 889aea75-bfdf-412f-9583-aef6e0889ae6 to internal message bus
+ Info       [SocketIO 02nJFgfkjIiKflHSAAAD] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 889aea75-bfdf-412f-9583-aef6e0889ae6). It will be processed by agents and broadcasted upon their reply.
+ Info       [SofIA-Chat] MessageBusService: Discovered new channel a47f9a5d-4643-4e14-877a-2f6db57bbd88, added to valid channels
+ Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel a47f9a5d-4643-4e14-877a-2f6db57bbd88, proceeding with message processing
+ Info       [SofIA-Chat] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
+ Info       [SofIA-Chat] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
+ Info       [MessageService DEBUG] About to call ensureAuthorEntityExists for author_id: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [MessageService DEBUG] Transformed ID: e161938d-6b56-0128-aa91-94201f895f01 from author_id: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [MessageService DEBUG] Existing entity found: false
+ Info       [MessageService DEBUG] Creating new entity with ID: e161938d-6b56-0128-aa91-94201f895f01
+ Info       [MessageService DEBUG] Entity created successfully
+ Info       [MessageService DEBUG] ensureAuthorEntityExists returned: e161938d-6b56-0128-aa91-94201f895f01
+ Info       #SofIA-Chat  [MessageService] Message received from e161938d-6b56-0128-aa91-94201f895f01 in room 00e252ab-e7a8-0b2a-aad8-7fe30799d92b
+[DEBUG recentMessages] ====== PROCESSING MESSAGE ======
+[DEBUG recentMessages] Input message.entityId: e161938d-6b56-0128-aa91-94201f895f01
+[DEBUG recentMessages] Input message.roomId: 00e252ab-e7a8-0b2a-aad8-7fe30799d92b
+[DEBUG recentMessages] Runtime agentId: 79c0c83b-2bd2-042f-a534-952c58a1024d
+[DEBUG recentMessages] Fetched entitiesData: [
+  {
+    id: "79c0c83b-2bd2-042f-a534-952c58a1024d",
+    names: [ "SofIA-Chat" ],
+  }, {
+    id: "e161938d-6b56-0128-aa91-94201f895f01",
+    names: [ "User-c89710c9" ],
+  }
+]
+[DEBUG recentMessages] Room type: GROUP
+[DEBUG recentMessages] Fetched recentMessagesData count: 1
+[DEBUG recentMessages] Recent messages entityIds: [
+  {
+    entityId: "e161938d-6b56-0128-aa91-94201f895f01",
+    text: "test 30",
+  }
+]
+[DEBUG recentMessages] About to format messages
+[DEBUG recentMessages] Available entities for formatting: [ "79c0c83b-2bd2-042f-a534-952c58a1024d",
+  "e161938d-6b56-0128-aa91-94201f895f01"
+]
+[DEBUG recentMessages] Dialogue messages entityIds: [ "e161938d-6b56-0128-aa91-94201f895f01" ]
+[DEBUG recentMessages] isPostFormat: false
+[DEBUG recentMessages] Looking for sender entity: e161938d-6b56-0128-aa91-94201f895f01
+[DEBUG recentMessages] All available entity IDs: [ "79c0c83b-2bd2-042f-a534-952c58a1024d",
+  "e161938d-6b56-0128-aa91-94201f895f01"
+]
+[DEBUG recentMessages] Found entity: {
+  id: "e161938d-6b56-0128-aa91-94201f895f01",
+  names: [ "User-c89710c9" ],
+}
+[DEBUG recentMessages] Final senderName: User-c89710c9
+error is 45963 |     const modelKey = typeof modelType === "string" ? modelType : ModelType[modelType];
+45964 |     const promptContent = params?.prompt || params?.input || (Array.isArray(params?.messages) ? JSON.stringify(params.messages) : null);
+45965 |     const model = this.getModel(modelKey, provider);
+45966 |     if (!model) {
+45967 |       const errorMsg = `No handler found for delegate type: ${modelKey}`;
+45968 |       throw new Error(errorMsg);
+                    ^
+error: No handler found for delegate type: TEXT_SMALL
+      at useModel (/Users/maximesaint-joannis/VScode/eliza/packages/core/dist/node/index.node.js:45968:13)
+      at useModel (/Users/maximesaint-joannis/VScode/eliza/packages/core/dist/node/index.node.js:45962:18)
+      at processMessage (/Users/maximesaint-joannis/VScode/eliza/packages/core/dist/node/index.node.js:43151:40)
+
+ Error      #SofIA-Chat  [MessageService] Error in handleMessage: {
+  error: 45963 |     const modelKey = typeof modelType === "string" ? modelType : ModelType[modelType];
+45964 |     const promptContent = params?.prompt || params?.input || (Array.isArray(params?.messages) ? JSON.stringify(params.messages) : null);
+45965 |     const model = this.getModel(modelKey, provider);
+45966 |     if (!model) {
+45967 |       const errorMsg = `No handler found for delegate type: ${modelKey}`;
+45968 |       throw new Error(errorMsg);
+                    ^
+error: No handler found for delegate type: TEXT_SMALL
+      at useModel (/Users/maximesaint-joannis/VScode/eliza/packages/core/dist/node/index.node.js:45968:13)
+      at useModel (/Users/maximesaint-joannis/VScode/eliza/packages/core/dist/node/index.node.js:45962:18)
+      at processMessage (/Users/maximesaint-joannis/VScode/eliza/packages/core/dist/node/index.node.js:43151:40)
+,
+}
+ Error      [SofIA-Chat] MessageBusService: Error processing message via elizaOS.sendMessage() No handler found for delegate type: TEXT_SMALL

@@ -1,0 +1,116 @@
+ [Sofia Config] Using server URL: http://localhost:3000
+ 🚀 [index.ts] Starting extension initialization...
+ 🚀 SOFIA Extension - Service Worker ready (Plasmo)
+ ✅ [index.ts] Wallet connecté: 0xc634457ad68b037e2d5aa1c10c3930d7e4e2d551
+ 🔑 [index.ts] Initializing user agent IDs...
+ ✅ Tracking enabled - Extension ready
+ 🔵 INFO   | [plasmo/parcel-runtime]: Connected to HMR server for /Users/maximesaint-joannis/VScode/SOFIA/Sofia/extension/.plasmo/static/background/index.ts
+ � Generated IDs for SofIA: Object
+ � Generated IDs for ChatBot: Object
+ � Generated IDs for ThemeExtractor: Object
+ � Generated IDs for PulseAgent: Object
+UserSessionManager.ts:137 � Generated IDs for RecommendationAgent: Object
+websocket.ts:51 ✅ User agent IDs initialized: Object
+index.ts:50 ✅ [index.ts] User agent IDs initialized
+index.ts:52 🎯 [index.ts] Loading domain intentions...
+indexedDB.ts:124 ✅ IndexedDB initialized successfully
+intentionRanking.ts:358 ✅ [intentionRanking] Loaded 17 domain intentions from IndexedDB
+index.ts:56 📚 [index.ts] Initializing SofIA socket...
+index.ts:58 🤖 [index.ts] Initializing Chatbot socket...
+index.ts:60 🎨 [index.ts] Initializing ThemeExtractor socket...
+websocket.ts:499 🎨 [websocket.ts] ThemeExtractor socket initialization completed
+index.ts:62 🫀 [index.ts] Initializing PulseAgent socket...
+websocket.ts:636 🫀 [websocket.ts] PulseAgent socket initialization completed
+index.ts:64 💎 [index.ts] Initializing RecommendationAgent socket...
+websocket.ts:788 💎 [websocket.ts] RecommendationAgent socket initialization completed
+index.ts:68 📨 [index.ts] Setting up message handlers...
+index.ts:72 🔔 [index.ts] Initializing badge count...
+index.ts:76 ✅ [index.ts] Extension initialization completed
+websocket.ts:109 ✅ Connected to Eliza (SofIA), socket ID: zAvucj8PKoZ14Xj5AAAJ
+websocket.ts:111 🔑 Using user-specific IDs: Object
+websocket.ts:114 🔧 [SofIA] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:138 ✅ [SofIA] DM channel created via REST API: Object
+websocket.ts:144 💾 [SofIA] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 45ccc67f-db51-4acb-9854-9b9c5b3952a9
+websocket.ts:146 🔧 [SofIA] Adding agent to channel explicitly...
+websocket.ts:158 ✅ [SofIA] Agent added to channel successfully
+websocket.ts:240 🤖 Connected to Chatbot, socket ID: jyrCG4uB-lS0_0xRAAAL
+websocket.ts:242 🔑 Using user-specific IDs: Object
+websocket.ts:245 🔧 [Chatbot] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:269 ✅ [Chatbot] DM channel created via REST API: Object
+websocket.ts:275 💾 [Chatbot] Updated ROOM_ID and CHANNEL_ID to use real channel ID: db2a2afb-12f6-4414-a1fe-bbd5e9700adc
+websocket.ts:278 🔧 [Chatbot] Adding agent to channel explicitly...
+websocket.ts:290 ✅ [Chatbot] Agent added to channel successfully
+websocket.ts:393 ✅ [websocket.ts] Connected to ThemeExtractor, socket ID: FiJ78E6SbxoSnXXIAAAN
+websocket.ts:395 🔑 Using user-specific IDs: Object
+websocket.ts:398 🔧 [ThemeExtractor] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:422 ✅ [ThemeExtractor] DM channel created via REST API: Object
+websocket.ts:428 💾 [ThemeExtractor] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 489f47d0-c960-4009-aae7-fac519b8e503
+websocket.ts:430 🔧 [ThemeExtractor] Adding agent to channel explicitly...
+websocket.ts:442 ✅ [ThemeExtractor] Agent added to channel successfully
+websocket.ts:524 ✅ [websocket.ts] Connected to PulseAgent, socket ID: 5uMvp3-PC5J-Cm63AAAP
+websocket.ts:526 🔑 Using user-specific IDs: Object
+websocket.ts:529 🔧 [PulseAgent] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:553 ✅ [PulseAgent] DM channel created via REST API: Object
+websocket.ts:559 💾 [PulseAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 8782f42b-8867-4328-a01e-b3f0ecc5dd1c
+websocket.ts:561 🔧 [PulseAgent] Adding agent to channel explicitly...
+websocket.ts:573 ✅ [PulseAgent] Agent added to channel successfully
+websocket.ts:672 ✅ [websocket.ts] Connected to RecommendationAgent, socket ID: NntnRmeQwBZCEqAbAAAR
+websocket.ts:674 🔑 Using user-specific IDs: Object
+websocket.ts:677 🔧 [RecommendationAgent] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:701 ✅ [RecommendationAgent] DM channel created via REST API: Object
+websocket.ts:707 💾 [RecommendationAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 1ae23acd-97b5-4120-ba87-b8f15920c488
+websocket.ts:709 🔧 [RecommendationAgent] Adding agent to channel explicitly...
+websocket.ts:721 ✅ [RecommendationAgent] Agent added to channel successfully
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://extensions/
+t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://extensions&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+usePageBlockchainData.ts:128 📥 Total atoms count: 1
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
+usePageBlockchainData.ts:202 📥 Total triples count: 1
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
+usePageBlockchainData.ts:217 📥 Atoms displayed: 1
+usePageBlockchainData.ts:237 📥 Total triples (real count): 1
+usePageBlockchainData.ts:239 📥 Triples displayed: 1
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:403 🔍 [usePageBlockchainData] URL change detected via polling, refreshing data...
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://extensions/
+ChatPage.tsx:119 🎧 [ChatPage] Message listener registered
+ChatPage.tsx:44 ✉️ Message utilisateur : test 19
+websocket.ts:865 � [CHATBOT] Sending message: test 19
+websocket.ts:866 � [CHATBOT] Complete IDs: Object
+websocket.ts:890 � [CHATBOT] Full payload: {
+  "type": 2,
+  "payload": {
+    "channelId": "db2a2afb-12f6-4414-a1fe-bbd5e9700adc",
+    "serverId": "00000000-0000-0000-0000-000000000000",
+    "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
+    "message": "test 19",
+    "metadata": {
+      "source": "extension",
+      "timestamp": 1762877488597,
+      "channelType": 2,
+      "user_display_name": "User"
+    }
+  }
+}
+websocket.ts:895 ✅ [CHATBOT] Message sent via Socket.IO to channel db2a2afb-12f6-4414-a1fe-bbd5e9700adc
+websocket.ts:315 📡 [Chatbot] messageBroadcast received: Object
+usePageBlockchainData.ts:128 📥 Total atoms count: 1
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
+usePageBlockchainData.ts:202 📥 Total triples count: 1
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
+usePageBlockchainData.ts:217 📥 Atoms displayed: 1
+usePageBlockchainData.ts:237 📥 Total triples (real count): 1
+usePageBlockchainData.ts:239 📥 Triples displayed: 1
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)

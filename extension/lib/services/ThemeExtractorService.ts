@@ -4,6 +4,7 @@
  */
 
 import { THEMEEXTRACTOR_IDS } from '../../background/constants'
+import { getWorldIds } from '../../background/websocket'
 
 interface ThemeExtractionResult {
   success: boolean
@@ -83,6 +84,8 @@ export class ThemeExtractorService {
         reject(new Error(`Timeout waiting for themes from ${type}`))
       }, this.TIMEOUT)
 
+      const worldIds = getWorldIds()  // ✅ Récupérer les IDs réels des worlds
+
       const payload = {
         type: 2,
         payload: {
@@ -90,9 +93,10 @@ export class ThemeExtractorService {
           senderName: "Extension",
           message: JSON.stringify({ urls }),
           messageId: this.generateUUID(),
-          roomId: THEMEEXTRACTOR_IDS.ROOM_ID,
+          roomId: THEMEEXTRACTOR_IDS.CHANNEL_ID,
           channelId: THEMEEXTRACTOR_IDS.CHANNEL_ID,
           serverId: THEMEEXTRACTOR_IDS.SERVER_ID,
+          worldId: worldIds.THEMEEXTRACTOR,  // ✅ ID réel du world ElizaOS
           source: "theme-extraction",
           attachments: [],
           metadata: {
@@ -108,7 +112,7 @@ export class ThemeExtractorService {
         clearTimeout(timeout)
         resolve(themes || [])
       }
-      
+
       this.socket.emit("message", payload)
       console.log(`📤 Sent ${type} request with ${urls.length} URLs`)
     })

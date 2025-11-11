@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import logoIcon from '../ui/icons/chatIcon.png'
 import '../styles/ChatPage.css'
-import { getChatbotSocket, initializeChatbotSocket } from '../../background/websocket'
-import { sendMessageToChatbot } from '../../background/messageSenders'
 import { Storage } from "@plasmohq/storage"
 
 const storage = new Storage()
@@ -21,7 +19,6 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const { goBack } = useRouter()
   const [pendingMessage, setPendingMessage] = useState<string | null>(null)
-  const [isSocketReady, setSocketReady] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
@@ -29,30 +26,7 @@ const ChatPage = () => {
     if (container) container.scrollTop = container.scrollHeight
   }, [messages])
 
-  useEffect(() => {
-    initializeChatbotSocket(() => setSocketReady(true))
-  }, [])
-
-  useEffect(() => {
-    const fetch = async () => {
-      const saved = await storage.get("pendingChatInput")
-      if (saved && typeof saved === "string" && saved.trim() !== "") {
-        await storage.remove("pendingChatInput")
-        setPendingMessage(saved)
-        setChatInput(saved) // si tu veux qu’il s'affiche aussi
-      }
-    }
-    fetch()
-  }, [])
-
-  useEffect(() => {
-    if (isSocketReady && pendingMessage) {
-      handleSendMessage(pendingMessage)
-      setPendingMessage(null)
-    }
-  }, [isSocketReady, pendingMessage])
-
-
+  // Define handleSendMessage BEFORE useEffect that uses it
   const handleSendMessage = (content?: string) => {
     const message = content ?? chatInput
     if (!message.trim()) return
@@ -66,10 +40,37 @@ const ChatPage = () => {
 
     setMessages(prev => [...prev, newUserMessage])
     console.log("✉️ Message utilisateur :", message)
-    sendMessageToChatbot(getChatbotSocket(), message)
+
+    // ✅ Send message to service worker to handle Socket.IO
+    // ChatPage runs in sidepanel context, socket runs in service worker context
+    chrome.runtime.sendMessage({
+      type: "SEND_CHATBOT_MESSAGE",
+      text: message
+    }).catch(err => console.error("Failed to send message to background:", err))
 
     setChatInput("")
   }
+
+  // Load pending message from storage (sent from other pages)
+  useEffect(() => {
+    const fetch = async () => {
+      const saved = await storage.get("pendingChatInput")
+      if (saved && typeof saved === "string" && saved.trim() !== "") {
+        await storage.remove("pendingChatInput")
+        setPendingMessage(saved)
+        setChatInput(saved)
+      }
+    }
+    fetch()
+  }, [])
+
+  // Send pending message immediately (socket is already initialized by background/index.ts)
+  useEffect(() => {
+    if (pendingMessage) {
+      handleSendMessage(pendingMessage)
+      setPendingMessage(null)
+    }
+  }, [pendingMessage])
 
     useEffect(() => {
       const loadMessages = async () => {
@@ -95,7 +96,11 @@ const ChatPage = () => {
 
   useEffect(() => {
     const handler = (message: any) => {
+      console.log("🔔 [ChatPage] Received message:", message)
+
       if (message?.type === "CHATBOT_RESPONSE") {
+        console.log("✅ [ChatPage] Processing CHATBOT_RESPONSE:", message.text)
+
         const response: Message = {
           id: Date.now().toString(),
           content: message.text,
@@ -103,12 +108,19 @@ const ChatPage = () => {
           timestamp: new Date()
         }
 
-        setMessages(prev => [...prev, response])
+        setMessages(prev => {
+          console.log("📝 [ChatPage] Adding message to state, current count:", prev.length)
+          return [...prev, response]
+        })
       }
     }
 
+    console.log("🎧 [ChatPage] Message listener registered")
     chrome.runtime.onMessage.addListener(handler)
-    return () => chrome.runtime.onMessage.removeListener(handler)
+    return () => {
+      console.log("🔌 [ChatPage] Message listener removed")
+      chrome.runtime.onMessage.removeListener(handler)
+    }
   }, [])
 
   return (
