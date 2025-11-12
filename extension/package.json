@@ -8,7 +8,11 @@
     "dev": "plasmo dev",
     "build": "plasmo build",
     "package": "plasmo package",
-    "proxy": "bun sofia-proxy/server.ts"
+    "proxy": "bun sofia-proxy/server.ts",
+    "clear:channels": "tsx background/__test__/clear-channels.ts",
+    "test:persistence": "pnpm clear:channels && tsx background/__test__/test-channel-persistence.ts",
+    "test:messages": "tsx background/__test__/test-message-reception.ts",
+    "test:all": "pnpm clear:channels && tsx background/__test__/test-channel-persistence.ts && tsx background/__test__/test-message-reception.ts"
   },
   "dependencies": {
     "@0xintuition/1ui": "^0.4.1",
@@ -60,7 +64,9 @@
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",
     "@types/react-router-dom": "^5.3.3",
+    "idb": "^8.0.3",
     "prettier": "3.2.4",
+    "tsx": "^4.20.6",
     "typescript": "5.3.3"
   },
   "manifest": {

@@ -2,7 +2,7 @@
  * Specialized methods for SofIA IndexedDB operations
  */
 
-import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord} from './indexedDB'
+import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type AgentChannelRecord } from './indexedDB'
 import { MessageBus } from '../services/MessageBus'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
 import { parseSofiaMessage } from '../utils/parseSofiaMessage'
@@ -998,13 +998,146 @@ export class RecommendationsService {
   }
 }
 
+/**
+ * 🆕 Agent Channels Service
+ * Manages persistent storage of channel IDs for multi-user support
+ */
+export class AgentChannelsService {
+  /**
+   * Store channel ID for a user-agent pair
+   */
+  static async storeChannelId(
+    walletAddress: string,
+    agentName: string,
+    channelId: string,
+    agentId: string
+  ): Promise<void> {
+    const key = `${walletAddress.toLowerCase()}:${agentName}`
+    const record: AgentChannelRecord = {
+      key,
+      channelId,
+      walletAddress: walletAddress.toLowerCase(),
+      agentName,
+      agentId,
+      createdAt: Date.now(),
+      lastUsed: Date.now()
+    }
+
+    await sofiaDB.put(STORES.AGENT_CHANNELS, record)
+    console.log(`💾 [AgentChannels] Stored channel for ${agentName}:`, channelId)
+  }
+
+  /**
+   * Get stored channel ID for a user-agent pair
+   */
+  static async getStoredChannelId(
+    walletAddress: string,
+    agentName: string
+  ): Promise<string | null> {
+    const key = `${walletAddress.toLowerCase()}:${agentName}`
+    const record = await sofiaDB.get<AgentChannelRecord>(STORES.AGENT_CHANNELS, key)
+
+    if (record?.channelId) {
+      // Update lastUsed timestamp
+      record.lastUsed = Date.now()
+      await sofiaDB.put(STORES.AGENT_CHANNELS, record)
+
+      console.log(`♻️ [AgentChannels] Retrieved channel for ${agentName}:`, record.channelId)
+      return record.channelId
+    }
+
+    console.log(`🆕 [AgentChannels] No existing channel for ${agentName}`)
+    return null
+  }
+
+  /**
+   * Get all channels for a specific wallet address
+   */
+  static async getAllUserChannels(walletAddress: string): Promise<AgentChannelRecord[]> {
+    const allChannels = await sofiaDB.getAllByIndex<AgentChannelRecord>(
+      STORES.AGENT_CHANNELS,
+      'walletAddress',
+      walletAddress.toLowerCase()
+    )
+    return allChannels
+  }
+
+  /**
+   * Get all channels for a specific agent (across all users)
+   */
+  static async getAllAgentChannels(agentName: string): Promise<AgentChannelRecord[]> {
+    const allChannels = await sofiaDB.getAllByIndex<AgentChannelRecord>(
+      STORES.AGENT_CHANNELS,
+      'agentName',
+      agentName
+    )
+    return allChannels
+  }
+
+  /**
+   * Delete a specific channel
+   */
+  static async deleteChannel(walletAddress: string, agentName: string): Promise<void> {
+    const key = `${walletAddress.toLowerCase()}:${agentName}`
+    await sofiaDB.delete(STORES.AGENT_CHANNELS, key)
+    console.log(`🗑️ [AgentChannels] Deleted channel for ${agentName}`)
+  }
+
+  /**
+   * Clear all channels for a specific wallet (useful for logout)
+   */
+  static async clearUserChannels(walletAddress: string): Promise<number> {
+    const userChannels = await this.getAllUserChannels(walletAddress)
+
+    for (const channel of userChannels) {
+      await sofiaDB.delete(STORES.AGENT_CHANNELS, channel.key)
+    }
+
+    console.log(`🗑️ [AgentChannels] Cleared ${userChannels.length} channels for wallet ${walletAddress}`)
+    return userChannels.length
+  }
+
+  /**
+   * Clear ALL channels (for debugging)
+   */
+  static async clearAllChannels(): Promise<void> {
+    await sofiaDB.clear(STORES.AGENT_CHANNELS)
+    console.log('🗑️ [AgentChannels] Cleared all channels')
+  }
+
+  /**
+   * Get channel statistics (for debugging)
+   */
+  static async getChannelStats(): Promise<{
+    totalChannels: number
+    uniqueWallets: number
+    channelsByAgent: Record<string, number>
+  }> {
+    const allChannels = await sofiaDB.getAll<AgentChannelRecord>(STORES.AGENT_CHANNELS)
+
+    const uniqueWallets = new Set(allChannels.map(c => c.walletAddress)).size
+    const channelsByAgent: Record<string, number> = {}
+
+    for (const channel of allChannels) {
+      channelsByAgent[channel.agentName] = (channelsByAgent[channel.agentName] || 0) + 1
+    }
+
+    return {
+      totalChannels: allChannels.length,
+      uniqueWallets,
+      channelsByAgent
+    }
+  }
+}
+
 // Export all services
 export const elizaDataService = ElizaDataService
-export const navigationDataService = NavigationDataService  
+export const navigationDataService = NavigationDataService
 export const userProfileService = UserProfileService
 export const userSettingsService = UserSettingsService
 export const searchHistoryService = SearchHistoryService
 export const bookmarkService = BookmarkService
 export const recommendationsService = RecommendationsService
+export const agentChannelsService = AgentChannelsService  // 🆕 Export agent channels service
 
 // Published triplet storage exports removed - using Intuition indexer as single source of truth

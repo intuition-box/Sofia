@@ -10,19 +10,20 @@ import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
-const DB_VERSION = 5
+const DB_VERSION = 6  // 🆕 Incrémenté pour ajouter agent_channels
 
 // Object store names
 export const STORES = {
   ELIZA_DATA: 'eliza_data',
-  NAVIGATION_DATA: 'navigation_data', 
+  NAVIGATION_DATA: 'navigation_data',
   USER_PROFILE: 'user_profile',
   USER_SETTINGS: 'user_settings',
   SEARCH_HISTORY: 'search_history',
   BOOKMARK_LISTS: 'bookmark_lists',
   BOOKMARKED_TRIPLETS: 'bookmarked_triplets',
   DOMAIN_INTENTIONS: 'domain_intentions',
-  RECOMMENDATIONS: 'recommendations'
+  RECOMMENDATIONS: 'recommendations',
+  AGENT_CHANNELS: 'agent_channels'  // 🆕 Store pour la persistance des channels
 } as const
 
 // Record types for IndexedDB
@@ -89,6 +90,17 @@ export interface RecommendationRecord {
   parsedRecommendations: any[]
   timestamp: number
   lastUpdated: number
+}
+
+// 🆕 Agent channel record for multi-user persistence
+export interface AgentChannelRecord {
+  key: string  // Format: "wallet_address:agent_name"
+  channelId: string
+  walletAddress: string
+  agentName: string
+  agentId: string
+  createdAt: number
+  lastUsed: number
 }
 
 /**
@@ -224,6 +236,17 @@ export class SofiaIndexedDB {
       })
       recommendationsStore.createIndex('timestamp', 'timestamp', { unique: false })
       recommendationsStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
+    }
+
+    // 🆕 Agent channels store (pour persistance multi-user)
+    if (!db.objectStoreNames.contains(STORES.AGENT_CHANNELS)) {
+      const agentChannelsStore = db.createObjectStore(STORES.AGENT_CHANNELS, {
+        keyPath: 'key'  // Format: "wallet_address:agent_name"
+      })
+      agentChannelsStore.createIndex('walletAddress', 'walletAddress', { unique: false })
+      agentChannelsStore.createIndex('agentName', 'agentName', { unique: false })
+      agentChannelsStore.createIndex('channelId', 'channelId', { unique: false })
+      agentChannelsStore.createIndex('lastUsed', 'lastUsed', { unique: false })
     }
 
     console.log('✅ Object stores created successfully')

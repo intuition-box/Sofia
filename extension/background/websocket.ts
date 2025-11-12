@@ -6,10 +6,25 @@ import {
   PULSEAGENT_BASE_IDS,
   RECOMMENDATION_BASE_IDS
 } from "./constants"
-import { getUserAgentIds, type AgentIds } from "../lib/services/UserSessionManager"
-import { elizaDataService } from "../lib/database/indexedDB-methods"
+import { getUserAgentIds, getWalletAddress, type AgentIds } from "../lib/services/UserSessionManager"
+import { elizaDataService, agentChannelsService } from "../lib/database/indexedDB-methods"
 import { sofiaDB, STORES } from "../lib/database/indexedDB"
 import { SOFIA_SERVER_URL } from "../config"
+
+/**
+ * 🆕 Extract text from ElizaOS message with fallback chain
+ * Handles different message formats from ElizaOS server
+ */
+function extractMessageText(data: any): string {
+  return (
+    data.text ||
+    data.content?.text ||
+    data.payload?.content?.text ||
+    data.message ||
+    data.payload?.message ||
+    ""
+  )
+}
 
 let socketSofia: Socket
 let socketBot: Socket
@@ -108,9 +123,21 @@ export async function initializeSofiaSocket(): Promise<void> {
     console.log("✅ Connected to Eliza (SofIA), socket ID:", socketSofia.id)
     console.log("🔑 Using user-specific IDs:", sofiaIds)
 
-    // Following the reference code pattern: Create DM channel via REST API (no ROOM_JOINING)
+    // 🆕 Vérifier si un channel existe déjà pour ce user
     try {
-      console.log("🔧 [SofIA] Creating DM channel via REST API (following reference pattern)...")
+      const walletAddress = await getWalletAddress()
+      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "SofIA")
+
+      if (storedChannelId) {
+        // ♻️ Réutiliser le channel existant
+        sofiaIds.ROOM_ID = storedChannelId
+        sofiaIds.CHANNEL_ID = storedChannelId
+        console.log("♻️ [SofIA] Reusing existing channel:", storedChannelId)
+        return  // Ne pas créer de nouveau channel
+      }
+
+      // 🆕 Pas de channel existant → créer via REST API
+      console.log("🔧 [SofIA] No existing channel, creating new one via REST API...")
       const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -137,6 +164,10 @@ export async function initializeSofiaSocket(): Promise<void> {
           sofiaIds.ROOM_ID = channelData.id
           sofiaIds.CHANNEL_ID = channelData.id
           console.log("💾 [SofIA] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", sofiaIds.ROOM_ID)
+
+          // 🆕 Persister le channel dans IndexedDB
+          await agentChannelsService.storeChannelId(walletAddress, "SofIA", channelData.id, sofiaIds.AGENT_ID)
+          console.log("💾 [SofIA] Channel ID persisted to IndexedDB")
 
           // ✅ Add agent explicitly to channel (following reference code pattern)
           console.log("🔧 [SofIA] Adding agent to channel explicitly...")
@@ -170,22 +201,37 @@ export async function initializeSofiaSocket(): Promise<void> {
   })
 
   socketSofia.on("messageBroadcast", async (data) => {
-    // 🆕 Utiliser les IDs dynamiques pour filtrer
-    if ((data.roomId === sofiaIds.ROOM_ID || data.channelId === sofiaIds.CHANNEL_ID) && data.senderId === sofiaIds.AGENT_ID) {
-      console.log("📩 Message SofIA:", data)
+    // 🆕 Logging détaillé pour debug
+    console.log("📡 [SofIA] messageBroadcast received:", {
+      channelId: data.channelId,
+      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
+      expectedChannelId: sofiaIds.CHANNEL_ID,
+      expectedAgentId: sofiaIds.AGENT_ID,
+      isFromAgent: (data.senderId === sofiaIds.AGENT_ID)
+    })
+
+    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
+    if (
+      data.channelId === sofiaIds.CHANNEL_ID &&
+      data.senderId === sofiaIds.AGENT_ID
+    ) {
+      console.log("✅ [SofIA] Agent message matched! Processing...")
 
       try {
+        // 🆕 Utiliser extractMessageText pour robustesse
+        const messageText = extractMessageText(data)
+
         // Create message in the exact same format as before
         const newMessage = {
           id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          content: { text: data.text },
+          content: { text: messageText },
           created_at: Date.now(),
           processed: false
         }
 
         // Store directly in IndexedDB instead of buffer
         await elizaDataService.storeMessage(newMessage, newMessage.id)
-        console.log("✅ Message stored directly in IndexedDB (SofIA)", { id: newMessage.id })
+        console.log("✅ [SofIA] Message stored in IndexedDB:", { id: newMessage.id, preview: messageText.substring(0, 50) })
 
         // Clean old messages periodically (keep last 50)
         const allMessages = await elizaDataService.getAllMessages()
@@ -195,8 +241,10 @@ export async function initializeSofiaSocket(): Promise<void> {
         }
 
       } catch (error) {
-        console.error("❌ Failed to store message in IndexedDB:", error)
+        console.error("❌ [SofIA] Failed to store message in IndexedDB:", error)
       }
+    } else {
+      console.log("⏭️ [SofIA] Message not for us (from user or different channel)")
     }
   })
 
@@ -236,9 +284,26 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
     console.log("🤖 Connected to Chatbot, socket ID:", socketBot.id)
     console.log("🔑 Using user-specific IDs:", chatbotIds)
 
-    // Following the reference code pattern: Create DM channel via REST API
+    // 🆕 Vérifier si un channel existe déjà pour ce user
     try {
-      console.log("🔧 [Chatbot] Creating DM channel via REST API (following reference pattern)...")
+      const walletAddress = await getWalletAddress()
+      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "ChatBot")
+
+      if (storedChannelId) {
+        // ♻️ Réutiliser le channel existant
+        chatbotIds.ROOM_ID = storedChannelId
+        chatbotIds.CHANNEL_ID = storedChannelId
+        console.log("♻️ [Chatbot] Reusing existing channel:", storedChannelId)
+
+        // ✅ Notification that socket is ready
+        if (typeof onReady === "function") {
+          onReady()
+        }
+        return  // Ne pas créer de nouveau channel
+      }
+
+      // 🆕 Pas de channel existant → créer via REST API
+      console.log("🔧 [Chatbot] No existing channel, creating new one via REST API...")
       const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -269,8 +334,11 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
           chatbotIds.CHANNEL_ID = channelData.id  // Also update CHANNEL_ID to match
           console.log("💾 [Chatbot] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", chatbotIds.ROOM_ID)
 
+          // 🆕 Persister le channel dans IndexedDB
+          await agentChannelsService.storeChannelId(walletAddress, "ChatBot", channelData.id, chatbotIds.AGENT_ID)
+          console.log("💾 [Chatbot] Channel ID persisted to IndexedDB")
+
           // ✅ Add agent explicitly to channel (following reference code pattern)
-          // Reference: https://github.com/elizaos-plugins/plugin-action-bench/.../channel-utils.ts
           console.log("🔧 [Chatbot] Adding agent to channel explicitly...")
           try {
             const addAgentResponse = await fetch(
@@ -308,31 +376,40 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
   })
 
   socketBot.on("messageBroadcast", (data) => {
+    // 🆕 Logging détaillé pour debug
     console.log("📡 [Chatbot] messageBroadcast received:", {
-      roomId: data.roomId,
       channelId: data.channelId,
-      senderId: data.senderId,
-      expectedRoomId: chatbotIds.ROOM_ID,
+      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
       expectedChannelId: chatbotIds.CHANNEL_ID,
-      match: (data.roomId === chatbotIds.ROOM_ID || data.channelId === chatbotIds.CHANNEL_ID) && data.senderId === chatbotIds.AGENT_ID
+      expectedAgentId: chatbotIds.AGENT_ID,
+      isFromAgent: (data.senderId === chatbotIds.AGENT_ID)
     })
 
-    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
     if (
-      (data.roomId === chatbotIds.ROOM_ID || data.channelId === chatbotIds.CHANNEL_ID) &&
+      data.channelId === chatbotIds.CHANNEL_ID &&
       data.senderId === chatbotIds.AGENT_ID
     ) {
+      console.log("✅ [Chatbot] Agent response matched! Sending to UI...")
+
       try {
+        // 🆕 Utiliser extractMessageText pour robustesse
+        const messageText = extractMessageText(data)
+
         // Envoyer directement via chrome.runtime.sendMessage (pas via MessageBus)
         chrome.runtime.sendMessage({
           type: "CHATBOT_RESPONSE",
-          text: data.text
+          text: messageText
         }).catch((error) => {
-          console.warn("⚠️ [websocket.ts] Error sending CHATBOT_RESPONSE:", error)
+          console.warn("⚠️ [Chatbot] Error sending CHATBOT_RESPONSE:", error)
         })
+
+        console.log("✅ [Chatbot] Response sent to UI:", messageText.substring(0, 50))
       } catch (error) {
-        console.warn("⚠️ [websocket.ts] Error sending CHATBOT_RESPONSE:", error)
+        console.warn("⚠️ [Chatbot] Error processing message:", error)
       }
+    } else {
+      console.log("⏭️ [Chatbot] Message not for us (from user or different channel)")
     }
   })
 
@@ -389,8 +466,20 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
     console.log("✅ [websocket.ts] Connected to ThemeExtractor, socket ID:", socketThemeExtractor.id)
     console.log("🔑 Using user-specific IDs:", themeExtractorIds)
 
-    // Following the reference code pattern: Create DM channel via REST API (no ROOM_JOINING)
+    // 🆕 Check if channel already exists for this user
     try {
+      const walletAddress = await getWalletAddress()
+      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "ThemeExtractor")
+
+      if (storedChannelId) {
+        // ♻️ Reuse existing channel
+        themeExtractorIds.ROOM_ID = storedChannelId
+        themeExtractorIds.CHANNEL_ID = storedChannelId
+        console.log(`♻️ [ThemeExtractor] Reusing existing channel: ${storedChannelId}`)
+        return  // Don't create a new channel
+      }
+
+      // 🆕 No existing channel → create via REST API
       console.log("🔧 [ThemeExtractor] Creating DM channel via REST API (following reference pattern)...")
       const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
         method: "POST",
@@ -421,6 +510,10 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
           themeExtractorIds.ROOM_ID = channelData.id
           themeExtractorIds.CHANNEL_ID = channelData.id
           console.log("💾 [ThemeExtractor] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", themeExtractorIds.ROOM_ID)
+
+          // 🆕 Persist channel in IndexedDB
+          await agentChannelsService.storeChannelId(walletAddress, "ThemeExtractor", channelData.id, themeExtractorIds.AGENT_ID)
+          console.log("💾 [ThemeExtractor] Channel persisted in IndexedDB")
 
           // ✅ Add agent explicitly to channel (following reference code pattern)
           console.log("🔧 [ThemeExtractor] Adding agent to channel explicitly...")
@@ -454,32 +547,45 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
   })
 
   socketThemeExtractor.on("messageBroadcast", async (data) => {
-    // 🆕 Utiliser les IDs dynamiques pour filtrer
-    if ((data.roomId === themeExtractorIds.ROOM_ID || data.channelId === themeExtractorIds.CHANNEL_ID) &&
-        data.senderId === themeExtractorIds.AGENT_ID) {
-      console.log("📩 ThemeExtractor response received")
-      console.log("🔍 RAW MESSAGE from ThemeExtractor:", data.text)
-      
+    console.log("📡 [ThemeExtractor] messageBroadcast received:", {
+      channelId: data.channelId,
+      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
+      expectedChannelId: themeExtractorIds.CHANNEL_ID,
+      expectedAgentId: themeExtractorIds.AGENT_ID,
+      isFromAgent: (data.senderId === themeExtractorIds.AGENT_ID)
+    })
+
+    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
+    if (
+      data.channelId === themeExtractorIds.CHANNEL_ID &&
+      data.senderId === themeExtractorIds.AGENT_ID
+    ) {
+      console.log("✅ [ThemeExtractor] Agent response matched! Processing themes...")
+
       try {
-        // Parse themes from the response and pass to handler
+        const messageText = extractMessageText(data)
+        console.log("🔍 [ThemeExtractor] Raw message:", messageText.substring(0, 100))
+
+        // Parse themes from the response
         let themes = []
         try {
-          const parsed = JSON.parse(data.text)
-          themes = parsed // Pass raw parsed data to handler
-          console.log("🎨 Raw parsed data sent to handler")
+          const parsed = JSON.parse(messageText)
+          themes = parsed
+          console.log("🎨 [ThemeExtractor] Themes parsed successfully:", themes)
         } catch (parseError) {
-          console.warn("⚠️ Could not parse themes as JSON:", parseError)
+          console.warn("⚠️ [ThemeExtractor] Could not parse themes as JSON:", parseError)
           themes = []
         }
-        
+
         // TODO: Re-implement theme extraction handler
         // handleThemeExtractorResponse(themes)
-        console.log("🎨 [websocket.ts] Theme extraction result:", themes)
+        console.log("🎨 [ThemeExtractor] Theme extraction result:", themes)
 
       } catch (error) {
-        console.error("❌ [websocket.ts] Failed to process ThemeExtractor response:", error)
-        // handleThemeExtractorResponse([])
+        console.error("❌ [ThemeExtractor] Failed to process response:", error)
       }
+    } else {
+      console.log("⏭️ [ThemeExtractor] Message not for us (from user or different channel)")
     }
   })
 
@@ -520,8 +626,20 @@ export async function initializePulseSocket(): Promise<void> {
     console.log("✅ [websocket.ts] Connected to PulseAgent, socket ID:", socketPulse.id)
     console.log("🔑 Using user-specific IDs:", pulseIds)
 
-    // Following the reference code pattern: Create DM channel via REST API (no ROOM_JOINING)
+    // 🆕 Check if channel already exists for this user
     try {
+      const walletAddress = await getWalletAddress()
+      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "PulseAgent")
+
+      if (storedChannelId) {
+        // ♻️ Reuse existing channel
+        pulseIds.ROOM_ID = storedChannelId
+        pulseIds.CHANNEL_ID = storedChannelId
+        console.log(`♻️ [PulseAgent] Reusing existing channel: ${storedChannelId}`)
+        return  // Don't create a new channel
+      }
+
+      // 🆕 No existing channel → create via REST API
       console.log("🔧 [PulseAgent] Creating DM channel via REST API (following reference pattern)...")
       const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
         method: "POST",
@@ -552,6 +670,10 @@ export async function initializePulseSocket(): Promise<void> {
           pulseIds.ROOM_ID = channelData.id
           pulseIds.CHANNEL_ID = channelData.id
           console.log("💾 [PulseAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", pulseIds.ROOM_ID)
+
+          // 🆕 Persist channel in IndexedDB
+          await agentChannelsService.storeChannelId(walletAddress, "PulseAgent", channelData.id, pulseIds.AGENT_ID)
+          console.log("💾 [PulseAgent] Channel persisted in IndexedDB")
 
           // ✅ Add agent explicitly to channel (following reference code pattern)
           console.log("🔧 [PulseAgent] Adding agent to channel explicitly...")
@@ -585,38 +707,52 @@ export async function initializePulseSocket(): Promise<void> {
   })
 
   socketPulse.on("messageBroadcast", async (data) => {
-    // 🆕 Utiliser les IDs dynamiques pour filtrer
-    if ((data.roomId === pulseIds.ROOM_ID || data.channelId === pulseIds.CHANNEL_ID) &&
-        data.senderId === pulseIds.AGENT_ID) {
-      console.log("📩 PulseAgent response received")
-      console.log("🫀 RAW MESSAGE from PulseAgent:", data.text)
-      
-      // Store pulse analysis results directly in IndexedDB
+    console.log("📡 [PulseAgent] messageBroadcast received:", {
+      channelId: data.channelId,
+      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
+      expectedChannelId: pulseIds.CHANNEL_ID,
+      expectedAgentId: pulseIds.AGENT_ID,
+      isFromAgent: (data.senderId === pulseIds.AGENT_ID)
+    })
+
+    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
+    if (
+      data.channelId === pulseIds.CHANNEL_ID &&
+      data.senderId === pulseIds.AGENT_ID
+    ) {
+      console.log("✅ [PulseAgent] Agent response matched! Processing pulse analysis...")
+
       try {
+        const messageText = extractMessageText(data)
+        console.log("🫀 [PulseAgent] Raw message:", messageText.substring(0, 100))
+
+        // Store pulse analysis results directly in IndexedDB
         const pulseRecord = {
           messageId: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          content: { text: data.text },
+          content: { text: messageText },
           timestamp: Date.now(),
           type: 'pulse_analysis'
         }
 
         // Use sofiaDB directly to bypass elizaDataService parsing
         const result = await sofiaDB.put(STORES.ELIZA_DATA, pulseRecord)
-        console.log("✅ [websocket.ts] Pulse analysis stored directly:", { id: result, type: pulseRecord.type })
-        
+        console.log("✅ [PulseAgent] Pulse analysis stored directly:", { id: result, type: pulseRecord.type })
+
         // Notify UI that pulse analysis is complete
         try {
           chrome.runtime.sendMessage({
             type: "PULSE_ANALYSIS_COMPLETE"
           })
-          console.log("🫀 [websocket.ts] Sent PULSE_ANALYSIS_COMPLETE message")
+          console.log("🫀 [PulseAgent] Sent PULSE_ANALYSIS_COMPLETE message")
         } catch (busError) {
-          console.warn("⚠️ [websocket.ts] Failed to send PULSE_ANALYSIS_COMPLETE:", busError)
+          console.warn("⚠️ [PulseAgent] Failed to send PULSE_ANALYSIS_COMPLETE:", busError)
         }
-        
+
       } catch (error) {
-        console.error("❌ [websocket.ts] Failed to store pulse analysis:", error)
+        console.error("❌ [PulseAgent] Failed to store pulse analysis:", error)
       }
+    } else {
+      console.log("⏭️ [PulseAgent] Message not for us (from user or different channel)")
     }
   })
 
@@ -668,8 +804,20 @@ export async function initializeRecommendationSocket(): Promise<void> {
     console.log("✅ [websocket.ts] Connected to RecommendationAgent, socket ID:", socketRecommendation.id)
     console.log("🔑 Using user-specific IDs:", recommendationIds)
 
-    // Following the reference code pattern: Create DM channel via REST API (no ROOM_JOINING)
+    // 🆕 Check if channel already exists for this user
     try {
+      const walletAddress = await getWalletAddress()
+      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "RecommendationAgent")
+
+      if (storedChannelId) {
+        // ♻️ Reuse existing channel
+        recommendationIds.ROOM_ID = storedChannelId
+        recommendationIds.CHANNEL_ID = storedChannelId
+        console.log(`♻️ [RecommendationAgent] Reusing existing channel: ${storedChannelId}`)
+        return  // Don't create a new channel
+      }
+
+      // 🆕 No existing channel → create via REST API
       console.log("🔧 [RecommendationAgent] Creating DM channel via REST API (following reference pattern)...")
       const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
         method: "POST",
@@ -700,6 +848,10 @@ export async function initializeRecommendationSocket(): Promise<void> {
           recommendationIds.ROOM_ID = channelData.id
           recommendationIds.CHANNEL_ID = channelData.id
           console.log("💾 [RecommendationAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", recommendationIds.ROOM_ID)
+
+          // 🆕 Persist channel in IndexedDB
+          await agentChannelsService.storeChannelId(walletAddress, "RecommendationAgent", channelData.id, recommendationIds.AGENT_ID)
+          console.log("💾 [RecommendationAgent] Channel persisted in IndexedDB")
 
           // ✅ Add agent explicitly to channel (following reference code pattern)
           console.log("🔧 [RecommendationAgent] Adding agent to channel explicitly...")
@@ -733,32 +885,33 @@ export async function initializeRecommendationSocket(): Promise<void> {
   })
 
   socketRecommendation.on("messageBroadcast", async (data) => {
-    // DEBUG: Log ALL incoming messages
-    console.log("🔍 [websocket.ts] RecommendationAgent messageBroadcast received:", {
-      roomId: data.roomId,
+    console.log("📡 [RecommendationAgent] messageBroadcast received:", {
       channelId: data.channelId,
-      senderId: data.senderId,
-      expectedRoomId: recommendationIds.ROOM_ID,
+      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
       expectedChannelId: recommendationIds.CHANNEL_ID,
       expectedAgentId: recommendationIds.AGENT_ID,
-      textPreview: data.text?.substring(0, 100)
+      isFromAgent: (data.senderId === recommendationIds.AGENT_ID)
     })
 
-    // 🆕 Utiliser les IDs dynamiques pour filtrer
-    if ((data.roomId === recommendationIds.ROOM_ID || data.channelId === recommendationIds.CHANNEL_ID) &&
-        data.senderId === recommendationIds.AGENT_ID) {
-      console.log("📩 [websocket.ts] RecommendationAgent response received")
-      console.log("💎 [websocket.ts] RAW MESSAGE from RecommendationAgent:", data.text)
+    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
+    if (
+      data.channelId === recommendationIds.CHANNEL_ID &&
+      data.senderId === recommendationIds.AGENT_ID
+    ) {
+      console.log("✅ [RecommendationAgent] Agent response matched! Processing recommendations...")
 
       try {
+        const messageText = extractMessageText(data)
+        console.log("💎 [RecommendationAgent] Raw message:", messageText.substring(0, 100))
+
         // Parse recommendations from the response
         let recommendations = null
         try {
-          const parsed = JSON.parse(data.text)
-          recommendations = parsed // Pass raw parsed data to handler
-          console.log("💎 [websocket.ts] Parsed recommendations data:", recommendations)
+          const parsed = JSON.parse(messageText)
+          recommendations = parsed
+          console.log("💎 [RecommendationAgent] Recommendations parsed successfully:", recommendations)
         } catch (parseError) {
-          console.warn("⚠️ [websocket.ts] Could not parse recommendations as JSON:", parseError)
+          console.warn("⚠️ [RecommendationAgent] Could not parse recommendations as JSON:", parseError)
           recommendations = null
         }
 
@@ -766,9 +919,11 @@ export async function initializeRecommendationSocket(): Promise<void> {
         handleRecommendationResponse(recommendations)
 
       } catch (error) {
-        console.error("❌ [websocket.ts] Failed to process RecommendationAgent response:", error)
+        console.error("❌ [RecommendationAgent] Failed to process response:", error)
         handleRecommendationResponse(null)
       }
+    } else {
+      console.log("⏭️ [RecommendationAgent] Message not for us (from user or different channel)")
     }
   })
 

@@ -1,150 +1,607 @@
-config.ts:18 [Sofia Config] Using server URL: http://localhost:3000
-index.ts:31 🚀 [index.ts] Starting extension initialization...
-index.ts:119 🚀 SOFIA Extension - Service Worker ready (Plasmo)
-runtime-142ee0bdda86b88d.js:1 🔵 INFO   | [plasmo/parcel-runtime]: Connected to HMR server for /Users/maximesaint-joannis/VScode/SOFIA/Sofia/extension/.plasmo/static/background/index.ts
-index.ts:45 ✅ [index.ts] Wallet connecté: 0xc634457ad68b037e2d5aa1c10c3930d7e4e2d551
-index.ts:47 🔑 [index.ts] Initializing user agent IDs...
-index.ts:109 ✅ Tracking enabled - Extension ready
-UserSessionManager.ts:137 � Generated IDs for SofIA: Object
-UserSessionManager.ts:137 � Generated IDs for ChatBot: Object
-UserSessionManager.ts:137 � Generated IDs for ThemeExtractor: Object
-UserSessionManager.ts:137 � Generated IDs for PulseAgent: Object
-UserSessionManager.ts:137 � Generated IDs for RecommendationAgent: Object
-websocket.ts:51 ✅ User agent IDs initialized: Object
-index.ts:50 ✅ [index.ts] User agent IDs initialized
-index.ts:52 🎯 [index.ts] Loading domain intentions...
-indexedDB.ts:124 ✅ IndexedDB initialized successfully
-intentionRanking.ts:358 ✅ [intentionRanking] Loaded 41 domain intentions from IndexedDB
-index.ts:56 📚 [index.ts] Initializing SofIA socket...
-index.ts:58 🤖 [index.ts] Initializing Chatbot socket...
-index.ts:60 🎨 [index.ts] Initializing ThemeExtractor socket...
-websocket.ts:496 🎨 [websocket.ts] ThemeExtractor socket initialization completed
-index.ts:62 🫀 [index.ts] Initializing PulseAgent socket...
-websocket.ts:633 🫀 [websocket.ts] PulseAgent socket initialization completed
-index.ts:64 💎 [index.ts] Initializing RecommendationAgent socket...
-websocket.ts:785 💎 [websocket.ts] RecommendationAgent socket initialization completed
-index.ts:68 📨 [index.ts] Setting up message handlers...
-index.ts:72 🔔 [index.ts] Initializing badge count...
-index.ts:76 ✅ [index.ts] Extension initialization completed
-websocket.ts:109 ✅ Connected to Eliza (SofIA), socket ID: 5V34ClmOxcoWcYMoAABb
-websocket.ts:111 🔑 Using user-specific IDs: Object
-websocket.ts:114 🔧 [SofIA] Creating DM channel via REST API (following reference pattern)...
-websocket.ts:135 ✅ [SofIA] DM channel created via REST API: Object
-websocket.ts:141 💾 [SofIA] Updated ROOM_ID and CHANNEL_ID to use real channel ID: f9851981-9a7a-4a26-8245-5cd5dcf7c54d
-websocket.ts:143 🔧 [SofIA] Adding agent to channel explicitly...
-websocket.ts:155 ✅ [SofIA] Agent added to channel successfully
-websocket.ts:237 🤖 Connected to Chatbot, socket ID: QVP4f6oC01WpO3s5AABd
-websocket.ts:239 🔑 Using user-specific IDs: Object
-websocket.ts:242 🔧 [Chatbot] Creating DM channel via REST API (following reference pattern)...
-websocket.ts:266 ✅ [Chatbot] DM channel created via REST API: Object
-websocket.ts:272 💾 [Chatbot] Updated ROOM_ID and CHANNEL_ID to use real channel ID: cf74aabb-3560-4908-9f60-cffcbdde055c
-websocket.ts:275 🔧 [Chatbot] Adding agent to channel explicitly...
-websocket.ts:390 ✅ [websocket.ts] Connected to ThemeExtractor, socket ID: CegkAcmlhIjy_9NDAABf
-websocket.ts:392 🔑 Using user-specific IDs: Object
-websocket.ts:395 🔧 [ThemeExtractor] Creating DM channel via REST API (following reference pattern)...
-websocket.ts:287 ✅ [Chatbot] Agent added to channel successfully
-websocket.ts:419 ✅ [ThemeExtractor] DM channel created via REST API: Object
-websocket.ts:425 💾 [ThemeExtractor] Updated ROOM_ID and CHANNEL_ID to use real channel ID: f29155a8-813f-4b70-9cc9-2b3b3dface83
-websocket.ts:427 🔧 [ThemeExtractor] Adding agent to channel explicitly...
-websocket.ts:439 ✅ [ThemeExtractor] Agent added to channel successfully
-websocket.ts:521 ✅ [websocket.ts] Connected to PulseAgent, socket ID: SWHp4S7vA7VyCSqoAABh
-websocket.ts:523 🔑 Using user-specific IDs: Object
-websocket.ts:526 🔧 [PulseAgent] Creating DM channel via REST API (following reference pattern)...
-websocket.ts:550 ✅ [PulseAgent] DM channel created via REST API: Object
-websocket.ts:556 💾 [PulseAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 4943aa47-cd23-4a4a-89f3-002a08ee7970
-websocket.ts:558 🔧 [PulseAgent] Adding agent to channel explicitly...
-websocket.ts:570 ✅ [PulseAgent] Agent added to channel successfully
-websocket.ts:669 ✅ [websocket.ts] Connected to RecommendationAgent, socket ID: 32nPFiwbFeiO5yS6AABj
-websocket.ts:671 🔑 Using user-specific IDs: Object
-websocket.ts:674 🔧 [RecommendationAgent] Creating DM channel via REST API (following reference pattern)...
-websocket.ts:698 ✅ [RecommendationAgent] DM channel created via REST API: Object
-websocket.ts:704 💾 [RecommendationAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 63b1af56-8c15-46c1-882b-c0f11eaed94d
-websocket.ts:706 🔧 [RecommendationAgent] Adding agent to channel explicitly...
-websocket.ts:718 ✅ [RecommendationAgent] Agent added to channel successfully
-websocket.ts:862 � [CHATBOT] Sending message: yalla
-websocket.ts:863 � [CHATBOT] Complete IDs: Object
-websocket.ts:886 � [CHATBOT] Full payload: {
+ [Sofia Config] Using server URL: http://localhost:3000
+ 🚀 [index.ts] Starting extension initialization...
+ 🚀 SOFIA Extension - Service Worker ready (Plasmo)
+ 🔵 INFO   | [plasmo/parcel-runtime]: Connected to HMR server for /Users/maximesaint-joannis/VScode/SOFIA/Sofia/extension/.plasmo/static/background/index.ts
+ ✅ [index.ts] Wallet connecté: 0xc634457ad68b037e2d5aa1c10c3930d7e4e2d551
+ 🔑 [index.ts] Initializing user agent IDs...
+ ✅ Tracking enabled - Extension ready
+ � Generated IDs for SofIA: Object
+ � Generated IDs for ChatBot: Object
+ � Generated IDs for ThemeExtractor: Object
+ � Generated IDs for PulseAgent: Object
+ � Generated IDs for RecommendationAgent: Object
+ ✅ User agent IDs initialized: Object
+ ✅ [index.ts] User agent IDs initialized
+ 🎯 [index.ts] Loading domain intentions...
+ 🔧 Creating IndexedDB object stores...
+ ✅ Object stores created successfully
+ ✅ IndexedDB initialized successfully
+ ✅ [intentionRanking] Loaded 0 domain intentions from IndexedDB
+ 📚 [index.ts] Initializing SofIA socket...
+ 🤖 [index.ts] Initializing Chatbot socket...
+ 🎨 [index.ts] Initializing ThemeExtractor socket...
+ 🎨 [websocket.ts] ThemeExtractor socket initialization completed
+ 🫀 [index.ts] Initializing PulseAgent socket...
+ 🫀 [websocket.ts] PulseAgent socket initialization completed
+ 💎 [index.ts] Initializing RecommendationAgent socket...
+ 💎 [websocket.ts] RecommendationAgent socket initialization completed
+ 📨 [index.ts] Setting up message handlers...
+ 🔔 [index.ts] Initializing badge count...
+ ✅ [index.ts] Extension initialization completed
+ ✅ Connected to Eliza (SofIA), socket ID: x5qFDzKPV_-nAyuCAAAV
+ 🔑 Using user-specific IDs: Object
+ � [AgentChannels] No existing channel for SofIA
+ 🔧 [SofIA] No existing channel, creating new one via REST API...
+ ✅ [SofIA] DM channel created via REST API: Object
+ 💾 [SofIA] Updated ROOM_ID and CHANNEL_ID to use real channel ID: d075cbe1-bac9-4bb9-9f73-00faf533da49
+ � [AgentChannels] Stored channel for SofIA: d075cbe1-bac9-4bb9-9f73-00faf533da49
+ 💾 [SofIA] Channel ID persisted to IndexedDB
+ 🔧 [SofIA] Adding agent to channel explicitly...
+ ✅ [SofIA] Agent added to channel successfully
+ 🤖 Connected to Chatbot, socket ID: HTrzBnopXk3YRKs-AAAX
+ 🔑 Using user-specific IDs: Object
+ � [AgentChannels] No existing channel for ChatBot
+ 🔧 [Chatbot] No existing channel, creating new one via REST API...
+ ✅ [Chatbot] DM channel created via REST API: Object
+ 💾 [Chatbot] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 102e3ad4-a127-4282-9f06-8bcd70d4ca32
+ � [AgentChannels] Stored channel for ChatBot: 102e3ad4-a127-4282-9f06-8bcd70d4ca32
+ 💾 [Chatbot] Channel ID persisted to IndexedDB
+ 🔧 [Chatbot] Adding agent to channel explicitly...
+ ✅ [Chatbot] Agent added to channel successfully
+ ✅ [websocket.ts] Connected to ThemeExtractor, socket ID: BY5udNmr7YqoZnaJAAAZ
+ 🔑 Using user-specific IDs: Object
+ � [AgentChannels] No existing channel for ThemeExtractor
+ 🔧 [ThemeExtractor] Creating DM channel via REST API (following reference pattern)...
+ ✅ [ThemeExtractor] DM channel created via REST API: Object
+ 💾 [ThemeExtractor] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 402838ab-2cde-4074-9ccb-b8a6263218ac
+ � [AgentChannels] Stored channel for ThemeExtractor: 402838ab-2cde-4074-9ccb-b8a6263218ac
+ 💾 [ThemeExtractor] Channel persisted in IndexedDB
+ 🔧 [ThemeExtractor] Adding agent to channel explicitly...
+ ✅ [ThemeExtractor] Agent added to channel successfully
+ ✅ [websocket.ts] Connected to PulseAgent, socket ID: PxlL85CEbFnGJNZ6AAAb
+ 🔑 Using user-specific IDs: Object
+ � [AgentChannels] No existing channel for PulseAgent
+ 🔧 [PulseAgent] Creating DM channel via REST API (following reference pattern)...
+ ✅ [PulseAgent] DM channel created via REST API: Object
+ 💾 [PulseAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 0adb57e8-e09c-47d6-b88d-1bbe1cfc0ca1
+ � [AgentChannels] Stored channel for PulseAgent: 0adb57e8-e09c-47d6-b88d-1bbe1cfc0ca1
+ 💾 [PulseAgent] Channel persisted in IndexedDB
+ 🔧 [PulseAgent] Adding agent to channel explicitly...
+ ✅ [PulseAgent] Agent added to channel successfully
+ ✅ [websocket.ts] Connected to RecommendationAgent, socket ID: pxSiKcjFvf3BMwiIAAAd
+ 🔑 Using user-specific IDs: Object
+ � [AgentChannels] No existing channel for RecommendationAgent
+ 🔧 [RecommendationAgent] Creating DM channel via REST API (following reference pattern)...
+ ✅ [RecommendationAgent] DM channel created via REST API: Object
+ 💾 [RecommendationAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 2bc10bc8-0d78-471e-8b3e-4f9ac52ec938
+ � [AgentChannels] Stored channel for RecommendationAgent: 2bc10bc8-0d78-471e-8b3e-4f9ac52ec938
+ 💾 [RecommendationAgent] Channel persisted in IndexedDB
+ 🔧 [RecommendationAgent] Adding agent to channel explicitly...
+ ✅ [RecommendationAgent] Agent added to channel successfully
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
+ 🔍 Fetching blockchain data for URL: chrome://extensions/
+t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://extensions&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+ 📥 Total atoms count: 1
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 1 (displaying first 100)
+ 📥 Total triples count: 1
+ 📥 Triples response (first 100): Object
+ 📥 Total atoms (real count): 1
+ 📥 Atoms displayed: 1
+ 📥 Total triples (real count): 1
+ 📥 Triples displayed: 1
+ 📊 Triple vaults: Array(1)
+ 🔍 [usePageBlockchainData] URL change detected via polling, refreshing data...
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
+ 🔍 Fetching blockchain data for URL: chrome://extensions/
+ 📥 Total atoms count: 1
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 1 (displaying first 100)
+ 📥 Total triples count: 1
+ 📥 Triples response (first 100): Object
+ 📥 Total atoms (real count): 1
+ 📥 Atoms displayed: 1
+ 📥 Total triples (real count): 1
+ 📥 Triples displayed: 1
+ 📊 Triple vaults: Array(1)
+ 🎧 [ChatPage] Message listener registered
+ ✉️ Message utilisateur : test ? 
+ � [CHATBOT] Sending message: test ? 
+ � [CHATBOT] Complete IDs: Object
+ � [CHATBOT] Full payload: {
   "type": 2,
   "payload": {
-    "channelId": "cf74aabb-3560-4908-9f60-cffcbdde055c",
+    "channelId": "102e3ad4-a127-4282-9f06-8bcd70d4ca32",
     "serverId": "00000000-0000-0000-0000-000000000000",
     "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-    "message": "yalla",
+    "message": "test ? ",
     "metadata": {
       "source": "extension",
-      "timestamp": 1762977383750,
+      "timestamp": 1762982991601,
       "user_display_name": "User"
     }
   }
 }
-websocket.ts:891 ✅ [CHATBOT] Message sent via Socket.IO to channel cf74aabb-3560-4908-9f60-cffcbdde055c
-websocket.ts:312 📡 [Chatbot] messageBroadcast received: Object
-usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
-usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
-usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
-usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
-usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://extensions/
-t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://extensions&size=32:1  Failed to load resource: the server responded with a status of 404 ()
-usePageBlockchainData.ts:128 📥 Total atoms count: 1
-usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
-usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
-usePageBlockchainData.ts:202 📥 Total triples count: 1
-usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
-usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
-usePageBlockchainData.ts:217 📥 Atoms displayed: 1
-usePageBlockchainData.ts:237 📥 Total triples (real count): 1
-usePageBlockchainData.ts:239 📥 Triples displayed: 1
-usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
-indexedDB.ts:124 ✅ IndexedDB initialized successfully
-usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
-usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
-usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
-usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
-usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://extensions/
-t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://extensions&size=32:1  Failed to load resource: the server responded with a status of 404 ()
-usePageBlockchainData.ts:128 📥 Total atoms count: 1
-usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
-usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
-usePageBlockchainData.ts:202 📥 Total triples count: 1
-usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
-usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
-usePageBlockchainData.ts:217 📥 Atoms displayed: 1
-usePageBlockchainData.ts:237 📥 Total triples (real count): 1
-usePageBlockchainData.ts:239 📥 Triples displayed: 1
-usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
-usePageBlockchainData.ts:403 🔍 [usePageBlockchainData] URL change detected via polling, refreshing data...
-usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
-usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
-usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
-usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
-usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://extensions/
-usePageBlockchainData.ts:128 📥 Total atoms count: 1
-usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
-usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
-usePageBlockchainData.ts:202 📥 Total triples count: 1
-usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
-usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
-usePageBlockchainData.ts:217 📥 Atoms displayed: 1
-usePageBlockchainData.ts:237 📥 Total triples (real count): 1
-usePageBlockchainData.ts:239 📥 Triples displayed: 1
-usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
-ChatPage.tsx:119 🎧 [ChatPage] Message listener registered
-ChatPage.tsx:44 ✉️ Message utilisateur : me reponds tu ? 
-websocket.ts:862 � [CHATBOT] Sending message: me reponds tu ? 
-websocket.ts:863 � [CHATBOT] Complete IDs: Object
-websocket.ts:886 � [CHATBOT] Full payload: {
+ ✅ [CHATBOT] Message sent via Socket.IO to channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32
+ 📡 [Chatbot] messageBroadcast received: Object
+ ⏭️ [Chatbot] Message not for us (from user or different channel)
+ 🔌 [ChatPage] Message listener removed
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
+ 🔍 Fetching blockchain data for URL: chrome://extensions/
+ 📥 Total atoms count: 1
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 1 (displaying first 100)
+ 📥 Total triples count: 1
+ 📥 Triples response (first 100): Object
+ 📥 Total atoms (real count): 1
+ 📥 Atoms displayed: 1
+ 📥 Total triples (real count): 1
+ 📥 Triples displayed: 1
+ 📊 Triple vaults: Array(1)
+ 🔍 [usePageBlockchainData] Tab URL changed, refreshing data...
+ 🔍 [usePageBlockchainData] Page load complete, checking for URL changes...
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: chrome://newtab/
+ 🔍 Fetching blockchain data for URL: chrome://newtab/
+t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://newtab&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+ 📥 Total atoms count: 1
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 1 (displaying first 100)
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: chrome://newtab/
+ 🔍 Fetching blockchain data for URL: chrome://newtab/
+ 📥 Total triples count: 0
+ 📥 Triples response (first 100): Object
+ 📥 Total atoms (real count): 1
+ 📥 Atoms displayed: 1
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ 📥 Total atoms count: 1
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 1 (displaying first 100)
+ 📥 Total triples count: 0
+ 📥 Triples response (first 100): Object
+ 📥 Total atoms (real count): 1
+ 📥 Atoms displayed: 1
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ 🔍 [usePageBlockchainData] Tab URL changed, refreshing data...
+ 🔍 [usePageBlockchainData] Page load complete, checking for URL changes...
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/
+ 🔍 Fetching blockchain data for URL: https://github.com/
+ 📥 Total atoms count: 41
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 41 (displaying first 100)
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/
+ 🔍 Fetching blockchain data for URL: https://github.com/
+ 📥 Total triples count: 72
+ 📥 Triples response (first 100): Object
+ 📥 Total atoms (real count): 41
+ 📥 Atoms displayed: 41
+ 📥 Total triples (real count): 72
+ 📥 Triples displayed: 72
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 🔍 [21:30:15] � PageDataService - PAGE_DATA buffered Object
+ 📥 Total atoms count: 41
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 41 (displaying first 100)
+ 📊 [21:30:15] � PageDataService - Page captured Object
+ � [SOFIA] Sending message: URL: https://github.com/\nTitle: GitHub\nDescription: GitHub is where people build software. More th
+ � [SOFIA] Complete IDs: Object
+ � [SOFIA] Full payload: {
   "type": 2,
   "payload": {
-    "channelId": "cf74aabb-3560-4908-9f60-cffcbdde055c",
+    "channelId": "d075cbe1-bac9-4bb9-9f73-00faf533da49",
     "serverId": "00000000-0000-0000-0000-000000000000",
     "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-    "message": "me reponds tu ? ",
+    "message": "URL: https://github.com/\\nTitle: GitHub\\nDescription: GitHub is where people build software. More than 150 million people use GitHub to discover, fork, an\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
     "metadata": {
       "source": "extension",
-      "timestamp": 1762977453671,
+      "timestamp": 1762983015797,
       "user_display_name": "User"
     }
   }
 }
-websocket.ts:891 ✅ [CHATBOT] Message sent via Socket.IO to channel cf74aabb-3560-4908-9f60-cffcbdde055c
-websocket.ts:312 📡 [Chatbot] messageBroadcast received: ObjectchannelId: "cf74aabb-3560-4908-9f60-cffcbdde055c"expectedChannelId: "cf74aabb-3560-4908-9f60-cffcbdde055c"expectedRoomId: "cf74aabb-3560-4908-9f60-cffcbdde055c"match: falseroomId: "cf74aabb-3560-4908-9f60-cffcbdde055c"senderId: "c89710c9-057e-43cc-a1ef-73de724a332c"[[Prototype]]: Object
+ ✅ [SOFIA] Message sent via Socket.IO to channel d075cbe1-bac9-4bb9-9f73-00faf533da49
+ � [intentionRanking] Domain github.com: visits=1, score=1.86
+ 📥 Total triples count: 72
+ 📥 Triples response (first 100): Object
+ 📥 Total atoms (real count): 41
+ 📥 Atoms displayed: 41
+ 📥 Total triples (real count): 72
+ 📥 Triples displayed: 72
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📊 Triple vaults: Array(1)
+ 📊 Triple vaults: Array(2)
+ 📡 [SofIA] messageBroadcast received: Object
+ ⏭️ [SofIA] Message not for us (from user or different channel)
+ ⚠️ [21:30:16] � PageDataService - PAGE_DURATION without PAGE_DATA Object
+warn @ index.js:8072
+ 🔍 [usePageBlockchainData] Tab URL changed, refreshing data...
+Unchecked runtime.lastError: The page keeping the extension port is moved into back/forward cache, so the message channel is closed.
+Unchecked runtime.lastError: The page keeping the extension port is moved into back/forward cache, so the message channel is closed.
+Unchecked runtime.lastError: The page keeping the extension port is moved into back/forward cache, so the message channel is closed.
+Unchecked runtime.lastError: The page keeping the extension port is moved into back/forward cache, so the message channel is closed.
+Unchecked runtime.lastError: The page keeping the extension port is moved into back/forward cache, so the message channel is closed.
+Unchecked runtime.lastError: The page keeping the extension port is moved into back/forward cache, so the message channel is closed.
+Unchecked runtime.lastError: The page keeping the extension port is moved into back/forward cache, so the message channel is closed.
+Unchecked runtime.lastError: The page keeping the extension port is moved into back/forward cache, so the message channel is closed.
+ 🔍 [usePageBlockchainData] Page load complete, checking for URL changes...
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/intuition-box/Sofia
+ 🔍 Fetching blockchain data for URL: https://github.com/intuition-box/Sofia
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/intuition-box/Sofia
+ 🔍 Fetching blockchain data for URL: https://github.com/intuition-box/Sofia
+ 📥 Total atoms count: 0
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 0 (displaying first 100)
+ 📥 No atoms found, skipping triplets query
+ 📥 Total atoms (real count): 0
+ 📥 Atoms displayed: 0
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ 📥 Total atoms count: 0
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 0 (displaying first 100)
+ 📥 No atoms found, skipping triplets query
+ 📥 Total atoms (real count): 0
+ 📥 Atoms displayed: 0
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ 🔍 [21:30:17] � PageDataService - PAGE_DATA buffered Object
+ 🔍 [usePageBlockchainData] Tab URL changed, refreshing data...
+ 🔍 [usePageBlockchainData] Page load complete, checking for URL changes...
+ 🔍 [usePageBlockchainData] Content script reported navigation, refreshing data...
+ 🔗 URL changed: Object
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/intuition-box/Sofia?tab=readme-ov-file
+ 🔍 Fetching blockchain data for URL: https://github.com/intuition-box/Sofia
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/intuition-box/Sofia?tab=readme-ov-file
+ 🔍 Fetching blockchain data for URL: https://github.com/intuition-box/Sofia
+ 📥 Total atoms count: 0
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 0 (displaying first 100)
+ 📥 No atoms found, skipping triplets query
+ 📥 Total atoms (real count): 0
+ 📥 Atoms displayed: 0
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ 📥 Total atoms count: 0
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 0 (displaying first 100)
+ 📥 No atoms found, skipping triplets query
+ 📥 Total atoms (real count): 0
+ 📥 Atoms displayed: 0
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/intuition-box/Sofia?tab=readme-ov-file
+ 🔍 Fetching blockchain data for URL: https://github.com/intuition-box/Sofia
+ ⚠️ [21:31:03] � PageDataService - PAGE_DURATION without PAGE_DATA Object
+warn @ index.js:8072
+ 📥 Total atoms count: 0
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 0 (displaying first 100)
+ 📥 No atoms found, skipping triplets query
+ 📥 Total atoms (real count): 0
+ 📥 Atoms displayed: 0
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ ⚠️ [21:31:04] � PageDataService - PAGE_DURATION without PAGE_DATA Object
+warn @ index.js:8072
+ 🔍 [usePageBlockchainData] Tab URL changed, refreshing data...
+ 🔍 [usePageBlockchainData] Page load complete, checking for URL changes...
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md
+ 🔍 Fetching blockchain data for URL: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md
+ 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+ 🔍 [usePageBlockchainData] Response from content script: Object
+ 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+ 🔍 [usePageBlockchainData] Got URL from tab: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md
+ 🔍 Fetching blockchain data for URL: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md
+ 📥 Total atoms count: 0
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 0 (displaying first 100)
+ 📥 No atoms found, skipping triplets query
+ 📥 Total atoms (real count): 0
+ 📥 Atoms displayed: 0
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ 📥 Total atoms count: 0
+ 📥 Atoms response (first 100): Object
+ 🔍 Found atom IDs: 0 (displaying first 100)
+ 📥 No atoms found, skipping triplets query
+ 📥 Total atoms (real count): 0
+ 📥 Atoms displayed: 0
+ 📥 Total triples (real count): 0
+ 📥 Triples displayed: 0
+ 🔍 [21:31:06] � PageDataService - PAGE_DATA buffered Object
+ 🔍 [21:31:16] � PageDataService - Domain analysis Object
+ 📊 [21:31:16] � PageDataService - Page captured Object
+ � [SOFIA] Sending message: URL: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md\nTitle: Sofia/d
+ � [SOFIA] Complete IDs: Object
+ � [SOFIA] Full payload: {
+  "type": 2,
+  "payload": {
+    "channelId": "d075cbe1-bac9-4bb9-9f73-00faf533da49",
+    "serverId": "00000000-0000-0000-0000-000000000000",
+    "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
+    "message": "URL: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md\\nTitle: Sofia/docs/Technical-Documentation.md at dev · int\\nDescription: Contribute to intuition-box/Sofia development by creating an account on GitHub.\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
+    "metadata": {
+      "source": "extension",
+      "timestamp": 1762983076511,
+      "user_display_name": "User"
+    }
+  }
+}
+ ✅ [SOFIA] Message sent via Socket.IO to channel d075cbe1-bac9-4bb9-9f73-00faf533da49
+ � [intentionRanking] Domain github.com: visits=2, score=2.7
+ 🔍 [usePageBlockchainData] Tab URL changed, refreshing data...
+ 📡 [SofIA] messageBroadcast received: Object
+ ⏭️ [SofIA] Message not for us (from user or different channel)
+ 🔍 [usePageBlockchainData] Page load complete, checking for URL changes...
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://newtab/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://newtab/
+t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://newtab&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+usePageBlockchainData.ts:128 📥 Total atoms count: 1
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://newtab/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://newtab/
+usePageBlockchainData.ts:202 📥 Total triples count: 0
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
+usePageBlockchainData.ts:217 📥 Atoms displayed: 1
+usePageBlockchainData.ts:237 📥 Total triples (real count): 0
+usePageBlockchainData.ts:239 📥 Triples displayed: 0
+usePageBlockchainData.ts:128 📥 Total atoms count: 1
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
+usePageBlockchainData.ts:202 📥 Total triples count: 0
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
+usePageBlockchainData.ts:217 📥 Atoms displayed: 1
+usePageBlockchainData.ts:237 📥 Total triples (real count): 0
+usePageBlockchainData.ts:239 📥 Triples displayed: 0
+usePageBlockchainData.ts:360 🔍 [usePageBlockchainData] Tab URL changed, refreshing data...
+usePageBlockchainData.ts:366 🔍 [usePageBlockchainData] Page load complete, checking for URL changes...
+usePageBlockchainData.ts:366 🔍 [usePageBlockchainData] Page load complete, checking for URL changes...
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: https://portal.intuition.systems/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: https://portal.intuition.systems/
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: https://portal.intuition.systems/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: https://portal.intuition.systems/
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: https://portal.intuition.systems/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: https://portal.intuition.systems/
+usePageBlockchainData.ts:128 📥 Total atoms count: 17
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 17 (displaying first 100)
+usePageBlockchainData.ts:128 📥 Total atoms count: 17
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 17 (displaying first 100)
+logger.ts:48 🔍 [21:31:19] � PageDataService - PAGE_DATA buffered Object
+usePageBlockchainData.ts:202 📥 Total triples count: 5
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 17
+usePageBlockchainData.ts:217 📥 Atoms displayed: 17
+usePageBlockchainData.ts:237 📥 Total triples (real count): 5
+usePageBlockchainData.ts:239 📥 Triples displayed: 5
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:128 📥 Total atoms count: 17
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 17 (displaying first 100)
+usePageBlockchainData.ts:202 📥 Total triples count: 5
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 17
+usePageBlockchainData.ts:217 📥 Atoms displayed: 17
+usePageBlockchainData.ts:237 📥 Total triples (real count): 5
+usePageBlockchainData.ts:239 📥 Triples displayed: 5
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:202 📥 Total triples count: 5
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 17
+usePageBlockchainData.ts:217 📥 Atoms displayed: 17
+usePageBlockchainData.ts:237 📥 Total triples (real count): 5
+usePageBlockchainData.ts:239 📥 Triples displayed: 5
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+logger.ts:48 🔍 [21:31:22] � PageDataService - PAGE_DATA buffered Object
+indexedDB.ts:136 ✅ IndexedDB initialized successfully
