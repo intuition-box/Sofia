@@ -11,6 +11,7 @@ import { setupMessageHandlers } from "./messageHandlers";
 import { MessageBus } from "../lib/services/MessageBus";
 import { isWalletConnected } from "../lib/services/UserSessionManager";
 import { Storage } from "@plasmohq/storage";
+import { initializeThemeIconManager } from "./themeIconManager";
 import "./oauth/index"; // Initialize OAuth service
 
 const storage = new Storage();
@@ -29,6 +30,9 @@ async function init(): Promise<void> {
   console.log("🚀 [index.ts] Starting extension initialization...")
 
   try {
+    // Initialize theme-aware icon system
+    await initializeThemeIconManager()
+
     // 1️⃣ IMPORTANT : Vérifier que le wallet est connecté
     const walletAddress = await storage.get("metamask-account")
     if (!walletAddress) {

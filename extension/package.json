@@ -1,14 +1,15 @@
 {
   "name": "sofia",
-  "displayName": "SofIA",
+  "displayName": "Sofia",
   "version": "0.0.1",
   "description": "Data tracking and wallet connexion",
   "author": "me",
   "scripts": {
     "dev": "plasmo dev",
-    "build": "plasmo build",
+    "build": "plasmo build && node scripts/post-build.js",
     "package": "plasmo package",
-    "proxy": "bun sofia-proxy/server.ts"
+    "proxy": "bun sofia-proxy/server.ts",
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@0xintuition/1ui": "^0.4.1",
@@ -61,6 +62,7 @@
     "@types/react-dom": "18.2.18",
     "@types/react-router-dom": "^5.3.3",
     "prettier": "3.2.4",
+    "sharp": "^0.34.5",
     "typescript": "5.3.3"
   },
   "manifest": {
@@ -72,7 +74,8 @@
       "alarms",
       "sidePanel",
       "bookmarks",
-      "identity"
+      "identity",
+      "offscreen"
     ],
     "host_permissions": [
       "<all_urls>",
