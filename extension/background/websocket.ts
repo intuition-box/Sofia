@@ -121,9 +121,6 @@ export async function initializeSofiaSocket(): Promise<void> {
           participantCentralUserIds: [sofiaIds.AUTHOR_ID, sofiaIds.AGENT_ID],
           metadata: {
             isDm: true,
-            user1: sofiaIds.AUTHOR_ID,
-            user2: sofiaIds.AGENT_ID,
-            forAgent: sofiaIds.AGENT_ID,
             source: "extension",
             createdAt: new Date().toISOString()
           }

@@ -1,0 +1,150 @@
+config.ts:18 [Sofia Config] Using server URL: http://localhost:3000
+index.ts:31 🚀 [index.ts] Starting extension initialization...
+index.ts:119 🚀 SOFIA Extension - Service Worker ready (Plasmo)
+runtime-142ee0bdda86b88d.js:1 🔵 INFO   | [plasmo/parcel-runtime]: Connected to HMR server for /Users/maximesaint-joannis/VScode/SOFIA/Sofia/extension/.plasmo/static/background/index.ts
+index.ts:45 ✅ [index.ts] Wallet connecté: 0xc634457ad68b037e2d5aa1c10c3930d7e4e2d551
+index.ts:47 🔑 [index.ts] Initializing user agent IDs...
+index.ts:109 ✅ Tracking enabled - Extension ready
+UserSessionManager.ts:137 � Generated IDs for SofIA: Object
+UserSessionManager.ts:137 � Generated IDs for ChatBot: Object
+UserSessionManager.ts:137 � Generated IDs for ThemeExtractor: Object
+UserSessionManager.ts:137 � Generated IDs for PulseAgent: Object
+UserSessionManager.ts:137 � Generated IDs for RecommendationAgent: Object
+websocket.ts:51 ✅ User agent IDs initialized: Object
+index.ts:50 ✅ [index.ts] User agent IDs initialized
+index.ts:52 🎯 [index.ts] Loading domain intentions...
+indexedDB.ts:124 ✅ IndexedDB initialized successfully
+intentionRanking.ts:358 ✅ [intentionRanking] Loaded 41 domain intentions from IndexedDB
+index.ts:56 📚 [index.ts] Initializing SofIA socket...
+index.ts:58 🤖 [index.ts] Initializing Chatbot socket...
+index.ts:60 🎨 [index.ts] Initializing ThemeExtractor socket...
+websocket.ts:496 🎨 [websocket.ts] ThemeExtractor socket initialization completed
+index.ts:62 🫀 [index.ts] Initializing PulseAgent socket...
+websocket.ts:633 🫀 [websocket.ts] PulseAgent socket initialization completed
+index.ts:64 💎 [index.ts] Initializing RecommendationAgent socket...
+websocket.ts:785 💎 [websocket.ts] RecommendationAgent socket initialization completed
+index.ts:68 📨 [index.ts] Setting up message handlers...
+index.ts:72 🔔 [index.ts] Initializing badge count...
+index.ts:76 ✅ [index.ts] Extension initialization completed
+websocket.ts:109 ✅ Connected to Eliza (SofIA), socket ID: 5V34ClmOxcoWcYMoAABb
+websocket.ts:111 🔑 Using user-specific IDs: Object
+websocket.ts:114 🔧 [SofIA] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:135 ✅ [SofIA] DM channel created via REST API: Object
+websocket.ts:141 💾 [SofIA] Updated ROOM_ID and CHANNEL_ID to use real channel ID: f9851981-9a7a-4a26-8245-5cd5dcf7c54d
+websocket.ts:143 🔧 [SofIA] Adding agent to channel explicitly...
+websocket.ts:155 ✅ [SofIA] Agent added to channel successfully
+websocket.ts:237 🤖 Connected to Chatbot, socket ID: QVP4f6oC01WpO3s5AABd
+websocket.ts:239 🔑 Using user-specific IDs: Object
+websocket.ts:242 🔧 [Chatbot] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:266 ✅ [Chatbot] DM channel created via REST API: Object
+websocket.ts:272 💾 [Chatbot] Updated ROOM_ID and CHANNEL_ID to use real channel ID: cf74aabb-3560-4908-9f60-cffcbdde055c
+websocket.ts:275 🔧 [Chatbot] Adding agent to channel explicitly...
+websocket.ts:390 ✅ [websocket.ts] Connected to ThemeExtractor, socket ID: CegkAcmlhIjy_9NDAABf
+websocket.ts:392 🔑 Using user-specific IDs: Object
+websocket.ts:395 🔧 [ThemeExtractor] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:287 ✅ [Chatbot] Agent added to channel successfully
+websocket.ts:419 ✅ [ThemeExtractor] DM channel created via REST API: Object
+websocket.ts:425 💾 [ThemeExtractor] Updated ROOM_ID and CHANNEL_ID to use real channel ID: f29155a8-813f-4b70-9cc9-2b3b3dface83
+websocket.ts:427 🔧 [ThemeExtractor] Adding agent to channel explicitly...
+websocket.ts:439 ✅ [ThemeExtractor] Agent added to channel successfully
+websocket.ts:521 ✅ [websocket.ts] Connected to PulseAgent, socket ID: SWHp4S7vA7VyCSqoAABh
+websocket.ts:523 🔑 Using user-specific IDs: Object
+websocket.ts:526 🔧 [PulseAgent] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:550 ✅ [PulseAgent] DM channel created via REST API: Object
+websocket.ts:556 💾 [PulseAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 4943aa47-cd23-4a4a-89f3-002a08ee7970
+websocket.ts:558 🔧 [PulseAgent] Adding agent to channel explicitly...
+websocket.ts:570 ✅ [PulseAgent] Agent added to channel successfully
+websocket.ts:669 ✅ [websocket.ts] Connected to RecommendationAgent, socket ID: 32nPFiwbFeiO5yS6AABj
+websocket.ts:671 🔑 Using user-specific IDs: Object
+websocket.ts:674 🔧 [RecommendationAgent] Creating DM channel via REST API (following reference pattern)...
+websocket.ts:698 ✅ [RecommendationAgent] DM channel created via REST API: Object
+websocket.ts:704 💾 [RecommendationAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID: 63b1af56-8c15-46c1-882b-c0f11eaed94d
+websocket.ts:706 🔧 [RecommendationAgent] Adding agent to channel explicitly...
+websocket.ts:718 ✅ [RecommendationAgent] Agent added to channel successfully
+websocket.ts:862 � [CHATBOT] Sending message: yalla
+websocket.ts:863 � [CHATBOT] Complete IDs: Object
+websocket.ts:886 � [CHATBOT] Full payload: {
+  "type": 2,
+  "payload": {
+    "channelId": "cf74aabb-3560-4908-9f60-cffcbdde055c",
+    "serverId": "00000000-0000-0000-0000-000000000000",
+    "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
+    "message": "yalla",
+    "metadata": {
+      "source": "extension",
+      "timestamp": 1762977383750,
+      "user_display_name": "User"
+    }
+  }
+}
+websocket.ts:891 ✅ [CHATBOT] Message sent via Socket.IO to channel cf74aabb-3560-4908-9f60-cffcbdde055c
+websocket.ts:312 📡 [Chatbot] messageBroadcast received: Object
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://extensions/
+t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://extensions&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+usePageBlockchainData.ts:128 📥 Total atoms count: 1
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
+usePageBlockchainData.ts:202 📥 Total triples count: 1
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
+usePageBlockchainData.ts:217 📥 Atoms displayed: 1
+usePageBlockchainData.ts:237 📥 Total triples (real count): 1
+usePageBlockchainData.ts:239 📥 Triples displayed: 1
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+indexedDB.ts:124 ✅ IndexedDB initialized successfully
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://extensions/
+t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://extensions&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+usePageBlockchainData.ts:128 📥 Total atoms count: 1
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
+usePageBlockchainData.ts:202 📥 Total triples count: 1
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
+usePageBlockchainData.ts:217 📥 Atoms displayed: 1
+usePageBlockchainData.ts:237 📥 Total triples (real count): 1
+usePageBlockchainData.ts:239 📥 Triples displayed: 1
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+usePageBlockchainData.ts:403 🔍 [usePageBlockchainData] URL change detected via polling, refreshing data...
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: Object
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: chrome://extensions/
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: chrome://extensions/
+usePageBlockchainData.ts:128 📥 Total atoms count: 1
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): Object
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 1 (displaying first 100)
+usePageBlockchainData.ts:202 📥 Total triples count: 1
+usePageBlockchainData.ts:203 📥 Triples response (first 100): Object
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 1
+usePageBlockchainData.ts:217 📥 Atoms displayed: 1
+usePageBlockchainData.ts:237 📥 Total triples (real count): 1
+usePageBlockchainData.ts:239 📥 Triples displayed: 1
+usePageBlockchainData.ts:242 📊 Triple vaults: Array(1)
+ChatPage.tsx:119 🎧 [ChatPage] Message listener registered
+ChatPage.tsx:44 ✉️ Message utilisateur : me reponds tu ? 
+websocket.ts:862 � [CHATBOT] Sending message: me reponds tu ? 
+websocket.ts:863 � [CHATBOT] Complete IDs: Object
+websocket.ts:886 � [CHATBOT] Full payload: {
+  "type": 2,
+  "payload": {
+    "channelId": "cf74aabb-3560-4908-9f60-cffcbdde055c",
+    "serverId": "00000000-0000-0000-0000-000000000000",
+    "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
+    "message": "me reponds tu ? ",
+    "metadata": {
+      "source": "extension",
+      "timestamp": 1762977453671,
+      "user_display_name": "User"
+    }
+  }
+}
+websocket.ts:891 ✅ [CHATBOT] Message sent via Socket.IO to channel cf74aabb-3560-4908-9f60-cffcbdde055c
+websocket.ts:312 📡 [Chatbot] messageBroadcast received: ObjectchannelId: "cf74aabb-3560-4908-9f60-cffcbdde055c"expectedChannelId: "cf74aabb-3560-4908-9f60-cffcbdde055c"expectedRoomId: "cf74aabb-3560-4908-9f60-cffcbdde055c"match: falseroomId: "cf74aabb-3560-4908-9f60-cffcbdde055c"senderId: "c89710c9-057e-43cc-a1ef-73de724a332c"[[Prototype]]: Object
