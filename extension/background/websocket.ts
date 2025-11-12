@@ -492,4 +492,3 @@ export async function sendRecommendationRequest(walletData: any): Promise<any> {
     console.log("📤 [websocket.ts] Sent recommendation request for wallet:", walletData.address)
   })
 }
-

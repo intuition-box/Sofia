@@ -1,17 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import chatIcon from '../../components/ui/icons/chatIcon.png'
 import PulseAnimation from '../ui/orbanimation/PulseAnimation'
 import CircularMenu from '../ui/orbanimation/CircularMenu'
 import PageBlockchainCard from '../ui/PageBlockchainCard'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
-import { MessageBus } from '../../lib/services/MessageBus'
 
 const storage = new Storage()
 
 const HomeConnectedPage = () => {
-  const [chatInput, setChatInput] = useState("")
   const [showMenu, setShowMenu] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const { navigateTo } = useRouter()
@@ -33,6 +30,15 @@ const HomeConnectedPage = () => {
     setIsAnalyzing(false)
     localStorage.setItem('targetTab', 'Pulse')
     navigateTo('Sofia')
+  }
+
+  const handleChatSubmit = async (message: string) => {
+    console.log("🎯 handleChatSubmit called with message:", message)
+    if (message.trim()) {
+      await storage.set("pendingChatInput", message)
+      console.log("💾 Message saved to storage:", message)
+      navigateTo('chat')
+    }
   }
 
   // Listen for pulse analysis completion via Chrome runtime messages
@@ -74,38 +80,6 @@ const HomeConnectedPage = () => {
         />
       )}
       <div className={`home-connected-page ${isAnalyzing ? 'home-analyzing' : ''}`}>
-        <div className="chat-section">
-        <div className="chat-input-container">
-          <img
-            src={chatIcon}
-            alt="Sofia"
-            className="chat-logo"
-            onClick={async () => {
-              if (chatInput.trim()) {
-                await storage.set("pendingChatInput", chatInput)
-              }
-              navigateTo('chat')
-            }}
-
-            style={{ cursor: 'pointer' }}
-          />
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={async (e) => {
-              if (e.key === 'Enter' && chatInput.trim()) {
-                await storage.set("pendingChatInput", chatInput)
-                navigateTo('chat')
-              }
-            }}
-            placeholder="Talk with Sofia..."
-            className="chat-input"
-          />
-
-        </div>
-      </div>
-
       <PageBlockchainCard />
 
 
@@ -127,6 +101,7 @@ const HomeConnectedPage = () => {
             isAnalyzing={isAnalyzing}
             onToggleMenu={handleOrbClick}
             showMenu={showMenu}
+            onChatSubmit={handleChatSubmit}
           />
           <CircularMenu
             isVisible={showMenu}

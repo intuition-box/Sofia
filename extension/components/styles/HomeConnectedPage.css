@@ -23,43 +23,8 @@
   z-index: 1000;
 }
 
-.chat-section {
-  margin-bottom: var(--spacing-xl);
-}
-
 .level-progress-section {
   margin-bottom: var(--spacing-3xl);
-}
-
-.chat-input-container {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-lighter);
-  backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-heavy), var(--shadow-inset);
-  transition: var(--transition-normal);
-}
-
-.chat-logo {
-  width: var(--size-icon-lg);
-  height: var(--size-icon-lg);
-  flex-shrink: 0;
-}
-
-.chat-input {
-  flex: 1;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  font-size: var(--font-size-lg);
-  background-color: transparent;
-  color: var(--color-text-primary);
-  outline: none;
-  font-family: var(--font-family-primary);
 }
 
 .favorites-section {

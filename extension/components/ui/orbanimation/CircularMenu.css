@@ -13,8 +13,9 @@
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   pointer-events: none;
-  top: 0;
-  left: 0;
+  top: 20%;
+  left: 0%;
+  transform: translate(-50%, 40%);
 }
 
 #menu-toggle {
@@ -23,7 +24,7 @@
 }
 
 #menu-toggle:checked ~ .circle-box {
-  transform: rotate(calc(45deg + 360deg / 8 * var(--i)));
+  transform: rotate(calc(225deg + 360deg / 8 * var(--i)));
   pointer-events: auto;
 }
 
@@ -67,7 +68,7 @@
   border-radius: 50%;
   font-size: 1.5em;
   text-decoration: none;
-  transform: rotate(calc(-1 * (45deg + 360deg / 8 * var(--i))));
+  transform: rotate(calc(-1 * (225deg + 360deg / 8 * var(--i))));
   transition: all 0.3s ease;
   cursor: pointer;
 }

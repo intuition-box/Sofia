@@ -147,7 +147,7 @@ const ChatPage = () => {
               console.log("🔑 Key pressed:", e.key)
               if (e.key === 'Enter') handleSendMessage()
             }}
-            placeholder="Talk with SofIA"
+            placeholder="Talk with Sofia"
             className="chat-input"
           />
         </div>
