@@ -67,7 +67,25 @@ Après avoir debuggé avec `test-entity-bug.ts`, l'extension est devenue complex
 ### 2. Helper Function
 - ✅ `extractMessageText()` créé pour extraction robuste du texte
 
-## Travail À Faire 🔄
+## ✅ Travail Accompli (Session actuelle)
+
+### Corrections WebSocket et Persistance
+1. ✅ **Filtrage messages corrigé** : Changé `data.authorId` → `data.senderId` pour tous les 5 agents
+2. ✅ **Persistance channels** : Implémentation complète avec IndexedDB pour réutilisation après reload
+3. ✅ **ROOM_JOINING ajouté** : Type 1 émis après création/récupération de channel
+4. ✅ **Type DM corrigé** : `type: 2` → `type: "DM"` pour création de channels
+5. ✅ **Metadata enrichie** : Ajout `isDM: true` et `channelType: "DM"` dans sendMessage
+
+### Résultat
+- ✅ L'extension envoie correctement les messages aux agents
+- ✅ Les agents reçoivent et génèrent des réponses
+- ✅ Les channels sont persistés et réutilisés
+- ⚠️ **Blocage identifié** : Le serveur ElizaOS ne broadcast pas les réponses d'agents via Socket.IO
+
+### Prochain Déblocage Nécessaire
+**Question pour l'équipe ElizaOS** : Comment les clients externes doivent-ils recevoir les réponses d'agents ? Le `messageBroadcast` Socket.IO ne semble émettre que les messages utilisateur, pas les réponses d'agents qui passent par le MessageBus interne.
+
+## Travail À Faire 🔄 (En attente de réponse ElizaOS)
 
 ### Phase 1: Correction Urgente - Filtrage des Messages Agent
 

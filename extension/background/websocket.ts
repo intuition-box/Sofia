@@ -133,6 +133,17 @@ export async function initializeSofiaSocket(): Promise<void> {
         sofiaIds.ROOM_ID = storedChannelId
         sofiaIds.CHANNEL_ID = storedChannelId
         console.log("♻️ [SofIA] Reusing existing channel:", storedChannelId)
+
+        // 🔑 JOIN the room via Socket.IO to receive broadcasts
+        socketSofia.emit("message", {
+          type: 1,  // ROOM_JOINING
+          payload: {
+            roomId: storedChannelId,
+            entityId: sofiaIds.AUTHOR_ID
+          }
+        })
+        console.log("📨 [SofIA] Sent ROOM_JOINING for existing channel:", storedChannelId)
+
         return  // Ne pas créer de nouveau channel
       }
 
@@ -143,7 +154,7 @@ export async function initializeSofiaSocket(): Promise<void> {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: `DM-SofIA-${Date.now()}`,
-          type: 2, // ChannelType.DM
+          type: "DM", // ChannelType.DM (must be string, not number!)
           server_id: sofiaIds.SERVER_ID,
           participantCentralUserIds: [sofiaIds.AUTHOR_ID, sofiaIds.AGENT_ID],
           metadata: {
@@ -190,6 +201,16 @@ export async function initializeSofiaSocket(): Promise<void> {
           } catch (addError) {
             console.error("❌ [SofIA] Error adding agent to channel:", addError)
           }
+
+          // 🔑 JOIN the newly created room via Socket.IO
+          socketSofia.emit("message", {
+            type: 1,  // ROOM_JOINING
+            payload: {
+              roomId: channelData.id,
+              entityId: sofiaIds.AUTHOR_ID
+            }
+          })
+          console.log("📨 [SofIA] Sent ROOM_JOINING for new channel:", channelData.id)
         }
       } else {
         const errorText = await response.text()
@@ -295,6 +316,16 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
         chatbotIds.CHANNEL_ID = storedChannelId
         console.log("♻️ [Chatbot] Reusing existing channel:", storedChannelId)
 
+        // 🔑 JOIN the room via Socket.IO to receive broadcasts
+        socketBot.emit("message", {
+          type: 1,  // ROOM_JOINING
+          payload: {
+            roomId: storedChannelId,
+            entityId: chatbotIds.AUTHOR_ID
+          }
+        })
+        console.log("📨 [Chatbot] Sent ROOM_JOINING for existing channel:", storedChannelId)
+
         // ✅ Notification that socket is ready
         if (typeof onReady === "function") {
           onReady()
@@ -309,7 +340,7 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: `DM-Chatbot-${Date.now()}`,
-          type: 2, // ChannelType.DM
+          type: "DM", // ChannelType.DM (must be string, not number!)
           server_id: chatbotIds.SERVER_ID,
           participantCentralUserIds: [chatbotIds.AUTHOR_ID, chatbotIds.AGENT_ID],
           metadata: {
@@ -360,6 +391,16 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
           } catch (addError) {
             console.error("❌ [Chatbot] Error adding agent to channel:", addError)
           }
+
+          // 🔑 JOIN the newly created room via Socket.IO
+          socketBot.emit("message", {
+            type: 1,  // ROOM_JOINING
+            payload: {
+              roomId: channelData.id,
+              entityId: chatbotIds.AUTHOR_ID
+            }
+          })
+          console.log("📨 [Chatbot] Sent ROOM_JOINING for new channel:", channelData.id)
         }
       } else {
         const errorText = await response.text()
@@ -376,18 +417,23 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
   })
 
   socketBot.on("messageBroadcast", (data) => {
-    // 🆕 Logging détaillé pour debug
-    console.log("📡 [Chatbot] messageBroadcast received:", {
+    // 🔍 LOG COMPLET pour debug - voir TOUS les messages
+    console.log("📡 [Chatbot] messageBroadcast received (RAW):", data)
+    console.log("📡 [Chatbot] Analysis:", {
       channelId: data.channelId,
-      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
+      roomId: data.roomId,
+      senderId: data.senderId,
+      senderName: data.senderName,
+      source: data.source,
       expectedChannelId: chatbotIds.CHANNEL_ID,
       expectedAgentId: chatbotIds.AGENT_ID,
+      channelMatch: (data.channelId === chatbotIds.CHANNEL_ID || data.roomId === chatbotIds.CHANNEL_ID),
       isFromAgent: (data.senderId === chatbotIds.AGENT_ID)
     })
 
-    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
+    // ✅ CORRECTION: Vérifier channel match ET senderId
     if (
-      data.channelId === chatbotIds.CHANNEL_ID &&
+      (data.channelId === chatbotIds.CHANNEL_ID || data.roomId === chatbotIds.CHANNEL_ID) &&
       data.senderId === chatbotIds.AGENT_ID
     ) {
       console.log("✅ [Chatbot] Agent response matched! Sending to UI...")
@@ -409,7 +455,9 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
         console.warn("⚠️ [Chatbot] Error processing message:", error)
       }
     } else {
-      console.log("⏭️ [Chatbot] Message not for us (from user or different channel)")
+      console.log("⏭️ [Chatbot] Message not for us:", {
+        reason: data.senderId !== chatbotIds.AGENT_ID ? "Wrong sender" : "Wrong channel"
+      })
     }
   })
 
@@ -476,6 +524,17 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
         themeExtractorIds.ROOM_ID = storedChannelId
         themeExtractorIds.CHANNEL_ID = storedChannelId
         console.log(`♻️ [ThemeExtractor] Reusing existing channel: ${storedChannelId}`)
+
+        // 🔑 JOIN the room via Socket.IO to receive broadcasts
+        socketThemeExtractor.emit("message", {
+          type: 1,  // ROOM_JOINING
+          payload: {
+            roomId: storedChannelId,
+            entityId: themeExtractorIds.AUTHOR_ID
+          }
+        })
+        console.log("📨 [ThemeExtractor] Sent ROOM_JOINING for existing channel:", storedChannelId)
+
         return  // Don't create a new channel
       }
 
@@ -486,7 +545,7 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: `DM-ThemeExtractor-${Date.now()}`,
-          type: 2, // ChannelType.DM
+          type: "DM", // ChannelType.DM (must be string, not number!)
           server_id: themeExtractorIds.SERVER_ID,
           participantCentralUserIds: [themeExtractorIds.AUTHOR_ID, themeExtractorIds.AGENT_ID],
           metadata: {
@@ -536,6 +595,16 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
           } catch (addError) {
             console.error("❌ [ThemeExtractor] Error adding agent to channel:", addError)
           }
+
+          // 🔑 JOIN the newly created room via Socket.IO
+          socketThemeExtractor.emit("message", {
+            type: 1,  // ROOM_JOINING
+            payload: {
+              roomId: channelData.id,
+              entityId: themeExtractorIds.AUTHOR_ID
+            }
+          })
+          console.log("📨 [ThemeExtractor] Sent ROOM_JOINING for new channel:", channelData.id)
         }
       } else {
         const errorText = await response.text()
@@ -646,7 +715,7 @@ export async function initializePulseSocket(): Promise<void> {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: `DM-PulseAgent-${Date.now()}`,
-          type: 2, // ChannelType.DM
+          type: "DM", // ChannelType.DM (must be string, not number!)
           server_id: pulseIds.SERVER_ID,
           participantCentralUserIds: [pulseIds.AUTHOR_ID, pulseIds.AGENT_ID],
           metadata: {
@@ -824,7 +893,7 @@ export async function initializeRecommendationSocket(): Promise<void> {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: `DM-RecommendationAgent-${Date.now()}`,
-          type: 2, // ChannelType.DM
+          type: "DM", // ChannelType.DM (must be string, not number!)
           server_id: recommendationIds.SERVER_ID,
           participantCentralUserIds: [recommendationIds.AUTHOR_ID, recommendationIds.AGENT_ID],
           metadata: {
@@ -1031,7 +1100,9 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
       metadata: {
         source: "extension",
         timestamp: Date.now(),
-        user_display_name: "User"         // Display name for user entity creation
+        user_display_name: "User",        // Display name for user entity creation
+        isDM: true,                        // Force ElizaOS to treat as DM
+        channelType: "DM"                  // Explicit channel type
       }
     }
   }

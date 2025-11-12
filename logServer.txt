@@ -1,4 +1,3 @@
-
 maximesaint-joannis@MacBook-Pro-de-maxime agent-sofia % clear
 maximesaint-joannis@MacBook-Pro-de-maxime agent-sofia % elizaos start
  Info       Using local @elizaos/cli installation
@@ -14,7 +13,7 @@ maximesaint-joannis@MacBook-Pro-de-maxime agent-sofia % elizaos start
 ⠀⠀⠀⠀⢸⣿⡦⠀⠀⠉⠛⠿⠃⠀⠀⠀  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
 Version: 1.6.4
-[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
 │
 ◇  ✓ Project built successfully
  Info       No character files specified, attempting to load project agents...
@@ -26,7 +25,7 @@ Version: 1.6.4
  Info       Loaded character: PulseAgent
  Info       Loaded character: RecommendationAgent
  Info       Loaded character: ThemeExtractorAgent
-[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
  Info       [INIT] Database Dir for SQL plugin: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/.eliza/.elizadb
  Info       [INIT] Running database migrations for messaging tables...
  Info       [RuntimeMigrator] Initializing migration system...
@@ -40,14 +39,12 @@ Version: 1.6.4
  Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
  Info       [RuntimeMigrator] Initializing migration system...
  Info       [RuntimeMigrator] Migration system initialized
- Info       [RuntimeMigrator] Executing 61 SQL statements for @elizaos/plugin-sql
- Info       [RuntimeMigrator] Recorded migration 0000_@elizaos/plugin-sql_mhwievr1 for @elizaos/plugin-sql
- Info       [RuntimeMigrator] Migration completed successfully for @elizaos/plugin-sql
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
  Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
  Info       [DatabaseMigrationService] All 1 migrations completed successfully
  Info       [INIT] Ensuring default server exists...
  Info       [AgentServer] Checking for server 00000000-0000-0000-0000-000000000000...
- Info       [AgentServer] Creating server with UUID 00000000-0000-0000-0000-000000000000...
+ Info       [AgentServer] Server already exists with ID: 00000000-0000-0000-0000-000000000000
  Info       [INIT] Server uses temporary adapter for migrations only
  Info       [INIT] Initializing ElizaOS...
  Info       [MessageBusService] Global ElizaOS instance set
@@ -278,95 +275,83 @@ AgentServer is listening on port 3000
  Info       [SofIA-Chat] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
  Info       [PulseAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
  Info       [RecommendationAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
- Info       [Eliza] MessageBusService: Fetched 0 channels from server 00000000-0000-0000-0000-000000000000
- Info       [Eliza] MessageBusService: Loaded 0 valid channel IDs from 1 servers (including default server)
- Info       [SofIA1] MessageBusService: Fetched 0 channels from server 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: Loaded 0 valid channel IDs from 1 servers (including default server)
- Info       [SofIA-Chat] MessageBusService: Fetched 0 channels from server 00000000-0000-0000-0000-000000000000
- Info       [SofIA-Chat] MessageBusService: Loaded 0 valid channel IDs from 1 servers (including default server)
- Info       [PulseAgent] MessageBusService: Fetched 0 channels from server 00000000-0000-0000-0000-000000000000
- Info       [PulseAgent] MessageBusService: Loaded 0 valid channel IDs from 1 servers (including default server)
- Info       [RecommendationAgent] MessageBusService: Fetched 0 channels from server 00000000-0000-0000-0000-000000000000
- Info       [RecommendationAgent] MessageBusService: Loaded 0 valid channel IDs from 1 servers (including default server)
  Info       [ThemeExtractorAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
- Info       [ThemeExtractorAgent] MessageBusService: Fetched 0 channels from server 00000000-0000-0000-0000-000000000000
- Info       [ThemeExtractorAgent] MessageBusService: Loaded 0 valid channel IDs from 1 servers (including default server)
+ Info       [Eliza] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [Eliza] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [SofIA1] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [SofIA1] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [SofIA-Chat] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [SofIA-Chat] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [PulseAgent] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [PulseAgent] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [RecommendationAgent] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [RecommendationAgent] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [ThemeExtractorAgent] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [ThemeExtractorAgent] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
  Info       GaiaNet API validated successfully
  Info       GaiaNet API validated successfully
  Info       GaiaNet API validated successfully
  Info       GaiaNet API validated successfully
  Info       GaiaNet API validated successfully
- Info       [SocketIO] New connection: 0MM9ncsqFIeot9v3AAAB
- Info       [SocketIO] New connection: sjnLB-m6zXMKCU31AAAD
- Info       [SocketIO] New connection: ceHAZWEgxzswg-euAAAF
- Info       [SocketIO] New connection: Ai8kXl4To4Fkw5MZAAAH
- Info       [SocketIO] New connection: 2i_wh9ylBSyLkWjhAAAJ
- Info       [SocketIO] Client Ai8kXl4To4Fkw5MZAAAH disconnected.
- Info       [SocketIO] Client 2i_wh9ylBSyLkWjhAAAJ disconnected.
- Info       [SocketIO] Client 0MM9ncsqFIeot9v3AAAB disconnected.
- Info       [SocketIO] Client sjnLB-m6zXMKCU31AAAD disconnected.
- Info       [SocketIO] Client ceHAZWEgxzswg-euAAAF disconnected.
- Info       [SocketIO] New connection: NbX1EifQP2VPZ21-AAAL
- Info       [SocketIO] New connection: j1EamPlhx0YFdCc_AAAN
- Info       [SocketIO] New connection: U7kTjarIR9wpX29qAAAP
- Info       [SocketIO] New connection: y7axXuJ8YN7ZYd1DAAAR
- Info       [SocketIO] New connection: nM52Dz2ZpIuBA_LQAAAT
- Info       [SocketIO] Client NbX1EifQP2VPZ21-AAAL disconnected.
- Info       [SocketIO] Client j1EamPlhx0YFdCc_AAAN disconnected.
- Info       [SocketIO] Client U7kTjarIR9wpX29qAAAP disconnected.
- Info       [SocketIO] Client y7axXuJ8YN7ZYd1DAAAR disconnected.
- Info       [SocketIO] Client nM52Dz2ZpIuBA_LQAAAT disconnected.
- Info       [SocketIO] New connection: x5qFDzKPV_-nAyuCAAAV
- Info       [Messages Router] Added agent 582f4e58-1285-004d-8ef6-1e6301f3d646 to channel d075cbe1-bac9-4bb9-9f73-00faf533da49
- Info       [SocketIO] New connection: HTrzBnopXk3YRKs-AAAX
- Info       [Messages Router] Added agent 79c0c83b-2bd2-042f-a534-952c58a1024d to channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32
- Info       [SocketIO] New connection: BY5udNmr7YqoZnaJAAAZ
- Info       [Messages Router] Added agent 7dad3d3a-db1a-08a2-9dda-182d98b6cf2b to channel 402838ab-2cde-4074-9ccb-b8a6263218ac
- Info       [SocketIO] New connection: PxlL85CEbFnGJNZ6AAAb
- Info       [Messages Router] Added agent 8afb486a-3c96-0569-b112-4a7f465862b2 to channel 0adb57e8-e09c-47d6-b88d-1bbe1cfc0ca1
- Info       [SocketIO] New connection: pxSiKcjFvf3BMwiIAAAd
- Info       [Messages Router] Added agent 92a956b2-ec82-0d31-8fc1-31c9e13836a3 to channel 2bc10bc8-0d78-471e-8b3e-4f9ac52ec938
- Info       [SocketIO DEBUG HTrzBnopXk3YRKs-AAAX] Event 'message': [{"type":2,"payload":{"channelId":"102e3ad4-a127-4282-9f06-8bcd70d4ca32","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"test ? ","metadata":{"source":"extension","timestamp":1762982991601,"user_display_name":"User"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"102e3ad4-a127-4282-9f06-8bcd70d4ca32","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"test ? ","metadata":{"source":"extension","timestamp":1762982991601,"user_display_name":"User"}}} (SocketID: HTrzBnopXk3YRKs-AAAX)
- Info       [SocketIO HTrzBnopXk3YRKs-AAAX] Handling message sending via 'message' event
- Info       [SocketIO HTrzBnopXk3YRKs-AAAX] Received SEND_MESSAGE for central submission: channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32 from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO HTrzBnopXk3YRKs-AAAX] Full payload for debugging: {
+ Info       [SocketIO] New connection: 8lY4oS07cpyg7qY8AAAB
+ Info       [SocketIO DEBUG 8lY4oS07cpyg7qY8AAAB] Event 'message': [{"type":1,"payload":{"roomId":"d075cbe1-bac9-4bb9-9f73-00faf533da49","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"d075cbe1-bac9-4bb9-9f73-00faf533da49","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: 8lY4oS07cpyg7qY8AAAB)
+ Info       [SocketIO 8lY4oS07cpyg7qY8AAAB] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket 8lY4oS07cpyg7qY8AAAB joined Socket.IO channel: d075cbe1-bac9-4bb9-9f73-00faf533da49
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket 8lY4oS07cpyg7qY8AAAB successfully joined channel d075cbe1-bac9-4bb9-9f73-00faf533da49.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO] New connection: 9jIpbBtQL8HtuOpNAAAD
+ Info       [SocketIO] New connection: GO-RKa1ZXWxF2xvGAAAF
+ Info       [SocketIO DEBUG GO-RKa1ZXWxF2xvGAAAF] Event 'message': [{"type":1,"payload":{"roomId":"102e3ad4-a127-4282-9f06-8bcd70d4ca32","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"102e3ad4-a127-4282-9f06-8bcd70d4ca32","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: GO-RKa1ZXWxF2xvGAAAF)
+ Info       [SocketIO GO-RKa1ZXWxF2xvGAAAF] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket GO-RKa1ZXWxF2xvGAAAF joined Socket.IO channel: 102e3ad4-a127-4282-9f06-8bcd70d4ca32
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket GO-RKa1ZXWxF2xvGAAAF successfully joined channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO DEBUG GO-RKa1ZXWxF2xvGAAAF] Event 'message': [{"type":2,"payload":{"channelId":"102e3ad4-a127-4282-9f06-8bcd70d4ca32","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"test ","metadata":{"source":"extension","timestamp":1762984831301,"user_display_name":"User"}}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"102e3ad4-a127-4282-9f06-8bcd70d4ca32","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"test ","metadata":{"source":"extension","timestamp":1762984831301,"user_display_name":"User"}}} (SocketID: GO-RKa1ZXWxF2xvGAAAF)
+ Info       [SocketIO GO-RKa1ZXWxF2xvGAAAF] Handling message sending via 'message' event
+ Info       [SocketIO GO-RKa1ZXWxF2xvGAAAF] Received SEND_MESSAGE for central submission: channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32 from c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO GO-RKa1ZXWxF2xvGAAAF] Full payload for debugging: {
   "channelId": "102e3ad4-a127-4282-9f06-8bcd70d4ca32",
   "serverId": "00000000-0000-0000-0000-000000000000",
   "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "test ? ",
+  "message": "test ",
   "metadata": {
     "source": "extension",
-    "timestamp": 1762982991601,
+    "timestamp": 1762984831301,
     "user_display_name": "User"
   }
 }
- Info       [SocketIO HTrzBnopXk3YRKs-AAAX] Checking if channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32 exists before creating message
- Info       [SocketIO HTrzBnopXk3YRKs-AAAX] Channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32 exists: true
- Info       [SocketIO HTrzBnopXk3YRKs-AAAX] Channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32 already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"ed624d6c-0d07-4056-b77c-f76b8ad0c213"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"ed624d6c-0d07-4056-b77c-f76b8ad0c213"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"ed624d6c-0d07-4056-b77c-f76b8ad0c213"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"ed624d6c-0d07-4056-b77c-f76b8ad0c213"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"ed624d6c-0d07-4056-b77c-f76b8ad0c213"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"ed624d6c-0d07-4056-b77c-f76b8ad0c213"}
- Info       [AgentServer] Published message ed624d6c-0d07-4056-b77c-f76b8ad0c213 to internal message bus
- Info       [SocketIO HTrzBnopXk3YRKs-AAAX] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: ed624d6c-0d07-4056-b77c-f76b8ad0c213). It will be processed by agents and broadcasted upon their reply.
- Info       [SofIA-Chat] MessageBusService: Discovered new channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, added to valid channels
- Info       [SofIA1] MessageBusService: Discovered new channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, added to valid channels
- Info       [Eliza] MessageBusService: Discovered new channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, added to valid channels
- Info       [RecommendationAgent] MessageBusService: Discovered new channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, added to valid channels
- Info       [PulseAgent] MessageBusService: Discovered new channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, added to valid channels
- Info       [ThemeExtractorAgent] MessageBusService: Discovered new channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, added to valid channels
+ Info       [SocketIO GO-RKa1ZXWxF2xvGAAAF] Checking if channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32 exists before creating message
+ Info       [SocketIO GO-RKa1ZXWxF2xvGAAAF] Channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32 exists: true
+ Info       [SocketIO GO-RKa1ZXWxF2xvGAAAF] Channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32 already exists, proceeding with message creation
+ Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"073dc823-aa36-444b-8321-cf205871582d"}
+ Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"073dc823-aa36-444b-8321-cf205871582d"}
+ Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"073dc823-aa36-444b-8321-cf205871582d"}
+ Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"073dc823-aa36-444b-8321-cf205871582d"}
+ Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"073dc823-aa36-444b-8321-cf205871582d"}
+ Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"073dc823-aa36-444b-8321-cf205871582d"}
+ Info       [AgentServer] Published message 073dc823-aa36-444b-8321-cf205871582d to internal message bus
+ Info       [SocketIO GO-RKa1ZXWxF2xvGAAAF] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 073dc823-aa36-444b-8321-cf205871582d). It will be processed by agents and broadcasted upon their reply.
  Info       [Eliza] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
+ Info       [SofIA1] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
  Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, proceeding with message processing
  Info       [SofIA-Chat] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
  Info       [SofIA-Chat] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
  Info       #SofIA-Chat  [MessageService] Message received from e161938d-6b56-0128-aa91-94201f895f01 in room b943641a-d44c-00bf-8e31-ec24480cf38d
- Info       [SofIA1] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
  Info       [PulseAgent] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
  Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
  Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
+ Info       [SocketIO] New connection: i5kVrpZpGxgM9KFDAAAH
  Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
  Error      GaiaNet embeddings error {
   error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
@@ -380,18 +365,29 @@ error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddi
       at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
 ,
 }
+ Info       [SocketIO] New connection: HvsVD025VdPJPWFJAAAJ
+ Info       [SocketIO DEBUG HvsVD025VdPJPWFJAAAJ] Event 'message': [{"type":1,"payload":{"roomId":"402838ab-2cde-4074-9ccb-b8a6263218ac","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"402838ab-2cde-4074-9ccb-b8a6263218ac","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: HvsVD025VdPJPWFJAAAJ)
+ Info       [SocketIO HvsVD025VdPJPWFJAAAJ] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket HvsVD025VdPJPWFJAAAJ joined Socket.IO channel: 402838ab-2cde-4074-9ccb-b8a6263218ac
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket HvsVD025VdPJPWFJAAAJ successfully joined channel 402838ab-2cde-4074-9ccb-b8a6263218ac.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
  Info       Using server ID: 00000000-0000-0000-0000-000000000000
  Info       No ownership data found for server 00000000-0000-0000-0000-000000000000, initializing empty role hierarchy
  Info       No settings state found for server 00000000-0000-0000-0000-000000000000
  Info       [SofIA-Chat] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA-Chat] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"102e3ad4-a127-4282-9f06-8bcd70d4ca32","server_id":"00000000-0000-0000-0000-000000000000","author_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","content":"Bonjour ! Oui, je suis là. En quoi puis-je vous aider ?","in_reply_to_message_id":"ed624d6c-0d07-4056-b77c-f76b8ad0c213","source_type":"agent_response","raw_message":{"text":"Bonjour ! Oui, je suis là. En quoi puis-je vous aider ?","thought":"Respond with a friendly greeting in French.","actions":["REPLY"]},"metadata":{"agent_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","agentName":"SofIA-Chat","channelType":"GROUP","isDm":false}}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"bf3f0267-376b-435e-ac75-e9a43570f0c9"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"bf3f0267-376b-435e-ac75-e9a43570f0c9"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"bf3f0267-376b-435e-ac75-e9a43570f0c9"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"bf3f0267-376b-435e-ac75-e9a43570f0c9"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"bf3f0267-376b-435e-ac75-e9a43570f0c9"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"bf3f0267-376b-435e-ac75-e9a43570f0c9"}
- Info       [AgentServer] Published message bf3f0267-376b-435e-ac75-e9a43570f0c9 to internal message bus
+ Info       [SofIA-Chat] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"102e3ad4-a127-4282-9f06-8bcd70d4ca32","server_id":"00000000-0000-0000-0000-000000000000","author_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","content":"Oui, je suis toujours là ! 😊","in_reply_to_message_id":"073dc823-aa36-444b-8321-cf205871582d","source_type":"agent_response","raw_message":{"text":"Oui, je suis toujours là ! 😊","thought":"Responding to a simple test message with a friendly acknowledgement.","actions":["REPLY"]},"metadata":{"agent_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","agentName":"SofIA-Chat","channelType":"GROUP","isDm":false}}
+ Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"25a01fb3-7ae7-4f3d-929b-5d29353adbfb"}
+ Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"25a01fb3-7ae7-4f3d-929b-5d29353adbfb"}
+ Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"25a01fb3-7ae7-4f3d-929b-5d29353adbfb"}
+ Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"25a01fb3-7ae7-4f3d-929b-5d29353adbfb"}
+ Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"25a01fb3-7ae7-4f3d-929b-5d29353adbfb"}
+ Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"25a01fb3-7ae7-4f3d-929b-5d29353adbfb"}
+ Info       [AgentServer] Published message 25a01fb3-7ae7-4f3d-929b-5d29353adbfb to internal message bus
  Info       [Eliza] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
  Info       [SofIA1] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
  Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, proceeding with message processing
@@ -399,109 +395,3 @@ error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddi
  Info       [PulseAgent] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
  Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
  Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 102e3ad4-a127-4282-9f06-8bcd70d4ca32, ignoring message
- Info       [SocketIO DEBUG x5qFDzKPV_-nAyuCAAAV] Event 'message': [{"type":2,"payload":{"channelId":"d075cbe1-bac9-4bb9-9f73-00faf533da49","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://github.com/\\nTitle: GitHub\\nDescription: GitHub is where people build software. More than 150 million people use GitHub to discover, fork, an\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1762983015797,"user_display_name":"User"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"d075cbe1-bac9-4bb9-9f73-00faf533da49","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://github.com/\\nTitle: GitHub\\nDescription: GitHub is where people build software. More than 150 million people use GitHub to discover, fork, an\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1762983015797,"user_display_name":"User"}}} (SocketID: x5qFDzKPV_-nAyuCAAAV)
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Handling message sending via 'message' event
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Received SEND_MESSAGE for central submission: channel d075cbe1-bac9-4bb9-9f73-00faf533da49 from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Full payload for debugging: {
-  "channelId": "d075cbe1-bac9-4bb9-9f73-00faf533da49",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "URL: https://github.com/\\nTitle: GitHub\\nDescription: GitHub is where people build software. More than 150 million people use GitHub to discover, fork, an\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1762983015797,
-    "user_display_name": "User"
-  }
-}
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Checking if channel d075cbe1-bac9-4bb9-9f73-00faf533da49 exists before creating message
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Channel d075cbe1-bac9-4bb9-9f73-00faf533da49 exists: true
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Channel d075cbe1-bac9-4bb9-9f73-00faf533da49 already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"ee29030f-3807-4909-906d-e264d8dce925"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"ee29030f-3807-4909-906d-e264d8dce925"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"ee29030f-3807-4909-906d-e264d8dce925"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"ee29030f-3807-4909-906d-e264d8dce925"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"ee29030f-3807-4909-906d-e264d8dce925"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"ee29030f-3807-4909-906d-e264d8dce925"}
- Info       [AgentServer] Published message ee29030f-3807-4909-906d-e264d8dce925 to internal message bus
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: ee29030f-3807-4909-906d-e264d8dce925). It will be processed by agents and broadcasted upon their reply.
- Info       [Eliza] MessageBusService: Discovered new channel d075cbe1-bac9-4bb9-9f73-00faf533da49, added to valid channels
- Info       [SofIA1] MessageBusService: Discovered new channel d075cbe1-bac9-4bb9-9f73-00faf533da49, added to valid channels
- Info       [SofIA-Chat] MessageBusService: Discovered new channel d075cbe1-bac9-4bb9-9f73-00faf533da49, added to valid channels
- Info       [PulseAgent] MessageBusService: Discovered new channel d075cbe1-bac9-4bb9-9f73-00faf533da49, added to valid channels
- Info       [RecommendationAgent] MessageBusService: Discovered new channel d075cbe1-bac9-4bb9-9f73-00faf533da49, added to valid channels
- Info       [ThemeExtractorAgent] MessageBusService: Discovered new channel d075cbe1-bac9-4bb9-9f73-00faf533da49, added to valid channels
- Info       [Eliza] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA1  [MessageService] Message received from 9e3cc7a8-b091-068a-8756-28a9bf48c72f in room bc1c9f2e-2305-0079-a51a-913f26d5cd29
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Info       [SofIA1] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA1] MessageBusService: Skipping response (reason: IGNORE action)
- Info       [SocketIO DEBUG x5qFDzKPV_-nAyuCAAAV] Event 'message': [{"type":2,"payload":{"channelId":"d075cbe1-bac9-4bb9-9f73-00faf533da49","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md\\nTitle: Sofia/docs/Technical-Documentation.md at dev · int\\nDescription: Contribute to intuition-box/Sofia development by creating an account on GitHub.\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1762983076511,"user_display_name":"User"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"d075cbe1-bac9-4bb9-9f73-00faf533da49","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md\\nTitle: Sofia/docs/Technical-Documentation.md at dev · int\\nDescription: Contribute to intuition-box/Sofia development by creating an account on GitHub.\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1762983076511,"user_display_name":"User"}}} (SocketID: x5qFDzKPV_-nAyuCAAAV)
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Handling message sending via 'message' event
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Received SEND_MESSAGE for central submission: channel d075cbe1-bac9-4bb9-9f73-00faf533da49 from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Full payload for debugging: {
-  "channelId": "d075cbe1-bac9-4bb9-9f73-00faf533da49",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "URL: https://github.com/intuition-box/Sofia/blob/dev/docs/Technical-Documentation.md\\nTitle: Sofia/docs/Technical-Documentation.md at dev · int\\nDescription: Contribute to intuition-box/Sofia development by creating an account on GitHub.\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1762983076511,
-    "user_display_name": "User"
-  }
-}
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Checking if channel d075cbe1-bac9-4bb9-9f73-00faf533da49 exists before creating message
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Channel d075cbe1-bac9-4bb9-9f73-00faf533da49 exists: true
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Channel d075cbe1-bac9-4bb9-9f73-00faf533da49 already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"21adcf19-d782-4c0c-8cb3-b0522b3bdf33"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"21adcf19-d782-4c0c-8cb3-b0522b3bdf33"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"21adcf19-d782-4c0c-8cb3-b0522b3bdf33"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"21adcf19-d782-4c0c-8cb3-b0522b3bdf33"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"21adcf19-d782-4c0c-8cb3-b0522b3bdf33"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"21adcf19-d782-4c0c-8cb3-b0522b3bdf33"}
- Info       [AgentServer] Published message 21adcf19-d782-4c0c-8cb3-b0522b3bdf33 to internal message bus
- Info       [SocketIO x5qFDzKPV_-nAyuCAAAV] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 21adcf19-d782-4c0c-8cb3-b0522b3bdf33). It will be processed by agents and broadcasted upon their reply.
- Info       [Eliza] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA1  [MessageService] Message received from 9e3cc7a8-b091-068a-8756-28a9bf48c72f in room bc1c9f2e-2305-0079-a51a-913f26d5cd29
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel d075cbe1-bac9-4bb9-9f73-00faf533da49, ignoring message
- Info       [SofIA1] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA1] MessageBusService: Skipping response (reason: IGNORE action)
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
