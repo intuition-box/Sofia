@@ -5,7 +5,9 @@ import twitchIcon from '../../ui/social/twitch.svg'
 import leftSideIcon from '../../ui/icons/left side.svg'
 import rightSideIcon from '../../ui/icons/right side.svg'
 import { useStorage } from "@plasmohq/storage/hook"
-import { getAddress } from 'viem'
+import { getAddress, createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+import { normalize } from 'viem/ens'
 import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../../../lib/config/constants'
 import Avatar from '../../ui/Avatar'
@@ -15,6 +17,7 @@ import '../../styles/AccountTab.css'
 const AccountTab = () => {
   const [walletAddress] = useStorage<string>("metamask-account")
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
+  const [userLabel, setUserLabel] = useState<string | undefined>(undefined)
 
   // OAuth connection states
   const [oauthTokens, setOauthTokens] = useState({
@@ -33,7 +36,7 @@ const AccountTab = () => {
   // Quest system hook - provides real quests based on user progress
   const { activeQuests, level, totalXP, loading: questsLoading } = useQuestSystem()
 
-  // Load user avatar from GraphQL
+  // Load user avatar and label from GraphQL
   useEffect(() => {
     const loadUserAvatar = async () => {
       if (!walletAddress) return
@@ -41,7 +44,7 @@ const AccountTab = () => {
       try {
         const checksumAddress = getAddress(walletAddress)
 
-        // Try to load avatar using accounts query
+        // Try to load avatar and label using accounts query
         const avatarQuery = `
           query GetAccountProfile($id: String!) {
             accounts(where: { id: { _eq: $id } }) {
@@ -57,12 +60,37 @@ const AccountTab = () => {
 
         const avatarResponse = await intuitionGraphqlClient.request(avatarQuery, {
           id: checksumAddress
-        }) as { accounts: Array<{ image?: string; atom?: { image?: string } }> }
+        }) as { accounts: Array<{ label?: string; image?: string; atom?: { label?: string; image?: string } }> }
 
-        // Try to get image from account or atom
+        // Try to get image and label from account or atom
         if (avatarResponse?.accounts && avatarResponse.accounts.length > 0) {
-          const avatarUrl = avatarResponse.accounts[0].image || avatarResponse.accounts[0].atom?.image
+          const account = avatarResponse.accounts[0]
+          let avatarUrl = account.image || account.atom?.image
+          const label = account.label || account.atom?.label
+
+          // If no avatar from GraphQL, try to resolve ENS avatar
+          if (!avatarUrl && label && (label.endsWith('.eth') || label.endsWith('.box'))) {
+            try {
+              const publicClient = createPublicClient({
+                chain: mainnet,
+                transport: http()
+              })
+
+              const ensAvatar = await publicClient.getEnsAvatar({
+                name: normalize(label)
+              })
+
+              if (ensAvatar) {
+                avatarUrl = ensAvatar
+                console.log('✅ Resolved ENS avatar for', label, ':', ensAvatar)
+              }
+            } catch (ensError) {
+              console.warn('Failed to resolve ENS avatar for', label, ':', ensError)
+            }
+          }
+
           setUserAvatar(avatarUrl)
+          setUserLabel(label)
         }
       } catch (error) {
         console.error('Error loading user avatar:', error)
@@ -198,13 +226,13 @@ const AccountTab = () => {
       <div className="profile-header">
         <Avatar
           imgSrc={userAvatar}
-          name={walletAddress}
+          name={userLabel || walletAddress}
           avatarClassName="profile-avatar"
           size="large"
         />
         <div className="profile-info">
           <h2 className="profile-name">
-            {walletAddress ? `${walletAddress.toLowerCase().slice(0, 6)}...${walletAddress.toLowerCase().slice(-4)}` : 'Connect Wallet'}
+            {userLabel || (walletAddress ? `${walletAddress.toLowerCase().slice(0, 6)}...${walletAddress.toLowerCase().slice(-4)}` : 'Connect Wallet')}
           </h2>
         </div>
       </div>
