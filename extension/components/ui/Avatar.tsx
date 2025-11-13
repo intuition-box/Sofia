@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials } from '../../lib/utils/avatar'
+import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils/avatar'
 import './Avatar.css'
 
 interface AvatarProps {
@@ -20,15 +20,19 @@ const Avatar = ({
   const [imageError, setImageError] = useState(false)
 
   const handleImageError = () => {
+    console.warn('Avatar image failed to load:', imgSrc)
     setImageError(true)
   }
 
+  // Normaliser l'URL (convertir IPFS, etc.)
+  const normalizedUrl = normalizeAvatarUrl(imgSrc)
+
   // Si on a une URL valide et pas d'erreur, afficher l'image
-  if (isValidImageUrl(imgSrc) && !imageError) {
+  if (isValidImageUrl(normalizedUrl) && !imageError) {
     return (
       <div className={`avatar avatar-${size} ${avatarClassName}`}>
         <img
-          src={imgSrc}
+          src={normalizedUrl}
           alt={name || 'Avatar'}
           className={`avatar-image ${imageClassName}`}
           onError={handleImageError}

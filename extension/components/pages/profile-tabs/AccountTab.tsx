@@ -44,6 +44,21 @@ const AccountTab = () => {
       try {
         const checksumAddress = getAddress(walletAddress)
 
+        // Try to load from cache first
+        const cacheKey = `user_profile_${checksumAddress}`
+        const cached = await chrome.storage.local.get(cacheKey)
+
+        if (cached[cacheKey]) {
+          const { avatar, label, timestamp } = cached[cacheKey]
+          // Cache valid for 1 hour
+          if (Date.now() - timestamp < 3600000) {
+            console.log('📦 Loading from cache:', { avatar, label })
+            setUserAvatar(avatar)
+            setUserLabel(label)
+            return
+          }
+        }
+
         // Try to load avatar and label using accounts query
         const avatarQuery = `
           query GetAccountProfile($id: String!) {
@@ -66,16 +81,37 @@ const AccountTab = () => {
         if (avatarResponse?.accounts && avatarResponse.accounts.length > 0) {
           const account = avatarResponse.accounts[0]
           let avatarUrl = account.image || account.atom?.image
-          const label = account.label || account.atom?.label
+          let label = account.label || account.atom?.label
 
-          // If no avatar from GraphQL, try to resolve ENS avatar
-          if (!avatarUrl && label && (label.endsWith('.eth') || label.endsWith('.box'))) {
+          console.log('📸 Avatar data from GraphQL:', { avatarUrl, label, account })
+
+          // Create public client for ENS operations
+          const publicClient = createPublicClient({
+            chain: mainnet,
+            transport: http()
+          })
+
+          // If label is truncated or missing, try reverse ENS lookup
+          if (!label || !label.endsWith('.eth') && !label.endsWith('.box')) {
+            console.log('🔍 Label is not an ENS name, attempting reverse lookup for:', checksumAddress)
             try {
-              const publicClient = createPublicClient({
-                chain: mainnet,
-                transport: http()
+              const ensName = await publicClient.getEnsName({
+                address: checksumAddress as `0x${string}`
               })
 
+              if (ensName) {
+                console.log('✅ Found ENS name via reverse lookup:', ensName)
+                label = ensName
+              }
+            } catch (ensError) {
+              console.log('⚠️ No ENS name found for address:', ensError)
+            }
+          }
+
+          // If we have an ENS name and no avatar from GraphQL, try to resolve ENS avatar
+          if (!avatarUrl && label && (label.endsWith('.eth') || label.endsWith('.box'))) {
+            console.log('🔍 Attempting to resolve ENS avatar for:', label)
+            try {
               const ensAvatar = await publicClient.getEnsAvatar({
                 name: normalize(label)
               })
@@ -83,14 +119,31 @@ const AccountTab = () => {
               if (ensAvatar) {
                 avatarUrl = ensAvatar
                 console.log('✅ Resolved ENS avatar for', label, ':', ensAvatar)
+              } else {
+                console.log('⚠️ No ENS avatar found for', label)
               }
             } catch (ensError) {
-              console.warn('Failed to resolve ENS avatar for', label, ':', ensError)
+              console.error('❌ Failed to resolve ENS avatar for', label, ':', ensError)
             }
           }
 
+          console.log('📸 Final avatar URL:', avatarUrl)
+          console.log('📸 Final label:', label)
           setUserAvatar(avatarUrl)
           setUserLabel(label)
+
+          // Save to cache
+          const cacheKey = `user_profile_${checksumAddress}`
+          await chrome.storage.local.set({
+            [cacheKey]: {
+              avatar: avatarUrl,
+              label: label,
+              timestamp: Date.now()
+            }
+          })
+          console.log('💾 Saved to cache')
+        } else {
+          console.log('⚠️ No account data found in GraphQL response')
         }
       } catch (error) {
         console.error('Error loading user avatar:', error)

@@ -3,11 +3,16 @@ import { glass } from '@dicebear/collection'
 
 /**
  * Vérifie si une URL est valide pour une image
- * N'accepte que HTTP et HTTPS
+ * Accepte HTTP, HTTPS, IPFS et data URIs
  */
 export function isValidImageUrl(url: string | undefined | null): boolean {
   if (!url) return false
-  return url.startsWith('http://') || url.startsWith('https://')
+  return (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('ipfs://') ||
+    url.startsWith('data:image/')
+  )
 }
 
 /**
@@ -49,6 +54,29 @@ export function escapeSvgForCss(uri: string): string {
     .replace(/\(/g, '%28')
     .replace(/\)/g, '%29')
     .replace(/#/g, '%23')
+}
+
+/**
+ * Convertit une URL IPFS en URL HTTP via une gateway
+ * ipfs://QmHash -> https://ipfs.io/ipfs/QmHash
+ */
+export function convertIpfsToHttp(url: string): string {
+  if (!url.startsWith('ipfs://')) return url
+  const hash = url.replace('ipfs://', '')
+  return `https://ipfs.io/ipfs/${hash}`
+}
+
+/**
+ * Normalise une URL d'avatar pour qu'elle soit utilisable dans un navigateur
+ * - Convertit IPFS en HTTP
+ * - Laisse les data URIs et HTTP(S) inchangés
+ */
+export function normalizeAvatarUrl(url: string | undefined | null): string | undefined {
+  if (!url) return undefined
+  if (url.startsWith('ipfs://')) {
+    return convertIpfsToHttp(url)
+  }
+  return url
 }
 
 /**
