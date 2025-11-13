@@ -3,8 +3,7 @@
  * Handles tab data collection and analysis
  */
 
-import { getPulseSocket } from '../../background/websocket'
-import { sendMessageToPulse } from '../../background/messageSenders'
+import { sendMessage } from '../../background/websocket'
 import type { MessageResponse } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
 
@@ -107,26 +106,18 @@ export class PulseService {
         keywordsCount: d.keywords.length
       }))
     })
-    
+
     try {
-      const pulseSocket = getPulseSocket()
-      
-      if (!pulseSocket?.connected) {
-        logger.warn('PulseAgent socket not connected')
-        return {
-          success: false,
-          message: "❌ PulseAgent not connected. Make sure PulseAgent is running."
-        }
-      }
-      
-      // Send to PulseAgent via WebSocket
-      sendMessageToPulse(pulseSocket, cleanData)
-      
+      // Send to PulseAgent via unified sendMessage
+      const message = `Analyze current pulse data:\n${JSON.stringify(cleanData)}`
+      await sendMessage('PULSEAGENT', message)
+
+      logger.info('Successfully sent to PulseAgent')
       return {
         success: true,
         message: `✅ Pulse analysis completed! Collected data from ${cleanData.length} tabs and sent to PulseAgent.`
       }
-      
+
     } catch (error) {
       logger.error('Failed to send to PulseAgent', error)
       return {

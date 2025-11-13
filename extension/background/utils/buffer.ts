@@ -1,5 +1,4 @@
-import { getSofiaSocket } from "../websocket"
-import { sendMessageToSofia } from "../messageSenders"
+import { sendMessage } from "../websocket"
 
 
 const sentMessages = new Set<string>()
@@ -7,7 +6,10 @@ const sentMessages = new Set<string>()
 export function sendToAgent(message: string): void {
   if (sentMessages.has(message)) return
 
-  sendMessageToSofia(getSofiaSocket(), message) 
+  // ✅ Use new simplified sendMessage function
+  sendMessage('SOFIA', message).catch(err => {
+    console.error("❌ Failed to send message to SofIA:", err)
+  })
   sentMessages.add(message)
 }
 

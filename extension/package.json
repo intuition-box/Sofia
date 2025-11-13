@@ -9,7 +9,11 @@
     "build": "plasmo build && node scripts/post-build.js",
     "package": "plasmo package",
     "proxy": "bun sofia-proxy/server.ts",
-    "generate-icons": "node scripts/generate-icons.js"
+    "generate-icons": "node scripts/generate-icons.js",
+    "clear:channels": "tsx background/__test__/clear-channels.ts",
+    "test:persistence": "pnpm clear:channels && tsx background/__test__/test-channel-persistence.ts",
+    "test:messages": "tsx background/__test__/test-message-reception.ts",
+    "test:all": "pnpm clear:channels && tsx background/__test__/test-channel-persistence.ts && tsx background/__test__/test-message-reception.ts"
   },
   "dependencies": {
     "@0xintuition/1ui": "^0.4.1",
@@ -61,8 +65,10 @@
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",
     "@types/react-router-dom": "^5.3.3",
+    "idb": "^8.0.3",
     "prettier": "3.2.4",
     "sharp": "^0.34.5",
+    "tsx": "^4.20.6",
     "typescript": "5.3.3"
   },
   "manifest": {
@@ -99,5 +105,6 @@
         ]
       }
     ]
-  }
+  },
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
 }

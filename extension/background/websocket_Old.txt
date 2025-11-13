@@ -1,0 +1,494 @@
+import { io, Socket } from "socket.io-client"
+import {
+  SOFIA_BASE_IDS,
+  CHATBOT_BASE_IDS,
+  THEMEEXTRACTOR_BASE_IDS,
+  PULSEAGENT_BASE_IDS,
+  RECOMMENDATION_BASE_IDS
+} from "./constants"
+import { getUserAgentIds, type AgentIds } from "../lib/services/UserSessionManager"
+import { elizaDataService } from "../lib/database/indexedDB-methods"
+import { sofiaDB, STORES } from "../lib/database/indexedDB"
+import { processUrlsWithThemeAnalysis } from "./tripletProcessor"
+import { MessageBus } from "../lib/services/MessageBus"
+import {
+  sendBookmarksToThemeExtractor,
+  sendHistoryToThemeExtractor,
+  handleThemeExtractorResponse,
+} from "./messageSenders"
+import { SOFIA_SERVER_URL } from "../config"
+
+let socketSofia: Socket
+let socketBot: Socket
+let socketThemeExtractor: Socket
+let socketPulse: Socket
+let socketRecommendation: Socket
+
+// Cache des IDs utilisateur (généré une fois au démarrage)
+let userAgentIds: {
+  sofia: AgentIds
+  chatbot: AgentIds
+  themeExtractor: AgentIds
+  pulse: AgentIds
+  recommendation: AgentIds
+} | null = null
+
+/**
+ * Initialize user agent IDs (called once at extension startup)
+ */
+export async function initializeUserAgentIds(): Promise<void> {
+  userAgentIds = {
+    sofia: await getUserAgentIds("SofIA", SOFIA_BASE_IDS.AGENT_ID),
+    chatbot: await getUserAgentIds("ChatBot", CHATBOT_BASE_IDS.AGENT_ID),
+    themeExtractor: await getUserAgentIds("ThemeExtractor", THEMEEXTRACTOR_BASE_IDS.AGENT_ID),
+    pulse: await getUserAgentIds("PulseAgent", PULSEAGENT_BASE_IDS.AGENT_ID),
+    recommendation: await getUserAgentIds("RecommendationAgent", RECOMMENDATION_BASE_IDS.AGENT_ID)
+  }
+
+  console.log("✅ User agent IDs initialized:", userAgentIds)
+}
+
+/**
+ * Export pour utilisation dans d'autres fichiers
+ */
+export function getUserAgentIdsCache() {
+  return userAgentIds
+}
+
+// Export sockets for direct access
+export function getSofiaSocket(): Socket { return socketSofia }
+export function getChatbotSocket(): Socket { return socketBot }
+export function getThemeExtractorSocket(): Socket { return socketThemeExtractor }
+export function getPulseSocket(): Socket { return socketPulse }
+export function getRecommendationSocket(): Socket { return socketRecommendation }
+
+// Common WebSocket configuration
+const commonSocketConfig = {
+  transports: ["websocket"],
+  path: "/socket.io",
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionAttempts: 5,
+  timeout: 20000
+}
+
+
+// === 1. Initialiser WebSocket pour SofIA ===
+export async function initializeSofiaSocket(): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const sofiaIds = userAgentIds!.sofia
+
+  socketSofia = io(SOFIA_SERVER_URL, commonSocketConfig)
+
+  socketSofia.on("connect", () => {
+    console.log("✅ Connected to Eliza (SofIA), socket ID:", socketSofia.id)
+    console.log("🔑 Using user-specific IDs:", sofiaIds)
+
+    // 🆕 Utiliser les IDs dynamiques
+    socketSofia.emit("message", {
+      type: 1,
+      payload: {
+        roomId: sofiaIds.ROOM_ID,
+        entityId: sofiaIds.AUTHOR_ID
+      }
+    })
+
+    console.log("📨 Sent room join for SofIA:", sofiaIds.ROOM_ID)
+  })
+
+  socketSofia.on("messageBroadcast", async (data) => {
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if ((data.roomId === sofiaIds.ROOM_ID || data.channelId === sofiaIds.CHANNEL_ID) && data.senderId === sofiaIds.AGENT_ID) {
+      console.log("📩 Message SofIA:", data)
+
+      try {
+        // Create message in the exact same format as before
+        const newMessage = {
+          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          content: { text: data.text },
+          created_at: Date.now(),
+          processed: false
+        }
+
+        // Store directly in IndexedDB instead of buffer
+        await elizaDataService.storeMessage(newMessage, newMessage.id)
+        console.log("✅ Message stored directly in IndexedDB (SofIA)", { id: newMessage.id })
+
+        // Clean old messages periodically (keep last 50)
+        const allMessages = await elizaDataService.getAllMessages()
+        if (allMessages.length > 50) {
+          console.log("🧹 Cleaning old messages, keeping 50 most recent")
+          await elizaDataService.deleteOldMessages(30) // Keep last 30 days
+        }
+
+      } catch (error) {
+        console.error("❌ Failed to store message in IndexedDB:", error)
+      }
+    }
+  })
+
+  socketSofia.on("disconnect", (reason) => {
+    console.warn("🔌 SofIA socket disconnected:", reason)
+    setTimeout(initializeSofiaSocket, 5000)
+  })
+}
+
+// === 2. Initialiser WebSocket pour Chatbot ===
+export async function initializeChatbotSocket(onReady?: () => void): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const chatbotIds = userAgentIds!.chatbot
+
+  socketBot = io(SOFIA_SERVER_URL, commonSocketConfig)
+
+  socketBot.on("connect", () => {
+    console.log("🤖 Connected to Chatbot, socket ID:", socketBot.id)
+    console.log("🔑 Using user-specific IDs:", chatbotIds)
+
+    // 🆕 Utiliser les IDs dynamiques
+    socketBot.emit("message", {
+      type: 1,
+      payload: {
+        roomId: chatbotIds.ROOM_ID,
+        entityId: chatbotIds.AUTHOR_ID
+      }
+    })
+
+    console.log("📨 Sent room join for Chatbot:", chatbotIds.ROOM_ID)
+
+    // ✅ Notification that socket is ready
+    if (typeof onReady === "function") {
+      onReady()
+    }
+  })
+
+  socketBot.on("messageBroadcast", (data) => {
+    console.log("📡 [Chatbot] messageBroadcast received:", {
+      roomId: data.roomId,
+      channelId: data.channelId,
+      senderId: data.senderId,
+      expectedRoomId: chatbotIds.ROOM_ID,
+      expectedChannelId: chatbotIds.CHANNEL_ID,
+      match: (data.roomId === chatbotIds.ROOM_ID || data.channelId === chatbotIds.CHANNEL_ID) && data.senderId === chatbotIds.AGENT_ID
+    })
+
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if (
+      (data.roomId === chatbotIds.ROOM_ID || data.channelId === chatbotIds.CHANNEL_ID) &&
+      data.senderId === chatbotIds.AGENT_ID
+    ) {
+      try {
+        // Envoyer directement via chrome.runtime.sendMessage (pas via MessageBus)
+        chrome.runtime.sendMessage({
+          type: "CHATBOT_RESPONSE",
+          text: data.text
+        }).catch((error) => {
+          console.warn("⚠️ [websocket.ts] Error sending CHATBOT_RESPONSE:", error)
+        })
+      } catch (error) {
+        console.warn("⚠️ [websocket.ts] Error sending CHATBOT_RESPONSE:", error)
+      }
+    }
+  })
+
+  socketBot.on("disconnect", (reason) => {
+    console.warn("🔌 Chatbot socket disconnected:", reason)
+    setTimeout(() => initializeChatbotSocket(onReady), 5000) // Reconnection with same callback
+  })
+}
+
+// === 3. Direct theme analysis functions ===
+export async function processBookmarksWithThemeAnalysis(urls: string[]): Promise<{success: boolean, message: string, themesExtracted: number, triplesProcessed: boolean}> {
+  return await processUrlsWithThemeAnalysis(
+    urls, 
+    'bookmark', 
+    (urls) => sendBookmarksToThemeExtractor(socketThemeExtractor, urls),
+    'Bookmark analysis completed'
+  )
+}
+
+export async function processHistoryWithThemeAnalysis(urls: string[]): Promise<{success: boolean, message: string, themesExtracted: number, triplesProcessed: boolean}> {
+  return await processUrlsWithThemeAnalysis(
+    urls, 
+    'history', 
+    (urls) => sendHistoryToThemeExtractor(socketThemeExtractor, urls),
+    'History analysis completed'
+  )
+}
+
+
+
+// === 3. Initialiser WebSocket pour ThemeExtractor ===
+export async function initializeThemeExtractorSocket(): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const themeExtractorIds = userAgentIds!.themeExtractor
+
+  socketThemeExtractor = io(SOFIA_SERVER_URL, commonSocketConfig)
+
+  socketThemeExtractor.on("connect", () => {
+    console.log("✅ [websocket.ts] Connected to ThemeExtractor, socket ID:", socketThemeExtractor.id)
+    console.log("🔑 Using user-specific IDs:", themeExtractorIds)
+
+    // 🆕 Utiliser les IDs dynamiques
+    const joinMessage = {
+      type: 1,
+      payload: {
+        roomId: themeExtractorIds.ROOM_ID,
+        entityId: themeExtractorIds.AUTHOR_ID
+      }
+    }
+
+    console.log("📨 [websocket.ts] Sending room join for ThemeExtractor:", joinMessage)
+    socketThemeExtractor.emit("message", joinMessage)
+    console.log("✅ [websocket.ts] Room join sent for ThemeExtractor")
+  })
+
+  socketThemeExtractor.on("messageBroadcast", async (data) => {
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if ((data.roomId === themeExtractorIds.ROOM_ID || data.channelId === themeExtractorIds.CHANNEL_ID) &&
+        data.senderId === themeExtractorIds.AGENT_ID) {
+      console.log("📩 ThemeExtractor response received")
+      console.log("🔍 RAW MESSAGE from ThemeExtractor:", data.text)
+      
+      try {
+        // Parse themes from the response and pass to handler
+        let themes = []
+        try {
+          const parsed = JSON.parse(data.text)
+          themes = parsed // Pass raw parsed data to handler
+          console.log("🎨 Raw parsed data sent to handler")
+        } catch (parseError) {
+          console.warn("⚠️ Could not parse themes as JSON:", parseError)
+          themes = []
+        }
+        
+        // Resolve the Promise so next batch can be sent
+        handleThemeExtractorResponse(themes)
+        
+      } catch (error) {
+        console.error("❌ [websocket.ts] Failed to process ThemeExtractor response:", error)
+        handleThemeExtractorResponse([])
+      }
+    }
+  })
+
+  socketThemeExtractor.on("connect_error", (error) => {
+    console.error("❌ [websocket.ts] ThemeExtractor connection error:", error)
+  })
+
+  socketThemeExtractor.on("disconnect", (reason) => {
+    console.warn("🔌 [websocket.ts] ThemeExtractor socket disconnected:", reason)
+    setTimeout(() => {
+      console.log("🔄 [websocket.ts] Attempting to reconnect ThemeExtractor...")
+      initializeThemeExtractorSocket()
+    }, 5000)
+  })
+  
+  console.log("🎨 [websocket.ts] ThemeExtractor socket initialization completed")
+}
+
+// === 4. Initialiser WebSocket pour PulseAgent ===
+export async function initializePulseSocket(): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const pulseIds = userAgentIds!.pulse
+
+  socketPulse = io(SOFIA_SERVER_URL, commonSocketConfig)
+
+  socketPulse.on("connect", () => {
+    console.log("✅ [websocket.ts] Connected to PulseAgent, socket ID:", socketPulse.id)
+    console.log("🔑 Using user-specific IDs:", pulseIds)
+
+    // 🆕 Utiliser les IDs dynamiques
+    const joinMessage = {
+      type: 1,
+      payload: {
+        roomId: pulseIds.ROOM_ID,
+        entityId: pulseIds.AUTHOR_ID
+      }
+    }
+
+    console.log("📨 [websocket.ts] Sending room join for PulseAgent:", joinMessage)
+    socketPulse.emit("message", joinMessage)
+    console.log("✅ [websocket.ts] Room join sent for PulseAgent")
+  })
+
+  socketPulse.on("messageBroadcast", async (data) => {
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if ((data.roomId === pulseIds.ROOM_ID || data.channelId === pulseIds.CHANNEL_ID) &&
+        data.senderId === pulseIds.AGENT_ID) {
+      console.log("📩 PulseAgent response received")
+      console.log("🫀 RAW MESSAGE from PulseAgent:", data.text)
+      
+      // Store pulse analysis results directly in IndexedDB
+      try {
+        const pulseRecord = {
+          messageId: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          content: { text: data.text },
+          timestamp: Date.now(),
+          type: 'pulse_analysis'
+        }
+
+        // Use sofiaDB directly to bypass elizaDataService parsing
+        const result = await sofiaDB.put(STORES.ELIZA_DATA, pulseRecord)
+        console.log("✅ [websocket.ts] Pulse analysis stored directly:", { id: result, type: pulseRecord.type })
+        
+        // Notify UI that pulse analysis is complete
+        try {
+          chrome.runtime.sendMessage({
+            type: "PULSE_ANALYSIS_COMPLETE"
+          })
+          console.log("🫀 [websocket.ts] Sent PULSE_ANALYSIS_COMPLETE message")
+        } catch (busError) {
+          console.warn("⚠️ [websocket.ts] Failed to send PULSE_ANALYSIS_COMPLETE:", busError)
+        }
+        
+      } catch (error) {
+        console.error("❌ [websocket.ts] Failed to store pulse analysis:", error)
+      }
+    }
+  })
+
+  socketPulse.on("connect_error", (error) => {
+    console.error("❌ [websocket.ts] PulseAgent connection error:", error)
+  })
+
+  socketPulse.on("disconnect", (reason) => {
+    console.warn("🔌 [websocket.ts] PulseAgent socket disconnected:", reason)
+    setTimeout(() => {
+      console.log("🔄 [websocket.ts] Attempting to reconnect PulseAgent...")
+      initializePulseSocket()
+    }, 5000)
+  })
+
+  console.log("🫀 [websocket.ts] PulseAgent socket initialization completed")
+}
+
+// === 5. Initialiser WebSocket pour RecommendationAgent ===
+// Global handler for RecommendationAgent responses
+let globalRecommendationHandler: ((recommendations: any) => void) | null = null
+
+export function handleRecommendationResponse(rawData: any): void {
+  if (globalRecommendationHandler) {
+    console.log("💎 [websocket.ts] Processing recommendation response")
+    globalRecommendationHandler(rawData)
+    globalRecommendationHandler = null
+  }
+}
+
+export async function initializeRecommendationSocket(): Promise<void> {
+  // 🆕 S'assurer que les IDs sont initialisés
+  if (!userAgentIds) {
+    await initializeUserAgentIds()
+  }
+
+  const recommendationIds = userAgentIds!.recommendation
+
+  socketRecommendation = io(SOFIA_SERVER_URL, commonSocketConfig)
+
+  socketRecommendation.on("connect", () => {
+    console.log("✅ [websocket.ts] Connected to RecommendationAgent, socket ID:", socketRecommendation.id)
+    console.log("🔑 Using user-specific IDs:", recommendationIds)
+
+    // 🆕 Utiliser les IDs dynamiques
+    const joinMessage = {
+      type: 1,
+      payload: {
+        roomId: recommendationIds.ROOM_ID,
+        entityId: recommendationIds.AUTHOR_ID
+      }
+    }
+
+    console.log("📨 [websocket.ts] Sending room join for RecommendationAgent:", joinMessage)
+    socketRecommendation.emit("message", joinMessage)
+    console.log("✅ [websocket.ts] Room join sent for RecommendationAgent")
+  })
+
+  socketRecommendation.on("messageBroadcast", async (data) => {
+    // DEBUG: Log ALL incoming messages
+    console.log("🔍 [websocket.ts] RecommendationAgent messageBroadcast received:", {
+      roomId: data.roomId,
+      channelId: data.channelId,
+      senderId: data.senderId,
+      expectedRoomId: recommendationIds.ROOM_ID,
+      expectedChannelId: recommendationIds.CHANNEL_ID,
+      expectedAgentId: recommendationIds.AGENT_ID,
+      textPreview: data.text?.substring(0, 100)
+    })
+
+    // 🆕 Utiliser les IDs dynamiques pour filtrer
+    if ((data.roomId === recommendationIds.ROOM_ID || data.channelId === recommendationIds.CHANNEL_ID) &&
+        data.senderId === recommendationIds.AGENT_ID) {
+      console.log("📩 [websocket.ts] RecommendationAgent response received")
+      console.log("💎 [websocket.ts] RAW MESSAGE from RecommendationAgent:", data.text)
+
+      try {
+        // Parse recommendations from the response
+        let recommendations = null
+        try {
+          const parsed = JSON.parse(data.text)
+          recommendations = parsed // Pass raw parsed data to handler
+          console.log("💎 [websocket.ts] Parsed recommendations data:", recommendations)
+        } catch (parseError) {
+          console.warn("⚠️ [websocket.ts] Could not parse recommendations as JSON:", parseError)
+          recommendations = null
+        }
+
+        // Resolve the Promise so requester can continue
+        handleRecommendationResponse(recommendations)
+
+      } catch (error) {
+        console.error("❌ [websocket.ts] Failed to process RecommendationAgent response:", error)
+        handleRecommendationResponse(null)
+      }
+    }
+  })
+
+  socketRecommendation.on("connect_error", (error) => {
+    console.error("❌ [websocket.ts] RecommendationAgent connection error:", error)
+  })
+
+  socketRecommendation.on("disconnect", (reason) => {
+    console.warn("🔌 [websocket.ts] RecommendationAgent socket disconnected:", reason)
+    setTimeout(() => {
+      console.log("🔄 [websocket.ts] Attempting to reconnect RecommendationAgent...")
+      initializeRecommendationSocket()
+    }, 5000)
+  })
+
+  console.log("💎 [websocket.ts] RecommendationAgent socket initialization completed")
+}
+
+// Helper function to send recommendation request and wait for response
+export async function sendRecommendationRequest(walletData: any): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Timeout waiting for recommendations'))
+    }, 60000) // 60 seconds timeout
+
+    // Store resolver for when recommendations come back
+    globalRecommendationHandler = (recommendations) => {
+      clearTimeout(timeout)
+      resolve(recommendations || null)
+    }
+
+    // Send the request
+    const { sendRequestToRecommendation } = require('./messageSenders')
+    sendRequestToRecommendation(socketRecommendation, walletData)
+    console.log("📤 [websocket.ts] Sent recommendation request for wallet:", walletData.address)
+  })
+}
