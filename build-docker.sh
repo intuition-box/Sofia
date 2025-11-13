@@ -1,62 +1,70 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Building Sofia Agent Docker Image"
-echo "====================================="
+echo "🚀 Building Sofia Agent Docker Image for PHALA Cloud"
+echo "======================================================"
 
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
-AGENT_SOURCE="$PROJECT_ROOT/agent"
-DOCKER_BUILD="$PROJECT_ROOT/docker-build"
-IMAGE_NAME="sofia-agent"
-IMAGE_TAG="latest"
+IMAGE_NAME="${IMAGE_NAME:-sofia-agent}"
+IMAGE_TAG="${IMAGE_TAG:-latest}"
+DOCKER_REGISTRY="${DOCKER_REGISTRY:-}"
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m'
 
-# Step 1: Clean docker-build/agent
-echo -e "${BLUE}Step 1: Preparing docker-build directory${NC}"
-rm -rf "$DOCKER_BUILD/agent"
-mkdir -p "$DOCKER_BUILD/agent"
-
-# Step 2: Copy essential files only
-echo -e "${BLUE}Step 2: Copying essential files${NC}"
-
-# Runtime essentials
-cp -r "$AGENT_SOURCE/src" "$DOCKER_BUILD/agent/"
-cp -r "$AGENT_SOURCE/plugins" "$DOCKER_BUILD/agent/"
-cp -r "$AGENT_SOURCE/config" "$DOCKER_BUILD/agent/"
-
-# Configuration files
-cp "$AGENT_SOURCE/package.json" "$DOCKER_BUILD/agent/"
-cp "$AGENT_SOURCE/bun.lock" "$DOCKER_BUILD/agent/" 2>/dev/null || echo "⚠ bun.lock not found"
-cp "$AGENT_SOURCE/tsconfig.json" "$DOCKER_BUILD/agent/"
-cp "$AGENT_SOURCE/tsconfig.build.json" "$DOCKER_BUILD/agent/"
-cp "$AGENT_SOURCE/tsup.config.ts" "$DOCKER_BUILD/agent/"
-
-# Environment (prioritize .env, fallback to .env.example)
-if [ -f "$AGENT_SOURCE/.env" ]; then
-  cp "$AGENT_SOURCE/.env" "$DOCKER_BUILD/agent/"
-  echo "  ✓ Copied .env"
-else
-  cp "$AGENT_SOURCE/.env.example" "$DOCKER_BUILD/agent/.env"
-  echo "  ⚠ .env not found, using .env.example"
+# Check if .env exists in agent-sofia
+if [ ! -f "$PROJECT_ROOT/agent-sofia/.env" ]; then
+  echo -e "${RED}ERROR: agent-sofia/.env not found${NC}"
+  echo -e "${YELLOW}Creating .env from .env.example...${NC}"
+  if [ -f "$PROJECT_ROOT/agent-sofia/.env.example" ]; then
+    cp "$PROJECT_ROOT/agent-sofia/.env.example" "$PROJECT_ROOT/agent-sofia/.env"
+    echo -e "${YELLOW}⚠ Please edit agent-sofia/.env with your configuration${NC}"
+    echo -e "${YELLOW}  Required: GAIANET_API_KEY, GAIANET_NODE_URL${NC}"
+  else
+    echo -e "${RED}ERROR: .env.example not found either. Cannot proceed.${NC}"
+    exit 1
+  fi
 fi
 
-# Optional: bunfig.toml if exists
-[ -f "$AGENT_SOURCE/bunfig.toml" ] && cp "$AGENT_SOURCE/bunfig.toml" "$DOCKER_BUILD/agent/"
+# Step 1: Build Docker image
+echo -e "${BLUE}Step 1: Building Docker image${NC}"
+FULL_IMAGE_NAME="${IMAGE_NAME}:${IMAGE_TAG}"
+if [ -n "$DOCKER_REGISTRY" ]; then
+  FULL_IMAGE_NAME="${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+fi
 
-echo -e "${GREEN}✓ Files copied${NC}"
+docker build \
+  --platform linux/amd64 \
+  -t "${FULL_IMAGE_NAME}" \
+  -f "$PROJECT_ROOT/Dockerfile" \
+  "$PROJECT_ROOT"
 
-# Step 3: Build Docker image
-echo -e "${BLUE}Step 3: Building Docker image${NC}"
-docker build -t "${IMAGE_NAME}:${IMAGE_TAG}" -f "$PROJECT_ROOT/Dockerfile" "$PROJECT_ROOT"
-echo -e "${GREEN}✓ Image built: ${IMAGE_NAME}:${IMAGE_TAG}${NC}"
+echo -e "${GREEN}✓ Image built: ${FULL_IMAGE_NAME}${NC}"
 
-echo ""
-echo -e "${YELLOW}To restart the container:${NC}"
-echo "  docker stop sofia-container 2>/dev/null && docker rm sofia-container 2>/dev/null || true"
-echo "  docker run -d --name sofia-container -p 3000:3000 ${IMAGE_NAME}:${IMAGE_TAG}"
+# Step 2: Show image size
+echo -e "${BLUE}Step 2: Image size${NC}"
+docker images "${IMAGE_NAME}" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+
 echo ""
 echo -e "${GREEN}✓ Build complete!${NC}"
+echo ""
+echo -e "${YELLOW}Next steps:${NC}"
+echo -e "${BLUE}To run locally:${NC}"
+echo "  docker run -d --name sofia-container -p 3000:3000 ${FULL_IMAGE_NAME}"
+echo ""
+echo -e "${BLUE}To push to registry (for PHALA Cloud):${NC}"
+echo "  docker tag ${IMAGE_NAME}:${IMAGE_TAG} <your-registry>/<your-repo>:${IMAGE_TAG}"
+echo "  docker push <your-registry>/<your-repo>:${IMAGE_TAG}"
+echo ""
+echo -e "${BLUE}Or use with Docker Hub:${NC}"
+echo "  docker tag ${IMAGE_NAME}:${IMAGE_TAG} <your-dockerhub-username>/sofia-agent:${IMAGE_TAG}"
+echo "  docker push <your-dockerhub-username>/sofia-agent:${IMAGE_TAG}"
+echo ""
+echo -e "${YELLOW}For PHALA Cloud deployment:${NC}"
+echo "  1. Push image to a public registry (Docker Hub, GHCR, etc.)"
+echo "  2. Use the image URL in PHALA Cloud deployment"
+echo "  3. Set required environment variables in PHALA Cloud UI"
+echo ""

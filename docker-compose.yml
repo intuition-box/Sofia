@@ -2,22 +2,36 @@ version: '3.8'
 
 services:
   sofia-agent:
-    image: maximesaintjoannis/sofia-agent:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+    image: sofia-agent:latest
     container_name: sofia-container
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      # Add your environment variables here or use .env file
+      # - GAIANET_API_KEY=${GAIANET_API_KEY}
+      # - GAIANET_NODE_URL=${GAIANET_NODE_URL}
     restart: unless-stopped
     networks:
       - sofia-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
+    volumes:
+      # Optional: persist database
+      - sofia-data:/app/.eliza
 
 networks:
   sofia-network:
     driver: bridge
+
+volumes:
+  sofia-data:

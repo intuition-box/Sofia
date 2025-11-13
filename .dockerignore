@@ -1,20 +1,25 @@
-# Dependencies
-.env
-node_modules/
-**/node_modules/
+# Exclude everything except agent-sofia
+*
+!agent-sofia/
 
-# Build outputs
-dist/
-**/dist/
-build/
-*.log
+# Extension files (not needed for Docker)
+extension/
+
+# Build outputs (will be rebuilt in Docker)
+agent-sofia/dist/
+agent-sofia/node_modules/
+agent-sofia/.eliza/
+agent-sofia/gaianet/dist/
+agent-sofia/gaianet/node_modules/
 
 # Development files
 .git/
 .github/
 *.md
+!agent-sofia/README.md
 .env.local
 .env.*.local
+agent-sofia/.env.local
 
 # Test files
 **/__tests__/
@@ -22,6 +27,8 @@ build/
 **/*.test.tsx
 **/*.spec.ts
 *.test.js
+agent-sofia/cypress/
+agent-sofia/test-entity-bug.ts
 
 # IDE
 .vscode/
@@ -29,6 +36,7 @@ build/
 *.swp
 *.swo
 *~
+.claude/
 
 # OS
 .DS_Store
@@ -39,3 +47,20 @@ Thumbs.db
 tmp/
 temp/
 coverage/
+*.log
+logClient.txt
+logServer.txt
+
+# Docker files (not needed in image)
+Dockerfile
+.dockerignore
+docker-compose.yml
+build-docker.sh
+deploy-gaianet.sh
+
+# Documentation
+docs/
+PLAN.md
+GETTING_STARTED.md
+DEVELOPMENT_WORKFLOW.md
+LICENSE
