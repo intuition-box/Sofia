@@ -1,53 +1,390 @@
- Info       [SocketIO DEBUG 6G4C_iRLyQRt_JF6AAAJ] Event 'message': [{"type":2,"payload":{"channelId":"3cfd131b-dc7b-4865-bd5e-176088b709d2","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"test chanelk retreive","metadata":{"source":"extension","timestamp":1763052982022,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"3cfd131b-dc7b-4865-bd5e-176088b709d2","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"test chanelk retreive","metadata":{"source":"extension","timestamp":1763052982022,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: 6G4C_iRLyQRt_JF6AAAJ)
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Handling message sending via 'message' event
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Received SEND_MESSAGE for central submission: channel 3cfd131b-dc7b-4865-bd5e-176088b709d2 from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Full payload for debugging: {
-  "channelId": "3cfd131b-dc7b-4865-bd5e-176088b709d2",
+maximesaint-joannis@MacBook-Pro-de-maxime agent-sofia % clear
+maximesaint-joannis@MacBook-Pro-de-maxime agent-sofia % elizaos start 
+ Info       Using local @elizaos/cli installation
+
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⣐⣿⣿⢰⡀⠀⠀⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⣴⠤⠾⠛⠛⣿⣶⣇⠀⠀⡆ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢰⣋⡳⡄⠀⢨⣭⡀⠀⡤⠀⣀⣝⢿⣶⣿⡅ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢸⣯⠀⣇⠀⣼⣿⣿⣆⢷⣴⣿⣿⡏⣛⡉⠀ ⢸⣿⣿⣿⣿⣿⣿⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⣾⣿⣿⣧⠀⠀⠀⢸⠟⢀⣴⣿⣿⣿⣿⣦⡀⣠⣾⣿⣿⣿⣿⣦⡙⢿
+⠀⠙⢷⣮⢸⣿⣿⣿⣿⣷⣯⣟⣏⣼⣷⣅⠾ ⢸⣿⣇⣀⣀⣀⠀⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⠀⠀⣠⣿⣿⠟⠁⠀⠀⣼⣿⡟⣿⣿⣆⠀⠀⠀⠀⣿⣿⠋⠀⠈⠻⣿⡇⣿⣿⣅⣀⣀⡛⠛⠃⠀
+⠀⠀⠀⠁⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠋⠀ ⢸⣿⡿⠿⠿⠿⠀⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⣠⣾⣿⠟⠁⠀⠀⠀⣰⣿⣿⣁⣸⣿⣿⡄⠀⠀⠀⣿⣿ ⠀⠀ ⣿⣿⢈⣛⠿⠿⠿⣿⣷⡄⠀
+⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣉⡟⠀⠀ ⢸⣿⣧⣤⣤⣤⣤⢸⣿⣿⣦⣤⣤⣤⡄⣿⣿⡇⣾⣿⣿⣧⣤⣤⣤⡄⢰⣿⣿⠟⠛⠛⠻⣿⣿⡄⢠⡀⠻⣿⣿⣦⣴⣿⣿⠇⢿⣿⣦⣤⣤⣿⣿⠇⣠
+⠀⠀⠀⠀⢰⡈⠛⠿⣿⣿⣿⣿⣿⠋⠀   ⠘⠛⠛⠛⠛⠛⠛⠈⠛⠛⠛⠛⠛⠛⠃⠛⠛⠃⠛⠛⠛⠛⠛⠛⠛⠃⠛⠛⠃⠀⠀⠀⠀⠙⠛⠃⠘⠛⠀⠈⠛⠛⠛⠛⠁⠀⠀⠙⠛⠛⠛⠛⠁⠚⠛
+⠀⠀⠀⠀⢸⣿⡦⠀⠀⠉⠛⠿⠃⠀⠀⠀  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+
+Version: 1.6.4
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+│
+◇  ✓ Project built successfully
+ Info       No character files specified, attempting to load project agents...
+ Info       Loaded project from /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/dist/index.js
+ Info       Found 6 agent(s) in project configuration
+ Info       Loaded character: Eliza
+ Info       Loaded character: SofIA1
+ Info       Loaded character: SofIA-Chat
+ Info       Loaded character: PulseAgent
+ Info       Loaded character: RecommendationAgent
+ Info       Loaded character: ThemeExtractorAgent
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+ Info       [INIT] Database Dir for SQL plugin: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/.eliza/.elizadb
+ Info       [INIT] Running database migrations for messaging tables...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       Discovered 1 plugin schemas out of 1 plugins
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       [INIT] Ensuring default server exists...
+ Info       [AgentServer] Checking for server 00000000-0000-0000-0000-000000000000...
+ Info       [AgentServer] Server already exists with ID: 00000000-0000-0000-0000-000000000000
+ Info       [INIT] Server uses temporary adapter for migrations only
+ Info       [INIT] Initializing ElizaOS...
+ Info       [MessageBusService] Global ElizaOS instance set
+ Info       [MessageBusService] Global AgentServer instance set
+ Info       [Sentry] Initialized Sentry for @elizaos/server
+ Info       Public health check endpoints enabled: /healthz and /health (rate limited: 100 req/min)
+ Warn       Server authentication is disabled. Set ELIZA_SERVER_AUTH_TOKEN environment variable to enable.
+ Info       Web UI enabled
+ Info       [STATIC] Found client files at: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client
+ Info       [STATIC] Serving static files from: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client
+ Info       [Jobs API] Started job cleanup interval
+ Info       [SocketIO] Router initialized with 0 agents
+ Info       [SocketIO] Setting up Socket.IO event listeners
+ Info       [SocketIO] Registered message types: 1: ROOM_JOINING, 2: SEND_MESSAGE, 3: MESSAGE, 4: ACK, 5: THINKING, 6: CONTROL, ROOM_JOINING: 1, SEND_MESSAGE: 2, MESSAGE: 3, ACK: 4, THINKING: 5, CONTROL: 6
+AgentServer is listening on port 3000
+ Warn       SECRET_SALT is not set or using default value
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       plugin-sql (node) init starting...
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       #Eliza  Running plugin migrations...
+ Info       #Eliza  Found 1 plugins with schemas to migrate.
+ Info       #SofIA1  Running plugin migrations...
+ Info       #SofIA1  Found 1 plugins with schemas to migrate.
+ Info       #SofIA-Chat  Running plugin migrations...
+ Info       #SofIA-Chat  Found 1 plugins with schemas to migrate.
+ Info       #PulseAgent  Running plugin migrations...
+ Info       #PulseAgent  Found 1 plugins with schemas to migrate.
+ Info       #RecommendationAgent  Running plugin migrations...
+ Info       #RecommendationAgent  Found 1 plugins with schemas to migrate.
+ Info       #ThemeExtractorAgent  Running plugin migrations...
+ Info       #ThemeExtractorAgent  Found 1 plugins with schemas to migrate.
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #Eliza  Plugin migrations completed successfully.
+ Info       #Eliza  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #SofIA1  Plugin migrations completed successfully.
+ Info       #SofIA1  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #SofIA-Chat  Plugin migrations completed successfully.
+ Info       #SofIA-Chat  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #PulseAgent  Plugin migrations completed successfully.
+ Info       #PulseAgent  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #RecommendationAgent  Plugin migrations completed successfully.
+ Info       #RecommendationAgent  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #ThemeExtractorAgent  Plugin migrations completed successfully.
+ Info       #ThemeExtractorAgent  Plugin migrations completed.
+ Warn       #Eliza  [AgentRuntime][Eliza] No TEXT_EMBEDDING model registered. Skipping embedding dimension setup.
+ Info       [EmbeddingService] Starting embedding generation service
+ Warn       [EmbeddingService] No TEXT_EMBEDDING model registered. Embedding service will not be initialized.
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       Initializing character
+ Info       Name: {
+  name: "Eliza",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "SofIA1",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "SofIA-Chat",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "PulseAgent",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "RecommendationAgent",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "ThemeExtractorAgent",
+}
+ Info       [AgentServer] Registered MessageBusConnector for agent Eliza
+ Info       [Eliza] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent Eliza with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent SofIA1
+ Info       [SofIA1] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent SofIA1 with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent SofIA-Chat
+ Info       [SofIA-Chat] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent SofIA-Chat with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent PulseAgent
+ Info       [PulseAgent] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent PulseAgent with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent RecommendationAgent
+ Info       [RecommendationAgent] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent RecommendationAgent with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent ThemeExtractorAgent
+ Info       [ThemeExtractorAgent] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent ThemeExtractorAgent with server ID: 00000000-0000-0000-0000-000000000000
+ Info       Started 6 agents
+ Info       [Eliza] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [SofIA1] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [SofIA-Chat] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [PulseAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [RecommendationAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [ThemeExtractorAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [Eliza] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [Eliza] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [SofIA1] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [SofIA1] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [SofIA-Chat] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [SofIA-Chat] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [PulseAgent] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [PulseAgent] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [RecommendationAgent] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [RecommendationAgent] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       [ThemeExtractorAgent] MessageBusService: Fetched 5 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [ThemeExtractorAgent] MessageBusService: Loaded 5 valid channel IDs from 1 servers (including default server)
+ Info       GaiaNet API validated successfully
+ Info       GaiaNet API validated successfully
+ Info       GaiaNet API validated successfully
+ Info       GaiaNet API validated successfully
+ Info       GaiaNet API validated successfully
+ Info       [SocketIO] New connection: y3aOtfrrnyKtFt71AAAB
+ Info       [SocketIO] New connection: LGfOPivvUw0lB5e4AAAD
+ Info       [SocketIO DEBUG y3aOtfrrnyKtFt71AAAB] Event 'message': [{"type":1,"payload":{"roomId":"2678f212-4087-45fc-826c-646345cf512c","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"2678f212-4087-45fc-826c-646345cf512c","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: y3aOtfrrnyKtFt71AAAB)
+ Info       [SocketIO y3aOtfrrnyKtFt71AAAB] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket y3aOtfrrnyKtFt71AAAB joined Socket.IO channel: 2678f212-4087-45fc-826c-646345cf512c
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket y3aOtfrrnyKtFt71AAAB successfully joined channel 2678f212-4087-45fc-826c-646345cf512c.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO DEBUG LGfOPivvUw0lB5e4AAAD] Event 'message': [{"type":1,"payload":{"roomId":"085d3a5f-9b5f-4718-b964-acac83cca89d","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"085d3a5f-9b5f-4718-b964-acac83cca89d","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: LGfOPivvUw0lB5e4AAAD)
+ Info       [SocketIO LGfOPivvUw0lB5e4AAAD] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket LGfOPivvUw0lB5e4AAAD joined Socket.IO channel: 085d3a5f-9b5f-4718-b964-acac83cca89d
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket LGfOPivvUw0lB5e4AAAD successfully joined channel 085d3a5f-9b5f-4718-b964-acac83cca89d.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO] New connection: J1UFkcNWmOx3EVcKAAAF
+ Info       [SocketIO DEBUG J1UFkcNWmOx3EVcKAAAF] Event 'message': [{"type":1,"payload":{"roomId":"3a7a2036-4c4e-4409-965f-5b5fba9800ef","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"3a7a2036-4c4e-4409-965f-5b5fba9800ef","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: J1UFkcNWmOx3EVcKAAAF)
+ Info       [SocketIO J1UFkcNWmOx3EVcKAAAF] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket J1UFkcNWmOx3EVcKAAAF joined Socket.IO channel: 3a7a2036-4c4e-4409-965f-5b5fba9800ef
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket J1UFkcNWmOx3EVcKAAAF successfully joined channel 3a7a2036-4c4e-4409-965f-5b5fba9800ef.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO] New connection: tWswqnU7hbxjmQcQAAAH
+ Info       [SocketIO DEBUG tWswqnU7hbxjmQcQAAAH] Event 'message': [{"type":1,"payload":{"roomId":"35be43a1-97c6-411c-81b0-888415679d76","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"35be43a1-97c6-411c-81b0-888415679d76","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: tWswqnU7hbxjmQcQAAAH)
+ Info       [SocketIO tWswqnU7hbxjmQcQAAAH] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket tWswqnU7hbxjmQcQAAAH joined Socket.IO channel: 35be43a1-97c6-411c-81b0-888415679d76
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket tWswqnU7hbxjmQcQAAAH successfully joined channel 35be43a1-97c6-411c-81b0-888415679d76.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO] New connection: L00_ht5D4YVbr6ttAAAJ
+ Info       [SocketIO DEBUG L00_ht5D4YVbr6ttAAAJ] Event 'message': [{"type":1,"payload":{"roomId":"b960c74d-d85f-472f-8ddf-e38e509d0cbb","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"b960c74d-d85f-472f-8ddf-e38e509d0cbb","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: L00_ht5D4YVbr6ttAAAJ)
+ Info       [SocketIO L00_ht5D4YVbr6ttAAAJ] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket L00_ht5D4YVbr6ttAAAJ joined Socket.IO channel: b960c74d-d85f-472f-8ddf-e38e509d0cbb
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket L00_ht5D4YVbr6ttAAAJ successfully joined channel b960c74d-d85f-472f-8ddf-e38e509d0cbb.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO DEBUG LGfOPivvUw0lB5e4AAAD] Event 'message': [{"type":2,"payload":{"channelId":"085d3a5f-9b5f-4718-b964-acac83cca89d","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"wesh","metadata":{"source":"extension","timestamp":1763057995284,"user_display_name":"User"}}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"085d3a5f-9b5f-4718-b964-acac83cca89d","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"wesh","metadata":{"source":"extension","timestamp":1763057995284,"user_display_name":"User"}}} (SocketID: LGfOPivvUw0lB5e4AAAD)
+ Info       [SocketIO LGfOPivvUw0lB5e4AAAD] Handling message sending via 'message' event
+ Info       [SocketIO LGfOPivvUw0lB5e4AAAD] Received SEND_MESSAGE for central submission: channel 085d3a5f-9b5f-4718-b964-acac83cca89d from c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO LGfOPivvUw0lB5e4AAAD] Full payload for debugging: {
+  "channelId": "085d3a5f-9b5f-4718-b964-acac83cca89d",
   "serverId": "00000000-0000-0000-0000-000000000000",
   "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "test chanelk retreive",
+  "message": "wesh",
   "metadata": {
     "source": "extension",
-    "timestamp": 1763052982022,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
+    "timestamp": 1763057995284,
+    "user_display_name": "User"
   }
 }
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Checking if channel 3cfd131b-dc7b-4865-bd5e-176088b709d2 exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Channel 3cfd131b-dc7b-4865-bd5e-176088b709d2 exists: true
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Channel 3cfd131b-dc7b-4865-bd5e-176088b709d2 already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"3d4eec52-179d-4210-9b6e-06d1a91816c4"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"3d4eec52-179d-4210-9b6e-06d1a91816c4"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"3d4eec52-179d-4210-9b6e-06d1a91816c4"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"3d4eec52-179d-4210-9b6e-06d1a91816c4"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"3d4eec52-179d-4210-9b6e-06d1a91816c4"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"3d4eec52-179d-4210-9b6e-06d1a91816c4"}
- Info       [AgentServer] Published message 3d4eec52-179d-4210-9b6e-06d1a91816c4 to internal message bus
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 3d4eec52-179d-4210-9b6e-06d1a91816c4). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [Eliza] MessageBusService: Discovered new channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, added to valid channels
- Info       [SofIA1] MessageBusService: Discovered new channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, added to valid channels
- Info       [SofIA-Chat] MessageBusService: Discovered new channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, added to valid channels
- Info       [PulseAgent] MessageBusService: Discovered new channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, added to valid channels
- Info       [RecommendationAgent] MessageBusService: Discovered new channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, added to valid channels
- Info       [ThemeExtractorAgent] MessageBusService: Discovered new channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, added to valid channels
- Info       [Eliza] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SofIA1] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, proceeding with message processing
+ Info       [SocketIO LGfOPivvUw0lB5e4AAAD] Checking if channel 085d3a5f-9b5f-4718-b964-acac83cca89d exists before creating message
+ Info       [SocketIO LGfOPivvUw0lB5e4AAAD] Channel 085d3a5f-9b5f-4718-b964-acac83cca89d exists: true
+ Info       [SocketIO LGfOPivvUw0lB5e4AAAD] Channel 085d3a5f-9b5f-4718-b964-acac83cca89d already exists, proceeding with message creation
+ Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a"}
+ Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a"}
+ Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a"}
+ Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a"}
+ Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a"}
+ Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a"}
+ Info       [AgentServer] Published message 5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a to internal message bus
+ Info       [SocketIO LGfOPivvUw0lB5e4AAAD] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a). It will be processed by agents and broadcasted upon their reply.
+ Info       [Eliza] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
+ Info       [SofIA1] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
+ Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, proceeding with message processing
  Info       [SofIA-Chat] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
  Info       [SofIA-Chat] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA-Chat  [MessageService] Message received from e161938d-6b56-0128-aa91-94201f895f01 in room 10818fff-2298-04a2-8683-ea8f5ec40960
+ Info       #SofIA-Chat  [MessageService] Message received from e161938d-6b56-0128-aa91-94201f895f01 in room c7c10dc2-45cb-0596-9e0c-3786ffd68e29
  Error      No world found for user during onboarding
  Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
+ Info       [PulseAgent] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
+ Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
+ Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
  Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
  Error      GaiaNet embeddings error {
   error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
@@ -62,733 +399,18 @@ error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddi
 ,
 }
  Info       [SofIA-Chat] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA-Chat] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"3cfd131b-dc7b-4865-bd5e-176088b709d2","server_id":"00000000-0000-0000-0000-000000000000","author_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","content":"Bonjour ! Pouvez‑vous préciser ce que vous entendez par « test chanelk retreive » ? Souhaitez‑vous récupérer des informations sur un canal ou tester une fonction particulière ?","in_reply_to_message_id":"3d4eec52-179d-4210-9b6e-06d1a91816c4","source_type":"agent_response","raw_message":{"text":"Bonjour ! Pouvez‑vous préciser ce que vous entendez par « test chanelk retreive » ? Souhaitez‑vous récupérer des informations sur un canal ou tester une fonction particulière ?","thought":"Clarify user’s ambiguous request about testing channel retrieval.","actions":["REPLY"]},"metadata":{"agent_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","agentName":"SofIA-Chat","channelType":"DM","isDm":true}}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"77188b2a-f379-4ad2-beb2-ed00bfd5b901"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"77188b2a-f379-4ad2-beb2-ed00bfd5b901"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"77188b2a-f379-4ad2-beb2-ed00bfd5b901"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"77188b2a-f379-4ad2-beb2-ed00bfd5b901"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"77188b2a-f379-4ad2-beb2-ed00bfd5b901"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"77188b2a-f379-4ad2-beb2-ed00bfd5b901"}
- Info       [AgentServer] Published message 77188b2a-f379-4ad2-beb2-ed00bfd5b901 to internal message bus
- Info       [Eliza] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SofIA1] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, proceeding with message processing
+ Info       [SofIA-Chat] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"085d3a5f-9b5f-4718-b964-acac83cca89d","server_id":"00000000-0000-0000-0000-000000000000","author_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","content":"Salut ! Comment ça va ?","in_reply_to_message_id":"5b2f2e29-0cc4-4ea1-9ad4-4b926bc8685a","source_type":"agent_response","raw_message":{"text":"Salut ! Comment ça va ?","thought":"Responding with an informal, friendly greeting in French.","actions":["REPLY"]},"metadata":{"agent_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","agentName":"SofIA-Chat","channelType":"DM","isDm":true}}
+ Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"46afa960-8666-42d9-9e76-41c0b05c6a49"}
+ Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"46afa960-8666-42d9-9e76-41c0b05c6a49"}
+ Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"46afa960-8666-42d9-9e76-41c0b05c6a49"}
+ Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"46afa960-8666-42d9-9e76-41c0b05c6a49"}
+ Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"46afa960-8666-42d9-9e76-41c0b05c6a49"}
+ Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"46afa960-8666-42d9-9e76-41c0b05c6a49"}
+ Info       [AgentServer] Published message 46afa960-8666-42d9-9e76-41c0b05c6a49 to internal message bus
+ Info       [Eliza] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
+ Info       [SofIA1] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
+ Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, proceeding with message processing
  Info       [SofIA-Chat] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SocketIO DEBUG 6G4C_iRLyQRt_JF6AAAJ] Event 'message': [{"type":2,"payload":{"channelId":"3cfd131b-dc7b-4865-bd5e-176088b709d2","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"je retest voir si il y a des log derreur ","metadata":{"source":"extension","timestamp":1763053028580,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"3cfd131b-dc7b-4865-bd5e-176088b709d2","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"je retest voir si il y a des log derreur ","metadata":{"source":"extension","timestamp":1763053028580,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: 6G4C_iRLyQRt_JF6AAAJ)
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Handling message sending via 'message' event
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Received SEND_MESSAGE for central submission: channel 3cfd131b-dc7b-4865-bd5e-176088b709d2 from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Full payload for debugging: {
-  "channelId": "3cfd131b-dc7b-4865-bd5e-176088b709d2",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "je retest voir si il y a des log derreur ",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1763053028580,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
-  }
-}
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Checking if channel 3cfd131b-dc7b-4865-bd5e-176088b709d2 exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Channel 3cfd131b-dc7b-4865-bd5e-176088b709d2 exists: true
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Channel 3cfd131b-dc7b-4865-bd5e-176088b709d2 already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"a951b1de-58bc-4af2-b995-1f070809c19d"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"a951b1de-58bc-4af2-b995-1f070809c19d"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"a951b1de-58bc-4af2-b995-1f070809c19d"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"a951b1de-58bc-4af2-b995-1f070809c19d"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"a951b1de-58bc-4af2-b995-1f070809c19d"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"a951b1de-58bc-4af2-b995-1f070809c19d"}
- Info       [AgentServer] Published message a951b1de-58bc-4af2-b995-1f070809c19d to internal message bus
- Info       [SocketIO 6G4C_iRLyQRt_JF6AAAJ] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: a951b1de-58bc-4af2-b995-1f070809c19d). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [Eliza] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SofIA1] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, proceeding with message processing
- Info       [SofIA-Chat] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA-Chat] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA-Chat  [MessageService] Message received from e161938d-6b56-0128-aa91-94201f895f01 in room 10818fff-2298-04a2-8683-ea8f5ec40960
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Info       [SofIA-Chat] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA-Chat] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"3cfd131b-dc7b-4865-bd5e-176088b709d2","server_id":"00000000-0000-0000-0000-000000000000","author_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","content":"D'accord, pour vérifier s'il y a des erreurs dans les logs, quel type de log cherchez‑vous (par ex., logs du serveur, logs d'application) et où se trouvent ces fichiers ? Si vous avez accès à la console ou aux outils de monitoring, je peux vous guider.","in_reply_to_message_id":"a951b1de-58bc-4af2-b995-1f070809c19d","source_type":"agent_response","raw_message":{"text":"D'accord, pour vérifier s'il y a des erreurs dans les logs, quel type de log cherchez‑vous (par ex., logs du serveur, logs d'application) et où se trouvent ces fichiers ? Si vous avez accès à la console ou aux outils de monitoring, je peux vous guider.","thought":"Clarify which logs to check and guide the user.","actions":["REPLY"]},"metadata":{"agent_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","agentName":"SofIA-Chat","channelType":"DM","isDm":true}}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"070b0e43-d6d9-4a4f-9f64-b1ae1531b970"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"070b0e43-d6d9-4a4f-9f64-b1ae1531b970"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"070b0e43-d6d9-4a4f-9f64-b1ae1531b970"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"070b0e43-d6d9-4a4f-9f64-b1ae1531b970"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"070b0e43-d6d9-4a4f-9f64-b1ae1531b970"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"070b0e43-d6d9-4a4f-9f64-b1ae1531b970"}
- Info       [AgentServer] Published message 070b0e43-d6d9-4a4f-9f64-b1ae1531b970 to internal message bus
- Info       [Eliza] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SofIA1] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, proceeding with message processing
- Info       [SofIA-Chat] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 3cfd131b-dc7b-4865-bd5e-176088b709d2, ignoring message
- Info       [SocketIO DEBUG spVGhPVn0mMivHYuAAAH] Event 'message': [{"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://github.com/\\nTitle: GitHub\\nDescription: GitHub is where people build software. More than 150 million people use GitHub to discover, fork, an\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053116388,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://github.com/\\nTitle: GitHub\\nDescription: GitHub is where people build software. More than 150 million people use GitHub to discover, fork, an\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053116388,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: spVGhPVn0mMivHYuAAAH)
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Handling message sending via 'message' event
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Received SEND_MESSAGE for central submission: channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Full payload for debugging: {
-  "channelId": "069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "URL: https://github.com/\\nTitle: GitHub\\nDescription: GitHub is where people build software. More than 150 million people use GitHub to discover, fork, an\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1763053116388,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
-  }
-}
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Checking if channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists: true
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"6026e5bf-01c3-4713-a8e6-d15ee061e547"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"6026e5bf-01c3-4713-a8e6-d15ee061e547"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"6026e5bf-01c3-4713-a8e6-d15ee061e547"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"6026e5bf-01c3-4713-a8e6-d15ee061e547"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"6026e5bf-01c3-4713-a8e6-d15ee061e547"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"6026e5bf-01c3-4713-a8e6-d15ee061e547"}
- Info       [AgentServer] Published message 6026e5bf-01c3-4713-a8e6-d15ee061e547 to internal message bus
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 6026e5bf-01c3-4713-a8e6-d15ee061e547). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [Eliza] MessageBusService: Discovered new channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, added to valid channels
- Info       [SofIA1] MessageBusService: Discovered new channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, added to valid channels
- Info       [SofIA-Chat] MessageBusService: Discovered new channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, added to valid channels
- Info       [PulseAgent] MessageBusService: Discovered new channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, added to valid channels
- Info       [RecommendationAgent] MessageBusService: Discovered new channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, added to valid channels
- Info       [ThemeExtractorAgent] MessageBusService: Discovered new channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, added to valid channels
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA1  [MessageService] Message received from 9e3cc7a8-b091-068a-8756-28a9bf48c72f in room 6a305674-87fb-00b0-947b-74259ed4c344
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Error      GaiaNet embeddings error: AbortError: The operation was aborted.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: The operation was aborted.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Info       [SofIA1] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA1] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","server_id":"00000000-0000-0000-0000-000000000000","author_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","content":"{JSON}","in_reply_to_message_id":"6026e5bf-01c3-4713-a8e6-d15ee061e547","source_type":"agent_response","raw_message":{"text":"{JSON}","thought":"...","actions":["REPLY"]},"metadata":{"agent_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","agentName":"SofIA1","channelType":"DM","isDm":true}}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"3419fc75-6014-45ba-a577-1d479383e889"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"3419fc75-6014-45ba-a577-1d479383e889"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"3419fc75-6014-45ba-a577-1d479383e889"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"3419fc75-6014-45ba-a577-1d479383e889"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"3419fc75-6014-45ba-a577-1d479383e889"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"3419fc75-6014-45ba-a577-1d479383e889"}
- Info       [AgentServer] Published message 3419fc75-6014-45ba-a577-1d479383e889 to internal message bus
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SocketIO DEBUG spVGhPVn0mMivHYuAAAH] Event 'message': [{"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://github.com/intuition-box/Sofia\\nTitle: intuition-box/Sofia\\nDescription: Contribute to intuition-box/Sofia development by creating an account on GitHub.\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053178024,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://github.com/intuition-box/Sofia\\nTitle: intuition-box/Sofia\\nDescription: Contribute to intuition-box/Sofia development by creating an account on GitHub.\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053178024,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: spVGhPVn0mMivHYuAAAH)
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Handling message sending via 'message' event
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Received SEND_MESSAGE for central submission: channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Full payload for debugging: {
-  "channelId": "069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "URL: https://github.com/intuition-box/Sofia\\nTitle: intuition-box/Sofia\\nDescription: Contribute to intuition-box/Sofia development by creating an account on GitHub.\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1763053178024,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
-  }
-}
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Checking if channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists: true
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"761c9839-79b2-464b-9b47-f677b3041999"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"761c9839-79b2-464b-9b47-f677b3041999"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"761c9839-79b2-464b-9b47-f677b3041999"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"761c9839-79b2-464b-9b47-f677b3041999"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"761c9839-79b2-464b-9b47-f677b3041999"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"761c9839-79b2-464b-9b47-f677b3041999"}
- Info       [AgentServer] Published message 761c9839-79b2-464b-9b47-f677b3041999 to internal message bus
- Info       [SocketIO spVGhPVn0mMivHYuAAAH] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 761c9839-79b2-464b-9b47-f677b3041999). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA1  [MessageService] Message received from 9e3cc7a8-b091-068a-8756-28a9bf48c72f in room 6a305674-87fb-00b0-947b-74259ed4c344
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SocketIO] New connection: YNeqMjWojBC25GumAAAL
- Info       [SocketIO DEBUG YNeqMjWojBC25GumAAAL] Event 'message': [{"type":1,"payload":{"channelId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","roomId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","entityId":"1c612358-fadd-49cd-b21b-568adfd288a6"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"channelId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","roomId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","entityId":"1c612358-fadd-49cd-b21b-568adfd288a6"}} (SocketID: YNeqMjWojBC25GumAAAL)
- Info       [SocketIO YNeqMjWojBC25GumAAAL] Handling channel joining via 'message' event
- Info       [SocketIO] Socket YNeqMjWojBC25GumAAAL joined Socket.IO channel: a5250c47-c5d7-496d-9665-9430fb9c4bea
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: 1c612358-fadd-49cd-b21b-568adfd288a6, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for 1c612358-fadd-49cd-b21b-568adfd288a6
- Info       [SocketIO] Socket YNeqMjWojBC25GumAAAL successfully joined channel a5250c47-c5d7-496d-9665-9430fb9c4bea.
- Info       #Eliza  [Bootstrap] Syncing user: 1c612358-fadd-49cd-b21b-568adfd288a6
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SofIA1] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA1] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","server_id":"00000000-0000-0000-0000-000000000000","author_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","content":"{\n  \"atoms\": [\n    {\n      \"name\": \"User\",\n      \"description\": \"SofIA browser user\",\n      \"url\": \"https://sofia.local/user\"\n    },\n    {\n      \"name\": \"intuition-box/Sofia\",\n      \"description\": \"Contribute to intuition-box/Sofia development by creating an account on GitHub.\",\n      \"url\": \"https://github.com/intuition-box/Sofia\"\n    }\n  ],\n  \"triplets\": [\n    {\n      \"subject\": {\n        \"name\": \"User\",\n        \"description\": \"SofIA browser user\",\n        \"url\": \"https://sofia.local/user\"\n      },\n      \"predicate\": {\n        \"name\": \"have visited\",\n        \"description\": \"Basic visit to the content.\"\n      },\n      \"object\": {\n        \"name\": \"intuition-box/Sofia\",\n        \"description\": \"Contribute to intuition-box/Sofia development by creating an account on GitHub.\",\n        \"url\": \"https://github.com/intuition-box/Sofia\"\n      }\n    }\n  ],\n  \"session\": \"Intuition browsing\",\n  \"intention\": \"Consider contributing to the Sofia project on GitHub\",\n  \"topic_family\": \"Web3\"\n}","in_reply_to_message_id":"761c9839-79b2-464b-9b47-f677b3041999","source_type":"agent_response","raw_message":{"text":"{\n  \"atoms\": [\n    {\n      \"name\": \"User\",\n      \"description\": \"SofIA browser user\",\n      \"url\": \"https://sofia.local/user\"\n    },\n    {\n      \"name\": \"intuition-box/Sofia\",\n      \"description\": \"Contribute to intuition-box/Sofia development by creating an account on GitHub.\",\n      \"url\": \"https://github.com/intuition-box/Sofia\"\n    }\n  ],\n  \"triplets\": [\n    {\n      \"subject\": {\n        \"name\": \"User\",\n        \"description\": \"SofIA browser user\",\n        \"url\": \"https://sofia.local/user\"\n      },\n      \"predicate\": {\n        \"name\": \"have visited\",\n        \"description\": \"Basic visit to the content.\"\n      },\n      \"object\": {\n        \"name\": \"intuition-box/Sofia\",\n        \"description\": \"Contribute to intuition-box/Sofia development by creating an account on GitHub.\",\n        \"url\": \"https://github.com/intuition-box/Sofia\"\n      }\n    }\n  ],\n  \"session\": \"Intuition browsing\",\n  \"intention\": \"Consider contributing to the Sofia project on GitHub\",\n  \"topic_family\": \"Web3\"\n}","thought":"Creating semantic triplet for the GitHub repository visit.","actions":["REPLY"]},"metadata":{"agent_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","agentName":"SofIA1","channelType":"DM","isDm":true}}
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"116122df-0a90-4415-9a34-1c099350f99f"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"116122df-0a90-4415-9a34-1c099350f99f"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"116122df-0a90-4415-9a34-1c099350f99f"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"116122df-0a90-4415-9a34-1c099350f99f"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"116122df-0a90-4415-9a34-1c099350f99f"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"116122df-0a90-4415-9a34-1c099350f99f"}
- Info       [AgentServer] Published message 116122df-0a90-4415-9a34-1c099350f99f to internal message bus
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SocketIO] Client 2nJtaHhAKQy36AjiAAAD disconnected.
- Info       [SocketIO] Client 1KoQJFLFT390jaI7AAAF disconnected.
- Info       [SocketIO] Client 6G4C_iRLyQRt_JF6AAAJ disconnected.
- Info       [SocketIO] Client spVGhPVn0mMivHYuAAAH disconnected.
- Info       [SocketIO] Client gicOz3P_FE2VjpduAAAB disconnected.
- Warn       [STATIC] Failed to serve index.html: Request aborted
- Warn       [STATIC] Attempted root: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client
- Warn       [STATIC] Full path was: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client/index.html
- Warn       [STATIC] Error code: ECONNABORTED
- Warn       [STATIC] Failed to serve index.html: Request aborted
- Warn       [STATIC] Attempted root: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client
- Warn       [STATIC] Full path was: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client/index.html
- Warn       [STATIC] Error code: ECONNABORTED
- Info       [SocketIO] Client YNeqMjWojBC25GumAAAL disconnected.
- Info       [SocketIO] New connection: Kp7klSAi4uSPzGGSAAAN
- Info       [SocketIO DEBUG Kp7klSAi4uSPzGGSAAAN] Event 'message': [{"type":1,"payload":{"channelId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","roomId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","entityId":"1c612358-fadd-49cd-b21b-568adfd288a6"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"channelId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","roomId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","entityId":"1c612358-fadd-49cd-b21b-568adfd288a6"}} (SocketID: Kp7klSAi4uSPzGGSAAAN)
- Info       [SocketIO Kp7klSAi4uSPzGGSAAAN] Handling channel joining via 'message' event
- Info       [SocketIO] Socket Kp7klSAi4uSPzGGSAAAN joined Socket.IO channel: a5250c47-c5d7-496d-9665-9430fb9c4bea
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: 1c612358-fadd-49cd-b21b-568adfd288a6, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for 1c612358-fadd-49cd-b21b-568adfd288a6
- Info       [SocketIO] Socket Kp7klSAi4uSPzGGSAAAN successfully joined channel a5250c47-c5d7-496d-9665-9430fb9c4bea.
- Info       #Eliza  [Bootstrap] Syncing user: 1c612358-fadd-49cd-b21b-568adfd288a6
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SocketIO] New connection: d0WW4x0khpPpwm8BAAAP
- Info       [SocketIO DEBUG d0WW4x0khpPpwm8BAAAP] Event 'message': [{"type":1,"payload":{"roomId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: d0WW4x0khpPpwm8BAAAP)
- Info       [SocketIO d0WW4x0khpPpwm8BAAAP] Handling channel joining via 'message' event
- Info       [SocketIO] Socket d0WW4x0khpPpwm8BAAAP joined Socket.IO channel: 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO] Socket d0WW4x0khpPpwm8BAAAP successfully joined channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf.
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SocketIO] New connection: JizN8dfHIeZplLXTAAAR
- Info       [SocketIO DEBUG JizN8dfHIeZplLXTAAAR] Event 'message': [{"type":1,"payload":{"roomId":"3cfd131b-dc7b-4865-bd5e-176088b709d2","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"3cfd131b-dc7b-4865-bd5e-176088b709d2","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: JizN8dfHIeZplLXTAAAR)
- Info       [SocketIO JizN8dfHIeZplLXTAAAR] Handling channel joining via 'message' event
- Info       [SocketIO] Socket JizN8dfHIeZplLXTAAAR joined Socket.IO channel: 3cfd131b-dc7b-4865-bd5e-176088b709d2
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO] Socket JizN8dfHIeZplLXTAAAR successfully joined channel 3cfd131b-dc7b-4865-bd5e-176088b709d2.
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SocketIO] New connection: eynTFwopJaJsYNttAAAT
- Info       [SocketIO DEBUG eynTFwopJaJsYNttAAAT] Event 'message': [{"type":1,"payload":{"roomId":"1867fbe6-2a20-4441-a7f0-1c8b3a8b465d","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"1867fbe6-2a20-4441-a7f0-1c8b3a8b465d","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: eynTFwopJaJsYNttAAAT)
- Info       [SocketIO eynTFwopJaJsYNttAAAT] Handling channel joining via 'message' event
- Info       [SocketIO] Socket eynTFwopJaJsYNttAAAT joined Socket.IO channel: 1867fbe6-2a20-4441-a7f0-1c8b3a8b465d
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO] Socket eynTFwopJaJsYNttAAAT successfully joined channel 1867fbe6-2a20-4441-a7f0-1c8b3a8b465d.
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SocketIO] New connection: tTWt82dJxCKJtgtyAAAV
- Info       [SocketIO] New connection: Fvc-rRn1Bgn2FrVhAAAX
- Info       [SocketIO DEBUG d0WW4x0khpPpwm8BAAAP] Event 'message': [{"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://discord.com/channels/@me/1325914866950734005\\nTitle: Discord\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053439429,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://discord.com/channels/@me/1325914866950734005\\nTitle: Discord\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053439429,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: d0WW4x0khpPpwm8BAAAP)
- Info       [SocketIO d0WW4x0khpPpwm8BAAAP] Handling message sending via 'message' event
- Info       [SocketIO d0WW4x0khpPpwm8BAAAP] Received SEND_MESSAGE for central submission: channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO d0WW4x0khpPpwm8BAAAP] Full payload for debugging: {
-  "channelId": "069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "URL: https://discord.com/channels/@me/1325914866950734005\\nTitle: Discord\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1763053439429,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
-  }
-}
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO d0WW4x0khpPpwm8BAAAP] Checking if channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO d0WW4x0khpPpwm8BAAAP] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists: true
- Info       [SocketIO d0WW4x0khpPpwm8BAAAP] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"e1b3fce7-9440-497c-9cee-a9be6c7087e5"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"e1b3fce7-9440-497c-9cee-a9be6c7087e5"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"e1b3fce7-9440-497c-9cee-a9be6c7087e5"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"e1b3fce7-9440-497c-9cee-a9be6c7087e5"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"e1b3fce7-9440-497c-9cee-a9be6c7087e5"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"e1b3fce7-9440-497c-9cee-a9be6c7087e5"}
- Info       [AgentServer] Published message e1b3fce7-9440-497c-9cee-a9be6c7087e5 to internal message bus
- Info       [SocketIO d0WW4x0khpPpwm8BAAAP] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: e1b3fce7-9440-497c-9cee-a9be6c7087e5). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA1  [MessageService] Message received from 9e3cc7a8-b091-068a-8756-28a9bf48c72f in room 6a305674-87fb-00b0-947b-74259ed4c344
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [SocketIO] Client d0WW4x0khpPpwm8BAAAP disconnected.
- Info       [SocketIO] Client JizN8dfHIeZplLXTAAAR disconnected.
- Info       [SocketIO] Client eynTFwopJaJsYNttAAAT disconnected.
- Info       [SocketIO] Client tTWt82dJxCKJtgtyAAAV disconnected.
- Info       [SocketIO] Client Fvc-rRn1Bgn2FrVhAAAX disconnected.
- Warn       [STATIC] Failed to serve index.html: Request aborted
- Warn       [STATIC] Attempted root: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client
- Warn       [STATIC] Full path was: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client/index.html
- Warn       [STATIC] Error code: ECONNABORTED
- Warn       [STATIC] Failed to serve index.html: Request aborted
- Warn       [STATIC] Attempted root: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client
- Warn       [STATIC] Full path was: /Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/server/dist/client/index.html
- Warn       [STATIC] Error code: ECONNABORTED
- Info       [SocketIO] Client Kp7klSAi4uSPzGGSAAAN disconnected.
- Info       [SocketIO] New connection: Nc0Uh7SGdkEoMzXLAAAZ
- Info       [SocketIO DEBUG Nc0Uh7SGdkEoMzXLAAAZ] Event 'message': [{"type":1,"payload":{"channelId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","roomId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","entityId":"1c612358-fadd-49cd-b21b-568adfd288a6"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"channelId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","roomId":"a5250c47-c5d7-496d-9665-9430fb9c4bea","entityId":"1c612358-fadd-49cd-b21b-568adfd288a6"}} (SocketID: Nc0Uh7SGdkEoMzXLAAAZ)
- Info       [SocketIO Nc0Uh7SGdkEoMzXLAAAZ] Handling channel joining via 'message' event
- Info       [SocketIO] Socket Nc0Uh7SGdkEoMzXLAAAZ joined Socket.IO channel: a5250c47-c5d7-496d-9665-9430fb9c4bea
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: 1c612358-fadd-49cd-b21b-568adfd288a6, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for 1c612358-fadd-49cd-b21b-568adfd288a6
- Info       [SocketIO] Socket Nc0Uh7SGdkEoMzXLAAAZ successfully joined channel a5250c47-c5d7-496d-9665-9430fb9c4bea.
- Info       #Eliza  [Bootstrap] Syncing user: 1c612358-fadd-49cd-b21b-568adfd288a6
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SocketIO] New connection: PWcKZFxHpZ-qSRwrAAAb
- Info       [SocketIO DEBUG PWcKZFxHpZ-qSRwrAAAb] Event 'message': [{"type":1,"payload":{"roomId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: PWcKZFxHpZ-qSRwrAAAb)
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Handling channel joining via 'message' event
- Info       [SocketIO] Socket PWcKZFxHpZ-qSRwrAAAb joined Socket.IO channel: 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO] Socket PWcKZFxHpZ-qSRwrAAAb successfully joined channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf.
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SocketIO] New connection: Kyynurm4pyu8ZxDoAAAd
- Info       [SocketIO DEBUG Kyynurm4pyu8ZxDoAAAd] Event 'message': [{"type":1,"payload":{"roomId":"3cfd131b-dc7b-4865-bd5e-176088b709d2","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"3cfd131b-dc7b-4865-bd5e-176088b709d2","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: Kyynurm4pyu8ZxDoAAAd)
- Info       [SocketIO Kyynurm4pyu8ZxDoAAAd] Handling channel joining via 'message' event
- Info       [SocketIO] Socket Kyynurm4pyu8ZxDoAAAd joined Socket.IO channel: 3cfd131b-dc7b-4865-bd5e-176088b709d2
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO] Socket Kyynurm4pyu8ZxDoAAAd successfully joined channel 3cfd131b-dc7b-4865-bd5e-176088b709d2.
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SocketIO] New connection: p4kXYQHD5JR9DzDGAAAf
- Info       [SocketIO DEBUG p4kXYQHD5JR9DzDGAAAf] Event 'message': [{"type":1,"payload":{"roomId":"1867fbe6-2a20-4441-a7f0-1c8b3a8b465d","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
- Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"1867fbe6-2a20-4441-a7f0-1c8b3a8b465d","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: p4kXYQHD5JR9DzDGAAAf)
- Info       [SocketIO p4kXYQHD5JR9DzDGAAAf] Handling channel joining via 'message' event
- Info       [SocketIO] Socket p4kXYQHD5JR9DzDGAAAf joined Socket.IO channel: 1867fbe6-2a20-4441-a7f0-1c8b3a8b465d
- Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
- Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO] Socket p4kXYQHD5JR9DzDGAAAf successfully joined channel 1867fbe6-2a20-4441-a7f0-1c8b3a8b465d.
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [SocketIO] New connection: G4vMYBPUQxbxf5VOAAAh
- Info       [SocketIO] New connection: wawJzZEF-QEIV4S0AAAj
- Info       [SocketIO DEBUG PWcKZFxHpZ-qSRwrAAAb] Event 'message': [{"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: http://localhost:3000/chat/582f4e58-1285-004d-8ef6-1e6301f3d646/a5250c47-c5d7-496d-9665-9430fb9c4bea\\nTitle: ElizaOS - Client\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053450891,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: http://localhost:3000/chat/582f4e58-1285-004d-8ef6-1e6301f3d646/a5250c47-c5d7-496d-9665-9430fb9c4bea\\nTitle: ElizaOS - Client\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053450891,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: PWcKZFxHpZ-qSRwrAAAb)
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Handling message sending via 'message' event
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Received SEND_MESSAGE for central submission: channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Full payload for debugging: {
-  "channelId": "069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "URL: http://localhost:3000/chat/582f4e58-1285-004d-8ef6-1e6301f3d646/a5250c47-c5d7-496d-9665-9430fb9c4bea\\nTitle: ElizaOS - Client\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1763053450891,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
-  }
-}
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Checking if channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists: true
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"e373b62c-d58f-4be3-af11-ba713bec223d"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"e373b62c-d58f-4be3-af11-ba713bec223d"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"e373b62c-d58f-4be3-af11-ba713bec223d"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"e373b62c-d58f-4be3-af11-ba713bec223d"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"e373b62c-d58f-4be3-af11-ba713bec223d"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"e373b62c-d58f-4be3-af11-ba713bec223d"}
- Info       [AgentServer] Published message e373b62c-d58f-4be3-af11-ba713bec223d to internal message bus
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: e373b62c-d58f-4be3-af11-ba713bec223d). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA1  [MessageService] Message received from 9e3cc7a8-b091-068a-8756-28a9bf48c72f in room 6a305674-87fb-00b0-947b-74259ed4c344
- Warn       [MessageService] Updating response ID for room 6a305674-87fb-00b0-947b-74259ed4c344 from 80c27e91-27a2-4cf5-ac59-05a387a3bd3e to 485dc903-9880-413c-8fd9-f3ed7150e445
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       #SofIA1  Response discarded - newer message being processed for agent: 582f4e58-1285-004d-8ef6-1e6301f3d646, room: 6a305674-87fb-00b0-947b-74259ed4c344
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Info       [SofIA1] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA1] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","server_id":"00000000-0000-0000-0000-000000000000","author_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","content":"{ ... }","in_reply_to_message_id":"e373b62c-d58f-4be3-af11-ba713bec223d","source_type":"agent_response","raw_message":{"text":"{ ... }","thought":"Generate triplet for local ElizaOS client visit.","actions":["REPLY"]},"metadata":{"agent_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","agentName":"SofIA1","channelType":"DM","isDm":true}}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"6c23eab2-5cb7-4c25-be4a-79c1d9b5f7f3"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"6c23eab2-5cb7-4c25-be4a-79c1d9b5f7f3"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"6c23eab2-5cb7-4c25-be4a-79c1d9b5f7f3"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"6c23eab2-5cb7-4c25-be4a-79c1d9b5f7f3"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"6c23eab2-5cb7-4c25-be4a-79c1d9b5f7f3"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"6c23eab2-5cb7-4c25-be4a-79c1d9b5f7f3"}
- Info       [AgentServer] Published message 6c23eab2-5cb7-4c25-be4a-79c1d9b5f7f3 to internal message bus
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SocketIO DEBUG PWcKZFxHpZ-qSRwrAAAb] Event 'message': [{"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://fr.wikipedia.org/wiki/Fromage\\nTitle: Fromage — Wikipédia\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053510494,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://fr.wikipedia.org/wiki/Fromage\\nTitle: Fromage — Wikipédia\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053510494,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: PWcKZFxHpZ-qSRwrAAAb)
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Handling message sending via 'message' event
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Received SEND_MESSAGE for central submission: channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Full payload for debugging: {
-  "channelId": "069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "URL: https://fr.wikipedia.org/wiki/Fromage\\nTitle: Fromage — Wikipédia\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1763053510494,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
-  }
-}
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Checking if channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists: true
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"98e458b3-68cf-4e29-93dd-25a844aebd7d"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"98e458b3-68cf-4e29-93dd-25a844aebd7d"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"98e458b3-68cf-4e29-93dd-25a844aebd7d"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"98e458b3-68cf-4e29-93dd-25a844aebd7d"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"98e458b3-68cf-4e29-93dd-25a844aebd7d"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"98e458b3-68cf-4e29-93dd-25a844aebd7d"}
- Info       [AgentServer] Published message 98e458b3-68cf-4e29-93dd-25a844aebd7d to internal message bus
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 98e458b3-68cf-4e29-93dd-25a844aebd7d). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA1  [MessageService] Message received from 9e3cc7a8-b091-068a-8756-28a9bf48c72f in room 6a305674-87fb-00b0-947b-74259ed4c344
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Info       [SofIA1] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA1] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","server_id":"00000000-0000-0000-0000-000000000000","author_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","content":"{\n  \"atoms\": [\n    {\n      \"name\": \"User\",\n      \"description\": \"SofIA browser user\",\n      \"url\": \"https://sofia.local/user\"\n    },\n    {\n      \"name\": \"Fromage — Wikipédia\",\n      \"description\": \"Content visited by the user.\",\n      \"url\": \"https://fr.wikipedia.org/wiki/Fromage\"\n    }\n  ],\n  \"triplets\": [\n    {\n      \"subject\": {\n        \"name\": \"User\",\n        \"description\": \"SofIA browser user\",\n        \"url\": \"https://sofia.local/user\"\n      },\n      \"predicate\": {\n        \"name\": \"have visited\",\n        \"description\": \"Basic visit to the content.\"\n      },\n      \"object\": {\n        \"name\": \"Fromage — Wikipédia\",\n        \"description\": \"Content visited by the user.\",\n        \"url\": \"https://fr.wikipedia.org/wiki/Fromage\"\n      }\n    }\n  ],\n  \"session\": \"Wikipedia browsing\",\n  \"intention\": \"Learn about cheese\",\n  \"topic_family\": \"Food\"\n}","in_reply_to_message_id":"98e458b3-68cf-4e29-93dd-25a844aebd7d","source_type":"agent_response","raw_message":{"text":"{\n  \"atoms\": [\n    {\n      \"name\": \"User\",\n      \"description\": \"SofIA browser user\",\n      \"url\": \"https://sofia.local/user\"\n    },\n    {\n      \"name\": \"Fromage — Wikipédia\",\n      \"description\": \"Content visited by the user.\",\n      \"url\": \"https://fr.wikipedia.org/wiki/Fromage\"\n    }\n  ],\n  \"triplets\": [\n    {\n      \"subject\": {\n        \"name\": \"User\",\n        \"description\": \"SofIA browser user\",\n        \"url\": \"https://sofia.local/user\"\n      },\n      \"predicate\": {\n        \"name\": \"have visited\",\n        \"description\": \"Basic visit to the content.\"\n      },\n      \"object\": {\n        \"name\": \"Fromage — Wikipédia\",\n        \"description\": \"Content visited by the user.\",\n        \"url\": \"https://fr.wikipedia.org/wiki/Fromage\"\n      }\n    }\n  ],\n  \"session\": \"Wikipedia browsing\",\n  \"intention\": \"Learn about cheese\",\n  \"topic_family\": \"Food\"\n}","thought":"Generate semantic triplet for Wikipedia page visit.","actions":["REPLY"]},"metadata":{"agent_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","agentName":"SofIA1","channelType":"DM","isDm":true}}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"abcdf012-a57a-427e-aaa9-159e78f25bbd"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"abcdf012-a57a-427e-aaa9-159e78f25bbd"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"abcdf012-a57a-427e-aaa9-159e78f25bbd"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"abcdf012-a57a-427e-aaa9-159e78f25bbd"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"abcdf012-a57a-427e-aaa9-159e78f25bbd"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"abcdf012-a57a-427e-aaa9-159e78f25bbd"}
- Info       [AgentServer] Published message abcdf012-a57a-427e-aaa9-159e78f25bbd to internal message bus
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SocketIO DEBUG G4vMYBPUQxbxf5VOAAAh] Event 'message': [{"type":2,"payload":{"channelId":"251861d8-3f67-4fd2-be75-f86407ab8015","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"Analyze current pulse data:\n[{\"url\":\"https://discord.com/channels/@me/1325914866950734005\",\"title\":\"(50) Discord | @Passive-Records.box 👁\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566358},{\"url\":\"https://www.youtube.com/watch?v=wC04Nx7MhtM\",\"title\":\"𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 듣자마자 느낌 좋은 재즈힙합 | Lo-Fi Jazz Boom Bap - YouTube\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566358},{\"url\":\"https://github.com/intuition-box/Sofia\",\"title\":\"intuition-box/Sofia\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566359},{\"url\":\"http://localhost:3000/chat/582f4e58-1285-004d-8ef6-1e6301f3d646/a5250c47-c5d7-496d-9665-9430fb9c4bea\",\"title\":\"ElizaOS - Client\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566359},{\"url\":\"https://fr.wikipedia.org/wiki/Lactos%C3%A9rum\",\"title\":\"Lactosérum — Wikipédia\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566360}]","metadata":{"source":"extension","timestamp":1763053566361,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"251861d8-3f67-4fd2-be75-f86407ab8015","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"Analyze current pulse data:\n[{\"url\":\"https://discord.com/channels/@me/1325914866950734005\",\"title\":\"(50) Discord | @Passive-Records.box 👁\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566358},{\"url\":\"https://www.youtube.com/watch?v=wC04Nx7MhtM\",\"title\":\"𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 듣자마자 느낌 좋은 재즈힙합 | Lo-Fi Jazz Boom Bap - YouTube\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566358},{\"url\":\"https://github.com/intuition-box/Sofia\",\"title\":\"intuition-box/Sofia\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566359},{\"url\":\"http://localhost:3000/chat/582f4e58-1285-004d-8ef6-1e6301f3d646/a5250c47-c5d7-496d-9665-9430fb9c4bea\",\"title\":\"ElizaOS - Client\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566359},{\"url\":\"https://fr.wikipedia.org/wiki/Lactos%C3%A9rum\",\"title\":\"Lactosérum — Wikipédia\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566360}]","metadata":{"source":"extension","timestamp":1763053566361,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: G4vMYBPUQxbxf5VOAAAh)
- Info       [SocketIO G4vMYBPUQxbxf5VOAAAh] Handling message sending via 'message' event
- Info       [SocketIO G4vMYBPUQxbxf5VOAAAh] Received SEND_MESSAGE for central submission: channel 251861d8-3f67-4fd2-be75-f86407ab8015 from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO G4vMYBPUQxbxf5VOAAAh] Full payload for debugging: {
-  "channelId": "251861d8-3f67-4fd2-be75-f86407ab8015",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "Analyze current pulse data:\n[{\"url\":\"https://discord.com/channels/@me/1325914866950734005\",\"title\":\"(50) Discord | @Passive-Records.box 👁\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566358},{\"url\":\"https://www.youtube.com/watch?v=wC04Nx7MhtM\",\"title\":\"𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 듣자마자 느낌 좋은 재즈힙합 | Lo-Fi Jazz Boom Bap - YouTube\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566358},{\"url\":\"https://github.com/intuition-box/Sofia\",\"title\":\"intuition-box/Sofia\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566359},{\"url\":\"http://localhost:3000/chat/582f4e58-1285-004d-8ef6-1e6301f3d646/a5250c47-c5d7-496d-9665-9430fb9c4bea\",\"title\":\"ElizaOS - Client\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566359},{\"url\":\"https://fr.wikipedia.org/wiki/Lactos%C3%A9rum\",\"title\":\"Lactosérum — Wikipédia\",\"keywords\":\"\",\"description\":\"\",\"timestamp\":1763053566360}]",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1763053566361,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
-  }
-}
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO G4vMYBPUQxbxf5VOAAAh] Checking if channel 251861d8-3f67-4fd2-be75-f86407ab8015 exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO G4vMYBPUQxbxf5VOAAAh] Channel 251861d8-3f67-4fd2-be75-f86407ab8015 exists: true
- Info       [SocketIO G4vMYBPUQxbxf5VOAAAh] Channel 251861d8-3f67-4fd2-be75-f86407ab8015 already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"6a29ced5-a0a8-4003-8c31-7a2698e07b43"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"6a29ced5-a0a8-4003-8c31-7a2698e07b43"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"6a29ced5-a0a8-4003-8c31-7a2698e07b43"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"6a29ced5-a0a8-4003-8c31-7a2698e07b43"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"6a29ced5-a0a8-4003-8c31-7a2698e07b43"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"6a29ced5-a0a8-4003-8c31-7a2698e07b43"}
- Info       [AgentServer] Published message 6a29ced5-a0a8-4003-8c31-7a2698e07b43 to internal message bus
- Info       [SocketIO G4vMYBPUQxbxf5VOAAAh] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 6a29ced5-a0a8-4003-8c31-7a2698e07b43). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [Eliza] MessageBusService: Discovered new channel 251861d8-3f67-4fd2-be75-f86407ab8015, added to valid channels
- Info       [SofIA1] MessageBusService: Discovered new channel 251861d8-3f67-4fd2-be75-f86407ab8015, added to valid channels
- Info       [SofIA-Chat] MessageBusService: Discovered new channel 251861d8-3f67-4fd2-be75-f86407ab8015, added to valid channels
- Info       [PulseAgent] MessageBusService: Discovered new channel 251861d8-3f67-4fd2-be75-f86407ab8015, added to valid channels
- Info       [RecommendationAgent] MessageBusService: Discovered new channel 251861d8-3f67-4fd2-be75-f86407ab8015, added to valid channels
- Info       [ThemeExtractorAgent] MessageBusService: Discovered new channel 251861d8-3f67-4fd2-be75-f86407ab8015, added to valid channels
- Info       [Eliza] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [SofIA1] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [PulseAgent - 8afb486a-3c96-0569-b112-4a7f465862b2] MessageBusService: Agent is a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, proceeding with message processing
- Info       [PulseAgent] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [PulseAgent] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #PulseAgent  [MessageService] Message received from d27c83e7-dbb8-0f05-aae8-bf788198a4f1 in room b9c05ad0-f265-0163-8f7d-c4a10219e749
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Info       [SocketIO DEBUG PWcKZFxHpZ-qSRwrAAAb] Event 'message': [{"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://fr.wikipedia.org/wiki/Lactos%C3%A9rum\\nTitle: Lactosérum — Wikipédia\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053603658,"user_display_name":"User","isDM":true,"channelType":"DM"}}}]
- Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"URL: https://fr.wikipedia.org/wiki/Lactos%C3%A9rum\\nTitle: Lactosérum — Wikipédia\\nAttention Score: 0.30\\nSuggested Predicate: have visited","metadata":{"source":"extension","timestamp":1763053603658,"user_display_name":"User","isDM":true,"channelType":"DM"}}} (SocketID: PWcKZFxHpZ-qSRwrAAAb)
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Handling message sending via 'message' event
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Received SEND_MESSAGE for central submission: channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf from c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Full payload for debugging: {
-  "channelId": "069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf",
-  "serverId": "00000000-0000-0000-0000-000000000000",
-  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
-  "message": "URL: https://fr.wikipedia.org/wiki/Lactos%C3%A9rum\\nTitle: Lactosérum — Wikipédia\\nAttention Score: 0.30\\nSuggested Predicate: have visited",
-  "metadata": {
-    "source": "extension",
-    "timestamp": 1763053603658,
-    "user_display_name": "User",
-    "isDM": true,
-    "channelType": "DM"
-  }
-}
- Info       [SocketIO] Detected DM channel during message submission, emitting ENTITY_JOINED for proper world setup
- Info       [SocketIO] ENTITY_JOINED event emitted for DM channel setup: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Checking if channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists before creating message
- Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
- Info       #Eliza  [Bootstrap] syncSingleUser - type: DM, isDM: true, worldMetadata: {"ownership":{"ownerId":"c89710c9-057e-43cc-a1ef-73de724a332c"},"roles":{"c89710c9-057e-43cc-a1ef-73de724a332c":"OWNER"},"settings":{}}
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf exists: true
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf already exists, proceeding with message creation
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"628ba536-25ed-4247-a2e8-d43309b1a31e"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"628ba536-25ed-4247-a2e8-d43309b1a31e"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"628ba536-25ed-4247-a2e8-d43309b1a31e"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"628ba536-25ed-4247-a2e8-d43309b1a31e"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"628ba536-25ed-4247-a2e8-d43309b1a31e"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"628ba536-25ed-4247-a2e8-d43309b1a31e"}
- Info       [AgentServer] Published message 628ba536-25ed-4247-a2e8-d43309b1a31e to internal message bus
- Info       [SocketIO PWcKZFxHpZ-qSRwrAAAb] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: 628ba536-25ed-4247-a2e8-d43309b1a31e). It will be processed by agents and broadcasted upon their reply.
- Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA1] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
- Info       #SofIA1  [MessageService] Message received from 9e3cc7a8-b091-068a-8756-28a9bf48c72f in room 6a305674-87fb-00b0-947b-74259ed4c344
- Error      No world found for user during onboarding
- Error      Critical error in settings provider: Error: No server ownership found for onboarding
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] Agent generated response for message. Preparing to send back to bus.
- Info       [PulseAgent] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"251861d8-3f67-4fd2-be75-f86407ab8015","server_id":"00000000-0000-0000-0000-000000000000","author_id":"8afb486a-3c96-0569-b112-4a7f465862b2","content":"{\n  \"themes\": [\n    {\n      \"name\": \"Music Playlist Exploration\",\n      \"category\": \"Entertainment/Audio\",\n      \"confidence\": 0.85,\n      \"predicate\": \"explore\",\n      \"object\": \"lo-fi jazz hip hop playlist on YouTube\",\n      \"keywords\": [\"lo-fi\", \"jazz\", \"hip hop\", \"playlist\"],\n      \"urls\": [\n        \"https://www.youtube.com/watch?v=wC04Nx7MhtM\"\n      ]\n    },\n    {\n      \"name\": \"Discord Community Research\",\n      \"category\": \"Social/Community\",\n      \"confidence\": 0.8,\n      \"predicate\": \"research\",\n      \"object\": \"Passive-Records.box Discord channel\",\n      \"keywords\": [\"discord\", \"Passive-Records.box\", \"music community\"],\n      \"urls\": [\n        \"https://discord.com/channels/@me/1325914866950734005\"\n      ]\n    },\n    {\n      \"name\": \"GitHub Repository Analysis\",\n      \"category\": \"Software Development\",\n      \"confidence\": 0.85,\n      \"predicate\": \"analyze\",\n      \"object\": \"intuition-box/Sofia GitHub repo\",\n      \"keywords\": [\"intuition-box\", \"Sofia\", \"github\", \"repository\"],\n      \"urls\": [\n        \"https://github.com/intuition-box/Sofia\"\n      ]\n    },\n    {\n      \"name\": \"Local Chat Client Evaluation\",\n      \"category\": \"Software Development / Chat\",\n      \"confidence\": 0.75,\n      \"predicate\": \"evaluate\",\n      \"object\": \"ElizaOS local chat client\",\n      \"keywords\": [\"ElizaOS\", \"chat\", \"client\", \"localhost\"],\n      \"urls\": [\n        \"http://localhost:3000/chat/582f4e58-1285-004d-8ef6-1e6301f3d646/a5250c47-c5d7-496d-9665-9430fb9c4bea\"\n      ]\n    },\n    {\n      \"name\": \"Lactosérum Knowledge Learning\",\n      \"category\": \"Science / Biology\",\n      \"confidence\": 0.8,\n      \"predicate\": \"learn\",\n      \"object\": \"lactoserum (milk protein)\",\n      \"keywords\": [\"lactoserum\", \"wikipedia\", \"milk protein\"],\n      \"urls\": [\n        \"https://fr.wikipedia.org/wiki/Lactos%C3%A9rum\"\n      ]\n    }\n  ]\n}","in_reply_to_message_id":"6a29ced5-a0a8-4003-8c31-7a2698e07b43","source_type":"agent_response","raw_message":{"text":"{\n  \"themes\": [\n    {\n      \"name\": \"Music Playlist Exploration\",\n      \"category\": \"Entertainment/Audio\",\n      \"confidence\": 0.85,\n      \"predicate\": \"explore\",\n      \"object\": \"lo-fi jazz hip hop playlist on YouTube\",\n      \"keywords\": [\"lo-fi\", \"jazz\", \"hip hop\", \"playlist\"],\n      \"urls\": [\n        \"https://www.youtube.com/watch?v=wC04Nx7MhtM\"\n      ]\n    },\n    {\n      \"name\": \"Discord Community Research\",\n      \"category\": \"Social/Community\",\n      \"confidence\": 0.8,\n      \"predicate\": \"research\",\n      \"object\": \"Passive-Records.box Discord channel\",\n      \"keywords\": [\"discord\", \"Passive-Records.box\", \"music community\"],\n      \"urls\": [\n        \"https://discord.com/channels/@me/1325914866950734005\"\n      ]\n    },\n    {\n      \"name\": \"GitHub Repository Analysis\",\n      \"category\": \"Software Development\",\n      \"confidence\": 0.85,\n      \"predicate\": \"analyze\",\n      \"object\": \"intuition-box/Sofia GitHub repo\",\n      \"keywords\": [\"intuition-box\", \"Sofia\", \"github\", \"repository\"],\n      \"urls\": [\n        \"https://github.com/intuition-box/Sofia\"\n      ]\n    },\n    {\n      \"name\": \"Local Chat Client Evaluation\",\n      \"category\": \"Software Development / Chat\",\n      \"confidence\": 0.75,\n      \"predicate\": \"evaluate\",\n      \"object\": \"ElizaOS local chat client\",\n      \"keywords\": [\"ElizaOS\", \"chat\", \"client\", \"localhost\"],\n      \"urls\": [\n        \"http://localhost:3000/chat/582f4e58-1285-004d-8ef6-1e6301f3d646/a5250c47-c5d7-496d-9665-9430fb9c4bea\"\n      ]\n    },\n    {\n      \"name\": \"Lactosérum Knowledge Learning\",\n      \"category\": \"Science / Biology\",\n      \"confidence\": 0.8,\n      \"predicate\": \"learn\",\n      \"object\": \"lactoserum (milk protein)\",\n      \"keywords\": [\"lactoserum\", \"wikipedia\", \"milk protein\"],\n      \"urls\": [\n        \"https://fr.wikipedia.org/wiki/Lactos%C3%A9rum\"\n      ]\n    }\n  ]\n}","thought":"Generate JSON with behavioral themes based on the provided URLs.","actions":["REPLY"]},"metadata":{"agent_id":"8afb486a-3c96-0569-b112-4a7f465862b2","agentName":"PulseAgent","channelType":"DM","isDm":true}}
- Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
- Error      GaiaNet embeddings error {
-  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
-74 |       return data;
-75 |     } catch (error) {
-76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
-77 |       const message = error instanceof Error ? error.message : "Unknown error";
-78 |       throw new Error(`GaiaNet API error: ${message}`);
-                 ^
-error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
-      at embeddings (/Users/maximesaint-joannis/VScode/SOFIA/Sofia/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
-,
-}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"943da357-d626-4a5b-8acc-69403bce8cdc"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"943da357-d626-4a5b-8acc-69403bce8cdc"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"943da357-d626-4a5b-8acc-69403bce8cdc"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"943da357-d626-4a5b-8acc-69403bce8cdc"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"943da357-d626-4a5b-8acc-69403bce8cdc"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"943da357-d626-4a5b-8acc-69403bce8cdc"}
- Info       [AgentServer] Published message 943da357-d626-4a5b-8acc-69403bce8cdc to internal message bus
- Info       [Eliza] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [SofIA1] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [PulseAgent - 8afb486a-3c96-0569-b112-4a7f465862b2] MessageBusService: Agent is a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, proceeding with message processing
- Info       [PulseAgent] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 251861d8-3f67-4fd2-be75-f86407ab8015, ignoring message
- Info       [SofIA1] Agent generated response for message. Preparing to send back to bus.
- Info       [SofIA1] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf","server_id":"00000000-0000-0000-0000-000000000000","author_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","content":"{ ... }","in_reply_to_message_id":"628ba536-25ed-4247-a2e8-d43309b1a31e","source_type":"agent_response","raw_message":{"text":"{ ... }","thought":"Generate JSON for Wikipedia page visit","actions":["REPLY"]},"metadata":{"agent_id":"582f4e58-1285-004d-8ef6-1e6301f3d646","agentName":"SofIA1","channelType":"DM","isDm":true}}
- Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"5f2764e4-1c77-41dc-aaf9-3610d6f684ea"}
- Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"5f2764e4-1c77-41dc-aaf9-3610d6f684ea"}
- Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"5f2764e4-1c77-41dc-aaf9-3610d6f684ea"}
- Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"5f2764e4-1c77-41dc-aaf9-3610d6f684ea"}
- Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"5f2764e4-1c77-41dc-aaf9-3610d6f684ea"}
- Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"5f2764e4-1c77-41dc-aaf9-3610d6f684ea"}
- Info       [AgentServer] Published message 5f2764e4-1c77-41dc-aaf9-3610d6f684ea to internal message bus
- Info       [Eliza] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [SofIA1 - 582f4e58-1285-004d-8ef6-1e6301f3d646] MessageBusService: Agent is a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, proceeding with message processing
- Info       [SofIA1] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
- Info       [SofIA-Chat] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [PulseAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
- Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 069b4e0c-1e57-44aa-aef4-e9d2eb8c15bf, ignoring message
+ Info       [PulseAgent] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
+ Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
+ Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel 085d3a5f-9b5f-4718-b964-acac83cca89d, ignoring message
