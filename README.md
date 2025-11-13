@@ -1,6 +1,13 @@
-# SofIA
+# Sofia
 
-> **SofIA** (Semantic Organization for Intelligence Amplification) - An advanced browser extension and AI agent ecosystem that transforms user navigation data into verifiable knowledge graphs using Web3 and blockchain technologies.
+> **Sofia** (Semantic Organization for Intelligence Amplification) - An advanced browser extension and AI agent ecosystem that transforms user navigation data into verifiable knowledge graphs using Web3 and blockchain technologies.
+
+## Official Links
+
+- [Website](https://sofia.intuition.box)
+- [X account](https://x.com/0xSofia3)
+- [Sofia Chronicles](https://sofia.intuition.box/blog/)
+- [Discord](https://discord.gg/bPuGcZ2z)
 
 ## Documentation
 
