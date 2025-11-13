@@ -26,6 +26,184 @@ function extractMessageText(data: any): string {
   )
 }
 
+/**
+ * 🆕 Check if a messageBroadcast is from the expected agent in the expected channel
+ * Handles both channelId and roomId (ElizaOS may send either)
+ */
+function isMessageFromAgent(data: any, agentIds: AgentIds): boolean {
+  const channelMatch = (data.channelId === agentIds.CHANNEL_ID || data.roomId === agentIds.CHANNEL_ID)
+  const isFromAgent = (data.senderId === agentIds.AGENT_ID)
+  return channelMatch && isFromAgent
+}
+
+/**
+ * 🆕 Unified function to handle messageBroadcast from agents
+ * Used by all 5 agents to process incoming messages consistently
+ */
+async function handleAgentMessage(
+  data: any,
+  agentIds: AgentIds,
+  agentName: string,
+  customHandler?: (messageText: string) => Promise<void>
+): Promise<void> {
+  console.log(`📡 [${agentName}] messageBroadcast received:`, {
+    channelId: data.channelId,
+    roomId: data.roomId,
+    senderId: data.senderId,
+    expectedChannelId: agentIds.CHANNEL_ID,
+    expectedAgentId: agentIds.AGENT_ID,
+    isFromAgent: isMessageFromAgent(data, agentIds)
+  })
+
+  // ✅ Vérifier si le message vient bien de l'agent dans le bon channel
+  if (isMessageFromAgent(data, agentIds)) {
+    console.log(`✅ [${agentName}] Agent response matched! Processing...`)
+
+    try {
+      const messageText = extractMessageText(data)
+      console.log(`📝 [${agentName}] Raw message:`, messageText.substring(0, 100))
+
+      // If custom handler provided, use it; otherwise use default storage
+      if (customHandler) {
+        await customHandler(messageText)
+      } else {
+        // Default: store message in IndexedDB
+        const newMessage = {
+          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          content: { text: messageText },
+          created_at: Date.now(),
+          processed: false
+        }
+
+        await elizaDataService.storeMessage(newMessage, newMessage.id)
+        console.log(`✅ [${agentName}] Message stored in IndexedDB:`, { id: newMessage.id, preview: messageText.substring(0, 50) })
+
+        // Clean old messages periodically (keep last 50)
+        const allMessages = await elizaDataService.getAllMessages()
+        if (allMessages.length > 50) {
+          console.log(`🧹 [${agentName}] Cleaning old messages, keeping 50 most recent`)
+          await elizaDataService.deleteOldMessages(30)
+        }
+      }
+
+    } catch (error) {
+      console.error(`❌ [${agentName}] Failed to process message:`, error)
+    }
+  } else {
+    console.log(`⏭️ [${agentName}] Message not for us (from user or different channel)`)
+  }
+}
+
+/**
+ * 🆕 Unified function to handle channel retrieval/creation and ROOM_JOINING
+ * Used by all 5 agents to ensure consistent behavior
+ */
+async function setupAgentChannel(
+  socket: Socket,
+  agentIds: AgentIds,
+  agentName: string,
+  onReady?: () => void
+): Promise<void> {
+  try {
+    const walletAddress = await getWalletAddress()
+    const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, agentName)
+
+    if (storedChannelId) {
+      // ♻️ Reuse existing channel
+      agentIds.ROOM_ID = storedChannelId
+      agentIds.CHANNEL_ID = storedChannelId
+      console.log(`♻️ [${agentName}] Reusing existing channel: ${storedChannelId}`)
+
+      // 🔑 JOIN the existing room via Socket.IO to receive broadcasts
+      socket.emit("message", {
+        type: 1,  // ROOM_JOINING
+        payload: {
+          roomId: storedChannelId,
+          entityId: agentIds.AUTHOR_ID
+        }
+      })
+      console.log(`📨 [${agentName}] Sent ROOM_JOINING for existing channel: ${storedChannelId}`)
+
+      if (onReady) onReady()
+      return  // Don't create a new channel
+    }
+
+    // 🆕 No existing channel → create via REST API
+    console.log(`🔧 [${agentName}] No existing channel, creating new one via REST API...`)
+    const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: `DM-${agentName}-${Date.now()}`,
+        type: 2, // ChannelType.DM (numeric value, not string!)
+        server_id: agentIds.SERVER_ID,
+        participantCentralUserIds: [agentIds.AUTHOR_ID, agentIds.AGENT_ID],
+        metadata: {
+          isDm: true,
+          source: "extension",
+          createdAt: new Date().toISOString()
+        }
+      })
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      const channelData = result.data || result
+      console.log(`✅ [${agentName}] DM channel created via REST API:`, channelData)
+
+      // Store the real channel ID returned by the API
+      if (channelData.id) {
+        agentIds.ROOM_ID = channelData.id
+        agentIds.CHANNEL_ID = channelData.id
+        console.log(`💾 [${agentName}] Updated ROOM_ID and CHANNEL_ID to use real channel ID: ${agentIds.ROOM_ID}`)
+
+        // 🆕 Persist channel in IndexedDB
+        await agentChannelsService.storeChannelId(walletAddress, agentName, channelData.id, agentIds.AGENT_ID)
+        console.log(`💾 [${agentName}] Channel ID persisted to IndexedDB`)
+
+        // ✅ Add agent explicitly to channel (following reference code pattern)
+        console.log(`🔧 [${agentName}] Adding agent to channel explicitly...`)
+        try {
+          const addAgentResponse = await fetch(
+            `${SOFIA_SERVER_URL}/api/messaging/central-channels/${channelData.id}/agents`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ agentId: agentIds.AGENT_ID })
+            }
+          )
+
+          if (addAgentResponse.ok) {
+            console.log(`✅ [${agentName}] Agent added to channel successfully`)
+          } else {
+            const errorText = await addAgentResponse.text()
+            console.warn(`⚠️ [${agentName}] Could not add agent: ${addAgentResponse.status} ${errorText}`)
+          }
+        } catch (addError) {
+          console.error(`❌ [${agentName}] Error adding agent to channel:`, addError)
+        }
+
+        // 🔑 JOIN the newly created room via Socket.IO
+        socket.emit("message", {
+          type: 1,  // ROOM_JOINING
+          payload: {
+            roomId: channelData.id,
+            entityId: agentIds.AUTHOR_ID
+          }
+        })
+        console.log(`📨 [${agentName}] Sent ROOM_JOINING for new channel: ${channelData.id}`)
+
+        if (onReady) onReady()
+      }
+    } else {
+      const errorText = await response.text()
+      console.error(`❌ [${agentName}] Failed to create DM channel:`, errorText)
+    }
+  } catch (error) {
+    console.error(`❌ [${agentName}] Error creating DM channel:`, error)
+  }
+}
+
 let socketSofia: Socket
 let socketBot: Socket
 let socketThemeExtractor: Socket
@@ -123,150 +301,13 @@ export async function initializeSofiaSocket(): Promise<void> {
     console.log("✅ Connected to Eliza (SofIA), socket ID:", socketSofia.id)
     console.log("🔑 Using user-specific IDs:", sofiaIds)
 
-    // 🆕 Vérifier si un channel existe déjà pour ce user
-    try {
-      const walletAddress = await getWalletAddress()
-      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "SofIA")
-
-      if (storedChannelId) {
-        // ♻️ Réutiliser le channel existant
-        sofiaIds.ROOM_ID = storedChannelId
-        sofiaIds.CHANNEL_ID = storedChannelId
-        console.log("♻️ [SofIA] Reusing existing channel:", storedChannelId)
-
-        // 🔑 JOIN the room via Socket.IO to receive broadcasts
-        socketSofia.emit("message", {
-          type: 1,  // ROOM_JOINING
-          payload: {
-            roomId: storedChannelId,
-            entityId: sofiaIds.AUTHOR_ID
-          }
-        })
-        console.log("📨 [SofIA] Sent ROOM_JOINING for existing channel:", storedChannelId)
-
-        return  // Ne pas créer de nouveau channel
-      }
-
-      // 🆕 Pas de channel existant → créer via REST API
-      console.log("🔧 [SofIA] No existing channel, creating new one via REST API...")
-      const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `DM-SofIA-${Date.now()}`,
-          type: "DM", // ChannelType.DM (must be string, not number!)
-          server_id: sofiaIds.SERVER_ID,
-          participantCentralUserIds: [sofiaIds.AUTHOR_ID, sofiaIds.AGENT_ID],
-          metadata: {
-            isDm: true,
-            source: "extension",
-            createdAt: new Date().toISOString()
-          }
-        })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        const channelData = result.data || result
-        console.log("✅ [SofIA] DM channel created via REST API:", channelData)
-
-        // Store the real channel ID returned by the API
-        if (channelData.id) {
-          sofiaIds.ROOM_ID = channelData.id
-          sofiaIds.CHANNEL_ID = channelData.id
-          console.log("💾 [SofIA] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", sofiaIds.ROOM_ID)
-
-          // 🆕 Persister le channel dans IndexedDB
-          await agentChannelsService.storeChannelId(walletAddress, "SofIA", channelData.id, sofiaIds.AGENT_ID)
-          console.log("💾 [SofIA] Channel ID persisted to IndexedDB")
-
-          // ✅ Add agent explicitly to channel (following reference code pattern)
-          console.log("🔧 [SofIA] Adding agent to channel explicitly...")
-          try {
-            const addAgentResponse = await fetch(
-              `${SOFIA_SERVER_URL}/api/messaging/central-channels/${channelData.id}/agents`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ agentId: sofiaIds.AGENT_ID })
-              }
-            )
-
-            if (addAgentResponse.ok) {
-              console.log("✅ [SofIA] Agent added to channel successfully")
-            } else {
-              const errorText = await addAgentResponse.text()
-              console.warn(`⚠️ [SofIA] Could not add agent: ${addAgentResponse.status} ${errorText}`)
-            }
-          } catch (addError) {
-            console.error("❌ [SofIA] Error adding agent to channel:", addError)
-          }
-
-          // 🔑 JOIN the newly created room via Socket.IO
-          socketSofia.emit("message", {
-            type: 1,  // ROOM_JOINING
-            payload: {
-              roomId: channelData.id,
-              entityId: sofiaIds.AUTHOR_ID
-            }
-          })
-          console.log("📨 [SofIA] Sent ROOM_JOINING for new channel:", channelData.id)
-        }
-      } else {
-        const errorText = await response.text()
-        console.error("❌ [SofIA] Failed to create DM channel:", errorText)
-      }
-    } catch (error) {
-      console.error("❌ [SofIA] Error creating DM channel:", error)
-    }
+    // 🆕 Use unified channel setup function
+    await setupAgentChannel(socketSofia, sofiaIds, "SofIA")
   })
 
+  // 🆕 Use unified message handler
   socketSofia.on("messageBroadcast", async (data) => {
-    // 🆕 Logging détaillé pour debug
-    console.log("📡 [SofIA] messageBroadcast received:", {
-      channelId: data.channelId,
-      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
-      expectedChannelId: sofiaIds.CHANNEL_ID,
-      expectedAgentId: sofiaIds.AGENT_ID,
-      isFromAgent: (data.senderId === sofiaIds.AGENT_ID)
-    })
-
-    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
-    if (
-      data.channelId === sofiaIds.CHANNEL_ID &&
-      data.senderId === sofiaIds.AGENT_ID
-    ) {
-      console.log("✅ [SofIA] Agent message matched! Processing...")
-
-      try {
-        // 🆕 Utiliser extractMessageText pour robustesse
-        const messageText = extractMessageText(data)
-
-        // Create message in the exact same format as before
-        const newMessage = {
-          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          content: { text: messageText },
-          created_at: Date.now(),
-          processed: false
-        }
-
-        // Store directly in IndexedDB instead of buffer
-        await elizaDataService.storeMessage(newMessage, newMessage.id)
-        console.log("✅ [SofIA] Message stored in IndexedDB:", { id: newMessage.id, preview: messageText.substring(0, 50) })
-
-        // Clean old messages periodically (keep last 50)
-        const allMessages = await elizaDataService.getAllMessages()
-        if (allMessages.length > 50) {
-          console.log("🧹 Cleaning old messages, keeping 50 most recent")
-          await elizaDataService.deleteOldMessages(30) // Keep last 30 days
-        }
-
-      } catch (error) {
-        console.error("❌ [SofIA] Failed to store message in IndexedDB:", error)
-      }
-    } else {
-      console.log("⏭️ [SofIA] Message not for us (from user or different channel)")
-    }
+    await handleAgentMessage(data, sofiaIds, "SofIA")
   })
 
   socketSofia.on("disconnect", (reason) => {
@@ -305,160 +346,22 @@ export async function initializeChatbotSocket(onReady?: () => void): Promise<voi
     console.log("🤖 Connected to Chatbot, socket ID:", socketBot.id)
     console.log("🔑 Using user-specific IDs:", chatbotIds)
 
-    // 🆕 Vérifier si un channel existe déjà pour ce user
-    try {
-      const walletAddress = await getWalletAddress()
-      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "ChatBot")
-
-      if (storedChannelId) {
-        // ♻️ Réutiliser le channel existant
-        chatbotIds.ROOM_ID = storedChannelId
-        chatbotIds.CHANNEL_ID = storedChannelId
-        console.log("♻️ [Chatbot] Reusing existing channel:", storedChannelId)
-
-        // 🔑 JOIN the room via Socket.IO to receive broadcasts
-        socketBot.emit("message", {
-          type: 1,  // ROOM_JOINING
-          payload: {
-            roomId: storedChannelId,
-            entityId: chatbotIds.AUTHOR_ID
-          }
-        })
-        console.log("📨 [Chatbot] Sent ROOM_JOINING for existing channel:", storedChannelId)
-
-        // ✅ Notification that socket is ready
-        if (typeof onReady === "function") {
-          onReady()
-        }
-        return  // Ne pas créer de nouveau channel
-      }
-
-      // 🆕 Pas de channel existant → créer via REST API
-      console.log("🔧 [Chatbot] No existing channel, creating new one via REST API...")
-      const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `DM-Chatbot-${Date.now()}`,
-          type: "DM", // ChannelType.DM (must be string, not number!)
-          server_id: chatbotIds.SERVER_ID,
-          participantCentralUserIds: [chatbotIds.AUTHOR_ID, chatbotIds.AGENT_ID],
-          metadata: {
-            isDm: true,
-            user1: chatbotIds.AUTHOR_ID,
-            user2: chatbotIds.AGENT_ID,
-            forAgent: chatbotIds.AGENT_ID,
-            source: "extension",
-            createdAt: new Date().toISOString()
-          }
-        })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        const channelData = result.data || result
-        console.log("✅ [Chatbot] DM channel created via REST API:", channelData)
-
-        // Store the real channel ID returned by the API
-        if (channelData.id) {
-          chatbotIds.ROOM_ID = channelData.id
-          chatbotIds.CHANNEL_ID = channelData.id  // Also update CHANNEL_ID to match
-          console.log("💾 [Chatbot] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", chatbotIds.ROOM_ID)
-
-          // 🆕 Persister le channel dans IndexedDB
-          await agentChannelsService.storeChannelId(walletAddress, "ChatBot", channelData.id, chatbotIds.AGENT_ID)
-          console.log("💾 [Chatbot] Channel ID persisted to IndexedDB")
-
-          // ✅ Add agent explicitly to channel (following reference code pattern)
-          console.log("🔧 [Chatbot] Adding agent to channel explicitly...")
-          try {
-            const addAgentResponse = await fetch(
-              `${SOFIA_SERVER_URL}/api/messaging/central-channels/${channelData.id}/agents`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ agentId: chatbotIds.AGENT_ID })
-              }
-            )
-
-            if (addAgentResponse.ok) {
-              console.log("✅ [Chatbot] Agent added to channel successfully")
-            } else {
-              const errorText = await addAgentResponse.text()
-              console.warn(`⚠️ [Chatbot] Could not add agent: ${addAgentResponse.status} ${errorText}`)
-              // Note: 409 Conflict means agent already exists - that's OK
-            }
-          } catch (addError) {
-            console.error("❌ [Chatbot] Error adding agent to channel:", addError)
-          }
-
-          // 🔑 JOIN the newly created room via Socket.IO
-          socketBot.emit("message", {
-            type: 1,  // ROOM_JOINING
-            payload: {
-              roomId: channelData.id,
-              entityId: chatbotIds.AUTHOR_ID
-            }
-          })
-          console.log("📨 [Chatbot] Sent ROOM_JOINING for new channel:", channelData.id)
-        }
-      } else {
-        const errorText = await response.text()
-        console.error("❌ [Chatbot] Failed to create DM channel:", errorText)
-      }
-    } catch (error) {
-      console.error("❌ [Chatbot] Error creating DM channel:", error)
-    }
-
-    // ✅ Notification that socket is ready
-    if (typeof onReady === "function") {
-      onReady()
-    }
+    // 🆕 Use unified channel setup function
+    await setupAgentChannel(socketBot, chatbotIds, "ChatBot", onReady)
   })
 
-  socketBot.on("messageBroadcast", (data) => {
-    // 🔍 LOG COMPLET pour debug - voir TOUS les messages
-    console.log("📡 [Chatbot] messageBroadcast received (RAW):", data)
-    console.log("📡 [Chatbot] Analysis:", {
-      channelId: data.channelId,
-      roomId: data.roomId,
-      senderId: data.senderId,
-      senderName: data.senderName,
-      source: data.source,
-      expectedChannelId: chatbotIds.CHANNEL_ID,
-      expectedAgentId: chatbotIds.AGENT_ID,
-      channelMatch: (data.channelId === chatbotIds.CHANNEL_ID || data.roomId === chatbotIds.CHANNEL_ID),
-      isFromAgent: (data.senderId === chatbotIds.AGENT_ID)
-    })
-
-    // ✅ CORRECTION: Vérifier channel match ET senderId
-    if (
-      (data.channelId === chatbotIds.CHANNEL_ID || data.roomId === chatbotIds.CHANNEL_ID) &&
-      data.senderId === chatbotIds.AGENT_ID
-    ) {
-      console.log("✅ [Chatbot] Agent response matched! Sending to UI...")
-
-      try {
-        // 🆕 Utiliser extractMessageText pour robustesse
-        const messageText = extractMessageText(data)
-
-        // Envoyer directement via chrome.runtime.sendMessage (pas via MessageBus)
-        chrome.runtime.sendMessage({
-          type: "CHATBOT_RESPONSE",
-          text: messageText
-        }).catch((error) => {
-          console.warn("⚠️ [Chatbot] Error sending CHATBOT_RESPONSE:", error)
-        })
-
-        console.log("✅ [Chatbot] Response sent to UI:", messageText.substring(0, 50))
-      } catch (error) {
-        console.warn("⚠️ [Chatbot] Error processing message:", error)
-      }
-    } else {
-      console.log("⏭️ [Chatbot] Message not for us:", {
-        reason: data.senderId !== chatbotIds.AGENT_ID ? "Wrong sender" : "Wrong channel"
+  // 🆕 Use unified message handler with custom handler for UI communication
+  socketBot.on("messageBroadcast", async (data) => {
+    await handleAgentMessage(data, chatbotIds, "ChatBot", async (messageText) => {
+      // Custom handler: Send directly to UI via chrome.runtime.sendMessage
+      chrome.runtime.sendMessage({
+        type: "CHATBOT_RESPONSE",
+        text: messageText
+      }).catch((error) => {
+        console.warn("⚠️ [Chatbot] Error sending CHATBOT_RESPONSE:", error)
       })
-    }
+      console.log("✅ [Chatbot] Response sent to UI:", messageText.substring(0, 50))
+    })
   })
 
   socketBot.on("disconnect", (reason) => {
@@ -514,148 +417,28 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
     console.log("✅ [websocket.ts] Connected to ThemeExtractor, socket ID:", socketThemeExtractor.id)
     console.log("🔑 Using user-specific IDs:", themeExtractorIds)
 
-    // 🆕 Check if channel already exists for this user
-    try {
-      const walletAddress = await getWalletAddress()
-      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "ThemeExtractor")
-
-      if (storedChannelId) {
-        // ♻️ Reuse existing channel
-        themeExtractorIds.ROOM_ID = storedChannelId
-        themeExtractorIds.CHANNEL_ID = storedChannelId
-        console.log(`♻️ [ThemeExtractor] Reusing existing channel: ${storedChannelId}`)
-
-        // 🔑 JOIN the room via Socket.IO to receive broadcasts
-        socketThemeExtractor.emit("message", {
-          type: 1,  // ROOM_JOINING
-          payload: {
-            roomId: storedChannelId,
-            entityId: themeExtractorIds.AUTHOR_ID
-          }
-        })
-        console.log("📨 [ThemeExtractor] Sent ROOM_JOINING for existing channel:", storedChannelId)
-
-        return  // Don't create a new channel
-      }
-
-      // 🆕 No existing channel → create via REST API
-      console.log("🔧 [ThemeExtractor] Creating DM channel via REST API (following reference pattern)...")
-      const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `DM-ThemeExtractor-${Date.now()}`,
-          type: "DM", // ChannelType.DM (must be string, not number!)
-          server_id: themeExtractorIds.SERVER_ID,
-          participantCentralUserIds: [themeExtractorIds.AUTHOR_ID, themeExtractorIds.AGENT_ID],
-          metadata: {
-            isDm: true,
-            user1: themeExtractorIds.AUTHOR_ID,
-            user2: themeExtractorIds.AGENT_ID,
-            forAgent: themeExtractorIds.AGENT_ID,
-            source: "extension",
-            createdAt: new Date().toISOString()
-          }
-        })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        const channelData = result.data || result
-        console.log("✅ [ThemeExtractor] DM channel created via REST API:", channelData)
-
-        // Store the real channel ID returned by the API
-        if (channelData.id) {
-          themeExtractorIds.ROOM_ID = channelData.id
-          themeExtractorIds.CHANNEL_ID = channelData.id
-          console.log("💾 [ThemeExtractor] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", themeExtractorIds.ROOM_ID)
-
-          // 🆕 Persist channel in IndexedDB
-          await agentChannelsService.storeChannelId(walletAddress, "ThemeExtractor", channelData.id, themeExtractorIds.AGENT_ID)
-          console.log("💾 [ThemeExtractor] Channel persisted in IndexedDB")
-
-          // ✅ Add agent explicitly to channel (following reference code pattern)
-          console.log("🔧 [ThemeExtractor] Adding agent to channel explicitly...")
-          try {
-            const addAgentResponse = await fetch(
-              `${SOFIA_SERVER_URL}/api/messaging/central-channels/${channelData.id}/agents`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ agentId: themeExtractorIds.AGENT_ID })
-              }
-            )
-
-            if (addAgentResponse.ok) {
-              console.log("✅ [ThemeExtractor] Agent added to channel successfully")
-            } else {
-              const errorText = await addAgentResponse.text()
-              console.warn(`⚠️ [ThemeExtractor] Could not add agent: ${addAgentResponse.status} ${errorText}`)
-            }
-          } catch (addError) {
-            console.error("❌ [ThemeExtractor] Error adding agent to channel:", addError)
-          }
-
-          // 🔑 JOIN the newly created room via Socket.IO
-          socketThemeExtractor.emit("message", {
-            type: 1,  // ROOM_JOINING
-            payload: {
-              roomId: channelData.id,
-              entityId: themeExtractorIds.AUTHOR_ID
-            }
-          })
-          console.log("📨 [ThemeExtractor] Sent ROOM_JOINING for new channel:", channelData.id)
-        }
-      } else {
-        const errorText = await response.text()
-        console.error("❌ [ThemeExtractor] Failed to create DM channel:", errorText)
-      }
-    } catch (error) {
-      console.error("❌ [ThemeExtractor] Error creating DM channel:", error)
-    }
+    // 🆕 Use unified channel setup function
+    await setupAgentChannel(socketThemeExtractor, themeExtractorIds, "ThemeExtractor")
   })
 
+  // 🆕 Use unified message handler with custom handler for theme parsing
   socketThemeExtractor.on("messageBroadcast", async (data) => {
-    console.log("📡 [ThemeExtractor] messageBroadcast received:", {
-      channelId: data.channelId,
-      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
-      expectedChannelId: themeExtractorIds.CHANNEL_ID,
-      expectedAgentId: themeExtractorIds.AGENT_ID,
-      isFromAgent: (data.senderId === themeExtractorIds.AGENT_ID)
-    })
-
-    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
-    if (
-      data.channelId === themeExtractorIds.CHANNEL_ID &&
-      data.senderId === themeExtractorIds.AGENT_ID
-    ) {
-      console.log("✅ [ThemeExtractor] Agent response matched! Processing themes...")
-
+    await handleAgentMessage(data, themeExtractorIds, "ThemeExtractor", async (messageText) => {
+      // Custom handler: Parse themes from JSON response
+      let themes = []
       try {
-        const messageText = extractMessageText(data)
-        console.log("🔍 [ThemeExtractor] Raw message:", messageText.substring(0, 100))
-
-        // Parse themes from the response
-        let themes = []
-        try {
-          const parsed = JSON.parse(messageText)
-          themes = parsed
-          console.log("🎨 [ThemeExtractor] Themes parsed successfully:", themes)
-        } catch (parseError) {
-          console.warn("⚠️ [ThemeExtractor] Could not parse themes as JSON:", parseError)
-          themes = []
-        }
-
-        // TODO: Re-implement theme extraction handler
-        // handleThemeExtractorResponse(themes)
-        console.log("🎨 [ThemeExtractor] Theme extraction result:", themes)
-
-      } catch (error) {
-        console.error("❌ [ThemeExtractor] Failed to process response:", error)
+        const parsed = JSON.parse(messageText)
+        themes = parsed
+        console.log("🎨 [ThemeExtractor] Themes parsed successfully:", themes)
+      } catch (parseError) {
+        console.warn("⚠️ [ThemeExtractor] Could not parse themes as JSON:", parseError)
+        themes = []
       }
-    } else {
-      console.log("⏭️ [ThemeExtractor] Message not for us (from user or different channel)")
-    }
+
+      // TODO: Re-implement theme extraction handler
+      // handleThemeExtractorResponse(themes)
+      console.log("🎨 [ThemeExtractor] Theme extraction result:", themes)
+    })
   })
 
   socketThemeExtractor.on("connect_error", (error) => {
@@ -695,134 +478,35 @@ export async function initializePulseSocket(): Promise<void> {
     console.log("✅ [websocket.ts] Connected to PulseAgent, socket ID:", socketPulse.id)
     console.log("🔑 Using user-specific IDs:", pulseIds)
 
-    // 🆕 Check if channel already exists for this user
-    try {
-      const walletAddress = await getWalletAddress()
-      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "PulseAgent")
-
-      if (storedChannelId) {
-        // ♻️ Reuse existing channel
-        pulseIds.ROOM_ID = storedChannelId
-        pulseIds.CHANNEL_ID = storedChannelId
-        console.log(`♻️ [PulseAgent] Reusing existing channel: ${storedChannelId}`)
-        return  // Don't create a new channel
-      }
-
-      // 🆕 No existing channel → create via REST API
-      console.log("🔧 [PulseAgent] Creating DM channel via REST API (following reference pattern)...")
-      const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `DM-PulseAgent-${Date.now()}`,
-          type: "DM", // ChannelType.DM (must be string, not number!)
-          server_id: pulseIds.SERVER_ID,
-          participantCentralUserIds: [pulseIds.AUTHOR_ID, pulseIds.AGENT_ID],
-          metadata: {
-            isDm: true,
-            user1: pulseIds.AUTHOR_ID,
-            user2: pulseIds.AGENT_ID,
-            forAgent: pulseIds.AGENT_ID,
-            source: "extension",
-            createdAt: new Date().toISOString()
-          }
-        })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        const channelData = result.data || result
-        console.log("✅ [PulseAgent] DM channel created via REST API:", channelData)
-
-        // Store the real channel ID returned by the API
-        if (channelData.id) {
-          pulseIds.ROOM_ID = channelData.id
-          pulseIds.CHANNEL_ID = channelData.id
-          console.log("💾 [PulseAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", pulseIds.ROOM_ID)
-
-          // 🆕 Persist channel in IndexedDB
-          await agentChannelsService.storeChannelId(walletAddress, "PulseAgent", channelData.id, pulseIds.AGENT_ID)
-          console.log("💾 [PulseAgent] Channel persisted in IndexedDB")
-
-          // ✅ Add agent explicitly to channel (following reference code pattern)
-          console.log("🔧 [PulseAgent] Adding agent to channel explicitly...")
-          try {
-            const addAgentResponse = await fetch(
-              `${SOFIA_SERVER_URL}/api/messaging/central-channels/${channelData.id}/agents`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ agentId: pulseIds.AGENT_ID })
-              }
-            )
-
-            if (addAgentResponse.ok) {
-              console.log("✅ [PulseAgent] Agent added to channel successfully")
-            } else {
-              const errorText = await addAgentResponse.text()
-              console.warn(`⚠️ [PulseAgent] Could not add agent: ${addAgentResponse.status} ${errorText}`)
-            }
-          } catch (addError) {
-            console.error("❌ [PulseAgent] Error adding agent to channel:", addError)
-          }
-        }
-      } else {
-        const errorText = await response.text()
-        console.error("❌ [PulseAgent] Failed to create DM channel:", errorText)
-      }
-    } catch (error) {
-      console.error("❌ [PulseAgent] Error creating DM channel:", error)
-    }
+    // 🆕 Use unified channel setup function
+    await setupAgentChannel(socketPulse, pulseIds, "PulseAgent")
   })
 
+  // 🆕 Use unified message handler with custom handler for pulse analysis
   socketPulse.on("messageBroadcast", async (data) => {
-    console.log("📡 [PulseAgent] messageBroadcast received:", {
-      channelId: data.channelId,
-      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
-      expectedChannelId: pulseIds.CHANNEL_ID,
-      expectedAgentId: pulseIds.AGENT_ID,
-      isFromAgent: (data.senderId === pulseIds.AGENT_ID)
-    })
-
-    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
-    if (
-      data.channelId === pulseIds.CHANNEL_ID &&
-      data.senderId === pulseIds.AGENT_ID
-    ) {
-      console.log("✅ [PulseAgent] Agent response matched! Processing pulse analysis...")
-
-      try {
-        const messageText = extractMessageText(data)
-        console.log("🫀 [PulseAgent] Raw message:", messageText.substring(0, 100))
-
-        // Store pulse analysis results directly in IndexedDB
-        const pulseRecord = {
-          messageId: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          content: { text: messageText },
-          timestamp: Date.now(),
-          type: 'pulse_analysis'
-        }
-
-        // Use sofiaDB directly to bypass elizaDataService parsing
-        const result = await sofiaDB.put(STORES.ELIZA_DATA, pulseRecord)
-        console.log("✅ [PulseAgent] Pulse analysis stored directly:", { id: result, type: pulseRecord.type })
-
-        // Notify UI that pulse analysis is complete
-        try {
-          chrome.runtime.sendMessage({
-            type: "PULSE_ANALYSIS_COMPLETE"
-          })
-          console.log("🫀 [PulseAgent] Sent PULSE_ANALYSIS_COMPLETE message")
-        } catch (busError) {
-          console.warn("⚠️ [PulseAgent] Failed to send PULSE_ANALYSIS_COMPLETE:", busError)
-        }
-
-      } catch (error) {
-        console.error("❌ [PulseAgent] Failed to store pulse analysis:", error)
+    await handleAgentMessage(data, pulseIds, "PulseAgent", async (messageText) => {
+      // Custom handler: Store pulse analysis and notify UI
+      const pulseRecord = {
+        messageId: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        content: { text: messageText },
+        timestamp: Date.now(),
+        type: 'pulse_analysis'
       }
-    } else {
-      console.log("⏭️ [PulseAgent] Message not for us (from user or different channel)")
-    }
+
+      // Use sofiaDB directly to bypass elizaDataService parsing
+      const result = await sofiaDB.put(STORES.ELIZA_DATA, pulseRecord)
+      console.log("✅ [PulseAgent] Pulse analysis stored directly:", { id: result, type: pulseRecord.type })
+
+      // Notify UI that pulse analysis is complete
+      try {
+        chrome.runtime.sendMessage({
+          type: "PULSE_ANALYSIS_COMPLETE"
+        })
+        console.log("🫀 [PulseAgent] Sent PULSE_ANALYSIS_COMPLETE message")
+      } catch (busError) {
+        console.warn("⚠️ [PulseAgent] Failed to send PULSE_ANALYSIS_COMPLETE:", busError)
+      }
+    })
   })
 
   socketPulse.on("connect_error", (error) => {
@@ -873,127 +557,27 @@ export async function initializeRecommendationSocket(): Promise<void> {
     console.log("✅ [websocket.ts] Connected to RecommendationAgent, socket ID:", socketRecommendation.id)
     console.log("🔑 Using user-specific IDs:", recommendationIds)
 
-    // 🆕 Check if channel already exists for this user
-    try {
-      const walletAddress = await getWalletAddress()
-      const storedChannelId = await agentChannelsService.getStoredChannelId(walletAddress, "RecommendationAgent")
-
-      if (storedChannelId) {
-        // ♻️ Reuse existing channel
-        recommendationIds.ROOM_ID = storedChannelId
-        recommendationIds.CHANNEL_ID = storedChannelId
-        console.log(`♻️ [RecommendationAgent] Reusing existing channel: ${storedChannelId}`)
-        return  // Don't create a new channel
-      }
-
-      // 🆕 No existing channel → create via REST API
-      console.log("🔧 [RecommendationAgent] Creating DM channel via REST API (following reference pattern)...")
-      const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `DM-RecommendationAgent-${Date.now()}`,
-          type: "DM", // ChannelType.DM (must be string, not number!)
-          server_id: recommendationIds.SERVER_ID,
-          participantCentralUserIds: [recommendationIds.AUTHOR_ID, recommendationIds.AGENT_ID],
-          metadata: {
-            isDm: true,
-            user1: recommendationIds.AUTHOR_ID,
-            user2: recommendationIds.AGENT_ID,
-            forAgent: recommendationIds.AGENT_ID,
-            source: "extension",
-            createdAt: new Date().toISOString()
-          }
-        })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        const channelData = result.data || result
-        console.log("✅ [RecommendationAgent] DM channel created via REST API:", channelData)
-
-        // Store the real channel ID returned by the API
-        if (channelData.id) {
-          recommendationIds.ROOM_ID = channelData.id
-          recommendationIds.CHANNEL_ID = channelData.id
-          console.log("💾 [RecommendationAgent] Updated ROOM_ID and CHANNEL_ID to use real channel ID:", recommendationIds.ROOM_ID)
-
-          // 🆕 Persist channel in IndexedDB
-          await agentChannelsService.storeChannelId(walletAddress, "RecommendationAgent", channelData.id, recommendationIds.AGENT_ID)
-          console.log("💾 [RecommendationAgent] Channel persisted in IndexedDB")
-
-          // ✅ Add agent explicitly to channel (following reference code pattern)
-          console.log("🔧 [RecommendationAgent] Adding agent to channel explicitly...")
-          try {
-            const addAgentResponse = await fetch(
-              `${SOFIA_SERVER_URL}/api/messaging/central-channels/${channelData.id}/agents`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ agentId: recommendationIds.AGENT_ID })
-              }
-            )
-
-            if (addAgentResponse.ok) {
-              console.log("✅ [RecommendationAgent] Agent added to channel successfully")
-            } else {
-              const errorText = await addAgentResponse.text()
-              console.warn(`⚠️ [RecommendationAgent] Could not add agent: ${addAgentResponse.status} ${errorText}`)
-            }
-          } catch (addError) {
-            console.error("❌ [RecommendationAgent] Error adding agent to channel:", addError)
-          }
-        }
-      } else {
-        const errorText = await response.text()
-        console.error("❌ [RecommendationAgent] Failed to create DM channel:", errorText)
-      }
-    } catch (error) {
-      console.error("❌ [RecommendationAgent] Error creating DM channel:", error)
-    }
+    // 🆕 Use unified channel setup function
+    await setupAgentChannel(socketRecommendation, recommendationIds, "RecommendationAgent")
   })
 
+  // 🆕 Use unified message handler with custom handler for recommendations
   socketRecommendation.on("messageBroadcast", async (data) => {
-    console.log("📡 [RecommendationAgent] messageBroadcast received:", {
-      channelId: data.channelId,
-      senderId: data.senderId,  // 🔑 L'auteur du message (USER_ID ou AGENT_ID)
-      expectedChannelId: recommendationIds.CHANNEL_ID,
-      expectedAgentId: recommendationIds.AGENT_ID,
-      isFromAgent: (data.senderId === recommendationIds.AGENT_ID)
-    })
-
-    // ✅ CORRECTION: Vérifier senderId (pas authorId) - c'est là que l'agent ID est envoyé
-    if (
-      data.channelId === recommendationIds.CHANNEL_ID &&
-      data.senderId === recommendationIds.AGENT_ID
-    ) {
-      console.log("✅ [RecommendationAgent] Agent response matched! Processing recommendations...")
-
+    await handleAgentMessage(data, recommendationIds, "RecommendationAgent", async (messageText) => {
+      // Custom handler: Parse recommendations and call global handler
+      let recommendations = null
       try {
-        const messageText = extractMessageText(data)
-        console.log("💎 [RecommendationAgent] Raw message:", messageText.substring(0, 100))
-
-        // Parse recommendations from the response
-        let recommendations = null
-        try {
-          const parsed = JSON.parse(messageText)
-          recommendations = parsed
-          console.log("💎 [RecommendationAgent] Recommendations parsed successfully:", recommendations)
-        } catch (parseError) {
-          console.warn("⚠️ [RecommendationAgent] Could not parse recommendations as JSON:", parseError)
-          recommendations = null
-        }
-
-        // Resolve the Promise so requester can continue
-        handleRecommendationResponse(recommendations)
-
-      } catch (error) {
-        console.error("❌ [RecommendationAgent] Failed to process response:", error)
-        handleRecommendationResponse(null)
+        const parsed = JSON.parse(messageText)
+        recommendations = parsed
+        console.log("💎 [RecommendationAgent] Recommendations parsed successfully:", recommendations)
+      } catch (parseError) {
+        console.warn("⚠️ [RecommendationAgent] Could not parse recommendations as JSON:", parseError)
+        recommendations = null
       }
-    } else {
-      console.log("⏭️ [RecommendationAgent] Message not for us (from user or different channel)")
-    }
+
+      // Resolve the Promise so requester can continue
+      handleRecommendationResponse(recommendations)
+    })
   })
 
   socketRecommendation.on("connect_error", (error) => {
