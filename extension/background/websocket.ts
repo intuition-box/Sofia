@@ -435,9 +435,8 @@ export async function initializeThemeExtractorSocket(): Promise<void> {
         themes = []
       }
 
-      // TODO: Re-implement theme extraction handler
-      // handleThemeExtractorResponse(themes)
-      console.log("🎨 [ThemeExtractor] Theme extraction result:", themes)
+      // Resolve the Promise so requester can continue
+      handleThemeExtractorResponse(themes)
     })
   })
 
@@ -521,7 +520,18 @@ export async function initializePulseSocket(): Promise<void> {
   console.log("🫀 [websocket.ts] PulseAgent socket initialization completed")
 }
 
-// === 5. Initialiser WebSocket pour RecommendationAgent ===
+// === Global handlers for async responses ===
+// Global handler for ThemeExtractor responses
+let globalThemeExtractorHandler: ((themes: any[]) => void) | null = null
+
+export function handleThemeExtractorResponse(themes: any[]): void {
+  if (globalThemeExtractorHandler) {
+    console.log("🎨 [websocket.ts] Processing theme extraction response")
+    globalThemeExtractorHandler(themes)
+    globalThemeExtractorHandler = null
+  }
+}
+
 // Global handler for RecommendationAgent responses
 let globalRecommendationHandler: ((recommendations: any) => void) | null = null
 
@@ -614,12 +624,39 @@ export async function sendRecommendationRequest(walletData: any): Promise<any> {
 }
 
 /**
- * Send theme extraction request (stub for now)
- * TODO: Re-implement properly
+ * Send theme extraction request to ThemeExtractor agent
+ * @param urls - Array of URLs to analyze for themes
+ * @returns Promise resolving to extracted themes
  */
 export async function sendThemeExtractionRequest(urls: string[]): Promise<any[]> {
-  console.log("⚠️ [websocket.ts] sendThemeExtractionRequest called but not implemented yet")
-  return []
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      console.warn("⚠️ [ThemeExtractor] Request timeout after 10 minutes")
+      globalThemeExtractorHandler = null
+      resolve([]) // Return empty array on timeout
+    }, 600000) // 10 minutes timeout (ThemeExtractor needs time to analyze many URLs)
+
+    // Store resolver for when themes come back
+    globalThemeExtractorHandler = (themes) => {
+      clearTimeout(timeout)
+      resolve(themes || [])
+    }
+
+    // Prepare message text with all URLs (no limit)
+    const urlList = urls.join('\n')
+    const messageText = `Extract themes from the following URLs:\n\n${urlList}\n\nProvide a JSON array of themes with their frequencies.`
+
+    console.log(`📤 [ThemeExtractor] Sending ${urls.length} URLs for analysis`)
+
+    // Send message to ThemeExtractor
+    sendMessage('THEMEEXTRACTOR', messageText)
+      .catch((error) => {
+        console.error("❌ [ThemeExtractor] Failed to send request:", error)
+        clearTimeout(timeout)
+        globalThemeExtractorHandler = null
+        reject(error)
+      })
+  })
 }
 
 /**
@@ -668,7 +705,7 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
 
   console.log(`📤 [${agentType}] Sending message:`, text.substring(0, 100))
   console.log(`📤 [${agentType}] Complete IDs:`, {
-    channelId: agentIds.ROOM_ID,
+    channelId: agentIds.CHANNEL_ID,
     serverId: agentIds.SERVER_ID,
     senderId: agentIds.AUTHOR_ID,
     agentId: agentIds.AGENT_ID
@@ -677,16 +714,15 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
   const payload = {
     type: 2,  // SEND_MESSAGE
     payload: {
-      channelId: agentIds.ROOM_ID,      // Real channel ID from REST API creation
+      channelId: agentIds.CHANNEL_ID,   // Use CHANNEL_ID (not ROOM_ID)
       serverId: agentIds.SERVER_ID,     // Server ID
       senderId: agentIds.AUTHOR_ID,     // User's entity ID
       message: text,                     // Plain text message
       metadata: {
         source: "extension",
         timestamp: Date.now(),
-        user_display_name: "User",        // Display name for user entity creation
-        isDM: true,                        // Force ElizaOS to treat as DM
-        channelType: "DM"                  // Explicit channel type
+        user_display_name: "User"         // Display name for user entity creation
+        // Removed isDM and channelType to avoid DM onboarding issues
       }
     }
   }
@@ -697,6 +733,6 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
   // Channel already created via REST API with proper participants
   socket.emit("message", payload)
 
-  console.log(`✅ [${agentType}] Message sent via Socket.IO to channel ${agentIds.ROOM_ID}`)
+  console.log(`✅ [${agentType}] Message sent via Socket.IO to channel ${agentIds.CHANNEL_ID}`)
 }
 

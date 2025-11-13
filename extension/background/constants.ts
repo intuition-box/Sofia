@@ -81,8 +81,9 @@ export const BEHAVIOR_CACHE_TIMEOUT_MS = 10 * 60 * 1000;
 // Consolidated sensitive patterns (used for filtering and security)
 export const SENSITIVE_URL_PATTERNS = [
   'login', 'auth', 'signin', 'signup', 'register', 'password',
-  'bank', 'payment', 'checkout', 'secure', 'private', 'admin', 
-  'oauth', 'token', 'session', 'CAPTCHA', 'reCAPTCHA'
+  'bank', 'payment', 'checkout', 'secure', 'private', 'admin',
+  'oauth', 'token', 'session', 'CAPTCHA', 'reCAPTCHA',
+  'privy.intuition.systems', 'embedded-wallets'  // Privy wallet interface
 ];
 
 // Specific exclusion patterns (technical + sensitive)
