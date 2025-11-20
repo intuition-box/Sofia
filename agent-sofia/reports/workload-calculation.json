@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-11-20T19:29:43.098Z",
+  "testDuration": "24 hours",
+  "baselineMetrics": {
+    "totalMessages": 0,
+    "totalLLMRequests": 0,
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "avgResponseTime": 0
+  },
+  "projections": {
+    "users20": {
+      "userCount": 20,
+      "activeUsers": 3,
+      "messagesHour": 0,
+      "llmRequestsHour": 0,
+      "tokensHour": null,
+      "messagesDay": 0,
+      "llmRequestsDay": 0,
+      "tokensDay": null,
+      "messagesMonth": 0,
+      "llmRequestsMonth": 0,
+      "tokensMonth": null,
+      "requestsPerSecond": "0.00",
+      "tokensPerSecond": "NaN",
+      "gpusNeeded": 1
+    },
+    "users50": {
+      "userCount": 50,
+      "activeUsers": 8,
+      "messagesHour": 0,
+      "llmRequestsHour": 0,
+      "tokensHour": null,
+      "messagesDay": 0,
+      "llmRequestsDay": 0,
+      "tokensDay": null,
+      "messagesMonth": 0,
+      "llmRequestsMonth": 0,
+      "tokensMonth": null,
+      "requestsPerSecond": "0.00",
+      "tokensPerSecond": "NaN",
+      "gpusNeeded": 1
+    },
+    "users100": {
+      "userCount": 100,
+      "activeUsers": 15,
+      "messagesHour": 0,
+      "llmRequestsHour": 0,
+      "tokensHour": null,
+      "messagesDay": 0,
+      "llmRequestsDay": 0,
+      "tokensDay": null,
+      "messagesMonth": 0,
+      "llmRequestsMonth": 0,
+      "tokensMonth": null,
+      "requestsPerSecond": "0.00",
+      "tokensPerSecond": "NaN",
+      "gpusNeeded": 1
+    }
+  }
+}
