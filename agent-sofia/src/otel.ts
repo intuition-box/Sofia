@@ -2,11 +2,8 @@ import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import { Resource } from '@opentelemetry/resources';
-import {
-  ATTR_SERVICE_NAME,
-  ATTR_SERVICE_VERSION
-} from '@opentelemetry/semantic-conventions';
+import { resourceFromAttributes } from '@opentelemetry/resources';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
 // Configuration pour Dash0
@@ -16,7 +13,7 @@ const dash0Endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'https://ingres
 const dash0Token = process.env.DASH0_AUTH_TOKEN || '';
 
 // Resource attributes - informations sur le service
-const resource = new Resource({
+const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
   [ATTR_SERVICE_VERSION]: serviceVersion,
   'deployment.environment': process.env.NODE_ENV || 'development',
@@ -25,7 +22,7 @@ const resource = new Resource({
 });
 
 // Headers pour l'authentification Dash0
-const headers = dash0Token ? {
+const headers: Record<string, string> = dash0Token ? {
   'Authorization': `Bearer ${dash0Token}`
 } : {};
 
