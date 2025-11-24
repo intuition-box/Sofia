@@ -1,5 +1,6 @@
 import { elizaLogger } from '@elizaos/core';
 import { GaiaNetConfig } from './config';
+import { traceable, getCurrentRunTree } from 'langsmith/traceable';
 
 export interface ChatCompletionRequest {
   model: string;
@@ -70,12 +71,40 @@ export class GaiaNetClient {
     }
   }
 
-  async chatCompletion(request: ChatCompletionRequest): Promise<ChatCompletionResponse> {
+  chatCompletion = traceable(
+    async (request: ChatCompletionRequest): Promise<ChatCompletionResponse> => {
+      const response = await this._chatCompletionInternal(request);
+
+      // Inject metadata into LangSmith trace
+      const runTree = getCurrentRunTree();
+      if (runTree) {
+        runTree.extra = {
+          ...runTree.extra,
+          metadata: {
+            model: request.model,
+            provider: 'gaianet',
+            input_tokens: response.usage?.prompt_tokens || 0,
+            output_tokens: response.usage?.completion_tokens || 0,
+            total_tokens: response.usage?.total_tokens || 0,
+          },
+        };
+        runTree.tags = ['gaianet', 'qwen', 'elizaos'];
+      }
+
+      return response;
+    },
+    {
+      name: 'gaianet_chat_completion',
+      run_type: 'llm',
+    }
+  );
+
+  private async _chatCompletionInternal(request: ChatCompletionRequest): Promise<ChatCompletionResponse> {
     elizaLogger.debug('GaiaNet chat completion request');
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 50000); // 50 second timeout - shorter than server timeout
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout (2 minutes) for large requests
 
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',

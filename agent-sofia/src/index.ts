@@ -1,6 +1,3 @@
-// IMPORTANT: OpenTelemetry must be initialized FIRST before any other imports
-import './otel.ts';
-
 import {
   logger,
   type IAgentRuntime,

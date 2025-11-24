@@ -1,0 +1,144 @@
+✅ Connected to Eliza (SofIA), socket ID: cEmy3MK03IlAj04fAAAB
+websocket.ts:304 🔑 Using user-specific IDs: Object
+indexedDB-methods.ts:1046 ♻️ [AgentChannels] Retrieved channel for SofIA: f7b47ba4-5ca3-46b9-97fb-50b1a39f8f13
+websocket.ts:117 ♻️ [SofIA] Reusing existing channel: f7b47ba4-5ca3-46b9-97fb-50b1a39f8f13
+websocket.ts:127 � [SofIA] Sent ROOM_JOINING for existing channel: f7b47ba4-5ca3-46b9-97fb-50b1a39f8f13
+websocket.ts:418 ✅ [websocket.ts] Connected to ThemeExtractor, socket ID: 9mmm4fEvbGCd_NW7AAAD
+websocket.ts:420 🔑 Using user-specific IDs: Object
+indexedDB-methods.ts:1046 ♻️ [AgentChannels] Retrieved channel for ThemeExtractor: 42a0d36a-1a18-44c8-a2bb-caab59f3808b
+websocket.ts:117 ♻️ [ThemeExtractor] Reusing existing channel: 42a0d36a-1a18-44c8-a2bb-caab59f3808b
+websocket.ts:127 � [ThemeExtractor] Sent ROOM_JOINING for existing channel: 42a0d36a-1a18-44c8-a2bb-caab59f3808b
+websocket.ts:568 ✅ [websocket.ts] Connected to RecommendationAgent, socket ID: o0zXWuip2L6MY7aDAAAF
+websocket.ts:570 🔑 Using user-specific IDs: Object
+indexedDB-methods.ts:1046 ♻️ [AgentChannels] Retrieved channel for RecommendationAgent: 7b0a1d37-e941-428b-a19c-e7cd7a1f18ba
+websocket.ts:117 ♻️ [RecommendationAgent] Reusing existing channel: 7b0a1d37-e941-428b-a19c-e7cd7a1f18ba
+websocket.ts:127 � [RecommendationAgent] Sent ROOM_JOINING for existing channel: 7b0a1d37-e941-428b-a19c-e7cd7a1f18ba
+websocket.ts:478 ✅ [websocket.ts] Connected to PulseAgent, socket ID: D2M6KRitgNb3VZeHAAAH
+websocket.ts:480 🔑 Using user-specific IDs: Object
+indexedDB-methods.ts:1046 ♻️ [AgentChannels] Retrieved channel for PulseAgent: 8aa3cee4-a0b3-4645-a4ed-1663cbad3328
+websocket.ts:117 ♻️ [PulseAgent] Reusing existing channel: 8aa3cee4-a0b3-4645-a4ed-1663cbad3328
+websocket.ts:127 � [PulseAgent] Sent ROOM_JOINING for existing channel: 8aa3cee4-a0b3-4645-a4ed-1663cbad3328
+websocket.ts:347 🤖 Connected to Chatbot, socket ID: NRV9aW_cbop16TQIAAAJ
+websocket.ts:349 🔑 Using user-specific IDs: Object
+indexedDB-methods.ts:1046 ♻️ [AgentChannels] Retrieved channel for ChatBot: d8fab831-a2b2-4d48-b84a-5ff921fb4f40
+websocket.ts:117 ♻️ [ChatBot] Reusing existing channel: d8fab831-a2b2-4d48-b84a-5ff921fb4f40
+websocket.ts:127 � [ChatBot] Sent ROOM_JOINING for existing channel: d8fab831-a2b2-4d48-b84a-5ff921fb4f40
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: {success: true}
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: https://docs.phala.com/phala-cloud/networking/expose-http-service
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: https://docs.phala.com/phala-cloud/networking/expose-http-service
+usePageBlockchainData.ts:128 📥 Total atoms count: 0
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): {atoms: Array(0)}
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 0 (displaying first 100)
+usePageBlockchainData.ts:205 📥 No atoms found, skipping triplets query
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 0
+usePageBlockchainData.ts:217 📥 Atoms displayed: 0
+usePageBlockchainData.ts:237 📥 Total triples (real count): 0
+usePageBlockchainData.ts:239 📥 Triples displayed: 0
+usePageBlockchainData.ts:403 🔍 [usePageBlockchainData] URL change detected via polling, refreshing data...
+usePageBlockchainData.ts:26 🔍 [usePageBlockchainData] Attempting to get clean URL from content script...
+usePageBlockchainData.ts:29 🔍 [usePageBlockchainData] Response from content script: {success: true}
+usePageBlockchainData.ts:36 🔍 [usePageBlockchainData] Content script failed, trying tab query...
+usePageBlockchainData.ts:42 🔍 [usePageBlockchainData] Got URL from tab: https://docs.phala.com/phala-cloud/networking/expose-http-service
+usePageBlockchainData.ts:64 🔍 Fetching blockchain data for URL: https://docs.phala.com/phala-cloud/networking/expose-http-service
+usePageBlockchainData.ts:128 📥 Total atoms count: 0
+usePageBlockchainData.ts:130 📥 Atoms response (first 100): {atoms: Array(0)}
+usePageBlockchainData.ts:135 🔍 Found atom IDs: 0 (displaying first 100)
+usePageBlockchainData.ts:205 📥 No atoms found, skipping triplets query
+usePageBlockchainData.ts:215 📥 Total atoms (real count): 0
+usePageBlockchainData.ts:217 📥 Atoms displayed: 0
+usePageBlockchainData.ts:237 📥 Total triples (real count): 0
+usePageBlockchainData.ts:239 📥 Triples displayed: 0
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: c chatInput: 
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: Backspace chatInput: c
+3PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: Backspace chatInput: 
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: c chatInput: 
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: o chatInput: c
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: m chatInput: co
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: o chatInput: com
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation:   chatInput: como
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: e chatInput: como 
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: s chatInput: como e
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: t chatInput: como es
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: r chatInput: como est
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: a chatInput: como estr
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: Backspace chatInput: como estra
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: Backspace chatInput: como estr
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: a chatInput: como est
+PulseAnimation.tsx:29 ⌨️ Key pressed in PulseAnimation: Enter chatInput: como esta
+PulseAnimation.tsx:31 ✅ Enter detected, calling onChatSubmit with: como esta
+HomeConnectedPage.tsx:37 🎯 handleChatSubmit called with message: como esta
+HomeConnectedPage.tsx:40 💾 Message saved to storage: como esta
+ChatPage.tsx:119 🎧 [ChatPage] Message listener registered
+ChatPage.tsx:44 ✉️ Message utilisateur : como esta
+websocket.ts:707 � [CHATBOT] Sending message: como esta
+websocket.ts:708 � [CHATBOT] Complete IDs: {channelId: 'd8fab831-a2b2-4d48-b84a-5ff921fb4f40', serverId: '00000000-0000-0000-0000-000000000000', senderId: 'c89710c9-057e-43cc-a1ef-73de724a332c', agentId: '79c0c83b-2bd2-042f-a534-952c58a1024d'}
+websocket.ts:732 � [CHATBOT] Full payload: {
+  "type": 2,
+  "payload": {
+    "channelId": "d8fab831-a2b2-4d48-b84a-5ff921fb4f40",
+    "serverId": "00000000-0000-0000-0000-000000000000",
+    "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
+    "message": "como esta",
+    "metadata": {
+      "source": "extension",
+      "timestamp": 1763980057912,
+      "user_display_name": "User"
+    }
+  }
+}
+websocket.ts:737 ✅ [CHATBOT] Message sent via Socket.IO to channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40
+websocket.ts:50 � [ChatBot] messageBroadcast received: {channelId: 'd8fab831-a2b2-4d48-b84a-5ff921fb4f40', roomId: 'd8fab831-a2b2-4d48-b84a-5ff921fb4f40', senderId: 'c89710c9-057e-43cc-a1ef-73de724a332c', expectedChannelId: 'd8fab831-a2b2-4d48-b84a-5ff921fb4f40', expectedAgentId: '79c0c83b-2bd2-042f-a534-952c58a1024d', …}
+websocket.ts:95 ⏭️ [ChatBot] Message not for us (from user or different channel)
+logger.ts:58 ⚠️ [10:27:54] � PageDataService - PAGE_DURATION without PAGE_DATA {url: 'https://docs.phala.com/phala-cloud/networking/expose-http-service'}
+warn @ logger.ts:58
+handlePageDuration @ PageDataService.ts:53
+(anonymous) @ messageHandlers.ts:165
+(anonymous) @ messageHandlers.ts:375Understand this warning
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'PAGE_DURATION', data: {…}}
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'PAGE_DURATION', data: {…}}
+logger.ts:58 ⚠️ [10:28:01] � PageDataService - PAGE_DURATION without PAGE_DATA {url: 'https://docs.phala.com/phala-cloud/networking/expose-http-service'}
+warn @ logger.ts:58
+handlePageDuration @ PageDataService.ts:53
+(anonymous) @ messageHandlers.ts:165
+(anonymous) @ messageHandlers.ts:375Understand this warning
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'PAGE_DURATION', data: {…}}
+logger.ts:58 ⚠️ [10:28:12] � PageDataService - PAGE_DURATION without PAGE_DATA {url: 'https://docs.phala.com/phala-cloud/networking/expose-http-service'}
+warn @ logger.ts:58
+handlePageDuration @ PageDataService.ts:53
+(anonymous) @ messageHandlers.ts:165
+(anonymous) @ messageHandlers.ts:375Understand this warning
+websocket.ts:50 � [ChatBot] messageBroadcast received: {channelId: undefined, roomId: 'd8fab831-a2b2-4d48-b84a-5ff921fb4f40', senderId: '79c0c83b-2bd2-042f-a534-952c58a1024d', expectedChannelId: 'd8fab831-a2b2-4d48-b84a-5ff921fb4f40', expectedAgentId: '79c0c83b-2bd2-042f-a534-952c58a1024d', …}
+websocket.ts:62 ✅ [ChatBot] Agent response matched! Processing...
+websocket.ts:66 � [ChatBot] Raw message: Bonjour! Je vais très bien, merci de demander. Et toi, comment vas-tu?
+websocket.ts:364 ✅ [Chatbot] Response sent to UI: Bonjour! Je vais très bien, merci de demander. Et 
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'CHATBOT_RESPONSE', text: 'Bonjour! Je vais très bien, merci de demander. Et toi, comment vas-tu?'}
+ChatPage.tsx:104 ✅ [ChatPage] Processing CHATBOT_RESPONSE: Bonjour! Je vais très bien, merci de demander. Et toi, comment vas-tu?
+ChatPage.tsx:113 📝 [ChatPage] Adding message to state, current count: 3
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'PAGE_DURATION', data: {…}}
+logger.ts:58 ⚠️ [10:28:20] � PageDataService - PAGE_DURATION without PAGE_DATA {url: 'https://docs.phala.com/phala-cloud/networking/expose-http-service'}
+warn @ logger.ts:58
+handlePageDuration @ PageDataService.ts:53
+(anonymous) @ messageHandlers.ts:165
+(anonymous) @ messageHandlers.ts:375Understand this warning
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'PAGE_THEME_DETECTED', theme: 'dark'}
+themeIconManager.ts:43 Failed to update extension icon: Error: Failed to set icon 'chrome-extension://pjchenjipgnekklopmojagihgmebncek/icon-dark-16.png': Failed to fetch
+    at extensions::setIcon:131:17
+    at extensions::setIcon:38:5
+updateIconForTheme @ themeIconManager.ts:43
+await in updateIconForTheme
+(anonymous) @ themeIconManager.ts:93Understand this error
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'PAGE_DURATION', data: {…}}
+logger.ts:58 ⚠️ [10:28:25] � PageDataService - PAGE_DURATION without PAGE_DATA {url: 'https://app.dash0.com/onboarding/instructions?org=…kJme75RcFp6bmBWem5yXmFCtZlRSVptbW1gIA4Wsedw%3D%3D'}
+warn @ logger.ts:58
+handlePageDuration @ PageDataService.ts:53
+(anonymous) @ messageHandlers.ts:165
+(anonymous) @ messageHandlers.ts:375Understand this warning
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'PAGE_DURATION', data: {…}}
+logger.ts:58 ⚠️ [10:28:25] � PageDataService - PAGE_DURATION without PAGE_DATA {url: 'https://www.youtube.com/embed/Wrp3MEU1jLc?rel=0&vq=hd2160'}
+warn @ logger.ts:58
+handlePageDuration @ PageDataService.ts:53
+(anonymous) @ messageHandlers.ts:165
+(anonymous) @ messageHandlers.ts:375Understand this warning
+ChatPage.tsx:101 🔔 [ChatPage] Received message: {type: 'PAGE_DURATION', data: {…}}

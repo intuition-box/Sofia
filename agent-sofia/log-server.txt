@@ -1,0 +1,422 @@
+➜  agent-sofia git:(OpenTelemetric) ✗ elizaos start
+[2025-11-24 10:26:45] INFO: Using local @elizaos/cli installation
+
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⣐⣿⣿⢰⡀⠀⠀⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⣴⠤⠾⠛⠛⣿⣶⣇⠀⠀⡆ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢰⣋⡳⡄⠀⢨⣭⡀⠀⡤⠀⣀⣝⢿⣶⣿⡅ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢸⣯⠀⣇⠀⣼⣿⣿⣆⢷⣴⣿⣿⡏⣛⡉⠀ ⢸⣿⣿⣿⣿⣿⣿⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⣾⣿⣿⣧⠀⠀⠀⢸⠟⢀⣴⣿⣿⣿⣿⣦⡀⣠⣾⣿⣿⣿⣿⣦⡙⢿
+⠀⠙⢷⣮⢸⣿⣿⣿⣿⣷⣯⣟⣏⣼⣷⣅⠾ ⢸⣿⣇⣀⣀⣀⠀⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⠀⠀⣠⣿⣿⠟⠁⠀⠀⣼⣿⡟⣿⣿⣆⠀⠀⠀⠀⣿⣿⠋⠀⠈⠻⣿⡇⣿⣿⣅⣀⣀⡛⠛⠃⠀
+⠀⠀⠀⠁⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠋⠀ ⢸⣿⡿⠿⠿⠿⠀⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⣠⣾⣿⠟⠁⠀⠀⠀⣰⣿⣿⣁⣸⣿⣿⡄⠀⠀⠀⣿⣿ ⠀⠀ ⣿⣿⢈⣛⠿⠿⠿⣿⣷⡄⠀
+⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣉⡟⠀⠀ ⢸⣿⣧⣤⣤⣤⣤⢸⣿⣿⣦⣤⣤⣤⡄⣿⣿⡇⣾⣿⣿⣧⣤⣤⣤⡄⢰⣿⣿⠟⠛⠛⠻⣿⣿⡄⢠⡀⠻⣿⣿⣦⣴⣿⣿⠇⢿⣿⣦⣤⣤⣿⣿⠇⣠
+⠀⠀⠀⠀⢰⡈⠛⠿⣿⣿⣿⣿⣿⠋⠀   ⠘⠛⠛⠛⠛⠛⠛⠈⠛⠛⠛⠛⠛⠛⠃⠛⠛⠃⠛⠛⠛⠛⠛⠛⠛⠃⠛⠛⠃⠀⠀⠀⠀⠙⠛⠃⠘⠛⠀⠈⠛⠛⠛⠛⠁⠀⠀⠙⠛⠛⠛⠛⠁⠚⠛
+⠀⠀⠀⠀⢸⣿⡦⠀⠀⠉⠛⠿⠃⠀⠀⠀  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+
+Version: 1.6.4
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+│
+◇  ✓ Project built successfully
+ Info       No character files specified, attempting to load project agents...
+ Info       Loaded project from /home/max/Project/sofia-core/core/agent-sofia/dist/index.js
+ Info       Found 6 agent(s) in project configuration
+ Info       Loaded character: Eliza
+ Info       Loaded character: SofIA1
+ Info       Loaded character: SofIA-Chat
+ Info       Loaded character: PulseAgent
+ Info       Loaded character: RecommendationAgent
+ Info       Loaded character: ThemeExtractorAgent
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+ Info       [INIT] Database Dir for SQL plugin: /home/max/Project/sofia-core/core/agent-sofia/.eliza/.elizadb
+ Info       [INIT] Running database migrations for messaging tables...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       Discovered 1 plugin schemas out of 1 plugins
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       [INIT] Ensuring default server exists...
+ Info       [AgentServer] Checking for server 00000000-0000-0000-0000-000000000000...
+ Info       [AgentServer] Server already exists with ID: 00000000-0000-0000-0000-000000000000
+ Info       [INIT] Server uses temporary adapter for migrations only
+ Info       [INIT] Initializing ElizaOS...
+ Info       [MessageBusService] Global ElizaOS instance set
+ Info       [MessageBusService] Global AgentServer instance set
+ Info       [Sentry] Initialized Sentry for @elizaos/server
+ Info       Public health check endpoints enabled: /healthz and /health (rate limited: 100 req/min)
+ Warn       Server authentication is disabled. Set ELIZA_SERVER_AUTH_TOKEN environment variable to enable.
+ Info       Web UI enabled
+ Info       [STATIC] Found client files at: /home/max/Project/sofia-core/core/agent-sofia/node_modules/@elizaos/server/dist/client
+ Info       [STATIC] Serving static files from: /home/max/Project/sofia-core/core/agent-sofia/node_modules/@elizaos/server/dist/client
+ Info       [Jobs API] Started job cleanup interval
+ Info       [SocketIO] Router initialized with 0 agents
+ Info       [SocketIO] Setting up Socket.IO event listeners
+ Info       [SocketIO] Registered message types: 1: ROOM_JOINING, 2: SEND_MESSAGE, 3: MESSAGE, 4: ACK, 5: THINKING, 6: CONTROL, ROOM_JOINING: 1, SEND_MESSAGE: 2, MESSAGE: 3, ACK: 4, THINKING: 5, CONTROL: 6
+AgentServer is listening on port 3000
+ Warn       SECRET_SALT is not set or using default value
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       Final plugins being loaded: {
+  plugins: [ "@elizaos/plugin-sql", "bootstrap", "gaianet" ],
+}
+ Info       plugin-sql (node) init starting...
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       plugin-sql (node) init starting...
+ Info       Initializing GaiaNet plugin
+ Info       GaiaNet plugin initialized successfully
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       No pre-registered database adapter detected; registering adapter
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       Database adapter created and registered
+ Info       #Eliza  Running plugin migrations...
+ Info       #Eliza  Found 1 plugins with schemas to migrate.
+ Info       #SofIA1  Running plugin migrations...
+ Info       #SofIA1  Found 1 plugins with schemas to migrate.
+ Info       #SofIA-Chat  Running plugin migrations...
+ Info       #SofIA-Chat  Found 1 plugins with schemas to migrate.
+ Info       #PulseAgent  Running plugin migrations...
+ Info       #PulseAgent  Found 1 plugins with schemas to migrate.
+ Info       #RecommendationAgent  Running plugin migrations...
+ Info       #RecommendationAgent  Found 1 plugins with schemas to migrate.
+ Info       #ThemeExtractorAgent  Running plugin migrations...
+ Info       #ThemeExtractorAgent  Found 1 plugins with schemas to migrate.
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       DatabaseMigrationService initialized with database and runtime migrator
+ Info       Registered schema for plugin: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] Starting migrations
+ Info       [DatabaseMigrationService] Environment: DEVELOPMENT
+ Info       [DatabaseMigrationService] Plugins to migrate: 1
+ Info       [RuntimeMigrator] Starting migration for plugin: @elizaos/plugin-sql
+ Info       [RuntimeMigrator] Initializing migration system...
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] Migration system initialized
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #Eliza  Plugin migrations completed successfully.
+ Info       #Eliza  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #SofIA1  Plugin migrations completed successfully.
+ Info       #SofIA1  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #SofIA-Chat  Plugin migrations completed successfully.
+ Info       #SofIA-Chat  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #PulseAgent  Plugin migrations completed successfully.
+ Info       #PulseAgent  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #RecommendationAgent  Plugin migrations completed successfully.
+ Info       #RecommendationAgent  Plugin migrations completed.
+ Info       [RuntimeMigrator] No changes detected for @elizaos/plugin-sql, skipping migration (hash: 4cf9e2c36eefb44def62bc8f4a2bed351512046129a89ad15dbf55fde82358ca)
+ Info       [DatabaseMigrationService] ✅ Completed: @elizaos/plugin-sql
+ Info       [DatabaseMigrationService] All 1 migrations completed successfully
+ Info       #ThemeExtractorAgent  Plugin migrations completed successfully.
+ Info       #ThemeExtractorAgent  Plugin migrations completed.
+ Warn       #Eliza  [AgentRuntime][Eliza] No TEXT_EMBEDDING model registered. Skipping embedding dimension setup.
+ Info       [EmbeddingService] Starting embedding generation service
+ Warn       [EmbeddingService] No TEXT_EMBEDDING model registered. Embedding service will not be initialized.
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       [EmbeddingService] Starting embedding generation service
+ Info       [EmbeddingService] Initializing embedding generation service
+ Info       [EmbeddingService] Started processing loop
+ Info       Initializing character
+ Info       Name: {
+  name: "Eliza",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "SofIA1",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "SofIA-Chat",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "PulseAgent",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "RecommendationAgent",
+}
+ Info       Initializing character
+ Info       Name: {
+  name: "ThemeExtractorAgent",
+}
+ Info       [AgentServer] Registered MessageBusConnector for agent Eliza
+ Info       [Eliza] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent Eliza with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent SofIA1
+ Info       [SofIA1] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent SofIA1 with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent SofIA-Chat
+ Info       [SofIA-Chat] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent SofIA-Chat with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent PulseAgent
+ Info       [PulseAgent] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent PulseAgent with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent RecommendationAgent
+ Info       [RecommendationAgent] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent RecommendationAgent with server ID: 00000000-0000-0000-0000-000000000000
+ Info       [AgentServer] Registered MessageBusConnector for agent ThemeExtractorAgent
+ Info       [ThemeExtractorAgent] MessageBusService: Subscribing to internal message bus for 'new_message', 'message_deleted', and 'channel_cleared' events.
+ Info       [AgentServer] Auto-associated agent ThemeExtractorAgent with server ID: 00000000-0000-0000-0000-000000000000
+ Info       Started 6 agents
+ Info       [Eliza] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [SofIA1] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [SofIA-Chat] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [PulseAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [RecommendationAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [ThemeExtractorAgent] MessageBusService: Agent is subscribed to 1 servers (including server 00000000-0000-0000-0000-000000000000)
+ Info       [Eliza] MessageBusService: Fetched 7 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [Eliza] MessageBusService: Loaded 7 valid channel IDs from 1 servers (including default server)
+ Info       [SofIA1] MessageBusService: Fetched 7 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [SofIA1] MessageBusService: Loaded 7 valid channel IDs from 1 servers (including default server)
+ Info       [SofIA-Chat] MessageBusService: Fetched 7 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [SofIA-Chat] MessageBusService: Loaded 7 valid channel IDs from 1 servers (including default server)
+ Info       [PulseAgent] MessageBusService: Fetched 7 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [PulseAgent] MessageBusService: Loaded 7 valid channel IDs from 1 servers (including default server)
+ Info       [RecommendationAgent] MessageBusService: Fetched 7 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [RecommendationAgent] MessageBusService: Loaded 7 valid channel IDs from 1 servers (including default server)
+ Info       [ThemeExtractorAgent] MessageBusService: Fetched 7 channels from server 00000000-0000-0000-0000-000000000000
+ Info       [ThemeExtractorAgent] MessageBusService: Loaded 7 valid channel IDs from 1 servers (including default server)
+ Info       [SocketIO] New connection: cEmy3MK03IlAj04fAAAB
+ Info       [SocketIO DEBUG cEmy3MK03IlAj04fAAAB] Event 'message': [{"type":1,"payload":{"roomId":"f7b47ba4-5ca3-46b9-97fb-50b1a39f8f13","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"f7b47ba4-5ca3-46b9-97fb-50b1a39f8f13","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: cEmy3MK03IlAj04fAAAB)
+ Info       [SocketIO cEmy3MK03IlAj04fAAAB] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket cEmy3MK03IlAj04fAAAB joined Socket.IO channel: f7b47ba4-5ca3-46b9-97fb-50b1a39f8f13
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket cEmy3MK03IlAj04fAAAB successfully joined channel f7b47ba4-5ca3-46b9-97fb-50b1a39f8f13.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       GaiaNet API validated successfully
+ Info       GaiaNet API validated successfully
+ Info       GaiaNet API validated successfully
+ Info       GaiaNet API validated successfully
+ Info       GaiaNet API validated successfully
+ Info       [SocketIO] New connection: 9mmm4fEvbGCd_NW7AAAD
+ Info       [SocketIO DEBUG 9mmm4fEvbGCd_NW7AAAD] Event 'message': [{"type":1,"payload":{"roomId":"42a0d36a-1a18-44c8-a2bb-caab59f3808b","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"42a0d36a-1a18-44c8-a2bb-caab59f3808b","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: 9mmm4fEvbGCd_NW7AAAD)
+ Info       [SocketIO 9mmm4fEvbGCd_NW7AAAD] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket 9mmm4fEvbGCd_NW7AAAD joined Socket.IO channel: 42a0d36a-1a18-44c8-a2bb-caab59f3808b
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket 9mmm4fEvbGCd_NW7AAAD successfully joined channel 42a0d36a-1a18-44c8-a2bb-caab59f3808b.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO] New connection: o0zXWuip2L6MY7aDAAAF
+ Info       [SocketIO DEBUG o0zXWuip2L6MY7aDAAAF] Event 'message': [{"type":1,"payload":{"roomId":"7b0a1d37-e941-428b-a19c-e7cd7a1f18ba","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"7b0a1d37-e941-428b-a19c-e7cd7a1f18ba","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: o0zXWuip2L6MY7aDAAAF)
+ Info       [SocketIO o0zXWuip2L6MY7aDAAAF] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket o0zXWuip2L6MY7aDAAAF joined Socket.IO channel: 7b0a1d37-e941-428b-a19c-e7cd7a1f18ba
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket o0zXWuip2L6MY7aDAAAF successfully joined channel 7b0a1d37-e941-428b-a19c-e7cd7a1f18ba.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO] New connection: D2M6KRitgNb3VZeHAAAH
+ Info       [SocketIO DEBUG D2M6KRitgNb3VZeHAAAH] Event 'message': [{"type":1,"payload":{"roomId":"8aa3cee4-a0b3-4645-a4ed-1663cbad3328","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"8aa3cee4-a0b3-4645-a4ed-1663cbad3328","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: D2M6KRitgNb3VZeHAAAH)
+ Info       [SocketIO D2M6KRitgNb3VZeHAAAH] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket D2M6KRitgNb3VZeHAAAH joined Socket.IO channel: 8aa3cee4-a0b3-4645-a4ed-1663cbad3328
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket D2M6KRitgNb3VZeHAAAH successfully joined channel 8aa3cee4-a0b3-4645-a4ed-1663cbad3328.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO] New connection: NRV9aW_cbop16TQIAAAJ
+ Info       [SocketIO DEBUG NRV9aW_cbop16TQIAAAJ] Event 'message': [{"type":1,"payload":{"roomId":"d8fab831-a2b2-4d48-b84a-5ff921fb4f40","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":1,"payload":{"roomId":"d8fab831-a2b2-4d48-b84a-5ff921fb4f40","entityId":"c89710c9-057e-43cc-a1ef-73de724a332c"}} (SocketID: NRV9aW_cbop16TQIAAAJ)
+ Info       [SocketIO NRV9aW_cbop16TQIAAAJ] Handling channel joining via 'message' event
+ Info       [SocketIO] Socket NRV9aW_cbop16TQIAAAJ joined Socket.IO channel: d8fab831-a2b2-4d48-b84a-5ff921fb4f40
+ Info       [SocketIO] Emitting ENTITY_JOINED event for entityId: c89710c9-057e-43cc-a1ef-73de724a332c, serverId: 00000000-0000-0000-0000-000000000000, isDm: false
+ Info       [SocketIO] ENTITY_JOINED event emitted successfully for c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO] Socket NRV9aW_cbop16TQIAAAJ successfully joined channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40.
+ Info       #Eliza  [Bootstrap] Syncing user: c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       #Eliza  [Bootstrap] syncSingleUser - type: GROUP, isDM: false, worldMetadata: undefined
+ Info       #Eliza  [Bootstrap] Created world check - ID: 740de269-82a9-0d4f-9889-c87fb8884f7f, metadata: null
+ Info       [SocketIO DEBUG NRV9aW_cbop16TQIAAAJ] Event 'message': [{"type":2,"payload":{"channelId":"d8fab831-a2b2-4d48-b84a-5ff921fb4f40","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"como esta","metadata":{"source":"extension","timestamp":1763980057912,"user_display_name":"User"}}}]
+ Info       [SocketIO] Generic 'message' event received: {"type":2,"payload":{"channelId":"d8fab831-a2b2-4d48-b84a-5ff921fb4f40","serverId":"00000000-0000-0000-0000-000000000000","senderId":"c89710c9-057e-43cc-a1ef-73de724a332c","message":"como esta","metadata":{"source":"extension","timestamp":1763980057912,"user_display_name":"User"}}} (SocketID: NRV9aW_cbop16TQIAAAJ)
+ Info       [SocketIO NRV9aW_cbop16TQIAAAJ] Handling message sending via 'message' event
+ Info       [SocketIO NRV9aW_cbop16TQIAAAJ] Received SEND_MESSAGE for central submission: channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40 from c89710c9-057e-43cc-a1ef-73de724a332c
+ Info       [SocketIO NRV9aW_cbop16TQIAAAJ] Full payload for debugging: {
+  "channelId": "d8fab831-a2b2-4d48-b84a-5ff921fb4f40",
+  "serverId": "00000000-0000-0000-0000-000000000000",
+  "senderId": "c89710c9-057e-43cc-a1ef-73de724a332c",
+  "message": "como esta",
+  "metadata": {
+    "source": "extension",
+    "timestamp": 1763980057912,
+    "user_display_name": "User"
+  }
+}
+ Info       [SocketIO NRV9aW_cbop16TQIAAAJ] Checking if channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40 exists before creating message
+ Info       [SocketIO NRV9aW_cbop16TQIAAAJ] Channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40 exists: true
+ Info       [SocketIO NRV9aW_cbop16TQIAAAJ] Channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40 already exists, proceeding with message creation
+ Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"c17d373a-e6aa-43d9-aeaa-a9e826f91b29"}
+ Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"c17d373a-e6aa-43d9-aeaa-a9e826f91b29"}
+ Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"c17d373a-e6aa-43d9-aeaa-a9e826f91b29"}
+ Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"c17d373a-e6aa-43d9-aeaa-a9e826f91b29"}
+ Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"c17d373a-e6aa-43d9-aeaa-a9e826f91b29"}
+ Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"c17d373a-e6aa-43d9-aeaa-a9e826f91b29"}
+ Info       [AgentServer] Published message c17d373a-e6aa-43d9-aeaa-a9e826f91b29 to internal message bus
+ Info       [SocketIO NRV9aW_cbop16TQIAAAJ] Message from c89710c9-057e-43cc-a1ef-73de724a332c (msgId: N/A) submitted to central store (central ID: c17d373a-e6aa-43d9-aeaa-a9e826f91b29). It will be processed by agents and broadcasted upon their reply.
+ Info       [Eliza] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Info       [SofIA1] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, proceeding with message processing
+ Info       [SofIA-Chat] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
+ Info       [SofIA-Chat] MessageBusService: All checks passed, proceeding to process message via elizaOS.sendMessage()
+ Info       #SofIA-Chat  [MessageService] Message received from e161938d-6b56-0128-aa91-94201f895f01 in room 334cf4a1-e635-0129-a373-549799849b94
+ Info       [PulseAgent] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Error      GaiaNet embeddings error: Error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
+ Error      GaiaNet embeddings error {
+  error: 73 |       elizaLogger.debug("GaiaNet embeddings success");
+74 |       return data;
+75 |     } catch (error) {
+76 |       elizaLogger.error("GaiaNet embeddings error: " + String(error));
+77 |       const message = error instanceof Error ? error.message : "Unknown error";
+78 |       throw new Error(`GaiaNet API error: ${message}`);
+                 ^
+error: GaiaNet API error: HTTP 500: 500 Internal Server Error: Computing embeddings is only supported in the embeddings and rag modes.
+      at embeddings (/home/max/Project/sofia-core/core/agent-sofia/node_modules/@elizaos/plugin-gaianet/dist/index.js:78:13)
+,
+}
+ Info       Using server ID: 00000000-0000-0000-0000-000000000000
+ Info       No ownership data found for server 00000000-0000-0000-0000-000000000000, initializing empty role hierarchy
+ Info       No settings state found for server 00000000-0000-0000-0000-000000000000
+ Info       [SofIA-Chat] Agent generated response for message. Preparing to send back to bus.
+ Info       [SofIA-Chat] MessageBusService: Sending payload to central server API endpoint (/api/messaging/submit): {"channel_id":"d8fab831-a2b2-4d48-b84a-5ff921fb4f40","server_id":"00000000-0000-0000-0000-000000000000","author_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","content":"Bonjour! Je vais très bien, merci de demander. Et toi, comment vas-tu?","in_reply_to_message_id":"c17d373a-e6aa-43d9-aeaa-a9e826f91b29","source_type":"agent_response","raw_message":{"text":"Bonjour! Je vais très bien, merci de demander. Et toi, comment vas-tu?","thought":"Replying politely in French, acknowledging greeting.","actions":["REPLY"]},"metadata":{"agent_id":"79c0c83b-2bd2-042f-a534-952c58a1024d","agentName":"SofIA-Chat","channelType":"GROUP","isDm":false}}
+ Info       [Eliza] MessageBusService: Received message from central bus {"messageId":"2b548456-bf87-426c-8ae6-deebc5e0fcd2"}
+ Info       [SofIA1] MessageBusService: Received message from central bus {"messageId":"2b548456-bf87-426c-8ae6-deebc5e0fcd2"}
+ Info       [SofIA-Chat] MessageBusService: Received message from central bus {"messageId":"2b548456-bf87-426c-8ae6-deebc5e0fcd2"}
+ Info       [PulseAgent] MessageBusService: Received message from central bus {"messageId":"2b548456-bf87-426c-8ae6-deebc5e0fcd2"}
+ Info       [RecommendationAgent] MessageBusService: Received message from central bus {"messageId":"2b548456-bf87-426c-8ae6-deebc5e0fcd2"}
+ Info       [ThemeExtractorAgent] MessageBusService: Received message from central bus {"messageId":"2b548456-bf87-426c-8ae6-deebc5e0fcd2"}
+ Info       [AgentServer] Published message 2b548456-bf87-426c-8ae6-deebc5e0fcd2 to internal message bus
+ Info       [Eliza] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Info       [SofIA1] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Info       [SofIA-Chat - 79c0c83b-2bd2-042f-a534-952c58a1024d] MessageBusService: Agent is a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, proceeding with message processing
+ Info       [SofIA-Chat] MessageBusService: Passed server subscription check for 00000000-0000-0000-0000-000000000000
+ Info       [PulseAgent] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Info       [RecommendationAgent] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+ Info       [ThemeExtractorAgent] MessageBusService: Agent not a participant in channel d8fab831-a2b2-4d48-b84a-5ff921fb4f40, ignoring message
+^A^C Info       Received SIGINT, shutting down gracefully...
+[2025-11-24 10:28:31] INFO: Received SIGINT, shutting down gracefully...
+ Info       Received shutdown signal, initiating graceful shutdown...
+ Info       [EmbeddingService] Stopping embedding generation service
+ Info       [Sessions API] Global cleanup initiated
+ Info       [Eliza] MessageBusService stopping...
