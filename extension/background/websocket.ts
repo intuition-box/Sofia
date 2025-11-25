@@ -120,7 +120,7 @@ async function setupAgentChannel(
         payload: {
           roomId: storedChannelId,
           entityId: agentIds.AUTHOR_ID,
-          isDm: true  // 🔥 FIX: Mark as DM for proper channel handling
+          metadata: { isDm: true, channelType: "DM" }  // Required for DM room type
         }
       })
       console.log(`📨 [${agentName}] Sent ROOM_JOINING for existing channel: ${storedChannelId}`)
@@ -129,14 +129,14 @@ async function setupAgentChannel(
       return  // Don't create a new channel
     }
 
-    // 🆕 No existing channel → create via REST API
+    // 🆕 No existing channel → create via REST API with type: 2 (DM)
     console.log(`🔧 [${agentName}] No existing channel, creating new one via REST API...`)
     const response = await fetch(`${SOFIA_SERVER_URL}/api/messaging/central-channels`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: `DM-${agentName}-${Date.now()}`,
-        type: "DM", // ChannelType.DM (string value for PostgreSQL)
+        type: 2, // ChannelType.DM (numeric value)
         server_id: agentIds.SERVER_ID,
         participantCentralUserIds: [agentIds.AUTHOR_ID, agentIds.AGENT_ID],
         metadata: {
@@ -190,7 +190,7 @@ async function setupAgentChannel(
           payload: {
             roomId: channelData.id,
             entityId: agentIds.AUTHOR_ID,
-            isDm: true  // 🔥 FIX: Mark as DM for proper channel handling
+            metadata: { isDm: true, channelType: "DM" }  // Required for DM room type
           }
         })
         console.log(`📨 [${agentName}] Sent ROOM_JOINING for new channel: ${channelData.id}`)
@@ -202,7 +202,7 @@ async function setupAgentChannel(
       console.error(`❌ [${agentName}] Failed to create DM channel:`, errorText)
     }
   } catch (error) {
-    console.error(`❌ [${agentName}] Error creating DM channel:`, error)
+    console.error(`❌ [${agentName}] Error in setupAgentChannel:`, error)
   }
 }
 
@@ -723,8 +723,9 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
       metadata: {
         source: "extension",
         timestamp: Date.now(),
-        user_display_name: "User"         // Display name for user entity creation
-        // Removed isDM and channelType to avoid DM onboarding issues
+        user_display_name: "User",
+        isDm: true,           // Required for proper DM world setup
+        channelType: "DM"     // Helps server route to correct room type
       }
     }
   }
