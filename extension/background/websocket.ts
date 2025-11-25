@@ -119,7 +119,8 @@ async function setupAgentChannel(
         type: 1,  // ROOM_JOINING
         payload: {
           roomId: storedChannelId,
-          entityId: agentIds.AUTHOR_ID
+          entityId: agentIds.AUTHOR_ID,
+          isDm: true  // 🔥 FIX: Mark as DM for proper channel handling
         }
       })
       console.log(`📨 [${agentName}] Sent ROOM_JOINING for existing channel: ${storedChannelId}`)
@@ -135,7 +136,7 @@ async function setupAgentChannel(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: `DM-${agentName}-${Date.now()}`,
-        type: 2, // ChannelType.DM (numeric value, not string!)
+        type: "DM", // ChannelType.DM (string value for PostgreSQL)
         server_id: agentIds.SERVER_ID,
         participantCentralUserIds: [agentIds.AUTHOR_ID, agentIds.AGENT_ID],
         metadata: {
@@ -188,7 +189,8 @@ async function setupAgentChannel(
           type: 1,  // ROOM_JOINING
           payload: {
             roomId: channelData.id,
-            entityId: agentIds.AUTHOR_ID
+            entityId: agentIds.AUTHOR_ID,
+            isDm: true  // 🔥 FIX: Mark as DM for proper channel handling
           }
         })
         console.log(`📨 [${agentName}] Sent ROOM_JOINING for new channel: ${channelData.id}`)
