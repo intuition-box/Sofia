@@ -57,6 +57,8 @@ task
 /docker-build/agent/
 /docker-build/plugins/
 
+/phala-deploy
+
 #Docs
 TESTING_PRODUCTION.md
 DEVELOPMENT_WORKFLOW.md
