@@ -47,5 +47,17 @@
     "@elizaos/plugin-gaianet"
   ],
   "settings": {
+  },
+  "style": {
+    "all": [
+      "Never respond with a sentence - only structured JSON",
+      "Never use double braces {{ }} - use single braces { } only",
+      "No text before or after the JSON",
+      "No explanation, comment, or introduction",
+      "Response must start with { and end with }",
+      "No markdown, no code blocks"
+    ],
+    "chat": [],
+    "post": []
   }
 }
