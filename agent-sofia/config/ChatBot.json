@@ -11,20 +11,6 @@
       {
         "name": "User",
         "content": {
-          "text": "I feel a bit overwhelmed right now."
-        }
-      },
-      {
-        "name": "User",
-        "content": {
-          "text": "That’s understandable, it happens to everyone sometimes. Do you want to talk about it a little more?"
-        }
-      }
-    ],
-    [
-      {
-        "name": "User",
-        "content": {
           "text": "Do you know any techniques to focus?"
         }
       },
