@@ -105,7 +105,12 @@ const PulseTab = () => {
       if (text && text.includes('{') && text.includes('themes')) {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0])
+          // Fix double braces from LLM output (e.g., {{ ... }} -> { ... })
+          let jsonStr = jsonMatch[0]
+          if (jsonStr.startsWith('{{') && jsonStr.endsWith('}}')) {
+            jsonStr = jsonStr.slice(1, -1)
+          }
+          const parsed = JSON.parse(jsonStr)
           return parsed.themes || []
         }
       }
@@ -129,7 +134,12 @@ const PulseTab = () => {
     if (text && text.includes('{') && text.includes('themes')) {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0])
+        // Fix double braces from LLM output (e.g., {{ ... }} -> { ... })
+        let jsonStr = jsonMatch[0]
+        if (jsonStr.startsWith('{{') && jsonStr.endsWith('}}')) {
+          jsonStr = jsonStr.slice(1, -1)
+        }
+        const parsed = JSON.parse(jsonStr)
         parsed.themes = newThemes
         const updatedText = text.replace(jsonMatch[0], JSON.stringify(parsed))
         

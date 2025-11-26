@@ -61,7 +61,7 @@ async function handleAgentMessage(
 
     try {
       const messageText = extractMessageText(data)
-      console.log(`📝 [${agentName}] Raw message:`, messageText.substring(0, 100))
+      console.log(`📝 [${agentName}] Raw message (full):`, messageText)
 
       // If custom handler provided, use it; otherwise use default storage
       if (customHandler) {
@@ -115,12 +115,14 @@ async function setupAgentChannel(
       console.log(`♻️ [${agentName}] Reusing existing channel: ${storedChannelId}`)
 
       // 🔑 JOIN the existing room via Socket.IO to receive broadcasts
+      // NOTE: isDm removed - channel already exists with correct type via REST API
+      // Adding isDm here triggers Bootstrap onboarding on EVERY reconnection = multiple worlds
       socket.emit("message", {
         type: 1,  // ROOM_JOINING
         payload: {
           roomId: storedChannelId,
           entityId: agentIds.AUTHOR_ID,
-          metadata: { isDm: true, channelType: "DM" }  // Required for DM room type
+          metadata: { channelType: "DM" }  // Just indicate channel type, no isDm to avoid Bootstrap sync
         }
       })
       console.log(`📨 [${agentName}] Sent ROOM_JOINING for existing channel: ${storedChannelId}`)
@@ -185,12 +187,14 @@ async function setupAgentChannel(
         }
 
         // 🔑 JOIN the newly created room via Socket.IO
+        // NOTE: isDm only on FIRST creation to trigger initial Bootstrap setup
+        // After that, channel exists with correct type - no need for isDm
         socket.emit("message", {
           type: 1,  // ROOM_JOINING
           payload: {
             roomId: channelData.id,
             entityId: agentIds.AUTHOR_ID,
-            metadata: { isDm: true, channelType: "DM" }  // Required for DM room type
+            metadata: { isDm: true, channelType: "DM" }  // isDm needed on first creation only
           }
         })
         console.log(`📨 [${agentName}] Sent ROOM_JOINING for new channel: ${channelData.id}`)
@@ -724,8 +728,8 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
         source: "extension",
         timestamp: Date.now(),
         user_display_name: "User",
-        isDm: true,           // Required for proper DM world setup
-        channelType: "DM"     // Helps server route to correct room type
+        isDm: true,  // Required for DM message routing
+        channelType: "DM"
       }
     }
   }

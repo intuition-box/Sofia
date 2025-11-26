@@ -57,10 +57,10 @@ const themeExtractorAgent: ProjectAgent = {
 const project: Project = {
   agents: [
     projectAgent,
-    sofiaAgent,          // ❌ Temporarily disabled for debugging
-    chatbotAgent,           // ✅ Only agent active for focused debugging
-    pulseAgent,          // ❌ Temporarily disabled for debugging
-    recommendationAgent, // ❌ Temporarily disabled for debugging
+    sofiaAgent,          
+    chatbotAgent,        
+    pulseAgent,        
+    recommendationAgent,
     themeExtractorAgent 
   ],
   
