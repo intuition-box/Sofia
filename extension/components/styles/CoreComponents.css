@@ -18,6 +18,21 @@
   overflow-x: hidden;
 }
 
+.bookmarks-container {
+  display: flex;
+  flex-direction: column;
+  /* gap: 10px; */
+  max-width: min(600px, 100%);
+  width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  text-align: left;
+  padding: 0 16px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
 /* ========== CARD SYSTEM ========== */
 
 .echo-card {
@@ -485,15 +500,14 @@
 }
 
 .triplet-favicon-positioned {
-  position: relative;
-  left: 0;
+  position: absolute;
+  right: 8px;
+  top: 8px;
   width: 20px;
   height: 20px;
   border-radius: 4px;
   object-fit: contain;
   flex-shrink: 0;
-  order: -1;
-  margin-right: 8px;
 }
 
 .triplet-url-link {
@@ -747,7 +761,7 @@
   
   .echo-header,
   .triplet-header {
-    gap: 8px;
+    gap: none;
   }
   
   .batch-btn {

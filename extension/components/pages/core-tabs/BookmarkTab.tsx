@@ -3,6 +3,7 @@ import { useBookmarks } from '../../../hooks/useBookmarks'
 import Iridescence from '../../ui/Iridescence'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
+import '../../styles/Modal.css'
 import '../../styles/BookmarkStyles.css'
 
 const BookmarkTab = () => {
@@ -112,7 +113,7 @@ const BookmarkTab = () => {
   }
 
   return (
-    <div className="triples-container">
+    <div className="bookmarks-container">
       {/* Header with lists navigation */}
       <div className="bookmark-header">
         {/* New List Button - Full Width */}
