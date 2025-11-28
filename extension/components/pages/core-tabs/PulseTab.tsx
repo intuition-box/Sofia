@@ -98,18 +98,77 @@ const PulseTab = () => {
   // Helper function to parse themes from message content
   const parseThemesFromMessage = (msg: any): PulseTheme[] => {
     try {
-      const text = (typeof msg.content === 'object' && msg.content && 'text' in msg.content && typeof msg.content.text === 'string') 
-        ? msg.content.text 
+      const text = (typeof msg.content === 'object' && msg.content && 'text' in msg.content && typeof msg.content.text === 'string')
+        ? msg.content.text
         : ''
-      
-      if (text && text.includes('{') && text.includes('themes')) {
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0])
-          return parsed.themes || []
+
+      if (!text || !text.includes('themes')) {
+        return []
+      }
+
+      // Fix double braces from LLM output (e.g., {{ ... }} -> { ... })
+      let jsonStr = text.trim()
+      if (jsonStr.startsWith('{{') && jsonStr.endsWith('}}')) {
+        jsonStr = jsonStr.slice(1, -1)
+      }
+
+      // Fix malformed JSON: {"themes":[...]},"thoughts":[]} -> {"themes":[...]}
+      // Find the themes array and extract it properly
+      const themesStartIndex = jsonStr.indexOf('"themes"')
+      if (themesStartIndex !== -1) {
+        // Find the opening bracket of themes array
+        const arrayStart = jsonStr.indexOf('[', themesStartIndex)
+        if (arrayStart !== -1) {
+          // Count only square brackets to find the end of the themes array
+          // We only care about when the outer array closes (squareBracketCount returns to 0)
+          let squareBracketCount = 0
+          let arrayEnd = -1
+          let inString = false
+          let prevChar = ''
+
+          for (let i = arrayStart; i < jsonStr.length; i++) {
+            const char = jsonStr[i]
+
+            // Handle string detection (ignore brackets inside strings)
+            if (char === '"' && prevChar !== '\\') {
+              inString = !inString
+            }
+
+            if (!inString) {
+              if (char === '[') squareBracketCount++
+              if (char === ']') {
+                squareBracketCount--
+                // Found the end of themes array when square brackets balance back to 0
+                if (squareBracketCount === 0) {
+                  arrayEnd = i
+                  break
+                }
+              }
+            }
+            prevChar = char
+          }
+
+          if (arrayEnd !== -1) {
+            // Extract just {"themes":[...]}
+            const cleanJson = `{"themes":${jsonStr.substring(arrayStart, arrayEnd + 1)}}`
+            console.log("🫀 [PulseTab] Cleaned JSON:", cleanJson.substring(0, 100) + "...")
+            try {
+              const parsed = JSON.parse(cleanJson)
+              return parsed.themes || []
+            } catch (parseError) {
+              console.warn("🫀 [PulseTab] Cleaned JSON parse failed:", parseError)
+            }
+          }
         }
       }
-      return []
+
+      // Direct parse as fallback
+      try {
+        const parsed = JSON.parse(jsonStr)
+        return parsed.themes || []
+      } catch {
+        return []
+      }
     } catch (error) {
       console.warn("🫀 [PulseTab] Failed to parse message:", error)
       return []
@@ -129,7 +188,12 @@ const PulseTab = () => {
     if (text && text.includes('{') && text.includes('themes')) {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0])
+        // Fix double braces from LLM output (e.g., {{ ... }} -> { ... })
+        let jsonStr = jsonMatch[0]
+        if (jsonStr.startsWith('{{') && jsonStr.endsWith('}}')) {
+          jsonStr = jsonStr.slice(1, -1)
+        }
+        const parsed = JSON.parse(jsonStr)
         parsed.themes = newThemes
         const updatedText = text.replace(jsonMatch[0], JSON.stringify(parsed))
         
@@ -168,7 +232,9 @@ const PulseTab = () => {
         // Parse and group themes by message (analysis session)
         const analysisGroups: PulseAnalysis[] = []
         pulseMessages.forEach((msg, msgIndex) => {
+          console.log("🫀 [PulseTab] Parsing message:", msg.id, "content:", msg.content)
           const themes = parseThemesFromMessage(msg)
+          console.log("🫀 [PulseTab] Parsed themes:", themes.length, themes)
           if (themes.length > 0) {
             analysisGroups.push({
               msgIndex,

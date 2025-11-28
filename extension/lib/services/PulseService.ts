@@ -109,7 +109,7 @@ export class PulseService {
 
     try {
       // Send to PulseAgent via unified sendMessage
-      const message = `Analyze current pulse data:\n${JSON.stringify(cleanData)}`
+      const message = JSON.stringify(cleanData)
       await sendMessage('PULSEAGENT', message)
 
       logger.info('Successfully sent to PulseAgent')
