@@ -75,7 +75,7 @@ export class GaiaNetClient {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 50000); // 50 second timeout - shorter than server timeout
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for large models
 
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
@@ -109,7 +109,7 @@ export class GaiaNetClient {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for embeddings
 
       const response = await fetch(`${this.baseURL}/embeddings`, {
         method: 'POST',

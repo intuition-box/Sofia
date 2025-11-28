@@ -9,7 +9,7 @@ export async function embeddings(
   // Handle null case for initialization
   if (params === null) {
     elizaLogger.debug('Creating test embedding for initialization');
-    const embeddingDimension = 1536; // Default dimension
+    const embeddingDimension = 768;
     const testVector = Array(embeddingDimension).fill(0);
     testVector[0] = 0.1;
     return testVector;
@@ -23,7 +23,7 @@ export async function embeddings(
     text = params.text;
   } else {
     elizaLogger.warn('Invalid input format for embedding');
-    const embeddingDimension = 1536;
+    const embeddingDimension = 768;
     const fallbackVector = Array(embeddingDimension).fill(0);
     fallbackVector[0] = 0.2;
     return fallbackVector;
@@ -32,7 +32,7 @@ export async function embeddings(
   // Check for empty text
   if (!text.trim()) {
     elizaLogger.warn('Empty text for embedding');
-    const embeddingDimension = 1536;
+    const embeddingDimension = 768;
     const emptyVector = Array(embeddingDimension).fill(0);
     emptyVector[0] = 0.3;
     return emptyVector;
@@ -88,7 +88,7 @@ export async function embeddings(
     );
 
     // Return a fallback embedding
-    const embeddingDimension = 1536;
+    const embeddingDimension = 768;
     const errorVector = Array(embeddingDimension).fill(0);
     errorVector[0] = 0.4;
     return errorVector;

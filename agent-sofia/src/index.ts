@@ -7,6 +7,7 @@ import {
 } from '@elizaos/core';
 
 import starterPlugin from './plugin.ts';
+import minimalProvidersPlugin from './minimalProvidersPlugin.ts';
 import { character } from './character.ts';
 
 // Import all 5 agent character configurations
@@ -16,11 +17,45 @@ import pulseCharacter from '../config/PulseAgent.json';
 import recommendationCharacter from '../config/RecommendationAgent.json';
 import themeExtractorCharacter from '../config/ThemeExtractor.json';
 
+// Aggressive memory cleanup - no memory needed for these JSON transformer agents
+const setupMemoryCleanup = (runtime: IAgentRuntime, agentName: string) => {
+  // Clean cache every 30 seconds (aggressive)
+  setInterval(async () => {
+    try {
+      const runtimeAny = runtime as any;
 
-const initCharacter = ({ runtime, characterData }: { runtime: IAgentRuntime, characterData?: Character }) => {
+      // Clear state cache
+      if (runtimeAny.cacheManager?.delete) {
+        await runtimeAny.cacheManager.delete(`state_${agentName}`);
+      }
+
+      // Clear message cache if available
+      if (runtimeAny.messageManager?.clearCache) {
+        await runtimeAny.messageManager.clearCache();
+      }
+
+      logger.debug(`[${agentName}] Cache cleared`);
+    } catch (error) {
+      // Silently ignore cleanup errors
+    }
+  }, 30 * 1000); // Every 30 seconds
+};
+
+const initCharacter = async ({ runtime, characterData }: { runtime: IAgentRuntime, characterData?: Character }) => {
   const actualCharacter = characterData || character;
-  logger.info('Initializing character');
-  logger.info({ name: actualCharacter.name }, 'Name:');
+  logger.info('========== INIT CHARACTER CALLED ==========');
+  logger.info(`Initializing character: ${actualCharacter.name}`);
+
+  // Register minimal providers plugin to limit context (only CHARACTER and TIME)
+  try {
+    await runtime.registerPlugin(minimalProvidersPlugin);
+    logger.info(`[${actualCharacter.name}] Minimal providers plugin registered`);
+  } catch (error) {
+    logger.warn(`[${actualCharacter.name}] Could not register minimal providers plugin:`, error);
+  }
+
+  // Setup automatic memory cleanup for this agent
+  setupMemoryCleanup(runtime, actualCharacter.name);
 };
 
 export const projectAgent: ProjectAgent = {
@@ -57,13 +92,12 @@ const themeExtractorAgent: ProjectAgent = {
 const project: Project = {
   agents: [
     projectAgent,
-    sofiaAgent,          // ❌ Temporarily disabled for debugging
-    chatbotAgent,           // ✅ Only agent active for focused debugging
-    pulseAgent,          // ❌ Temporarily disabled for debugging
-    recommendationAgent, // ❌ Temporarily disabled for debugging
-    themeExtractorAgent 
+    sofiaAgent,
+    chatbotAgent,
+    pulseAgent,
+    recommendationAgent,
+    themeExtractorAgent
   ],
-  
 };
 
 export { character } from './character.ts';
