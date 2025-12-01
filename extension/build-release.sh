@@ -113,7 +113,7 @@ Thank you for testing Sofia! Follow these steps to install the extension:
 **Connection issues:**
 - Open DevTools (F12) and check Console for errors
 - Verify you have internet connection
-- Check that https://sofia-agent.intuition.box is accessible
+- Reload extension and see the agent websocket connection 
 
 **"Mode développeur" warning:**
 - This is normal for alpha versions
@@ -186,8 +186,7 @@ Since this is alpha, updates require manual reinstallation:
 ## 🙏 Thank You!
 
 Thanks for helping test Sofia! Your feedback is invaluable.
-
----
+EOL
 
 echo "✅ Release notes template created: ${RELEASE_NOTES}"
 echo ""

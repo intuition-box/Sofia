@@ -1,7 +1,7 @@
 {
   "name": "sofia",
   "displayName": "Sofia",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Data tracking and wallet connexion",
   "author": "me",
   "scripts": {
