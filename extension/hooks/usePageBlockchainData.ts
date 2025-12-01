@@ -61,88 +61,72 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     try {
       console.log('🔍 Fetching blockchain data for URL:', url)
 
-      // Query to get total count of atoms
-      const atomsCountQuery = `
-        query AtomsCountByURL($likeStr: String!) {
-          atoms_aggregate: terms_aggregate(
+      // Extract hostname from URL for label search
+      const hostname = new URL(url).hostname
+
+      // First, get atom term_ids from the atoms table
+      const atomIdsQuery = `
+        query AtomIdsByURL($likeStr: String!) {
+          atoms(
             where: {
-              _and: [
-                { type: { _eq: Atom } },
-                { _or: [
-                  { atom: { value: { thing: { url: { _ilike: $likeStr } } } } },
-                  { atom: { value: { person: { url: { _ilike: $likeStr } } } } },
-                  { atom: { value: { organization: { url: { _ilike: $likeStr } } } } }
-                ]}
-              ]
+              label: { _ilike: $likeStr }
             }
           ) {
-            aggregate {
-              count
-            }
+            term_id
           }
         }
       `
+
+      const atomIdsResponse = await intuitionGraphqlClient.request(atomIdsQuery, {
+        likeStr: `%${hostname}%`
+      })
+
+      const foundAtomIds = atomIdsResponse?.atoms?.map((a: any) => a.term_id) || []
+      console.log('🔍 Found atom term_ids from atoms table:', foundAtomIds.length)
+
+      // Now get atom details from atoms table
+      // Note: Atoms don't have vaults - only triples have vaults
+      const totalAtomsCount = foundAtomIds.length
 
       const atomsQuery = `
-        query AtomsByURL($likeStr: String!) {
-          atoms: terms(
-            limit: 100
+        query AtomsByTermIds($atomIds: [String!]!) {
+          atoms(
             where: {
-              _and: [
-                { type: { _eq: Atom } },
-                { _or: [
-                  { atom: { value: { thing: { url: { _ilike: $likeStr } } } } },
-                  { atom: { value: { person: { url: { _ilike: $likeStr } } } } },
-                  { atom: { value: { organization: { url: { _ilike: $likeStr } } } } }
-                ]}
-              ]
+              term_id: { _in: $atomIds }
             }
           ) {
-            id
-            atom {
-              label
-              type
-              value {
-                thing { url name description }
-                person { url name description }
-                organization { url name description }
-              }
-            }
-            vaults {
-              curve_id
-              position_count
-              total_shares
-            }
+            term_id
+            label
+            type
           }
         }
       `
 
-      // Fetch count and data in parallel
-      const [atomsCountResponse, atomsResponse] = await Promise.all([
-        intuitionGraphqlClient.request(atomsCountQuery, { likeStr: `%${url}%` }),
-        intuitionGraphqlClient.request(atomsQuery, { likeStr: `%${url}%` })
-      ])
+      // Fetch atoms data (only if we found atoms)
+      let atomsResponse: any = { atoms: [] }
 
-      const totalAtomsCount = atomsCountResponse?.atoms_aggregate?.aggregate?.count || 0
+      if (foundAtomIds.length > 0) {
+        atomsResponse = await intuitionGraphqlClient.request(atomsQuery, { atomIds: foundAtomIds })
+      }
+
       console.log('📥 Total atoms count:', totalAtomsCount)
       console.log('📥 Atoms response (first 100):', atomsResponse)
 
       const atoms = atomsResponse?.atoms || []
-      const atomIds = atoms.map((atom: any) => atom.id)
+      const atomIds = atoms.map((atom: any) => atom.term_id)
 
       console.log('🔍 Found atom IDs:', atomIds.length, '(displaying first 100)')
 
       // Query to get total count of triplets
       const triplesCountQuery = `
         query TriplesCountByAtomIds($atomIds: [String!]!) {
-          triples_aggregate: terms_aggregate(
+          triples_aggregate(
             where: {
               _and: [
-                { type: { _eq: Triple } },
                 { _or: [
-                  { triple: { subject: { term_id: { _in: $atomIds } } } },
-                  { triple: { predicate: { term_id: { _in: $atomIds } } } },
-                  { triple: { object: { term_id: { _in: $atomIds } } } }
+                  { subject: { term_id: { _in: $atomIds } } },
+                  { predicate: { term_id: { _in: $atomIds } } },
+                  { object: { term_id: { _in: $atomIds } } }
                 ]}
               ]
             }
@@ -157,29 +141,28 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       // Now query triplets that contain any of these atoms
       const triplesQuery = `
         query TriplesByAtomIds($atomIds: [String!]!) {
-          triples: terms(
+          triples(
             limit: 100
             where: {
               _and: [
-                { type: { _eq: Triple } },
                 { _or: [
-                  { triple: { subject: { term_id: { _in: $atomIds } } } },
-                  { triple: { predicate: { term_id: { _in: $atomIds } } } },
-                  { triple: { object: { term_id: { _in: $atomIds } } } }
+                  { subject: { term_id: { _in: $atomIds } } },
+                  { predicate: { term_id: { _in: $atomIds } } },
+                  { object: { term_id: { _in: $atomIds } } }
                 ]}
               ]
             }
           ) {
-            id
-            triple {
-              subject { term_id label }
-              predicate { term_id label }
-              object { term_id label }
-            }
-            vaults {
-              curve_id
-              position_count
-              total_shares
+            term_id
+            subject { term_id label }
+            predicate { term_id label }
+            object { term_id label }
+            term {
+              vaults {
+                curve_id
+                position_count
+                total_shares
+              }
             }
           }
         }
@@ -214,21 +197,15 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       console.log('📥 Total atoms (real count):', totalAtomsCount)
       console.log('📥 Atoms displayed:', atoms.length)
 
-      // Store atoms for display and calculate shares
+      // Store atoms for display
+      // Note: Atoms don't have vaults - market cap comes from triples only
       atoms.forEach((atom: any) => {
         atomsList.push({
-          id: atom.id,
-          label: atom.atom?.label || 'Unknown',
-          type: atom.atom?.type || 'unknown',
-          vaults: atom.vaults || []
+          id: atom.term_id,
+          label: atom.label || 'Unknown',
+          type: atom.type || 'unknown',
+          vaults: [] // Atoms don't have vaults
         })
-
-        if (atom.vaults) {
-          atom.vaults.forEach((vault: any) => {
-            totalShares += Number(vault.total_shares || 0) / 1e18
-            totalPositions += Number(vault.position_count || 0)
-          })
-        }
       })
 
       // Display ONLY real triplets in the list (first 100)
@@ -237,23 +214,25 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       console.log('📥 Triples displayed:', triples.length)
 
       allResults.push(...triples.map((triple: any) => {
-        console.log('📊 Triple vaults:', triple.vaults)
+        // Access vaults through triple.term.vaults
+        const vaults = triple.term?.vaults || []
+        console.log('📊 Triple vaults:', vaults)
 
         // Add triple shares to total
-        if (triple.vaults) {
-          triple.vaults.forEach((vault: any) => {
+        if (vaults) {
+          vaults.forEach((vault: any) => {
             totalShares += Number(vault.total_shares || 0) / 1e18
             totalPositions += Number(vault.position_count || 0)
           })
         }
 
         return {
-          term_id: triple.id,
-          subject: triple.triple?.subject || { label: 'Unknown', term_id: '' },
-          predicate: triple.triple?.predicate || { label: 'Unknown', term_id: '' },
-          object: triple.triple?.object || { label: 'Unknown', term_id: '' },
+          term_id: triple.term_id,
+          subject: triple.subject || { label: 'Unknown', term_id: '' },
+          predicate: triple.predicate || { label: 'Unknown', term_id: '' },
+          object: triple.object || { label: 'Unknown', term_id: '' },
           created_at: new Date().toISOString(),
-          positions: (triple.vaults || []).map((vault: any) => ({
+          positions: vaults.map((vault: any) => ({
             shares: vault.total_shares || '0',
             position_count: vault.position_count || 0
           })),

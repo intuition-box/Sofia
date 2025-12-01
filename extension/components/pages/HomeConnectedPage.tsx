@@ -92,8 +92,7 @@ const HomeConnectedPage = () => {
             height: '200px',
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
+            alignItems: 'center'
           }}
         >
           <PulseAnimation
