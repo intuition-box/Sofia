@@ -32,6 +32,9 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY package.json bun.lock* ./
 
+# Copy local gaianet plugin BEFORE install (required for file: dependency)
+COPY gaianet/ ./gaianet/
+
 # Install dependencies
 RUN bun install
 
