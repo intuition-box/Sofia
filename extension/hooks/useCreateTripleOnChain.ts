@@ -91,7 +91,7 @@ export const useCreateTripleOnChain = () => {
 
   const createTripleOnChain = async (
     predicateName: string, // ex: "has visited", "loves"
-    objectData: { name: string; description?: string; url: string },
+    objectData: { name: string; description?: string; url: string; image?: string },
     customWeight?: bigint // Optional custom weight/value for the triple
   ): Promise<TripleOnChainResult> => {
     
@@ -299,17 +299,18 @@ export const useCreateTripleOnChain = () => {
 
       // Collect unique predicates and objects
       const uniquePredicates = new Set<string>()
-      const uniqueObjects = new Map<string, { name: string; description?: string; url: string }>()
+      const uniqueObjects = new Map<string, { name: string; description?: string; url: string; image?: string }>()
       
       for (const input of inputs) {
         // Collect unique predicates
         uniquePredicates.add(input.predicateName)
         
-        // Object atoms  
+        // Object atoms
         uniqueObjects.set(input.objectData.name, {
           name: input.objectData.name,
           description: input.objectData.description,
-          url: input.objectData.url
+          url: input.objectData.url,
+          image: input.objectData.image
         })
       }
 
@@ -332,7 +333,8 @@ export const useCreateTripleOnChain = () => {
         const atomsDataArray = Array.from(uniqueObjects.values()).map(objData => ({
           name: objData.name,
           description: objData.description || "Contenu visité par l'utilisateur.",
-          url: objData.url
+          url: objData.url,
+          image: objData.image
         }))
         
         const batchResults = await createAtomsBatch(atomsDataArray)
