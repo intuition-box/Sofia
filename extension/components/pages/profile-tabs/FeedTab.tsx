@@ -183,13 +183,12 @@ const FeedTab = () => {
         return
       }
 
-      // Use the events table to get all activity from Trust Circle accounts
-      // Using the exact query structure from task.md that works on Intuition portal
+      // GraphQL query to fetch all events with full deposit/redemption data
+      // Filters by Trust Circle users (creator for atoms/triples, sender for deposits/redemptions)
       const feedQuery = `
         query GetEvents($limit: Int, $offset: Int, $orderBy: [events_order_by!], $where: events_bool_exp) {
           events(limit: $limit, offset: $offset, order_by: $orderBy, where: $where) {
             id
-            block_number
             created_at
             type
             transaction_hash
@@ -269,7 +268,6 @@ const FeedTab = () => {
         }
       `
 
-      // Build the where clause to filter by Trust Circle accounts
       const whereClause = {
         "_and": [
           {
@@ -278,19 +276,55 @@ const FeedTab = () => {
             }
           },
           {
+            "_not": {
+              "_and": [
+                {
+                  "type": {
+                    "_eq": "Deposited"
+                  }
+                },
+                {
+                  "deposit": {
+                    "assets_after_fees": {
+                      "_eq": "0"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
             "_or": [
               { "atom": { "creator": { "id": { "_in": walletAddresses } } } },
-              { "triple": { "creator": { "id": { "_in": walletAddresses } } } }
+              { "triple": { "creator": { "id": { "_in": walletAddresses } } } },
+              { "deposit": { "sender_id": { "_in": walletAddresses } } },
+              { "redemption": { "sender_id": { "_in": walletAddresses } } }
             ]
           }
         ]
       }
 
-      const feedResponse = await intuitionGraphqlClient.request(feedQuery, {
-        limit: 500,
-        offset: 0,
-        orderBy: [{ "created_at": "desc" }],
-        where: whereClause
+      // Use portal API endpoint for events query (supports deposit/redemption)
+      const portalEndpoint = "https://portal.intuition.systems/api/graphql"
+      const feedResponse = await fetch(portalEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: feedQuery,
+          variables: {
+            limit: 500,
+            offset: 0,
+            orderBy: [{ "created_at": "desc" }],
+            where: whereClause
+          }
+        }),
+      }).then(res => res.json()).then(json => {
+        if (json.errors) {
+          throw new Error(`GraphQL error: ${json.errors[0].message}`)
+        }
+        return json.data
       }) as { events: Array<any> }
 
       console.log('📊 Feed response:', feedResponse)
@@ -305,11 +339,6 @@ const FeedTab = () => {
       const feedEvents: FeedEvent[] = []
 
       for (const event of feedResponse.events || []) {
-        // Skip Deposited events with 0 assets_after_fees
-        if (event.type === 'Deposited' && event.deposit?.assets_after_fees === '0') {
-          continue
-        }
-
         console.log('📊 Processing event:', event.type, event)
         let accountLabel = ''
         let accountWallet = ''
@@ -317,10 +346,8 @@ const FeedTab = () => {
         let description = ''
         let details = ''
         let portalLink = ''
-        let amount: string | undefined = undefined
-        let amountLabel: string | undefined = undefined
 
-        // Process events
+        // Process AtomCreated and TripleCreated events
         if (event.type === 'AtomCreated' && event.atom) {
           accountWallet = event.atom.creator.id
           accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
@@ -336,13 +363,12 @@ const FeedTab = () => {
           details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
           portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
         } else if (event.type === 'Deposited' && event.deposit) {
-          // For deposits, use the sender from deposit object
           accountWallet = event.deposit.sender_id
-          accountLabel = walletToLabel.get(event.deposit.sender_id.toLowerCase()) || event.deposit.sender?.label
-          accountImage = event.deposit.sender?.image
-          description = 'deposited on'
+          accountLabel = walletToLabel.get(event.deposit.sender_id.toLowerCase()) || event.deposit.sender.label
+          accountImage = event.deposit.sender.image
+          description = 'deposited into'
 
-          // Determine what was deposited on (atom or triple)
+          // Determine what was deposited into (atom or triple)
           if (event.atom) {
             details = event.atom.label
             portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
@@ -350,18 +376,10 @@ const FeedTab = () => {
             details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
             portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
           }
-
-          // Extract deposit amount (assets_after_fees converted to TRUST)
-          if (event.deposit.assets_after_fees) {
-            const assetsInTRUST = Number(event.deposit.assets_after_fees) / 1e18
-            amount = assetsInTRUST.toFixed(4)
-            amountLabel = 'TRUST'
-          }
         } else if (event.type === 'Redeemed' && event.redemption) {
-          // For redemptions, use the sender from redemption object
           accountWallet = event.redemption.sender_id
-          accountLabel = walletToLabel.get(event.redemption.sender_id.toLowerCase()) || event.redemption.sender?.label
-          accountImage = event.redemption.sender?.image
+          accountLabel = walletToLabel.get(event.redemption.sender_id.toLowerCase()) || event.redemption.sender.label
+          accountImage = event.redemption.sender.image
           description = 'redeemed from'
 
           // Determine what was redeemed from (atom or triple)
@@ -372,20 +390,24 @@ const FeedTab = () => {
             details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
             portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
           }
-
-          // Extract redemption amount (assets converted to TRUST)
-          if (event.redemption.assets) {
-            const assetsInTRUST = Number(event.redemption.assets) / 1e18
-            amount = assetsInTRUST.toFixed(4)
-            amountLabel = 'TRUST'
-          }
         }
 
-        // Check if this event is from someone in the Trust Circle
-        const isInTrustCircle = accountWallet && walletAddresses.some(w => w.toLowerCase() === accountWallet.toLowerCase())
+        if (accountLabel && accountWallet) {
+          // Calculate amount for deposit/redemption events
+          let amount: string | undefined
+          let amountLabel: string | undefined
 
-        if (accountLabel && accountWallet && isInTrustCircle) {
-          console.log('✅ Adding feed event:', { accountLabel, accountWallet, accountImage, description, details, amount, amountLabel })
+          if (event.type === 'Deposited' && event.deposit) {
+            const assets = BigInt(event.deposit.assets_after_fees)
+            amount = (Number(assets) / 1e18).toFixed(4)
+            amountLabel = 'TRUST'
+          } else if (event.type === 'Redeemed' && event.redemption) {
+            const assets = BigInt(event.redemption.assets)
+            amount = (Number(assets) / 1e18).toFixed(4)
+            amountLabel = 'TRUST'
+          }
+
+          console.log('✅ Adding feed event:', { accountLabel, accountWallet, accountImage, description, details, amount })
           feedEvents.push({
             id: event.id,
             type: event.type,
@@ -400,7 +422,7 @@ const FeedTab = () => {
             amountLabel
           })
         } else {
-          console.log('⚠️ Skipping event - not in Trust Circle or no accountLabel:', event.type, { accountWallet, isInTrustCircle })
+          console.log('⚠️ Skipping event - no accountLabel:', event.type)
         }
       }
 
