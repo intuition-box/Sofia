@@ -131,19 +131,19 @@ export const useTrustPage = (): TrustPageResult => {
 
       const defaultCost = await BlockchainService.getTripleCost()
 
-      // For createTriples, we need MORE than defaultCost to get shares after fees
-      // defaultCost covers creation fees, we need to add deposit amount on top
-      const minimumDeposit = defaultCost * 2n // 0.2 TRUST minimum to ensure we get shares
-      const tripleCost = customWeight !== undefined && customWeight > minimumDeposit ? customWeight : minimumDeposit
+      // User specifies amount for shares, we add creation fees on top
+      // So if user wants 0.01 TRUST in shares, total = 0.01 + defaultCost (~0.003) = 0.013 TRUST
+      const userShareAmount = customWeight !== undefined && customWeight > 0n ? customWeight : defaultCost
+      const tripleCost = userShareAmount + defaultCost
 
-      logger.debug('Triple cost retrieved', {
-        cost: tripleCost.toString(),
-        costInTRUST: Number(tripleCost) / 1e18,
+      logger.debug('Triple cost calculation', {
+        userShareAmount: userShareAmount.toString(),
+        userShareAmountInTRUST: Number(userShareAmount) / 1e18,
+        creationFees: defaultCost.toString(),
+        creationFeesInTRUST: Number(defaultCost) / 1e18,
+        totalCost: tripleCost.toString(),
+        totalCostInTRUST: Number(tripleCost) / 1e18,
         isCustom: customWeight !== undefined,
-        defaultCost: defaultCost.toString(),
-        defaultCostInTRUST: Number(defaultCost) / 1e18,
-        minimumDeposit: minimumDeposit.toString(),
-        minimumDepositInTRUST: Number(minimumDeposit) / 1e18,
         customWeight: customWeight?.toString(),
         customWeightInTRUST: customWeight ? Number(customWeight) / 1e18 : 'none'
       })

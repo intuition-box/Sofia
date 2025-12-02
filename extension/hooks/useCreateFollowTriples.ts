@@ -83,15 +83,22 @@ export const useCreateFollowTriples = () => {
 
         tripleVaultId = tripleCheck.tripleVaultId as Address
       } else {
-        // Triple doesn't exist - use createTriples() with minimum amount
+        // Triple doesn't exist - use createTriples() with shares amount + creation fees
         console.log('[Follow] Triple does not exist, using createTriples()')
 
-        // For createTriples, we must use at least defaultCost
-        const createAmount = depositAmount > defaultCost ? depositAmount : defaultCost
+        // The user amount is what they want in shares
+        // We add defaultCost on top for creation fees
+        // So if user wants 0.01 TRUST in shares, total cost = 0.01 + 0.003 = 0.013 TRUST
+        const userShareAmount = depositAmount > 0n ? depositAmount : defaultCost
+        const createAmount = userShareAmount + defaultCost
 
-        console.log('[Follow] Using createTriples with amount:', {
-          createAmount: createAmount.toString(),
-          createAmountInTRUST: Number(createAmount) / 1e18
+        console.log('[Follow] Using createTriples with fees added on top:', {
+          userShareAmount: userShareAmount.toString(),
+          userShareAmountInTRUST: Number(userShareAmount) / 1e18,
+          creationFees: defaultCost.toString(),
+          creationFeesInTRUST: Number(defaultCost) / 1e18,
+          totalCost: createAmount.toString(),
+          totalCostInTRUST: Number(createAmount) / 1e18
         })
 
         // Simulate first

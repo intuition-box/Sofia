@@ -82,7 +82,7 @@ const UpvoteModal = ({
           <p className="modal-description">
             {currentUpvotes > 0 
               ? `You currently have ${currentUpvotes} upvote${currentUpvotes !== 1 ? 's' : ''} on this identity`
-              : "Be the first to upvote this identity"
+              : ""
             }
           </p>
 

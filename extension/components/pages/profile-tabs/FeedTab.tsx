@@ -26,6 +26,8 @@ interface FeedEvent {
   description: string
   details: string
   portalLink?: string
+  amount?: string // Amount in TRUST tokens
+  amountLabel?: string // e.g., "shares" or "assets"
 }
 
 const FeedTab = () => {
@@ -182,27 +184,26 @@ const FeedTab = () => {
       }
 
       // Use the events table to get all activity from Trust Circle accounts
+      // Using the exact query structure from task.md that works on Intuition portal
       const feedQuery = `
-        query TrustCircleActivity($walletAddresses: [String!]!, $limit: Int = 200) {
-          events(
-            limit: $limit
-            order_by: {created_at: desc}
-            where: {
-              _or: [
-                {atom: {creator: {id: {_in: $walletAddresses}}}},
-                {triple: {creator: {id: {_in: $walletAddresses}}}}
-              ]
-            }
-          ) {
+        query GetEvents($limit: Int, $offset: Int, $orderBy: [events_order_by!], $where: events_bool_exp) {
+          events(limit: $limit, offset: $offset, order_by: $orderBy, where: $where) {
             id
+            block_number
             created_at
             type
             transaction_hash
+            atom_id
+            triple_id
+            deposit_id
+            redemption_id
             atom {
               term_id
+              data
+              image
               label
               type
-              image
+              wallet_id
               creator {
                 id
                 label
@@ -212,21 +213,84 @@ const FeedTab = () => {
             triple {
               term_id
               creator {
+                label
+                image
                 id
+                atom_id
+                type
+              }
+              subject {
+                term_id
+                data
+                image
+                label
+                type
+              }
+              predicate {
+                term_id
+                data
+                image
+                label
+                type
+              }
+              object {
+                term_id
+                data
+                image
+                label
+                type
+              }
+            }
+            deposit {
+              curve_id
+              sender_id
+              sender {
+                id
+                atom_id
                 label
                 image
               }
-              subject { term_id, label }
-              predicate { term_id, label }
-              object { term_id, label }
+              shares
+              assets_after_fees
+            }
+            redemption {
+              curve_id
+              sender_id
+              sender {
+                id
+                atom_id
+                label
+                image
+              }
+              assets
+              shares
             }
           }
         }
       `
 
+      // Build the where clause to filter by Trust Circle accounts
+      const whereClause = {
+        "_and": [
+          {
+            "type": {
+              "_neq": "FeesTransfered"
+            }
+          },
+          {
+            "_or": [
+              { "atom": { "creator": { "id": { "_in": walletAddresses } } } },
+              { "triple": { "creator": { "id": { "_in": walletAddresses } } } }
+            ]
+          }
+        ]
+      }
+
       const feedResponse = await intuitionGraphqlClient.request(feedQuery, {
-        walletAddresses,
-        limit: 200
+        limit: 500,
+        offset: 0,
+        orderBy: [{ "created_at": "desc" }],
+        where: whereClause
       }) as { events: Array<any> }
 
       console.log('📊 Feed response:', feedResponse)
@@ -241,15 +305,22 @@ const FeedTab = () => {
       const feedEvents: FeedEvent[] = []
 
       for (const event of feedResponse.events || []) {
+        // Skip Deposited events with 0 assets_after_fees
+        if (event.type === 'Deposited' && event.deposit?.assets_after_fees === '0') {
+          continue
+        }
+
         console.log('📊 Processing event:', event.type, event)
         let accountLabel = ''
         let accountWallet = ''
         let accountImage = ''
         let description = ''
         let details = ''
-
-        // Determine account and data based on event type
         let portalLink = ''
+        let amount: string | undefined = undefined
+        let amountLabel: string | undefined = undefined
+
+        // Process events
         if (event.type === 'AtomCreated' && event.atom) {
           accountWallet = event.atom.creator.id
           accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
@@ -264,45 +335,57 @@ const FeedTab = () => {
           description = 'created claim'
           details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
           portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
-        } else if (event.type === 'Deposited') {
-          // Pour Deposited, on ne peut pas filtrer dans le where, mais on peut traiter l'événement
-          // On va juste afficher tous les Deposited et filtrer côté client
-          if (event.atom?.creator) {
-            accountWallet = event.atom.creator.id
-            accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
-            accountImage = event.atom.creator.image
-            description = 'activity on'
+        } else if (event.type === 'Deposited' && event.deposit) {
+          // For deposits, use the sender from deposit object
+          accountWallet = event.deposit.sender_id
+          accountLabel = walletToLabel.get(event.deposit.sender_id.toLowerCase()) || event.deposit.sender?.label
+          accountImage = event.deposit.sender?.image
+          description = 'deposited on'
+
+          // Determine what was deposited on (atom or triple)
+          if (event.atom) {
             details = event.atom.label
             portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
-          } else if (event.triple?.creator) {
-            accountWallet = event.triple.creator.id
-            accountLabel = walletToLabel.get(event.triple.creator.id.toLowerCase()) || event.triple.creator.label
-            accountImage = event.triple.creator.image
-            description = 'activity on claim'
+          } else if (event.triple) {
             details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
             portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
           }
-        } else if (event.type === 'Redeemed') {
-          // Même chose pour Redeemed
-          if (event.atom?.creator) {
-            accountWallet = event.atom.creator.id
-            accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
-            accountImage = event.atom.creator.image
-            description = 'activity on'
+
+          // Extract deposit amount (assets_after_fees converted to TRUST)
+          if (event.deposit.assets_after_fees) {
+            const assetsInTRUST = Number(event.deposit.assets_after_fees) / 1e18
+            amount = assetsInTRUST.toFixed(4)
+            amountLabel = 'TRUST'
+          }
+        } else if (event.type === 'Redeemed' && event.redemption) {
+          // For redemptions, use the sender from redemption object
+          accountWallet = event.redemption.sender_id
+          accountLabel = walletToLabel.get(event.redemption.sender_id.toLowerCase()) || event.redemption.sender?.label
+          accountImage = event.redemption.sender?.image
+          description = 'redeemed from'
+
+          // Determine what was redeemed from (atom or triple)
+          if (event.atom) {
             details = event.atom.label
             portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
-          } else if (event.triple?.creator) {
-            accountWallet = event.triple.creator.id
-            accountLabel = walletToLabel.get(event.triple.creator.id.toLowerCase()) || event.triple.creator.label
-            accountImage = event.triple.creator.image
-            description = 'activity on claim'
+          } else if (event.triple) {
             details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
             portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
+          }
+
+          // Extract redemption amount (assets converted to TRUST)
+          if (event.redemption.assets) {
+            const assetsInTRUST = Number(event.redemption.assets) / 1e18
+            amount = assetsInTRUST.toFixed(4)
+            amountLabel = 'TRUST'
           }
         }
 
-        if (accountLabel && accountWallet) {
-          console.log('✅ Adding feed event:', { accountLabel, accountWallet, accountImage, description, details })
+        // Check if this event is from someone in the Trust Circle
+        const isInTrustCircle = accountWallet && walletAddresses.some(w => w.toLowerCase() === accountWallet.toLowerCase())
+
+        if (accountLabel && accountWallet && isInTrustCircle) {
+          console.log('✅ Adding feed event:', { accountLabel, accountWallet, accountImage, description, details, amount, amountLabel })
           feedEvents.push({
             id: event.id,
             type: event.type,
@@ -312,10 +395,12 @@ const FeedTab = () => {
             accountImage,
             description,
             details,
-            portalLink
+            portalLink,
+            amount,
+            amountLabel
           })
         } else {
-          console.log('⚠️ Skipping event - no accountLabel:', event.type)
+          console.log('⚠️ Skipping event - not in Trust Circle or no accountLabel:', event.type, { accountWallet, isInTrustCircle })
         }
       }
 
@@ -504,6 +589,14 @@ const FeedTab = () => {
                         </a>
                       ) : (
                         <span className="feed-details-text">{item.details}</span>
+                      )}
+                      {item.amount && item.amountLabel && (
+                        <>
+                          {' '}
+                          <span className="feed-amount">
+                            ({item.amount} {item.amountLabel})
+                          </span>
+                        </>
                       )}
                     </div>
                     <div className="feed-meta">

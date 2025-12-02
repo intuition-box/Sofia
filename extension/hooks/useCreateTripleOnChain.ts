@@ -127,7 +127,10 @@ export const useCreateTripleOnChain = () => {
         const contractAddress = BlockchainService.getContractAddress()
 
         const defaultCost = await BlockchainService.getTripleCost()
-        const tripleCost = customWeight !== undefined ? customWeight : defaultCost
+
+        // User specifies amount for shares, we add creation fees on top
+        const userShareAmount = customWeight !== undefined && customWeight > 0n ? customWeight : defaultCost
+        const tripleCost = userShareAmount + defaultCost
 
         const subjectId = userAtom.vaultId as Address
         const predicateId = predicateAtom.vaultId as Address
