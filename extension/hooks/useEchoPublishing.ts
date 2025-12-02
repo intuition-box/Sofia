@@ -38,12 +38,24 @@ export const useEchoPublishing = ({
     }
     
     try {
+      // Calculate favicon URL from triplet URL
+      let faviconUrl = ''
+      if (triplet.url) {
+        try {
+          const urlObj = new URL(triplet.url)
+          faviconUrl = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=128`
+        } catch {
+          // Invalid URL, skip favicon
+        }
+      }
+
       const result = await createTripleOnChain(
         triplet.triplet.predicate,
         {
           name: triplet.triplet.object,
           description: triplet.description,
-          url: triplet.url
+          url: triplet.url,
+          image: faviconUrl
         },
         customWeight
       )

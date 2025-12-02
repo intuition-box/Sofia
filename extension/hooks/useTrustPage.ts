@@ -11,12 +11,16 @@ import type { Address } from '../types/viem'
 
 const logger = createHookLogger('useTrustPage')
 
+// Minimum deposit for triple creation (0.01 TRUST in wei)
+const MIN_TRIPLE_DEPOSIT = 10000000000000000n // 10^16 wei = 0.01 ether
+
 export interface TrustPageResult {
   trustPage: (url: string, customWeight?: bigint) => Promise<void>
   loading: boolean
   error: string | null
   success: boolean
   tripleVaultId: string | null
+  operationType: 'created' | 'deposit' | null
 }
 
 export const useTrustPage = (): TrustPageResult => {
@@ -34,6 +38,7 @@ export const useTrustPage = (): TrustPageResult => {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tripleVaultId, setTripleVaultId] = useState<string | null>(null)
+  const [operationType, setOperationType] = useState<'created' | 'deposit' | null>(null)
 
   // Get universal "I" subject atom (same for all users)
   const getUserAtom = useCallback(async () => {
@@ -112,7 +117,64 @@ export const useTrustPage = (): TrustPageResult => {
       )
 
       if (tripleCheck.exists) {
-        logger.info('Triple already exists', { tripleVaultId: tripleCheck.tripleVaultId })
+        // Triple exists - deposit on it instead of just returning
+        const { walletClient, publicClient } = await getClients()
+        const contractAddress = BlockchainService.getContractAddress()
+
+        // For deposit, use customWeight directly (no feeCost needed)
+        const feeCost = await BlockchainService.getTripleCost()
+        const depositAmount = customWeight !== undefined ? customWeight : feeCost
+        const curveId = 2n // Curve ID for triple deposits
+
+        logger.debug('Triple exists, performing deposit instead', {
+          tripleVaultId: tripleCheck.tripleVaultId,
+          depositAmount: depositAmount.toString(),
+          depositAmountInTRUST: Number(depositAmount) / 1e18
+        })
+
+        // Simulate deposit first
+        await publicClient.simulateContract({
+          address: contractAddress as Address,
+          abi: MultiVaultAbi,
+          functionName: 'deposit',
+          args: [
+            address as Address,                    // receiver
+            tripleCheck.tripleVaultId as Address,  // termId
+            curveId,                               // curveId
+            0n                                     // minShares
+          ],
+          value: depositAmount,
+          account: walletClient.account
+        })
+
+        // Execute deposit
+        const hash = await walletClient.writeContract({
+          address: contractAddress as Address,
+          abi: MultiVaultAbi,
+          functionName: 'deposit',
+          args: [
+            address as Address,
+            tripleCheck.tripleVaultId as Address,
+            curveId,
+            0n
+          ],
+          value: depositAmount,
+          chain: SELECTED_CHAIN,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address as Address
+        })
+
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+        if (receipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+        }
+
+        logger.info('✅ Deposit on existing triple successful', {
+          tripleVaultId: tripleCheck.tripleVaultId,
+          txHash: hash
+        })
 
         loadingRef.current = false
         successRef.current = true
@@ -121,6 +183,7 @@ export const useTrustPage = (): TrustPageResult => {
         setLoading(false)
         setSuccess(true)
         setTripleVaultId(tripleCheck.tripleVaultId!)
+        setOperationType('deposit')
         return
       }
 
@@ -129,21 +192,18 @@ export const useTrustPage = (): TrustPageResult => {
       const { walletClient, publicClient } = await getClients()
       const contractAddress = BlockchainService.getContractAddress()
 
-      const defaultCost = await BlockchainService.getTripleCost()
+      const feeCost = await BlockchainService.getTripleCost()
 
-      // User specifies amount for shares, we add creation fees on top
-      // So if user wants 0.01 TRUST in shares, total = 0.01 + defaultCost (~0.003) = 0.013 TRUST
-      const userShareAmount = customWeight !== undefined && customWeight > 0n ? customWeight : defaultCost
-      const tripleCost = userShareAmount + defaultCost
+      // Step 1: Create triple with minimum deposit + fee
+      const creationCost = MIN_TRIPLE_DEPOSIT + feeCost
 
-      logger.debug('Triple cost calculation', {
-        userShareAmount: userShareAmount.toString(),
-        userShareAmountInTRUST: Number(userShareAmount) / 1e18,
-        creationFees: defaultCost.toString(),
-        creationFeesInTRUST: Number(defaultCost) / 1e18,
-        totalCost: tripleCost.toString(),
-        totalCostInTRUST: Number(tripleCost) / 1e18,
-        isCustom: customWeight !== undefined,
+      logger.debug('Triple creation cost', {
+        creationCost: creationCost.toString(),
+        creationCostInTRUST: Number(creationCost) / 1e18,
+        feeCost: feeCost.toString(),
+        feeCostInTRUST: Number(feeCost) / 1e18,
+        minDeposit: MIN_TRIPLE_DEPOSIT.toString(),
+        minDepositInTRUST: Number(MIN_TRIPLE_DEPOSIT) / 1e18,
         customWeight: customWeight?.toString(),
         customWeightInTRUST: customWeight ? Number(customWeight) / 1e18 : 'none'
       })
@@ -162,9 +222,9 @@ export const useTrustPage = (): TrustPageResult => {
           [subjectId],
           [predicateId],
           [objectId],
-          [tripleCost]
+          [creationCost]
         ],
-        value: tripleCost,
+        value: creationCost,
         account: walletClient.account
       })
 
@@ -181,9 +241,9 @@ export const useTrustPage = (): TrustPageResult => {
           [subjectId],
           [predicateId],
           [objectId],
-          [tripleCost]
+          [creationCost]
         ],
-        value: tripleCost,
+        value: creationCost,
         chain: SELECTED_CHAIN,
         gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
         maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
@@ -201,6 +261,43 @@ export const useTrustPage = (): TrustPageResult => {
         throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
       }
 
+      // Step 2: If customWeight > minDeposit, deposit the rest on Curve 2
+      if (customWeight !== undefined && customWeight > MIN_TRIPLE_DEPOSIT) {
+        const additionalDeposit = customWeight - MIN_TRIPLE_DEPOSIT
+        const curveId = 2n
+
+        logger.debug('Depositing additional amount on Curve 2', {
+          tripleVaultId: expectedTripleVaultId,
+          additionalDeposit: additionalDeposit.toString(),
+          additionalDepositInTRUST: Number(additionalDeposit) / 1e18
+        })
+
+        const depositHash = await walletClient.writeContract({
+          address: contractAddress as Address,
+          abi: MultiVaultAbi,
+          functionName: 'deposit',
+          args: [
+            address as Address,              // receiver
+            expectedTripleVaultId as Address, // termId
+            curveId,                         // curveId = 2 (Deposit/Share curve)
+            0n                               // minShares
+          ],
+          value: additionalDeposit,
+          chain: SELECTED_CHAIN,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address as Address
+        })
+
+        const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
+
+        if (depositReceipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: Deposit failed - ${depositReceipt.status}`)
+        }
+
+        logger.debug('Additional deposit on Curve 2 successful', { depositHash })
+      }
+
       logger.info('✅ Trust triplet created successfully', {
         tripleVaultId: expectedTripleVaultId,
         txHash: hash
@@ -213,6 +310,7 @@ export const useTrustPage = (): TrustPageResult => {
       setLoading(false)
       setSuccess(true)
       setTripleVaultId(expectedTripleVaultId)
+      setOperationType('created')
 
     } catch (error) {
       logger.error('Trust page creation failed', error)
@@ -244,6 +342,7 @@ export const useTrustPage = (): TrustPageResult => {
     loading,
     error,
     success,
-    tripleVaultId
+    tripleVaultId,
+    operationType
   }
 }

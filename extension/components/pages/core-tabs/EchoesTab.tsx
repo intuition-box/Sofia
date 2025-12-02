@@ -123,6 +123,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [isCreating, setIsCreating] = useState(false)
   const [transactionSuccess, setTransactionSuccess] = useState(false)
   const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [createdCount, setCreatedCount] = useState(0)
+  const [depositCount, setDepositCount] = useState(0)
 
   // Function to get favicon URL from a website URL
   const getFaviconUrl = (url: string): string => {
@@ -150,14 +152,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Handle modal weight submission
   const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
     if (selectedTripletsForWeighting.length === 0) return
-    
+
     try {
       setIsCreating(true)
       setTransactionError(null)
       setTransactionSuccess(false)
-      
-      await publishSelected(customWeights)
-      
+      setCreatedCount(0)
+      setDepositCount(0)
+
+      const result = await publishSelected(customWeights)
+
+      setCreatedCount(result.createdCount || 0)
+      setDepositCount(result.depositCount || 0)
       setTransactionSuccess(true)
     } catch (error) {
       console.error('Failed to publish triplets with custom weights:', error)
@@ -173,6 +179,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     setSelectedTripletsForWeighting([])
     setTransactionError(null)
     setTransactionSuccess(false)
+    setCreatedCount(0)
+    setDepositCount(0)
     clearSelection()
   }
 
@@ -429,6 +437,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         isProcessing={isCreating}
         transactionSuccess={transactionSuccess}
         transactionError={transactionError}
+        createdCount={createdCount}
+        depositCount={depositCount}
         onClose={handleWeightModalClose}
         onSubmit={handleWeightSubmit}
       />

@@ -22,6 +22,8 @@ interface WeightModalProps {
   isProcessing: boolean
   transactionSuccess?: boolean
   transactionError?: string
+  createdCount?: number   // Number of newly created triples
+  depositCount?: number   // Number of deposits on existing triples
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
@@ -40,7 +42,7 @@ const weightOptions: WeightOption[] = [
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, createdCount = 0, depositCount = 0, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -204,7 +206,14 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 {transactionSuccess && (
                   <>
                     <p className="modal-success-title">Transaction Validated</p>
-                    <p className="modal-success-step">Your claims has been successfully amplified!</p>
+                    <p className="modal-success-step">
+                      {createdCount > 0 && depositCount > 0
+                        ? `${createdCount} signal${createdCount > 1 ? 's' : ''} created, ${depositCount} existing signal${depositCount > 1 ? 's' : ''} reinforced!`
+                        : depositCount > 0
+                          ? `Your signal${depositCount > 1 ? 's have' : ' has'} been reinforced!`
+                          : `Your signal${createdCount > 1 ? 's have' : ' has'} been amplified!`
+                      }
+                    </p>
                   </>
                 )}
                 {transactionError && (

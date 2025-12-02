@@ -4,6 +4,7 @@ import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import UpvoteModal from '../../modals/UpvoteModal'
+import SharesModal from '../../modals/SharesModal'
 import { useStorage } from "@plasmohq/storage/hook"
 import logoIcon from '../../ui/icons/chatIcon.png'
 import '../../styles/CoreComponents.css'
@@ -15,17 +16,22 @@ interface SignalsTabProps {
   setExpandedTriplet: (value: { tripletId: string } | null) => void
 }
 
-type SortOption = 'highest-shares' | 'lowest-shares' | 'newest' | 'oldest' | 'a-z' | 'z-a' | 'platform'
+type SortOption = 'highest-shares' | 'lowest-shares' | 'highest-support' | 'lowest-support' | 'newest' | 'oldest' | 'a-z' | 'z-a' | 'platform'
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
   const { triplets, refreshFromAPI } = useIntuitionTriplets()
-  const { addWeight, removeWeight } = useWeightOnChain()
+  const { addWeight, addShares, removeWeight } = useWeightOnChain()
   const [address] = useStorage<string>("metamask-account")
-  
+
   // Upvote modal state
   const [selectedTriplet, setSelectedTriplet] = useState<typeof triplets[0] | null>(null)
   const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
   const [isProcessingUpvote, setIsProcessingUpvote] = useState(false)
+
+  // Shares modal state
+  const [selectedSharesTriplet, setSelectedSharesTriplet] = useState<typeof triplets[0] | null>(null)
+  const [isSharesModalOpen, setIsSharesModalOpen] = useState(false)
+  const [isProcessingShares, setIsProcessingShares] = useState(false)
   
   // Sorting state
   const [sortBy, setSortBy] = useState<SortOption>('newest')
@@ -69,8 +75,12 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     // Apply sorting
     switch (sortBy) {
       case 'highest-shares':
-        return filtered.sort((a, b) => (b.position?.upvotes || 0) - (a.position?.upvotes || 0))
+        return filtered.sort((a, b) => (b.position?.shares || 0) - (a.position?.shares || 0))
       case 'lowest-shares':
+        return filtered.sort((a, b) => (a.position?.shares || 0) - (b.position?.shares || 0))
+      case 'highest-support':
+        return filtered.sort((a, b) => (b.position?.upvotes || 0) - (a.position?.upvotes || 0))
+      case 'lowest-support':
         return filtered.sort((a, b) => (a.position?.upvotes || 0) - (b.position?.upvotes || 0))
       case 'newest':
         return filtered.sort((a, b) => b.timestamp - a.timestamp)
@@ -95,6 +105,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   const sortOptions = [
     { value: 'highest-shares', label: 'Highest Shares' },
     { value: 'lowest-shares', label: 'Lowest Shares' },
+    { value: 'highest-support', label: 'Highest Support' },
+    { value: 'lowest-support', label: 'Lowest Support' },
     { value: 'newest', label: 'Newest' },
     { value: 'oldest', label: 'Oldest' },
     { value: 'a-z', label: 'A-Z' },
@@ -181,12 +193,12 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
     try {
       setIsProcessingUpvote(true)
-      
+
       const currentUpvotes = selectedTriplet.position?.upvotes || 0
       const difference = newUpvotes - currentUpvotes
-      
+
       console.log('Adjusting upvotes from', currentUpvotes, 'to', newUpvotes, 'difference:', difference)
-      
+
       if (difference === 0) {
         handleCloseUpvoteModal()
         return
@@ -194,22 +206,22 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
 
       // Convert upvotes to Wei (1 upvote = 0.001 TRUST = 10^15 Wei)
       const weightChange = BigInt(Math.abs(difference)) * BigInt(1e15)
-      
+
       let result
       if (difference > 0) {
         // Adding upvotes
         result = await addWeight(selectedTriplet.id, weightChange)
       } else {
-        // Removing upvotes  
+        // Removing upvotes
         result = await removeWeight(selectedTriplet.id, weightChange)
       }
 
       if (result.success) {
         console.log('✅ Weight adjustment successful:', result.txHash)
-        
+
         // Refresh the data after successful transaction
         await refreshFromAPI()
-        
+
         handleCloseUpvoteModal()
       } else {
         throw new Error(result.error || 'Transaction failed')
@@ -217,6 +229,45 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     } catch (error) {
       console.error('Failed to adjust upvotes:', error)
       setIsProcessingUpvote(false)
+      // Keep modal open to show error or allow retry
+    }
+  }
+
+  // Shares modal handlers
+  const handleSharesClick = (triplet: typeof triplets[0]) => {
+    setSelectedSharesTriplet(triplet)
+    setIsSharesModalOpen(true)
+  }
+
+  const handleCloseSharesModal = () => {
+    setIsSharesModalOpen(false)
+    setSelectedSharesTriplet(null)
+    setIsProcessingShares(false)
+  }
+
+  const handleSharesSubmit = async (amount: bigint) => {
+    if (!selectedSharesTriplet || !address) return
+
+    try {
+      setIsProcessingShares(true)
+
+      console.log('Investing shares:', amount.toString(), 'wei on triple:', selectedSharesTriplet.id)
+
+      const result = await addShares(selectedSharesTriplet.id, amount)
+
+      if (result.success) {
+        console.log('✅ Shares investment successful:', result.txHash)
+
+        // Refresh the data after successful transaction
+        await refreshFromAPI()
+
+        handleCloseSharesModal()
+      } else {
+        throw new Error(result.error || 'Transaction failed')
+      }
+    } catch (error) {
+      console.error('Failed to invest shares:', error)
+      setIsProcessingShares(false)
       // Keep modal open to show error or allow retry
     }
   }
@@ -294,11 +345,11 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     </p>
                   </div>
                   
-                  {/* Favicon et Upvotes alignés avec le texte */}
+                  {/* Favicon et Badges alignés avec le texte */}
                   <div className="triplet-actions-container">
                     {tripletItem.url && (
-                      <img 
-                        src={getFaviconUrl(tripletItem.url)} 
+                      <img
+                        src={getFaviconUrl(tripletItem.url)}
                         alt="favicon"
                         className="triplet-favicon-small"
                         onError={(e) => {
@@ -307,18 +358,28 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                         }}
                       />
                     )}
-                    {(
-                      <div
-                        className="upvote-badge upvote-badge-relative"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleUpvoteClick(tripletItem)
-                        }}
-                        title="Adjust upvotes"
-                      >
-                        👍 {tripletItem.position?.upvotes || 0}
-                      </div>
-                    )}
+                    {/* Curve 2 - Shares/Deposit */}
+                    <div
+                      className="shares-badge shares-badge-relative"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleSharesClick(tripletItem)
+                      }}
+                      title="Shares (Curve 2 - Deposit)"
+                    >
+                    {(tripletItem.position?.shares || 0).toFixed(2)}
+                    </div>
+                    {/* Curve 1 - Upvotes */}
+                    <div
+                      className="upvote-badge upvote-badge-relative"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleUpvoteClick(tripletItem)
+                      }}
+                      title="Upvotes (Curve 1)"
+                    >
+                      👍 {tripletItem.position?.upvotes || 0}
+                    </div>
                   </div>
                 </div>
                 {isExpanded && (() => {
@@ -405,6 +466,20 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
           onClose={handleCloseUpvoteModal}
           onSubmit={handleUpvoteSubmit}
           isProcessing={isProcessingUpvote}
+        />
+      )}
+
+      {/* Shares Modal */}
+      {selectedSharesTriplet && (
+        <SharesModal
+          isOpen={isSharesModalOpen}
+          objectName={selectedSharesTriplet.triplet.object}
+          tripleId={selectedSharesTriplet.id}
+          currentShares={selectedSharesTriplet.position?.shares || 0}
+          totalMarketCap={selectedSharesTriplet.totalMarketCap || '0'}
+          onClose={handleCloseSharesModal}
+          onSubmit={handleSharesSubmit}
+          isProcessing={isProcessingShares}
         />
       )}
     </div>

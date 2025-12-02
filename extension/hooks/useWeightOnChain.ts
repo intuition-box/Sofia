@@ -79,6 +79,71 @@ export const useWeightOnChain = () => {
     }
   }
 
+  /**
+   * Add shares to a triple vault on Curve 2 (Deposit/Share curve)
+   * Used for investing in triple shares, separate from upvotes
+   */
+  const addShares = async (
+    tripleVaultId: string,
+    amount: bigint
+  ): Promise<WeightResult> => {
+    try {
+      if (!address) {
+        throw new Error('No wallet connected')
+      }
+
+      logger.debug('Adding shares to triple (Curve 2)', { tripleVaultId, amount: amount.toString() })
+
+      const { walletClient, publicClient } = await getClients()
+      const contractAddress = BlockchainService.getContractAddress()
+
+      // Use curve ID 2 for Deposit/Share curve
+      const curveId = 2
+
+      const txParams = {
+        address: contractAddress,
+        abi: MultiVaultAbi,
+        functionName: 'deposit',
+        args: [
+          address as Address, // receiver
+          tripleVaultId as `0x${string}`, // termId (triple vault ID) - bytes32
+          curveId, // curveId = 2 for shares
+          0n // minShares (0 for no slippage protection)
+        ],
+        value: amount,
+        chain: SELECTED_CHAIN,
+        gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+        account: address as Address
+      }
+
+      logger.debug('Executing deposit transaction (Curve 2)', txParams)
+
+      const hash = await walletClient.writeContract(txParams)
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+      if (receipt.status !== 'success') {
+        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+      }
+
+      logger.debug('Shares addition successful', { hash, receipt })
+
+      return {
+        success: true,
+        txHash: hash
+      }
+    } catch (error) {
+      logger.error('Shares addition failed', error)
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      return {
+        success: false,
+        error: `Shares addition failed: ${errorMessage}`
+      }
+    }
+  }
+
   const removeWeight = async (
     tripleVaultId: string,
     weightToRemove: bigint
@@ -169,8 +234,9 @@ export const useWeightOnChain = () => {
     }
   }
 
-  return { 
+  return {
     addWeight,
+    addShares,
     removeWeight
   }
 }

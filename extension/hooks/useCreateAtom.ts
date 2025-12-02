@@ -87,79 +87,104 @@ export const useCreateAtom = () => {
         contractAddress: BlockchainService.getContractAddress()
       })
       
-      // Calculate expected vaultId locally (same as contract)
-      const expectedVaultId = BlockchainService.calculateAtomHash(ipfsUri)
+      // Calculate expected vaultId using the contract's calculateAtomId function
+      const expectedVaultId = await BlockchainService.calculateAtomId(ipfsUri)
 
       // Simulate to validate before paying gas fees
       const { publicClient } = await getClients()
-      const simulation = await publicClient.simulateContract({
-        address: BlockchainService.getContractAddress() as `0x${string}`,
-        abi: MultiVaultAbi,
-        functionName: 'createAtoms',
-        args: [[encodedData], [atomCost]],
-        value: atomCost,
-        account: walletClient.account
-      })
 
-      // Get the actual vault ID from simulation
-      // If atom already exists, contract returns existing ID (which may differ from our calculation)
-      const simulatedVaultIds = simulation.result as `0x${string}`[]
-      const actualVaultId = simulatedVaultIds[0]
-
-      if (actualVaultId !== expectedVaultId) {
-        logger.info('Hash mismatch - atom may already exist with different data', {
-          expectedVaultId,
-          actualVaultId,
-          atomName: atomData.name
+      try {
+        const simulation = await publicClient.simulateContract({
+          address: BlockchainService.getContractAddress() as `0x${string}`,
+          abi: MultiVaultAbi,
+          functionName: 'createAtoms',
+          args: [[encodedData], [atomCost]],
+          value: atomCost,
+          account: walletClient.account
         })
+
+        // Get the actual vault ID from simulation
+        // If atom already exists, contract returns existing ID (which may differ from our calculation)
+        const simulatedVaultIds = simulation.result as `0x${string}`[]
+        const actualVaultId = simulatedVaultIds[0]
+
+        if (actualVaultId !== expectedVaultId) {
+          logger.info('Hash mismatch - atom may already exist with different data', {
+            expectedVaultId,
+            actualVaultId,
+            atomName: atomData.name
+          })
+        }
+
+        logger.debug('Sending atom creation transaction', {
+          args: [[encodedData], [atomCost]],
+          value: atomCost.toString(),
+          expectedVaultId: expectedVaultId,
+          actualVaultId: actualVaultId,
+          simulationConfirmed: true
+        })
+
+        const txHash = await walletClient.writeContract({
+          address: BlockchainService.getContractAddress() as `0x${string}`,
+          abi: MultiVaultAbi,
+          functionName: 'createAtoms',
+          args: [[encodedData], [atomCost]],
+          value: atomCost,
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+          chain: SELECTED_CHAIN,
+          account: address as `0x${string}`
+        })
+
+        logger.debug('Transaction sent', { txHash })
+
+        // Wait for confirmation
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+        logger.debug('Transaction confirmed', { status: receipt.status })
+
+        if (receipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+        }
+
+        const result = {
+          success: true,
+          vaultId: actualVaultId,
+          atomHash: actualVaultId,
+          txHash
+        }
+
+        console.log('✅ ATOM CREATION COMPLETED:', {
+          atomName: atomData.name,
+          ipfsUri: ipfsUri,
+          encodedData: encodedData,
+          vaultId: result.vaultId,
+          atomHash: result.atomHash,
+          txHash: result.txHash
+        })
+
+        return result
+
+      } catch (simulationError) {
+        // Check if atom already exists (MultiVault_AtomExists error)
+        const errorMessage = simulationError instanceof Error ? simulationError.message : ''
+        if (errorMessage.includes('MultiVault_AtomExists') || errorMessage.includes('AtomExists')) {
+          // Use the contract's calculateAtomId to get the correct atom ID
+          const atomId = await BlockchainService.calculateAtomId(ipfsUri)
+          logger.debug('Atom already exists (caught during simulation), returning existing', {
+            atomName: atomData.name,
+            atomId
+          })
+
+          return {
+            success: true,
+            vaultId: atomId,
+            atomHash: atomId,
+            txHash: 'existing'
+          }
+        }
+        // Re-throw other errors
+        throw simulationError
       }
 
-      logger.debug('Sending atom creation transaction', {
-        args: [[encodedData], [atomCost]],
-        value: atomCost.toString(),
-        expectedVaultId: expectedVaultId,
-        actualVaultId: actualVaultId,
-        simulationConfirmed: true
-      })
-
-      const txHash = await walletClient.writeContract({
-        address: BlockchainService.getContractAddress() as `0x${string}`,
-        abi: MultiVaultAbi,
-        functionName: 'createAtoms',
-        args: [[encodedData], [atomCost]],
-        value: atomCost,
-        gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
-        chain: SELECTED_CHAIN,
-        account: address as `0x${string}`
-      })
-
-      logger.debug('Transaction sent', { txHash })
-
-      // Wait for confirmation
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
-      logger.debug('Transaction confirmed', { status: receipt.status })
-      
-      if (receipt.status !== 'success') {
-        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
-      }
-
-      const result = {
-        success: true,
-        vaultId: actualVaultId,
-        atomHash: actualVaultId,
-        txHash
-      }
-
-      console.log('✅ ATOM CREATION COMPLETED:', {
-        atomName: atomData.name,
-        ipfsUri: ipfsUri,
-        encodedData: encodedData,
-        vaultId: result.vaultId,
-        atomHash: result.atomHash,
-        txHash: result.txHash
-      })
-      
-      return result
     } catch (error) {
       logger.error('Atom creation failed', error)
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
@@ -230,63 +255,75 @@ export const useCreateAtom = () => {
       if (newAtoms.length > 0) {
         const { walletClient, publicClient } = await getClients()
         const atomCost = await BlockchainService.getAtomCost()
-        
-        // Prepare batch data
-        const encodedDataArray = newAtoms.map(({ ipfsUri }) => stringToHex(ipfsUri))
-        const costsArray = newAtoms.map(() => atomCost)
-        const totalValue = atomCost * BigInt(newAtoms.length)
-        
-        logger.debug('Creating atoms batch transaction', {
-          count: newAtoms.length,
-          totalValue: totalValue.toString()
-        })
-        
-        // Simulate first
-        const simulation = await publicClient.simulateContract({
-          address: BlockchainService.getContractAddress() as `0x${string}`,
-          abi: MultiVaultAbi,
-          functionName: 'createAtoms',
-          args: [encodedDataArray, costsArray],
-          value: totalValue,
-          account: walletClient.account
-        })
-        
-        // Execute batch transaction
-        const txHash = await walletClient.writeContract({
-          address: BlockchainService.getContractAddress() as `0x${string}`,
-          abi: MultiVaultAbi,
-          functionName: 'createAtoms',
-          args: [encodedDataArray, costsArray],
-          value: totalValue,
-          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
-          chain: SELECTED_CHAIN,
-          account: address as `0x${string}`
-        })
-        
-        logger.debug('Batch transaction sent', { txHash })
-        
-        // Wait for confirmation
-        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
-        
-        if (receipt.status !== 'success') {
-          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
-        }
-        
-        // Get vault IDs from simulation result
-        const vaultIds = simulation.result as `0x${string}`[]
-        
-        // Add new atoms to results
-        for (let i = 0; i < newAtoms.length; i++) {
-          const newAtom = newAtoms[i]
-          results[newAtom.atomData.name] = {
-            success: true,
-            vaultId: vaultIds[i],
-            atomHash: vaultIds[i],
-            txHash
+        const contractAddress = BlockchainService.getContractAddress() as `0x${string}`
+
+        // Process atoms one by one to handle MultiVault_AtomExists errors gracefully
+        for (const newAtom of newAtoms) {
+          const encodedData = stringToHex(newAtom.ipfsUri)
+
+          try {
+            // Simulate first
+            const simulation = await publicClient.simulateContract({
+              address: contractAddress,
+              abi: MultiVaultAbi,
+              functionName: 'createAtoms',
+              args: [[encodedData], [atomCost]],
+              value: atomCost,
+              account: walletClient.account
+            })
+
+            // Execute transaction
+            const txHash = await walletClient.writeContract({
+              address: contractAddress,
+              abi: MultiVaultAbi,
+              functionName: 'createAtoms',
+              args: [[encodedData], [atomCost]],
+              value: atomCost,
+              gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+              chain: SELECTED_CHAIN,
+              account: address as `0x${string}`
+            })
+
+            // Wait for confirmation
+            const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+
+            if (receipt.status !== 'success') {
+              throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+            }
+
+            // Get vault ID from simulation result
+            const vaultIds = simulation.result as `0x${string}`[]
+
+            results[newAtom.atomData.name] = {
+              success: true,
+              vaultId: vaultIds[0],
+              atomHash: vaultIds[0],
+              txHash
+            }
+
+          } catch (error) {
+            // Check if atom already exists (MultiVault_AtomExists error)
+            const errorMessage = error instanceof Error ? error.message : ''
+            if (errorMessage.includes('MultiVault_AtomExists') || errorMessage.includes('AtomExists')) {
+              logger.debug('Atom already exists, getting existing vaultId', { name: newAtom.atomData.name })
+
+              // Use the contract's calculateAtomId to get the correct atom ID
+              const atomId = await BlockchainService.calculateAtomId(newAtom.ipfsUri)
+
+              results[newAtom.atomData.name] = {
+                success: true,
+                vaultId: atomId,
+                atomHash: atomId,
+                txHash: 'existing'
+              }
+            } else {
+              // Re-throw other errors
+              throw error
+            }
           }
         }
-        
-        logger.debug('Batch atom creation completed', { 
+
+        logger.debug('Batch atom creation completed', {
           newCount: newAtoms.length,
           existingCount: existingAtoms.length,
           totalCount: Object.keys(results).length

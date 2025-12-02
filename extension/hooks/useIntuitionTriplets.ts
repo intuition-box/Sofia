@@ -24,6 +24,16 @@ const formatSharesAsUpvotes = (shares: string): number => {
   }
 }
 
+// Convert shares from Wei to TRUST value for Curve 2 (Deposit/Share)
+const formatSharesAsDeposit = (shares: string): number => {
+  try {
+    const sharesBigInt = BigInt(shares)
+    return Number(sharesBigInt) / 1e18
+  } catch {
+    return 0
+  }
+}
+
 export interface IntuitionTriplet {
   blockNumber: number
   id: string
@@ -48,9 +58,12 @@ export interface IntuitionTriplet {
   tripleStatus?: 'on-chain' | 'pending' | 'atom-only'
   // Position data
   position?: {
-    upvotes: number
+    upvotes: number      // Curve 1 - Upvote shares
+    shares: number       // Curve 2 - Deposit/Share shares
     created_at: string
   }
+  // Total market cap for Curve 2
+  totalMarketCap?: string
 }
 
 interface UseIntuitionTripletsResult {
@@ -81,16 +94,22 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
       console.log('🔄 Checksum address:', checksumAddress)
 
     const triplesQuery = `
-      query Query_root($where: triples_bool_exp) {
+      query Query_root($where: triples_bool_exp, $walletAddress: String!) {
         triples(where: $where) {
           subject { label }
           predicate { label }
-          object { label }
+          object { label, term_id }
           term_id
           created_at
-          positions {
-            shares
-            created_at
+          term {
+            vaults(order_by: {curve_id: asc}) {
+              curve_id
+              total_shares
+              positions(where: {account_id: {_eq: $walletAddress}}) {
+                shares
+                created_at
+              }
+            }
           }
         }
       }
@@ -120,11 +139,12 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
     
     console.log('🚀 Making GraphQL request with where:', where)
     console.log('🚀 Query:', triplesQuery)
-    console.log('🚀 Variables:', { where })
+    console.log('🚀 Variables:', { where, walletAddress: checksumAddress })
     console.log('🚀 SUBJECT_IDS.I value:', SUBJECT_IDS.I)
-    
+
     const response = await intuitionGraphqlClient.request(triplesQuery, {
-      where
+      where,
+      walletAddress: checksumAddress
     }) as GraphQLTriplesResponse
     
     console.log('📥 GraphQL response:', response)
@@ -191,11 +211,24 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
       const objectLabel = triple.object?.label || 'Unknown'
       const objectData = atomDataMap.get(objectLabel)
 
-      // Get position data if available
-      const position = triple.positions && triple.positions.length > 0 ? {
-        upvotes: formatSharesAsUpvotes(triple.positions[0].shares),
-        created_at: triple.positions[0].created_at
+      // Get vault data for both curves
+      const vaults = (triple as any).term?.vaults || []
+      const curve1Vault = vaults.find((v: any) => v.curve_id === '1')
+      const curve2Vault = vaults.find((v: any) => v.curve_id === '2')
+
+      // Get position data from both curves
+      const curve1Shares = curve1Vault?.positions?.[0]?.shares
+      const curve2Shares = curve2Vault?.positions?.[0]?.shares
+      const created_at = curve1Vault?.positions?.[0]?.created_at || curve2Vault?.positions?.[0]?.created_at || ''
+
+      const position = (curve1Shares || curve2Shares) ? {
+        upvotes: curve1Shares ? formatSharesAsUpvotes(curve1Shares) : 0,
+        shares: curve2Shares ? formatSharesAsDeposit(curve2Shares) : 0,
+        created_at
       } : undefined
+
+      // Get total market cap from Curve 2 vault
+      const totalMarketCap = curve2Vault?.total_shares || '0'
 
       return {
         id: triple.term_id,
@@ -210,7 +243,8 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
         timestamp: new Date(triple.created_at).getTime(),
         blockNumber: 0,
         source: 'intuition_api' as const,
-        position
+        position,
+        totalMarketCap
       }
     })
 
