@@ -12,6 +12,9 @@ import type { Address, Hash, ContractWriteParams } from '../types/viem'
 
 const logger = createHookLogger('useCreateTripleOnChain')
 
+// Minimum deposit for triple creation (0.01 TRUST in wei)
+const MIN_TRIPLE_DEPOSIT = 10000000000000000n // 10^16 wei = 0.01 ether
+
 
 export const useCreateTripleOnChain = () => {
   const { createAtomWithMultivault, createAtomsBatch } = useCreateAtom()
@@ -181,15 +184,14 @@ export const useCreateTripleOnChain = () => {
         const contractAddress = BlockchainService.getContractAddress()
 
         const feeCost = await BlockchainService.getTripleCost()
-        // customWeight is the deposit amount user wants, we add fees on top
-        const tripleCost = customWeight !== undefined
-          ? customWeight + feeCost
-          : feeCost
+
+        // Step 1: Create triple with minimum deposit + fee
+        const creationCost = MIN_TRIPLE_DEPOSIT + feeCost
 
         const subjectId = userAtom.vaultId as Address
         const predicateId = predicateAtom.vaultId as Address
         const objectId = objectAtom.vaultId as Address
-        
+
         const txParams = {
           address: contractAddress,
           abi: MultiVaultAbi,
@@ -198,9 +200,9 @@ export const useCreateTripleOnChain = () => {
             [subjectId],
             [predicateId],
             [objectId],
-            [tripleCost]
+            [creationCost]
           ],
-          value: tripleCost,
+          value: creationCost,
           chain: SELECTED_CHAIN,
           gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
@@ -211,7 +213,7 @@ export const useCreateTripleOnChain = () => {
         const hash = await executeTransaction(txParams)
 
         const receipt = await publicClient.waitForTransactionReceipt({ hash: hash as Address })
-        
+
         if (receipt.status !== 'success') {
           throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
         }
@@ -221,14 +223,50 @@ export const useCreateTripleOnChain = () => {
           address: contractAddress as Address,
           abi: MultiVaultAbi,
           functionName: 'createTriples',
-          args: [[subjectId], [predicateId], [objectId], [tripleCost]],
-          value: tripleCost,
+          args: [[subjectId], [predicateId], [objectId], [creationCost]],
+          value: creationCost,
           account: walletClient.account
         })
 
         const tripleIds = simulation.result as Address[]
         const tripleVaultId = tripleIds[0]
-        
+
+        // Step 2: If customWeight > minDeposit, deposit the rest on Curve 2
+        if (customWeight !== undefined && customWeight > MIN_TRIPLE_DEPOSIT) {
+          const additionalDeposit = customWeight - MIN_TRIPLE_DEPOSIT
+          const curveId = 2n
+
+          logger.debug('Depositing additional amount on Curve 2', {
+            tripleVaultId,
+            additionalDeposit: additionalDeposit.toString()
+          })
+
+          const depositHash = await walletClient.writeContract({
+            address: contractAddress as Address,
+            abi: MultiVaultAbi,
+            functionName: 'deposit',
+            args: [
+              address as Address,           // receiver
+              tripleVaultId as Address,     // termId
+              curveId,                      // curveId = 2 (Deposit/Share curve)
+              0n                            // minShares
+            ],
+            value: additionalDeposit,
+            chain: SELECTED_CHAIN,
+            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+            account: address as Address
+          })
+
+          const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
+
+          if (depositReceipt.status !== 'success') {
+            throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: Deposit failed - ${depositReceipt.status}`)
+          }
+
+          logger.debug('Additional deposit successful', { depositHash })
+        }
+
         return {
           success: true,
           tripleVaultId: tripleVaultId,
@@ -381,16 +419,13 @@ export const useCreateTripleOnChain = () => {
         // Get fee cost from contract
         const feeCost = await BlockchainService.getTripleCost()
 
-        // Prepare batch arrays with individual custom weights
-        // customWeight is the deposit amount user wants, we add fees on top
+        // Step 1: Create all triples with minimum deposit + fee
         const subjectIds = triplesToCreate.map(t => t.subjectId as Address)
         const predicateIds = triplesToCreate.map(t => t.predicateId as Address)
         const objectIds = triplesToCreate.map(t => t.objectId as Address)
-        const tripleCosts = triplesToCreate.map(t =>
-          t.customWeight !== undefined
-            ? t.customWeight + feeCost
-            : feeCost
-        )
+        // Each triple is created with MIN_TRIPLE_DEPOSIT + feeCost
+        const creationCost = MIN_TRIPLE_DEPOSIT + feeCost
+        const tripleCosts = triplesToCreate.map(() => creationCost)
 
         const totalValue = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
 
@@ -442,6 +477,49 @@ export const useCreateTripleOnChain = () => {
               source: 'created',
               tripleHash: tripleIds[i]
             })
+          }
+
+          // Step 2: For triples with customWeight > minDeposit, deposit the rest on Curve 2
+          const triplesNeedingDeposit = triplesToCreate.filter(t =>
+            t.customWeight !== undefined && t.customWeight > MIN_TRIPLE_DEPOSIT
+          )
+
+          if (triplesNeedingDeposit.length > 0) {
+            const curveId = 2n
+
+            logger.debug('Processing additional deposits on Curve 2', {
+              count: triplesNeedingDeposit.length
+            })
+
+            for (const triple of triplesNeedingDeposit) {
+              const tripleIndex = triplesToCreate.indexOf(triple)
+              const tripleVaultId = tripleIds[tripleIndex]
+              const additionalAmount = triple.customWeight! - MIN_TRIPLE_DEPOSIT
+
+              const depositHash = await walletClient.writeContract({
+                address: contractAddress,
+                abi: MultiVaultAbi,
+                functionName: 'deposit',
+                args: [address as Address, tripleVaultId, curveId, 0n],
+                value: additionalAmount,
+                chain: SELECTED_CHAIN,
+                maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+                maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+                account: address as Address
+              })
+
+              const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
+
+              if (depositReceipt.status !== 'success') {
+                throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: Additional deposit failed - ${depositReceipt.status}`)
+              }
+
+              logger.debug('Additional deposit successful', {
+                tripleVaultId,
+                additionalAmount: additionalAmount.toString(),
+                depositHash
+              })
+            }
           }
 
         } catch (createError) {
