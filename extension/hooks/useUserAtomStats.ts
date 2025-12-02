@@ -159,8 +159,8 @@ export const useUserAtomStats = (
         if (response.followers_count.nodes.length > 0) {
           const followerNode = response.followers_count.nodes[0]
 
-          // Check if term exists before accessing it
-          if (followerNode.term) {
+          // Check if followerNode and term exist before accessing
+          if (followerNode && followerNode.term) {
             followersMarketCap = followerNode.term.total_market_cap || '0'
 
             // Get position count from the vault

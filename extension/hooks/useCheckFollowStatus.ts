@@ -41,6 +41,21 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
         return
       }
 
+      // Validate that accountTermId is a bytes32 (66 chars) and not a wallet address (42 chars)
+      if (accountTermId.length !== 66) {
+        logger.warn('Invalid accountTermId - expected bytes32 (66 chars) but got', {
+          accountTermId,
+          length: accountTermId.length
+        })
+        setStatus({
+          isFollowing: false,
+          isTrusting: false,
+          loading: false,
+          error: 'Invalid account term ID'
+        })
+        return
+      }
+
       try {
         setStatus(prev => ({ ...prev, loading: true, error: null }))
 
@@ -98,6 +113,15 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
    */
   const refetch = async () => {
     if (!address || !accountTermId) return
+
+    // Validate term ID length
+    if (accountTermId.length !== 66) {
+      logger.warn('Invalid accountTermId in refetch', {
+        accountTermId,
+        length: accountTermId.length
+      })
+      return
+    }
 
     try {
       setStatus(prev => ({ ...prev, loading: true }))

@@ -13,6 +13,7 @@ import UpvoteModal from '../../modals/UpvoteModal'
 import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import Avatar from '../../ui/Avatar'
 import AccountStats from '../../ui/AccountStats'
+import { batchGetEnsAvatars } from '../../../lib/utils/ensUtils'
 import UserAtomStats from '../../ui/UserAtomStats'
 import { useRouter } from '../../layout/RouterProvider'
 import '../../styles/CoreComponents.css'
@@ -130,7 +131,21 @@ const FollowTab = () => {
   // Handle follow success callback
   const handleFollowSuccess = () => {
     console.log('✅ FollowTab - Follow successful, refreshing list')
+
+    // Rafraîchir immédiatement
     loadFollows()
+
+    // Rafraîchir après 2 secondes (le temps que l'API indexe)
+    setTimeout(() => {
+      console.log('🔄 FollowTab - Second refresh after indexing delay')
+      loadFollows()
+    }, 2000)
+
+    // Rafraîchir après 5 secondes au cas où
+    setTimeout(() => {
+      console.log('🔄 FollowTab - Third refresh after extended delay')
+      loadFollows()
+    }, 5000)
   }
 
   // Handle navigation to user profile
@@ -252,6 +267,7 @@ const FollowTab = () => {
 
       if (filterType === 'following' || filterType === 'trust-circle') {
         // FOLLOWING or TRUST CIRCLE: Query triples where I have a position
+        // Use same structure as task.md
         const triplesQuery = `
           query Triples($where: triples_bool_exp, $walletAddress: String!) {
             triples(where: $where) {
@@ -260,11 +276,14 @@ const FollowTab = () => {
               object { label, term_id, type, image, data }
               term_id
               created_at
-              positions(where: { account: { id: { _eq: $walletAddress } } }) {
-                account { id }
-                shares
-                created_at
-                curve_id
+              term {
+                vaults(where: {curve_id: {_eq: "1"}}, order_by: {curve_id: asc}) {
+                  positions(where: {account_id: {_eq: $walletAddress}}) {
+                    account_id
+                    shares
+                    created_at
+                  }
+                }
               }
             }
           }
@@ -275,15 +294,6 @@ const FollowTab = () => {
 
         const where = {
           "_and": [
-            {
-              "positions": {
-                "account": {
-                  "id": {
-                    "_eq": checksumAddress
-                  }
-                }
-              }
-            },
             {
               "subject_id": {
                 "_eq": SUBJECT_IDS.I
@@ -374,10 +384,6 @@ const FollowTab = () => {
                       id
                       label
                       image
-                      atom {
-                        term_id
-                        data
-                      }
                     }
                     shares
                   }
@@ -459,16 +465,24 @@ const FollowTab = () => {
 
       if (filterType === 'following' || filterType === 'trust-circle') {
         // Following or Trust Circle: Each triple represents one account I follow/trust
-        accounts = response.triples.map((triple: any) => {
-          const account = triple.object
-          const accountData = atomDataMap.get(account.label)
+        // Filter client-side: only show triples where user has positions
+        accounts = response.triples
+          .filter((triple: any) => {
+            const vault = triple.term?.vaults?.[0]
+            return vault && vault.positions && vault.positions.length > 0
+          })
+          .map((triple: any) => {
+            const account = triple.object
+            const accountData = atomDataMap.get(account.label)
 
-          // Calculate trust amount from my positions on this triple
-          const trustAmountWei = triple.positions?.reduce((sum: number, pos: any) => {
-            return sum + parseFloat(pos.shares || '0')
-          }, 0) || 0
+            // Calculate trust amount from my positions on this triple via term.vaults
+            const vault = triple.term.vaults[0]
+            const myPositions = vault?.positions || []
+            const trustAmountWei = myPositions.reduce((sum: number, pos: any) => {
+              return sum + parseFloat(pos.shares || '0')
+            }, 0)
 
-          const trustAmount = trustAmountWei / 1e18
+            const trustAmount = trustAmountWei / 1e18
 
           // Extract wallet address from data field or use label if it's an address
           let walletAddress: string | undefined = undefined
@@ -532,6 +546,21 @@ const FollowTab = () => {
             }
           }) || []
         }
+      }
+
+      // Fetch ENS avatars for accounts that don't have images from Intuition
+      console.log('🔍 Fetching ENS avatars for accounts without images...')
+      const ensAvatars = await batchGetEnsAvatars(
+        accounts.map(acc => ({ label: acc.label, image: acc.image }))
+      )
+
+      // Update accounts with ENS avatars
+      if (ensAvatars.size > 0) {
+        accounts = accounts.map(acc => ({
+          ...acc,
+          image: acc.image || ensAvatars.get(acc.label) || undefined
+        }))
+        console.log('✅ Fetched ENS avatars:', ensAvatars.size)
       }
 
       setFollowedAccounts(accounts)

@@ -63,12 +63,20 @@ const FeedTab = () => {
 
       // Step 1: Get all accounts in my Trust Circle
       const trustCircleQuery = `
-        query GetTrustCircle($where: triples_bool_exp) {
+        query GetTrustCircle($where: triples_bool_exp, $walletAddress: String!) {
           triples(where: $where) {
             object {
               label
               term_id
               type
+            }
+            term {
+              vaults(where: {curve_id: {_eq: "1"}}, order_by: {curve_id: asc}) {
+                positions(where: {account_id: {_eq: $walletAddress}}) {
+                  account_id
+                  shares
+                }
+              }
             }
           }
         }
@@ -76,15 +84,6 @@ const FeedTab = () => {
 
       const trustCircleWhere = {
         "_and": [
-          {
-            "positions": {
-              "account": {
-                "id": {
-                  "_eq": checksumAddress
-                }
-              }
-            }
-          },
           {
             "subject_id": {
               "_eq": SUBJECT_IDS.I
@@ -106,17 +105,24 @@ const FeedTab = () => {
       }
 
       const trustCircleResponse = await intuitionGraphqlClient.request(trustCircleQuery, {
-        where: trustCircleWhere
-      }) as { triples: Array<{ object: any }> }
+        where: trustCircleWhere,
+        walletAddress: checksumAddress
+      }) as { triples: Array<{ object: any; term: { vaults: Array<{ positions: Array<any> }> } }> }
 
-      if (!trustCircleResponse.triples || trustCircleResponse.triples.length === 0) {
+      // Filter client-side: only keep triples where user has positions
+      const triplesWithPositions = trustCircleResponse.triples?.filter(triple => {
+        const vault = triple.term?.vaults?.[0]
+        return vault && vault.positions && vault.positions.length > 0
+      }) || []
+
+      if (triplesWithPositions.length === 0) {
         setFeedItems([])
         setLoading(false)
         return
       }
 
       // Get wallet addresses for these Account atoms via separate query
-      const accountTermIds = trustCircleResponse.triples.map(t => t.object.term_id)
+      const accountTermIds = triplesWithPositions.map(t => t.object.term_id)
 
       const atomsQuery = `
         query GetAccountAtoms($termIds: [String!]!) {
@@ -177,16 +183,14 @@ const FeedTab = () => {
 
       // Use the events table to get all activity from Trust Circle accounts
       const feedQuery = `
-        query TrustCircleActivity($walletAddresses: [String!]!, $limit: Int = 50) {
+        query TrustCircleActivity($walletAddresses: [String!]!, $limit: Int = 200) {
           events(
             limit: $limit
             order_by: {created_at: desc}
             where: {
               _or: [
                 {atom: {creator: {id: {_in: $walletAddresses}}}},
-                {triple: {creator: {id: {_in: $walletAddresses}}}},
-                {deposit: {sender: {id: {_in: $walletAddresses}}}},
-                {redemption: {sender: {id: {_in: $walletAddresses}}}}
+                {triple: {creator: {id: {_in: $walletAddresses}}}}
               ]
             }
           ) {
@@ -216,31 +220,13 @@ const FeedTab = () => {
               predicate { term_id, label }
               object { term_id, label }
             }
-            deposit {
-              sender {
-                id
-                label
-                image
-              }
-              shares
-              assets_after_fees
-            }
-            redemption {
-              sender {
-                id
-                label
-                image
-              }
-              shares
-              assets
-            }
           }
         }
       `
 
       const feedResponse = await intuitionGraphqlClient.request(feedQuery, {
         walletAddresses,
-        limit: 50
+        limit: 200
       }) as { events: Array<any> }
 
       console.log('📊 Feed response:', feedResponse)
@@ -278,41 +264,40 @@ const FeedTab = () => {
           description = 'created claim'
           details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
           portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
-        } else if (event.type === 'Deposited' && event.deposit) {
-          accountWallet = event.deposit.sender.id
-          accountLabel = walletToLabel.get(event.deposit.sender.id.toLowerCase()) || event.deposit.sender.label
-          accountImage = event.deposit.sender.image
-          const amount = (parseFloat(event.deposit.assets_after_fees) / 1e18).toFixed(4)
-
-          if (event.atom) {
-            description = 'deposited on'
-            details = `${event.atom.label} (${amount} WETH)`
+        } else if (event.type === 'Deposited') {
+          // Pour Deposited, on ne peut pas filtrer dans le where, mais on peut traiter l'événement
+          // On va juste afficher tous les Deposited et filtrer côté client
+          if (event.atom?.creator) {
+            accountWallet = event.atom.creator.id
+            accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
+            accountImage = event.atom.creator.image
+            description = 'activity on'
+            details = event.atom.label
             portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
-          } else if (event.triple) {
-            description = 'deposited on'
-            details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label} (${amount} WETH)`
+          } else if (event.triple?.creator) {
+            accountWallet = event.triple.creator.id
+            accountLabel = walletToLabel.get(event.triple.creator.id.toLowerCase()) || event.triple.creator.label
+            accountImage = event.triple.creator.image
+            description = 'activity on claim'
+            details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
             portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
-          } else {
-            description = 'deposited'
-            details = `${amount} WETH`
           }
-        } else if (event.type === 'Redeemed' && event.redemption) {
-          accountWallet = event.redemption.sender.id
-          accountLabel = walletToLabel.get(event.redemption.sender.id.toLowerCase()) || event.redemption.sender.label
-          accountImage = event.redemption.sender.image
-          const amount = (parseFloat(event.redemption.assets) / 1e18).toFixed(4)
-
-          if (event.atom) {
-            description = 'redeemed from'
-            details = `${event.atom.label} (${amount} WETH)`
+        } else if (event.type === 'Redeemed') {
+          // Même chose pour Redeemed
+          if (event.atom?.creator) {
+            accountWallet = event.atom.creator.id
+            accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
+            accountImage = event.atom.creator.image
+            description = 'activity on'
+            details = event.atom.label
             portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
-          } else if (event.triple) {
-            description = 'redeemed from'
-            details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label} (${amount} WETH)`
+          } else if (event.triple?.creator) {
+            accountWallet = event.triple.creator.id
+            accountLabel = walletToLabel.get(event.triple.creator.id.toLowerCase()) || event.triple.creator.label
+            accountImage = event.triple.creator.image
+            description = 'activity on claim'
+            details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
             portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
-          } else {
-            description = 'redeemed'
-            details = `${amount} WETH`
           }
         }
 

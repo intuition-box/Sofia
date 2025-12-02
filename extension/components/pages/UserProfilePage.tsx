@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import Avatar from '../ui/Avatar'
 import { useUserSignals } from '../../hooks/useUserSignals'
@@ -6,10 +7,12 @@ import { useUserAtomStats } from '../../hooks/useUserAtomStats'
 import { useCheckFollowStatus } from '../../hooks/useCheckFollowStatus'
 import FollowButton from '../ui/FollowButton'
 import TrustAccountButton from '../ui/TrustAccountButton'
+import { getEnsAvatar } from '../../lib/utils/ensUtils'
 import '../styles/UserProfile.css'
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(userProfileData?.image)
 
   // Check if we already follow/trust this account
   const followStatus = useCheckFollowStatus(userProfileData?.termId)
@@ -35,6 +38,22 @@ const UserProfilePage = () => {
     hasMore: hasMoreLists,
     loadMore: loadMoreLists
   } = useUserLists(userProfileData?.termId)
+
+  // Fetch ENS avatar if not available from Intuition
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      if (!userProfileData?.image && userProfileData?.label) {
+        console.log('🔍 Fetching ENS avatar for:', userProfileData.label)
+        const avatar = await getEnsAvatar(userProfileData.label, userProfileData.image)
+        if (avatar) {
+          console.log('✅ ENS avatar found:', avatar)
+          setAvatarUrl(avatar)
+        }
+      }
+    }
+
+    fetchAvatar()
+  }, [userProfileData?.label, userProfileData?.image])
 
   if (!userProfileData) {
     return (
@@ -69,7 +88,7 @@ const UserProfilePage = () => {
       {/* Profile Header */}
       <div className="user-profile-header">
         <Avatar
-          imgSrc={userProfileData.image}
+          imgSrc={avatarUrl}
           name={userProfileData.label}
           avatarClassName="user-profile-avatar"
           size="large"
@@ -111,7 +130,7 @@ const UserProfilePage = () => {
                   createdAt: new Date().toISOString(),
                   creatorId: '',
                   atomType: 'Account',
-                  image: userProfileData.image,
+                  image: avatarUrl,
                   data: userProfileData.walletAddress
                 }}
                 onFollowSuccess={() => {
