@@ -1,8 +1,8 @@
 {
   "name": "sofia",
-  "displayName": "Sofia",
+  "displayName": "Sofia BETA",
   "version": "0.1.0",
-  "description": "Data tracking and wallet connexion",
+  "description": "Transform your browsing into structured knowledge on the blockchain. AI-powered insights and web3 integration.",
   "author": "me",
   "scripts": {
     "dev": "plasmo dev",
