@@ -20,6 +20,7 @@ export interface TrustPageResult {
   error: string | null
   success: boolean
   tripleVaultId: string | null
+  operationType: 'created' | 'deposit' | null
 }
 
 export const useTrustPage = (): TrustPageResult => {
@@ -37,6 +38,7 @@ export const useTrustPage = (): TrustPageResult => {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tripleVaultId, setTripleVaultId] = useState<string | null>(null)
+  const [operationType, setOperationType] = useState<'created' | 'deposit' | null>(null)
 
   // Get universal "I" subject atom (same for all users)
   const getUserAtom = useCallback(async () => {
@@ -181,6 +183,7 @@ export const useTrustPage = (): TrustPageResult => {
         setLoading(false)
         setSuccess(true)
         setTripleVaultId(tripleCheck.tripleVaultId!)
+        setOperationType('deposit')
         return
       }
 
@@ -307,6 +310,7 @@ export const useTrustPage = (): TrustPageResult => {
       setLoading(false)
       setSuccess(true)
       setTripleVaultId(expectedTripleVaultId)
+      setOperationType('created')
 
     } catch (error) {
       logger.error('Trust page creation failed', error)
@@ -338,6 +342,7 @@ export const useTrustPage = (): TrustPageResult => {
     loading,
     error,
     success,
-    tripleVaultId
+    tripleVaultId,
+    operationType
   }
 }

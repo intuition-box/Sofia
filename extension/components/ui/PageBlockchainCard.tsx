@@ -10,13 +10,14 @@ import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
   const { triplets, loading, error, currentUrl, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
-  const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError } = useTrustPage()
+  const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType } = useTrustPage()
   const [showDetails, setShowDetails] = useState(false)
 
   // Local state for button UI to prevent re-renders from affecting button
   const [localTrustLoading, setLocalTrustLoading] = useState(false)
   const [localTrustSuccess, setLocalTrustSuccess] = useState(false)
   const [localTrustError, setLocalTrustError] = useState<string | null>(null)
+  const [localOperationType, setLocalOperationType] = useState<'created' | 'deposit' | null>(null)
 
   // Modal state
   const [showWeightModal, setShowWeightModal] = useState(false)
@@ -30,6 +31,13 @@ const PageBlockchainCard = () => {
   // Favicon state
   const [faviconUrl, setFaviconUrl] = useState<string | null>(null)
   const [faviconError, setFaviconError] = useState(false)
+
+  // Sync operationType from hook to local state when transaction completes
+  React.useEffect(() => {
+    if (operationType && localTrustSuccess) {
+      setLocalOperationType(operationType)
+    }
+  }, [operationType, localTrustSuccess])
 
   // Load favicon when URL changes
   React.useEffect(() => {
@@ -90,19 +98,15 @@ const PageBlockchainCard = () => {
     setLocalTrustLoading(true)
     setLocalTrustError(null)
     setLocalTrustSuccess(false)
+    setLocalOperationType(null)
 
     try {
       const weight = customWeights[0] || undefined
       await trustPage(currentUrl, weight as bigint | undefined)
       setLocalTrustSuccess(true)
 
-      // Close modal
-      setShowWeightModal(false)
-
-      // Auto-hide success message after 3 seconds
-      setTimeout(() => {
-        setLocalTrustSuccess(false)
-      }, 3000)
+      // Don't close modal - let user see the success message
+      // Modal will be closed by user clicking Close button
 
       // RESUME auto-refreshes after transaction completes
       resumeRefresh()
@@ -125,6 +129,9 @@ const PageBlockchainCard = () => {
   const handleModalClose = () => {
     setShowWeightModal(false)
     setModalTriplets([])
+    setLocalTrustSuccess(false)
+    setLocalTrustError(null)
+    setLocalOperationType(null)
   }
 
   const handleAtomClick = (atomId: string) => {
@@ -489,6 +496,8 @@ const PageBlockchainCard = () => {
           isProcessing={localTrustLoading}
           transactionSuccess={localTrustSuccess}
           transactionError={localTrustError || undefined}
+          createdCount={localOperationType === 'created' ? 1 : 0}
+          depositCount={localOperationType === 'deposit' ? 1 : 0}
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
         />,
