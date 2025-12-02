@@ -1,6 +1,6 @@
 import { getClients } from '../clients/viemClients'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
-import { stringToHex, keccak256 } from 'viem'
+import { stringToHex } from 'viem'
 import type { AtomCheckResult, TripleCheckResult } from '../../types/blockchain'
 import { MULTIVAULT_CONTRACT_ADDRESS } from '../config/chainConfig'
 
@@ -12,9 +12,28 @@ export class BlockchainService {
   private static readonly CONTRACT_ADDRESS = MULTIVAULT_CONTRACT_ADDRESS
 
   /**
-   * Calculate atom hash from IPFS URI
+   * Calculate atom ID using the contract's calculateAtomId function
+   * This ensures the ID matches exactly what the contract uses
+   */
+  static async calculateAtomId(ipfsUri: string): Promise<string> {
+    const { publicClient } = await getClients()
+    const encodedData = stringToHex(ipfsUri)
+
+    return await publicClient.readContract({
+      address: this.CONTRACT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
+      functionName: 'calculateAtomId',
+      args: [encodedData]
+    }) as string
+  }
+
+  /**
+   * @deprecated Use calculateAtomId instead - this local calculation doesn't match the contract
    */
   static calculateAtomHash(ipfsUri: string): string {
+    console.warn('[BlockchainService] calculateAtomHash is deprecated - use calculateAtomId instead')
+    // This is kept for backward compatibility but should not be used
+    const { keccak256 } = require('viem')
     const encodedData = stringToHex(ipfsUri)
     return keccak256(encodedData)
   }
@@ -24,8 +43,8 @@ export class BlockchainService {
    */
   static async checkAtomExists(ipfsUri: string): Promise<AtomCheckResult> {
     const { publicClient } = await getClients()
-    const atomHash = this.calculateAtomHash(ipfsUri)
-    
+    const atomHash = await this.calculateAtomId(ipfsUri)
+
     const exists = await publicClient.readContract({
       address: this.CONTRACT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,

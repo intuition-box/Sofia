@@ -55,6 +55,8 @@ export interface BatchTripleInput {
 export interface BatchTripleResult extends BlockchainResult {
   results: TripleOnChainResult[]
   failedTriples: { input: BatchTripleInput; error: string }[]
+  createdCount?: number  // Number of newly created triples
+  depositCount?: number  // Number of deposits on existing triples
 }
 
 // Export legacy types for compatibility

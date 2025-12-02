@@ -113,21 +113,78 @@ export const useCreateTripleOnChain = () => {
       )
       
       if (tripleCheck.exists) {
+        // Triple exists - deposit on it instead of just returning existing
+        const { walletClient, publicClient } = await getClients()
+        const contractAddress = BlockchainService.getContractAddress()
+
+        // For deposit, use customWeight directly (no feeCost needed)
+        const feeCost = await BlockchainService.getTripleCost()
+        const depositAmount = customWeight !== undefined ? customWeight : feeCost
+        const curveId = 2n // Curve ID for triple deposits
+
+        logger.debug('Triple exists, performing deposit instead', {
+          tripleVaultId: tripleCheck.tripleVaultId,
+          depositAmount: depositAmount.toString()
+        })
+
+        // Simulate deposit first
+        await publicClient.simulateContract({
+          address: contractAddress as Address,
+          abi: MultiVaultAbi,
+          functionName: 'deposit',
+          args: [
+            address as Address,                    // receiver
+            tripleCheck.tripleVaultId as Address,  // termId
+            curveId,                               // curveId
+            0n                                     // minShares
+          ],
+          value: depositAmount,
+          account: walletClient.account
+        })
+
+        // Execute deposit
+        const hash = await walletClient.writeContract({
+          address: contractAddress as Address,
+          abi: MultiVaultAbi,
+          functionName: 'deposit',
+          args: [
+            address as Address,
+            tripleCheck.tripleVaultId as Address,
+            curveId,
+            0n
+          ],
+          value: depositAmount,
+          chain: SELECTED_CHAIN,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address as Address
+        })
+
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+        if (receipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+        }
+
         return {
           success: true,
           tripleVaultId: tripleCheck.tripleVaultId!,
+          txHash: hash,
           subjectVaultId: userAtom.vaultId,
           predicateVaultId: predicateAtom.vaultId,
           objectVaultId: objectAtom.vaultId,
-          source: 'existing',
+          source: 'deposit',
           tripleHash: tripleCheck.tripleHash
         }
       } else {
         const { walletClient, publicClient } = await getClients()
         const contractAddress = BlockchainService.getContractAddress()
 
-        const defaultCost = await BlockchainService.getTripleCost()
-        const tripleCost = customWeight !== undefined ? customWeight : defaultCost
+        const feeCost = await BlockchainService.getTripleCost()
+        // customWeight is the deposit amount user wants, we add fees on top
+        const tripleCost = customWeight !== undefined
+          ? customWeight + feeCost
+          : feeCost
 
         const subjectId = userAtom.vaultId as Address
         const predicateId = predicateAtom.vaultId as Address
@@ -255,40 +312,53 @@ export const useCreateTripleOnChain = () => {
       const results: TripleOnChainResult[] = []
       const triplesToCreate: {
         subjectId: string
-        predicateId: string  
+        predicateId: string
         objectId: string
         originalInput: BatchTripleInput
         index: number
         customWeight?: bigint
       }[] = []
-      
+      const triplesToDeposit: {
+        tripleVaultId: string
+        subjectId: string
+        predicateId: string
+        objectId: string
+        customWeight?: bigint
+        tripleHash: string
+      }[] = []
+
       // Use Set for O(1) deduplication instead of O(n) some() calls
       const tripleKeysSet = new Set<string>()
 
       for (let i = 0; i < inputs.length; i++) {
         const input = inputs[i]
-        
+
         const userVaultId = atomResults.get(`user:I`)!
         const predicateVaultId = atomResults.get(`predicate:${input.predicateName}`)!
         const objectVaultId = atomResults.get(`object:${input.objectData.name}`)!
 
         // Check if triple already exists
         const tripleCheck = await BlockchainService.checkTripleExists(userVaultId, predicateVaultId, objectVaultId)
-        
+
         if (tripleCheck.exists) {
-          results.push({
-            success: true,
-            tripleVaultId: tripleCheck.tripleVaultId!,
-            subjectVaultId: userVaultId,
-            predicateVaultId: predicateVaultId,
-            objectVaultId: objectVaultId,
-            source: 'existing',
-            tripleHash: tripleCheck.tripleHash
-          })
+          // Triple exists - add to deposit list instead of just returning existing
+          const tripleKey = `${userVaultId}-${predicateVaultId}-${objectVaultId}`
+
+          if (!tripleKeysSet.has(tripleKey)) {
+            tripleKeysSet.add(tripleKey)
+            triplesToDeposit.push({
+              tripleVaultId: tripleCheck.tripleVaultId!,
+              subjectId: userVaultId,
+              predicateId: predicateVaultId,
+              objectId: objectVaultId,
+              customWeight: input.customWeight,
+              tripleHash: tripleCheck.tripleHash
+            })
+          }
         } else {
           // Create unique key for deduplication (O(1) instead of O(n))
           const tripleKey = `${userVaultId}-${predicateVaultId}-${objectVaultId}`
-          
+
           if (!tripleKeysSet.has(tripleKey)) {
             tripleKeysSet.add(tripleKey)
             triplesToCreate.push({
@@ -308,74 +378,245 @@ export const useCreateTripleOnChain = () => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress: Address = BlockchainService.getContractAddress() as Address
 
-        // Get default triple cost using service
-        const defaultTripleCost = await BlockchainService.getTripleCost()
+        // Get fee cost from contract
+        const feeCost = await BlockchainService.getTripleCost()
 
         // Prepare batch arrays with individual custom weights
+        // customWeight is the deposit amount user wants, we add fees on top
         const subjectIds = triplesToCreate.map(t => t.subjectId as Address)
         const predicateIds = triplesToCreate.map(t => t.predicateId as Address)
         const objectIds = triplesToCreate.map(t => t.objectId as Address)
-        const tripleCosts = triplesToCreate.map(t => t.customWeight !== undefined ? t.customWeight : defaultTripleCost)
+        const tripleCosts = triplesToCreate.map(t =>
+          t.customWeight !== undefined
+            ? t.customWeight + feeCost
+            : feeCost
+        )
 
         const totalValue = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
 
-        // Simulate first to validate and get gas estimation
-        const simulation = await publicClient.simulateContract({
-          address: contractAddress,
-          abi: MultiVaultAbi,
-          functionName: 'createTriples',
-          args: [subjectIds, predicateIds, objectIds, tripleCosts],
-          value: totalValue,
-          account: walletClient.account
-        })
-
-        // Execute batch transaction with automatic gas estimation
-        const batchTxParams = {
-          address: contractAddress,
-          abi: MultiVaultAbi,
-          functionName: 'createTriples',
-          args: [subjectIds, predicateIds, objectIds, tripleCosts],
-          value: totalValue,
-          chain: SELECTED_CHAIN,
-          // Remove hardcoded gas - let Viem estimate automatically
-          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-          account: address
-        }
-
-        const hash = await executeTransaction(batchTxParams)
-
-        // Wait for confirmation
-        const receipt = await publicClient.waitForTransactionReceipt({ hash })
-        
-        if (receipt.status !== 'success') {
-          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
-        }
-
-        // Add successful results
-        const tripleIds = simulation.result as Address[]
-        for (let i = 0; i < triplesToCreate.length; i++) {
-          const triple = triplesToCreate[i]
-          results.push({
-            success: true,
-            tripleVaultId: tripleIds[i],
-            txHash: hash,
-            subjectVaultId: triple.subjectId,
-            predicateVaultId: triple.predicateId,
-            objectVaultId: triple.objectId,
-            source: 'created',
-            tripleHash: tripleIds[i]
+        try {
+          // Simulate first to validate and get gas estimation
+          const simulation = await publicClient.simulateContract({
+            address: contractAddress,
+            abi: MultiVaultAbi,
+            functionName: 'createTriples',
+            args: [subjectIds, predicateIds, objectIds, tripleCosts],
+            value: totalValue,
+            account: walletClient.account
           })
+
+          // Execute batch transaction with automatic gas estimation
+          const batchTxParams = {
+            address: contractAddress,
+            abi: MultiVaultAbi,
+            functionName: 'createTriples',
+            args: [subjectIds, predicateIds, objectIds, tripleCosts],
+            value: totalValue,
+            chain: SELECTED_CHAIN,
+            // Remove hardcoded gas - let Viem estimate automatically
+            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+            account: address
+          }
+
+          const hash = await executeTransaction(batchTxParams)
+
+          // Wait for confirmation
+          const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+          if (receipt.status !== 'success') {
+            throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+          }
+
+          // Add successful results
+          const tripleIds = simulation.result as Address[]
+          for (let i = 0; i < triplesToCreate.length; i++) {
+            const triple = triplesToCreate[i]
+            results.push({
+              success: true,
+              tripleVaultId: tripleIds[i],
+              txHash: hash,
+              subjectVaultId: triple.subjectId,
+              predicateVaultId: triple.predicateId,
+              objectVaultId: triple.objectId,
+              source: 'created',
+              tripleHash: tripleIds[i]
+            })
+          }
+
+        } catch (createError) {
+          // Check if error is TripleExists
+          // Note: 0x4762af7d is NOT TripleExists - it's AtomDoesNotExist
+          const errorMessage = createError instanceof Error ? createError.message : ''
+          const isTripleExistsError =
+            errorMessage.includes('MultiVault_TripleExists') ||
+            errorMessage.includes('TripleExists')
+
+          if (isTripleExistsError) {
+            logger.debug('createTriples simulation failed - triples may exist, falling back to deposits', {
+              error: errorMessage,
+              triplesToCreate: triplesToCreate.length
+            })
+
+            // Move all triples to deposit list since we can't determine which ones exist
+            const curveId = 2n
+            for (const triple of triplesToCreate) {
+              // Calculate tripleId for deposit
+              const tripleId = await publicClient.readContract({
+                address: contractAddress,
+                abi: MultiVaultAbi,
+                functionName: 'calculateTripleId',
+                args: [
+                  triple.subjectId as Address,
+                  triple.predicateId as Address,
+                  triple.objectId as Address
+                ]
+              }) as Address
+
+              // For deposit, use customWeight directly (no feeCost needed)
+              const depositAmount = triple.customWeight !== undefined
+                ? triple.customWeight
+                : feeCost
+
+              // Simulate deposit
+              await publicClient.simulateContract({
+                address: contractAddress,
+                abi: MultiVaultAbi,
+                functionName: 'deposit',
+                args: [
+                  address as Address,
+                  tripleId,
+                  curveId,
+                  0n
+                ],
+                value: depositAmount,
+                account: walletClient.account
+              })
+
+              // Execute deposit
+              const depositHash = await walletClient.writeContract({
+                address: contractAddress,
+                abi: MultiVaultAbi,
+                functionName: 'deposit',
+                args: [
+                  address as Address,
+                  tripleId,
+                  curveId,
+                  0n
+                ],
+                value: depositAmount,
+                chain: SELECTED_CHAIN,
+                maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+                maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+                account: address as Address
+              })
+
+              const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
+
+              if (depositReceipt.status !== 'success') {
+                throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${depositReceipt.status}`)
+              }
+
+              results.push({
+                success: true,
+                tripleVaultId: tripleId,
+                txHash: depositHash,
+                subjectVaultId: triple.subjectId,
+                predicateVaultId: triple.predicateId,
+                objectVaultId: triple.objectId,
+                source: 'deposit',
+                tripleHash: tripleId
+              })
+            }
+          } else {
+            // Re-throw other errors
+            throw createError
+          }
         }
 
       }
 
-      
+      // Process deposits on existing triples
+      if (triplesToDeposit.length > 0) {
+        const { walletClient, publicClient } = await getClients()
+        const contractAddress: Address = BlockchainService.getContractAddress() as Address
+        const feeCost = await BlockchainService.getTripleCost()
+        const curveId = 2n // Curve ID for triple deposits
+
+        logger.debug('Processing deposits on existing triples', { count: triplesToDeposit.length })
+
+        // Process deposits one by one (deposit doesn't have a batch function)
+        for (const tripleToDeposit of triplesToDeposit) {
+          // For deposit, use customWeight directly (no feeCost needed)
+          const depositAmount = tripleToDeposit.customWeight !== undefined
+            ? tripleToDeposit.customWeight
+            : feeCost
+
+          // Simulate deposit first
+          await publicClient.simulateContract({
+            address: contractAddress,
+            abi: MultiVaultAbi,
+            functionName: 'deposit',
+            args: [
+              address as Address,                          // receiver
+              tripleToDeposit.tripleVaultId as Address,    // termId
+              curveId,                                     // curveId
+              0n                                           // minShares
+            ],
+            value: depositAmount,
+            account: walletClient.account
+          })
+
+          // Execute deposit
+          const depositHash = await walletClient.writeContract({
+            address: contractAddress,
+            abi: MultiVaultAbi,
+            functionName: 'deposit',
+            args: [
+              address as Address,
+              tripleToDeposit.tripleVaultId as Address,
+              curveId,
+              0n
+            ],
+            value: depositAmount,
+            chain: SELECTED_CHAIN,
+            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+            account: address as Address
+          })
+
+          const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
+
+          if (depositReceipt.status !== 'success') {
+            throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${depositReceipt.status}`)
+          }
+
+          results.push({
+            success: true,
+            tripleVaultId: tripleToDeposit.tripleVaultId,
+            txHash: depositHash,
+            subjectVaultId: tripleToDeposit.subjectId,
+            predicateVaultId: tripleToDeposit.predicateId,
+            objectVaultId: tripleToDeposit.objectId,
+            source: 'deposit',
+            tripleHash: tripleToDeposit.tripleHash
+          })
+        }
+
+        logger.debug('Deposits on existing triples completed', { count: triplesToDeposit.length })
+      }
+
+      // Count created vs deposited
+      const createdCount = results.filter(r => r.source === 'created').length
+      const depositCount = results.filter(r => r.source === 'deposit').length
+
       return {
         success: true,
         results,
-        txHash: triplesToCreate.length > 0 ? results.find(r => r.txHash && r.txHash !== 'existing')?.txHash : undefined,
-        failedTriples: []
+        txHash: results.find(r => r.txHash)?.txHash,
+        failedTriples: [],
+        createdCount,
+        depositCount
       }
       
     } catch (error) {
