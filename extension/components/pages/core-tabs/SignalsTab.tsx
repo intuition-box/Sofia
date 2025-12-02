@@ -16,7 +16,7 @@ interface SignalsTabProps {
   setExpandedTriplet: (value: { tripletId: string } | null) => void
 }
 
-type SortOption = 'highest-shares' | 'lowest-shares' | 'newest' | 'oldest' | 'a-z' | 'z-a' | 'platform'
+type SortOption = 'highest-shares' | 'lowest-shares' | 'highest-support' | 'lowest-support' | 'newest' | 'oldest' | 'a-z' | 'z-a' | 'platform'
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
   const { triplets, refreshFromAPI } = useIntuitionTriplets()
@@ -75,8 +75,12 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     // Apply sorting
     switch (sortBy) {
       case 'highest-shares':
-        return filtered.sort((a, b) => (b.position?.upvotes || 0) - (a.position?.upvotes || 0))
+        return filtered.sort((a, b) => (b.position?.shares || 0) - (a.position?.shares || 0))
       case 'lowest-shares':
+        return filtered.sort((a, b) => (a.position?.shares || 0) - (b.position?.shares || 0))
+      case 'highest-support':
+        return filtered.sort((a, b) => (b.position?.upvotes || 0) - (a.position?.upvotes || 0))
+      case 'lowest-support':
         return filtered.sort((a, b) => (a.position?.upvotes || 0) - (b.position?.upvotes || 0))
       case 'newest':
         return filtered.sort((a, b) => b.timestamp - a.timestamp)
@@ -101,6 +105,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   const sortOptions = [
     { value: 'highest-shares', label: 'Highest Shares' },
     { value: 'lowest-shares', label: 'Lowest Shares' },
+    { value: 'highest-support', label: 'Highest Support' },
+    { value: 'lowest-support', label: 'Lowest Support' },
     { value: 'newest', label: 'Newest' },
     { value: 'oldest', label: 'Oldest' },
     { value: 'a-z', label: 'A-Z' },
@@ -361,7 +367,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       }}
                       title="Shares (Curve 2 - Deposit)"
                     >
-                      💎 {(tripletItem.position?.shares || 0).toFixed(2)}
+                    {(tripletItem.position?.shares || 0).toFixed(2)}
                     </div>
                     {/* Curve 1 - Upvotes */}
                     <div

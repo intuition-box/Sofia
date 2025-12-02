@@ -78,7 +78,7 @@ const SharesModal = ({
       <div className="modal-content">
         <div className="modal-header">
           <div className="modal-title">
-            <span>💎 Invest in Shares</span>
+            <span>{objectName}</span>
           </div>
           <button
             className="modal-close"
@@ -90,15 +90,6 @@ const SharesModal = ({
         </div>
 
         <div className="modal-body">
-          <div className="modal-identity-info">
-            <div className="modal-avatar">
-              <span className="modal-avatar-placeholder">💎</span>
-            </div>
-            <div className="modal-identity-details">
-              <div className="modal-identity-name">{objectName}</div>
-              <span className="modal-identity-type">Triple Signal</span>
-            </div>
-          </div>
 
           {/* Market Cap Display */}
           <div className="modal-market-cap">
