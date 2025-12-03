@@ -49,9 +49,23 @@
   box-sizing: border-box;
 }
 
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.user-message-wrapper {
+  align-items: flex-end;
+}
+
+.sofia-message-wrapper {
+  align-items: flex-start;
+}
+
 .message {
   display: flex;
-  margin-bottom: 12px;
 }
 
 .user-message {
@@ -63,7 +77,7 @@
 }
 
 .message-content {
-  max-width: 80%;
+  max-width: 100%;
   padding: 12px 16px;
   border-radius: 18px;
   font-size: 14px;
@@ -77,9 +91,15 @@
 }
 
 .sofia-message .message-content {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #e0e0e0;
+  color: #000000;
+  background-color: #ffd4b7;
   border-bottom-left-radius: 4px;
+}
+
+.message-timestamp {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0 4px;
 }
 
 .chat-input-section {

@@ -209,6 +209,56 @@ export class BlockchainService {
   }
 
   /**
+   * Get protocol fee amount for a given asset amount
+   */
+  static async getProtocolFeeAmount(assets: bigint): Promise<bigint> {
+    const { publicClient } = await getClients()
+
+    const fees = await publicClient.readContract({
+      address: this.CONTRACT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
+      functionName: 'protocolFeeAmount',
+      args: [assets]
+    }) as bigint
+
+    console.log('[BlockchainService] protocolFeeAmount returned:', {
+      assets: assets.toString(),
+      assetsInTRUST: Number(assets) / 1e18,
+      fees: fees.toString(),
+      feesInTRUST: Number(fees) / 1e18,
+      feePercentage: (Number(fees) * 100 / Number(assets)).toFixed(2) + '%'
+    })
+
+    return fees
+  }
+
+  /**
+   * Calculate the amount to send (including fees) to receive the desired amount after fees
+   * Formula: amount_to_send = desired_amount / (1 - fee_rate)
+   */
+  static async calculateAmountWithFees(desiredAmount: bigint): Promise<bigint> {
+    // Calculate fee rate using a sample amount (1 ETH)
+    const sampleAmount = 1000000000000000000n // 1 ETH
+    const sampleFees = await this.getProtocolFeeAmount(sampleAmount)
+    const feeRate = Number(sampleFees) / Number(sampleAmount)
+
+    // Calculate amount to send
+    const amountToSend = BigInt(Math.ceil(Number(desiredAmount) / (1 - feeRate)))
+
+    console.log('[BlockchainService] calculateAmountWithFees:', {
+      desiredAmount: desiredAmount.toString(),
+      desiredAmountInTRUST: Number(desiredAmount) / 1e18,
+      feeRate: (feeRate * 100).toFixed(2) + '%',
+      amountToSend: amountToSend.toString(),
+      amountToSendInTRUST: Number(amountToSend) / 1e18,
+      expectedFees: (amountToSend - desiredAmount).toString(),
+      expectedFeesInTRUST: Number(amountToSend - desiredAmount) / 1e18
+    })
+
+    return amountToSend
+  }
+
+  /**
    * Get contract address
    */
   static getContractAddress(): string {

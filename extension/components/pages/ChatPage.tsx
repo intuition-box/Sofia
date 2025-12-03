@@ -130,10 +130,12 @@ const ChatPage = () => {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`message ${message.sender === 'user' ? 'user-message' : 'sofia-message'}`}
+            className={`message-wrapper ${message.sender === 'user' ? 'user-message-wrapper' : 'sofia-message-wrapper'}`}
           >
-            <div className="message-content">
-              {message.content}
+            <div className={`message ${message.sender === 'user' ? 'user-message' : 'sofia-message'}`}>
+              <div className="message-content">
+                {message.content}
+              </div>
             </div>
             <small className="message-timestamp">
               {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

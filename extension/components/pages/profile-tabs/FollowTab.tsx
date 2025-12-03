@@ -268,26 +268,59 @@ const FollowTab = () => {
       if (filterType === 'following' || filterType === 'trust-circle') {
         // FOLLOWING or TRUST CIRCLE: Query triples where I have a position
         // Use same structure as task.md
-        const triplesQuery = `
-          query Triples($where: triples_bool_exp, $walletAddress: String!) {
-            triples(where: $where) {
-              subject { label, term_id, type }
-              predicate { label, term_id }
-              object { label, term_id, type, image, data }
-              term_id
-              created_at
-              term {
-                vaults(where: {curve_id: {_eq: "1"}}, order_by: {curve_id: asc}) {
-                  positions(where: {account_id: {_eq: $walletAddress}}) {
-                    account_id
-                    shares
-                    created_at
+        // IMPORTANT:
+        // - Following uses curve_id = 1 only
+        // - Trust Circle uses ALL curves (1 and 2) because:
+        //   - Curve 1 = initial creation deposit (0.01 TRUST)
+        //   - Curve 2 = additional deposits
+
+        let triplesQuery: string
+
+        if (filterType === 'trust-circle') {
+          // For trust-circle, get positions from ALL curves (no filter on curve_id)
+          triplesQuery = `
+            query Triples($where: triples_bool_exp, $walletAddress: String!) {
+              triples(where: $where) {
+                subject { label, term_id, type }
+                predicate { label, term_id }
+                object { label, term_id, type, image, data }
+                term_id
+                created_at
+                term {
+                  vaults(order_by: {curve_id: asc}) {
+                    positions(where: {account_id: {_eq: $walletAddress}}) {
+                      account_id
+                      shares
+                      created_at
+                    }
                   }
                 }
               }
             }
-          }
-        `
+          `
+        } else {
+          // For following, only get positions from curve_id = 1
+          triplesQuery = `
+            query Triples($where: triples_bool_exp, $walletAddress: String!) {
+              triples(where: $where) {
+                subject { label, term_id, type }
+                predicate { label, term_id }
+                object { label, term_id, type, image, data }
+                term_id
+                created_at
+                term {
+                  vaults(where: {curve_id: {_eq: "1"}}, order_by: {curve_id: asc}) {
+                    positions(where: {account_id: {_eq: $walletAddress}}) {
+                      account_id
+                      shares
+                      created_at
+                    }
+                  }
+                }
+              }
+            }
+          `
+        }
 
         // Use TRUSTS or FOLLOW predicate depending on filter type
         const predicateId = filterType === 'trust-circle' ? PREDICATE_IDS.TRUSTS : PREDICATE_IDS.FOLLOW
@@ -384,6 +417,14 @@ const FollowTab = () => {
                       id
                       label
                       image
+                      atom_id
+                      atom {
+                        term_id
+                        label
+                        data
+                        type
+                        image
+                      }
                     }
                     shares
                   }
@@ -468,18 +509,22 @@ const FollowTab = () => {
         // Filter client-side: only show triples where user has positions
         accounts = response.triples
           .filter((triple: any) => {
-            const vault = triple.term?.vaults?.[0]
-            return vault && vault.positions && vault.positions.length > 0
+            // Check if user has positions in ANY vault (curve)
+            const vaults = triple.term?.vaults || []
+            return vaults.some((vault: any) => vault.positions && vault.positions.length > 0)
           })
           .map((triple: any) => {
             const account = triple.object
             const accountData = atomDataMap.get(account.label)
 
-            // Calculate trust amount from my positions on this triple via term.vaults
-            const vault = triple.term.vaults[0]
-            const myPositions = vault?.positions || []
-            const trustAmountWei = myPositions.reduce((sum: number, pos: any) => {
-              return sum + parseFloat(pos.shares || '0')
+            // Calculate trust amount from my positions across ALL vaults (curves)
+            const vaults = triple.term?.vaults || []
+            const trustAmountWei = vaults.reduce((vaultSum: number, vault: any) => {
+              const positions = vault?.positions || []
+              const vaultPositionsSum = positions.reduce((posSum: number, pos: any) => {
+                return posSum + parseFloat(pos.shares || '0')
+              }, 0)
+              return vaultSum + vaultPositionsSum
             }, 0)
 
             const trustAmount = trustAmountWei / 1e18
@@ -521,23 +566,39 @@ const FollowTab = () => {
             const trustAmountWei = parseFloat(position.shares || '0')
             const trustAmount = trustAmountWei / 1e18
 
-            // Extract wallet address from account.id or account.atom.data
+            // Extract wallet address and atom info
+            const accountAtom = position.account.atom
             let walletAddress: string | undefined = undefined
-            if (position.account.id?.startsWith('0x')) {
-              walletAddress = position.account.id
-            } else if (position.account.atom?.data && typeof position.account.atom.data === 'string' && position.account.atom.data.startsWith('0x')) {
-              walletAddress = position.account.atom.data
-            } else if (position.account.label?.startsWith('0x')) {
-              walletAddress = position.account.label
+            let atomTermId: string | undefined = undefined
+            let displayLabel: string = position.account.label || position.account.id
+            let displayImage: string | undefined = position.account.image
+
+            // Prioritize atom data if available (more complete info)
+            if (accountAtom) {
+              atomTermId = accountAtom.term_id
+              if (accountAtom.data && typeof accountAtom.data === 'string' && accountAtom.data.startsWith('0x')) {
+                walletAddress = accountAtom.data
+              }
+              // Use atom label and image if available
+              if (accountAtom.label) displayLabel = accountAtom.label
+              if (accountAtom.image) displayImage = accountAtom.image
             }
+
+            // Fallback to account.id if it's a wallet address
+            if (!walletAddress && position.account.id?.startsWith('0x')) {
+              walletAddress = position.account.id
+            }
+
+            // Use atom term_id, or fallback to account.id
+            const finalTermId = atomTermId || position.account.id
 
             return {
               id: position.account.id,
-              label: position.account.label || position.account.id,
-              termId: position.account.atom?.term_id || position.account.id, // Use atom's term_id if available, fallback to account.id
+              label: displayLabel,
+              termId: finalTermId,
               tripleId: triple.term_id,
               followDate: new Date(triple.created_at).toLocaleDateString(),
-              image: position.account.image,
+              image: displayImage,
               url: undefined,
               description: undefined,
               walletInfo: [],
@@ -720,7 +781,30 @@ const FollowTab = () => {
                   <TrustAccountButton
                     accountVaultId={account.termId}
                     accountLabel={account.label}
-                    onSuccess={() => console.log('✅ Trust created for', account.label)}
+                    onSuccess={() => {
+                      console.log('✅ Trust created for', account.label)
+
+                      // Rafraîchir immédiatement
+                      loadFollows()
+
+                      // Rafraîchir après 2 secondes (le temps que l'API indexe)
+                      setTimeout(() => {
+                        console.log('🔄 FollowTab - Refresh after trust indexing delay')
+                        loadFollows()
+                      }, 2000)
+
+                      // Rafraîchir après 5 secondes au cas où
+                      setTimeout(() => {
+                        console.log('🔄 FollowTab - Second refresh after trust')
+                        loadFollows()
+                      }, 5000)
+
+                      // Rafraîchir après 10 secondes (indexation plus longue pour positions)
+                      setTimeout(() => {
+                        console.log('🔄 FollowTab - Final refresh after trust')
+                        loadFollows()
+                      }, 10000)
+                    }}
                   />
                 )}
                 {filterType === 'trust-circle' && (

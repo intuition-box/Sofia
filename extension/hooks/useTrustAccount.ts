@@ -97,13 +97,21 @@ export const useTrustAccount = (): TrustAccountResult => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress = BlockchainService.getContractAddress()
 
-        // For deposit, use customWeight directly (no feeCost needed)
-        const feeCost = await BlockchainService.getTripleCost()
-        const depositAmount = customWeight !== undefined ? customWeight : feeCost
+        // Calculate deposit amount including fees
+        // User wants to deposit customWeight (after fees), so we need to calculate how much to send
+        let depositAmount: bigint
+        if (customWeight !== undefined) {
+          depositAmount = await BlockchainService.calculateAmountWithFees(customWeight)
+        } else {
+          const feeCost = await BlockchainService.getTripleCost()
+          depositAmount = feeCost
+        }
         const curveId = 2n // Curve ID for triple deposits
 
         logger.debug('Triple exists, performing deposit instead', {
           tripleVaultId: tripleCheck.tripleVaultId,
+          desiredAmount: customWeight?.toString(),
+          desiredAmountInTRUST: customWeight ? Number(customWeight) / 1e18 : 'N/A',
           depositAmount: depositAmount.toString(),
           depositAmountInTRUST: Number(depositAmount) / 1e18
         })
@@ -239,11 +247,15 @@ export const useTrustAccount = (): TrustAccountResult => {
 
       // Step 2: If customWeight > minDeposit, deposit the rest on Curve 2
       if (customWeight !== undefined && customWeight > MIN_TRIPLE_DEPOSIT) {
-        const additionalDeposit = customWeight - MIN_TRIPLE_DEPOSIT
+        const additionalDesiredDeposit = customWeight - MIN_TRIPLE_DEPOSIT
+        // Calculate amount to send including fees
+        const additionalDeposit = await BlockchainService.calculateAmountWithFees(additionalDesiredDeposit)
         const curveId = 2n
 
         logger.debug('Depositing additional amount on Curve 2', {
           tripleVaultId: expectedTripleVaultId,
+          desiredAdditionalDeposit: additionalDesiredDeposit.toString(),
+          desiredAdditionalDepositInTRUST: Number(additionalDesiredDeposit) / 1e18,
           additionalDeposit: additionalDeposit.toString(),
           additionalDepositInTRUST: Number(additionalDeposit) / 1e18
         })
