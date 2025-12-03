@@ -42,6 +42,7 @@ export interface SofiaFeeProxyInterface extends Interface {
       | "ethMultiVault"
       | "feeRecipient"
       | "getAtomCost"
+      | "getMultiVaultAmountFromValue"
       | "getShares"
       | "getTotalCreationCost"
       | "getTotalDepositCost"
@@ -65,6 +66,8 @@ export interface SofiaFeeProxyInterface extends Interface {
       | "DepositPercentageFeeUpdated"
       | "FeeRecipientUpdated"
       | "FeesCollected"
+      | "MultiVaultSuccess"
+      | "TransactionForwarded"
   ): EventFragment;
 
   encodeFunctionData(
@@ -105,7 +108,7 @@ export interface SofiaFeeProxyInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "deposit",
-    values: [AddressLike, BytesLike, BigNumberish, BigNumberish, BigNumberish]
+    values: [AddressLike, BytesLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "depositBatch",
@@ -136,6 +139,10 @@ export interface SofiaFeeProxyInterface extends Interface {
   encodeFunctionData(
     functionFragment: "getAtomCost",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMultiVaultAmountFromValue",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getShares",
@@ -249,6 +256,10 @@ export interface SofiaFeeProxyInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getAtomCost",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMultiVaultAmountFromValue",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getShares", data: BytesLike): Result;
@@ -385,6 +396,47 @@ export namespace FeesCollectedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace MultiVaultSuccessEvent {
+  export type InputTuple = [operation: string, resultCount: BigNumberish];
+  export type OutputTuple = [operation: string, resultCount: bigint];
+  export interface OutputObject {
+    operation: string;
+    resultCount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace TransactionForwardedEvent {
+  export type InputTuple = [
+    operation: string,
+    user: AddressLike,
+    sofiaFee: BigNumberish,
+    multiVaultValue: BigNumberish,
+    totalReceived: BigNumberish
+  ];
+  export type OutputTuple = [
+    operation: string,
+    user: string,
+    sofiaFee: bigint,
+    multiVaultValue: bigint,
+    totalReceived: bigint
+  ];
+  export interface OutputObject {
+    operation: string;
+    user: string;
+    sofiaFee: bigint;
+    multiVaultValue: bigint;
+    totalReceived: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export interface SofiaFeeProxy extends BaseContract {
   connect(runner?: ContractRunner | null): SofiaFeeProxy;
   waitForDeployment(): Promise<this>;
@@ -476,8 +528,7 @@ export interface SofiaFeeProxy extends BaseContract {
       receiver: AddressLike,
       termId: BytesLike,
       curveId: BigNumberish,
-      minShares: BigNumberish,
-      depositAmount: BigNumberish
+      minShares: BigNumberish
     ],
     [bigint],
     "payable"
@@ -504,6 +555,12 @@ export interface SofiaFeeProxy extends BaseContract {
   feeRecipient: TypedContractMethod<[], [string], "view">;
 
   getAtomCost: TypedContractMethod<[], [bigint], "view">;
+
+  getMultiVaultAmountFromValue: TypedContractMethod<
+    [msgValue: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
   getShares: TypedContractMethod<
     [account: AddressLike, termId: BytesLike, curveId: BigNumberish],
@@ -630,8 +687,7 @@ export interface SofiaFeeProxy extends BaseContract {
       receiver: AddressLike,
       termId: BytesLike,
       curveId: BigNumberish,
-      minShares: BigNumberish,
-      depositAmount: BigNumberish
+      minShares: BigNumberish
     ],
     [bigint],
     "payable"
@@ -664,6 +720,9 @@ export interface SofiaFeeProxy extends BaseContract {
   getFunction(
     nameOrSignature: "getAtomCost"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getMultiVaultAmountFromValue"
+  ): TypedContractMethod<[msgValue: BigNumberish], [bigint], "view">;
   getFunction(
     nameOrSignature: "getShares"
   ): TypedContractMethod<
@@ -766,6 +825,20 @@ export interface SofiaFeeProxy extends BaseContract {
     FeesCollectedEvent.OutputTuple,
     FeesCollectedEvent.OutputObject
   >;
+  getEvent(
+    key: "MultiVaultSuccess"
+  ): TypedContractEvent<
+    MultiVaultSuccessEvent.InputTuple,
+    MultiVaultSuccessEvent.OutputTuple,
+    MultiVaultSuccessEvent.OutputObject
+  >;
+  getEvent(
+    key: "TransactionForwarded"
+  ): TypedContractEvent<
+    TransactionForwardedEvent.InputTuple,
+    TransactionForwardedEvent.OutputTuple,
+    TransactionForwardedEvent.OutputObject
+  >;
 
   filters: {
     "AdminWhitelistUpdated(address,bool)": TypedContractEvent<
@@ -832,6 +905,28 @@ export interface SofiaFeeProxy extends BaseContract {
       FeesCollectedEvent.InputTuple,
       FeesCollectedEvent.OutputTuple,
       FeesCollectedEvent.OutputObject
+    >;
+
+    "MultiVaultSuccess(string,uint256)": TypedContractEvent<
+      MultiVaultSuccessEvent.InputTuple,
+      MultiVaultSuccessEvent.OutputTuple,
+      MultiVaultSuccessEvent.OutputObject
+    >;
+    MultiVaultSuccess: TypedContractEvent<
+      MultiVaultSuccessEvent.InputTuple,
+      MultiVaultSuccessEvent.OutputTuple,
+      MultiVaultSuccessEvent.OutputObject
+    >;
+
+    "TransactionForwarded(string,address,uint256,uint256,uint256)": TypedContractEvent<
+      TransactionForwardedEvent.InputTuple,
+      TransactionForwardedEvent.OutputTuple,
+      TransactionForwardedEvent.OutputObject
+    >;
+    TransactionForwarded: TypedContractEvent<
+      TransactionForwardedEvent.InputTuple,
+      TransactionForwardedEvent.OutputTuple,
+      TransactionForwardedEvent.OutputObject
     >;
   };
 }

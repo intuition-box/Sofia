@@ -11,8 +11,10 @@
     "clean": "hardhat clean",
     "node": "hardhat node",
     "deploy:local": "hardhat run scripts/deploy-local.ts --network localhost",
+    "deploy:local:debug": "hardhat run scripts/deploy-local-debug.ts --network localhost",
     "deploy:sepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
     "deploy:mainnet": "hardhat run scripts/deploy.ts --network base",
+    "monitor": "hardhat run scripts/monitor-events.ts --network localhost",
     "verify": "hardhat verify"
   },
   "keywords": [

@@ -1,15 +1,117 @@
 import { getClients } from '../clients/viemClients'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
+import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { stringToHex } from 'viem'
 import type { AtomCheckResult, TripleCheckResult } from '../../types/blockchain'
-import { MULTIVAULT_CONTRACT_ADDRESS } from '../config/chainConfig'
+import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS } from '../config/chainConfig'
 
 /**
  * Centralized service for blockchain operations
  * Eliminates code duplication across multiple hooks
+ *
+ * Supports two modes:
+ * - Direct MultiVault: Used on testnet/mainnet when no proxy is deployed
+ * - Sofia Fee Proxy: Used when SOFIA_PROXY_ADDRESS is configured (local dev or production)
  */
 export class BlockchainService {
   private static readonly CONTRACT_ADDRESS = MULTIVAULT_CONTRACT_ADDRESS
+  private static readonly PROXY_ADDRESS = SOFIA_PROXY_ADDRESS
+
+  /**
+   * Check if proxy mode is enabled
+   */
+  static isProxyEnabled(): boolean {
+    return !!this.PROXY_ADDRESS && this.PROXY_ADDRESS !== '0x0000000000000000000000000000000000000000'
+  }
+
+  /**
+   * Get proxy address (returns undefined if not configured)
+   */
+  static getProxyAddress(): `0x${string}` | undefined {
+    if (this.isProxyEnabled()) {
+      return this.PROXY_ADDRESS as `0x${string}`
+    }
+    return undefined
+  }
+
+  /**
+   * Get the address to use for write operations (proxy if available, otherwise direct)
+   */
+  static getWriteAddress(): `0x${string}` {
+    return this.isProxyEnabled()
+      ? this.PROXY_ADDRESS as `0x${string}`
+      : this.CONTRACT_ADDRESS as `0x${string}`
+  }
+
+  /**
+   * Get the ABI to use for write operations
+   */
+  static getWriteAbi() {
+    return this.isProxyEnabled() ? SofiaFeeProxyAbi : MultiVaultAbi
+  }
+
+  /**
+   * Calculate Sofia fee for creation operations (atoms/triples)
+   * Returns 0 if proxy is not enabled
+   */
+  static async calculateCreationFee(count: number = 1): Promise<bigint> {
+    if (!this.isProxyEnabled()) return 0n
+
+    const { publicClient } = await getClients()
+    return await publicClient.readContract({
+      address: this.PROXY_ADDRESS as `0x${string}`,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'calculateCreationFee',
+      args: [BigInt(count)]
+    }) as bigint
+  }
+
+  /**
+   * Calculate Sofia fee for deposit operations
+   * Returns 0 if proxy is not enabled
+   */
+  static async calculateDepositFee(depositAmount: bigint): Promise<bigint> {
+    if (!this.isProxyEnabled()) return 0n
+
+    const { publicClient } = await getClients()
+    return await publicClient.readContract({
+      address: this.PROXY_ADDRESS as `0x${string}`,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'calculateDepositFee',
+      args: [depositAmount]
+    }) as bigint
+  }
+
+  /**
+   * Get total cost for deposit including Sofia fees
+   * Returns depositAmount if proxy is not enabled
+   */
+  static async getTotalDepositCost(depositAmount: bigint): Promise<bigint> {
+    if (!this.isProxyEnabled()) return depositAmount
+
+    const { publicClient } = await getClients()
+    return await publicClient.readContract({
+      address: this.PROXY_ADDRESS as `0x${string}`,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'getTotalDepositCost',
+      args: [depositAmount]
+    }) as bigint
+  }
+
+  /**
+   * Get total cost for creation including Sofia fees
+   */
+  static async getTotalCreationCost(count: number, multiVaultCost: bigint): Promise<bigint> {
+    if (!this.isProxyEnabled()) return multiVaultCost
+
+    const { publicClient } = await getClients()
+    return await publicClient.readContract({
+      address: this.PROXY_ADDRESS as `0x${string}`,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'getTotalCreationCost',
+      args: [BigInt(count), multiVaultCost]
+    }) as bigint
+  }
 
   /**
    * Calculate atom ID using the contract's calculateAtomId function

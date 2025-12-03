@@ -282,33 +282,35 @@ contract SofiaFeeProxy {
         return result;
     }
 
-    /// @notice Deposit with Sofia fee collection
-    /// @dev Signature differs from MultiVault (added depositAmount parameter)
+    /// @notice Deposit with Sofia fee collection - SAME SIGNATURE AS MULTIVAULT
+    /// @dev Fee is calculated from msg.value using inverse formula
     /// @param receiver Address to receive shares
     /// @param termId Vault ID (atom or triple)
     /// @param curveId Bonding curve ID
     /// @param minShares Minimum shares expected
-    /// @param depositAmount Exact amount to deposit to MultiVault
     /// @return shares Amount of shares minted
     function deposit(
         address receiver,
         bytes32 termId,
         uint256 curveId,
-        uint256 minShares,
-        uint256 depositAmount
+        uint256 minShares
     ) external payable returns (uint256 shares) {
-        uint256 sofiaFee = calculateDepositFee(depositAmount);
-        uint256 totalRequired = depositAmount + sofiaFee;
-
-        if (msg.value < totalRequired) {
+        // Must send more than just the fixed fee
+        if (msg.value <= depositFixedFee) {
             revert Errors.SofiaFeeProxy_InsufficientValue();
         }
 
+        // Inverse calculation: how much to send to MultiVault
+        // Formula: multiVaultAmount = (msg.value - fixedFee) * 10000 / (10000 + percentage)
+        uint256 multiVaultAmount = (msg.value - depositFixedFee) * FEE_DENOMINATOR
+                                   / (FEE_DENOMINATOR + depositPercentageFee);
+        uint256 sofiaFee = msg.value - multiVaultAmount;
+
         _transferFee(sofiaFee);
         emit FeesCollected(msg.sender, sofiaFee, "deposit");
-        emit TransactionForwarded("deposit", msg.sender, sofiaFee, depositAmount, msg.value);
+        emit TransactionForwarded("deposit", msg.sender, sofiaFee, multiVaultAmount, msg.value);
 
-        uint256 result = ethMultiVault.deposit{value: depositAmount}(
+        uint256 result = ethMultiVault.deposit{value: multiVaultAmount}(
             receiver,
             termId,
             curveId,
@@ -316,6 +318,14 @@ contract SofiaFeeProxy {
         );
         emit MultiVaultSuccess("deposit", 1);
         return result;
+    }
+
+    /// @notice Calculate how much MultiVault will receive for a given msg.value
+    /// @param msgValue The value that will be sent with the transaction
+    /// @return Amount that will be forwarded to MultiVault
+    function getMultiVaultAmountFromValue(uint256 msgValue) public view returns (uint256) {
+        if (msgValue <= depositFixedFee) return 0;
+        return (msgValue - depositFixedFee) * FEE_DENOMINATOR / (FEE_DENOMINATOR + depositPercentageFee);
     }
 
     /// @notice Batch deposit with Sofia fee collection

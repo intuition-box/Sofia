@@ -299,35 +299,64 @@ describe("SofiaFeeProxy", function () {
   });
 
   describe("Proxy Functions - deposit", function () {
-    it("Should collect fees on deposit", async function () {
+    it("Should collect fees on deposit (inverse calculation)", async function () {
       const { proxy, user } = await loadFixture(deployFixture);
 
-      const depositAmount = ethers.parseEther("10");
-      const sofiaFee = await proxy.calculateDepositFee(depositAmount);
-      const totalRequired = depositAmount + sofiaFee;
+      // User wants 10 TRUST to reach MultiVault
+      const desiredDepositAmount = ethers.parseEther("10");
+      // Calculate total to send (deposit + fees)
+      const totalToSend = await proxy.getTotalDepositCost(desiredDepositAmount);
 
       const initialBalance = await ethers.provider.getBalance(GNOSIS_SAFE);
 
       const termId = ethers.zeroPadValue("0x01", 32);
 
-      await expect(proxy.connect(user).deposit(user.address, termId, 1n, 0n, depositAmount, { value: totalRequired }))
-        .to.emit(proxy, "FeesCollected")
-        .withArgs(user.address, sofiaFee, "deposit");
+      // New signature: deposit(receiver, termId, curveId, minShares) - 4 params
+      // Proxy calculates fees from msg.value using inverse formula
+      await expect(proxy.connect(user).deposit(user.address, termId, 1n, 0n, { value: totalToSend }))
+        .to.emit(proxy, "FeesCollected");
 
       const finalBalance = await ethers.provider.getBalance(GNOSIS_SAFE);
-      expect(finalBalance - initialBalance).to.equal(sofiaFee);
+      // Fee should be approximately what we calculated (small rounding difference possible)
+      const collectedFee = finalBalance - initialBalance;
+      const expectedFee = await proxy.calculateDepositFee(desiredDepositAmount);
+      // Allow small rounding difference (1 wei)
+      expect(collectedFee).to.be.closeTo(expectedFee, 1);
     });
 
-    it("Should revert on insufficient value for deposit", async function () {
+    it("Should calculate multiVaultAmount correctly", async function () {
+      const { proxy } = await loadFixture(deployFixture);
+
+      // If user sends 10.3 TRUST (10 + 0.3 fees for 10 deposit)
+      const totalSent = ethers.parseEther("10.3");
+      const multiVaultAmount = await proxy.getMultiVaultAmountFromValue(totalSent);
+
+      // Should be approximately 10 TRUST
+      expect(multiVaultAmount).to.be.closeTo(ethers.parseEther("10"), ethers.parseEther("0.001"));
+    });
+
+    it("Should revert when sending only fixed fee or less", async function () {
       const { proxy, user } = await loadFixture(deployFixture);
 
-      const depositAmount = ethers.parseEther("10");
       const termId = ethers.zeroPadValue("0x01", 32);
 
-      // Send only depositAmount without fees
+      // Send exactly the fixed fee (should revert - nothing left for deposit)
       await expect(
-        proxy.connect(user).deposit(user.address, termId, 1n, 0n, depositAmount, { value: depositAmount })
+        proxy.connect(user).deposit(user.address, termId, 1n, 0n, { value: DEPOSIT_FEE })
       ).to.be.revertedWithCustomError(proxy, "SofiaFeeProxy_InsufficientValue");
+
+      // Send less than fixed fee (should revert)
+      await expect(
+        proxy.connect(user).deposit(user.address, termId, 1n, 0n, { value: ethers.parseEther("0.05") })
+      ).to.be.revertedWithCustomError(proxy, "SofiaFeeProxy_InsufficientValue");
+    });
+
+    it("Should return 0 from getMultiVaultAmountFromValue for insufficient value", async function () {
+      const { proxy } = await loadFixture(deployFixture);
+
+      // Less than or equal to fixed fee should return 0
+      expect(await proxy.getMultiVaultAmountFromValue(DEPOSIT_FEE)).to.equal(0n);
+      expect(await proxy.getMultiVaultAmountFromValue(ethers.parseEther("0.05"))).to.equal(0n);
     });
   });
 
