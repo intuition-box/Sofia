@@ -24,6 +24,8 @@ import type {
 export interface MockMultiVaultInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "approvals"
+      | "approve"
       | "atomCost"
       | "calculateAtomId"
       | "calculateTripleId"
@@ -57,6 +59,14 @@ export interface MockMultiVaultInterface extends Interface {
       | "tripleSubjects"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "approvals",
+    values: [AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "approve",
+    values: [AddressLike, BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "atomCost", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "calculateAtomId",
@@ -185,6 +195,8 @@ export interface MockMultiVaultInterface extends Interface {
     values: [BytesLike]
   ): string;
 
+  decodeFunctionResult(functionFragment: "approvals", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "atomCost", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "calculateAtomId",
@@ -333,6 +345,18 @@ export interface MockMultiVault extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  approvals: TypedContractMethod<
+    [arg0: AddressLike, arg1: AddressLike],
+    [bigint],
+    "view"
+  >;
+
+  approve: TypedContractMethod<
+    [sender: AddressLike, approvalType: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   atomCost: TypedContractMethod<[], [bigint], "view">;
 
   calculateAtomId: TypedContractMethod<[data: BytesLike], [string], "view">;
@@ -474,6 +498,20 @@ export interface MockMultiVault extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "approvals"
+  ): TypedContractMethod<
+    [arg0: AddressLike, arg1: AddressLike],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "approve"
+  ): TypedContractMethod<
+    [sender: AddressLike, approvalType: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "atomCost"
   ): TypedContractMethod<[], [bigint], "view">;

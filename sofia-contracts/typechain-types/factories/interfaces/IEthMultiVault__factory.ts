@@ -12,6 +12,24 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        internalType: "enum IEthMultiVault.ApprovalTypes",
+        name: "approvalType",
+        type: "uint8",
+      },
+    ],
+    name: "approve",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bytes",
         name: "data",
         type: "bytes",

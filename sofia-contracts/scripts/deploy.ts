@@ -1,6 +1,7 @@
 import { ethers, network } from "hardhat";
 
 // ============ MultiVault Addresses ============
+const MULTIVAULT_INTUITION = "0x6E35cF57A41fA15eA0EaE9C33e751b01A784Fe7e"; // Intuition Mainnet
 const MULTIVAULT_BASE = "0x6E35cF57A41fA15eA0EaE9C33e751b01A784Fe7e";
 const MULTIVAULT_BASE_SEPOLIA = "0x2Ece8D4dEdcB9918A398528f3fa4688b1d2CAB91";
 
@@ -9,8 +10,8 @@ const GNOSIS_SAFE = "0x68c72d6c3d81B20D8F81e4E41BA2F373973141eD";
 
 // ============ Initial Fee Configuration ============
 const INITIAL_CREATION_FEE = ethers.parseEther("0.1"); // 0.1 TRUST
-const INITIAL_DEPOSIT_FEE = ethers.parseEther("0.1"); // 0.1 TRUST
-const INITIAL_DEPOSIT_PERCENTAGE = 200n; // 2%
+const INITIAL_DEPOSIT_FEE = ethers.parseEther("0"); // No fixed deposit fee
+const INITIAL_DEPOSIT_PERCENTAGE = 500n; // 5%
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -20,19 +21,22 @@ async function main() {
   // Get admin addresses from environment
   const admin1 = process.env.ADMIN_1;
   const admin2 = process.env.ADMIN_2;
-  const admin3 = process.env.ADMIN_3;
 
-  if (!admin1 || !admin2 || !admin3) {
-    throw new Error("Missing ADMIN_1, ADMIN_2, or ADMIN_3 environment variables");
+  if (!admin1 || !admin2) {
+    throw new Error("Missing ADMIN_1 or ADMIN_2 environment variables");
   }
 
-  const admins = [admin1, admin2, admin3];
+  const admins = [admin1, admin2];
 
   // Select MultiVault address based on network
   let multiVault: string;
   const chainId = (await ethers.provider.getNetwork()).chainId;
 
-  if (chainId === 8453n) {
+  if (chainId === 1155n) {
+    // Intuition Mainnet
+    multiVault = MULTIVAULT_INTUITION;
+    console.log("Deploying to Intuition Mainnet");
+  } else if (chainId === 8453n) {
     // Base Mainnet
     multiVault = MULTIVAULT_BASE;
     console.log("Deploying to Base Mainnet");
@@ -53,7 +57,6 @@ async function main() {
   console.log("- Fee recipient (Gnosis Safe):", GNOSIS_SAFE);
   console.log("- Admin 1:", admin1);
   console.log("- Admin 2:", admin2);
-  console.log("- Admin 3:", admin3);
   console.log("- Creation fee:", ethers.formatEther(INITIAL_CREATION_FEE), "ETH");
   console.log("- Deposit fixed fee:", ethers.formatEther(INITIAL_DEPOSIT_FEE), "ETH");
   console.log("- Deposit percentage:", Number(INITIAL_DEPOSIT_PERCENTAGE) / 100, "%");

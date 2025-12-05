@@ -1,5 +1,6 @@
 import { getClients } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
+import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useStorage } from "@plasmohq/storage/hook"
 import { BlockchainService } from '../lib/services/blockchainService'
@@ -32,30 +33,35 @@ export const useWeightOnChain = () => {
       const { walletClient, publicClient } = await getClients()
       const contractAddress = BlockchainService.getContractAddress()
 
-      // Use curve ID 1 as default for triples
-      const curveId = 1
+      // Calculate total cost including Sofia fees
+      const totalCost = await BlockchainService.getTotalDepositCost(additionalWeight)
+      logger.debug('Deposit cost calculated', {
+        depositAmount: additionalWeight.toString(),
+        totalCost: totalCost.toString()
+      })
 
-      const txParams = {
+      // Use curve ID 1 as default for triples
+      const curveId = 1n
+
+      const hash = await walletClient.writeContract({
         address: contractAddress,
-        abi: MultiVaultAbi,
-        functionName: 'deposit',
+        abi: SofiaFeeProxyAbi,
+        functionName: 'deposit' as const,
         args: [
           address as Address, // receiver
           tripleVaultId as `0x${string}`, // termId (triple vault ID) - bytes32
           curveId, // curveId
           0n // minShares (0 for no slippage protection)
         ],
-        value: additionalWeight,
+        value: totalCost, // Use totalCost which includes Sofia fees
         chain: SELECTED_CHAIN,
         gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
         maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
         maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
         account: address as Address
-      }
+      })
 
-      logger.debug('Executing deposit transaction', txParams)
-
-      const hash = await walletClient.writeContract(txParams)
+      logger.debug('Deposit transaction sent', { hash })
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
       
@@ -79,71 +85,6 @@ export const useWeightOnChain = () => {
     }
   }
 
-  /**
-   * Add shares to a triple vault on Curve 2 (Deposit/Share curve)
-   * Used for investing in triple shares, separate from upvotes
-   */
-  const addShares = async (
-    tripleVaultId: string,
-    amount: bigint
-  ): Promise<WeightResult> => {
-    try {
-      if (!address) {
-        throw new Error('No wallet connected')
-      }
-
-      logger.debug('Adding shares to triple (Curve 2)', { tripleVaultId, amount: amount.toString() })
-
-      const { walletClient, publicClient } = await getClients()
-      const contractAddress = BlockchainService.getContractAddress()
-
-      // Use curve ID 2 for Deposit/Share curve
-      const curveId = 2
-
-      const txParams = {
-        address: contractAddress,
-        abi: MultiVaultAbi,
-        functionName: 'deposit',
-        args: [
-          address as Address, // receiver
-          tripleVaultId as `0x${string}`, // termId (triple vault ID) - bytes32
-          curveId, // curveId = 2 for shares
-          0n // minShares (0 for no slippage protection)
-        ],
-        value: amount,
-        chain: SELECTED_CHAIN,
-        gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
-        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-        account: address as Address
-      }
-
-      logger.debug('Executing deposit transaction (Curve 2)', txParams)
-
-      const hash = await walletClient.writeContract(txParams)
-
-      const receipt = await publicClient.waitForTransactionReceipt({ hash })
-
-      if (receipt.status !== 'success') {
-        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
-      }
-
-      logger.debug('Shares addition successful', { hash, receipt })
-
-      return {
-        success: true,
-        txHash: hash
-      }
-    } catch (error) {
-      logger.error('Shares addition failed', error)
-      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
-      return {
-        success: false,
-        error: `Shares addition failed: ${errorMessage}`
-      }
-    }
-  }
-
   const removeWeight = async (
     tripleVaultId: string,
     weightToRemove: bigint
@@ -156,7 +97,8 @@ export const useWeightOnChain = () => {
       logger.debug('Removing weight from triple', { tripleVaultId, weightToRemove: weightToRemove.toString() })
 
       const { walletClient, publicClient } = await getClients()
-      const contractAddress = BlockchainService.getContractAddress()
+      // Redeem must go directly to MultiVault (proxy doesn't support redeem for security)
+      const contractAddress = BlockchainService.getMultiVaultAddress()
 
       // Use curve ID 1 as default for triples
       const curveId = 1
@@ -230,6 +172,72 @@ export const useWeightOnChain = () => {
       return {
         success: false,
         error: `Weight removal failed: ${errorMessage}`
+      }
+    }
+  }
+
+  const addShares = async (
+    tripleVaultId: string,
+    amount: bigint
+  ): Promise<WeightResult> => {
+    try {
+      if (!address) {
+        throw new Error('No wallet connected')
+      }
+
+      logger.debug('Adding shares to triple', { tripleVaultId, amount: amount.toString() })
+
+      const { walletClient, publicClient } = await getClients()
+      const contractAddress = BlockchainService.getContractAddress()
+
+      // Calculate total cost including Sofia fees
+      const totalCost = await BlockchainService.getTotalDepositCost(amount)
+      logger.debug('Deposit cost calculated', {
+        depositAmount: amount.toString(),
+        totalCost: totalCost.toString()
+      })
+
+      // Use curve ID 1 (linear/upvote curve - always initialized)
+      const curveId = 1n
+
+      const hash = await walletClient.writeContract({
+        address: contractAddress,
+        abi: SofiaFeeProxyAbi,
+        functionName: 'deposit' as const,
+        args: [
+          address as Address, // receiver
+          tripleVaultId as `0x${string}`, // termId (triple vault ID) - bytes32
+          curveId, // curveId
+          0n // minShares (0 for no slippage protection)
+        ],
+        value: totalCost,
+        chain: SELECTED_CHAIN,
+        gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+        account: address as Address
+      })
+
+      logger.debug('Shares deposit transaction sent', { hash })
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+      if (receipt.status !== 'success') {
+        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+      }
+
+      logger.debug('Shares addition successful', { hash, receipt })
+
+      return {
+        success: true,
+        txHash: hash
+      }
+    } catch (error) {
+      logger.error('Shares addition failed', error)
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      return {
+        success: false,
+        error: `Shares addition failed: ${errorMessage}`
       }
     }
   }

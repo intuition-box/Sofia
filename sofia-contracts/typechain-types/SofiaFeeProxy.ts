@@ -96,11 +96,18 @@ export interface SofiaFeeProxyInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createAtoms",
-    values: [BytesLike[], BigNumberish[]]
+    values: [AddressLike, BytesLike[], BigNumberish[], BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "createTriples",
-    values: [BytesLike[], BytesLike[], BytesLike[], BigNumberish[]]
+    values: [
+      AddressLike,
+      BytesLike[],
+      BytesLike[],
+      BytesLike[],
+      BigNumberish[],
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "creationFixedFee",
@@ -505,17 +512,24 @@ export interface SofiaFeeProxy extends BaseContract {
   >;
 
   createAtoms: TypedContractMethod<
-    [data: BytesLike[], assets: BigNumberish[]],
+    [
+      receiver: AddressLike,
+      data: BytesLike[],
+      assets: BigNumberish[],
+      curveId: BigNumberish
+    ],
     [string[]],
     "payable"
   >;
 
   createTriples: TypedContractMethod<
     [
+      receiver: AddressLike,
       subjectIds: BytesLike[],
       predicateIds: BytesLike[],
       objectIds: BytesLike[],
-      assets: BigNumberish[]
+      assets: BigNumberish[],
+      curveId: BigNumberish
     ],
     [string[]],
     "payable"
@@ -661,7 +675,12 @@ export interface SofiaFeeProxy extends BaseContract {
   getFunction(
     nameOrSignature: "createAtoms"
   ): TypedContractMethod<
-    [data: BytesLike[], assets: BigNumberish[]],
+    [
+      receiver: AddressLike,
+      data: BytesLike[],
+      assets: BigNumberish[],
+      curveId: BigNumberish
+    ],
     [string[]],
     "payable"
   >;
@@ -669,10 +688,12 @@ export interface SofiaFeeProxy extends BaseContract {
     nameOrSignature: "createTriples"
   ): TypedContractMethod<
     [
+      receiver: AddressLike,
       subjectIds: BytesLike[],
       predicateIds: BytesLike[],
       objectIds: BytesLike[],
-      assets: BigNumberish[]
+      assets: BigNumberish[],
+      curveId: BigNumberish
     ],
     [string[]],
     "payable"

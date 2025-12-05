@@ -28,8 +28,13 @@ contract MockMultiVault is IEthMultiVault {
     mapping(bytes32 => bytes32) public triplePredicates;
     mapping(bytes32 => bytes32) public tripleObjects;
     mapping(address => mapping(bytes32 => mapping(uint256 => uint256))) public shares;
+    mapping(address => mapping(address => ApprovalTypes)) public approvals;
 
     // ============ Write Functions ============
+
+    function approve(address sender, ApprovalTypes approvalType) external override {
+        approvals[msg.sender][sender] = approvalType;
+    }
 
     function createAtoms(
         bytes[] calldata data,

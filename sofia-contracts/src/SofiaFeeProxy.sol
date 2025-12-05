@@ -218,15 +218,28 @@ contract SofiaFeeProxy {
 
     // ============ Proxy Functions (Payable) ============
 
-    /// @notice Create atoms with Sofia fee collection
+    /// @notice Create atoms with Sofia fee collection and deposit to receiver
+    /// @dev Receiver must have approved this proxy on MultiVault for DEPOSIT
+    /// @param receiver Address to receive the shares (the real user)
     /// @param data Array of atom data (IPFS URIs as bytes)
-    /// @param assets Array of asset values for each atom
-    /// @return Array of created atom IDs
-    function createAtoms(bytes[] calldata data, uint256[] calldata assets)
-        external payable returns (bytes32[] memory)
-    {
-        uint256 sofiaFee = calculateCreationFee(data.length);
-        uint256 multiVaultCost = _sumArray(assets);
+    /// @param assets Array of deposit amounts for each atom (on top of creation cost)
+    /// @param curveId Bonding curve ID for deposits (1 = linear, 2 = progressive)
+    /// @return atomIds Array of created atom IDs
+    function createAtoms(
+        address receiver,
+        bytes[] calldata data,
+        uint256[] calldata assets,
+        uint256 curveId
+    ) external payable returns (bytes32[] memory atomIds) {
+        if (data.length != assets.length) {
+            revert Errors.SofiaFeeProxy_WrongArrayLengths();
+        }
+
+        uint256 count = data.length;
+        uint256 sofiaFee = calculateCreationFee(count);
+        uint256 atomCost = ethMultiVault.getAtomCost();
+        uint256 totalDeposit = _sumArray(assets);
+        uint256 multiVaultCost = (atomCost * count) + totalDeposit;
         uint256 totalRequired = sofiaFee + multiVaultCost;
 
         if (msg.value < totalRequired) {
@@ -237,31 +250,57 @@ contract SofiaFeeProxy {
         emit FeesCollected(msg.sender, sofiaFee, "createAtoms");
         emit TransactionForwarded("createAtoms", msg.sender, sofiaFee, multiVaultCost, msg.value);
 
-        bytes32[] memory result = ethMultiVault.createAtoms{value: multiVaultCost}(data, assets);
-        emit MultiVaultSuccess("createAtoms", result.length);
-        return result;
+        // Create atoms with minimum cost (just atomCost per atom)
+        uint256[] memory minAssets = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            minAssets[i] = atomCost;
+        }
+        atomIds = ethMultiVault.createAtoms{value: atomCost * count}(data, minAssets);
+
+        // Deposit remaining assets to receiver for each atom
+        for (uint256 i = 0; i < count; i++) {
+            if (assets[i] > 0) {
+                ethMultiVault.deposit{value: assets[i]}(
+                    receiver,
+                    atomIds[i],
+                    curveId,
+                    0 // minShares
+                );
+            }
+        }
+
+        emit MultiVaultSuccess("createAtoms", count);
+        return atomIds;
     }
 
-    /// @notice Create triples with Sofia fee collection
+    /// @notice Create triples with Sofia fee collection and deposit to receiver
+    /// @dev Receiver must have approved this proxy on MultiVault for DEPOSIT
+    /// @param receiver Address to receive the shares (the real user)
     /// @param subjectIds Array of subject atom IDs
     /// @param predicateIds Array of predicate atom IDs
     /// @param objectIds Array of object atom IDs
-    /// @param assets Array of asset values for each triple
-    /// @return Array of created triple IDs
+    /// @param assets Array of deposit amounts for each triple (on top of creation cost)
+    /// @param curveId Bonding curve ID for deposits (1 = linear, 2 = progressive)
+    /// @return tripleIds Array of created triple IDs
     function createTriples(
+        address receiver,
         bytes32[] calldata subjectIds,
         bytes32[] calldata predicateIds,
         bytes32[] calldata objectIds,
-        uint256[] calldata assets
-    ) external payable returns (bytes32[] memory) {
+        uint256[] calldata assets,
+        uint256 curveId
+    ) external payable returns (bytes32[] memory tripleIds) {
         if (subjectIds.length != predicateIds.length ||
             predicateIds.length != objectIds.length ||
             objectIds.length != assets.length) {
             revert Errors.SofiaFeeProxy_WrongArrayLengths();
         }
 
-        uint256 sofiaFee = calculateCreationFee(subjectIds.length);
-        uint256 multiVaultCost = _sumArray(assets);
+        uint256 count = subjectIds.length;
+        uint256 sofiaFee = calculateCreationFee(count);
+        uint256 tripleCost = ethMultiVault.getTripleCost();
+        uint256 totalDeposit = _sumArray(assets);
+        uint256 multiVaultCost = (tripleCost * count) + totalDeposit;
         uint256 totalRequired = sofiaFee + multiVaultCost;
 
         if (msg.value < totalRequired) {
@@ -272,14 +311,32 @@ contract SofiaFeeProxy {
         emit FeesCollected(msg.sender, sofiaFee, "createTriples");
         emit TransactionForwarded("createTriples", msg.sender, sofiaFee, multiVaultCost, msg.value);
 
-        bytes32[] memory result = ethMultiVault.createTriples{value: multiVaultCost}(
+        // Create triples with minimum cost (just tripleCost per triple)
+        uint256[] memory minAssets = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            minAssets[i] = tripleCost;
+        }
+        tripleIds = ethMultiVault.createTriples{value: tripleCost * count}(
             subjectIds,
             predicateIds,
             objectIds,
-            assets
+            minAssets
         );
-        emit MultiVaultSuccess("createTriples", result.length);
-        return result;
+
+        // Deposit remaining assets to receiver for each triple
+        for (uint256 i = 0; i < count; i++) {
+            if (assets[i] > 0) {
+                ethMultiVault.deposit{value: assets[i]}(
+                    receiver,
+                    tripleIds[i],
+                    curveId,
+                    0 // minShares
+                );
+            }
+        }
+
+        emit MultiVaultSuccess("createTriples", count);
+        return tripleIds;
     }
 
     /// @notice Deposit with Sofia fee collection - SAME SIGNATURE AS MULTIVAULT

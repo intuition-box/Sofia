@@ -4,7 +4,22 @@ pragma solidity ^0.8.21;
 /// @title IEthMultiVault
 /// @notice Interface for the Intuition MultiVault contract (subset of functions used by Sofia)
 interface IEthMultiVault {
+    // ============ Enums ============
+
+    /// @notice Approval types for deposit/redemption delegation
+    enum ApprovalTypes {
+        NONE,       // 0 - No approval
+        DEPOSIT,    // 1 - Can deposit on behalf
+        REDEMPTION, // 2 - Can redeem on behalf
+        BOTH        // 3 - Can deposit and redeem
+    }
+
     // ============ Write Functions ============
+
+    /// @notice Approve another address to deposit/redeem on your behalf
+    /// @param sender Address to approve (e.g., SofiaFeeProxy)
+    /// @param approvalType Type of approval to grant
+    function approve(address sender, ApprovalTypes approvalType) external;
 
     /// @notice Create multiple atoms in a single transaction
     /// @param data Array of atom data (IPFS URIs as bytes)

@@ -1,9 +1,13 @@
 /**
- * SofiaFeeProxy ABI
+ * SofiaFeeProxy ABI v2
  * Proxy contract for Intuition MultiVault with fee collection
  *
- * SAME SIGNATURE as MultiVault - deposit() has 4 params (not 5)
- * Fees are calculated from msg.value using inverse formula
+ * NEW: createAtoms/createTriples now take receiver and curveId params
+ * - receiver: Address that will own the shares (the user)
+ * - curveId: Bonding curve ID (1 = linear, 2 = progressive)
+ *
+ * User must approve proxy on MultiVault first:
+ *   multiVault.approve(proxyAddress, DEPOSIT)
  *
  * Fee helper functions:
  * - calculateCreationFee, calculateDepositFee
@@ -142,23 +146,27 @@ export const SofiaFeeProxyAbi = [
   // ============ Proxy Functions (Write) ============
   {
     inputs: [
+      { internalType: "address", name: "receiver", type: "address" },
       { internalType: "bytes[]", name: "data", type: "bytes[]" },
-      { internalType: "uint256[]", name: "assets", type: "uint256[]" }
+      { internalType: "uint256[]", name: "assets", type: "uint256[]" },
+      { internalType: "uint256", name: "curveId", type: "uint256" }
     ],
     name: "createAtoms",
-    outputs: [{ internalType: "bytes32[]", name: "", type: "bytes32[]" }],
+    outputs: [{ internalType: "bytes32[]", name: "atomIds", type: "bytes32[]" }],
     stateMutability: "payable",
     type: "function"
   },
   {
     inputs: [
+      { internalType: "address", name: "receiver", type: "address" },
       { internalType: "bytes32[]", name: "subjectIds", type: "bytes32[]" },
       { internalType: "bytes32[]", name: "predicateIds", type: "bytes32[]" },
       { internalType: "bytes32[]", name: "objectIds", type: "bytes32[]" },
-      { internalType: "uint256[]", name: "assets", type: "uint256[]" }
+      { internalType: "uint256[]", name: "assets", type: "uint256[]" },
+      { internalType: "uint256", name: "curveId", type: "uint256" }
     ],
     name: "createTriples",
-    outputs: [{ internalType: "bytes32[]", name: "", type: "bytes32[]" }],
+    outputs: [{ internalType: "bytes32[]", name: "tripleIds", type: "bytes32[]" }],
     stateMutability: "payable",
     type: "function"
   },

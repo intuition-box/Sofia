@@ -1,5 +1,6 @@
 import { getClients } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
+import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
 import { useStorage } from "@plasmohq/storage/hook"
@@ -15,12 +16,41 @@ const logger = createHookLogger('useCreateTripleOnChain')
 // Minimum deposit for triple creation (0.01 TRUST in wei)
 const MIN_TRIPLE_DEPOSIT = 10000000000000000n // 10^16 wei = 0.01 ether
 
+// Curve ID for creation deposits (1 = linear/upvote, 2 = progressive/shares)
+const CREATION_CURVE_ID = 1n
+
 
 export const useCreateTripleOnChain = () => {
   const { createAtomWithMultivault, createAtomsBatch } = useCreateAtom()
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
-  
+
+  // Ensure user has approved the proxy on MultiVault (required for receiver pattern)
+  const ensureProxyApproval = async (): Promise<void> => {
+    if (!address) {
+      throw new Error('No wallet connected')
+    }
+
+    const isApproved = await BlockchainService.checkProxyApproval(address)
+
+    if (!isApproved) {
+      logger.info('Proxy not approved, requesting approval from user')
+
+      // Request approval transaction
+      const txHash = await BlockchainService.requestProxyApproval()
+      logger.debug('Approval transaction sent', { txHash })
+
+      // Wait for confirmation
+      const success = await BlockchainService.waitForApprovalConfirmation(txHash)
+
+      if (!success) {
+        throw new Error('Proxy approval transaction failed')
+      }
+
+      logger.info('Proxy approval confirmed')
+    }
+  }
+
   // Utility function to get the universal "I" subject atom (shared between simple and batch)
   const getUserAtom = async () => {
     if (!address) {
@@ -94,12 +124,15 @@ export const useCreateTripleOnChain = () => {
     objectData: { name: string; description?: string; url: string; image?: string },
     customWeight?: bigint // Optional custom weight/value for the triple
   ): Promise<TripleOnChainResult> => {
-    
+
     try {
       if (!address) {
         throw new Error('No wallet connected')
       }
-      
+
+      // Ensure proxy is approved before any creation (one-time approval)
+      await ensureProxyApproval()
+
       const userAtomResult = await getUserAtom()
       
       const userAtom = {
@@ -185,8 +218,11 @@ export const useCreateTripleOnChain = () => {
 
         const feeCost = await BlockchainService.getTripleCost()
 
-        // Step 1: Create triple with minimum deposit + fee
-        const creationCost = MIN_TRIPLE_DEPOSIT + feeCost
+        // Create triple with full amount (customWeight or minimum) + fee
+        const depositAmount = customWeight !== undefined ? customWeight : MIN_TRIPLE_DEPOSIT
+        const creationCost = depositAmount + feeCost
+        // Total cost including Sofia fees
+        const totalCost = await BlockchainService.getTotalCreationCost(1, creationCost)
 
         const subjectId = userAtom.vaultId as Address
         const predicateId = predicateAtom.vaultId as Address
@@ -194,15 +230,17 @@ export const useCreateTripleOnChain = () => {
 
         const txParams = {
           address: contractAddress,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi as unknown as any[],
           functionName: 'createTriples',
           args: [
+            address,        // receiver - user gets the shares
             [subjectId],
             [predicateId],
             [objectId],
-            [creationCost]
+            [depositAmount], // deposit amount (without creation cost)
+            CREATION_CURVE_ID  // curveId
           ],
-          value: creationCost,
+          value: totalCost,  // Total including Sofia fees
           chain: SELECTED_CHAIN,
           gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
@@ -221,51 +259,15 @@ export const useCreateTripleOnChain = () => {
         // Simulate to get the result after successful transaction
         const simulation = await publicClient.simulateContract({
           address: contractAddress as Address,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
-          args: [[subjectId], [predicateId], [objectId], [creationCost]],
-          value: creationCost,
+          args: [address as Address, [subjectId], [predicateId], [objectId], [depositAmount], CREATION_CURVE_ID],
+          value: totalCost,
           account: walletClient.account
         })
 
         const tripleIds = simulation.result as Address[]
         const tripleVaultId = tripleIds[0]
-
-        // Step 2: If customWeight > minDeposit, deposit the rest on Curve 2
-        if (customWeight !== undefined && customWeight > MIN_TRIPLE_DEPOSIT) {
-          const additionalDeposit = customWeight - MIN_TRIPLE_DEPOSIT
-          const curveId = 2n
-
-          logger.debug('Depositing additional amount on Curve 2', {
-            tripleVaultId,
-            additionalDeposit: additionalDeposit.toString()
-          })
-
-          const depositHash = await walletClient.writeContract({
-            address: contractAddress as Address,
-            abi: MultiVaultAbi,
-            functionName: 'deposit',
-            args: [
-              address as Address,           // receiver
-              tripleVaultId as Address,     // termId
-              curveId,                      // curveId = 2 (Deposit/Share curve)
-              0n                            // minShares
-            ],
-            value: additionalDeposit,
-            chain: SELECTED_CHAIN,
-            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-            account: address as Address
-          })
-
-          const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
-
-          if (depositReceipt.status !== 'success') {
-            throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: Deposit failed - ${depositReceipt.status}`)
-          }
-
-          logger.debug('Additional deposit successful', { depositHash })
-        }
 
         return {
           success: true,
@@ -291,7 +293,10 @@ export const useCreateTripleOnChain = () => {
       if (!address) {
         throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
       }
-      
+
+      // Ensure proxy is approved before any creation (one-time approval)
+      await ensureProxyApproval()
+
       logger.debug('Starting batch triple creation', { count: inputs.length })
       
       // User atom (always needed) - will use the universal "I" subject
@@ -421,23 +426,33 @@ export const useCreateTripleOnChain = () => {
         // Get fee cost from contract
         const feeCost = await BlockchainService.getTripleCost()
 
-        // Step 1: Create all triples with minimum deposit + fee
+        // Create all triples with full amount (customWeight or minimum) + fee
         const subjectIds = triplesToCreate.map(t => t.subjectId as Address)
         const predicateIds = triplesToCreate.map(t => t.predicateId as Address)
         const objectIds = triplesToCreate.map(t => t.objectId as Address)
-        // Each triple is created with MIN_TRIPLE_DEPOSIT + feeCost
-        const creationCost = MIN_TRIPLE_DEPOSIT + feeCost
-        const tripleCosts = triplesToCreate.map(() => creationCost)
+        // Each triple is created with (customWeight or MIN_TRIPLE_DEPOSIT) + feeCost
+        const tripleCosts = triplesToCreate.map(t => {
+          const depositAmount = t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
+          return depositAmount + feeCost
+        })
 
-        const totalValue = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
+        // multiVaultTotal = sum of amounts for MultiVault
+        const multiVaultTotal = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
+        // totalValue = multiVaultTotal + Sofia fees
+        const totalValue = await BlockchainService.getTotalCreationCost(triplesToCreate.length, multiVaultTotal)
+
+        // Deposit amounts for each triple (without creation cost)
+        const depositAmounts = triplesToCreate.map(t => {
+          return t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
+        })
 
         try {
           // Simulate first to validate and get gas estimation
           const simulation = await publicClient.simulateContract({
             address: contractAddress,
-            abi: MultiVaultAbi,
+            abi: SofiaFeeProxyAbi,
             functionName: 'createTriples',
-            args: [subjectIds, predicateIds, objectIds, tripleCosts],
+            args: [address as Address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID],
             value: totalValue,
             account: walletClient.account
           })
@@ -445,9 +460,9 @@ export const useCreateTripleOnChain = () => {
           // Execute batch transaction with automatic gas estimation
           const batchTxParams = {
             address: contractAddress,
-            abi: MultiVaultAbi,
+            abi: SofiaFeeProxyAbi as unknown as any[],
             functionName: 'createTriples',
-            args: [subjectIds, predicateIds, objectIds, tripleCosts],
+            args: [address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID],
             value: totalValue,
             chain: SELECTED_CHAIN,
             // Remove hardcoded gas - let Viem estimate automatically
@@ -479,49 +494,6 @@ export const useCreateTripleOnChain = () => {
               source: 'created',
               tripleHash: tripleIds[i]
             })
-          }
-
-          // Step 2: For triples with customWeight > minDeposit, deposit the rest on Curve 2
-          const triplesNeedingDeposit = triplesToCreate.filter(t =>
-            t.customWeight !== undefined && t.customWeight > MIN_TRIPLE_DEPOSIT
-          )
-
-          if (triplesNeedingDeposit.length > 0) {
-            const curveId = 2n
-
-            logger.debug('Processing additional deposits on Curve 2', {
-              count: triplesNeedingDeposit.length
-            })
-
-            for (const triple of triplesNeedingDeposit) {
-              const tripleIndex = triplesToCreate.indexOf(triple)
-              const tripleVaultId = tripleIds[tripleIndex]
-              const additionalAmount = triple.customWeight! - MIN_TRIPLE_DEPOSIT
-
-              const depositHash = await walletClient.writeContract({
-                address: contractAddress,
-                abi: MultiVaultAbi,
-                functionName: 'deposit',
-                args: [address as Address, tripleVaultId, curveId, 0n],
-                value: additionalAmount,
-                chain: SELECTED_CHAIN,
-                maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-                maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-                account: address as Address
-              })
-
-              const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
-
-              if (depositReceipt.status !== 'success') {
-                throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: Additional deposit failed - ${depositReceipt.status}`)
-              }
-
-              logger.debug('Additional deposit successful', {
-                tripleVaultId,
-                additionalAmount: additionalAmount.toString(),
-                depositHash
-              })
-            }
           }
 
         } catch (createError) {

@@ -2,23 +2,60 @@ import { usePinThingMutation } from "@0xintuition/graphql"
 import { getClients } from '../lib/clients/viemClients'
 import { stringToHex } from 'viem'
 import { MultiVaultAbi } from '../ABI/MultiVault'
+import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '~lib/config/chainConfig'
 import { useStorage } from "@plasmohq/storage/hook"
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
 import type { AtomIPFSData, AtomCreationResult } from '../types/blockchain'
+import type { Address } from '../types/viem'
 
 const logger = createHookLogger('useCreateAtom')
+
+// Curve ID for creation deposits (1 = linear/upvote, 2 = progressive/shares)
+const CREATION_CURVE_ID = 1n
+
+// Minimum deposit for atom creation (same as atom cost - no extra deposit)
+const MIN_ATOM_DEPOSIT = 0n
 
 export const useCreateAtom = () => {
   const { mutateAsync: pinThing } = usePinThingMutation()
   const [address] = useStorage<string>("metamask-account")
   // State management removed - let components handle loading/error states
 
+  // Ensure user has approved the proxy on MultiVault (required for receiver pattern)
+  const ensureProxyApproval = async (): Promise<void> => {
+    if (!address) {
+      throw new Error('No wallet connected')
+    }
+
+    const isApproved = await BlockchainService.checkProxyApproval(address)
+
+    if (!isApproved) {
+      logger.info('Proxy not approved, requesting approval from user')
+
+      // Request approval transaction
+      const txHash = await BlockchainService.requestProxyApproval()
+      logger.debug('Approval transaction sent', { txHash })
+
+      // Wait for confirmation
+      const success = await BlockchainService.waitForApprovalConfirmation(txHash)
+
+      if (!success) {
+        throw new Error('Proxy approval transaction failed')
+      }
+
+      logger.info('Proxy approval confirmed')
+    }
+  }
+
   const createAtomDirect = async (atomData: AtomIPFSData): Promise<AtomCreationResult> => {
     try {
       logger.debug('Creating atom V2', { name: atomData.name })
+
+      // Ensure proxy is approved before any creation (one-time approval)
+      await ensureProxyApproval()
 
       // Check if pinThing is available
       if (!pinThing) {
@@ -60,8 +97,13 @@ export const useCreateAtom = () => {
       
       // Get atom cost using service
       const atomCost = await BlockchainService.getAtomCost()
-      logger.debug('Atom cost retrieved', { cost: atomCost.toString() })
-      
+      // Calculate total cost including Sofia fees
+      const totalCost = await BlockchainService.getTotalCreationCost(1, atomCost)
+      logger.debug('Atom cost retrieved', {
+        atomCost: atomCost.toString(),
+        totalCost: totalCost.toString()
+      })
+
       // Check if atom already exists using service
       const atomCheck = await BlockchainService.checkAtomExists(ipfsUri)
       
@@ -95,11 +137,11 @@ export const useCreateAtom = () => {
 
       try {
         const simulation = await publicClient.simulateContract({
-          address: BlockchainService.getContractAddress() as `0x${string}`,
-          abi: MultiVaultAbi,
+          address: BlockchainService.getContractAddress(),
+          abi: SofiaFeeProxyAbi,
           functionName: 'createAtoms',
-          args: [[encodedData], [atomCost]],
-          value: atomCost,
+          args: [address as Address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
+          value: totalCost, // Use totalCost which includes Sofia fees
           account: walletClient.account
         })
 
@@ -117,19 +159,19 @@ export const useCreateAtom = () => {
         }
 
         logger.debug('Sending atom creation transaction', {
-          args: [[encodedData], [atomCost]],
-          value: atomCost.toString(),
+          args: [address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
+          value: totalCost.toString(),
           expectedVaultId: expectedVaultId,
           actualVaultId: actualVaultId,
           simulationConfirmed: true
         })
 
         const txHash = await walletClient.writeContract({
-          address: BlockchainService.getContractAddress() as `0x${string}`,
-          abi: MultiVaultAbi,
+          address: BlockchainService.getContractAddress(),
+          abi: SofiaFeeProxyAbi,
           functionName: 'createAtoms',
-          args: [[encodedData], [atomCost]],
-          value: atomCost,
+          args: [address as Address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
+          value: totalCost, // Use totalCost which includes Sofia fees
           gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
           chain: SELECTED_CHAIN,
           account: address as `0x${string}`
@@ -195,11 +237,14 @@ export const useCreateAtom = () => {
   const createAtomsBatch = async (atomsData: AtomIPFSData[]): Promise<{ [key: string]: AtomCreationResult }> => {
     try {
       logger.debug('Creating atoms batch', { count: atomsData.length })
-      
+
       if (atomsData.length === 0) {
         return {}
       }
-      
+
+      // Ensure proxy is approved before any creation (one-time approval)
+      await ensureProxyApproval()
+
       // Pin all atoms to IPFS in parallel
       const pinPromises = atomsData.map(async (atomData) => {
         const pinResult = await pinThing({
@@ -255,7 +300,9 @@ export const useCreateAtom = () => {
       if (newAtoms.length > 0) {
         const { walletClient, publicClient } = await getClients()
         const atomCost = await BlockchainService.getAtomCost()
-        const contractAddress = BlockchainService.getContractAddress() as `0x${string}`
+        // Calculate total cost including Sofia fees (if proxy is enabled)
+        const totalCost = await BlockchainService.getTotalCreationCost(1, atomCost)
+        const contractAddress = BlockchainService.getContractAddress()
 
         // Process atoms one by one to handle MultiVault_AtomExists errors gracefully
         for (const newAtom of newAtoms) {
@@ -265,20 +312,20 @@ export const useCreateAtom = () => {
             // Simulate first
             const simulation = await publicClient.simulateContract({
               address: contractAddress,
-              abi: MultiVaultAbi,
+              abi: SofiaFeeProxyAbi,
               functionName: 'createAtoms',
-              args: [[encodedData], [atomCost]],
-              value: atomCost,
+              args: [address as Address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
+              value: totalCost, // Use totalCost which includes Sofia fees
               account: walletClient.account
             })
 
             // Execute transaction
             const txHash = await walletClient.writeContract({
               address: contractAddress,
-              abi: MultiVaultAbi,
+              abi: SofiaFeeProxyAbi,
               functionName: 'createAtoms',
-              args: [[encodedData], [atomCost]],
-              value: atomCost,
+              args: [address as Address, [encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
+              value: totalCost, // Use totalCost which includes Sofia fees
               gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
               chain: SELECTED_CHAIN,
               account: address as `0x${string}`

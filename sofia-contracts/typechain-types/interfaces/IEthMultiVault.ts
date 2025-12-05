@@ -24,6 +24,7 @@ import type {
 export interface IEthMultiVaultInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "approve"
       | "calculateAtomId"
       | "calculateTripleId"
       | "createAtoms"
@@ -38,6 +39,10 @@ export interface IEthMultiVaultInterface extends Interface {
       | "previewDeposit"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "approve",
+    values: [AddressLike, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "calculateAtomId",
     values: [BytesLike]
@@ -93,6 +98,7 @@ export interface IEthMultiVaultInterface extends Interface {
     values: [BytesLike, BigNumberish, BigNumberish]
   ): string;
 
+  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "calculateAtomId",
     data: BytesLike
@@ -177,6 +183,12 @@ export interface IEthMultiVault extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  approve: TypedContractMethod<
+    [sender: AddressLike, approvalType: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   calculateAtomId: TypedContractMethod<[data: BytesLike], [string], "view">;
 
   calculateTripleId: TypedContractMethod<
@@ -259,6 +271,13 @@ export interface IEthMultiVault extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "approve"
+  ): TypedContractMethod<
+    [sender: AddressLike, approvalType: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "calculateAtomId"
   ): TypedContractMethod<[data: BytesLike], [string], "view">;

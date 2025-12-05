@@ -230,18 +230,22 @@ describe("SofiaFeeProxy", function () {
 
   describe("Proxy Functions - createAtoms", function () {
     it("Should collect fees on createAtoms", async function () {
-      const { proxy, user } = await loadFixture(deployFixture);
+      const { proxy, mockMultiVault, user } = await loadFixture(deployFixture);
 
       const data = [ethers.toUtf8Bytes("ipfs://atom1"), ethers.toUtf8Bytes("ipfs://atom2")];
       const assets = [ethers.parseEther("0.01"), ethers.parseEther("0.01")];
+      const curveId = 1n;
 
       const sofiaFee = await proxy.calculateCreationFee(2n);
-      const multiVaultCost = ethers.parseEther("0.02");
+      const atomCost = await mockMultiVault.getAtomCost();
+      const totalAssets = ethers.parseEther("0.02");
+      const multiVaultCost = (atomCost * 2n) + totalAssets; // creation cost + deposit assets
       const totalRequired = sofiaFee + multiVaultCost;
 
       const initialBalance = await ethers.provider.getBalance(GNOSIS_SAFE);
 
-      await expect(proxy.connect(user).createAtoms(data, assets, { value: totalRequired }))
+      // New signature: createAtoms(receiver, data, assets, curveId)
+      await expect(proxy.connect(user).createAtoms(user.address, data, assets, curveId, { value: totalRequired }))
         .to.emit(proxy, "FeesCollected")
         .withArgs(user.address, sofiaFee, "createAtoms");
 
@@ -254,29 +258,35 @@ describe("SofiaFeeProxy", function () {
 
       const data = [ethers.toUtf8Bytes("ipfs://atom1")];
       const assets = [ethers.parseEther("0.01")];
+      const curveId = 1n;
 
+      // New signature: createAtoms(receiver, data, assets, curveId)
       await expect(
-        proxy.connect(user).createAtoms(data, assets, { value: ethers.parseEther("0.01") })
+        proxy.connect(user).createAtoms(user.address, data, assets, curveId, { value: ethers.parseEther("0.01") })
       ).to.be.revertedWithCustomError(proxy, "SofiaFeeProxy_InsufficientValue");
     });
   });
 
   describe("Proxy Functions - createTriples", function () {
     it("Should collect fees on createTriples", async function () {
-      const { proxy, user } = await loadFixture(deployFixture);
+      const { proxy, mockMultiVault, user } = await loadFixture(deployFixture);
 
       const subjectIds = [ethers.zeroPadValue("0x01", 32)];
       const predicateIds = [ethers.zeroPadValue("0x02", 32)];
       const objectIds = [ethers.zeroPadValue("0x03", 32)];
       const assets = [ethers.parseEther("0.01")];
+      const curveId = 1n;
 
       const sofiaFee = await proxy.calculateCreationFee(1n);
-      const multiVaultCost = ethers.parseEther("0.01");
+      const tripleCost = await mockMultiVault.getTripleCost();
+      const totalAssets = ethers.parseEther("0.01");
+      const multiVaultCost = tripleCost + totalAssets; // creation cost + deposit assets
       const totalRequired = sofiaFee + multiVaultCost;
 
       const initialBalance = await ethers.provider.getBalance(GNOSIS_SAFE);
 
-      await expect(proxy.connect(user).createTriples(subjectIds, predicateIds, objectIds, assets, { value: totalRequired }))
+      // New signature: createTriples(receiver, subjectIds, predicateIds, objectIds, assets, curveId)
+      await expect(proxy.connect(user).createTriples(user.address, subjectIds, predicateIds, objectIds, assets, curveId, { value: totalRequired }))
         .to.emit(proxy, "FeesCollected")
         .withArgs(user.address, sofiaFee, "createTriples");
 
@@ -291,9 +301,11 @@ describe("SofiaFeeProxy", function () {
       const predicateIds = [ethers.zeroPadValue("0x02", 32)]; // Wrong length
       const objectIds = [ethers.zeroPadValue("0x03", 32), ethers.zeroPadValue("0x05", 32)];
       const assets = [ethers.parseEther("0.01"), ethers.parseEther("0.01")];
+      const curveId = 1n;
 
+      // New signature: createTriples(receiver, subjectIds, predicateIds, objectIds, assets, curveId)
       await expect(
-        proxy.connect(user).createTriples(subjectIds, predicateIds, objectIds, assets, { value: ethers.parseEther("10") })
+        proxy.connect(user).createTriples(user.address, subjectIds, predicateIds, objectIds, assets, curveId, { value: ethers.parseEther("10") })
       ).to.be.revertedWithCustomError(proxy, "SofiaFeeProxy_WrongArrayLengths");
     });
   });

@@ -17,9 +17,9 @@ async function main() {
   const mockVaultAddress = await mockVault.getAddress();
   console.log("MockMultiVault deployed at:", mockVaultAddress);
 
-  // Fee configuration
-  const INITIAL_CREATION_FEE = ethers.parseEther("0.1"); // 0.1 TRUST
-  const INITIAL_DEPOSIT_FEE = ethers.parseEther("0.1"); // 0.1 TRUST
+  // Fee configuration (low values for local testing)
+  const INITIAL_CREATION_FEE = ethers.parseEther("0.001"); // 0.001 ETH for local testing
+  const INITIAL_DEPOSIT_FEE = ethers.parseEther("0.001"); // 0.001 ETH for local testing
   const INITIAL_DEPOSIT_PERCENTAGE = 200n; // 2%
 
   // Use deployer as fee recipient and admin for local testing
