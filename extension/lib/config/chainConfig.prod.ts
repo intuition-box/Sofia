@@ -27,11 +27,12 @@ export const intuitionMainnet = defineChain({
 export const SELECTED_CHAIN = intuitionMainnet
 export const DEFAULT_CHAIN_ID = SELECTED_CHAIN.id.toString()
 export const MULTIVAULT_CONTRACT_ADDRESS = "0x6E35cF57A41fA15eA0EaE9C33e751b01A784Fe7e"
+export const SOFIA_PROXY_ADDRESS = "0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c"
 
 // Blockchain Configuration
 export const BLOCKCHAIN_CONFIG = {
   CONTRACT_ADDRESS: MULTIVAULT_CONTRACT_ADDRESS,
-  DEFAULT_GAS: 2000000n,
+  DEFAULT_GAS: 500000n, // Gas limit for proxy operations
   MAX_FEE_PER_GAS: 1000000000n, // 1 gwei
   MAX_PRIORITY_FEE_PER_GAS: 100000000n, // 0.1 gwei
   BATCH_SIZE: 20,
