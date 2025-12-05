@@ -105,15 +105,11 @@ export const SofiaFeeProxyAbi = [
 
   // ============ Fee Calculation Functions ============
   {
-    inputs: [{ internalType: "uint256", name: "depositAmount", type: "uint256" }],
+    inputs: [
+      { internalType: "uint256", name: "depositCount", type: "uint256" },
+      { internalType: "uint256", name: "totalDeposit", type: "uint256" }
+    ],
     name: "calculateDepositFee",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "count", type: "uint256" }],
-    name: "calculateCreationFee",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function"
@@ -127,7 +123,8 @@ export const SofiaFeeProxyAbi = [
   },
   {
     inputs: [
-      { internalType: "uint256", name: "count", type: "uint256" },
+      { internalType: "uint256", name: "depositCount", type: "uint256" },
+      { internalType: "uint256", name: "totalDeposit", type: "uint256" },
       { internalType: "uint256", name: "multiVaultCost", type: "uint256" }
     ],
     name: "getTotalCreationCost",

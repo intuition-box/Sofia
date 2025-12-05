@@ -94,11 +94,11 @@ export const useCreateAtom = () => {
       })
 
       const { walletClient } = await getClients()
-      
+
       // Get atom cost using service
       const atomCost = await BlockchainService.getAtomCost()
-      // Calculate total cost including Sofia fees
-      const totalCost = await BlockchainService.getTotalCreationCost(1, atomCost)
+      // Calculate total cost including Sofia fees (no deposit, so depositCount=0, totalDeposit=0)
+      const totalCost = await BlockchainService.getTotalCreationCost(0, 0n, atomCost)
       logger.debug('Atom cost retrieved', {
         atomCost: atomCost.toString(),
         totalCost: totalCost.toString()
@@ -300,8 +300,8 @@ export const useCreateAtom = () => {
       if (newAtoms.length > 0) {
         const { walletClient, publicClient } = await getClients()
         const atomCost = await BlockchainService.getAtomCost()
-        // Calculate total cost including Sofia fees (if proxy is enabled)
-        const totalCost = await BlockchainService.getTotalCreationCost(1, atomCost)
+        // Calculate total cost including Sofia fees (no deposit, so depositCount=0, totalDeposit=0)
+        const totalCost = await BlockchainService.getTotalCreationCost(0, 0n, atomCost)
         const contractAddress = BlockchainService.getContractAddress()
 
         // Process atoms one by one to handle MultiVault_AtomExists errors gracefully

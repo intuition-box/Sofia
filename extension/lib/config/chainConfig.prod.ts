@@ -27,7 +27,7 @@ export const intuitionMainnet = defineChain({
 export const SELECTED_CHAIN = intuitionMainnet
 export const DEFAULT_CHAIN_ID = SELECTED_CHAIN.id.toString()
 export const MULTIVAULT_CONTRACT_ADDRESS = "0x6E35cF57A41fA15eA0EaE9C33e751b01A784Fe7e"
-export const SOFIA_PROXY_ADDRESS = "0x880E213224Ce5B6B8a01A21D4318819c67146533"
+export const SOFIA_PROXY_ADDRESS = "0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c"
 
 // Blockchain Configuration
 export const BLOCKCHAIN_CONFIG = {

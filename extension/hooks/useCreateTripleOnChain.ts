@@ -216,13 +216,13 @@ export const useCreateTripleOnChain = () => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress = BlockchainService.getContractAddress()
 
-        const feeCost = await BlockchainService.getTripleCost()
+        const tripleCost = await BlockchainService.getTripleCost()
 
-        // Create triple with full amount (customWeight or minimum) + fee
+        // Create triple with deposit amount
         const depositAmount = customWeight !== undefined ? customWeight : MIN_TRIPLE_DEPOSIT
-        const creationCost = depositAmount + feeCost
-        // Total cost including Sofia fees
-        const totalCost = await BlockchainService.getTotalCreationCost(1, creationCost)
+        const multiVaultCost = tripleCost + depositAmount
+        // Total cost including Sofia fees (depositCount=1, totalDeposit=depositAmount)
+        const totalCost = await BlockchainService.getTotalCreationCost(1, depositAmount, multiVaultCost)
 
         const subjectId = userAtom.vaultId as Address
         const predicateId = predicateAtom.vaultId as Address
@@ -423,28 +423,26 @@ export const useCreateTripleOnChain = () => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress: Address = BlockchainService.getContractAddress() as Address
 
-        // Get fee cost from contract
-        const feeCost = await BlockchainService.getTripleCost()
+        // Get triple cost from MultiVault
+        const tripleCost = await BlockchainService.getTripleCost()
 
-        // Create all triples with full amount (customWeight or minimum) + fee
         const subjectIds = triplesToCreate.map(t => t.subjectId as Address)
         const predicateIds = triplesToCreate.map(t => t.predicateId as Address)
         const objectIds = triplesToCreate.map(t => t.objectId as Address)
-        // Each triple is created with (customWeight or MIN_TRIPLE_DEPOSIT) + feeCost
-        const tripleCosts = triplesToCreate.map(t => {
-          const depositAmount = t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
-          return depositAmount + feeCost
-        })
 
-        // multiVaultTotal = sum of amounts for MultiVault
-        const multiVaultTotal = tripleCosts.reduce((sum, cost) => sum + cost, 0n)
-        // totalValue = multiVaultTotal + Sofia fees
-        const totalValue = await BlockchainService.getTotalCreationCost(triplesToCreate.length, multiVaultTotal)
-
-        // Deposit amounts for each triple (without creation cost)
+        // Deposit amounts for each triple
         const depositAmounts = triplesToCreate.map(t => {
           return t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         })
+
+        // Count non-zero deposits
+        const depositCount = depositAmounts.filter(a => a > 0n).length
+        // Sum of all deposits
+        const totalDeposit = depositAmounts.reduce((sum, a) => sum + a, 0n)
+        // MultiVault cost = (tripleCost * count) + totalDeposit
+        const multiVaultCost = (tripleCost * BigInt(triplesToCreate.length)) + totalDeposit
+        // Total value including Sofia fees
+        const totalValue = await BlockchainService.getTotalCreationCost(depositCount, totalDeposit, multiVaultCost)
 
         try {
           // Simulate first to validate and get gas estimation

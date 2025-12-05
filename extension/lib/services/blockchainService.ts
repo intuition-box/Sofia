@@ -10,7 +10,7 @@ import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS } from '../config/chai
  * Eliminates code duplication across multiple hooks
  *
  * All write operations go through the Sofia Fee Proxy which:
- * - Collects fees (0.1 TRUST fixed + 2% for deposits)
+ * - Collects fees (0.1 TRUST fixed per deposit + 5% of deposit amount)
  * - Forwards transactions to the MultiVault
  * - Has the same function signatures as MultiVault
  */
@@ -19,33 +19,22 @@ export class BlockchainService {
   private static readonly PROXY_ADDRESS = SOFIA_PROXY_ADDRESS
 
   /**
-   * Calculate Sofia fee for creation operations (atoms/triples)
+   * Calculate Sofia fee for deposits
+   * @param depositCount Number of non-zero deposits
+   * @param totalDeposit Total amount being deposited
    */
-  static async calculateCreationFee(count: number = 1): Promise<bigint> {
-    const { publicClient } = await getClients()
-    return await publicClient.readContract({
-      address: this.PROXY_ADDRESS as `0x${string}`,
-      abi: SofiaFeeProxyAbi,
-      functionName: 'calculateCreationFee',
-      args: [BigInt(count)]
-    }) as bigint
-  }
-
-  /**
-   * Calculate Sofia fee for deposit operations
-   */
-  static async calculateDepositFee(depositAmount: bigint): Promise<bigint> {
+  static async calculateDepositFee(depositCount: number, totalDeposit: bigint): Promise<bigint> {
     const { publicClient } = await getClients()
     return await publicClient.readContract({
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
       functionName: 'calculateDepositFee',
-      args: [depositAmount]
+      args: [BigInt(depositCount), totalDeposit]
     }) as bigint
   }
 
   /**
-   * Get total cost for deposit including Sofia fees
+   * Get total cost for a single deposit including Sofia fees
    */
   static async getTotalDepositCost(depositAmount: bigint): Promise<bigint> {
     const { publicClient } = await getClients()
@@ -58,15 +47,18 @@ export class BlockchainService {
   }
 
   /**
-   * Get total cost for creation including Sofia fees
+   * Get total cost for createAtoms/createTriples including Sofia fees
+   * @param depositCount Number of non-zero deposits
+   * @param totalDeposit Sum of all deposit amounts
+   * @param multiVaultCost Total cost required by MultiVault (atomCost/tripleCost * count + totalDeposit)
    */
-  static async getTotalCreationCost(count: number, multiVaultCost: bigint): Promise<bigint> {
+  static async getTotalCreationCost(depositCount: number, totalDeposit: bigint, multiVaultCost: bigint): Promise<bigint> {
     const { publicClient } = await getClients()
     return await publicClient.readContract({
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
       functionName: 'getTotalCreationCost',
-      args: [BigInt(count), multiVaultCost]
+      args: [BigInt(depositCount), totalDeposit, multiVaultCost]
     }) as bigint
   }
 
