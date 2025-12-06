@@ -93,7 +93,25 @@ export const EXCLUDED_URL_PATTERNS = [
   'widget', 'chrome-extension://', 'sandbox', 'about:blank', 'CookieSync Page',
   // Services de mail
   'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
-  // Sensitive patterns (reference to sensitive patterns)
+  // Captcha and verification services
+  'hcaptcha.com', 'recaptcha.net', 'recaptcha.google.com',
+  'challenges.cloudflare.com', 'turnstile.cloudflare.com',
+  'captcha', 'challenge-platform', 'geo.captcha-delivery.com',
+  'arkoselabs.com', 'funcaptcha.com',
+  // Technical frames, CDNs and embeds
+  'iframe', 'embed', 'player',
+  'cdn.', 'static.', 'assets.', 'media.',
+  'fonts.googleapis.com', 'fonts.gstatic.com',
+  'googletagmanager.com', 'google-analytics.com', 'analytics.',
+  'doubleclick.net', 'googlesyndication.com', 'adsense',
+  'cloudflare.com/cdn-cgi', 'jsdelivr.net', 'unpkg.com',
+  'polyfill.io', 'sentry.io', 'hotjar.com', 'intercom.io',
+  'cookielaw.org', 'onetrust.com', 'trustarc.com',
+  // Unknown and empty content
+  'unknown', 'undefined', 'null', 'blank', 'empty',
+  'about:blank', 'about:srcdoc', 'data:', 'javascript:',
+  'chrome://', 'moz-extension://', 'edge://', 'brave://',
+  // Sensitive patterns
   ...SENSITIVE_URL_PATTERNS
 ];
 
