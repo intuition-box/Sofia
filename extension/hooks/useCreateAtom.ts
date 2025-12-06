@@ -19,6 +19,13 @@ const CREATION_CURVE_ID = 1n
 // Minimum deposit for atom creation (same as atom cost - no extra deposit)
 const MIN_ATOM_DEPOSIT = 0n
 
+// Type for pinned atom data (IPFS pinned but not yet on-chain)
+export interface PinnedAtomData {
+  atomData: AtomIPFSData
+  ipfsUri: string
+  encodedData: `0x${string}`
+}
+
 export const useCreateAtom = () => {
   const { mutateAsync: pinThing } = usePinThingMutation()
   const [address] = useStorage<string>("metamask-account")
@@ -48,6 +55,204 @@ export const useCreateAtom = () => {
 
       logger.info('Proxy approval confirmed')
     }
+  }
+
+  /**
+   * Pin atom data to IPFS without creating on-chain
+   * Use this to batch pin multiple atoms before creating them in a single tx
+   */
+  const pinAtomToIPFS = async (atomData: AtomIPFSData): Promise<PinnedAtomData> => {
+    if (!pinThing) {
+      throw new Error('IPFS pinning service not available. Please try again.')
+    }
+
+    const pinResult = await pinThing({
+      name: atomData.name,
+      description: atomData.description || "Contenu visité par l'utilisateur.",
+      image: atomData.image || "",
+      url: atomData.url
+    })
+
+    if (!pinResult.pinThing?.uri) {
+      throw new Error(`Failed to pin atom: ${atomData.name}`)
+    }
+
+    const ipfsUri = pinResult.pinThing.uri
+    const encodedData = stringToHex(ipfsUri)
+
+    logger.debug('Atom pinned to IPFS', { name: atomData.name, ipfsUri })
+
+    return {
+      atomData,
+      ipfsUri,
+      encodedData
+    }
+  }
+
+  /**
+   * Create multiple atoms from already-pinned data in a SINGLE transaction
+   * This is the optimized batch creation function
+   */
+  const createAtomsFromPinned = async (
+    pinnedAtoms: PinnedAtomData[]
+  ): Promise<{ [key: string]: AtomCreationResult }> => {
+    if (pinnedAtoms.length === 0) {
+      return {}
+    }
+
+    const results: { [key: string]: AtomCreationResult } = {}
+
+    // Check which atoms already exist on-chain
+    const atomChecks = await Promise.all(
+      pinnedAtoms.map(async (pinned) => {
+        const atomCheck = await BlockchainService.checkAtomExists(pinned.ipfsUri)
+        return {
+          ...pinned,
+          exists: atomCheck.exists,
+          atomHash: atomCheck.atomHash
+        }
+      })
+    )
+
+    // Separate existing and new atoms
+    const existingAtoms = atomChecks.filter(check => check.exists)
+    const newAtoms = atomChecks.filter(check => !check.exists)
+
+    // Add existing atoms to results immediately
+    for (const existingAtom of existingAtoms) {
+      results[existingAtom.atomData.name] = {
+        success: true,
+        vaultId: existingAtom.atomHash!,
+        atomHash: existingAtom.atomHash!,
+        txHash: 'existing'
+      }
+    }
+
+    // Create all new atoms in ONE transaction
+    if (newAtoms.length > 0) {
+      const { walletClient, publicClient } = await getClients()
+      const atomCost = await BlockchainService.getAtomCost()
+      const contractAddress = BlockchainService.getContractAddress()
+
+      // Prepare arrays for batch creation
+      const encodedDataArray = newAtoms.map(atom => atom.encodedData)
+      const depositsArray = newAtoms.map(() => MIN_ATOM_DEPOSIT)
+
+      // Total cost = atomCost * numberOfAtoms (no deposit fees since deposits are 0)
+      const multiVaultCost = atomCost * BigInt(newAtoms.length)
+      const totalCost = await BlockchainService.getTotalCreationCost(0, 0n, multiVaultCost)
+
+      logger.debug('Creating atoms in single batch transaction', {
+        count: newAtoms.length,
+        totalCost: totalCost.toString()
+      })
+
+      try {
+        // Simulate first
+        const simulation = await publicClient.simulateContract({
+          address: contractAddress,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'createAtoms',
+          args: [address as Address, encodedDataArray, depositsArray, CREATION_CURVE_ID],
+          value: totalCost,
+          account: walletClient.account
+        })
+
+        // Execute single transaction for all atoms
+        const txHash = await walletClient.writeContract({
+          address: contractAddress,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'createAtoms',
+          args: [address as Address, encodedDataArray, depositsArray, CREATION_CURVE_ID],
+          value: totalCost,
+          chain: SELECTED_CHAIN,
+          account: address as `0x${string}`
+        })
+
+        logger.debug('Batch atom creation tx sent', { txHash, count: newAtoms.length })
+
+        // Wait for confirmation
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+
+        if (receipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+        }
+
+        // Get vault IDs from simulation result
+        const vaultIds = simulation.result as `0x${string}`[]
+
+        // Map results back to atom names
+        for (let i = 0; i < newAtoms.length; i++) {
+          results[newAtoms[i].atomData.name] = {
+            success: true,
+            vaultId: vaultIds[i],
+            atomHash: vaultIds[i],
+            txHash
+          }
+        }
+
+        logger.debug('Batch atom creation completed in single tx', {
+          newCount: newAtoms.length,
+          existingCount: existingAtoms.length
+        })
+
+      } catch (error) {
+        // If batch fails due to some atoms existing, fall back to individual creation
+        const errorMessage = error instanceof Error ? error.message : ''
+        if (errorMessage.includes('MultiVault_AtomExists') || errorMessage.includes('AtomExists')) {
+          logger.debug('Some atoms already exist, falling back to individual creation')
+
+          // Create atoms one by one as fallback
+          for (const newAtom of newAtoms) {
+            try {
+              const singleSimulation = await publicClient.simulateContract({
+                address: contractAddress,
+                abi: SofiaFeeProxyAbi,
+                functionName: 'createAtoms',
+                args: [address as Address, [newAtom.encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
+                value: atomCost,
+                account: walletClient.account
+              })
+
+              const txHash = await walletClient.writeContract({
+                address: contractAddress,
+                abi: SofiaFeeProxyAbi,
+                functionName: 'createAtoms',
+                args: [address as Address, [newAtom.encodedData], [MIN_ATOM_DEPOSIT], CREATION_CURVE_ID],
+                value: atomCost,
+                chain: SELECTED_CHAIN,
+                account: address as `0x${string}`
+              })
+
+              const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+
+              if (receipt.status === 'success') {
+                const vaultIds = singleSimulation.result as `0x${string}`[]
+                results[newAtom.atomData.name] = {
+                  success: true,
+                  vaultId: vaultIds[0],
+                  atomHash: vaultIds[0],
+                  txHash
+                }
+              }
+            } catch (singleError) {
+              // Atom exists, get its ID
+              const atomId = await BlockchainService.calculateAtomId(newAtom.ipfsUri)
+              results[newAtom.atomData.name] = {
+                success: true,
+                vaultId: atomId,
+                atomHash: atomId,
+                txHash: 'existing'
+              }
+            }
+          }
+        } else {
+          throw error
+        }
+      }
+    }
+
+    return results
   }
 
   const createAtomDirect = async (atomData: AtomIPFSData): Promise<AtomCreationResult> => {
@@ -386,8 +591,12 @@ export const useCreateAtom = () => {
     }
   }
 
-  return { 
+  return {
     createAtomWithMultivault: createAtomDirect,
-    createAtomsBatch
+    createAtomsBatch,
+    // New optimized functions for batch operations
+    pinAtomToIPFS,
+    createAtomsFromPinned,
+    ensureProxyApproval
   }
 }

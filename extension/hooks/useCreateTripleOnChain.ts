@@ -21,42 +21,20 @@ const CREATION_CURVE_ID = 1n
 
 
 export const useCreateTripleOnChain = () => {
-  const { createAtomWithMultivault, createAtomsBatch } = useCreateAtom()
+  const {
+    pinAtomToIPFS,
+    createAtomsFromPinned,
+    ensureProxyApproval
+  } = useCreateAtom()
   const [address] = useStorage<string>("metamask-account")
   const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
-
-  // Ensure user has approved the proxy on MultiVault (required for receiver pattern)
-  const ensureProxyApproval = async (): Promise<void> => {
-    if (!address) {
-      throw new Error('No wallet connected')
-    }
-
-    const isApproved = await BlockchainService.checkProxyApproval(address)
-
-    if (!isApproved) {
-      logger.info('Proxy not approved, requesting approval from user')
-
-      // Request approval transaction
-      const txHash = await BlockchainService.requestProxyApproval()
-      logger.debug('Approval transaction sent', { txHash })
-
-      // Wait for confirmation
-      const success = await BlockchainService.waitForApprovalConfirmation(txHash)
-
-      if (!success) {
-        throw new Error('Proxy approval transaction failed')
-      }
-
-      logger.info('Proxy approval confirmed')
-    }
-  }
 
   // Utility function to get the universal "I" subject atom (shared between simple and batch)
   const getUserAtom = async () => {
     if (!address) {
       throw new Error('No wallet connected')
     }
-    
+
     // Return the pre-existing "I" subject atom instead of creating one for each wallet
     return {
       vaultId: SUBJECT_IDS.I,
@@ -66,27 +44,13 @@ export const useCreateTripleOnChain = () => {
     }
   }
 
-  // Utility function to get predicate atom (shared between simple and batch)
-  const getPredicateAtom = async (predicateName: string) => {
+  // Check if predicate has a pre-defined ID (no creation needed)
+  const getPredicateIdIfExists = (predicateName: string): string | null => {
     if (predicateName === 'follow') {
-      return {
-        vaultId: PREDICATE_IDS.FOLLOW,
-        ipfsUri: '',
-        name: predicateName
-      }
-    } else {
-      const predicateAtomResult = await createAtomWithMultivault({
-        name: predicateName,
-        description: `Predicate representing the relation "${predicateName}"`,
-        url: ''
-      })
-      
-      return {
-        vaultId: predicateAtomResult.vaultId,
-        ipfsUri: '',
-        name: predicateName
-      }
+      return PREDICATE_IDS.FOLLOW
     }
+    // Add other pre-defined predicates here if needed
+    return null
   }
 
   // Helper function to determine which wallet to use
@@ -134,14 +98,62 @@ export const useCreateTripleOnChain = () => {
       await ensureProxyApproval()
 
       const userAtomResult = await getUserAtom()
-      
       const userAtom = {
         vaultId: userAtomResult.vaultId,
         ipfsUri: '',
-        name: 'I'  // Always "I" instead of wallet address
+        name: 'I'
       }
-      const predicateAtom = await getPredicateAtom(predicateName)
-      const objectAtom = await createAtomWithMultivault(objectData)
+
+      // Check if predicate already has a pre-defined ID
+      const existingPredicateId = getPredicateIdIfExists(predicateName)
+
+      // OPTIMIZATION: Pin all atoms to IPFS in parallel, then create in single tx
+      const atomsToPinAndCreate: { name: string; description?: string; url: string; image?: string; type: 'predicate' | 'object' }[] = []
+
+      // Add predicate to pin list if not pre-defined
+      if (!existingPredicateId) {
+        atomsToPinAndCreate.push({
+          name: predicateName,
+          description: `Predicate representing the relation "${predicateName}"`,
+          url: '',
+          type: 'predicate'
+        })
+      }
+
+      // Always add object to pin list
+      atomsToPinAndCreate.push({
+        name: objectData.name,
+        description: objectData.description,
+        url: objectData.url,
+        image: objectData.image,
+        type: 'object'
+      })
+
+      // Pin all atoms to IPFS in parallel (no blockchain tx yet)
+      logger.debug('Pinning atoms to IPFS', { count: atomsToPinAndCreate.length })
+      const pinnedAtoms = await Promise.all(
+        atomsToPinAndCreate.map(atomData => pinAtomToIPFS(atomData))
+      )
+
+      // Create all new atoms in a SINGLE transaction
+      logger.debug('Creating atoms in single transaction', { count: pinnedAtoms.length })
+      const createdAtoms = await createAtomsFromPinned(pinnedAtoms)
+
+      // Get the vault IDs
+      let predicateVaultId: string
+      let objectVaultId: string
+
+      if (existingPredicateId) {
+        predicateVaultId = existingPredicateId
+        objectVaultId = createdAtoms[objectData.name].vaultId
+      } else {
+        predicateVaultId = createdAtoms[predicateName].vaultId
+        objectVaultId = createdAtoms[objectData.name].vaultId
+      }
+
+      const predicateAtom = { vaultId: predicateVaultId, name: predicateName }
+      const objectAtom = { vaultId: objectVaultId }
+
       const tripleCheck = await BlockchainService.checkTripleExists(
         userAtom.vaultId,
         predicateAtom.vaultId,
@@ -298,19 +310,16 @@ export const useCreateTripleOnChain = () => {
       await ensureProxyApproval()
 
       logger.debug('Starting batch triple creation', { count: inputs.length })
-      
+
       // User atom (always needed) - will use the universal "I" subject
       const userAtomKey = `user:I`
 
       // Collect unique predicates and objects
       const uniquePredicates = new Set<string>()
       const uniqueObjects = new Map<string, { name: string; description?: string; url: string; image?: string }>()
-      
+
       for (const input of inputs) {
-        // Collect unique predicates
         uniquePredicates.add(input.predicateName)
-        
-        // Object atoms
         uniqueObjects.set(input.objectData.name, {
           name: input.objectData.name,
           description: input.objectData.description,
@@ -324,35 +333,64 @@ export const useCreateTripleOnChain = () => {
       // Create user atom first using utility function
       const userAtomResult = await getUserAtom()
       atomResults.set(userAtomKey, userAtomResult.vaultId)
-      
-      // Create/get all unique predicates using the SAME unified logic as simple function
+
+      // OPTIMIZATION: Collect ALL atoms to create (predicates + objects) and create in SINGLE tx
+      const atomsToPinAndCreate: { name: string; description?: string; url: string; image?: string; key: string }[] = []
+
+      // Add predicates that need creation (not pre-defined)
       for (const predicateName of uniquePredicates) {
-        const predicateAtom = await getPredicateAtom(predicateName)
-        atomResults.set(`predicate:${predicateName}`, predicateAtom.vaultId)
+        const existingId = getPredicateIdIfExists(predicateName)
+        if (existingId) {
+          // Pre-defined predicate, add directly to results
+          atomResults.set(`predicate:${predicateName}`, existingId)
+        } else {
+          // Need to create this predicate
+          atomsToPinAndCreate.push({
+            name: predicateName,
+            description: `Predicate representing the relation "${predicateName}"`,
+            url: '',
+            key: `predicate:${predicateName}`
+          })
+        }
       }
-      
-      // Create all object atoms in a single batch transaction
-      if (uniqueObjects.size > 0) {
-        logger.debug('Creating object atoms in batch', { count: uniqueObjects.size })
-        
-        const atomsDataArray = Array.from(uniqueObjects.values()).map(objData => ({
+
+      // Add all objects to create
+      for (const [objectName, objData] of uniqueObjects.entries()) {
+        atomsToPinAndCreate.push({
           name: objData.name,
           description: objData.description || "Contenu visité par l'utilisateur.",
           url: objData.url,
-          image: objData.image
-        }))
-        
-        const batchResults = await createAtomsBatch(atomsDataArray)
-        
-        // Map batch results to atomResults
-        for (const [objectName, atomResult] of Object.entries(batchResults)) {
-          atomResults.set(`object:${objectName}`, atomResult.vaultId)
-        }
-        
-        logger.debug('Object atoms batch creation completed', { count: Object.keys(batchResults).length })
+          image: objData.image,
+          key: `object:${objectName}`
+        })
       }
 
-      // All atoms are now created/retrieved in batches above
+      // Pin all atoms to IPFS in parallel
+      if (atomsToPinAndCreate.length > 0) {
+        logger.debug('Pinning all atoms to IPFS in parallel', { count: atomsToPinAndCreate.length })
+
+        const pinnedAtoms = await Promise.all(
+          atomsToPinAndCreate.map(atomData => pinAtomToIPFS(atomData))
+        )
+
+        // Create ALL atoms in a SINGLE transaction
+        logger.debug('Creating all atoms in single transaction', { count: pinnedAtoms.length })
+        const createdAtoms = await createAtomsFromPinned(pinnedAtoms)
+
+        // Map results back to atomResults using the original keys
+        for (let i = 0; i < atomsToPinAndCreate.length; i++) {
+          const key = atomsToPinAndCreate[i].key
+          const name = atomsToPinAndCreate[i].name
+          atomResults.set(key, createdAtoms[name].vaultId)
+        }
+
+        logger.debug('All atoms created in single tx', {
+          predicatesCreated: atomsToPinAndCreate.filter(a => a.key.startsWith('predicate:')).length,
+          objectsCreated: atomsToPinAndCreate.filter(a => a.key.startsWith('object:')).length
+        })
+      }
+
+      // All atoms are now created/retrieved
 
       const results: TripleOnChainResult[] = []
       const triplesToCreate: {
@@ -523,15 +561,18 @@ export const useCreateTripleOnChain = () => {
                 ]
               }) as Address
 
-              // For deposit, use customWeight directly (no feeCost needed)
+              // For deposit, use customWeight or MIN_TRIPLE_DEPOSIT as fallback
               const depositAmount = triple.customWeight !== undefined
                 ? triple.customWeight
-                : feeCost
+                : MIN_TRIPLE_DEPOSIT
 
-              // Simulate deposit
+              // Calculate total cost including Sofia fees
+              const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
+
+              // Simulate deposit via Proxy
               await publicClient.simulateContract({
                 address: contractAddress,
-                abi: MultiVaultAbi,
+                abi: SofiaFeeProxyAbi,
                 functionName: 'deposit',
                 args: [
                   address as Address,
@@ -539,14 +580,14 @@ export const useCreateTripleOnChain = () => {
                   curveId,
                   0n
                 ],
-                value: depositAmount,
+                value: totalDepositCost,
                 account: walletClient.account
               })
 
-              // Execute deposit
+              // Execute deposit via Proxy
               const depositHash = await walletClient.writeContract({
                 address: contractAddress,
-                abi: MultiVaultAbi,
+                abi: SofiaFeeProxyAbi,
                 functionName: 'deposit',
                 args: [
                   address as Address,
@@ -554,7 +595,7 @@ export const useCreateTripleOnChain = () => {
                   curveId,
                   0n
                 ],
-                value: depositAmount,
+                value: totalDepositCost,
                 chain: SELECTED_CHAIN,
                 maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
                 maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
@@ -590,22 +631,24 @@ export const useCreateTripleOnChain = () => {
       if (triplesToDeposit.length > 0) {
         const { walletClient, publicClient } = await getClients()
         const contractAddress: Address = BlockchainService.getContractAddress() as Address
-        const feeCost = await BlockchainService.getTripleCost()
         const curveId = 2n // Curve ID for triple deposits
 
         logger.debug('Processing deposits on existing triples', { count: triplesToDeposit.length })
 
         // Process deposits one by one (deposit doesn't have a batch function)
         for (const tripleToDeposit of triplesToDeposit) {
-          // For deposit, use customWeight directly (no feeCost needed)
+          // For deposit, use customWeight or MIN_TRIPLE_DEPOSIT as fallback
           const depositAmount = tripleToDeposit.customWeight !== undefined
             ? tripleToDeposit.customWeight
-            : feeCost
+            : MIN_TRIPLE_DEPOSIT
 
-          // Simulate deposit first
+          // Calculate total cost including Sofia fees
+          const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
+
+          // Simulate deposit via Proxy
           await publicClient.simulateContract({
             address: contractAddress,
-            abi: MultiVaultAbi,
+            abi: SofiaFeeProxyAbi,
             functionName: 'deposit',
             args: [
               address as Address,                          // receiver
@@ -613,14 +656,14 @@ export const useCreateTripleOnChain = () => {
               curveId,                                     // curveId
               0n                                           // minShares
             ],
-            value: depositAmount,
+            value: totalDepositCost,
             account: walletClient.account
           })
 
-          // Execute deposit
+          // Execute deposit via Proxy
           const depositHash = await walletClient.writeContract({
             address: contractAddress,
-            abi: MultiVaultAbi,
+            abi: SofiaFeeProxyAbi,
             functionName: 'deposit',
             args: [
               address as Address,
@@ -628,7 +671,7 @@ export const useCreateTripleOnChain = () => {
               curveId,
               0n
             ],
-            value: depositAmount,
+            value: totalDepositCost,
             chain: SELECTED_CHAIN,
             maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
             maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
