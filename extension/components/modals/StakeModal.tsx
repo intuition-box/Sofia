@@ -5,6 +5,8 @@ import '../styles/Modal.css'
 
 interface StakeModalProps {
   isOpen: boolean
+  subjectName: string
+  predicateName: string
   objectName: string
   tripleId: string
   currentLinear: number           // Position en TRUST sur Curve 1
@@ -18,6 +20,8 @@ interface StakeModalProps {
 
 const StakeModal = ({
   isOpen,
+  subjectName,
+  predicateName,
   objectName,
   tripleId,
   currentLinear,
@@ -38,18 +42,17 @@ const StakeModal = ({
     }
   }, [isOpen, defaultCurve])
 
-  // Reset amount when switching curves
-  const handleCurveChange = (curve: 1 | 2) => {
-    setSelectedCurve(curve)
-    setAmount('')
-  }
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     // Allow only numbers and decimal point
     if (/^\d*\.?\d*$/.test(value)) {
       setAmount(value)
     }
+  }
+
+  const handleToggleCurve = () => {
+    setSelectedCurve(prev => prev === 1 ? 2 : 1)
+    setAmount('') // Reset amount when switching
   }
 
   const handleSubmit = async () => {
@@ -61,6 +64,12 @@ const StakeModal = ({
     }
   }
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
   if (!isOpen) return null
 
   const numAmount = parseFloat(amount) || 0
@@ -69,32 +78,18 @@ const StakeModal = ({
   // Get current position based on selected curve
   const currentPosition = selectedCurve === 1 ? currentLinear : currentOffsetProgressive
 
-  // Get description based on selected curve
-  const description = selectedCurve === 1
-    ? "Linear is the lowest-risk way to attest. The share price is never going down"
-    : "Buy signal share and earn fees. Share price can fluctuate"
-
-  // Format market cap for display (only for Curve 2)
-  const formatMarketCap = (cap: string): string => {
-    try {
-      const value = Number(BigInt(cap)) / 1e18
-      if (value >= 1000000) {
-        return `${(value / 1000000).toFixed(2)}M`
-      } else if (value >= 1000) {
-        return `${(value / 1000).toFixed(2)}K`
-      }
-      return value.toFixed(4)
-    } catch {
-      return '0'
-    }
-  }
+  // Get curve label
+  const curveLabel = selectedCurve === 1 ? 'Linear' : 'Offset Progressive'
 
   return createPortal(
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="modal-overlay" onClick={handleBackdropClick}>
+      <div className="modal-content stake-modal-content">
         <div className="modal-header">
-          <div className="modal-title">
-            <span>Stake</span>
+          <div className="modal-title-row">
+            <span className="modal-title">Stake</span>
+            <span className={`stake-curve-badge ${selectedCurve === 1 ? 'linear' : 'offset'}`}>
+              {curveLabel}
+            </span>
           </div>
           <button
             className="modal-close"
@@ -106,71 +101,85 @@ const StakeModal = ({
         </div>
 
         <div className="modal-body">
-          {/* Curve Toggle */}
-          <div className="curve-toggle">
-            <button
-              className={`curve-toggle-option ${selectedCurve === 1 ? 'selected' : ''}`}
-              onClick={() => handleCurveChange(1)}
-              disabled={isProcessing}
-            >
-              Linear
-            </button>
-            <button
-              className={`curve-toggle-option ${selectedCurve === 2 ? 'selected' : ''}`}
-              onClick={() => handleCurveChange(2)}
-              disabled={isProcessing}
-            >
-              Offset Progressive
-            </button>
-          </div>
-
-          {/* Current Position */}
-          {currentPosition > 0 && (
-            <p className="modal-description">
-              {currentPosition.toFixed(4)} shares
-            </p>
-          )}
-
-          {/* Description */}
           <p className="modal-description">
-            {description}
+            Staking on a Triple enhances its discoverability in the Intuition system.
           </p>
 
-          {/* Amount Input */}
-          <div className="modal-amount-section">
-            <label className="modal-amount-label">Amount to stake</label>
-            <div className="modal-amount-input-container">
+          {/* Triple Display */}
+          <div
+            className="stake-triple-box clickable"
+            onClick={() => window.open(`https://portal.intuition.systems/explore/triple/${tripleId}?tab=positions`, '_blank')}
+            title="View on Intuition Portal"
+          >
+            <div className="stake-triple-icon">⭕</div>
+            <span className="stake-triple-name">
+              <span className="stake-triple-subject">{subjectName}</span>
+              {' '}
+              <span className="stake-triple-predicate">{predicateName}</span>
+              {' '}
+              <span className="stake-triple-object">{objectName}</span>
+            </span>
+          </div>
+
+          {/* Your Active Position */}
+          <div className="stake-position-section">
+            <div className="stake-position-header">Your Active Position</div>
+            <div className="stake-position-display">
+              <span className={`stake-curve-badge-small ${selectedCurve === 1 ? 'linear' : 'offset'}`}>
+                {curveLabel}
+              </span>
+              <span className="stake-position-value">{currentPosition.toFixed(4)} shares</span>
+            </div>
+          </div>
+
+          {/* Curve Toggle */}
+          <div className="stake-toggle-section">
+            <span className="stake-toggle-label">{curveLabel}</span>
+            <label className="stake-toggle-switch">
               <input
-                type="text"
-                className="modal-amount-input"
-                value={amount}
-                onChange={handleInputChange}
-                placeholder="0.00"
+                type="checkbox"
+                checked={selectedCurve === 2}
+                onChange={handleToggleCurve}
                 disabled={isProcessing}
               />
-              <span className="modal-amount-suffix">TRUST</span>
-            </div>
+              <span className="stake-toggle-slider"></span>
+            </label>
+          </div>
+
+          {/* Amount Input */}
+          <div className="modal-section">
+            <div className="modal-custom-label">TRUST</div>
+            <input
+              type="text"
+              value={amount}
+              onChange={handleInputChange}
+              className="modal-custom-input"
+              placeholder="Enter an Amount"
+              disabled={isProcessing}
+            />
           </div>
 
           {/* Submit Button */}
-          <button
-            className="modal-btn primary"
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-          >
-            <div className="modal-btn-background">
-              <Iridescence
-                color={[0.4, 0.3, 0.8]}
-                speed={0.3}
-                mouseReact={false}
-                amplitude={0.1}
-                zoom={0.05}
-              />
-            </div>
-            <div className="modal-btn-content">
-              {isProcessing ? 'Processing...' : `Stake ${numAmount > 0 ? numAmount.toFixed(2) : '0'} TRUST`}
-            </div>
-          </button>
+          <div className="modal-actions">
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className="modal-btn primary"
+            >
+              <div className="modal-btn-background">
+                <Iridescence
+                  color={[1, 0.4, 0.5]}
+                  speed={0.3}
+                  mouseReact={false}
+                  amplitude={0.1}
+                  zoom={0.05}
+                />
+              </div>
+              <div className="modal-btn-content">
+                {isProcessing ? 'Processing...' : `Stake ${numAmount > 0 ? numAmount.toFixed(2) : '0'} TRUST`}
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     </div>,

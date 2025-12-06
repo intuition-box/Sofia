@@ -551,15 +551,9 @@
   gap: 4px;
   min-width: 60px;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  cursor: default;
   white-space: nowrap;
   font-family: 'Montserrat', sans-serif;
-}
-
-.upvote-badge-relative:hover {
-  background: rgba(76, 175, 80, 0.2);
-  transform: scale(1.05);
 }
 
 /* ========== SHARES BADGES (Curve 2) ========== */
@@ -602,16 +596,9 @@
   gap: 4px;
   min-width: 60px;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   white-space: nowrap;
   font-family: 'Montserrat', sans-serif;
-  transition: all 0.2s ease;
-}
-
-.shares-badge-relative:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
-  border-color: rgba(102, 126, 234, 0.6);
-  transform: scale(1.05);
 }
 
 /* ========== STAKE BUTTON ========== */

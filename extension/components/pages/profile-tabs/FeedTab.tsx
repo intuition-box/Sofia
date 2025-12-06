@@ -4,7 +4,7 @@ import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
 import { getAddress } from 'viem'
 import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
-import UpvoteModal from '../../modals/UpvoteModal'
+import StakeModal from '../../modals/StakeModal'
 import Avatar from '../../ui/Avatar'
 import '../../styles/CoreComponents.css'
 import '../../styles/PageBlockchainCard.css'
@@ -656,13 +656,23 @@ const FeedTab = () => {
         </div>
       )}
 
-      <UpvoteModal
+      <StakeModal
         isOpen={isUpvoteModalOpen}
         onClose={handleCloseModal}
-        onSubmit={handleSubmit}
+        onSubmit={async (amount: bigint, curveId: 1 | 2) => {
+          // Convert bigint Wei to number TRUST then to upvotes
+          const trustAmount = Number(amount) / 1e18
+          const newUpvotes = Math.round(trustAmount * 1000)
+          await handleSubmit(newUpvotes)
+        }}
+        subjectName="Feed"
+        predicateName={selectedEvent?.type === 'AtomCreated' ? 'created' : 'supports'}
         objectName={selectedEvent ? selectedEvent.details : ''}
-        objectType={selectedEvent?.type === 'AtomCreated' ? 'Identity' : 'Claim'}
-        currentUpvotes={0}
+        tripleId={selectedEvent?.termId || ''}
+        currentLinear={0}
+        currentOffsetProgressive={0}
+        totalMarketCap="0"
+        defaultCurve={1}
         isProcessing={isProcessing}
       />
     </div>

@@ -9,7 +9,7 @@ import searchIcon from '../../ui/icons/Icon=Search.svg'
 import { useGetAtomAccount, AccountAtom } from '../../../hooks/useGetAtomAccount'
 import FollowButton from '../../ui/FollowButton'
 import TrustAccountButton from '../../ui/TrustAccountButton'
-import UpvoteModal from '../../modals/UpvoteModal'
+import StakeModal from '../../modals/StakeModal'
 import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import Avatar from '../../ui/Avatar'
 import AccountStats from '../../ui/AccountStats'
@@ -826,15 +826,25 @@ const FollowTab = () => {
         </div>
       )}
 
-      {/* Upvote Modal for Trust Circle */}
+      {/* Stake Modal for Trust Circle */}
       {selectedAccount && (
-        <UpvoteModal
+        <StakeModal
           isOpen={isUpvoteModalOpen}
+          subjectName="I"
+          predicateName="trust"
           objectName={selectedAccount.label}
-          objectType="Account"
-          currentUpvotes={Math.round(selectedAccount.trustAmount * 1000)}
+          tripleId={selectedAccount.tripleId}
+          currentLinear={selectedAccount.trustAmount}
+          currentOffsetProgressive={0}
+          totalMarketCap="0"
+          defaultCurve={1}
           onClose={handleCloseUpvoteModal}
-          onSubmit={handleUpvoteSubmit}
+          onSubmit={async (amount: bigint, curveId: 1 | 2) => {
+            // Convert bigint Wei to number TRUST
+            const trustAmount = Number(amount) / 1e18
+            const newUpvotes = Math.round(trustAmount * 1000)
+            await handleUpvoteSubmit(newUpvotes)
+          }}
           isProcessing={isProcessingUpvote}
         />
       )}

@@ -902,3 +902,243 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
+
+/* ========== STAKE MODAL SPECIFIC STYLES ========== */
+
+/* Title row with badge */
+.modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Curve badges */
+.stake-curve-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stake-curve-badge.linear {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stake-curve-badge.offset {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Triple display box */
+.stake-triple-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin: 12px 0;
+  transition: all 0.2s ease;
+}
+
+.stake-triple-box.clickable {
+  cursor: pointer;
+}
+
+.stake-triple-box.clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.stake-triple-icon {
+  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.stake-triple-box.clickable:hover .stake-triple-icon {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stake-triple-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.stake-triple-subject {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.stake-triple-predicate {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.stake-triple-object {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
+/* Position section */
+.stake-position-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 12px 0;
+}
+
+.stake-position-header {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
+}
+
+.stake-position-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stake-curve-badge-small {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stake-curve-badge-small.linear {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stake-curve-badge-small.offset {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stake-position-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Toggle switch */
+.stake-toggle-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin: 12px 0;
+}
+
+.stake-toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.stake-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.stake-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.stake-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: 0.4s;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stake-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.stake-toggle-switch input:checked + .stake-toggle-slider {
+  background-color: rgba(102, 126, 234, 0.3);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.stake-toggle-switch input:checked + .stake-toggle-slider:before {
+  transform: translateX(24px);
+}
+
+.stake-toggle-switch input:disabled + .stake-toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Stake Modal Input - Larger text */
+.stake-modal-content .modal-custom-input {
+  font-size: 24px;
+  font-weight: 600;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.stake-modal-content .modal-custom-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.stake-modal-content .modal-section {
+  margin: 12px 0;
+}
+
+.stake-modal-content .modal-custom-label {
+  margin-bottom: 8px;
+}
+
+.stake-modal-content .modal-description {
+  margin: 10px 0;
+  font-size: 13px;
+}

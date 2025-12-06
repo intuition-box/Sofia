@@ -70,13 +70,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     // Apply sorting
     switch (sortBy) {
       case 'highest-shares':
-        return filtered.sort((a, b) => (b.position?.shares || 0) - (a.position?.shares || 0))
+        return filtered.sort((a, b) => (b.position?.offsetProgressive || 0) - (a.position?.offsetProgressive || 0))
       case 'lowest-shares':
-        return filtered.sort((a, b) => (a.position?.shares || 0) - (b.position?.shares || 0))
+        return filtered.sort((a, b) => (a.position?.offsetProgressive || 0) - (b.position?.offsetProgressive || 0))
       case 'highest-support':
-        return filtered.sort((a, b) => (b.position?.upvotes || 0) - (a.position?.upvotes || 0))
+        return filtered.sort((a, b) => (b.position?.linear || 0) - (a.position?.linear || 0))
       case 'lowest-support':
-        return filtered.sort((a, b) => (a.position?.upvotes || 0) - (b.position?.upvotes || 0))
+        return filtered.sort((a, b) => (a.position?.linear || 0) - (b.position?.linear || 0))
       case 'newest':
         return filtered.sort((a, b) => b.timestamp - a.timestamp)
       case 'oldest':
@@ -310,7 +310,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       className="upvote-badge upvote-badge-relative"
                       title="Linear (Curve 1 - Support)"
                     >
-                      👍 {(tripletItem.position?.linear || 0).toFixed(4)}
+                      {(tripletItem.position?.linear || 0).toFixed(4)}
                     </div>
                     {/* Curve 2 - Offset Progressive (Shares) */}
                     <div
@@ -409,6 +409,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       {selectedStakeTriplet && (
         <StakeModal
           isOpen={isStakeModalOpen}
+          subjectName={selectedStakeTriplet.triplet.subject}
+          predicateName={selectedStakeTriplet.triplet.predicate}
           objectName={selectedStakeTriplet.triplet.object}
           tripleId={selectedStakeTriplet.id}
           currentLinear={selectedStakeTriplet.position?.linear || 0}
