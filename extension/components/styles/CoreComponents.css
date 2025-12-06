@@ -614,6 +614,27 @@
   transform: scale(1.05);
 }
 
+/* ========== STAKE BUTTON ========== */
+
+.stake-button {
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+  margin-left: 6px;
+}
+
+.stake-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
 .portal-fallback-link {
   color: #888;
   font-style: italic;

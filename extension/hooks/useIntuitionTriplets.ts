@@ -12,20 +12,18 @@ import { getAddress } from 'viem'
 
 
 
-// Convert shares from Wei to upvote count (1 upvote = 0.001 TRUST = 10^15 Wei)
-const formatSharesAsUpvotes = (shares: string): number => {
+// Convert shares from Wei to TRUST for Curve 1 (Linear - Support)
+const formatSharesAsLinear = (shares: string): number => {
   try {
     const sharesBigInt = BigInt(shares)
-    const trustValue = Number(sharesBigInt) / 1e18
-    const upvoteCount = Math.floor(trustValue / 0.001)
-    return upvoteCount
+    return Number(sharesBigInt) / 1e18
   } catch {
     return 0
   }
 }
 
-// Convert shares from Wei to TRUST value for Curve 2 (Deposit/Share)
-const formatSharesAsDeposit = (shares: string): number => {
+// Convert shares from Wei to TRUST for Curve 2 (Offset Progressive - Shares)
+const formatSharesAsOffsetProgressive = (shares: string): number => {
   try {
     const sharesBigInt = BigInt(shares)
     return Number(sharesBigInt) / 1e18
@@ -58,8 +56,8 @@ export interface IntuitionTriplet {
   tripleStatus?: 'on-chain' | 'pending' | 'atom-only'
   // Position data
   position?: {
-    upvotes: number      // Curve 1 - Upvote shares
-    shares: number       // Curve 2 - Deposit/Share shares
+    linear: number              // Curve 1 - Linear shares (in TRUST)
+    offsetProgressive: number   // Curve 2 - Offset Progressive shares (in TRUST)
     created_at: string
   }
   // Total market cap for Curve 2
@@ -222,8 +220,8 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
       const created_at = curve1Vault?.positions?.[0]?.created_at || curve2Vault?.positions?.[0]?.created_at || ''
 
       const position = (curve1Shares || curve2Shares) ? {
-        upvotes: curve1Shares ? formatSharesAsUpvotes(curve1Shares) : 0,
-        shares: curve2Shares ? formatSharesAsDeposit(curve2Shares) : 0,
+        linear: curve1Shares ? formatSharesAsLinear(curve1Shares) : 0,
+        offsetProgressive: curve2Shares ? formatSharesAsOffsetProgressive(curve2Shares) : 0,
         created_at
       } : undefined
 

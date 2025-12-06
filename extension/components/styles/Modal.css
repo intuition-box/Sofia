@@ -866,3 +866,39 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Curve Toggle - For StakeModal */
+.curve-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.curve-toggle-option {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.curve-toggle-option:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.curve-toggle-option.selected {
+  background: rgba(100, 150, 255, 0.2);
+  border-color: rgba(100, 150, 255, 0.5);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.curve-toggle-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

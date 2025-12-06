@@ -197,8 +197,8 @@ export const useWeightOnChain = () => {
         totalCost: totalCost.toString()
       })
 
-      // Use curve ID 1 (linear/upvote curve - always initialized)
-      const curveId = 1n
+      // Use curve ID 2 (Offset Progressive - Shares/Deposit)
+      const curveId = 2n
 
       const hash = await walletClient.writeContract({
         address: contractAddress,
