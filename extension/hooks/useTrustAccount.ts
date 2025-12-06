@@ -1,14 +1,18 @@
 import { useState, useCallback, useRef } from 'react'
 import { getClients } from '../lib/clients/viemClients'
-import { MultiVaultAbi } from '../ABI/MultiVault'
+import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useStorage } from "@plasmohq/storage/hook"
+import { useCreateAtom } from './useCreateAtom'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import type { Address } from '../types/viem'
 
 const logger = createHookLogger('useTrustAccount')
+
+// Curve ID for creation deposits (1 = linear/upvote, 2 = progressive/shares)
+const CREATION_CURVE_ID = 1n
 
 // Minimum deposit for triple creation (0.01 TRUST in wei)
 const MIN_TRIPLE_DEPOSIT = 10000000000000000n // 10^16 wei = 0.01 ether
@@ -23,6 +27,7 @@ export interface TrustAccountResult {
 }
 
 export const useTrustAccount = (): TrustAccountResult => {
+  const { ensureProxyApproval } = useCreateAtom()
   const [address] = useStorage<string>("metamask-account")
 
   // Use refs to preserve state during re-renders from parent
@@ -64,6 +69,9 @@ export const useTrustAccount = (): TrustAccountResult => {
         throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
       }
 
+      // Ensure proxy is approved before any creation (one-time approval)
+      await ensureProxyApproval()
+
       logger.info('Creating trust triplet for account', { accountVaultId, accountLabel, customWeight: customWeight?.toString() })
 
       // Update refs and state
@@ -97,16 +105,15 @@ export const useTrustAccount = (): TrustAccountResult => {
         const { walletClient, publicClient } = await getClients()
         const contractAddress = BlockchainService.getContractAddress()
 
-        // Calculate deposit amount including fees
-        // User wants to deposit customWeight (after fees), so we need to calculate how much to send
+        // Calculate deposit amount
         let depositAmount: bigint
         if (customWeight !== undefined) {
-          depositAmount = await BlockchainService.calculateAmountWithFees(customWeight)
+          depositAmount = customWeight
         } else {
           const feeCost = await BlockchainService.getTripleCost()
           depositAmount = feeCost
         }
-        const curveId = 2n // Curve ID for triple deposits
+        const curveId = 1n // Curve ID for triple deposits (linear/upvote)
 
         logger.debug('Triple exists, performing deposit instead', {
           tripleVaultId: tripleCheck.tripleVaultId,
@@ -116,10 +123,13 @@ export const useTrustAccount = (): TrustAccountResult => {
           depositAmountInTRUST: Number(depositAmount) / 1e18
         })
 
+        // Calculate total cost including Sofia fees
+        const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
+
         // Simulate deposit first
         await publicClient.simulateContract({
           address: contractAddress as Address,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi,
           functionName: 'deposit',
           args: [
             address as Address,                    // receiver
@@ -127,14 +137,14 @@ export const useTrustAccount = (): TrustAccountResult => {
             curveId,                               // curveId
             0n                                     // minShares
           ],
-          value: depositAmount,
+          value: totalDepositCost,
           account: walletClient.account
         })
 
         // Execute deposit
         const hash = await walletClient.writeContract({
           address: contractAddress as Address,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi,
           functionName: 'deposit',
           args: [
             address as Address,
@@ -142,7 +152,7 @@ export const useTrustAccount = (): TrustAccountResult => {
             curveId,
             0n
           ],
-          value: depositAmount,
+          value: totalDepositCost,
           chain: SELECTED_CHAIN,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
           maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
@@ -176,18 +186,26 @@ export const useTrustAccount = (): TrustAccountResult => {
       const { walletClient, publicClient } = await getClients()
       const contractAddress = BlockchainService.getContractAddress()
 
-      const feeCost = await BlockchainService.getTripleCost()
+      const tripleCost = await BlockchainService.getTripleCost()
 
-      // Step 1: Create triple with minimum deposit + fee
-      const creationCost = MIN_TRIPLE_DEPOSIT + feeCost
+      // EXACT pattern from useCreateTripleOnChain.ts (lines 234-266):
+      // depositAmount = what user wants to deposit (without tripleCost)
+      // multiVaultCost = tripleCost + depositAmount
+      // totalCost = getTotalCreationCost(1, depositAmount, multiVaultCost)
+      // args assets = [depositAmount] (WITHOUT tripleCost)
+      const depositAmount = customWeight !== undefined && customWeight > 0n ? customWeight : MIN_TRIPLE_DEPOSIT
+      const multiVaultCost = tripleCost + depositAmount
+      const totalCost = await BlockchainService.getTotalCreationCost(1, depositAmount, multiVaultCost)
 
       logger.debug('Triple creation cost', {
-        creationCost: creationCost.toString(),
-        creationCostInTRUST: Number(creationCost) / 1e18,
-        feeCost: feeCost.toString(),
-        feeCostInTRUST: Number(feeCost) / 1e18,
-        minDeposit: MIN_TRIPLE_DEPOSIT.toString(),
-        minDepositInTRUST: Number(MIN_TRIPLE_DEPOSIT) / 1e18,
+        tripleCost: tripleCost.toString(),
+        tripleCostInTRUST: Number(tripleCost) / 1e18,
+        depositAmount: depositAmount.toString(),
+        depositAmountInTRUST: Number(depositAmount) / 1e18,
+        multiVaultCost: multiVaultCost.toString(),
+        multiVaultCostInTRUST: Number(multiVaultCost) / 1e18,
+        totalCost: totalCost.toString(),
+        totalCostInTRUST: Number(totalCost) / 1e18,
         customWeight: customWeight?.toString(),
         customWeightInTRUST: customWeight ? Number(customWeight) / 1e18 : 'none'
       })
@@ -196,95 +214,47 @@ export const useTrustAccount = (): TrustAccountResult => {
       const predicateId = trustPredicate.vaultId as Address
       const objectId = accountVaultId as Address
 
-      // Simulate first to validate
-      logger.debug('Simulating transaction')
-      const simulation = await publicClient.simulateContract({
-        address: contractAddress as Address,
-        abi: MultiVaultAbi,
+      const txParams = {
+        address: contractAddress,
+        abi: SofiaFeeProxyAbi as unknown as any[],
         functionName: 'createTriples',
         args: [
+          address,          // receiver - user gets the shares
           [subjectId],
           [predicateId],
           [objectId],
-          [creationCost]
+          [depositAmount],  // assets WITHOUT tripleCost - EXACT pattern from useCreateTripleOnChain
+          CREATION_CURVE_ID  // curveId
         ],
-        value: creationCost,
-        account: walletClient.account
-      })
-
-      const expectedTripleIds = simulation.result as Address[]
-      const expectedTripleVaultId = expectedTripleIds[0]
-      logger.debug('Simulation successful', { expectedTripleVaultId })
-
-      logger.debug('Sending transaction to MetaMask')
-      const hash = await walletClient.writeContract({
-        address: contractAddress as Address,
-        abi: MultiVaultAbi,
-        functionName: 'createTriples',
-        args: [
-          [subjectId],
-          [predicateId],
-          [objectId],
-          [creationCost]
-        ],
-        value: creationCost,
+        value: totalCost,   // Total including Sofia fees
         chain: SELECTED_CHAIN,
         gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
         maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
         maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
         account: address as Address
-      })
+      }
 
-      logger.debug('Transaction sent', { hash })
+      logger.debug('Sending transaction to MetaMask')
+      const hash = await walletClient.writeContract(txParams)
 
-      // Wait for confirmation
-      logger.debug('Waiting for transaction confirmation')
       const receipt = await publicClient.waitForTransactionReceipt({ hash: hash as Address })
 
       if (receipt.status !== 'success') {
         throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
       }
 
-      // Step 2: If customWeight > minDeposit, deposit the rest on Curve 2
-      if (customWeight !== undefined && customWeight > MIN_TRIPLE_DEPOSIT) {
-        const additionalDesiredDeposit = customWeight - MIN_TRIPLE_DEPOSIT
-        // Calculate amount to send including fees
-        const additionalDeposit = await BlockchainService.calculateAmountWithFees(additionalDesiredDeposit)
-        const curveId = 2n
+      // Simulate to get the result after successful transaction
+      const simulation = await publicClient.simulateContract({
+        address: contractAddress as Address,
+        abi: SofiaFeeProxyAbi,
+        functionName: 'createTriples',
+        args: [address as Address, [subjectId], [predicateId], [objectId], [depositAmount], CREATION_CURVE_ID],
+        value: totalCost,
+        account: walletClient.account
+      })
 
-        logger.debug('Depositing additional amount on Curve 2', {
-          tripleVaultId: expectedTripleVaultId,
-          desiredAdditionalDeposit: additionalDesiredDeposit.toString(),
-          desiredAdditionalDepositInTRUST: Number(additionalDesiredDeposit) / 1e18,
-          additionalDeposit: additionalDeposit.toString(),
-          additionalDepositInTRUST: Number(additionalDeposit) / 1e18
-        })
-
-        const depositHash = await walletClient.writeContract({
-          address: contractAddress as Address,
-          abi: MultiVaultAbi,
-          functionName: 'deposit',
-          args: [
-            address as Address,              // receiver
-            expectedTripleVaultId as Address, // termId
-            curveId,                         // curveId = 2 (Deposit/Share curve)
-            0n                               // minShares
-          ],
-          value: additionalDeposit,
-          chain: SELECTED_CHAIN,
-          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-          account: address as Address
-        })
-
-        const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
-
-        if (depositReceipt.status !== 'success') {
-          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: Deposit failed - ${depositReceipt.status}`)
-        }
-
-        logger.debug('Additional deposit on Curve 2 successful', { depositHash })
-      }
+      const tripleIds = simulation.result as Address[]
+      const expectedTripleVaultId = tripleIds[0]
 
       logger.info('✅ Trust triplet created successfully', {
         tripleVaultId: expectedTripleVaultId,
@@ -323,7 +293,7 @@ export const useTrustAccount = (): TrustAccountResult => {
         setError(errorMessage)
       }
     }
-  }, [address, getUserAtom, getTrustPredicateAtom])
+  }, [address, getUserAtom, getTrustPredicateAtom, ensureProxyApproval])
 
   return {
     trustAccount,

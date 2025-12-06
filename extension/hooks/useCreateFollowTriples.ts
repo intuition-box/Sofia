@@ -1,6 +1,6 @@
 import { useStorage } from "@plasmohq/storage/hook"
 import { getClients } from '../lib/clients/viemClients'
-import { MultiVaultAbi } from '../ABI/MultiVault'
+import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
@@ -62,11 +62,14 @@ export const useCreateFollowTriples = () => {
         // Triple exists - use deposit() which allows any amount >= 0.01
         console.log('[Follow] Triple exists, using deposit() with amount:', depositAmount.toString())
 
-        const curveId = 1 // Default curve ID for triples
+        const curveId = 1n // Default curve ID for triples
+
+        // Calculate total cost including Sofia fees
+        const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
 
         hash = await walletClient.writeContract({
           address: contractAddress as Address,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi,
           functionName: 'deposit',
           args: [
             address as Address, // receiver
@@ -74,7 +77,7 @@ export const useCreateFollowTriples = () => {
             curveId, // curveId
             0n // minShares (0 for no slippage protection)
           ],
-          value: depositAmount, // Amount sent in value, not args!
+          value: totalDepositCost, // Amount sent in value including Sofia fees
           chain: SELECTED_CHAIN,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
           maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
@@ -101,27 +104,43 @@ export const useCreateFollowTriples = () => {
           totalCostInTRUST: Number(createAmount) / 1e18
         })
 
+        // Calculate total creation cost including Sofia fees
+        // depositCount = 1 (one triple with userShareAmount deposit)
+        // totalDeposit = userShareAmount (the actual deposit, not including creation fees)
+        // multiVaultCost = createAmount (defaultCost + userShareAmount = what MultiVault needs)
+        const totalCreationCost = await BlockchainService.getTotalCreationCost(1, userShareAmount, createAmount)
+        const curveId = 1n // Default curve for triple creation
+
         // Simulate first
         const simulation = await publicClient.simulateContract({
           address: contractAddress as Address,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
-          args: [[userTermId as Address], [predicateTermId as Address], [targetTermId as Address], [createAmount]],
-          value: createAmount,
+          args: [
+            address as Address,           // receiver
+            [userTermId as Address],      // subjectIds
+            [predicateTermId as Address], // predicateIds
+            [targetTermId as Address],    // objectIds
+            [createAmount],               // assets
+            curveId                       // curveId
+          ],
+          value: totalCreationCost,
           account: address as Address
         })
 
         hash = await walletClient.writeContract({
           address: contractAddress as Address,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
           args: [
-            [userTermId as Address],
-            [predicateTermId as Address],
-            [targetTermId as Address],
-            [createAmount]
+            address as Address,           // receiver
+            [userTermId as Address],      // subjectIds
+            [predicateTermId as Address], // predicateIds
+            [targetTermId as Address],    // objectIds
+            [createAmount],               // assets
+            curveId                       // curveId
           ],
-          value: createAmount,
+          value: totalCreationCost,
           chain: SELECTED_CHAIN,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
           maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,

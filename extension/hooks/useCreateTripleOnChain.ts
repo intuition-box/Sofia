@@ -49,7 +49,9 @@ export const useCreateTripleOnChain = () => {
     if (predicateName === 'follow') {
       return PREDICATE_IDS.FOLLOW
     }
-    // Add other pre-defined predicates here if needed
+    if (predicateName === 'trusts') {
+      return PREDICATE_IDS.TRUSTS
+    }
     return null
   }
 
@@ -175,10 +177,13 @@ export const useCreateTripleOnChain = () => {
           depositAmount: depositAmount.toString()
         })
 
-        // Simulate deposit first
+        // Calculate total cost including Sofia fees
+        const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
+
+        // Simulate deposit first via Proxy
         await publicClient.simulateContract({
           address: contractAddress as Address,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi,
           functionName: 'deposit',
           args: [
             address as Address,                    // receiver
@@ -186,14 +191,14 @@ export const useCreateTripleOnChain = () => {
             curveId,                               // curveId
             0n                                     // minShares
           ],
-          value: depositAmount,
+          value: totalDepositCost,
           account: walletClient.account
         })
 
-        // Execute deposit
+        // Execute deposit via Proxy
         const hash = await walletClient.writeContract({
           address: contractAddress as Address,
-          abi: MultiVaultAbi,
+          abi: SofiaFeeProxyAbi,
           functionName: 'deposit',
           args: [
             address as Address,
@@ -201,7 +206,7 @@ export const useCreateTripleOnChain = () => {
             curveId,
             0n
           ],
-          value: depositAmount,
+          value: totalDepositCost,
           chain: SELECTED_CHAIN,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
           maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
@@ -240,6 +245,32 @@ export const useCreateTripleOnChain = () => {
         const predicateId = predicateAtom.vaultId as Address
         const objectId = objectAtom.vaultId as Address
 
+        // Debug: Log all IDs before creating triple
+        console.log('🔍 [createTripleOnChain] Creating triple with:', {
+          subjectId,
+          predicateId,
+          objectId,
+          depositAmount: depositAmount.toString(),
+          totalCost: totalCost.toString(),
+          receiver: address
+        })
+
+        // Simulate first to catch errors with detailed message
+        try {
+          await publicClient.simulateContract({
+            address: contractAddress as Address,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'createTriples',
+            args: [address as Address, [subjectId], [predicateId], [objectId], [depositAmount], CREATION_CURVE_ID],
+            value: totalCost,
+            account: walletClient.account
+          })
+          console.log('✅ [createTripleOnChain] Simulation passed')
+        } catch (simError) {
+          console.error('❌ [createTripleOnChain] Simulation failed:', simError)
+          throw simError
+        }
+
         const txParams = {
           address: contractAddress,
           abi: SofiaFeeProxyAbi as unknown as any[],
@@ -254,7 +285,7 @@ export const useCreateTripleOnChain = () => {
           ],
           value: totalCost,  // Total including Sofia fees
           chain: SELECTED_CHAIN,
-          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+          // Remove hardcoded gas - let Viem estimate automatically
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
           maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
           account: address
