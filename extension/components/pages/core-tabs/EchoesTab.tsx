@@ -190,25 +190,30 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       try {
         // Load blacklist of published triplets
         const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
-        
+
         const newEchoTriplets: EchoTriplet[] = []
-        
+        const seenHashes = new Set<string>() // Track seen triplets to avoid duplicates
+
         for (const record of parsedMessages) {
           if (record.type === 'parsed_message' && record.content) {
             const parsed = record.content as any // Already parsed by useElizaData
-            
+
             if (parsed && parsed.triplets && parsed.triplets.length > 0) {
               parsed.triplets.forEach((triplet, index) => {
-                console.log('🔍 Triplet structure:', triplet)
-                console.log('🔍 Triplet.object:', triplet.object)
-                console.log('🔍 parsed rawObjectUrl:', parsed.rawObjectUrl)
+                // Generate hash for deduplication
+                const hash = `${triplet.subject}|${triplet.predicate}|${triplet.object}`.toLowerCase()
+                if (seenHashes.has(hash)) {
+                  return // Skip duplicate triplet
+                }
+                seenHashes.add(hash)
+
                 const tripletId = `${record.messageId}_${index}`
-                
+
                 // Skip if already published
                 if (publishedTripletIds.includes(tripletId)) {
                   return
                 }
-                
+
                 const echoTriplet: EchoTriplet = {
                   id: tripletId,
                   triplet: {
@@ -227,11 +232,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
             }
           }
         }
-        
+
         setEchoTriplets(newEchoTriplets)
         setHasInitialLoad(true)
-        
-        
+
+
       } catch (error) {
         console.error('❌ EchoesTab: Failed to transform messages:', error)
         setHasInitialLoad(true)

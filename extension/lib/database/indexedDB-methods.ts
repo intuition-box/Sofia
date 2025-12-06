@@ -41,14 +41,14 @@ export class ElizaDataService {
       timestamp: Date.now(),
       type: 'parsed_message'
     }
-    
+
     const result = await sofiaDB.add(STORES.ELIZA_DATA, record)
     console.log('🧠 Parsed Sofia message stored:', messageId)
-    
+
     // Note: Badge update is handled differently based on context:
     // - OAuth: Direct call to updateEchoBadge in TripletExtractor
     // - Other sources: Use chrome.runtime.sendMessage({ type: 'UPDATE_ECHO_BADGE' })
-    
+
     return result as number
   }
 
