@@ -283,23 +283,29 @@ export class BlockchainService {
 
   /**
    * Check if user has approved the proxy for deposits on MultiVault
+   * The proxy needs approval to deposit on behalf of the user (receiver pattern)
    * @param userAddress The user's wallet address
-   * @returns true if user has approved DEPOSIT or BOTH
+   * @returns true if proxy is approved for deposits
    */
-  static async checkProxyApproval(userAddress: string): Promise<boolean> {
+  static async checkProxyApproval(userAddress?: string): Promise<boolean> {
+    if (!userAddress) {
+      return false
+    }
+
     const { publicClient } = await getClients()
 
     try {
-      // MultiVault has an approvals mapping: approvals[owner][sender] => ApprovalTypes
-      const approval = await publicClient.readContract({
+      // Check approval status on MultiVault: approvals(owner, sender) returns ApprovalTypes
+      const approvalType = await publicClient.readContract({
         address: this.MULTIVAULT_ADDRESS as `0x${string}`,
         abi: MultiVaultAbi,
         functionName: 'approvals',
         args: [userAddress as `0x${string}`, this.PROXY_ADDRESS as `0x${string}`]
       }) as number
 
-      // DEPOSIT = 1, BOTH = 3
-      return approval === this.ApprovalTypes.DEPOSIT || approval === this.ApprovalTypes.BOTH
+      // ApprovalTypes: 0=NONE, 1=DEPOSIT, 2=REDEMPTION, 3=BOTH
+      // We need at least DEPOSIT (1) or BOTH (3)
+      return approvalType === this.ApprovalTypes.DEPOSIT || approvalType === this.ApprovalTypes.BOTH
     } catch (error) {
       console.error('Error checking proxy approval:', error)
       return false
