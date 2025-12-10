@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { RecommendationService } from '../lib/services/ai/RecommendationService'
 import type { Recommendation } from '../lib/services/ai/types'
 
@@ -18,7 +18,8 @@ export interface UseRecommendationsResult {
 export const useRecommendations = (): UseRecommendationsResult => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [account] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const account = user?.wallet?.address
 
   console.log('🔄 useRecommendations hook - account:', account)
 

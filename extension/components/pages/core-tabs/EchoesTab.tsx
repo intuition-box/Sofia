@@ -4,7 +4,7 @@ import { elizaDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import { useEchoSelection } from '../../../hooks/useEchoSelection'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import WeightModal from '../../modals/WeightModal'
 import Iridescence from '../../ui/Iridescence'
 import type { EchoTriplet } from '../../../types/blockchain'
@@ -20,7 +20,8 @@ interface EchoesTabProps {
 const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   // Local state for EchoesTab
   const [echoTriplets, setEchoTriplets] = useState<EchoTriplet[]>([])
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
   const [hasInitialLoad, setHasInitialLoad] = useState(false)
   
   // Modal state for custom weighting

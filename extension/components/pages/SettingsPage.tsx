@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
+import { usePrivy } from '@privy-io/react-auth'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
-import { disconnectWallet, cleanupProvider } from '../../lib/services/metamask'
-import { useStorage } from '@plasmohq/storage/hook'
+import { cleanupProvider } from '../../lib/services/metamask'
 import { elizaDataService } from '../../lib/database/indexedDB-methods'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
 import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
@@ -16,15 +16,14 @@ import '../styles/Modal.css'
 const SettingsPage = () => {
   const { navigateTo } = useRouter()
   const { isTrackingEnabled, toggleTracking } = useTracking()
+  const { user, logout, authenticated } = usePrivy()
+  const account = user?.wallet?.address
 
   // Local UI states
   const [isClearing, setIsClearing] = useState(false)
 
-  // Plasmo storage 
+  // Plasmo storage
   const storage = new Storage()
-
-  // Reactive Metamask account stored in Plasmo storage
-  const [account, setAccount] = useStorage<string>('metamask-account')
 
 
   // Clears all local storage (Plasmo + IndexedDB) and disconnects wallet
@@ -32,10 +31,9 @@ const SettingsPage = () => {
     if (!confirm('Are you sure you want to clear all stored data? This action cannot be undone.')) return
     setIsClearing(true)
     try {
-      // Disconnect MetaMask if connected
-      if (account) {
-        setAccount('')
-        await disconnectWallet()
+      // Disconnect wallet via Privy if connected
+      if (authenticated) {
+        await logout()
       }
 
       // Clean injected provider streams

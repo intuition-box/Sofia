@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import FollowModal from '../modals/FollowModal'
 import { useFollowAccount } from '../../hooks/useFollowAccount'
 import type { AccountAtom } from '../../hooks/useGetAtomAccount'
@@ -14,7 +14,8 @@ const FollowButton = ({
   account,
   onFollowSuccess
 }: FollowButtonProps) => {
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
   const { followAccount, isLoading } = useFollowAccount()
   const [showModal, setShowModal] = useState(false)
 

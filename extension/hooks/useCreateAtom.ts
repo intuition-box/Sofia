@@ -4,7 +4,7 @@ import { stringToHex } from 'viem'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '~lib/config/chainConfig'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
@@ -28,7 +28,8 @@ export interface PinnedAtomData {
 
 export const useCreateAtom = () => {
   const { mutateAsync: pinThing } = usePinThingMutation()
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
   // State management removed - let components handle loading/error states
 
   // Ensure user has approved the proxy on MultiVault (required for receiver pattern)

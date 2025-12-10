@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRecommendations } from '../../hooks/useRecommendations'
 import { useResonanceService } from '../../hooks/useResonanceService'
 import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import logoIcon from '../../components/ui/icons/chatIcon.png'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -11,7 +11,8 @@ import '../styles/CoreComponents.css'
 const ResonancePage = () => {
   const { recommendations, isLoading, generateRecommendations } = useRecommendations()
   const [searchQuery, setSearchQuery] = useState('')
-  const [account] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const account = user?.wallet?.address
   const [isAdditive, setIsAdditive] = useState(false)
   
   console.log('🏠 ResonancePage rendered')

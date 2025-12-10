@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { parseEther } from 'viem'
 import { useCreateFollowTriples } from './useCreateFollowTriples'
 import { createHookLogger } from '../lib/utils/logger'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import type { AccountAtom } from './useGetAtomAccount'
 
 const logger = createHookLogger('useFollowAccount')
@@ -16,7 +16,8 @@ export interface FollowResult {
 
 export const useFollowAccount = () => {
   const { createFollowTriple } = useCreateFollowTriples()
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
   const [isLoading, setIsLoading] = useState(false)
 
 

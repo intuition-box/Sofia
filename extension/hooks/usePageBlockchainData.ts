@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { messageBus } from '../lib/services/MessageBus'
 import type { PageBlockchainTriplet, UsePageBlockchainDataResult } from '../types/page'
@@ -14,7 +14,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
-  const [account] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const account = user?.wallet?.address
 
   // Pause flag to prevent refreshes during transactions
   const pauseRefreshRef = useRef(false)

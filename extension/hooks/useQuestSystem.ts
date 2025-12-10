@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { getAddress } from 'viem'
@@ -96,7 +96,8 @@ const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
 ]
 
 export const useQuestSystem = (): QuestSystemResult => {
-  const [walletAddress] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const walletAddress = user?.wallet?.address
   const { lists, triplets } = useBookmarks()
 
   const [userProgress, setUserProgress] = useState<UserProgress>({

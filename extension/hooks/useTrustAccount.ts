@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react'
 import { getClients } from '../lib/clients/viemClients'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { useCreateAtom } from './useCreateAtom'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
@@ -28,7 +28,8 @@ export interface TrustAccountResult {
 
 export const useTrustAccount = (): TrustAccountResult => {
   const { ensureProxyApproval } = useCreateAtom()
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
 
   // Use refs to preserve state during re-renders from parent
   const loadingRef = useRef(false)

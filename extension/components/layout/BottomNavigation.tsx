@@ -1,4 +1,4 @@
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { useRouter } from './RouterProvider'
 import { Home } from 'lucide-react'
 import Dock, { DockItemData } from '../ui/NavigationBar'
@@ -8,7 +8,8 @@ import personIcon from '../ui/icons/Icon=person.svg'
 import settingsIcon from '../ui/icons/Icon=Settings.svg'
 
 const BottomNavigation = () => {
-  const [account] = useStorage<string>("metamask-account")
+  const { user, authenticated } = usePrivy()
+  const account = authenticated ? user?.wallet?.address : null
   const { navigateTo } = useRouter()
 
   if (!account) return null

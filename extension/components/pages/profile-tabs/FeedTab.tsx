@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { usePrivy } from '@privy-io/react-auth'
 import { useStorage } from "@plasmohq/storage/hook"
 import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
@@ -31,7 +32,8 @@ interface FeedEvent {
 }
 
 const FeedTab = () => {
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
   const [feedItems, setFeedItems] = useState<FeedEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { elizaDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
@@ -27,7 +27,8 @@ interface PulseAnalysis {
 }
 
 const PulseTab = () => {
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
   const [pulseAnalyses, setPulseAnalyses] = useState<PulseAnalysis[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedSessions, setExpandedSessions] = useState<Set<number>>(new Set())

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
 import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../../../types/intuition'
@@ -36,7 +36,8 @@ interface FollowedAccount {
 }
 
 const FollowTab = () => {
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
   const [followedAccounts, setFollowedAccounts] = useState<FollowedAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

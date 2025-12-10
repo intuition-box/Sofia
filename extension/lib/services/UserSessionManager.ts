@@ -5,10 +5,6 @@
  * Each wallet generates a unique, deterministic UUID for user identification.
  */
 
-import { Storage } from "@plasmohq/storage"
-
-const storage = new Storage()
-
 // Global server ID (shared across all users) - must match ElizaOS default
 const GLOBAL_SERVER_ID = "00000000-0000-0000-0000-000000000000"
 
@@ -46,14 +42,15 @@ export async function generateDeterministicUUID(input: string): Promise<string> 
 }
 
 /**
- * Gets the connected wallet address from storage
+ * Gets the connected wallet address from chrome.storage.session
  * @throws Error if wallet is not connected
  */
 export async function getWalletAddress(): Promise<string> {
-  const walletAddress = await storage.get("metamask-account")
+  const result = await chrome.storage.session.get('walletAddress')
+  const walletAddress = result.walletAddress
 
   if (!walletAddress) {
-    throw new Error("Wallet non connecté - Connexion requise pour utiliser SofIA")
+    throw new Error("Wallet not connected - Connection required to use SofIA")
   }
 
   return walletAddress
@@ -64,8 +61,8 @@ export async function getWalletAddress(): Promise<string> {
  */
 export async function isWalletConnected(): Promise<boolean> {
   try {
-    const walletAddress = await storage.get("metamask-account")
-    return !!walletAddress
+    const result = await chrome.storage.session.get('walletAddress')
+    return !!result.walletAddress
   } catch (error) {
     return false
   }
@@ -83,10 +80,11 @@ export async function getUserId(): Promise<string> {
     // Generate deterministic UUID from wallet address
     const userId = await generateDeterministicUUID(`user:${walletAddress.toLowerCase()}`)
 
-    // Store mapping for debugging
-    const mapping = await storage.get("user-wallet-mapping") || {}
+    // Store mapping for debugging in chrome.storage.session
+    const result = await chrome.storage.session.get('user-wallet-mapping')
+    const mapping = result['user-wallet-mapping'] || {}
     mapping[walletAddress] = userId
-    await storage.set("user-wallet-mapping", mapping)
+    await chrome.storage.session.set({ 'user-wallet-mapping': mapping })
 
     return userId
   } catch (error) {
@@ -150,8 +148,8 @@ export async function getUserAgentIds(
  */
 export async function getUserMapping(): Promise<Record<string, string>> {
   try {
-    const mapping = await storage.get("user-wallet-mapping") || {}
-    return mapping
+    const result = await chrome.storage.session.get('user-wallet-mapping')
+    return result['user-wallet-mapping'] || {}
   } catch (error) {
     console.error("❌ Error getting user mapping:", error)
     return {}
@@ -163,7 +161,7 @@ export async function getUserMapping(): Promise<Record<string, string>> {
  */
 export async function resetUserSession(): Promise<void> {
   try {
-    await storage.remove("user-wallet-mapping")
+    await chrome.storage.session.remove('user-wallet-mapping')
     console.log("✅ User session reset")
   } catch (error) {
     console.error("❌ Error resetting user session:", error)

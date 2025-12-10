@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../lib/config/constants'
 import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../types/intuition'
@@ -75,7 +75,8 @@ interface UseIntuitionTripletsResult {
  */
 export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
   const [triplets, setTriplets] = useState<IntuitionTriplet[]>([])
-  const [account] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const account = user?.wallet?.address
 
   const refreshFromAPI = useCallback(async (): Promise<IntuitionTriplet[]> => {
     try {

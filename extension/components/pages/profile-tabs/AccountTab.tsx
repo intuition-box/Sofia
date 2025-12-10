@@ -4,7 +4,7 @@ import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
 import leftSideIcon from '../../ui/icons/left side.svg'
 import rightSideIcon from '../../ui/icons/right side.svg'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import { getAddress, createPublicClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
 import { normalize } from 'viem/ens'
@@ -15,7 +15,8 @@ import { useQuestSystem } from '../../../hooks/useQuestSystem'
 import '../../styles/AccountTab.css'
 
 const AccountTab = () => {
-  const [walletAddress] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const walletAddress = user?.wallet?.address
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   const [userLabel, setUserLabel] = useState<string | undefined>(undefined)
 

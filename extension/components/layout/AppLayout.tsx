@@ -1,4 +1,4 @@
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import Background from './background'
 import { useRouter } from './RouterProvider'
 import '../styles/Global.css'
@@ -9,7 +9,8 @@ interface AppLayoutProps {
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const [account] = useStorage<string>("metamask-account")
+  const { user, authenticated } = usePrivy()
+  const account = authenticated ? user?.wallet?.address : null
   const { currentPage } = useRouter()
 
   return (

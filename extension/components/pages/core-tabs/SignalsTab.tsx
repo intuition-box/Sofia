@@ -4,7 +4,7 @@ import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import StakeModal from '../../modals/StakeModal'
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import logoIcon from '../../ui/icons/chatIcon.png'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
@@ -20,7 +20,8 @@ type SortOption = 'highest-shares' | 'lowest-shares' | 'highest-support' | 'lowe
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
   const { triplets, refreshFromAPI } = useIntuitionTriplets()
   const { addWeight, addShares, removeWeight } = useWeightOnChain()
-  const [address] = useStorage<string>("metamask-account")
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
 
   // Stake modal state (unified)
   const [selectedStakeTriplet, setSelectedStakeTriplet] = useState<typeof triplets[0] | null>(null)
