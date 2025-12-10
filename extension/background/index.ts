@@ -9,12 +9,14 @@ import {
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 import { MessageBus } from "../lib/services/MessageBus";
-import { isWalletConnected } from "../lib/services/UserSessionManager";
-import { Storage } from "@plasmohq/storage";
 import { initializeThemeIconManager } from "./themeIconManager";
 import "./oauth/index"; // Initialize OAuth service
 
-const storage = new Storage();
+// Helper pour récupérer l'adresse wallet depuis chrome.storage.session
+export async function getWalletAddress(): Promise<string | null> {
+  const result = await chrome.storage.session.get('walletAddress')
+  return result.walletAddress || null
+}
 
 // Initialize badge count on startup
 async function initializeBadgeCount(): Promise<void> {
@@ -34,7 +36,7 @@ async function init(): Promise<void> {
     await initializeThemeIconManager()
 
     // 1️⃣ IMPORTANT : Vérifier que le wallet est connecté
-    const walletAddress = await storage.get("metamask-account")
+    const walletAddress = await getWalletAddress()
     if (!walletAddress) {
       console.warn("⚠️ [index.ts] Wallet non connecté - Initialisation des agents reportée")
       console.warn("⚠️ [index.ts] L'utilisateur doit connecter son wallet pour utiliser SofIA")
@@ -83,22 +85,22 @@ async function init(): Promise<void> {
   }
 }
 
-// Écouter les changements de wallet et réinitialiser les connexions
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes['metamask-account']) {
-    const newWallet = changes['metamask-account'].newValue
-    const oldWallet = changes['metamask-account'].oldValue
-
-    if (newWallet && newWallet !== oldWallet) {
-      console.log("🔄 [index.ts] Wallet changed, reinitializing connections...")
-      // Réinitialiser l'extension avec le nouveau wallet
-      init()
-    }
-  }
-})
-
-chrome.runtime.onMessage.addListener((message, sender) => {
-  if (message.type === "open_sidepanel") {
+// Listen for wallet connection messages from sidepanel (Privy)
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'WALLET_CONNECTED') {
+    // Store in chrome.storage.session (survives reload, cleared on browser close)
+    chrome.storage.session.set({ walletAddress: message.address })
+    console.log('✅ [index.ts] Wallet connected via Privy:', message.address)
+    // Reinitialize extension with new wallet
+    init()
+    sendResponse({ success: true })
+    return true
+  } else if (message.type === 'WALLET_DISCONNECTED') {
+    chrome.storage.session.remove('walletAddress')
+    console.log('🔌 [index.ts] Wallet disconnected')
+    sendResponse({ success: true })
+    return true
+  } else if (message.type === "open_sidepanel") {
     const tabId = sender.tab?.id
     const windowId = sender.tab?.windowId
 
@@ -106,7 +108,20 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
     chrome.sidePanel.open({ tabId, windowId })
   }
-});
+})
+
+// On startup, check if already connected (after extension reload)
+async function checkExistingConnection() {
+  const address = await getWalletAddress()
+  if (address) {
+    console.log('🔄 [index.ts] Restoring wallet session:', address)
+    init()
+  } else {
+    // No wallet, but initialize basic handlers
+    setupMessageHandlers()
+    await initializeBadgeCount()
+  }
+}
 
 chrome.runtime.onInstalled.addListener(async () => {
   console.log("✅ Tracking enabled - Extension ready");
@@ -118,7 +133,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
-init();
+checkExistingConnection();
 
 console.log('🚀 SOFIA Extension - Service Worker ready (Plasmo)');
 
