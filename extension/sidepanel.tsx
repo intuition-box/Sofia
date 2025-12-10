@@ -24,23 +24,22 @@ import UserProfilePage from "./components/pages/UserProfilePage"
 
 
 const SidePanelContent = () => {
-  const [account] = useStorage<string>("metamask-account")
   const { currentPage, navigateTo } = useRouter()
-  
-  // Synchronize wallet connections
-  useWalletSync()
+
+  // Synchronize wallet with Privy and background script
+  const { walletAddress, authenticated } = usePrivyWalletSync()
 
   // Automatic page management based on connection state
   useEffect(() => {
-    if (account && currentPage === 'home') {
+    if (authenticated && walletAddress && currentPage === 'home') {
       navigateTo('home-connected')
-    } else if (!account && currentPage !== 'home') {
+    } else if (!authenticated && currentPage !== 'home') {
       navigateTo('home')
     }
-  }, [account, currentPage, navigateTo])
+  }, [authenticated, walletAddress, currentPage, navigateTo])
 
   const renderCurrentPage = () => {
-    if (!account) return <HomePage />
+    if (!authenticated || !walletAddress) return <HomePage />
 
     switch (currentPage) {
       case 'home':
@@ -87,13 +86,15 @@ const queryClient = new QueryClient({
 
 function SidePanel() {
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <PrivyProvider appId={privyConfig.appId} config={privyConfig.config}>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider initialPage="home">
-          <SidePanelContent />
-        </RouterProvider>
+        <WagmiProvider config={wagmiConfig}>
+          <RouterProvider initialPage="home">
+            <SidePanelContent />
+          </RouterProvider>
+        </WagmiProvider>
       </QueryClientProvider>
-    </WagmiProvider>
+    </PrivyProvider>
   )
 }
 
