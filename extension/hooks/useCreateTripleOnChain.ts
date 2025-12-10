@@ -3,8 +3,7 @@ import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
-import { useStorage } from "@plasmohq/storage/hook"
-import { sessionWallet } from '../lib/services/sessionWallet'
+import { usePrivy } from '@privy-io/react-auth'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../lib/config/constants'
@@ -26,8 +25,8 @@ export const useCreateTripleOnChain = () => {
     createAtomsFromPinned,
     ensureProxyApproval
   } = useCreateAtom()
-  const [address] = useStorage<string>("metamask-account")
-  const [useSessionWallet] = useStorage<boolean>("sofia-use-session-wallet", false)
+  const { user } = usePrivy()
+  const address = user?.wallet?.address
 
   // Utility function to get the universal "I" subject atom (shared between simple and batch)
   const getUserAtom = async () => {
@@ -55,34 +54,17 @@ export const useCreateTripleOnChain = () => {
     return null
   }
 
-  // Helper function to determine which wallet to use
-  const shouldUseSessionWallet = (transactionValue: bigint): boolean => {
-    if (!useSessionWallet) return false
-    
-    const sessionStatus = sessionWallet.getStatus()
-    if (!sessionStatus.isReady) return false
-    
-    // Check if session wallet has enough balance
-    return sessionWallet.canExecute(transactionValue)
-  }
-
-  // Helper function to execute transaction with appropriate wallet
+  // Helper function to execute transaction with wallet
   const executeTransaction = async (txParams: ContractWriteParams): Promise<Hash> => {
-    const canUseSession = shouldUseSessionWallet(txParams.value || 0n)
-    
     // Ensure proper Address typing for viem
     const viemParams = {
       ...txParams,
       address: txParams.address as Address,
       account: txParams.account as Address
     }
-    
-    if (canUseSession) {
-      return await sessionWallet.executeTransaction(viemParams) as Hash
-    } else {
-      const { walletClient } = await getClients()
-      return await walletClient.writeContract(viemParams)
-    }
+
+    const { walletClient } = await getClients()
+    return await walletClient.writeContract(viemParams)
   }
 
   const createTripleOnChain = async (

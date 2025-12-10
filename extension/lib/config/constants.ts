@@ -21,8 +21,6 @@ export {
 // Storage Configuration
 export const STORAGE_CONFIG = {
   TRACKING_ENABLED_KEY: "tracking_enabled",
-  METAMASK_ACCOUNT_KEY: "metamask-account",
-  SESSION_WALLET_KEY: "sofia-use-session-wallet",
   MAX_RECENT_MESSAGES: 50,
   CLEANUP_DAYS: 30
 } as const
