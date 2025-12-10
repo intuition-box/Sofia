@@ -12,10 +12,19 @@ import { MessageBus } from "../lib/services/MessageBus";
 import { initializeThemeIconManager } from "./themeIconManager";
 import "./oauth/index"; // Initialize OAuth service
 
+// 🔥 FIX: Flag to prevent duplicate socket initialization
+let socketsInitialized = false
+
 // Helper pour récupérer l'adresse wallet depuis chrome.storage.session
 export async function getWalletAddress(): Promise<string | null> {
   const result = await chrome.storage.session.get('walletAddress')
   return result.walletAddress || null
+}
+
+// Exported function to initialize sockets when wallet connects (called from messageHandlers)
+export async function initializeSocketsOnWalletConnect(): Promise<void> {
+  console.log("🔌 [index.ts] initializeSocketsOnWalletConnect called")
+  await init()
 }
 
 // Initialize badge count on startup
@@ -35,14 +44,21 @@ async function init(): Promise<void> {
     // Initialize theme-aware icon system
     await initializeThemeIconManager()
 
+    // 🔥 FIX: Setup message handlers (has internal guard against duplicates)
+    setupMessageHandlers()
+
     // 1️⃣ IMPORTANT : Vérifier que le wallet est connecté
     const walletAddress = await getWalletAddress()
     if (!walletAddress) {
       console.warn("⚠️ [index.ts] Wallet non connecté - Initialisation des agents reportée")
       console.warn("⚠️ [index.ts] L'utilisateur doit connecter son wallet pour utiliser SofIA")
-      // Setup message handlers anyway for UI to work
-      setupMessageHandlers()
       await initializeBadgeCount()
+      return
+    }
+
+    // 🔥 FIX: Prevent duplicate socket initialization
+    if (socketsInitialized) {
+      console.log("⚠️ [index.ts] Sockets already initialized, skipping")
       return
     }
 
@@ -69,11 +85,10 @@ async function init(): Promise<void> {
     console.log("💎 [index.ts] Initializing RecommendationAgent socket...")
     await initializeRecommendationSocket()
 
-    // 5️⃣ Setup message handlers
-    console.log("📨 [index.ts] Setting up message handlers...")
-    setupMessageHandlers()
+    // 🔥 FIX: Mark sockets as initialized
+    socketsInitialized = true
 
-    // 6️⃣ Initialize badge count
+    // 5️⃣ Initialize badge count
     console.log("🔔 [index.ts] Initializing badge count...")
     await initializeBadgeCount()
 
@@ -85,15 +100,22 @@ async function init(): Promise<void> {
   }
 }
 
-// Listen for wallet connection messages from sidepanel (Privy)
+// Listen for wallet connection messages from sidepanel or external auth page
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'WALLET_CONNECTED') {
-    // Store in chrome.storage.session (survives reload, cleared on browser close)
-    chrome.storage.session.set({ walletAddress: message.address })
-    console.log('✅ [index.ts] Wallet connected via Privy:', message.address)
-    // Reinitialize extension with new wallet
-    init()
-    sendResponse({ success: true })
+    // Support both formats: message.address (old) and message.walletAddress (new external auth)
+    const walletAddress = message.walletAddress || message.data?.walletAddress || message.address
+    if (walletAddress) {
+      // Store in chrome.storage.session (survives reload, cleared on browser close)
+      chrome.storage.session.set({ walletAddress })
+      console.log('✅ [index.ts] Wallet connected:', walletAddress)
+      // Reinitialize extension with new wallet (initialize sockets)
+      init()
+      sendResponse({ success: true })
+    } else {
+      console.error('❌ [index.ts] WALLET_CONNECTED received but no address provided')
+      sendResponse({ success: false, error: 'No wallet address provided' })
+    }
     return true
   } else if (message.type === 'WALLET_DISCONNECTED') {
     chrome.storage.session.remove('walletAddress')
@@ -115,12 +137,11 @@ async function checkExistingConnection() {
   const address = await getWalletAddress()
   if (address) {
     console.log('🔄 [index.ts] Restoring wallet session:', address)
-    init()
   } else {
-    // No wallet, but initialize basic handlers
-    setupMessageHandlers()
-    await initializeBadgeCount()
+    console.log('🔄 [index.ts] No wallet session, initializing basic handlers only')
   }
+  // 🔥 FIX: Always call init() - it handles the flags internally
+  await init()
 }
 
 chrome.runtime.onInstalled.addListener(async () => {

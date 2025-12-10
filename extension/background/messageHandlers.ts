@@ -17,7 +17,10 @@ import { badgeService } from "../lib/services/BadgeService"
 import { pageDataService } from "../lib/services/PageDataService"
 import { pulseService } from "../lib/services/PulseService"
 import { tripletStorageService } from "../lib/services/TripletStorageService"
-// Discord and X/Twitter OAuth removed - not needed
+import { initializeSocketsOnWalletConnect } from "./index"
+
+// 🔥 FIX: Flag to prevent duplicate message handlers registration
+let handlersRegistered = false
 
 
 
@@ -145,6 +148,14 @@ async function handleOllamaRequest(payload: any, sendResponse: (response: Messag
 
 
 export function setupMessageHandlers(): void {
+  // 🔥 FIX: Prevent duplicate handler registration
+  if (handlersRegistered) {
+    console.log("⚠️ [messageHandlers] Handlers already registered, skipping")
+    return
+  }
+  handlersRegistered = true
+  console.log("📨 [messageHandlers] Registering message handlers...")
+
   // Handle external messages from auth page (localhost:3000 or sofia.intuition.box)
   chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
     console.log('📨 External message received:', message.type, 'from:', sender.origin)
@@ -152,8 +163,10 @@ export function setupMessageHandlers(): void {
     if (message.type === 'WALLET_CONNECTED') {
       const walletAddress = message.data?.walletAddress || message.walletAddress
       if (walletAddress) {
-        chrome.storage.session.set({ walletAddress }).then(() => {
+        chrome.storage.session.set({ walletAddress }).then(async () => {
           console.log('✅ Wallet connected from external page:', walletAddress)
+          // Initialize sockets now that wallet is connected
+          await initializeSocketsOnWalletConnect()
           sendResponse({ success: true })
         }).catch((error) => {
           console.error('❌ Failed to save wallet:', error)
