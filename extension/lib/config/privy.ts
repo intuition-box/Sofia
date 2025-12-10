@@ -7,7 +7,7 @@ export const privyConfig = {
   config: {
     appearance: {
       theme: 'dark' as const,
-      accentColor: '#ecc48fff',
+      accentColor: '#ecc48f' as `#${string}`,
     },
     loginMethods: ['wallet'] as const,
     defaultChain: SELECTED_CHAIN,

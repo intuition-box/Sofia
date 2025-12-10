@@ -1,6 +1,4 @@
-import React from "react"
-import { connectWallet, disconnectWallet } from "../../lib/services/metamask"
-import { useStorage } from "@plasmohq/storage/hook"
+import { usePrivy } from '@privy-io/react-auth'
 import Iridescence from './Iridescence'
 
 interface WalletConnectionButtonProps {
@@ -8,31 +6,21 @@ interface WalletConnectionButtonProps {
 }
 
 const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProps) => {
-  const [account, setAccount] = useStorage<string>("metamask-account")
-  const [isLoading, setIsLoading] = React.useState(false)
+  const { login, logout, authenticated, ready } = usePrivy()
+  const isLoading = !ready
 
   const handleConnect = async () => {
-    if (disabled) return;
-
-    setIsLoading(true)
-    try {
-      const accountAddress = await connectWallet()
-      setAccount(accountAddress)
-    } catch (error) {
-      console.error("Failed to connect to wallet: ", error)
-    } finally {
-      setIsLoading(false)
-    }
+    if (disabled || isLoading) return
+    login()
   }
 
-  const handleDisconnect = () => {
-    setAccount("");
-    disconnectWallet()
+  const handleDisconnect = async () => {
+    await logout()
   }
 
   return (
     <div>
-      {!account ? (
+      {!authenticated ? (
         <button
           className={`wallet-connect-button ${isLoading ? 'loading' : ''}`}
           onClick={handleConnect}
