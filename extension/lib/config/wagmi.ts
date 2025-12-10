@@ -1,5 +1,4 @@
-import { createConfig } from '@privy-io/wagmi'
-import { http } from 'wagmi'
+import { createConfig, http } from 'wagmi'
 
 import { SELECTED_CHAIN } from './chainConfig'
 

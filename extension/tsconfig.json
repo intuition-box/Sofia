@@ -2,8 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "~*": ["./*"],
-      "@privy-io/wagmi": ["lib/utils/wagmi.ts"] 
+      "~*": ["./*"]
     },
     "types": [
       "chrome",

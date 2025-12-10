@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { PrivyProvider } from '@privy-io/react-auth'
-import { WagmiProvider } from '@privy-io/wagmi'
+import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { configureClient } from '@0xintuition/graphql'
 import "./components/styles/Global.css"
@@ -86,7 +86,7 @@ const queryClient = new QueryClient({
 
 function SidePanel() {
   return (
-    <PrivyProvider appId={privyConfig.appId} config={privyConfig.config}>
+    <PrivyProvider appId={privyConfig.appId} clientId={privyConfig.clientId} config={privyConfig.config}>
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
           <RouterProvider initialPage="home">

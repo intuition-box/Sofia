@@ -86,7 +86,8 @@
     "host_permissions": [
       "<all_urls>",
       "http://127.0.0.1:8080/*",
-      "http://127.0.0.1:11434/*"
+      "http://127.0.0.1:11434/*",
+      "https://auth.privy.io/*"
     ],
     "side_panel": {
       "default_path": "sidepanel.html"
