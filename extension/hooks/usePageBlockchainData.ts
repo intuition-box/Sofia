@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { messageBus } from '../lib/services/MessageBus'
 import type { PageBlockchainTriplet, UsePageBlockchainDataResult } from '../types/page'
@@ -14,8 +14,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
-  const { user } = usePrivy()
-  const account = user?.wallet?.address
+  const { walletAddress: account } = useWalletFromStorage()
 
   // Pause flag to prevent refreshes during transactions
   const pauseRefreshRef = useRef(false)

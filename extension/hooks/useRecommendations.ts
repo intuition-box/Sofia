@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 import { RecommendationService } from '../lib/services/ai/RecommendationService'
 import type { Recommendation } from '../lib/services/ai/types'
 
@@ -18,8 +18,7 @@ export interface UseRecommendationsResult {
 export const useRecommendations = (): UseRecommendationsResult => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const { user } = usePrivy()
-  const account = user?.wallet?.address
+  const { walletAddress: account } = useWalletFromStorage()
 
   console.log('🔄 useRecommendations hook - account:', account)
 

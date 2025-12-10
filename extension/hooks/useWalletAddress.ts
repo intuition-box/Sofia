@@ -1,15 +1,14 @@
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 
 /**
- * Hook to get the connected wallet address from Privy
- * This replaces the previous useStorage("metamask-account") pattern
+ * Hook to get the connected wallet address from chrome.storage.session
+ * This replaces the previous usePrivy pattern
  */
 export const useWalletAddress = () => {
-  const { user, authenticated } = usePrivy()
-  const address = user?.wallet?.address || null
+  const { walletAddress, authenticated } = useWalletFromStorage()
 
   return {
-    address,
-    isConnected: authenticated && !!address
+    address: walletAddress,
+    isConnected: authenticated && !!walletAddress
   }
 }

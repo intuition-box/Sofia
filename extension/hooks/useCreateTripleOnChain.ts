@@ -3,7 +3,7 @@ import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../lib/config/constants'
@@ -25,8 +25,7 @@ export const useCreateTripleOnChain = () => {
     createAtomsFromPinned,
     ensureProxyApproval
   } = useCreateAtom()
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
 
   // Utility function to get the universal "I" subject atom (shared between simple and batch)
   const getUserAtom = async () => {

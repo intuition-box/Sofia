@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import FollowModal from '../modals/FollowModal'
 import { useFollowAccount } from '../../hooks/useFollowAccount'
 import type { AccountAtom } from '../../hooks/useGetAtomAccount'
@@ -14,8 +14,7 @@ const FollowButton = ({
   account,
   onFollowSuccess
 }: FollowButtonProps) => {
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
   const { followAccount, isLoading } = useFollowAccount()
   const [showModal, setShowModal] = useState(false)
 

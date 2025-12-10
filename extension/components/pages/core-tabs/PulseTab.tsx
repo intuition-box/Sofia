@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { elizaDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
@@ -27,8 +27,7 @@ interface PulseAnalysis {
 }
 
 const PulseTab = () => {
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
   const [pulseAnalyses, setPulseAnalyses] = useState<PulseAnalysis[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedSessions, setExpandedSessions] = useState<Set<number>>(new Set())

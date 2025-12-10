@@ -145,6 +145,41 @@ async function handleOllamaRequest(payload: any, sendResponse: (response: Messag
 
 
 export function setupMessageHandlers(): void {
+  // Handle external messages from auth page (localhost:3000 or sofia.intuition.box)
+  chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+    console.log('📨 External message received:', message.type, 'from:', sender.origin)
+
+    if (message.type === 'WALLET_CONNECTED') {
+      const walletAddress = message.data?.walletAddress || message.walletAddress
+      if (walletAddress) {
+        chrome.storage.session.set({ walletAddress }).then(() => {
+          console.log('✅ Wallet connected from external page:', walletAddress)
+          sendResponse({ success: true })
+        }).catch((error) => {
+          console.error('❌ Failed to save wallet:', error)
+          sendResponse({ success: false, error: error.message })
+        })
+      } else {
+        sendResponse({ success: false, error: 'No wallet address provided' })
+      }
+      return true
+    }
+
+    if (message.type === 'WALLET_DISCONNECTED') {
+      chrome.storage.session.remove('walletAddress').then(() => {
+        console.log('✅ Wallet disconnected from external page')
+        sendResponse({ success: true })
+      }).catch((error) => {
+        console.error('❌ Failed to disconnect wallet:', error)
+        sendResponse({ success: false, error: error.message })
+      })
+      return true
+    }
+
+    sendResponse({ success: false, error: 'Unknown message type' })
+    return true
+  })
+
   chrome.runtime.onMessage.addListener((message: ChromeMessage, _sender, sendResponse) => {
     // Handle async operations
     (async () => {
@@ -368,6 +403,33 @@ export function setupMessageHandlers(): void {
           console.error("❌ URL_CHANGED error:", error)
         }
         break
+
+      case "WALLET_CONNECTED":
+        try {
+          const walletAddress = message.data?.walletAddress || message.walletAddress
+          if (walletAddress) {
+            await chrome.storage.session.set({ walletAddress })
+            console.log("✅ Wallet connected:", walletAddress)
+            sendResponse({ success: true })
+          } else {
+            sendResponse({ success: false, error: "No wallet address provided" })
+          }
+        } catch (error) {
+          console.error("❌ WALLET_CONNECTED error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "WALLET_DISCONNECTED":
+        try {
+          await chrome.storage.session.remove('walletAddress')
+          console.log("✅ Wallet disconnected")
+          sendResponse({ success: true })
+        } catch (error) {
+          console.error("❌ WALLET_DISCONNECTED error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
 
     }
 

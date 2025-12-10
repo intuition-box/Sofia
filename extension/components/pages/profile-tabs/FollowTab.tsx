@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
 import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../../../types/intuition'
@@ -36,8 +36,7 @@ interface FollowedAccount {
 }
 
 const FollowTab = () => {
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
   const [followedAccounts, setFollowedAccounts] = useState<FollowedAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage, disconnectWallet } from '../../hooks/useWalletFromStorage'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
@@ -16,8 +16,7 @@ import '../styles/Modal.css'
 const SettingsPage = () => {
   const { navigateTo } = useRouter()
   const { isTrackingEnabled, toggleTracking } = useTracking()
-  const { user, logout, authenticated } = usePrivy()
-  const account = user?.wallet?.address
+  const { walletAddress: account, authenticated } = useWalletFromStorage()
 
   // Local UI states
   const [isClearing, setIsClearing] = useState(false)
@@ -31,9 +30,9 @@ const SettingsPage = () => {
     if (!confirm('Are you sure you want to clear all stored data? This action cannot be undone.')) return
     setIsClearing(true)
     try {
-      // Disconnect wallet via Privy if connected
+      // Disconnect wallet if connected
       if (authenticated) {
-        await logout()
+        await disconnectWallet()
       }
 
       // Clean injected provider streams

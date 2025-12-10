@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
-import { useStorage } from "@plasmohq/storage/hook"
+import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
 import { getAddress } from 'viem'
@@ -32,15 +31,14 @@ interface FeedEvent {
 }
 
 const FeedTab = () => {
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
   const [feedItems, setFeedItems] = useState<FeedEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<FeedEvent | null>(null)
   const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [declinedEvents, setDeclinedEvents] = useStorage<string[]>("declined-feed-events", [])
+  const [declinedEvents, setDeclinedEvents] = useState<string[]>([])
   const { addWeight, removeWeight } = useWeightOnChain()
 
 

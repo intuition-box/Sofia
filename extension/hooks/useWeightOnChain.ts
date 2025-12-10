@@ -2,7 +2,7 @@ import { getClients } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
@@ -17,8 +17,7 @@ interface WeightResult {
 }
 
 export const useWeightOnChain = () => {
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
 
   const addWeight = async (
     tripleVaultId: string,

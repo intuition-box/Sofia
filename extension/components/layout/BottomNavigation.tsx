@@ -1,4 +1,4 @@
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import { useRouter } from './RouterProvider'
 import { Home } from 'lucide-react'
 import Dock, { DockItemData } from '../ui/NavigationBar'
@@ -8,8 +8,8 @@ import personIcon from '../ui/icons/Icon=person.svg'
 import settingsIcon from '../ui/icons/Icon=Settings.svg'
 
 const BottomNavigation = () => {
-  const { user, authenticated } = usePrivy()
-  const account = authenticated ? user?.wallet?.address : null
+  const { walletAddress, authenticated } = useWalletFromStorage()
+  const account = authenticated ? walletAddress : null
   const { navigateTo } = useRouter()
 
   if (!account) return null

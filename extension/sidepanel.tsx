@@ -1,16 +1,14 @@
 import { useEffect } from "react"
-import { PrivyProvider } from '@privy-io/react-auth'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { configureClient } from '@0xintuition/graphql'
 import "./components/styles/Global.css"
 
 import { wagmiConfig } from "./lib/config/wagmi"
-import { privyConfig } from "./lib/config/privy"
 import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
 import AppLayout from "./components/layout/AppLayout"
 import BottomNavigation from "./components/layout/BottomNavigation"
-import { usePrivyWalletSync } from "./hooks/usePrivyWalletSync"
+import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
 
 // Pages
 import HomePage from "./components/pages/HomePage"
@@ -26,8 +24,8 @@ import UserProfilePage from "./components/pages/UserProfilePage"
 const SidePanelContent = () => {
   const { currentPage, navigateTo } = useRouter()
 
-  // Synchronize wallet with Privy and background script
-  const { walletAddress, authenticated } = usePrivyWalletSync()
+  // Read wallet from chrome.storage.session (set by tabs/auth.tsx via Privy)
+  const { walletAddress, authenticated } = useWalletFromStorage()
 
   // Automatic page management based on connection state
   useEffect(() => {
@@ -71,8 +69,8 @@ const SidePanelContent = () => {
 }
 
 // Configure GraphQL client to use testnet endpoint
-configureClient({ 
-  apiUrl: 'https://testnet.intuition.sh/v1/graphql' 
+configureClient({
+  apiUrl: 'https://testnet.intuition.sh/v1/graphql'
 })
 
 // Query client for React Query
@@ -86,15 +84,13 @@ const queryClient = new QueryClient({
 
 function SidePanel() {
   return (
-    <PrivyProvider appId={privyConfig.appId} clientId={privyConfig.clientId} config={privyConfig.config}>
-      <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>
-          <RouterProvider initialPage="home">
-            <SidePanelContent />
-          </RouterProvider>
-        </WagmiProvider>
-      </QueryClientProvider>
-    </PrivyProvider>
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={wagmiConfig}>
+        <RouterProvider initialPage="home">
+          <SidePanelContent />
+        </RouterProvider>
+      </WagmiProvider>
+    </QueryClientProvider>
   )
 }
 

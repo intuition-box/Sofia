@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { parseEther } from 'viem'
 import { useCreateFollowTriples } from './useCreateFollowTriples'
 import { createHookLogger } from '../lib/utils/logger'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 import type { AccountAtom } from './useGetAtomAccount'
 
 const logger = createHookLogger('useFollowAccount')
@@ -16,8 +16,7 @@ export interface FollowResult {
 
 export const useFollowAccount = () => {
   const { createFollowTriple } = useCreateFollowTriples()
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
   const [isLoading, setIsLoading] = useState(false)
 
 

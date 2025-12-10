@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 import { BlockchainService } from '../lib/services/blockchainService'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { createHookLogger } from '../lib/utils/logger'
@@ -21,8 +21,7 @@ export interface FollowStatus {
  * @returns Follow and trust status with loading/error states
  */
 export const useCheckFollowStatus = (accountTermId?: string) => {
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
   const [status, setStatus] = useState<FollowStatus>({
     isFollowing: false,
     isTrusting: false,

@@ -1,4 +1,4 @@
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import Background from './background'
 import { useRouter } from './RouterProvider'
 import '../styles/Global.css'
@@ -9,8 +9,8 @@ interface AppLayoutProps {
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const { user, authenticated } = usePrivy()
-  const account = authenticated ? user?.wallet?.address : null
+  const { walletAddress, authenticated } = useWalletFromStorage()
+  const account = authenticated ? walletAddress : null
   const { currentPage } = useRouter()
 
   return (

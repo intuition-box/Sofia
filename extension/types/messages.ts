@@ -41,6 +41,10 @@ export type MessageType =
   | 'PAGE_ANALYSIS'
   | 'GET_PAGE_DATA'
   | 'GET_CLEAN_URL'
+  | 'URL_CHANGED'
+  | 'GENERATE_RECOMMENDATIONS'
+  | 'WALLET_CONNECTED'
+  | 'WALLET_DISCONNECTED'
 
 // Specific message interfaces
 export interface ChromeMessage extends BaseMessage {
@@ -52,6 +56,7 @@ export interface ChromeMessage extends BaseMessage {
   metadata?: any
   timestamp?: number
   payload?: any
+  walletAddress?: string
 }
 
 export interface TripletMessage extends BaseMessage {
@@ -170,4 +175,5 @@ export interface MessageResponse {
   message?: string
   url?: string
   tabId?: number
+  recommendations?: any[]
 }

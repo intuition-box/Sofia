@@ -1,4 +1,4 @@
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 import { getClients } from '../lib/clients/viemClients'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
@@ -12,8 +12,7 @@ import type { AccountAtom } from './useGetAtomAccount'
 const logger = createHookLogger('useCreateFollowTriples')
 
 export const useCreateFollowTriples = () => {
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
 
 
   const createFollowTriple = async (

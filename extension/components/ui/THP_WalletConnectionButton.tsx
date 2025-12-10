@@ -1,4 +1,4 @@
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage, openAuthTab, disconnectWallet } from '../../hooks/useWalletFromStorage'
 import Iridescence from './Iridescence'
 
 interface WalletConnectionButtonProps {
@@ -6,16 +6,17 @@ interface WalletConnectionButtonProps {
 }
 
 const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProps) => {
-  const { login, logout, authenticated, ready } = usePrivy()
+  const { authenticated, ready } = useWalletFromStorage()
   const isLoading = !ready
 
-  const handleConnect = async () => {
+  const handleConnect = () => {
     if (disabled || isLoading) return
-    login()
+    // Ouvre le tab d'authentification Privy
+    openAuthTab()
   }
 
   const handleDisconnect = async () => {
-    await logout()
+    await disconnectWallet()
   }
 
   return (

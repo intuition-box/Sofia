@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWalletFromStorage } from './useWalletFromStorage'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
 import { createHookLogger } from '../lib/utils/logger'
 import { ERROR_MESSAGES } from '../lib/config/constants'
@@ -17,8 +17,7 @@ export interface TrustPageResult {
 
 export const useTrustPage = (): TrustPageResult => {
   const { createTripleOnChain } = useCreateTripleOnChain()
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
+  const { walletAddress: address } = useWalletFromStorage()
 
   // Use refs to preserve state during re-renders from parent
   const loadingRef = useRef(false)
