@@ -1,15 +1,16 @@
 import { useEffect } from "react"
-import { useStorage } from "@plasmohq/storage/hook"
-import { WagmiProvider } from 'wagmi'
+import { PrivyProvider } from '@privy-io/react-auth'
+import { WagmiProvider } from '@privy-io/wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { configureClient } from '@0xintuition/graphql'
 import "./components/styles/Global.css"
 
 import { wagmiConfig } from "./lib/config/wagmi"
+import { privyConfig } from "./lib/config/privy"
 import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
 import AppLayout from "./components/layout/AppLayout"
 import BottomNavigation from "./components/layout/BottomNavigation"
-import { useWalletSync } from "./hooks/useWalletSync"
+import { usePrivyWalletSync } from "./hooks/usePrivyWalletSync"
 
 // Pages
 import HomePage from "./components/pages/HomePage"

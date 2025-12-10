@@ -1,15 +1,10 @@
-import { createConfig } from 'wagmi'
-import { injected } from '@wagmi/connectors'
-import type { Config } from 'wagmi'
-import { http } from 'viem'
+import { createConfig } from '@privy-io/wagmi'
+import { http } from 'wagmi'
 
 import { SELECTED_CHAIN } from './chainConfig'
 
-export const wagmiConfig: Config = createConfig({
+export const wagmiConfig = createConfig({
   chains: [SELECTED_CHAIN],
-  connectors: [
-    injected()
-  ],
   transports: {
     [SELECTED_CHAIN.id]: http(SELECTED_CHAIN.rpcUrls.default.http[0])
   },
