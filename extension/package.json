@@ -6,7 +6,7 @@
   "author": "me",
   "scripts": {
     "dev": "plasmo dev",
-    "build": "plasmo build && node scripts/post-build.js",
+    "build": "plasmo build --no-minify && node scripts/post-build.js",
     "package": "plasmo package",
     "proxy": "bun sofia-proxy/server.ts",
     "generate-icons": "node scripts/generate-icons.js",
@@ -75,7 +75,6 @@
       "history",
       "tabs",
       "activeTab",
-      "alarms",
       "sidePanel",
       "bookmarks",
       "identity",
