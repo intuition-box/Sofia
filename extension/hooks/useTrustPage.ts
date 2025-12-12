@@ -6,8 +6,10 @@ import { ERROR_MESSAGES } from '../lib/config/constants'
 
 const logger = createHookLogger('useTrustPage')
 
+export type PredicateType = 'trusts' | 'distrust'
+
 export interface TrustPageResult {
-  trustPage: (url: string, customWeight?: bigint) => Promise<void>
+  trustPage: (url: string, customWeight?: bigint, predicateName?: PredicateType) => Promise<void>
   loading: boolean
   error: string | null
   success: boolean
@@ -32,13 +34,13 @@ export const useTrustPage = (): TrustPageResult => {
   const [tripleVaultId, setTripleVaultId] = useState<string | null>(null)
   const [operationType, setOperationType] = useState<'created' | 'deposit' | null>(null)
 
-  const trustPage = useCallback(async (url: string, customWeight?: bigint) => {
+  const trustPage = useCallback(async (url: string, customWeight?: bigint, predicateName: PredicateType = 'trusts') => {
     try {
       if (!address) {
         throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
       }
 
-      logger.info('Creating trust triplet for URL', { url, customWeight: customWeight?.toString() })
+      logger.info(`Creating ${predicateName} triplet for URL`, { url, predicateName, customWeight: customWeight?.toString() })
 
       // Update refs and state
       loadingRef.current = true
@@ -61,7 +63,7 @@ export const useTrustPage = (): TrustPageResult => {
       // Get favicon URL from Google's service
       const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
 
-      logger.debug('Creating trust triple via useCreateTripleOnChain', { pageLabel })
+      logger.debug(`Creating ${predicateName} triple via useCreateTripleOnChain`, { pageLabel, predicateName })
 
       // Use useCreateTripleOnChain which handles:
       // - Proxy approval
@@ -70,7 +72,7 @@ export const useTrustPage = (): TrustPageResult => {
       // - Triple creation OR deposit if it already exists
       // - Proper executeTransaction with session wallet support
       const result = await createTripleOnChain(
-        'trusts',  // predicateName - mapped to PREDICATE_IDS.TRUSTS
+        predicateName,  // 'trusts' or 'distrust'
         {
           name: pageLabel,
           description: `Page: ${pageLabel}`,

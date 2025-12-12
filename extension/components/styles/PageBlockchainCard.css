@@ -740,6 +740,50 @@
   font-size: 11px;
 }
 
+/* Trust & Distrust Buttons Row */
+.trust-buttons-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.trust-buttons-row .trust-page-button {
+  flex: 1;
+}
+
+/* Trust Button - keeps existing Iridescence style */
+.trust-btn {
+  /* Inherits from .trust-page-button */
+}
+
+/* Distrust Button - Outline/Ghost style */
+.distrust-btn {
+  background: transparent !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.distrust-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.distrust-btn .trust-button-background {
+  display: none;
+}
+
+.distrust-btn.success {
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  background: rgba(239, 68, 68, 0.15) !important;
+}
+
+.distrust-btn .button-spinner {
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  border-top: 2px solid rgba(239, 68, 68, 0.8);
+}
+
 /* Responsive Design */
 @media (max-width: 400px) {
   .credibility-visual-metrics {

@@ -55,7 +55,8 @@ export const EXPLORER_URLS = {
 // Predicate IDs (Testnet) - Verified via GraphQL queries (80 triplets usage)
 export const PREDICATE_IDS = {
   FOLLOW: "0xffd07650dc7ab341184362461ebf52144bf8bcac5a19ef714571de15f1319260",
-  TRUSTS: "0x3a73f3b1613d166eea141a25a2adc70db9304ab3c4e90daecad05f86487c3ee9"
+  TRUSTS: "0x3a73f3b1613d166eea141a25a2adc70db9304ab3c4e90daecad05f86487c3ee9",
+  DISTRUST: "0x93dd055a971886b66c5f4d9c29098ebdd9b7991890b6372a7e184c64321c9710"
 } as const
 
 // Subject IDs (Testnet) - Verified via GraphQL queries
@@ -66,5 +67,6 @@ export const SUBJECT_IDS = {
 // Predicate Names (for display)
 export const PREDICATE_NAMES = {
   FOLLOW: "follow",
-  TRUSTS: "trusts"
+  TRUSTS: "trusts",
+  DISTRUST: "distrust"
 } as const

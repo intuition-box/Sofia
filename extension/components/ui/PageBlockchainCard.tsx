@@ -13,15 +13,22 @@ const PageBlockchainCard = () => {
   const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType } = useTrustPage()
   const [showDetails, setShowDetails] = useState(false)
 
-  // Local state for button UI to prevent re-renders from affecting button
+  // Local state for Trust button UI
   const [localTrustLoading, setLocalTrustLoading] = useState(false)
   const [localTrustSuccess, setLocalTrustSuccess] = useState(false)
   const [localTrustError, setLocalTrustError] = useState<string | null>(null)
   const [localOperationType, setLocalOperationType] = useState<'created' | 'deposit' | null>(null)
 
+  // Local state for Distrust button UI
+  const [localDistrustLoading, setLocalDistrustLoading] = useState(false)
+  const [localDistrustSuccess, setLocalDistrustSuccess] = useState(false)
+  const [localDistrustError, setLocalDistrustError] = useState<string | null>(null)
+  const [localDistrustOperationType, setLocalDistrustOperationType] = useState<'created' | 'deposit' | null>(null)
+
   // Modal state
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [modalTriplets, setModalTriplets] = useState<any[]>([])
+  const [modalType, setModalType] = useState<'trust' | 'distrust'>('trust')
 
   // Extended panel state
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
@@ -86,6 +93,37 @@ const PageBlockchainCard = () => {
     }
 
     setModalTriplets([triplet])
+    setModalType('trust')
+    setShowWeightModal(true)
+  }
+
+  const handleDistrustPage = () => {
+    if (!currentUrl) return
+
+    // Extract domain and path from URL for display
+    const urlObj = new URL(currentUrl)
+    const domain = urlObj.hostname
+    const pathname = urlObj.pathname
+
+    // Create a more descriptive label: domain + path (without query params)
+    const pageLabel = pathname && pathname !== '/'
+      ? `${domain}${pathname}`
+      : domain
+
+    // Prepare triplet for modal
+    const triplet = {
+      id: 'distrust-page',
+      triplet: {
+        subject: 'I',
+        predicate: 'distrust',
+        object: pageLabel
+      },
+      description: `Distrust ${pageLabel}`,
+      url: currentUrl
+    }
+
+    setModalTriplets([triplet])
+    setModalType('distrust')
     setShowWeightModal(true)
   }
 
@@ -95,15 +133,22 @@ const PageBlockchainCard = () => {
     // PAUSE all auto-refreshes during transaction
     pauseRefresh()
 
-    setLocalTrustLoading(true)
-    setLocalTrustError(null)
-    setLocalTrustSuccess(false)
-    setLocalOperationType(null)
+    const isTrust = modalType === 'trust'
+    const setLoading = isTrust ? setLocalTrustLoading : setLocalDistrustLoading
+    const setError = isTrust ? setLocalTrustError : setLocalDistrustError
+    const setSuccess = isTrust ? setLocalTrustSuccess : setLocalDistrustSuccess
+    const setOpType = isTrust ? setLocalOperationType : setLocalDistrustOperationType
+
+    setLoading(true)
+    setError(null)
+    setSuccess(false)
+    setOpType(null)
 
     try {
       const weight = customWeights[0] || undefined
-      await trustPage(currentUrl, weight as bigint | undefined)
-      setLocalTrustSuccess(true)
+      // Pass the predicate name based on modal type
+      await trustPage(currentUrl, weight as bigint | undefined, modalType === 'trust' ? 'trusts' : 'distrust')
+      setSuccess(true)
 
       // Don't close modal - let user see the success message
       // Modal will be closed by user clicking Close button
@@ -116,22 +161,27 @@ const PageBlockchainCard = () => {
         fetchDataForCurrentPage()
       }, 1000)
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create trust'
-      setLocalTrustError(errorMessage)
+      const errorMessage = error instanceof Error ? error.message : `Failed to create ${modalType}`
+      setError(errorMessage)
 
       // RESUME even on error
       resumeRefresh()
     } finally {
-      setLocalTrustLoading(false)
+      setLoading(false)
     }
   }
 
   const handleModalClose = () => {
     setShowWeightModal(false)
     setModalTriplets([])
+    // Reset trust state
     setLocalTrustSuccess(false)
     setLocalTrustError(null)
     setLocalOperationType(null)
+    // Reset distrust state
+    setLocalDistrustSuccess(false)
+    setLocalDistrustError(null)
+    setLocalDistrustOperationType(null)
   }
 
   const handleAtomClick = (atomId: string) => {
@@ -310,39 +360,62 @@ const PageBlockchainCard = () => {
             </div>
           </StarBorder>
 
-          {/* Trust Button */}
-          <button
-            className={`trust-page-button ${localTrustSuccess ? 'success' : ''} ${localTrustLoading ? 'loading' : ''}`}
-            onClick={handleTrustPage}
-            disabled={localTrustLoading || !currentUrl}
-          >
-            <div className="trust-button-background">
-              <Iridescence
-                color={[1, 0.4, 0.5]}
-                speed={0.3}
-                mouseReact={false}
-                amplitude={0.1}
-                zoom={0.05}
-              />
-            </div>
-            <span className="trust-button-content">
-              {localTrustLoading ? (
-                <>
-                  <div className="button-spinner"></div>
-                  Creating trust...
-                </>
-              ) : localTrustSuccess ? (
-                <>✓ Trusted!</>
-              ) : (
-                <>TRUST</>
-              )}
-            </span>
-          </button>
+          {/* Trust & Distrust Buttons Row */}
+          <div className="trust-buttons-row">
+            {/* Trust Button */}
+            <button
+              className={`trust-page-button trust-btn ${localTrustSuccess ? 'success' : ''} ${localTrustLoading ? 'loading' : ''}`}
+              onClick={handleTrustPage}
+              disabled={localTrustLoading || localDistrustLoading || !currentUrl}
+            >
+              <div className="trust-button-background">
+                <Iridescence
+                  color={[1, 0.4, 0.5]}
+                  speed={0.3}
+                  mouseReact={false}
+                  amplitude={0.1}
+                  zoom={0.05}
+                />
+              </div>
+              <span className="trust-button-content">
+                {localTrustLoading ? (
+                  <>
+                    <div className="button-spinner"></div>
+                    Creating...
+                  </>
+                ) : localTrustSuccess ? (
+                  <>✓ Trusted!</>
+                ) : (
+                  <>TRUST</>
+                )}
+              </span>
+            </button>
+
+            {/* Distrust Button */}
+            <button
+              className={`trust-page-button distrust-btn ${localDistrustSuccess ? 'success' : ''} ${localDistrustLoading ? 'loading' : ''}`}
+              onClick={handleDistrustPage}
+              disabled={localTrustLoading || localDistrustLoading || !currentUrl}
+            >
+              <span className="trust-button-content">
+                {localDistrustLoading ? (
+                  <>
+                    <div className="button-spinner"></div>
+                    Creating...
+                  </>
+                ) : localDistrustSuccess ? (
+                  <>✓ Distrusted!</>
+                ) : (
+                  <>DISTRUST</>
+                )}
+              </span>
+            </button>
+          </div>
 
           {/* Error Display */}
-          {localTrustError && (
+          {(localTrustError || localDistrustError) && (
             <div className="trust-error">
-              <small>{localTrustError}</small>
+              <small>{localTrustError || localDistrustError}</small>
             </div>
           )}
         </div>
@@ -493,11 +566,11 @@ const PageBlockchainCard = () => {
         <WeightModal
           isOpen={showWeightModal}
           triplets={modalTriplets}
-          isProcessing={localTrustLoading}
-          transactionSuccess={localTrustSuccess}
-          transactionError={localTrustError || undefined}
-          createdCount={localOperationType === 'created' ? 1 : 0}
-          depositCount={localOperationType === 'deposit' ? 1 : 0}
+          isProcessing={modalType === 'trust' ? localTrustLoading : localDistrustLoading}
+          transactionSuccess={modalType === 'trust' ? localTrustSuccess : localDistrustSuccess}
+          transactionError={(modalType === 'trust' ? localTrustError : localDistrustError) || undefined}
+          createdCount={(modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'created' ? 1 : 0}
+          depositCount={(modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'deposit' ? 1 : 0}
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
         />,

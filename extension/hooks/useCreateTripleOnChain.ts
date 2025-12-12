@@ -50,6 +50,10 @@ export const useCreateTripleOnChain = () => {
     if (predicateName === 'trusts') {
       return PREDICATE_IDS.TRUSTS
     }
+    if (predicateName === 'distrust') {
+      // Return ID if it exists (non-empty), otherwise null to create it
+      return PREDICATE_IDS.DISTRUST || null
+    }
     return null
   }
 
