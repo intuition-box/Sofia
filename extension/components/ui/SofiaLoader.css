@@ -6,13 +6,14 @@
 
 .sofia-loader-svg {
   overflow: visible;
+  animation: sofia-zoom-pulse 4s ease-in-out infinite;
 }
 
 /* Contours des formes S avec halo */
 .sofia-loader-container .outline-path {
   fill: none;
   stroke: #FFF8EE;
-  stroke-width: 3;
+  stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 2500;
@@ -20,17 +21,17 @@
 }
 
 .sofia-loader-container .path-1 {
-  animation: sofia-draw-loop 5s ease-in-out infinite, sofia-glow-pulse 5s ease-in-out infinite;
+  animation: sofia-draw-loop 5s ease-in-out infinite, sofia-glow-intense 4s ease-in-out infinite;
 }
 
 .sofia-loader-container .path-2 {
-  animation: sofia-draw-loop-reverse 5s ease-in-out infinite, sofia-glow-pulse 5s ease-in-out infinite;
+  animation: sofia-draw-loop 5s ease-in-out infinite, sofia-glow-intense 4s ease-in-out infinite;
 }
 
 @keyframes sofia-draw-loop {
   0% {
     stroke-dashoffset: 2500;
-    opacity: 0.3;
+    opacity: 0.4;
   }
   25% {
     opacity: 1;
@@ -44,39 +45,32 @@
   }
   100% {
     stroke-dashoffset: -2500;
-    opacity: 0.3;
+    opacity: 0.4;
   }
 }
 
-@keyframes sofia-draw-loop-reverse {
-  0% {
-    stroke-dashoffset: -2500;
-    opacity: 0.3;
-  }
-  25% {
-    opacity: 1;
-  }
-  50% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-  75% {
-    opacity: 1;
-  }
-  100% {
-    stroke-dashoffset: 2500;
-    opacity: 0.3;
-  }
-}
 
-@keyframes sofia-glow-pulse {
+/* Zoom pulse effect on the whole SVG */
+@keyframes sofia-zoom-pulse {
   0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(255, 248, 238, 0.8))
-            drop-shadow(0 0 16px rgba(255, 248, 238, 0.5))
-            drop-shadow(0 0 24px rgba(255, 248, 238, 0.3));
+    transform: scale(1);
   }
   50% {
-    filter: drop-shadow(0 0 4px rgba(255, 248, 238, 0.6))
-            drop-shadow(0 0 8px rgba(255, 248, 238, 0.3));
+    transform: scale(1.08);
+  }
+}
+
+/* Intense glow effect */
+@keyframes sofia-glow-intense {
+  0%, 100% {
+    filter: drop-shadow(0 0 12px rgba(255, 248, 238, 1))
+            drop-shadow(0 0 25px rgba(255, 248, 238, 0.8))
+            drop-shadow(0 0 40px rgba(255, 248, 238, 0.5))
+            drop-shadow(0 0 60px rgba(255, 248, 238, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(255, 248, 238, 0.7))
+            drop-shadow(0 0 12px rgba(255, 248, 238, 0.4))
+            drop-shadow(0 0 20px rgba(255, 248, 238, 0.2));
   }
 }

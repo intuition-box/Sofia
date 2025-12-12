@@ -7,6 +7,7 @@ import { useEchoSelection } from '../../../hooks/useEchoSelection'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import WeightModal from '../../modals/WeightModal'
 import Iridescence from '../../ui/Iridescence'
+import SofiaLoader from '../../ui/SofiaLoader'
 import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
@@ -253,11 +254,8 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   if (!hasInitialLoad && parsedMessages.length === 0) {
     return (
       <div className="triples-container">
-        <div className="empty-state">
-          <p>Loading your echoes...</p>
-          <p className="empty-subtext">
-            Scanning your browsing activity for insights
-          </p>
+        <div className="loading-indicator">
+          <SofiaLoader size={150} />
         </div>
       </div>
     )

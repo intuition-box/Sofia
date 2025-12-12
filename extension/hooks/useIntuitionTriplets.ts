@@ -66,6 +66,7 @@ export interface IntuitionTriplet {
 
 interface UseIntuitionTripletsResult {
   triplets: IntuitionTriplet[]
+  isLoading: boolean
   refreshFromAPI: () => Promise<IntuitionTriplet[]>
 }
 
@@ -75,14 +76,17 @@ interface UseIntuitionTripletsResult {
  */
 export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
   const [triplets, setTriplets] = useState<IntuitionTriplet[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const { walletAddress: account } = useWalletFromStorage()
 
   const refreshFromAPI = useCallback(async (): Promise<IntuitionTriplet[]> => {
     try {
+      setIsLoading(true)
       console.log('🔍 refreshFromAPI called with account:', account)
       if (!account) {
         console.log('❌ No account, returning empty array')
         setTriplets([])
+        setIsLoading(false)
         return []
       }
 
@@ -248,12 +252,14 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
 
     console.log('📋 Final mapped triplets:', mappedTriplets)
     console.log('📋 Setting triplets in state, count:', mappedTriplets.length)
-    
+
     setTriplets(mappedTriplets)
+    setIsLoading(false)
     return mappedTriplets
   } catch (error) {
     console.error('💥 Error in refreshFromAPI:', error)
     setTriplets([])
+    setIsLoading(false)
     return []
   }
   }, [account])
@@ -266,6 +272,7 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
 
   return {
     triplets,
+    isLoading,
     refreshFromAPI
   }
 }

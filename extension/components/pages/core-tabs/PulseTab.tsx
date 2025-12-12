@@ -4,6 +4,7 @@ import { elizaDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import WeightModal from '../../modals/WeightModal'
+import SofiaLoader from '../../ui/SofiaLoader'
 import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
@@ -486,8 +487,8 @@ const PulseTab = () => {
   if (loading) {
     return (
       <div className="triples-container">
-        <div className="empty-state">
-          <p>Loading pulse analysis...</p>
+        <div className="loading-indicator">
+          <SofiaLoader size={150} />
         </div>
       </div>
     )
@@ -496,11 +497,8 @@ const PulseTab = () => {
   if (pulseAnalyses.length === 0) {
     return (
       <div className="triples-container">
-        <div className="empty-state">
-          <p>No Pulse Analysis Yet</p>
-          <p className="empty-subtext">
-            Use the Pulse Analysis button in Settings to analyze your browsing patterns
-          </p>
+        <div className="loading-indicator">
+          <SofiaLoader size={150} />
         </div>
       </div>
     )

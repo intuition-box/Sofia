@@ -4,6 +4,7 @@ import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import StakeModal from '../../modals/StakeModal'
+import SofiaLoader from '../../ui/SofiaLoader'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import logoIcon from '../../ui/icons/chatIcon.png'
 import '../../styles/CoreComponents.css'
@@ -18,7 +19,7 @@ interface SignalsTabProps {
 type SortOption = 'highest-shares' | 'lowest-shares' | 'highest-support' | 'lowest-support' | 'newest' | 'oldest' | 'a-z' | 'z-a' | 'platform'
 
 const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
-  const { triplets, refreshFromAPI } = useIntuitionTriplets()
+  const { triplets, isLoading, refreshFromAPI } = useIntuitionTriplets()
   const { addWeight, addShares, removeWeight } = useWeightOnChain()
   const { walletAddress: address } = useWalletFromStorage()
 
@@ -392,16 +393,13 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
             Try adjusting your search terms or clear the search to see all triplets.
           </p>
         </div>
+      ) : isLoading ? (
+        <div className="loading-indicator">
+          <SofiaLoader size={150} />
+        </div>
       ) : (
         <div className="empty-state">
-          <p>No Published Triplets Found</p>
-          <p className="empty-subtext">
-            Triplets you publish to Intuition blockchain will appear here.<br />
-            Create some triplets from Echoes tab to see them displayed with full on-chain data!
-          </p>
-          <button onClick={refreshFromAPI} className="refresh-button">
-            Refresh from Blockchain
-          </button>
+          <p>No triplets found</p>
         </div>
       )}
 
