@@ -31,7 +31,97 @@
       {
         "name": "User",
         "content": {
-          "text": "It’s Buenos Aires 🇦🇷"
+          "text": "It's Buenos Aires 🇦🇷"
+        }
+      }
+    ],
+    [
+      {
+        "name": "User",
+        "content": {
+          "text": "Can you search for vitalik.eth on Intuition?"
+        }
+      },
+      {
+        "name": "SofIA-Chat",
+        "content": {
+          "text": "Let me search the Intuition knowledge graph for vitalik.eth...",
+          "actions": ["search_account_ids", "get_account_info"]
+        }
+      }
+    ],
+    [
+      {
+        "name": "User",
+        "content": {
+          "text": "Who follows the Ethereum account on Intuition?"
+        }
+      },
+      {
+        "name": "SofIA-Chat",
+        "content": {
+          "text": "I'll check who follows Ethereum on the Intuition knowledge graph...",
+          "actions": ["search_atoms", "get_followers"]
+        }
+      }
+    ],
+    [
+      {
+        "name": "User",
+        "content": {
+          "text": "What entities does this address follow: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+        }
+      },
+      {
+        "name": "SofIA-Chat",
+        "content": {
+          "text": "Let me look up what this account follows on Intuition...",
+          "actions": ["get_following"]
+        }
+      }
+    ],
+    [
+      {
+        "name": "User",
+        "content": {
+          "text": "Extract knowledge from this: Alice works at OpenAI as a researcher"
+        }
+      },
+      {
+        "name": "SofIA-Chat",
+        "content": {
+          "text": "I'll extract the semantic relationships from that text...",
+          "actions": ["extract_triples"]
+        }
+      }
+    ],
+    [
+      {
+        "name": "User",
+        "content": {
+          "text": "Find lists about blockchain protocols"
+        }
+      },
+      {
+        "name": "SofIA-Chat",
+        "content": {
+          "text": "Let me search for lists related to blockchain protocols on Intuition...",
+          "actions": ["search_lists"]
+        }
+      }
+    ],
+    [
+      {
+        "name": "User",
+        "content": {
+          "text": "Tell me about Uniswap on Intuition"
+        }
+      },
+      {
+        "name": "SofIA-Chat",
+        "content": {
+          "text": "I'll search for Uniswap in the Intuition knowledge graph...",
+          "actions": ["search_atoms"]
         }
       }
     ]
@@ -69,9 +159,14 @@
   "plugins": [
     "@elizaos/plugin-sql",
     "@elizaos/plugin-bootstrap",
-    "@elizaos/plugin-gaianet"
+    "@elizaos/plugin-gaianet",
+    "@elizaos/plugin-mcp"
   ],
   "settings": {
+    "model": "Qwen2.5-72B-Instruct",
+    "temperature": 0.7,
+    "maxTokens": 2048,
+    "responseTimeout": 30000
   },
   "style": {
     "all": [],
