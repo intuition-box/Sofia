@@ -35,6 +35,8 @@ export const useElizaData = (): UseElizaDataResult => {
   const loadMessages = useCallback(async (): Promise<ElizaRecord[]> => {
     try {
       const allElizaMessages = await elizaDataService.getAllMessages()
+      console.log('🔍 [useElizaData] loadMessages - count:', allElizaMessages.length)
+      console.log('🔍 [useElizaData] loadMessages - sample:', allElizaMessages.slice(0, 3))
       setAllMessages(allElizaMessages)
       return allElizaMessages
     } catch (err) {

@@ -189,6 +189,9 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   useEffect(() => {
     const transformMessages = async () => {
       try {
+        console.log('🔍 EchoesTab: parsedMessages count:', parsedMessages.length)
+        console.log('🔍 EchoesTab: parsedMessages sample:', parsedMessages.slice(0, 3))
+
         // Load blacklist of published triplets
         const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
 
