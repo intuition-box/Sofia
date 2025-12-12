@@ -4,6 +4,7 @@ import { useResonanceService } from '../../hooks/useResonanceService'
 import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
 import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import logoIcon from '../../components/ui/icons/chatIcon.png'
+import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/CoreComponents.css'
@@ -74,7 +75,9 @@ const ResonancePage = () => {
         {/* Recommendations grid by theme */}
         {isLoading && validItems.length === 0 && (
           <div className="recommendations-section">
-            <div className="loading-indicator">Analyzing your wallet activity...</div>
+            <div className="loading-indicator">
+              <SofiaLoader size={150} />
+            </div>
           </div>
         )}
         
@@ -93,7 +96,9 @@ const ResonancePage = () => {
             </button>
             
             {isLoading && validItems.length > 0 && (
-              <div className="loading-indicator">Analyzing your wallet activity...</div>
+              <div className="loading-indicator">
+                <SofiaLoader size={60} />
+              </div>
             )}
             {previewError && (
               <div className="error-state">{previewError}</div>

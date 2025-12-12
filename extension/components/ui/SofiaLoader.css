@@ -1,0 +1,82 @@
+.sofia-loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sofia-loader-svg {
+  overflow: visible;
+}
+
+/* Contours des formes S avec halo */
+.sofia-loader-container .outline-path {
+  fill: none;
+  stroke: #FFF8EE;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 2500;
+  stroke-dashoffset: 2500;
+}
+
+.sofia-loader-container .path-1 {
+  animation: sofia-draw-loop 5s ease-in-out infinite, sofia-glow-pulse 5s ease-in-out infinite;
+}
+
+.sofia-loader-container .path-2 {
+  animation: sofia-draw-loop-reverse 5s ease-in-out infinite, sofia-glow-pulse 5s ease-in-out infinite;
+}
+
+@keyframes sofia-draw-loop {
+  0% {
+    stroke-dashoffset: 2500;
+    opacity: 0.3;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -2500;
+    opacity: 0.3;
+  }
+}
+
+@keyframes sofia-draw-loop-reverse {
+  0% {
+    stroke-dashoffset: -2500;
+    opacity: 0.3;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 2500;
+    opacity: 0.3;
+  }
+}
+
+@keyframes sofia-glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(255, 248, 238, 0.8))
+            drop-shadow(0 0 16px rgba(255, 248, 238, 0.5))
+            drop-shadow(0 0 24px rgba(255, 248, 238, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 4px rgba(255, 248, 238, 0.6))
+            drop-shadow(0 0 8px rgba(255, 248, 238, 0.3));
+  }
+}

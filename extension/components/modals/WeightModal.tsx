@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Iridescence from '../ui/Iridescence'
+import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Modal.css'
 
 interface Triplet {
@@ -193,7 +194,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
 
           {(isProcessing || transactionSuccess || transactionError) && (
             <div className="modal-processing-section">
-              {isProcessing && <div className="modal-loading-spinner"></div>}
+              {isProcessing && <SofiaLoader size={60} />}
               {transactionSuccess && <div className="modal-success-icon">✅</div>}
               {transactionError && <div className="modal-error-icon">❌</div>}
               <div className="modal-processing-text">

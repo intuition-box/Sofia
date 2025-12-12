@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import Iridescence from '../ui/Iridescence'
+import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Modal.css'
 
 interface FollowModalProps {
@@ -125,6 +126,15 @@ const FollowModal = ({
             </p>
           </div>
 
+          {loading && (
+            <div className="modal-processing-section">
+              <SofiaLoader size={60} />
+              <div className="modal-processing-text">
+                <p className="modal-processing-title">Processing...</p>
+              </div>
+            </div>
+          )}
+
           <div className="modal-actions">
             <button
               onClick={onClose}
@@ -133,24 +143,26 @@ const FollowModal = ({
             >
               Cancel
             </button>
-            <button
-              onClick={handleConfirmFollow}
-              disabled={loading || parseFloat(trustAmount) < 0.01}
-              className="modal-btn primary"
-            >
-              <div className="modal-btn-background">
-                <Iridescence
-                  color={[1, 0.4, 0.5]}
-                  speed={0.3}
-                  mouseReact={false}
-                  amplitude={0.1}
-                  zoom={0.05}
-                />
-              </div>
-              <div className="modal-btn-content">
-                {loading ? 'Processing...' : `Follow with ${trustAmount} TRUST`}
-              </div>
-            </button>
+            {!loading && (
+              <button
+                onClick={handleConfirmFollow}
+                disabled={parseFloat(trustAmount) < 0.01}
+                className="modal-btn primary"
+              >
+                <div className="modal-btn-background">
+                  <Iridescence
+                    color={[1, 0.4, 0.5]}
+                    speed={0.3}
+                    mouseReact={false}
+                    amplitude={0.1}
+                    zoom={0.05}
+                  />
+                </div>
+                <div className="modal-btn-content">
+                  Follow with {trustAmount} TRUST
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </div>

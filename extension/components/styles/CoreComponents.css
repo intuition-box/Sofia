@@ -1045,11 +1045,15 @@
   gap: 12px;
 }
 
-.loading-indicator{ 
+.loading-indicator{
   color : #F2DED6;
-  text-align : left;
+  text-align : center;
   display: flex;
   justify-content: center;
+  align-items: center;
+  min-height: 450px;
+  padding-top: 100px;
+  width: 100%;
 }
 .recommendations-grid {
   display: grid;
