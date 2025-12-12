@@ -1,0 +1,47 @@
+{
+  "name": "@0xintuition/mcp-server",
+  "version": "0.9.0",
+  "description": "MCP server for interacting with the Intuition knowledge graph.",
+  "license": "MIT",
+  "author": "@0xintuition",
+  "type": "module",
+  "bin": {
+    "intuition-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "tsc && node --experimental-specifier-resolution=node dist/test.js",
+    "start:http": "PORT=3001 SERVER_MODE=http node --experimental-specifier-resolution=node dist/index.js",
+    "start:stdio": "SERVER_MODE=stdio node --experimental-specifier-resolution=node dist/index.js",
+    "codegen": "graphql-codegen --config codegen.ts"
+  },
+  "dependencies": {
+    "@graphql-typed-document-node/core": "^3.2.0",
+    "@modelcontextprotocol/sdk": "1.11.2",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22",
+    "@types/node-fetch": "^2.6.12",
+    "express": "^4.18.2",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
+    "graphql-tag": "^2.12.6",
+    "node-fetch": "^3.3.2",
+    "universal-user-agent": "^7.0.2",
+    "zod": "^3.22.4",
+    "zod-to-json-schema": "^3.23.5"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/typescript": "^4.0.6",
+    "@graphql-codegen/typescript-graphql-request": "^6.2.0",
+    "@graphql-codegen/typescript-operations": "^4.2.0",
+    "shx": "^0.3.4",
+    "typescript": "^5.6.2"
+  },
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
+}

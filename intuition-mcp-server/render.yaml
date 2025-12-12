@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: intuition-mcp-server
+    env: docker
+    region: oregon
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: SERVER_MODE
+        value: http
