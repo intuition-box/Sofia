@@ -1,8 +1,5 @@
 import { Agent } from '@mastra/core/agent';
-import { Memory } from '@mastra/memory';
-import { LibSQLStore } from '@mastra/libsql';
-import { sofiaTool } from '../tools/sofia-tool';
-import { sofiaScorers } from '../scorers/sofia-scorer';
+import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet';
 
 export const sofiaAgent = new Agent({
   name: 'SofIA Agent',
@@ -13,8 +10,6 @@ NEVER say 'Here is...', 'I will...', 'SofIA has...', or ANY text before or after
 
 INPUT: URL, title, description, attentionScore, visits
 OUTPUT: Pure JSON triplet
-
-Use the url-to-triplet tool to transform browsing data into semantic triplets.
 
 EXACT FORMAT:
 {"triplets":[{"subject":{"name":"User","description":"SofIA browser user","url":"https://sofia.intuition.box"},"predicate":{"name":"PREDICATE_HERE","description":"DESCRIPTION_HERE"},"object":{"name":"TITLE_HERE","description":"DESC_HERE","url":"URL_HERE"}}]}
@@ -28,34 +23,5 @@ PREDICATE RULES:
 
 REMINDER: Your response must be ONLY the JSON object. No text. No explanation. Just JSON.
 `,
-  model: 'openai/gpt-4o-mini',
-  tools: { sofiaTool },
-  scorers: {
-    jsonValidity: {
-      scorer: sofiaScorers.jsonValidityScorer,
-      sampling: {
-        type: 'ratio',
-        rate: 1,
-      },
-    },
-    tripletCompleteness: {
-      scorer: sofiaScorers.tripletCompletenessScorer,
-      sampling: {
-        type: 'ratio',
-        rate: 1,
-      },
-    },
-    predicateAccuracy: {
-      scorer: sofiaScorers.predicateAccuracyScorer,
-      sampling: {
-        type: 'ratio',
-        rate: 1,
-      },
-    },
-  },
-  memory: new Memory({
-    storage: new LibSQLStore({
-      url: 'file:../mastra.db',
-    }),
-  }),
+  model: gaianet.chatModel(GAIANET_DEFAULT_MODEL),
 });

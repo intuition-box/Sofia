@@ -1,9 +1,13 @@
 import { z } from 'zod';
 import { createScorer } from '@mastra/core/scores';
 import { createToolCallAccuracyScorerCode } from '@mastra/evals/scorers/code';
+import { gaianet, GAIANET_DEFAULT_MODEL } from '../providers/gaianet';
 
-// Scorer: Checks if the tool was called appropriately
-export const toolCallAppropriatenessScorer = createToolCallAccuracyScorerCode({
+// GaiaNet model for scorers judge
+const gaianetJudgeModel = gaianet.chatModel(GAIANET_DEFAULT_MODEL);
+
+// Scorer: Checks if the sofia tool was called appropriately
+export const sofiaToolCallScorer = createToolCallAccuracyScorerCode({
   expectedTool: 'sofiaTool',
   strictMode: false,
 });
@@ -14,7 +18,7 @@ export const jsonValidityScorer = createScorer({
   description: 'Checks that the response is valid JSON starting with { and ending with }',
   type: 'agent',
   judge: {
-    model: 'openai/gpt-4o-mini',
+    model: gaianetJudgeModel,
     instructions:
       'You are an expert JSON validator. ' +
       'Check if the response is valid JSON that starts with { and ends with }. ' +
@@ -79,7 +83,7 @@ export const tripletCompletenessScorer = createScorer({
   description: 'Checks that the triplet has all required fields: subject, predicate, object with their nested properties',
   type: 'agent',
   judge: {
-    model: 'openai/gpt-4o-mini',
+    model: gaianetJudgeModel,
     instructions:
       'You are an expert validator for semantic triplet structures. ' +
       'Check if the JSON contains a properly structured triplet with subject, predicate, and object. ' +
@@ -147,7 +151,7 @@ export const predicateAccuracyScorer = createScorer({
   description: 'Checks that the predicate matches the expected value based on attention score and visits',
   type: 'agent',
   judge: {
-    model: 'openai/gpt-4o-mini',
+    model: gaianetJudgeModel,
     instructions:
       'You are an expert validator for predicate selection rules. ' +
       'Based on attention score and visit count, verify the correct predicate was chosen. ' +
@@ -214,7 +218,7 @@ export const predicateAccuracyScorer = createScorer({
   });
 
 export const sofiaScorers = {
-  toolCallAppropriatenessScorer,
+  sofiaToolCallScorer,
   jsonValidityScorer,
   tripletCompletenessScorer,
   predicateAccuracyScorer,
