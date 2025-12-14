@@ -1,0 +1,32 @@
+{
+  "name": "sofia-mastra",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "mastra dev",
+    "build": "mastra build",
+    "start": "mastra start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "@mastra/core": "^0.24.8",
+    "@mastra/evals": "^0.14.4",
+    "@mastra/libsql": "^0.16.4",
+    "@mastra/loggers": "^0.10.19",
+    "@mastra/memory": "^0.15.13",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.2",
+    "mastra": "^0.18.8",
+    "typescript": "^5.9.3"
+  },
+  "description": ""
+}
