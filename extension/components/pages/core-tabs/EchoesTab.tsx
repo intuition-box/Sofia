@@ -33,14 +33,29 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [isPredicateDropdownOpen, setIsPredicateDropdownOpen] = useState(false)
 
   // Hook IndexedDB pour les messages Eliza parsés uniquement
-  const { 
+  const {
     allMessages,
     loadMessages
   } = useElizaData()
-  
+
   // Tous les messages sont déjà des parsed_message (pas de raw stockage)
   const parsedMessages = allMessages
   const refreshMessages = loadMessages
+
+  // Listen for ECHOES_UPDATED messages from background to auto-refresh
+  useEffect(() => {
+    const handleMessage = (message: any) => {
+      if (message.type === 'ECHOES_UPDATED') {
+        console.log('🔄 [EchoesTab] Received ECHOES_UPDATED, refreshing...')
+        loadMessages()
+      }
+    }
+
+    chrome.runtime.onMessage.addListener(handleMessage)
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleMessage)
+    }
+  }, [loadMessages])
 
   // Extract unique predicates from triplets
   const uniquePredicates = useMemo(() => {
@@ -204,8 +219,16 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
             if (parsed && parsed.triplets && parsed.triplets.length > 0) {
               parsed.triplets.forEach((triplet, index) => {
+                // Normalize triplet values - handle both string format (ElizaOS) and object format (Mastra)
+                const subjectValue = typeof triplet.subject === 'object' ? triplet.subject?.name : triplet.subject
+                const predicateValue = typeof triplet.predicate === 'object' ? triplet.predicate?.name : triplet.predicate
+                const objectValue = typeof triplet.object === 'object' ? triplet.object?.name : triplet.object
+
+                // Extract URL from object if it's an object (Mastra format)
+                const objectUrl = typeof triplet.object === 'object' ? triplet.object?.url : (triplet.objectUrl || '')
+
                 // Generate hash for deduplication
-                const hash = `${triplet.subject}|${triplet.predicate}|${triplet.object}`.toLowerCase()
+                const hash = `${subjectValue}|${predicateValue}|${objectValue}`.toLowerCase()
                 if (seenHashes.has(hash)) {
                   return // Skip duplicate triplet
                 }
@@ -221,11 +244,11 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                 const echoTriplet: EchoTriplet = {
                   id: tripletId,
                   triplet: {
-                    subject: triplet.subject,
-                    predicate: triplet.predicate,
-                    object: triplet.object
+                    subject: subjectValue || 'User',
+                    predicate: predicateValue || 'visited',
+                    object: objectValue || ''
                   },
-                  url: triplet.objectUrl || triplet.object?.url || parsed.rawObjectUrl || '',
+                  url: objectUrl || parsed.rawObjectUrl || '',
                   description: parsed.rawObjectDescription || parsed.intention,
                   timestamp: record.timestamp,
                   sourceMessageId: record.messageId,

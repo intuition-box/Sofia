@@ -14,5 +14,9 @@
 // Falls back to localhost if variable is not defined
 export const SOFIA_SERVER_URL = process.env.PLASMO_PUBLIC_SOFIA_SERVER_URL || "http://localhost:3000"
 
-// Log the URL being used (useful for debugging)
+// Mastra API URL for SofIA agents (HTTP REST)
+export const MASTRA_API_URL = process.env.PLASMO_PUBLIC_MASTRA_URL || "http://localhost:4111"
+
+// Log the URLs being used (useful for debugging)
 console.log(`[Sofia Config] Using server URL: ${SOFIA_SERVER_URL}`)
+console.log(`[Sofia Config] Using Mastra API URL: ${MASTRA_API_URL}`)
