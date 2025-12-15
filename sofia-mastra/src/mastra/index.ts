@@ -2,22 +2,18 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
-import { weatherWorkflow } from './workflows/weather-workflow';
-import { weatherAgent } from './agents/weather-agent';
-import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
 import { sofiaWorkflow } from './workflows/sofia-workflow';
+import { chatbotWorkflow } from './workflows/chatbot-workflow';
 import { sofiaAgent } from './agents/sofia-agent';
 import { themeExtractorAgent } from './agents/theme-extractor-agent';
 import { pulseAgent } from './agents/pulse-agent';
 import { recommendationAgent } from './agents/recommendation-agent';
+import { chatbotAgent } from './agents/chatbot-agent';
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow, sofiaWorkflow },
-  agents: { weatherAgent, sofiaAgent, themeExtractorAgent, pulseAgent, recommendationAgent },
+  workflows: { sofiaWorkflow, chatbotWorkflow },
+  agents: { sofiaAgent, themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent },
   scorers: {
-    toolCallAppropriatenessScorer,
-    completenessScorer,
-    translationScorer,
   },
   storage: new LibSQLStore({
     url: ':memory:',

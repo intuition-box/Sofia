@@ -1,19 +1,8 @@
-import {
-  initializeChatbotSocket,
-  initializeSofiaSocket,
-  initializeThemeExtractorSocket,
-  initializePulseSocket,
-  initializeRecommendationSocket,
-  initializeUserAgentIds
-} from "./agentRouter";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 import { MessageBus } from "../lib/services/MessageBus";
 import { initializeThemeIconManager } from "./themeIconManager";
 import "./oauth/index"; // Initialize OAuth service
-
-// 🔥 FIX: Flag to prevent duplicate socket initialization
-let socketsInitialized = false
 
 // Helper pour récupérer l'adresse wallet depuis chrome.storage.session
 export async function getWalletAddress(): Promise<string | null> {
@@ -21,7 +10,7 @@ export async function getWalletAddress(): Promise<string | null> {
   return result.walletAddress || null
 }
 
-// Exported function to initialize sockets when wallet connects (called from messageHandlers)
+// Exported function to initialize when wallet connects (called from messageHandlers)
 export async function initializeSocketsOnWalletConnect(): Promise<void> {
   console.log("🔌 [index.ts] initializeSocketsOnWalletConnect called")
   await init()
@@ -44,59 +33,32 @@ async function init(): Promise<void> {
     // Initialize theme-aware icon system
     await initializeThemeIconManager()
 
-    // 🔥 FIX: Setup message handlers (has internal guard against duplicates)
+    // Setup message handlers (has internal guard against duplicates)
     setupMessageHandlers()
 
-    // 1️⃣ IMPORTANT : Vérifier que le wallet est connecté
+    // Check wallet connection
     const walletAddress = await getWalletAddress()
     if (!walletAddress) {
-      console.warn("⚠️ [index.ts] Wallet non connecté - Initialisation des agents reportée")
-      console.warn("⚠️ [index.ts] L'utilisateur doit connecter son wallet pour utiliser SofIA")
+      console.warn("⚠️ [index.ts] Wallet not connected - Some features may be limited")
       await initializeBadgeCount()
       return
     }
 
-    // 🔥 FIX: Prevent duplicate socket initialization
-    if (socketsInitialized) {
-      console.log("⚠️ [index.ts] Sockets already initialized, skipping")
-      return
-    }
+    console.log("✅ [index.ts] Wallet connected:", walletAddress)
 
-    console.log("✅ [index.ts] Wallet connecté:", walletAddress)
-
-    // 2️⃣ Initialiser les IDs utilisateur (DOIT être fait en premier)
-    console.log("🔑 [index.ts] Initializing user agent IDs...")
-    await initializeUserAgentIds()
-    console.log("✅ [index.ts] User agent IDs initialized")
-
-    // 3️⃣ Charger les domaines d'intention
+    // Load domain intentions
     console.log("🎯 [index.ts] Loading domain intentions...")
     await loadDomainIntentions()
 
-    // 4️⃣ Initialiser les websockets (maintenant que les IDs sont prêts)
-    console.log("📚 [index.ts] Initializing SofIA socket...")
-    await initializeSofiaSocket()
-    console.log("🤖 [index.ts] Initializing Chatbot socket...")
-    await initializeChatbotSocket()
-    console.log("🎨 [index.ts] Initializing ThemeExtractor socket...")
-    await initializeThemeExtractorSocket()
-    console.log("🫀 [index.ts] Initializing PulseAgent socket...")
-    await initializePulseSocket()
-    console.log("💎 [index.ts] Initializing RecommendationAgent socket...")
-    await initializeRecommendationSocket()
-
-    // 🔥 FIX: Mark sockets as initialized
-    socketsInitialized = true
-
-    // 5️⃣ Initialize badge count
+    // Initialize badge count
     console.log("🔔 [index.ts] Initializing badge count...")
     await initializeBadgeCount()
 
     console.log("✅ [index.ts] Extension initialization completed")
+    console.log("📡 [index.ts] All agents use Mastra HTTP - no sockets to initialize")
 
   } catch (error) {
     console.error("❌ [index.ts] Extension initialization failed:", error)
-    console.error("❌ [index.ts] This may be due to missing wallet connection")
   }
 }
 
@@ -109,7 +71,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Store in chrome.storage.session (survives reload, cleared on browser close)
       chrome.storage.session.set({ walletAddress })
       console.log('✅ [index.ts] Wallet connected:', walletAddress)
-      // Reinitialize extension with new wallet (initialize sockets)
+      // Reinitialize extension with new wallet
       init()
       sendResponse({ success: true })
     } else {
@@ -140,7 +102,6 @@ async function checkExistingConnection() {
   } else {
     console.log('🔄 [index.ts] No wallet session, initializing basic handlers only')
   }
-  // 🔥 FIX: Always call init() - it handles the flags internally
   await init()
 }
 

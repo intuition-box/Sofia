@@ -21,8 +21,9 @@
     "@mastra/evals": "^0.14.4",
     "@mastra/libsql": "^0.16.4",
     "@mastra/loggers": "^0.10.19",
+    "@mastra/mcp": "^0.3.6",
     "@mastra/memory": "^0.15.13",
-    "zod": "^4.1.13"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^25.0.2",
