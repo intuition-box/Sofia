@@ -11355,7 +11355,7 @@ export type SearchListsQueryVariables = Exact<{
 }>;
 
 
-export type SearchListsQuery = { predicate_objects: Array<{ id: string, triple_count: number, object: { term_id: string, label?: string | null, image?: string | null, value?: { thing?: { description?: string | null } | null } | null, cached_image?: { safe: boolean, url: string } | null, term: { vaults: Array<{ total_shares: string, position_count: number }> }, as_object_triples_aggregate: { aggregate?: { count: number } | null }, as_object_triples: Array<{ subject: { term_id: string, label?: string | null, image?: string | null } }> }, predicate: { term_id: string, label?: string | null } }> };
+export type SearchListsQuery = { predicate_objects: Array<{ triple_count: number, object: { term_id: string, label?: string | null, image?: string | null, value?: { thing?: { description?: string | null } | null } | null, cached_image?: { safe: boolean, url: string } | null, term: { vaults: Array<{ total_shares: string, position_count: number }> }, as_object_triples_aggregate: { aggregate?: { count: number } | null }, as_object_triples: Array<{ subject: { term_id: string, label?: string | null, image?: string | null } }> }, predicate: { term_id: string, label?: string | null } }> };
 
 export const AccountMetadataFragmentDoc = gql`
     fragment AccountMetadata on accounts {
@@ -11682,7 +11682,6 @@ export const SearchListsDocument = gql`
     order_by: [{triple_count: desc}]
     limit: 20
   ) {
-    id
     triple_count
     object {
       term_id

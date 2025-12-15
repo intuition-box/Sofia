@@ -126,7 +126,6 @@ export const SEARCH_LISTS = gql`
       order_by: [{ triple_count: desc }]
       limit: 20
     ) {
-      id
       triple_count
       object {
         term_id

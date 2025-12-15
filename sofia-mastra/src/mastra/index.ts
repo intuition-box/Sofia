@@ -16,7 +16,7 @@ export const mastra = new Mastra({
   scorers: {
   },
   storage: new LibSQLStore({
-    url: ':memory:',
+    url: process.env.DATABASE_URL || 'file:./data/mastra.db',
   }),
   logger: new PinoLogger({
     name: 'Mastra',

@@ -57,6 +57,24 @@ function mapToolName(llmToolName: string): { serverName: string; toolName: strin
   return { serverName: 'intuition', toolName: llmToolName };
 }
 
+/**
+ * Normalize tool arguments to match expected schema
+ * LLM sometimes generates wrong parameter names (e.g., "query" instead of "queries")
+ */
+function normalizeToolArguments(toolName: string, args: Record<string, unknown>): Record<string, unknown> {
+  // search_atoms expects { queries: string[] } but LLM might send { query: string }
+  if (toolName === 'search_atoms') {
+    if (args.query && !args.queries) {
+      return { queries: [args.query as string] };
+    }
+    // Ensure queries is an array
+    if (args.queries && !Array.isArray(args.queries)) {
+      return { queries: [args.queries as string] };
+    }
+  }
+  return args;
+}
+
 // Step 1: Send message to chatbot agent and get initial response
 const getChatbotResponse = createStep({
   id: 'get-chatbot-response',
@@ -142,9 +160,10 @@ const executeToolCalls = createStep({
         };
       }
 
-      // Execute the tool - Mastra MCP tools expect { context: arguments }
+      // Normalize arguments and execute the tool - Mastra MCP tools expect { context: arguments }
       const tool = serverTools[toolName];
-      const result = await tool.execute({ context: toolCall.arguments });
+      const normalizedArgs = normalizeToolArguments(toolName, toolCall.arguments);
+      const result = await tool.execute({ context: normalizedArgs });
 
       console.log(`✅ [ChatbotWorkflow] Tool result:`, JSON.stringify(result).substring(0, 200));
 

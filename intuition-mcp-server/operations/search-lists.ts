@@ -68,7 +68,6 @@ export const searchListsOperation: SearchListsOperation = {
               text: JSON.stringify({
                 query: validatedArgs.query,
                 results: validResults.slice(0, 10).map((list) => ({
-                  id: list.id,
                   label: list.object?.label,
                   triple_count: list.triple_count,
                   object_id: list.object?.term_id,
