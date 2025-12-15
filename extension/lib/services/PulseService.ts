@@ -3,7 +3,7 @@
  * Handles tab data collection and analysis
  */
 
-import { sendMessage } from '../../background/websocket'
+import { sendMessage } from '../../background/agentRouter'
 import type { MessageResponse } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
 
@@ -86,15 +86,29 @@ export class PulseService {
   }
 
   /**
+   * Clean URL by removing query parameters to reduce prompt size
+   * Keeps only the base URL + path
+   */
+  private cleanUrl(url: string): string {
+    try {
+      const parsed = new URL(url)
+      // Keep only origin + pathname (no query params, no hash)
+      return parsed.origin + parsed.pathname
+    } catch {
+      return url
+    }
+  }
+
+  /**
    * Send pulse data to PulseAgent
    */
   private async sendPulseDataToAgent(pulseData: any[]): Promise<MessageResponse> {
-    // Clean data to avoid cyclic references
-    const cleanData = pulseData.map(data => ({
-      url: data.url || '',
-      title: data.title || '',
+    // Clean data: remove query params from URLs and limit to 20 tabs max
+    const cleanData = pulseData.slice(0, 20).map(data => ({
+      url: this.cleanUrl(data.url || ''),
+      title: (data.title || '').slice(0, 100), // Limit title length
       keywords: data.keywords || '',
-      description: data.description || '',
+      description: (data.description || '').slice(0, 200), // Limit description
       timestamp: data.timestamp || Date.now()
     }))
 

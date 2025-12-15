@@ -12,8 +12,8 @@ import {
 } from "./mastraClient"
 
 /**
- * Extract text from ElizaOS message with fallback chain
- * Handles different message formats from ElizaOS server
+ * Extract text from message with fallback chain
+ * Used by ChatBot WebSocket handler
  */
 function extractMessageText(data: any): string {
   return (
@@ -28,7 +28,8 @@ function extractMessageText(data: any): string {
 
 /**
  * Check if a messageBroadcast is from the expected agent in the expected channel
- * Handles both channelId and roomId (ElizaOS may send either)
+ * Handles both channelId and roomId formats
+ * Used by ChatBot WebSocket handler
  */
 function isMessageFromAgent(data: any, agentIds: AgentIds): boolean {
   const channelMatch = (data.channelId === agentIds.CHANNEL_ID || data.roomId === agentIds.CHANNEL_ID)
@@ -180,7 +181,7 @@ async function setupAgentChannel(
 // Only ChatBot socket is needed (WebSocket for real-time chat)
 let socketBot: Socket
 
-// Cache des IDs utilisateur (only chatbot now)
+// User agent IDs cache (ChatBot only)
 let userAgentIds: {
   chatbot: AgentIds
 } | null = null
@@ -198,7 +199,7 @@ export async function initializeUserAgentIds(): Promise<void> {
 }
 
 /**
- * Export pour utilisation dans d'autres fichiers
+ * Export user agent IDs cache for use in other files
  */
 export function getUserAgentIdsCache() {
   return userAgentIds

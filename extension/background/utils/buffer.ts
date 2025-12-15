@@ -1,4 +1,4 @@
-import { sendMessage } from "../websocket"
+import { sendMessage } from "../agentRouter"
 
 
 const sentMessages = new Set<string>()

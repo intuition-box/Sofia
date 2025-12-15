@@ -5,7 +5,7 @@ import {
   initializePulseSocket,
   initializeRecommendationSocket,
   initializeUserAgentIds
-} from "./websocket";
+} from "./agentRouter";
 import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 import { MessageBus } from "../lib/services/MessageBus";

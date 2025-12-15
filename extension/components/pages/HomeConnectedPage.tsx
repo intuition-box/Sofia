@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import PulseAnimation from '../ui/orbanimation/PulseAnimation'
 import CircularMenu from '../ui/orbanimation/CircularMenu'
 import PageBlockchainCard from '../ui/PageBlockchainCard'
+import FullScreenLoader from '../ui/FullScreenLoader'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
 
@@ -24,12 +25,6 @@ const HomeConnectedPage = () => {
   const handleStartAnalysis = () => {
     setIsAnalyzing(true)
     setShowMenu(false)
-  }
-
-  const handleAnalysisComplete = () => {
-    setIsAnalyzing(false)
-    localStorage.setItem('targetTab', 'Pulse')
-    navigateTo('Sofia')
   }
 
   const handleChatSubmit = async (message: string) => {
@@ -61,10 +56,14 @@ const HomeConnectedPage = () => {
 
   return (
     <>
-      {(showMenu || isAnalyzing) && (
-        <div 
+      <FullScreenLoader
+        isVisible={isAnalyzing}
+        message="Analyzing your browsing session..."
+      />
+      {showMenu && !isAnalyzing && (
+        <div
           className="page-blur-overlay"
-          onClick={isAnalyzing ? undefined : handleBackgroundClick}
+          onClick={handleBackgroundClick}
           style={{
             position: 'fixed',
             top: 0,
@@ -75,11 +74,11 @@ const HomeConnectedPage = () => {
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             zIndex: 999,
-            cursor: isAnalyzing ? 'wait' : 'pointer'
+            cursor: 'pointer'
           }}
         />
       )}
-      <div className={`home-connected-page ${isAnalyzing ? 'home-analyzing' : ''}`}>
+      <div className="home-connected-page">
       <PageBlockchainCard />
 
 
@@ -97,7 +96,6 @@ const HomeConnectedPage = () => {
         >
           <PulseAnimation
             size={120}
-            isAnalyzing={isAnalyzing}
             onToggleMenu={handleOrbClick}
             showMenu={showMenu}
             onChatSubmit={handleChatSubmit}

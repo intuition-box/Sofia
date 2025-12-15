@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { elizaDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
