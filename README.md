@@ -227,22 +227,6 @@ GET  /sse          # SSE stream for MCP
 POST /messages     # MCP message handler
 GET  /health       # Health check
 ```
-
----
-
-## Testing
-
-```bash
-cd extension
-
-# Run all tests
-pnpm test:all
-
-# Individual tests
-pnpm test:persistence
-pnpm test:messages
-```
-
 ---
 
 ## Tech Stack Summary
