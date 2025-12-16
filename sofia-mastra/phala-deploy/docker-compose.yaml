@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  sofia:
+    image: maximesaintjoannis/sofia-mastra:latest
+    container_name: sofia
+    environment:
+      # GaiaNet configuration
+      - GAIANET_NODE_URL=https://0x8ec66d4be3b167fb1410f5b0aa264be6355ab5cd.gaia.domains/
+      - GAIANET_MODEL=Qwen2.5-14B-Instruct-Q5_K_M
+      - GAIANET_TEXT_MODEL_SMALL=Qwen2.5-14B-Instruct-Q5_K_M
+      - GAIANET_TEXT_MODEL_LARGE=Qwen2.5-14B-Instruct-Q5_K_M
+      - GAIANET_EMBEDDING_MODEL=Nomic-embed-text-v1.5
+      - GAIANET_EMBEDDING_URL=https://0x8ec66d4be3b167fb1410f5b0aa264be6355ab5cd.gaia.domains/v1/embeddings
+      - USE_EMBEDDINGS=true
+
+      # Database (LibSQL file for persistence on DStack encrypted volume)
+      - DATABASE_URL=file:/dstack/data/mastra.db
+
+      # MCP Server (internal - runs in same container)
+      - MCP_SERVER_URL=http://127.0.0.1:3001/sse
+
+      # Server configuration
+      - NODE_ENV=production
+    ports:
+      - '4111:4111'
+    restart: always
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4111/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
