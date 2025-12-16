@@ -50,11 +50,6 @@ User Transaction
 │                                      │
 │  Fixed Fee:      0.1 TRUST           │
 │  Percentage Fee: 5%                  │
-│                                      │
-│  Example: 10 TRUST deposit           │
-│  → Sofia Fee: 0.6 TRUST              │
-│  → MultiVault: 10 TRUST              │
-│  → User sends: 10.6 TRUST            │
 └──────────────────────────────────────┘
        │
        ▼
