@@ -1,4 +1,4 @@
-# Sofia Core
+![Sofia Banner](extension/assets/banner.png)
 
 **Transform your browsing into structured knowledge on the blockchain.**
 
