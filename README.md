@@ -161,7 +161,6 @@ pnpm dev
 
 ### Extension (`.env.development`)
 ```env
-PLASMO_PUBLIC_SOFIA_SERVER_URL=http://localhost:3000
 PLASMO_PUBLIC_MASTRA_URL=http://localhost:4111
 PLASMO_PUBLIC_NETWORK=testnet
 PLASMO_PUBLIC_PRIVY_APP_ID=your-privy-app-id
