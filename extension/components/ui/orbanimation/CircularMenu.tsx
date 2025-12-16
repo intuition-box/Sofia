@@ -5,9 +5,10 @@ interface CircularMenuProps {
   isVisible: boolean
   onItemClick?: (item: string) => void
   onStartAnalysis?: () => void
+  onStartImport?: () => void
 }
 
-const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuProps) => {
+const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis, onStartImport }: CircularMenuProps) => {
   const { navigateTo } = useRouter()
 
   const menuItems = [
@@ -52,10 +53,9 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuP
       action: () => {
         if (confirm('Import all your browser bookmarks?')) {
           chrome.runtime.sendMessage({ type: 'GET_BOOKMARKS' })
+          onStartImport?.()
+          onItemClick?.('import-data')
         }
-        localStorage.setItem('targetTab', 'Echoes')
-        navigateTo('Sofia')
-        onItemClick?.('import-data')
       }
     },
     {
@@ -86,31 +86,33 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis }: CircularMenuP
   if (!isVisible) return null
 
   return (
-    <aside className="menu-tooltip-container">
-      <input type="checkbox" id="menu-toggle" checked={isVisible} readOnly />
-      {menuItems.map((item) => (
-        <li
-          key={item.id}
-          style={{ '--i': item.position } as React.CSSProperties}
-          className="circle-box"
-        >
-          <a
-            href="#"
-            className="anchor"
-            onClick={(e) => {
-              e.preventDefault()
-              handleItemClick(item)
-            }}
-            style={{
-              background: item.gradient
-            }}
-            title={item.title}
-          >
-            {item.icon}
-          </a>
-        </li>
-      ))}
-    </aside>
+    <>
+        <aside className="menu-tooltip-container">
+          <input type="checkbox" id="menu-toggle" checked={isVisible} readOnly />
+          {menuItems.map((item) => (
+            <li
+              key={item.id}
+              style={{ '--i': item.position } as React.CSSProperties}
+              className="circle-box"
+            >
+              <a
+                href="#"
+                className="anchor"
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleItemClick(item)
+                }}
+                style={{
+                  background: item.gradient
+                }}
+                title={item.title}
+              >
+                {item.icon}
+              </a>
+            </li>
+          ))}
+        </aside>
+    </>
   )
 }
 

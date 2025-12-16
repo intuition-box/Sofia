@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build outputs (will be rebuilt in container)
+.mastra/
+dist/
+
+# Development files
+*.log
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Tests
+__tests__/
+*.test.ts
+*.spec.ts
+
+# Data (will be mounted as volume)
+data/

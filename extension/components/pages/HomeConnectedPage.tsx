@@ -12,6 +12,7 @@ const storage = new Storage()
 const HomeConnectedPage = () => {
   const [showMenu, setShowMenu] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   const { navigateTo } = useRouter()
 
   const handleOrbClick = () => {
@@ -27,6 +28,11 @@ const HomeConnectedPage = () => {
     setShowMenu(false)
   }
 
+  const handleStartImport = () => {
+    setIsImporting(true)
+    setShowMenu(false)
+  }
+
   const handleChatSubmit = async (message: string) => {
     console.log("🎯 handleChatSubmit called with message:", message)
     if (message.trim()) {
@@ -36,13 +42,19 @@ const HomeConnectedPage = () => {
     }
   }
 
-  // Listen for pulse analysis completion via Chrome runtime messages
+  // Listen for pulse analysis and theme extraction completion via Chrome runtime messages
   useEffect(() => {
     const handleMessage = (message: any) => {
       if (message.type === 'PULSE_ANALYSIS_COMPLETE') {
         console.log('🫀 Pulse analysis completed, redirecting...')
         setIsAnalyzing(false)
         localStorage.setItem('targetTab', 'Pulse')
+        navigateTo('Sofia')
+      }
+      if (message.type === 'THEME_EXTRACTION_COMPLETE') {
+        console.log('📚 Theme extraction completed, redirecting to Echoes...')
+        setIsImporting(false)
+        localStorage.setItem('targetTab', 'Echoes')
         navigateTo('Sofia')
       }
     }
@@ -60,7 +72,11 @@ const HomeConnectedPage = () => {
         isVisible={isAnalyzing}
         message="Analyzing your browsing session..."
       />
-      {showMenu && !isAnalyzing && (
+      <FullScreenLoader
+        isVisible={isImporting}
+        message="Importing and analyzing your bookmarks..."
+      />
+      {showMenu && !isAnalyzing && !isImporting && (
         <div
           className="page-blur-overlay"
           onClick={handleBackgroundClick}
@@ -107,6 +123,7 @@ const HomeConnectedPage = () => {
               setShowMenu(false)
             }}
             onStartAnalysis={handleStartAnalysis}
+            onStartImport={handleStartImport}
           />
         </div>
       </div>

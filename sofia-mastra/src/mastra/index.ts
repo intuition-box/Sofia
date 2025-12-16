@@ -28,4 +28,7 @@ export const mastra = new Mastra({
   observability: {
     default: { enabled: true },
   },
+  bundler: {
+    externals: ['pino', 'pino-pretty'],
+  },
 });

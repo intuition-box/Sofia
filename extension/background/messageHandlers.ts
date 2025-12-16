@@ -262,6 +262,13 @@ export function setupMessageHandlers(): void {
       case "GET_BOOKMARKS":
         handleDataExtraction('bookmarks', getAllBookmarks, async (urls: string[]) => {
           const themes = await sendThemeExtractionRequest(urls)
+
+          // Send completion notification to UI
+          chrome.runtime.sendMessage({
+            type: 'THEME_EXTRACTION_COMPLETE',
+            themesExtracted: themes?.length || 0
+          }).catch(() => {}) // Ignore if no listener
+
           return {
             success: true,
             message: 'Bookmark analysis completed',

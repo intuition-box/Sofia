@@ -1,0 +1,30 @@
+services:
+  sofia-mastra:
+    build:
+      context: ../..
+      dockerfile: sofia-mastra/phala-deploy/Dockerfile
+    container_name: sofia-mastra
+    ports:
+      - "4111:4111"
+      - "3001:3001"
+    volumes:
+      # Persist LibSQL data
+      - mastra_data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/mastra.db
+      - MCP_SERVER_URL=http://127.0.0.1:3001/sse
+      # GaiaNet configuration (set these in .env or override)
+      - GAIANET_BASE_URL=${GAIANET_BASE_URL:-}
+      - GAIANET_API_KEY=${GAIANET_API_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4111/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  mastra_data:
+    driver: local
