@@ -168,6 +168,16 @@
   border-color: #7b1fa250;
 }
 
+.connect-button.discord:hover {
+  background-color: #5865F2;
+  border-color: #4752c450;
+}
+
+.connect-button.discord.connected {
+  background-color: #5865F2;
+  border-color: #4752c450;
+}
+
 .platform-icon {
   width: 40px;
   height: 40px;
@@ -188,6 +198,10 @@
 }
 
 .twitch-icon {
+  border-radius: 10px;
+}
+
+.discord-icon {
   border-radius: 10px;
 }
 

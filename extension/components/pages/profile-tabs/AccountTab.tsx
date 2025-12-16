@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import youtubeIcon from '../../ui/social/youtube.svg'
 import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
+import discordIcon from '../../ui/social/discord.svg'
 import leftSideIcon from '../../ui/icons/left side.svg'
 import rightSideIcon from '../../ui/icons/right side.svg'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
@@ -24,6 +25,7 @@ const AccountTab = () => {
     youtube: false,
     spotify: false,
     twitch: false,
+    discord: false,
   })
 
   // User stats state
@@ -233,12 +235,14 @@ const AccountTab = () => {
         'oauth_token_youtube',
         'oauth_token_spotify',
         'oauth_token_twitch',
+        'oauth_token_discord',
       ])
 
       setOauthTokens({
         youtube: !!result.oauth_token_youtube,
         spotify: !!result.oauth_token_spotify,
         twitch: !!result.oauth_token_twitch,
+        discord: !!result.oauth_token_discord,
       })
     }
 
@@ -246,7 +250,7 @@ const AccountTab = () => {
 
     // Listen for storage changes to update connection states
     const handleStorageChange = (changes: any) => {
-      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch) {
+      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch || changes.oauth_token_discord) {
         checkOAuthTokens()
       }
     }
@@ -255,15 +259,15 @@ const AccountTab = () => {
     return () => chrome.storage.onChanged.removeListener(handleStorageChange)
   }, [])
 
-  // Fonction de connexion OAuth
-  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' ) => {
+  // OAuth connect function
+  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' | 'discord') => {
     chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
   }
 
-  // Fonction de déconnexion OAuth (soft - garde le sync)
-  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch') => {
+  // OAuth disconnect function (soft - keeps sync info)
+  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch' | 'discord') => {
     await chrome.storage.local.remove(`oauth_token_${platform}`)
-    // Note: On garde le sync_info pour éviter de re-télécharger les données
+    // Note: Keep sync_info to avoid re-downloading data
   }
 
   // Calculate circular progress for quests
@@ -316,6 +320,15 @@ const AccountTab = () => {
         >
           <div className="platform-icon spotify-icon">
             <img src={spotifyIcon} alt="Spotify" />
+          </div>
+        </button>
+
+        <button
+          className={`connect-button discord ${oauthTokens.discord ? 'connected' : ''}`}
+          onClick={() => oauthTokens.discord ? disconnectOAuth('discord') : connectOAuth('discord')}
+        >
+          <div className="platform-icon discord-icon">
+            <img src={discordIcon} alt="Discord" />
           </div>
         </button>
       </div>

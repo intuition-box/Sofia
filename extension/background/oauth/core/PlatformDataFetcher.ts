@@ -134,6 +134,14 @@ export class PlatformDataFetcher {
     if (!lastSync) return data
 
     const config = this.platformRegistry.getConfig(platform)!
+
+    // Discord returns a direct array, not wrapped in an object
+    if (config.dataStructure === 'array') {
+      if (!Array.isArray(data)) return data
+      if (!config.idField || !lastSync.lastItemIds) return data
+      return data.filter((item: any) => !lastSync.lastItemIds!.includes(item[config.idField!]))
+    }
+
     const filtered = { ...data }
     const dataArray = data[config.dataStructure]
 
@@ -159,7 +167,20 @@ export class PlatformDataFetcher {
     const config = this.platformRegistry.getConfig(platform)!
     const ids: string[] = []
 
-    if (config.idField && data[config.dataStructure]) {
+    if (!config.idField) return ids
+
+    // Discord returns a direct array
+    if (config.dataStructure === 'array') {
+      if (Array.isArray(data)) {
+        data.forEach((item: any) => {
+          const id = item[config.idField!]
+          if (id) ids.push(id)
+        })
+      }
+      return ids
+    }
+
+    if (data[config.dataStructure]) {
       data[config.dataStructure].forEach((item: any) => {
         const id = item[config.idField!]
         if (id) ids.push(id)

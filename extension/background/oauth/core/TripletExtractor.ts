@@ -11,9 +11,26 @@ export class TripletExtractor {
     const rules = this.platformRegistry.getTripletRules(platform)
     const triplets: Triplet[] = []
 
+    // Discord: skip ALL triplets if email not verified (proof of humanity required)
+    if (platform === 'discord' && !userData.profile?.verified) {
+      console.log('⚠️ [OAuth] Discord email not verified - skipping all triplets (proof of humanity required)')
+      return []
+    }
+
+    // Discord: add special "i am username" triplet from profile
+    if (platform === 'discord' && userData.profile?.username) {
+      triplets.push({
+        subject: 'i',
+        predicate: 'am',
+        object: userData.profile.global_name || userData.profile.username,
+        objectUrl: `https://discord.com/users/${userData.profile.id}`
+      })
+      console.log(`🔍 [OAuth] Added Discord identity triplet: i am ${userData.profile.global_name || userData.profile.username}`)
+    }
+
     for (const endpoint in userData.data) {
       const data = userData.data[endpoint]
-      
+
       for (const rule of rules) {
         if (endpoint.includes(rule.pattern)) {
           try {
@@ -86,16 +103,22 @@ export class TripletExtractor {
     } else {
       // Use platform's default data structure
       const config = this.platformRegistry.getConfig(platform)!
-      items = Array.isArray(data[config.dataStructure]) ? data[config.dataStructure] : []
+      // Discord returns a direct array
+      if (config.dataStructure === 'array') {
+        items = Array.isArray(data) ? data : []
+      } else {
+        items = Array.isArray(data[config.dataStructure]) ? data[config.dataStructure] : []
+      }
     }
 
     items.forEach((item: any) => {
       try {
         const object = rule.extractObject(item)
+        // Skip if object is null/undefined (e.g., owner_of when not owner)
         if (object) {
           const objectUrl = rule.extractObjectUrl ? rule.extractObjectUrl(item) : undefined
           triplets.push({
-            subject: 'You',
+            subject: 'i',
             predicate: rule.predicate,
             object,
             objectUrl
@@ -168,6 +191,12 @@ export class TripletExtractor {
           }
           return 'https://www.twitch.tv'
 
+        case 'discord':
+          // Discord user profile URL
+          if (profile?.id) {
+            return `https://discord.com/users/${profile.id}`
+          }
+          return 'https://discord.com'
 
         default:
           return `https://${platform}.com`

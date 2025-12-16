@@ -85,6 +85,24 @@ export class PlatformRegistry {
       requiresClientId: true
     })
 
+    // Discord Configuration
+    this.platforms.set('discord', {
+      name: 'Discord',
+      clientId: oauthConfig.discord.clientId,
+      clientSecret: oauthConfig.discord.clientSecret,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: ['identify', 'email', 'guilds'],
+      authUrl: 'https://discord.com/api/oauth2/authorize',
+      tokenUrl: 'https://discord.com/api/oauth2/token',
+      apiBaseUrl: 'https://discord.com/api/v10',
+      endpoints: {
+        profile: '/users/@me',
+        data: ['/users/@me/guilds']
+      },
+      dataStructure: 'array',
+      idField: 'id'
+    })
+
   }
 
   private initializeTripletRules() {
@@ -134,6 +152,23 @@ export class PlatformRegistry {
         predicate: PREDICATE_NAMES.FOLLOW,
         extractObject: (item) => item.broadcaster_name,
         extractObjectUrl: (item) => `https://www.twitch.tv/${item.broadcaster_login}`
+      }
+    ])
+
+    // Discord Triplet Rules
+    // Note: All Discord triplets require profile.verified = true (checked in TripletExtractor)
+    this.tripletRules.set('discord', [
+      {
+        pattern: 'guilds',
+        predicate: 'member_of',
+        extractObject: (guild) => guild.name,
+        extractObjectUrl: (guild) => `https://discord.com/channels/${guild.id}`
+      },
+      {
+        pattern: 'guilds',
+        predicate: 'owner_of',
+        extractObject: (guild) => guild.owner ? guild.name : null,
+        extractObjectUrl: (guild) => `https://discord.com/channels/${guild.id}`
       }
     ])
 

@@ -28,7 +28,7 @@ export interface PlatformConfig {
     data: string[]
   }
   // Platform-specific configurations
-  dataStructure: 'items' | 'data' // YouTube/Spotify use 'items', Twitch uses 'data'
+  dataStructure: 'items' | 'data' | 'array' // YouTube/Spotify use 'items', Twitch uses 'data', Discord returns direct array
   idField?: string // For incremental sync
   dateField?: string // For date-based filtering
   requiresClientId?: boolean // Twitch needs Client-Id header
@@ -52,8 +52,8 @@ export interface SyncInfo {
 export interface TripletRule {
   pattern: string // endpoint pattern to match
   predicate: string
-  extractObject: (item: any) => string
-  extractObjectUrl?: (item: any) => string // URL spécifique de l'objet
+  extractObject: (item: any) => string | null // Returns null to skip triplet creation
+  extractObjectUrl?: (item: any) => string // Object-specific URL
   extractFromPath?: string // path to items array (e.g., 'artists.items')
 }
 
