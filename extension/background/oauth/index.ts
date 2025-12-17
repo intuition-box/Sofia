@@ -52,6 +52,15 @@ export class OAuthService {
     return this.flowManager.handleImplicitCallback(platform, accessToken, state)
   }
 
+  async handleExternalOAuthToken(
+    platform: string,
+    accessToken: string,
+    refreshToken?: string,
+    expiresIn?: number
+  ): Promise<void> {
+    return this.flowManager.handleExternalOAuthToken(platform, accessToken, refreshToken, expiresIn)
+  }
+
   async syncPlatformData(platform: string): Promise<any> {
     console.log(`🔍 [OAuth] Starting data sync for ${platform}`)
     const userData = await this.dataFetcher.fetchUserData(platform)

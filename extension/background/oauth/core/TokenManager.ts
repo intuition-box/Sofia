@@ -52,20 +52,36 @@ export class TokenManager {
 
   private async refreshAccessToken(platform: string, token: UserToken): Promise<UserToken> {
     const config = this.platformRegistry.getConfig(platform)
-    if (!config || !config.clientSecret || !token.refreshToken) {
-      throw new Error(`Cannot refresh token for ${platform}: missing config or refresh token`)
+
+    // For external OAuth platforms (YouTube, Spotify, Discord, Twitter),
+    // token refresh requires client secret which is on the landing page.
+    // For now, users must re-authenticate when token expires.
+    // Future: implement refresh via landing page endpoint
+    if (config?.externalOAuth) {
+      console.log(`⚠️ [OAuth] Token expired for ${platform}. External OAuth requires re-authentication.`)
+      // Clear expired token so user can re-authenticate
+      await this.removeToken(platform)
+      throw new Error(`Token expired for ${platform}. Please reconnect your account.`)
     }
 
+    // For Twitch (implicit flow), no refresh token available
+    if (!token.refreshToken) {
+      console.log(`⚠️ [OAuth] No refresh token for ${platform}. Re-authentication required.`)
+      await this.removeToken(platform)
+      throw new Error(`Token expired for ${platform}. Please reconnect your account.`)
+    }
+
+    // This path is no longer used since all auth-code platforms use external OAuth
+    // Keeping for backwards compatibility
     console.log(`🔄 [OAuth] Refreshing token for ${platform}`)
 
-    const response = await fetch(config.tokenUrl!, {
+    const response = await fetch(config!.tokenUrl!, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
+        client_id: config!.clientId,
         refresh_token: token.refreshToken,
         grant_type: 'refresh_token'
       })
@@ -77,7 +93,7 @@ export class TokenManager {
     }
 
     const tokenData = await response.json()
-    
+
     const refreshedToken: UserToken = {
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token || token.refreshToken,
@@ -87,8 +103,13 @@ export class TokenManager {
     }
 
     await this.storeToken(platform, refreshedToken)
-    
+
     console.log(`✅ [OAuth] Token refreshed successfully for ${platform}`)
     return refreshedToken
+  }
+
+  async removeToken(platform: string): Promise<void> {
+    await chrome.storage.local.remove(`oauth_token_${platform}`)
+    console.log(`🗑️ [OAuth] Token removed for ${platform}`)
   }
 }

@@ -3,6 +3,7 @@ import youtubeIcon from '../../ui/social/youtube.svg'
 import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
 import discordIcon from '../../ui/social/discord.svg'
+import xIcon from '../../ui/social/x.svg'
 import leftSideIcon from '../../ui/icons/left side.svg'
 import rightSideIcon from '../../ui/icons/right side.svg'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
@@ -26,7 +27,17 @@ const AccountTab = () => {
     spotify: false,
     twitch: false,
     discord: false,
+    twitter: false,
   })
+
+  // Discord profile for avatar fallback
+  const [discordProfile, setDiscordProfile] = useState<{
+    id: string
+    username: string
+    global_name: string
+    avatar: string
+    verified: boolean
+  } | null>(null)
 
   // User stats state
   const [userStats, setUserStats] = useState({
@@ -228,7 +239,7 @@ const AccountTab = () => {
     loadUserStats()
   }, [walletAddress])
 
-  // Check OAuth token status on component mount
+  // Check OAuth token status and load Discord profile on component mount
   useEffect(() => {
     const checkOAuthTokens = async () => {
       const result = await chrome.storage.local.get([
@@ -236,6 +247,8 @@ const AccountTab = () => {
         'oauth_token_spotify',
         'oauth_token_twitch',
         'oauth_token_discord',
+        'oauth_token_twitter',
+        'discord_profile',
       ])
 
       setOauthTokens({
@@ -243,15 +256,25 @@ const AccountTab = () => {
         spotify: !!result.oauth_token_spotify,
         twitch: !!result.oauth_token_twitch,
         discord: !!result.oauth_token_discord,
+        twitter: !!result.oauth_token_twitter,
       })
+
+      // Load Discord profile if available
+      if (result.discord_profile) {
+        setDiscordProfile(result.discord_profile)
+      }
     }
 
     checkOAuthTokens()
 
     // Listen for storage changes to update connection states
     const handleStorageChange = (changes: any) => {
-      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch || changes.oauth_token_discord) {
+      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch || changes.oauth_token_discord || changes.oauth_token_twitter) {
         checkOAuthTokens()
+      }
+      // Update Discord profile when it changes
+      if (changes.discord_profile) {
+        setDiscordProfile(changes.discord_profile.newValue || null)
       }
     }
 
@@ -260,13 +283,18 @@ const AccountTab = () => {
   }, [])
 
   // OAuth connect function
-  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' | 'discord') => {
+  const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter') => {
     chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
   }
 
   // OAuth disconnect function (soft - keeps sync info)
-  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch' | 'discord') => {
+  const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter') => {
     await chrome.storage.local.remove(`oauth_token_${platform}`)
+    // Clear Discord profile on disconnect
+    if (platform === 'discord') {
+      await chrome.storage.local.remove('discord_profile')
+      setDiscordProfile(null)
+    }
     // Note: Keep sync_info to avoid re-downloading data
   }
 
@@ -275,6 +303,22 @@ const AccountTab = () => {
     return (current / total) * 100
   }
 
+  // Get Discord avatar URL
+  const getDiscordAvatarUrl = () => {
+    if (!discordProfile?.id || !discordProfile?.avatar) return undefined
+    return `https://cdn.discordapp.com/avatars/${discordProfile.id}/${discordProfile.avatar}.png?size=128`
+  }
+
+  // Get Discord avatar URL
+  const displayAvatar = userAvatar || getDiscordAvatarUrl()
+
+  // Check if label is a real name (ENS) or just a truncated wallet address
+  const isRealLabel = userLabel && !userLabel.startsWith('0x') && !userLabel.includes('...')
+
+  // Get display label: prioritize ENS name, fallback to Discord username
+  // Ignore userLabel if it's just a truncated wallet address
+  const displayLabel = isRealLabel ? userLabel : (discordProfile?.global_name || discordProfile?.username)
+
 
   return (
     <div className="profile-section account-tab">
@@ -282,15 +326,21 @@ const AccountTab = () => {
       {/* Profile Header */}
       <div className="profile-header">
         <Avatar
-          imgSrc={userAvatar}
-          name={userLabel || walletAddress}
+          imgSrc={displayAvatar}
+          name={displayLabel || walletAddress}
           avatarClassName="profile-avatar"
           size="large"
         />
         <div className="profile-info">
           <h2 className="profile-name">
-            {userLabel || (walletAddress ? `${walletAddress.toLowerCase().slice(0, 6)}...${walletAddress.toLowerCase().slice(-4)}` : 'Connect Wallet')}
+            {displayLabel || (walletAddress ? `${walletAddress.toLowerCase().slice(0, 6)}...${walletAddress.toLowerCase().slice(-4)}` : 'Connect Wallet')}
           </h2>
+          {/* Only show wallet below if we have a display name (Discord/ENS) */}
+          {displayLabel && walletAddress && (
+            <p className="profile-wallet">
+              {walletAddress.toLowerCase().slice(0, 6)}...{walletAddress.toLowerCase().slice(-4)}
+            </p>
+          )}
         </div>
       </div>
 
@@ -329,6 +379,15 @@ const AccountTab = () => {
         >
           <div className="platform-icon discord-icon">
             <img src={discordIcon} alt="Discord" />
+          </div>
+        </button>
+
+        <button
+          className={`connect-button twitter ${oauthTokens.twitter ? 'connected' : ''}`}
+          onClick={() => oauthTokens.twitter ? disconnectOAuth('twitter') : connectOAuth('twitter')}
+        >
+          <div className="platform-icon twitter-icon">
+            <img src={xIcon} alt="X" />
           </div>
         </button>
       </div>

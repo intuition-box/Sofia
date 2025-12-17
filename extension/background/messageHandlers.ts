@@ -1,11 +1,8 @@
 import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
-import { recordScroll } from "./behavior"
 import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
 import { getAllBookmarks, getAllHistory } from "./messageSenders"
-import { convertThemesToTriplets } from "./tripletProcessor"
-import { elizaDataService } from "../lib/database/indexedDB-methods"
 import {
   recordUserPredicate,
   getTopIntentions,
@@ -18,6 +15,7 @@ import { pageDataService } from "../lib/services/PageDataService"
 import { pulseService } from "../lib/services/PulseService"
 import { tripletStorageService } from "../lib/services/TripletStorageService"
 import { initializeSocketsOnWalletConnect } from "./index"
+import { oauthService } from "./oauth"
 
 // 🔥 FIX: Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
@@ -147,6 +145,15 @@ async function handleOllamaRequest(payload: any, sendResponse: (response: Messag
 }
 
 
+// Allowed origins for external messages (security)
+const ALLOWED_EXTERNAL_ORIGINS = [
+  'https://sofia.intuition.box',
+  'http://localhost:3000' // For development only
+]
+
+// Supported OAuth platforms
+const SUPPORTED_OAUTH_PLATFORMS = ['twitter', 'youtube', 'spotify', 'discord']
+
 export function setupMessageHandlers(): void {
   // 🔥 FIX: Prevent duplicate handler registration
   if (handlersRegistered) {
@@ -159,6 +166,17 @@ export function setupMessageHandlers(): void {
   // Handle external messages from auth page (localhost:3000 or sofia.intuition.box)
   chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
     console.log('📨 External message received:', message.type, 'from:', sender.origin)
+
+    // SECURITY: Validate origin before processing any external message
+    const isAllowedOrigin = sender.origin && ALLOWED_EXTERNAL_ORIGINS.some(
+      allowed => sender.origin!.startsWith(allowed)
+    )
+
+    if (!isAllowedOrigin) {
+      console.warn('⚠️ Rejected external message from untrusted origin:', sender.origin)
+      sendResponse({ success: false, error: 'Untrusted origin' })
+      return true
+    }
 
     if (message.type === 'WALLET_CONNECTED') {
       const walletAddress = message.data?.walletAddress || message.walletAddress
@@ -186,6 +204,37 @@ export function setupMessageHandlers(): void {
         console.error('❌ Failed to disconnect wallet:', error)
         sendResponse({ success: false, error: error.message })
       })
+      return true
+    }
+
+    // Handle OAuth token from landing page (generic handler for all platforms)
+    if (message.type === 'OAUTH_TOKEN_SUCCESS' || message.type === 'TWITTER_OAUTH_SUCCESS') {
+      const { platform, accessToken, refreshToken, expiresIn } = message
+
+      // Validate platform
+      const platformName = platform || 'twitter'
+      if (!SUPPORTED_OAUTH_PLATFORMS.includes(platformName)) {
+        console.warn('⚠️ Unsupported OAuth platform:', platformName)
+        sendResponse({ success: false, error: `Unsupported platform: ${platformName}` })
+        return true
+      }
+
+      if (accessToken) {
+        oauthService.handleExternalOAuthToken(
+          platformName,
+          accessToken,
+          refreshToken,
+          expiresIn
+        ).then(() => {
+          console.log(`✅ ${platformName} OAuth token received and stored`)
+          sendResponse({ success: true })
+        }).catch((error) => {
+          console.error(`❌ Failed to store ${platformName} token:`, error)
+          sendResponse({ success: false, error: error.message })
+        })
+      } else {
+        sendResponse({ success: false, error: 'No access token provided' })
+      }
       return true
     }
 

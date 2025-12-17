@@ -43,6 +43,14 @@
   white-space: nowrap;
 }
 
+.profile-wallet {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 4px 0 0 0;
+  font-weight: 400;
+}
+
 /* ========== STATS SECTION ========== */
 .stats-section {
   display: flex;
@@ -119,7 +127,7 @@
 .platform-icons-container {
   display: flex;
   justify-content: center;
-  gap: 64px;
+  gap: 16px;
   padding: 16px;
   margin-bottom: 20px;
 }
@@ -178,6 +186,16 @@
   border-color: #4752c450;
 }
 
+.connect-button.twitter:hover {
+  background-color: #000000;
+  border-color: #33333350;
+}
+
+.connect-button.twitter.connected {
+  background-color: #000000;
+  border-color: #33333350;
+}
+
 .platform-icon {
   width: 40px;
   height: 40px;
@@ -203,6 +221,14 @@
 
 .discord-icon {
   border-radius: 10px;
+}
+
+.twitter-icon {
+  border-radius: 10px;
+}
+
+.twitter-icon img {
+  filter: invert(1);
 }
 
 .connect-button-text {

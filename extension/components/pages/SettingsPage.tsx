@@ -44,10 +44,11 @@ const SettingsPage = () => {
       // Clear custom IndexedDB data (Eliza messages, triplets, etc.)
       await elizaDataService.clearAll()
 
-      // Clear OAuth tokens and sync info
+      // Clear OAuth tokens, sync info, and platform profiles
       await chrome.storage.local.remove([
         'oauth_token_youtube', 'oauth_token_spotify', 'oauth_token_twitch', 'oauth_token_twitter', 'oauth_token_discord',
-        'sync_info_youtube', 'sync_info_spotify', 'sync_info_twitch', 'sync_info_twitter', 'sync_info_discord'
+        'sync_info_youtube', 'sync_info_spotify', 'sync_info_twitch', 'sync_info_twitter', 'sync_info_discord',
+        'discord_profile'
       ])
 
       // Clear recommendations cache (if user has account)

@@ -28,6 +28,22 @@ export class TripletExtractor {
       console.log(`🔍 [OAuth] Added Discord identity triplet: i am ${userData.profile.global_name || userData.profile.username}`)
     }
 
+    // Twitter/X: add "i am username" triplet only if verified (blue checkmark)
+    if (platform === 'twitter') {
+      const twitterProfile = userData.profile?.data
+      if (twitterProfile?.verified) {
+        triplets.push({
+          subject: 'i',
+          predicate: 'am',
+          object: twitterProfile.name || twitterProfile.username,
+          objectUrl: `https://x.com/${twitterProfile.username}`
+        })
+        console.log(`🔍 [OAuth] Added Twitter identity triplet: i am ${twitterProfile.name || twitterProfile.username} (verified)`)
+      } else {
+        console.log('⚠️ [OAuth] Twitter user not verified - skipping identity triplet')
+      }
+    }
+
     for (const endpoint in userData.data) {
       const data = userData.data[endpoint]
 
@@ -197,6 +213,14 @@ export class TripletExtractor {
             return `https://discord.com/users/${profile.id}`
           }
           return 'https://discord.com'
+
+        case 'twitter':
+          // Twitter/X user profile URL
+          const twitterData = profile?.data
+          if (twitterData?.username) {
+            return `https://x.com/${twitterData.username}`
+          }
+          return 'https://x.com'
 
         default:
           return `https://${platform}.com`

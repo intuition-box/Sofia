@@ -32,6 +32,8 @@ export interface PlatformConfig {
   idField?: string // For incremental sync
   dateField?: string // For date-based filtering
   requiresClientId?: boolean // Twitch needs Client-Id header
+  requiresPKCE?: boolean // Twitter/X requires PKCE flow
+  externalOAuth?: boolean // Twitter/X uses external landing page for OAuth
 }
 
 export interface UserToken {

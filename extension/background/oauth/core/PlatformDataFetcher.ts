@@ -62,6 +62,19 @@ export class PlatformDataFetcher {
 
       userData.profile = await profileResponse.json()
 
+      // Store Discord profile for avatar/username display in UI
+      if (platform === 'discord' && userData.profile) {
+        const discordProfile = {
+          id: userData.profile.id,
+          username: userData.profile.username,
+          global_name: userData.profile.global_name,
+          avatar: userData.profile.avatar,
+          verified: userData.profile.verified
+        }
+        await chrome.storage.local.set({ discord_profile: discordProfile })
+        console.log('💾 [OAuth] Stored Discord profile for UI:', discordProfile)
+      }
+
       // Get user ID for platforms that need it
       let userId = null
       if (platform === 'twitch' && userData.profile.data?.[0]?.id) {
