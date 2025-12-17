@@ -24,10 +24,12 @@ export class PlatformDataFetcher {
     }
 
     console.log(`🔍 [OAuth] Fetching user data for ${platform}`)
+    console.log(`🔍 [OAuth] API Base URL: ${config.apiBaseUrl}`)
+    console.log(`🔍 [OAuth] Profile endpoint: ${config.endpoints.profile}`)
 
     // Get sync info for incremental sync
     const lastSync = await this.syncManager.getLastSyncInfo(platform)
-    
+
     // Get valid access token
     let accessToken: string
     if (providedToken) {
@@ -35,6 +37,8 @@ export class PlatformDataFetcher {
     } else {
       accessToken = await this.tokenManager.getValidToken(platform)
     }
+
+    console.log(`🔍 [OAuth] Token retrieved for ${platform}: ${accessToken ? accessToken.substring(0, 20) + '...' : 'NULL'}`)
 
 
     const userData: UserData = {
@@ -54,13 +58,23 @@ export class PlatformDataFetcher {
       }
 
       // Fetch profile
-      const profileResponse = await fetch(`${config.apiBaseUrl}${config.endpoints.profile}`, { headers })
-      
+      const profileUrl = `${config.apiBaseUrl}${config.endpoints.profile}`
+      console.log(`🔍 [OAuth] Fetching profile from: ${profileUrl}`)
+      console.log(`🔍 [OAuth] Headers:`, JSON.stringify(headers))
+
+      const profileResponse = await fetch(profileUrl, { headers })
+
+      console.log(`🔍 [OAuth] Profile response status: ${profileResponse.status}`)
+      console.log(`🔍 [OAuth] Profile response headers:`, Object.fromEntries(profileResponse.headers.entries()))
+
       if (!profileResponse.ok) {
-        throw new Error(`Profile fetch failed: ${profileResponse.status}`)
+        const errorBody = await profileResponse.text()
+        console.error(`❌ [OAuth] Profile fetch failed for ${platform}:`, profileResponse.status, errorBody)
+        throw new Error(`Profile fetch failed: ${profileResponse.status} - ${errorBody}`)
       }
 
       userData.profile = await profileResponse.json()
+      console.log(`✅ [OAuth] Profile fetched for ${platform}:`, JSON.stringify(userData.profile).substring(0, 200))
 
       // Store Discord profile for avatar/username display in UI
       if (platform === 'discord' && userData.profile) {
@@ -137,6 +151,9 @@ export class PlatformDataFetcher {
 
     } catch (error) {
       console.error(`❌ [OAuth] Error fetching user data for ${platform}:`, error)
+      console.error(`❌ [OAuth] Error name:`, error?.name)
+      console.error(`❌ [OAuth] Error message:`, error?.message)
+      console.error(`❌ [OAuth] Error stack:`, error?.stack)
       throw error
     }
 
