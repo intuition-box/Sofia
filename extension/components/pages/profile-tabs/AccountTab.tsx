@@ -14,6 +14,7 @@ import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../../../lib/config/constants'
 import Avatar from '../../ui/Avatar'
 import { useQuestSystem } from '../../../hooks/useQuestSystem'
+import { useClaimHumanity } from '../../../hooks/useClaimHumanity'
 import '../../styles/AccountTab.css'
 
 const AccountTab = () => {
@@ -47,7 +48,10 @@ const AccountTab = () => {
   })
 
   // Quest system hook - provides real quests based on user progress
-  const { activeQuests, level, totalXP, loading: questsLoading } = useQuestSystem()
+  const { activeQuests, level, totalXP, loading: questsLoading, markQuestCompleted } = useQuestSystem()
+
+  // Claim Humanity hook - handles Proof of Human attestation
+  const { isHuman, canClaim, isClaiming, claimHumanity } = useClaimHumanity()
 
   // Load user avatar and label from GraphQL
   useEffect(() => {
@@ -481,6 +485,27 @@ const AccountTab = () => {
                   <span className="quest-status" style={{ color: quest.statusColor }}>
                     {quest.status === 'active' ? 'In Progress' : quest.status === 'completed' ? 'Completed' : 'Locked'} • +{quest.xpReward} XP
                   </span>
+                  {/* Claim Humanity button for proof-of-human quest */}
+                  {quest.id === 'proof-of-human' && quest.claimable && canClaim && !isHuman && (
+                    <button
+                      className="claim-humanity-button"
+                      onClick={async () => {
+                        const result = await claimHumanity()
+                        if (result.success) {
+                          markQuestCompleted('proof-of-human')
+                        } else {
+                          console.error('Claim failed:', result.error)
+                          alert(`Claim failed: ${result.error}`)
+                        }
+                      }}
+                      disabled={isClaiming}
+                    >
+                      {isClaiming ? 'Claiming...' : 'Claim Humanity'}
+                    </button>
+                  )}
+                  {quest.id === 'proof-of-human' && isHuman && (
+                    <span className="human-badge">Verified Human</span>
+                  )}
                 </div>
               </div>
             )

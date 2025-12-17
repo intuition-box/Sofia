@@ -9,10 +9,12 @@ import { themeExtractorAgent } from './agents/theme-extractor-agent';
 import { pulseAgent } from './agents/pulse-agent';
 import { recommendationAgent } from './agents/recommendation-agent';
 import { chatbotAgent } from './agents/chatbot-agent';
+import { humanAttestorTool } from './tools/human-attestor';
 
 export const mastra = new Mastra({
   workflows: { sofiaWorkflow, chatbotWorkflow },
   agents: { sofiaAgent, themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent },
+  tools: { humanAttestorTool },
   scorers: {
   },
   storage: new LibSQLStore({

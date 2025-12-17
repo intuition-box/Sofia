@@ -1,22 +1,31 @@
 /**
  * useClaimHumanity Hook
- * Handles the "Proof of Human" on-chain attestation
- * Creates a triple: [I] [is_human] [verified]
+ * Handles the "Proof of Human" on-chain attestation via Mastra API
+ * The bot pays all gas fees - free for the user!
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { useCreateTripleOnChain } from './useCreateTripleOnChain'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { BlockchainService } from '../lib/services/blockchainService'
+
+// Mastra API URL (TEE-secured on Phala)
+const MASTRA_API_URL = process.env.PLASMO_PUBLIC_MASTRA_URL || 'https://mastra.sofia.xyz'
 
 // Storage key for human attestation
 const HUMAN_ATTESTATION_KEY = 'human_attestation'
 
 export interface HumanAttestation {
   txHash: string
-  tripleVaultId: string
   claimedAt: number
   walletAddress: string
+  blockNumber?: number
+}
+
+export interface VerificationStatus {
+  youtube: boolean
+  spotify: boolean
+  discord: boolean
+  twitch: boolean
+  twitter: boolean
 }
 
 export interface ClaimHumanityResult {
@@ -25,19 +34,19 @@ export interface ClaimHumanityResult {
   canClaim: boolean
   isClaiming: boolean
   claimHumanity: () => Promise<{ success: boolean; txHash?: string; error?: string }>
-  checkExistingAttestation: () => Promise<boolean>
+  verificationStatus: VerificationStatus | null
 }
 
 export const useClaimHumanity = (): ClaimHumanityResult => {
   const { walletAddress } = useWalletFromStorage()
-  const { createTripleOnChain } = useCreateTripleOnChain()
 
   const [isHuman, setIsHuman] = useState(false)
   const [attestation, setAttestation] = useState<HumanAttestation | null>(null)
   const [canClaim, setCanClaim] = useState(false)
   const [isClaiming, setIsClaiming] = useState(false)
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | null>(null)
 
-  // Check if user has all 5 OAuth connections
+  // Check if user has all 5 OAuth connections locally
   const checkCanClaim = useCallback(async () => {
     const result = await chrome.storage.local.get([
       'oauth_token_youtube',
@@ -47,14 +56,17 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
       'oauth_token_twitter',
     ])
 
-    const connectedCount = [
-      result.oauth_token_youtube,
-      result.oauth_token_spotify,
-      result.oauth_token_twitch,
-      result.oauth_token_discord,
-      result.oauth_token_twitter,
-    ].filter(Boolean).length
+    const status: VerificationStatus = {
+      youtube: !!result.oauth_token_youtube,
+      spotify: !!result.oauth_token_spotify,
+      discord: !!result.oauth_token_discord,
+      twitch: !!result.oauth_token_twitch,
+      twitter: !!result.oauth_token_twitter,
+    }
 
+    setVerificationStatus(status)
+
+    const connectedCount = Object.values(status).filter(Boolean).length
     setCanClaim(connectedCount >= 5)
     return connectedCount >= 5
   }, [])
@@ -79,40 +91,7 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
     return false
   }, [walletAddress])
 
-  // Check if attestation already exists on-chain
-  const checkExistingAttestation = useCallback(async (): Promise<boolean> => {
-    if (!walletAddress) return false
-
-    try {
-      // Check if the triple [I] [is_human] [verified] already exists
-      // We'll query the blockchain to see if the user has already claimed
-      const tripleCheck = await BlockchainService.checkTripleExistsByNames(
-        'I',
-        'is_human',
-        'verified'
-      )
-
-      if (tripleCheck.exists) {
-        // Store locally if found on-chain but not in local storage
-        const newAttestation: HumanAttestation = {
-          txHash: 'existing',
-          tripleVaultId: tripleCheck.tripleVaultId || '',
-          claimedAt: Date.now(),
-          walletAddress,
-        }
-        await chrome.storage.local.set({ [HUMAN_ATTESTATION_KEY]: newAttestation })
-        setAttestation(newAttestation)
-        setIsHuman(true)
-        return true
-      }
-    } catch (error) {
-      console.error('Error checking existing attestation:', error)
-    }
-
-    return false
-  }, [walletAddress])
-
-  // Claim humanity on-chain
+  // Claim humanity via Mastra API (bot pays gas!)
   const claimHumanity = useCallback(async (): Promise<{ success: boolean; txHash?: string; error?: string }> => {
     if (!walletAddress) {
       return { success: false, error: 'No wallet connected' }
@@ -129,37 +108,68 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
     setIsClaiming(true)
 
     try {
-      console.log('🧬 [ClaimHumanity] Starting on-chain claim...')
+      console.log('🧬 [ClaimHumanity] Starting claim via Mastra API...')
 
-      // Create the triple: [I] [is_human] [verified]
-      const result = await createTripleOnChain(
-        'is_human', // predicate
-        {
-          name: 'verified',
-          description: 'Verified human through multi-platform OAuth attestation',
-          url: '',
-        }
-      )
+      // 1. Récupérer les 5 tokens OAuth
+      const tokenResult = await chrome.storage.local.get([
+        'oauth_token_youtube',
+        'oauth_token_spotify',
+        'oauth_token_discord',
+        'oauth_token_twitch',
+        'oauth_token_twitter',
+      ])
 
-      if (result.success) {
-        console.log('✅ [ClaimHumanity] Claim successful!', result)
-
-        // Store attestation locally
-        const newAttestation: HumanAttestation = {
-          txHash: result.txHash,
-          tripleVaultId: result.tripleVaultId,
-          claimedAt: Date.now(),
+      // 2. Appeler Mastra Tool via API
+      const response = await fetch(`${MASTRA_API_URL}/api/tools/human-attestor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           walletAddress,
-        }
+          tokens: {
+            youtube: tokenResult.oauth_token_youtube,
+            spotify: tokenResult.oauth_token_spotify,
+            discord: tokenResult.oauth_token_discord,
+            twitch: tokenResult.oauth_token_twitch,
+            twitter: tokenResult.oauth_token_twitter,
+          },
+        }),
+      })
 
-        await chrome.storage.local.set({ [HUMAN_ATTESTATION_KEY]: newAttestation })
-        setAttestation(newAttestation)
-        setIsHuman(true)
-
-        return { success: true, txHash: result.txHash }
-      } else {
-        return { success: false, error: 'Transaction failed' }
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`API error: ${response.status} - ${errorText}`)
       }
+
+      const data = await response.json()
+
+      // Update verification status from API response
+      if (data.verified) {
+        setVerificationStatus(data.verified)
+      }
+
+      if (!data.success) {
+        console.error('❌ [ClaimHumanity] Verification failed:', data)
+        return {
+          success: false,
+          error: data.error || `Only ${data.verifiedCount}/5 platforms verified`,
+        }
+      }
+
+      console.log('✅ [ClaimHumanity] Claim successful!', data)
+
+      // 3. Stocker l'attestation localement
+      const newAttestation: HumanAttestation = {
+        txHash: data.txHash,
+        claimedAt: Date.now(),
+        walletAddress,
+        blockNumber: data.blockNumber,
+      }
+
+      await chrome.storage.local.set({ [HUMAN_ATTESTATION_KEY]: newAttestation })
+      setAttestation(newAttestation)
+      setIsHuman(true)
+
+      return { success: true, txHash: data.txHash }
     } catch (error) {
       console.error('❌ [ClaimHumanity] Claim failed:', error)
       return {
@@ -169,7 +179,7 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
     } finally {
       setIsClaiming(false)
     }
-  }, [walletAddress, canClaim, isHuman, createTripleOnChain])
+  }, [walletAddress, canClaim, isHuman])
 
   // Load on mount
   useEffect(() => {
@@ -203,6 +213,6 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
     canClaim,
     isClaiming,
     claimHumanity,
-    checkExistingAttestation,
+    verificationStatus,
   }
 }
