@@ -362,7 +362,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       <div className="triplet-detail-actions">
                       {/* Bouton Stake */}
                         <button
-                          className="stake-button"
+                          className="portal-button"
                           onClick={(e) => {
                             e.stopPropagation()
                             // Smart default: use curve 1 if user has shares on linear, otherwise curve 2

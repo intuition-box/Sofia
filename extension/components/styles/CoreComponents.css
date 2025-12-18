@@ -421,7 +421,7 @@
 }
 
 .portal-button {
-  background: rgba(255, 255, 255, 0.1);
+  background: #3937371a;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   color: white;
@@ -434,8 +434,9 @@
 }
 
 .portal-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+  background: rgba(255, 208, 180, 0.082);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px 0 rgba(255, 226, 145, 0.281);
 }
 
 /* ========== UPVOTE BADGES ========== */
@@ -585,24 +586,6 @@
 }
 
 /* ========== STAKE BUTTON ========== */
-
-.stake-button {
-  color: #fff;
-  cursor: pointer;
-  background: #ffffff1a;
-  border: 1px solid #fff3;
-  border-radius: 4px;
-  padding: 15px 20px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 500;
-  font-size: 15px;
-  transition: all .2s;
-}
-
-.stake-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-}
 
 .portal-fallback-link {
   color: #b9977d;
