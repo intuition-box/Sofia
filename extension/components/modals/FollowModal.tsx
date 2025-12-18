@@ -18,10 +18,10 @@ const FollowModal = ({
   const [trustAmount, setTrustAmount] = useState('0.01')
   const [loading, setLoading] = useState(false)
 
-  // Predefined amounts based on Intuition's follow-actions.tsx
+  // Predefined amounts
   const predefinedAmounts = [
     { label: 'Minimum', value: '0.01' },
-    { label: 'Default', value: '0.05' },
+    { label: 'Default', value: '0.5' },
     { label: 'Strong', value: '1' }
   ]
 
@@ -77,7 +77,7 @@ const FollowModal = ({
       <div className="modal-content">
         <div className="modal-header">
           <div className="modal-title">
-            Follow {accountLabel}
+            Follow
           </div>
           <button
             className="modal-close"
@@ -93,37 +93,40 @@ const FollowModal = ({
             Choose how much TRUST to stake on this follow relationship
           </p>
 
-          <div className="modal-section">
-            <div className="modal-custom-label">Quick amounts (TRUST)</div>
-            <div className="modal-amount-options">
-              {predefinedAmounts.map(amount => (
-                <button
-                  key={amount.value}
-                  onClick={() => handleAmountSelect(amount.value)}
-                  className={`modal-amount-option ${trustAmount === amount.value ? 'selected' : ''}`}
-                >
-                  <span className="modal-amount-label">{amount.label}</span>
-                  <span className="modal-amount-value">{amount.value} TRUST</span>
-                </button>
-              ))}
-            </div>
+          {/* Triple Display */}
+          <div className="modal-triplet-info">
+            <p>
+              <span className="subject">I</span>{' '}
+              <span className="action">follow</span>{' '}
+              <span className="object">{accountLabel}</span>
+            </p>
           </div>
 
           <div className="modal-custom-amount">
-            <div className="modal-custom-label">Custom amount (TRUST)</div>
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={trustAmount}
-              onChange={handleCustomAmountChange}
-              className="modal-custom-input"
-              placeholder="Enter amount..."
-              disabled={loading}
-            />
-            <p className="modal-custom-hint">
-              Minimum: 0.01 TRUST
-            </p>
+            <div className="modal-amount-row">
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={trustAmount}
+                onChange={handleCustomAmountChange}
+                onFocus={(e) => e.target.select()}
+                className="modal-custom-input"
+                placeholder="Min 0.01 TRUST"
+                disabled={loading}
+              />
+              <div className="modal-amount-options">
+                {predefinedAmounts.map(amount => (
+                  <button
+                    key={amount.value}
+                    onClick={() => handleAmountSelect(amount.value)}
+                    className={`modal-amount-option ${trustAmount === amount.value ? 'selected' : ''}`}
+                  >
+                    {amount.value}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {loading && (

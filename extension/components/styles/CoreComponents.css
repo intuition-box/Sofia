@@ -173,21 +173,10 @@
 /* ========== TRIPLET DETAILS ========== */
 
 .triplet-detail-section {
-  padding: 16px;
-  background-color: rgba(251, 247, 245, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(242, 222, 214, 0.1);
   transition: all 0.3s ease;
   overflow: hidden;
   width: 100%;
   box-sizing: border-box;
-  margin-top: 12px;
-}
-
-.triplet-detail-section:hover {
-  background-color: rgba(251, 247, 245, 0.08);
-  border-color: rgba(199, 134, 108, 0.3);
-  transform: translateY(-1px);
 }
 
 .triplet-detail-title {
@@ -207,6 +196,7 @@
   font-weight: 600;
   color: #FBF7F5;
   margin: 0 0 8px 0;
+  margin-top: 20px;
   line-height: 1.4;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -223,13 +213,6 @@
   opacity: 0.9;
 }
 
-.triplet-detail-timestamp {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
-  color: #F2DED6;
-  opacity: 0.7;
-  margin: 8px 0 0 0;
-}
 
 .triplet-detail-url {
   font-family: 'Montserrat', sans-serif;
@@ -442,8 +425,8 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   color: white;
-  padding: 4px 8px;
-  font-size: 12px;
+  padding: 15px 20px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: 'Montserrat', sans-serif;
@@ -604,27 +587,25 @@
 /* ========== STAKE BUTTON ========== */
 
 .stake-button {
-  padding: 4px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
   cursor: pointer;
-  font-size: 12px;
+  background: #ffffff1a;
+  border: 1px solid #fff3;
+  border-radius: 4px;
+  padding: 15px 20px;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  transition: all 0.2s;
-  margin-left: 6px;
+  font-size: 15px;
+  transition: all .2s;
 }
 
 .stake-button:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
 }
 
 .portal-fallback-link {
-  color: #888;
-  font-style: italic;
+  color: #b9977d;
 }
 
 .triplet-detail-actions {
@@ -844,9 +825,6 @@
     min-width: 50px;
   }
 
-  .triplet-detail-section {
-    padding: 12px;
-  }
 }
 
 /* ========== PULSE TAB SPECIFIC STYLES ========== */
@@ -1177,4 +1155,42 @@
   .recommendation-category {
     font-size: 16px;
   }
+}
+
+/* ========== BONDING CURVE CHART IN EXPANDED VIEW ========== */
+
+.chart-section-expanded {
+  margin-top: 16px;
+}
+
+.chart-curve-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  justify-content: flex-start;
+  
+}
+
+.curve-selector-btn {
+  padding: 7px 44px;
+  background-color: rgba(255, 255, 255, 0.021);
+  border: 1px solid rgba(255, 255, 255, 0.103);
+  border-radius: 33px;
+  color: #ffffff88;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.curve-selector-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.curve-selector-btn.active {
+  background-color: rgba(175, 116, 76, 0.3);
+  border-color: rgba(175, 129, 76, 0.6);
+  box-shadow: 0 0 8px rgba(175, 144, 76, 0.4);
+  color: #ffffff;
 }

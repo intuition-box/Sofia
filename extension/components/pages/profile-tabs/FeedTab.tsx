@@ -668,10 +668,7 @@ const FeedTab = () => {
         subjectName="Feed"
         predicateName={selectedEvent?.type === 'AtomCreated' ? 'created' : 'supports'}
         objectName={selectedEvent ? selectedEvent.details : ''}
-        tripleId={selectedEvent?.termId || ''}
-        currentLinear={0}
-        currentOffsetProgressive={0}
-        totalMarketCap="0"
+        tripleId=""
         defaultCurve={1}
         isProcessing={isProcessing}
       />

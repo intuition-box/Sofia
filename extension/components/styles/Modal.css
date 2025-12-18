@@ -88,7 +88,7 @@
   padding: 0 24px 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 7px;
 }
 
 .modal-section {
@@ -98,9 +98,9 @@
 }
 
 .modal-description {
-  font-size: 14px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
-  text-align: center;
+  text-align: left;
   margin: 0;
   line-height: 1.4;
   max-width: 400px;
@@ -239,40 +239,45 @@
   -moz-appearance: textfield;
 }
 
+/* Amount Row - Input and Pills on same line */
+.modal-amount-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* Amount/Weight Options */
 .modal-amount-options {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  justify-content: center;
+  gap: 26px;
+  justify-content: flex-end;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .modal-amount-option {
-  padding: 8px 16px;
-  border-radius: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: white;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
-  min-width: 80px;
+  min-width: 50px;
 }
 
 .modal-amount-option.selected {
-  border-color: var(--color-primary);
-  background: rgba(59, 130, 246, 0.2);
-  color: var(--color-primary);
+  border-color: #ffffff75;
+  color: #ffb659;
+  background: #513a10;
 }
 
 .modal-amount-option:hover:not(.selected) {
-  background: rgba(255, 255, 255, 0.1);
+  background: #513a10;
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -284,7 +289,7 @@
 
 .modal-amount-value {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* Custom Input */
@@ -292,6 +297,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.modal-custom-label-main {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: left;
+  margin-bottom: 8px;
 }
 
 .modal-custom-label {
@@ -305,12 +318,27 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 12px 16px;
+  padding: 10px 7px;
   color: white;
-  font-size: 16px;
+  font-size: 14px;
   text-align: center;
   outline: none;
   transition: all 0.2s ease;
+  flex: 1;
+  min-width: 0;
+  max-width: 200px;
+}
+
+/* Hide number input arrows/scrollbar */
+.modal-custom-input::-webkit-outer-spin-button,
+.modal-custom-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.modal-custom-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .modal-custom-input:focus {
@@ -365,24 +393,28 @@
 }
 
 .modal-triplet-info p {
-  margin: 0;
+  margin: 10;
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
+  text-align: center;
 }
 
 .modal-triplet-info .subject {
-  color: #60a5fa;
+  color: #feffdc;
   font-weight: 600;
+  font-size: 20px;
 }
 
 .modal-triplet-info .action {
-  color: #34d399;
+  color: #e7ce4c;
   font-weight: 500;
+  font-size: 20px;
 }
 
 .modal-triplet-info .object {
-  color: #fbbf24;
+  color: #f1a20d;
   font-weight: 500;
+  font-size: 20px;
 }
 
 /* Weight Options (for WeightModal) */
@@ -678,6 +710,7 @@
 .modal-actions {
   display: flex;
   gap: 12px;
+  margin-top: 12px;
 }
 
 .modal-btn {
@@ -1002,8 +1035,110 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 14px;
   margin: 12px 0;
+}
+
+.stake-position-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12px;
+}
+
+.stake-position-tabs {
+  display: flex;
+  gap: 12px;
+}
+
+.stake-position-tab {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.stake-position-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+}
+
+.stake-position-tab-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.stake-info-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.stake-info-icon:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Custom tooltip */
+.stake-info-icon::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 50%;
+  transform: translateX(50%);
+  background: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+  width: 220px;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tooltip arrow */
+.stake-info-icon::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  right: 50%;
+  transform: translateX(50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.stake-info-icon:hover::after,
+.stake-info-icon:hover::before {
+  opacity: 1;
 }
 
 .stake-position-header {
@@ -1118,9 +1253,9 @@
 
 /* Stake Modal Input - Larger text */
 .stake-modal-content .modal-custom-input {
-  font-size: 24px;
-  font-weight: 600;
-  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 300;
+  padding: 2px 18px;
   text-align: center;
 }
 
@@ -1128,6 +1263,44 @@
   color: rgba(255, 255, 255, 0.3);
   font-size: 20px;
   font-weight: 500;
+}
+
+/* Curve Selection Pills */
+.stake-curve-selection {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+.stake-curve-pill {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.stake-curve-pill.selected {
+  border-color: #ffffff75;
+  color: #ffb659;
+  background: #513a10;
+}
+
+.stake-curve-pill:hover:not(.selected) {
+  background: #513a10;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.stake-curve-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .stake-modal-content .modal-section {
@@ -1141,4 +1314,339 @@
 .stake-modal-content .modal-description {
   margin: 10px 0;
   font-size: 13px;
+}
+
+/* ========================================
+   NEW STAKE MODAL STYLES (Screenshot Design)
+   ======================================== */
+
+/* Chart Section */
+.stake-chart-section {
+  margin: 16px 0;
+}
+
+.stake-chart-loading,
+.stake-chart-error,
+.stake-chart-no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+.stake-chart-error {
+  color: rgba(255, 100, 100, 0.7);
+}
+
+.stake-chart-no-data {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+}
+
+.stake-chart-header {
+  margin-bottom: 16px;
+}
+
+.stake-chart-balance {
+  margin-bottom: 12px;
+}
+
+.stake-chart-balance-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stake-chart-balance-value {
+  font-size: 32px;
+  font-weight: 300;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stake-chart-balance-change {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stake-chart-balance-change.positive {
+  color: #4caf50;
+}
+
+.stake-chart-balance-change.negative {
+  color: #f44336;
+}
+
+.stake-chart-metrics {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.stake-chart-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stake-chart-metric-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stake-chart-metric-value {
+  font-size: 13px;
+  color: white;
+  font-weight: 500;
+}
+
+.stake-chart-container {
+  margin-top: 16px;
+  width: 100%;
+  min-height: 200px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+}
+
+/* Amount Section - New Layout */
+.stake-amount-section {
+  margin: 20px 0;
+}
+
+.stake-amount-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 12px;
+}
+
+/* Input Container with integrated toggle */
+.stake-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.stake-amount-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  padding: 0;
+}
+
+.stake-amount-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+}
+
+.stake-amount-input::-webkit-outer-spin-button,
+.stake-amount-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.stake-amount-input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* Toggle integrated in input */
+.stake-input-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.stake-input-toggle .stake-toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+}
+
+.stake-input-toggle .stake-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+}
+
+.stake-input-toggle .stake-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.stake-input-toggle .stake-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  transition: 0.3s;
+}
+
+.stake-input-toggle .stake-toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.stake-input-toggle .stake-toggle-switch input:checked + .stake-toggle-slider {
+  background-color: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.6);
+}
+
+.stake-input-toggle .stake-toggle-switch input:checked + .stake-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+/* Balance Display */
+.stake-balance {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 12px;
+}
+
+/* Amount Pills */
+.stake-amount-pills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stake-amount-pill {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.stake-amount-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.stake-amount-pill.selected {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffb659;
+}
+
+.stake-amount-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Preview Section */
+.stake-preview-section {
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stake-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.stake-preview-row + .stake-preview-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stake-preview-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stake-preview-value {
+  font-size: 14px;
+  color: white;
+  font-weight: 500;
+}
+
+/* New Buttons - Screenshot Style */
+.stake-btn {
+  padding: 14px 32px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.stake-btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stake-btn-cancel:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.stake-btn-submit {
+  background: linear-gradient(135deg, #c2185b 0%, #d81b60 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(194, 24, 91, 0.3);
+}
+
+.stake-btn-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d81b60 0%, #e91e63 100%);
+  box-shadow: 0 6px 16px rgba(194, 24, 91, 0.4);
+  transform: translateY(-1px);
+}
+
+.stake-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stake-btn-submit:disabled {
+  background: rgba(194, 24, 91, 0.3);
+  box-shadow: none;
 }

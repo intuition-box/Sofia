@@ -5,7 +5,9 @@ import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import StakeModal from '../../modals/StakeModal'
 import SofiaLoader from '../../ui/SofiaLoader'
+import { BondingCurveChart } from '../../charts/BondingCurveChart'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
+import { getAddress } from 'viem'
 import logoIcon from '../../ui/icons/chatIcon.png'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
@@ -28,11 +30,14 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
   const [isProcessingStake, setIsProcessingStake] = useState(false)
   const [defaultCurve, setDefaultCurve] = useState<1 | 2>(2) // Offset Progressive par défaut
-  
+
+  // Chart curve selection state (per triplet)
+  const [selectedChartCurve, setSelectedChartCurve] = useState<{ [tripletId: string]: 1 | 2 }>({})
+
   // Sorting state
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -320,45 +325,53 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                     >
                       {(tripletItem.position?.offsetProgressive || 0).toFixed(2)}
                     </div>
-                    {/* Bouton Stake */}
-                    <button
-                      className="stake-button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleStakeClick(tripletItem, 2) // Default to Offset Progressive
-                      }}
-                    >
-                      Stake
-                    </button>
                   </div>
                 </div>
                 {isExpanded && (() => {
                   console.log('tripletItem.url:', tripletItem.url, 'tripletItem:', tripletItem)
+                  const currentCurve = selectedChartCurve[tripletItem.id] || 2
+                  const checksumAddress = address ? getAddress(address) : undefined
+
                   return (
                     <div className="triplet-detail-section">
-                      <h4 className="triplet-detail-title">Source</h4>
-                      <p className="triplet-detail-name">
-                        {tripletItem.url ? (
-                          <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" className="triplet-url-link">
-                            {tripletItem.url}
-                          </a>
-                        ) : (
-                          <a 
-                            href={`https://portal.intuition.systems/explore/atom/${tripletItem.objectTermId}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="portal-fallback-link"
+                      {/* Bonding Curve Chart Section */}
+                      <div className="chart-section-expanded">
+                        <div className="chart-curve-selector">
+                          <button
+                            className={`curve-selector-btn ${currentCurve === 1 ? 'active' : ''}`}
+                            onClick={() => setSelectedChartCurve(prev => ({ ...prev, [tripletItem.id]: 1 }))}
                           >
-                            View "{tripletItem.triplet.object}" on Portal
-                          </a>
-                        )}
-                      </p>
-                      <p className="triplet-detail-timestamp">
-                        {new Date(tripletItem.timestamp).toLocaleString()}
-                      </p>
-                      
+                            Linear (Support)
+                          </button>
+                          <button
+                            className={`curve-selector-btn ${currentCurve === 2 ? 'active' : ''}`}
+                            onClick={() => setSelectedChartCurve(prev => ({ ...prev, [tripletItem.id]: 2 }))}
+                          >
+                            Offset (Shares)
+                          </button>
+                        </div>
+
+                        <BondingCurveChart
+                          tripleId={tripletItem.id}
+                          curveId={currentCurve}
+                          walletAddress={checksumAddress}
+                        />
+                      </div>
+
                       {/* Actions dans la section expanded */}
                       <div className="triplet-detail-actions">
+                      {/* Bouton Stake */}
+                        <button
+                          className="stake-button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            // Smart default: use curve 1 if user has shares on linear, otherwise curve 2
+                            const defaultCurveId = (tripletItem.position?.linear || 0) > 0 ? 1 : 2
+                            handleStakeClick(tripletItem, defaultCurveId)
+                          }}
+                        >
+                         ↗️ Stake
+                        </button>
                         <button
                           onClick={() => handleViewOnPortal(tripletItem.id)}
                           className="portal-button"
@@ -379,6 +392,22 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                           className="portal-button"
                         />
                       </div>
+                      <p className="triplet-detail-name">
+                        {tripletItem.url ? (
+                          <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" className="triplet-url-link">
+                            {tripletItem.url}
+                          </a>
+                        ) : (
+                          <a
+                            href={`https://portal.intuition.systems/explore/atom/${tripletItem.objectTermId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="portal-fallback-link"
+                          >
+                            View "{tripletItem.triplet.object}" on Portal
+                          </a>
+                        )}
+                      </p>
                     </div>
                   )
                 })()}
@@ -411,9 +440,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
           predicateName={selectedStakeTriplet.triplet.predicate}
           objectName={selectedStakeTriplet.triplet.object}
           tripleId={selectedStakeTriplet.id}
-          currentLinear={selectedStakeTriplet.position?.linear || 0}
-          currentOffsetProgressive={selectedStakeTriplet.position?.offsetProgressive || 0}
-          totalMarketCap={selectedStakeTriplet.totalMarketCap || '0'}
           defaultCurve={defaultCurve}
           onClose={handleCloseStakeModal}
           onSubmit={handleStakeSubmit}

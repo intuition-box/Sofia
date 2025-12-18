@@ -38,8 +38,8 @@ type WeightOption = {
 
 const weightOptions: WeightOption[] = [
   { id: 'minimum', label: 'Minimum', value: 0.01, description: '0.01 TRUST' },
-  { id: 'default', label: 'Default', value: 0.05, description: '0.05 TRUST' },
-  { id: 'strong', label: 'Strong', value: 0.1, description: '0.1 TRUST' },
+  { id: 'default', label: 'Default', value: 0.5, description: '0.5 TRUST' },
+  { id: 'strong', label: 'Strong', value: 1, description: '1 TRUST' },
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
@@ -135,7 +135,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     <div className={`modal-overlay ${isProcessing ? 'processing' : ''}`}>
       <div className="modal-content">
         <div className="modal-header">
-          <div className="modal-title">Amplify</div>
         </div>
         
         <div className="modal-body">
@@ -153,40 +152,44 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   <span className="object">{triplet.triplet.object}</span>
                 </p>
               </div>
-              
-                <div className="modal-weight-options">
-                  {weightOptions.map((option) => (
-                    <div key={option.id} className="modal-weight-option">
-                      <label className="modal-weight-option-label">
-                        <input
-                          type="radio"
-                          name={`weight-${index}`}
-                          value={option.id}
-                          checked={selectedWeights[index] === option.id}
-                          onChange={() => handleWeightSelection(index, option.id)}
+
+                {/* Amount Section */}
+                <div className="modal-custom-amount">
+                  <div className="modal-amount-row">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.000001"
+                      value={
+                        selectedWeights[index] === 'custom'
+                          ? (customValues[index] || '')
+                          : (weightOptions.find(opt => opt.id === selectedWeights[index])?.value || '')
+                      }
+                      onChange={(e) => {
+                        handleWeightSelection(index, 'custom')
+                        handleCustomValueChange(index, e.target.value)
+                      }}
+                      onFocus={(e) => {
+                        handleWeightSelection(index, 'custom')
+                        e.target.select()
+                      }}
+                      className="modal-custom-input"
+                      placeholder="Min 0.01 TRUST"
+                      disabled={isProcessing}
+                    />
+                    <div className="modal-amount-options">
+                      {weightOptions.filter(opt => opt.id !== 'custom').map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => handleWeightSelection(index, option.id)}
+                          className={`modal-amount-option ${selectedWeights[index] === option.id ? 'selected' : ''}`}
                           disabled={isProcessing}
-                          className="modal-weight-radio"
-                        />
-                        <span className="modal-weight-radio-custom"></span>
-                        <div className="modal-weight-option-content">
-                          <span className="modal-weight-option-title">{option.label}</span>
-                          <span className="modal-weight-option-description">{option.description}</span>
-                        </div>
-                      </label>
-                      {option.id === 'custom' && selectedWeights[index] === 'custom' && (
-                        <input
-                          type="number"
-                          step="0.000001"
-                          min="0"
-                          placeholder="Enter amount (e.g., 0.025)"
-                          value={customValues[index] || ''}
-                          onChange={(e) => handleCustomValueChange(index, e.target.value)}
-                          className="modal-custom-input"
-                          disabled={isProcessing}
-                        />
-                      )}
+                        >
+                          {option.value}
+                        </button>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
             ))}

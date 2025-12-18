@@ -834,9 +834,6 @@ const FollowTab = () => {
           predicateName="trust"
           objectName={selectedAccount.label}
           tripleId={selectedAccount.tripleId}
-          currentLinear={selectedAccount.trustAmount}
-          currentOffsetProgressive={0}
-          totalMarketCap="0"
           defaultCurve={1}
           onClose={handleCloseUpvoteModal}
           onSubmit={async (amount: bigint, curveId: 1 | 2) => {
