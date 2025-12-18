@@ -65,7 +65,7 @@ const QuickActionButton = ({
       disabled={disabled}
     >
       {className === 'portal-button' && action === 'add' ? (
-        '+'
+        '🔖 Bookmark'
       ) : (
         <img 
           src={getIcon()}
