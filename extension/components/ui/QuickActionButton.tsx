@@ -19,6 +19,7 @@ import SelectedIcon from './icons/quick_action/Selected=Selected.svg'
 import SelectedHoverIcon from './icons/quick_action/Selected=SelectedHover.svg'
 import RemoveIcon2 from './icons/quick_action/Selected=Remove.svg'
 import RemoveHoverIcon2 from './icons/quick_action/Selected=RemoveHover.svg'
+import BookmarkPlusIcon from './icons/bookmark-plus.svg'
 
 interface QuickActionButtonProps {
   action: 'add' | 'remove' | 'send' | 'view' | 'vote' | 'scan' | 'amplify' | 'select'
@@ -65,9 +66,12 @@ const QuickActionButton = ({
       disabled={disabled}
     >
       {className === 'portal-button' && action === 'add' ? (
-        '🔖 Bookmark'
+        <>
+          <img src={BookmarkPlusIcon} alt="bookmark" className="portal-button-icon" />
+          Bookmark
+        </>
       ) : (
-        <img 
+        <img
           src={getIcon()}
           alt={`${action === 'scan' ? 'scan' : action === 'amplify' ? 'amplify' : action} action`}
           className="quick-action-icon"

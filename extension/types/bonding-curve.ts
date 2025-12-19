@@ -27,6 +27,8 @@ export interface BondingCurveData {
   userShares?: string
   totalShares?: string
   marketCap?: string
+  totalInvested?: string
+  totalRedeemed?: string
 }
 
 export interface DepositPreview {

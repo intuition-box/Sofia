@@ -807,19 +807,6 @@ const FollowTab = () => {
                     }}
                   />
                 )}
-                {filterType === 'trust-circle' && (
-                  <div
-                    className="upvote-badge upvote-badge-relative"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleUpvoteClick(account)
-                    }}
-                    title="Adjust trust weight"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    👍 {Math.round(account.trustAmount * 1000)}
-                  </div>
-                )}
               </div>
             </div>
           ))}

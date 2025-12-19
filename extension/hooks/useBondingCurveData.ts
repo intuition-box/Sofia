@@ -19,6 +19,8 @@ interface GraphQLResponse {
     total_shares: string
     positions: Array<{
       shares: string
+      total_deposit_assets_after_total_fees: string
+      total_redeem_assets_for_receiver: string
     }>
   }>
 }
@@ -41,6 +43,8 @@ const GET_BONDING_CURVE_DATA = `
       total_shares
       positions(where: {account_id: {_eq: $walletAddress}}) {
         shares
+        total_deposit_assets_after_total_fees
+        total_redeem_assets_for_receiver
       }
     }
   }
@@ -127,12 +131,16 @@ export function useBondingCurveData(
         const totalShares = vault?.total_shares || '0'
         const userShares = vault?.positions?.[0]?.shares || '0'
         const marketCap = vault?.term?.total_market_cap || totalShares // Use total_market_cap from term
+        const totalInvested = vault?.positions?.[0]?.total_deposit_assets_after_total_fees || '0'
+        const totalRedeemed = vault?.positions?.[0]?.total_redeem_assets_for_receiver || '0'
 
         console.log('🔵 [useBondingCurveData] Extracted values:', {
           currentSharePrice,
           totalShares,
           userShares,
           marketCap,
+          totalInvested,
+          totalRedeemed,
           positionsCount: vault?.positions?.length || 0
         })
 
@@ -145,7 +153,9 @@ export function useBondingCurveData(
             priceChange: { percentage: '+0%', value: '0', isPositive: true },
             userShares: formatBalance(BigInt(userShares), 18, 4),
             totalShares: formatBalance(BigInt(totalShares), 18, 4),
-            marketCap
+            marketCap,
+            totalInvested: formatBalance(BigInt(totalInvested), 18, 4),
+            totalRedeemed: formatBalance(BigInt(totalRedeemed), 18, 4)
           }
         }
 
@@ -193,7 +203,9 @@ export function useBondingCurveData(
           },
           userShares: formatBalance(BigInt(userShares), 18, 4),
           totalShares: formatBalance(BigInt(totalShares), 18, 4),
-          marketCap
+          marketCap,
+          totalInvested: formatBalance(BigInt(totalInvested), 18, 4),
+          totalRedeemed: formatBalance(BigInt(totalRedeemed), 18, 4)
         }
 
         console.log('🔵 [useBondingCurveData] Final result:', result)
@@ -208,7 +220,9 @@ export function useBondingCurveData(
           priceChange: { percentage: '+0%', value: '0', isPositive: true },
           userShares: '0',
           totalShares: '0',
-          marketCap: '0'
+          marketCap: '0',
+          totalInvested: '0',
+          totalRedeemed: '0'
         }
       }
     },
@@ -225,6 +239,8 @@ export function useBondingCurveData(
     error: error as Error | null,
     userShares: data?.userShares || '0',
     totalShares: data?.totalShares || '0',
-    marketCap: data?.marketCap || '0'
+    marketCap: data?.marketCap || '0',
+    totalInvested: data?.totalInvested || '0',
+    totalRedeemed: data?.totalRedeemed || '0'
   }
 }

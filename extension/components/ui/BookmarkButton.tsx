@@ -9,6 +9,7 @@ import { useBookmarks } from '../../hooks/useBookmarks'
 import type { Triplet } from '~components/pages/core-tabs/types'
 import type { BookmarkedTriplet } from '../../types/bookmarks'
 import QuickActionButton from './QuickActionButton'
+import BookmarkPlusIcon from './icons/bookmark-plus.svg'
 import '../styles/BookmarkStyles.css'
 
 interface BookmarkButtonProps {
@@ -65,11 +66,21 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
 
   return (
     <>
-      <QuickActionButton
-        action="add"
-        onClick={handleOpenModal}
-        className={className}
-      />
+      {className === 'portal-button' ? (
+        <button
+          className="portal-button"
+          onClick={handleOpenModal}
+        >
+          <img src={BookmarkPlusIcon} alt="bookmark" className="portal-button-icon" />
+          Bookmark
+        </button>
+      ) : (
+        <QuickActionButton
+          action="add"
+          onClick={handleOpenModal}
+          className={className}
+        />
+      )}
 
       {showModal && createPortal(
         <div

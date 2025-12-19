@@ -9,6 +9,8 @@ import { BondingCurveChart } from '../../charts/BondingCurveChart'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { getAddress } from 'viem'
 import logoIcon from '../../ui/icons/chatIcon.png'
+import ArrowTopRightIcon from '../../ui/icons/arrow-top-right-thick.svg'
+import LinkVariantIcon from '../../ui/icons/link-variant.svg'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
@@ -311,20 +313,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                         }}
                       />
                     )}
-                    {/* Curve 1 - Linear (Support) */}
-                    <div
-                      className="upvote-badge upvote-badge-relative"
-                      title="Linear (Curve 1 - Support)"
-                    >
-                      {(tripletItem.position?.linear || 0).toFixed(4)}
-                    </div>
-                    {/* Curve 2 - Offset Progressive (Shares) */}
-                    <div
-                      className="shares-badge shares-badge-relative"
-                      title="Offset Progressive (Curve 2 - Shares)"
-                    >
-                      {(tripletItem.position?.offsetProgressive || 0).toFixed(2)}
-                    </div>
                   </div>
                 </div>
                 {isExpanded && (() => {
@@ -370,14 +358,16 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                             handleStakeClick(tripletItem, defaultCurveId)
                           }}
                         >
-                         ↗️ Stake
+                          <img src={ArrowTopRightIcon} alt="stake" className="portal-button-icon" />
+                          Stake
                         </button>
                         <button
                           onClick={() => handleViewOnPortal(tripletItem.id)}
                           className="portal-button"
                           title="View on Intuition Portal"
                         >
-                          🌐 Portal
+                          <img src={LinkVariantIcon} alt="portal" className="portal-button-icon" />
+                          Portal
                         </button>
                         <BookmarkButton
                           triplet={tripletItem.triplet}

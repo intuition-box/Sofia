@@ -80,7 +80,7 @@
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  gap: 12px;
+  gap: 5px;
   margin-bottom: -7px;
 }
 
@@ -425,12 +425,21 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   color: white;
-  padding: 15px 20px;
+  padding: 15px 16px;
   font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: 'Montserrat', sans-serif;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portal-button-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
 }
 
 .portal-button:hover {
@@ -438,37 +447,6 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 16px 0 rgba(255, 226, 145, 0.281);
 }
-
-/* ========== UPVOTE BADGES ========== */
-
-.upvote-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(76, 175, 80, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 60px;
-  justify-content: center;
-  z-index: 2;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.upvote-badge:hover {
-  background: rgba(76, 175, 80, 0.2);
-  transform: scale(1.05);
-}
-
 /* ========== UTILITY CLASSES ========== */
 
 .cursor-pointer {
@@ -517,72 +495,6 @@
   height: 16px;
   border-radius: 2px;
   opacity: 0.8;
-}
-
-.upvote-badge-relative {
-  position: relative;
-  bottom: auto;
-  right: auto;
-  background: rgba(76, 175, 80, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 60px;
-  justify-content: center;
-  cursor: default;
-  white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
-}
-
-/* ========== SHARES BADGES (Curve 2) ========== */
-
-.shares-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 80px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border: 1px solid rgba(102, 126, 234, 0.4);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 60px;
-  justify-content: center;
-  z-index: 2;
-  cursor: default;
-  white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.shares-badge-relative {
-  position: relative;
-  bottom: auto;
-  right: auto;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border: 1px solid rgba(102, 126, 234, 0.4);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 60px;
-  justify-content: center;
-  cursor: default;
-  white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
 }
 
 /* ========== STAKE BUTTON ========== */
@@ -800,12 +712,6 @@
   .portal-button {
     padding: 3px 6px;
     font-size: 11px;
-  }
-
-  .upvote-badge {
-    padding: 3px 8px;
-    font-size: 11px;
-    min-width: 50px;
   }
 
 }
@@ -1155,12 +1061,12 @@
 }
 
 .curve-selector-btn {
-  padding: 7px 44px;
+  padding: 5px 30px;
   background-color: rgba(255, 255, 255, 0.021);
   border: 1px solid rgba(255, 255, 255, 0.103);
   border-radius: 33px;
   color: #ffffff88;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
