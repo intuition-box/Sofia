@@ -7,6 +7,7 @@ import SofiaLoader from '../ui/SofiaLoader'
 import { useDepositPreview } from '../../hooks/useDepositPreview'
 import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import type { CurveType } from '../../types/bonding-curve'
+import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import '../styles/Modal.css'
 
 interface StakeModalProps {
@@ -17,7 +18,7 @@ interface StakeModalProps {
   tripleId: string
   defaultCurve?: 1 | 2           // Curve pré-sélectionnée (défaut: 2)
   onClose: () => void
-  onSubmit: (amount: bigint, curveId: 1 | 2) => Promise<void>
+  onSubmit: (amount: bigint, curveId: 1 | 2) => Promise<{ success: boolean, txHash?: string, error?: string }>
   isProcessing?: boolean
 }
 
@@ -35,6 +36,9 @@ const StakeModal = ({
   const [selectedCurve, setSelectedCurve] = useState<1 | 2>(defaultCurve)
   const [amount, setAmount] = useState('10')
   const [debouncedAmount, setDebouncedAmount] = useState('10')
+  const [transactionHash, setTransactionHash] = useState<string | null>(null)
+  const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   // Get wallet address from storage
   const { walletAddress, authenticated } = useWalletFromStorage()
@@ -85,6 +89,9 @@ const StakeModal = ({
       setAmount('10')
       setDebouncedAmount('10')
       setSelectedCurve(defaultCurve)
+      setTransactionHash(null)
+      setTransactionError(null)
+      setIsSuccess(false)
     }
   }, [isOpen, defaultCurve])
 
@@ -103,9 +110,21 @@ const StakeModal = ({
   const handleSubmit = async () => {
     const numAmount = parseFloat(amount)
     if (numAmount > 0) {
-      // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
-      const weiAmount = BigInt(Math.floor(numAmount * 1e18))
-      await onSubmit(weiAmount, selectedCurve)
+      try {
+        setTransactionError(null)
+        // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
+        const weiAmount = BigInt(Math.floor(numAmount * 1e18))
+        const result = await onSubmit(weiAmount, selectedCurve)
+
+        if (result.success && result.txHash) {
+          setTransactionHash(result.txHash)
+          setIsSuccess(true)
+        } else if (result.error) {
+          setTransactionError(result.error)
+        }
+      } catch (error) {
+        setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
+      }
     }
   }
 
@@ -113,6 +132,19 @@ const StakeModal = ({
     if (e.target === e.currentTarget) {
       onClose()
     }
+  }
+
+  // Parse error message to show only essential info
+  const parseErrorMessage = (error: string): string => {
+    // Extract "Shares addition failed:" or "Weight addition failed:"
+    const failedMatch = error.match(/(Shares addition failed|Weight addition failed):/i)
+    const failedText = failedMatch ? failedMatch[0] : 'Transaction failed:'
+
+    // Extract "Details:" section
+    const detailsMatch = error.match(/Details:\s*(.+?)(?:\n|$)/i)
+    const detailsText = detailsMatch ? `Details: ${detailsMatch[1]}` : ''
+
+    return detailsText ? `${failedText}\n${detailsText}` : failedText
   }
 
   if (!isOpen) return null
@@ -227,8 +259,36 @@ const StakeModal = ({
             </div>
           )}
 
+          {/* Success State */}
+          {isSuccess && transactionHash && (
+            <div className="modal-processing-section modal-success-section">
+              <div className="modal-success-text">
+                <p className="modal-success-title">Transaction Validated</p>
+                <a
+                  href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="modal-tx-link"
+                >
+                  View on Explorer →
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {transactionError && !isSuccess && (
+            <div className="modal-error-section">
+              <div className="modal-error-icon">❌</div>
+              <div className="modal-error-text">
+                <p className="modal-error-title">Transaction Failed</p>
+                <p className="modal-error-message">{parseErrorMessage(transactionError)}</p>
+              </div>
+            </div>
+          )}
+
           {/* Loading State */}
-          {isProcessing && (
+          {isProcessing && !isSuccess && (
             <div className="modal-processing-section">
               <SofiaLoader size={60} />
               <div className="modal-processing-text">

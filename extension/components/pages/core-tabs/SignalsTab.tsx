@@ -193,8 +193,10 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     setIsProcessingStake(false)
   }
 
-  const handleStakeSubmit = async (amount: bigint, curveId: 1 | 2) => {
-    if (!selectedStakeTriplet || !address) return
+  const handleStakeSubmit = async (amount: bigint, curveId: 1 | 2): Promise<{ success: boolean, txHash?: string, error?: string }> => {
+    if (!selectedStakeTriplet || !address) {
+      return { success: false, error: 'No wallet connected' }
+    }
 
     try {
       setIsProcessingStake(true)
@@ -216,14 +218,20 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         // Refresh the data after successful transaction
         await refreshFromAPI()
 
-        handleCloseStakeModal()
+        // Return success result - modal will auto-close after showing success message
+        setIsProcessingStake(false)
+        return { success: true, txHash: result.txHash }
       } else {
-        throw new Error(result.error || 'Transaction failed')
+        setIsProcessingStake(false)
+        return { success: false, error: result.error || 'Transaction failed' }
       }
     } catch (error) {
       console.error('Failed to stake:', error)
       setIsProcessingStake(false)
-      // Keep modal open to show error or allow retry
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Transaction failed'
+      }
     }
   }
 
@@ -288,7 +296,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
             <div key={tripletItem.id} className="echo-card border-default position-relative">
               <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
                 {/* Header avec favicon et upvotes alignés au texte */}
-                <div className="triplet-header position-relative">
+                <div className="triplet-header">
                   {/* Texte du triplet */}
                   <div className="triplet-text-container">
                     <p className="triplet-text clickable" onClick={() => {
@@ -353,9 +361,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                           className="portal-button"
                           onClick={(e) => {
                             e.stopPropagation()
-                            // Smart default: use curve 1 if user has shares on linear, otherwise curve 2
-                            const defaultCurveId = (tripletItem.position?.linear || 0) > 0 ? 1 : 2
-                            handleStakeClick(tripletItem, defaultCurveId)
+                            // Always open with Offset Progressive (curve 2)
+                            handleStakeClick(tripletItem, 2)
                           }}
                         >
                           <img src={ArrowTopRightIcon} alt="stake" className="portal-button-icon" />

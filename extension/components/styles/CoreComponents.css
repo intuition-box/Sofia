@@ -102,7 +102,7 @@
 .triplet-header,
 .echo-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
   gap: 8px;
   margin-bottom: 3px;
@@ -120,10 +120,6 @@
   gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.triplet-text.clickable:hover {
-  opacity: 0.8;
 }
 
 /* Subject, Predicate, Object styles */
@@ -178,16 +174,18 @@
   width: 100%;
   box-sizing: border-box;
 }
-
+.triplet-detail-timestamp{
+  color: rgba(255, 255, 255, 0.452);
+  margin: 1px;
+}
 .triplet-detail-title {
   font-family: 'Gotu', cursive;
   font-size: 16px;
   font-weight: 600;
-  color: #C7866C;
-  margin: 0 0 12px 0;
+  color: #e7b586;
+  margin: 0 0 -20px 0;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 .triplet-detail-name {
@@ -398,14 +396,14 @@
 }
 
 .delete-selected {
-  background: rgba(220, 38, 38, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #bbbbbb;
+  background: #ffffff33;
+  border: 1px solid #9090904d;
 }
 
 .delete-selected:hover {
   background: rgba(220, 38, 38, 0.3);
-  color: #FBF7F5;
+  color: #ff7860;
   transform: translateY(-1px);
 }
 
@@ -473,12 +471,15 @@
 }
 
 .triplet-url-link {
-  color: white;
+  color: #afafaf;
+}
+
+.triplet-url-link:hover {
+  color: #ECB8D1;
 }
 
 .triplet-text-container {
   position: relative;
-  width: 100%;
 }
 
 .triplet-actions-container {
@@ -501,6 +502,13 @@
 
 .portal-fallback-link {
   color: #b9977d;
+}
+
+.triplet-detail-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  align-items: center;
 }
 
 .triplet-detail-actions {
@@ -698,6 +706,9 @@
   .echo-header,
   .triplet-header {
     gap: none;
+    position: relative;
+    display: flex;
+    flex-direction: row;
   }
   
   .batch-btn {

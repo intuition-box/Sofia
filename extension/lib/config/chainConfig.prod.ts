@@ -48,7 +48,7 @@ export const API_CONFIG = {
 
 // Explorer URLs
 export const EXPLORER_URLS = {
-  TRANSACTION: "https://explorer.intuition.systems/txs/",
+  TRANSACTION: "https://explorer.intuition.systems/tx/",
   ADDRESS: "https://explorer.intuition.systems/address/",
   INTUITION: "https://explorer.intuition.systems"
 } as const
