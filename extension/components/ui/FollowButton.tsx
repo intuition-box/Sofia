@@ -17,6 +17,7 @@ const FollowButton = ({
   const { walletAddress: address } = useWalletFromStorage()
   const { followAccount, isLoading } = useFollowAccount()
   const [showModal, setShowModal] = useState(false)
+  const [shouldRefreshOnClose, setShouldRefreshOnClose] = useState(false)
 
   const handleFollowClick = () => {
     console.log('🔄 FollowButton - Follow button clicked', {
@@ -51,20 +52,39 @@ const FollowButton = ({
           tripleVaultId: result.tripleVaultId
         })
 
-        setShowModal(false)
-        onFollowSuccess?.()
+        // Don't refresh here - will refresh when modal closes to avoid re-render
+        setShouldRefreshOnClose(true)
+
+        // Return result to modal in the expected format
+        return {
+          success: true,
+          txHash: result.transactionHash,
+        }
       } else {
         console.error('❌ FollowButton - Follow transaction failed', result.error)
-        // TODO: Show error message to user
+        return {
+          success: false,
+          error: result.error
+        }
       }
     } catch (error) {
       console.error('❌ FollowButton - Follow transaction failed', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Transaction failed'
+      }
     }
   }
 
   const handleModalClose = () => {
     console.log('🚪 FollowButton - Modal closed')
     setShowModal(false)
+
+    // Refresh followers list if transaction was successful
+    if (shouldRefreshOnClose) {
+      setShouldRefreshOnClose(false)
+      onFollowSuccess?.()
+    }
   }
 
   return (

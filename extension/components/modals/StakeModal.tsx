@@ -110,19 +110,28 @@ const StakeModal = ({
   const handleSubmit = async () => {
     const numAmount = parseFloat(amount)
     if (numAmount > 0) {
+      // Reset states at the start of transaction
+      setTransactionError(null)
+      setIsSuccess(false)
+      setTransactionHash(null)
+
       try {
-        setTransactionError(null)
         // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
         const weiAmount = BigInt(Math.floor(numAmount * 1e18))
+        console.log('📊 StakeModal - Starting transaction:', { amount: numAmount, weiAmount: weiAmount.toString() })
         const result = await onSubmit(weiAmount, selectedCurve)
+        console.log('📊 StakeModal - Transaction result:', result)
 
         if (result.success && result.txHash) {
+          console.log('✅ StakeModal - Success! Setting txHash:', result.txHash)
           setTransactionHash(result.txHash)
           setIsSuccess(true)
         } else if (result.error) {
+          console.error('❌ StakeModal - Error:', result.error)
           setTransactionError(result.error)
         }
       } catch (error) {
+        console.error('❌ StakeModal - Transaction failed', error)
         setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
       }
     }
@@ -304,15 +313,24 @@ const StakeModal = ({
               disabled={isProcessing}
               className="stake-btn stake-btn-cancel"
             >
-              Cancel
+              {(isSuccess || transactionError) ? 'Close' : 'Cancel'}
             </button>
-            {!isProcessing && (
+            {!isProcessing && !isSuccess && !transactionError && (
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
                 className="stake-btn stake-btn-submit"
               >
-                Stake {numAmount > 0 ? numAmount.toFixed(2) : '0.01'} TRUST
+                Stake
+              </button>
+            )}
+            {transactionError && (
+              <button
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                className="stake-btn stake-btn-submit"
+              >
+                Retry
               </button>
             )}
           </div>

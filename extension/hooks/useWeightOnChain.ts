@@ -21,7 +21,8 @@ export const useWeightOnChain = () => {
 
   const addWeight = async (
     tripleVaultId: string,
-    additionalWeight: bigint
+    additionalWeight: bigint,
+    curveId: bigint = 1n
   ): Promise<WeightResult> => {
     try {
       if (!address) {
@@ -37,11 +38,9 @@ export const useWeightOnChain = () => {
       const totalCost = await BlockchainService.getTotalDepositCost(additionalWeight)
       logger.debug('Deposit cost calculated', {
         depositAmount: additionalWeight.toString(),
-        totalCost: totalCost.toString()
+        totalCost: totalCost.toString(),
+        curveId: curveId.toString()
       })
-
-      // Use curve ID 1 as default for triples
-      const curveId = 1n
 
       const hash = await walletClient.writeContract({
         address: contractAddress,

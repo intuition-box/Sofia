@@ -1,5 +1,5 @@
 import { useWalletFromStorage, openAuthTab, disconnectWallet } from '../../hooks/useWalletFromStorage'
-import Iridescence from './Iridescence'
+// Removed Iridescence import - using CSS salmon gradient now
 
 interface WalletConnectionButtonProps {
   disabled?: boolean;
@@ -27,25 +27,14 @@ const WalletConnectionButton = ({ disabled = false }: WalletConnectionButtonProp
           onClick={handleConnect}
           disabled={disabled || isLoading}
         >
-          <div className="wallet-button-background">
-            <Iridescence
-              color={[1, 0.4, 0.5]}
-              speed={0.3}
-              mouseReact={false}
-              amplitude={0.1}
-              zoom={0.05}
-            />
-          </div>
-          <span className="wallet-button-content">
-            {isLoading ? (
-              <>
-                <div className="button-spinner"></div>
-                Connecting...
-              </>
-            ) : (
-              <>CONNECT WALLET</>
-            )}
-          </span>
+          {isLoading ? (
+            <>
+              <div className="button-spinner"></div>
+              Connecting...
+            </>
+          ) : (
+            <>CONNECT WALLET</>
+          )}
         </button>
       ) : (
         <button

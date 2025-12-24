@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useBookmarks } from '../../../hooks/useBookmarks'
-import Iridescence from '../../ui/Iridescence'
+// Removed Iridescence import - using CSS salmon gradient now
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/Modal.css'
@@ -123,18 +123,7 @@ const BookmarkTab = () => {
             className="btn iridescence-btn"
             style={{ width: '100%' }}
           >
-            <div className="iridescence-btn-background">
-              <Iridescence
-                color={[1, 0.4, 0.5]}
-                speed={0.3}
-                mouseReact={false}
-                amplitude={0.1}
-                zoom={0.05}
-              />
-            </div>
-            <span className="iridescence-btn-content">
-              + New List
-            </span>
+            + New List
           </button>
         </div>
 

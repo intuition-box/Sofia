@@ -389,7 +389,7 @@
 }
 
 .modal-triplet-info {
-  margin-bottom: 12px;
+  margin-bottom: none;
 }
 
 .modal-triplet-info p {
@@ -789,6 +789,9 @@
   display: flex;
   gap: 12px;
   margin-top: 12px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
 }
 
 .modal-btn {
@@ -815,44 +818,42 @@
 }
 
 .modal-btn.primary {
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  border: none;
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  font-family: 'Gotu', cursive;
   position: relative;
-  background: transparent;
-  border: 1px solid rgba(217, 119, 6, 0.3);
-  color: white;
   overflow: hidden;
+  transition: all 1s ease;
 }
 
-.modal-btn-background {
+.modal-btn.primary::before {
+  content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
   z-index: 0;
-  border-radius: 50px;
-  overflow: hidden;
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
 }
 
-.modal-btn.primary:hover:not(:disabled) .modal-btn-background {
-  opacity: 1;
-}
-
-.modal-btn-content {
+.modal-btn.primary > * {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-family: Gotu, cursive;
-  font-size: 14px;
 }
 
+/* Removed .modal-btn-background and .modal-btn-content - no longer needed */
+
 .modal-btn.primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
 }
 
 .modal-btn.primary.blue {
@@ -1685,14 +1686,14 @@
 
 /* New Buttons - Screenshot Style */
 .stake-btn {
-  padding: 14px 32px;
   border-radius: 24px;
+  font-family: 'Gotu', cursive;
   font-size: 14px;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 120px;
+  transition: all 0.3s ease;
+  padding: 11px 44px;
 }
 
 .stake-btn-cancel {
@@ -1702,29 +1703,60 @@
 }
 
 .stake-btn-cancel:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: white;
+  background: rgba(255, 0, 0, 0.068);
+  border-color: rgba(255, 0, 0, 0.226);
+  color: rgb(252, 106, 106);
 }
 
 .stake-btn-submit {
-  background: linear-gradient(135deg, #c2185b 0%, #d81b60 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(194, 24, 91, 0.3);
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  position: relative;
+  overflow: hidden;
+  transition: all 1s ease;
+  padding: 11px 116px
+}
+
+.stake-btn-submit::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stake-btn-submit > * {
+  position: relative;
+  z-index: 1;
 }
 
 .stake-btn-submit:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d81b60 0%, #e91e63 100%);
-  box-shadow: 0 6px 16px rgba(194, 24, 91, 0.4);
-  transform: translateY(-1px);
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
 }
 
 .stake-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .stake-btn-submit:disabled {
-  background: rgba(194, 24, 91, 0.3);
+  background: rgba(236, 72, 153, 0.3);
   box-shadow: none;
+  animation: none;
+}
+
+@keyframes orb-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }

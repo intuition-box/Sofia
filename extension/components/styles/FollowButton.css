@@ -17,26 +17,42 @@
 }
 
 .follow-button.salmon-gradient-button {
-  background: linear-gradient(135deg, #ff8a65 0%, #ff6e40 50%, #ff8a65 100%);
+  background: var(--color-gradient-button);
   background-size: 200% 200%;
-  animation: salmon-gradient 3s ease infinite;
-  box-shadow: 0 2px 8px rgba(255, 110, 64, 0.3);
+  animation: orb-gradient 20s ease infinite;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  color: #000000;
+  font-family: 'Gotu', cursive;
+  font-weight: 700;
+  transition: all 1s ease;
 }
 
-@keyframes salmon-gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+.follow-button.salmon-gradient-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.follow-button.salmon-gradient-button > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes orb-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .follow-button.salmon-gradient-button:hover:not(:disabled) {
-  box-shadow: 0 4px 16px rgba(255, 110, 64, 0.5);
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
   transform: translateY(-2px);
 }
 

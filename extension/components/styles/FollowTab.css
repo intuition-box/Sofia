@@ -37,6 +37,18 @@
   border-color: #3a3a3a;
 }
 
+.filter-btn.trustactive {
+  background: var(--color-gradient-button);
+  animation: orb-gradient 20s ease infinite;
+  background-size: 200% 200%;
+  padding: 8px 20px;
+  color: #000000;
+  border-color: #ffb01c;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
 /* Title */
 .follow-title {
   color: #fff;
@@ -306,6 +318,7 @@
 .empty-state p {
   color: #9ca3af;
   font-size: 14px;
+  line-height: 1px;
 }
 
 /* Responsive design */
@@ -355,4 +368,9 @@
   .trust-amount {
     font-size: 12px;
   }
+}
+
+/* Trust button in following section */
+.follow-tab .trust-page-button.salmon-gradient-button {
+  padding: 8px 23px;
 }

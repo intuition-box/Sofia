@@ -36,8 +36,10 @@ const FeedTab = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<FeedEvent | null>(null)
+  const [selectedVaultId, setSelectedVaultId] = useState<string>('')
   const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [shouldRefreshOnClose, setShouldRefreshOnClose] = useState(false)
   const [declinedEvents, setDeclinedEvents] = useState<string[]>([])
   const { addWeight, removeWeight } = useWeightOnChain()
 
@@ -456,7 +458,18 @@ const FeedTab = () => {
     e.preventDefault()
     e.stopPropagation()
 
+    // Extract vaultId from portalLink
+    let vaultId = ''
+    if (item.type === 'AtomCreated' || item.portalLink?.includes('/atom/')) {
+      const match = item.portalLink?.match(/\/atom\/(.+)$/)
+      vaultId = match ? match[1] : ''
+    } else if (item.type === 'TripleCreated' || item.portalLink?.includes('/triple/')) {
+      const match = item.portalLink?.match(/\/triple\/(.+)$/)
+      vaultId = match ? match[1] : ''
+    }
+
     setSelectedEvent(item)
+    setSelectedVaultId(vaultId)
     setIsUpvoteModalOpen(true)
   }
 
@@ -471,6 +484,14 @@ const FeedTab = () => {
   const handleCloseModal = () => {
     setIsUpvoteModalOpen(false)
     setSelectedEvent(null)
+    setSelectedVaultId('')
+    setIsProcessing(false)
+
+    // Refresh feed if transaction was successful
+    if (shouldRefreshOnClose) {
+      setShouldRefreshOnClose(false)
+      loadTrustCircleFeed()
+    }
   }
 
   const handleSubmit = async (newUpvotes: number) => {
@@ -660,15 +681,50 @@ const FeedTab = () => {
         isOpen={isUpvoteModalOpen}
         onClose={handleCloseModal}
         onSubmit={async (amount: bigint, curveId: 1 | 2) => {
-          // Convert bigint Wei to number TRUST then to upvotes
-          const trustAmount = Number(amount) / 1e18
-          const newUpvotes = Math.round(trustAmount * 1000)
-          await handleSubmit(newUpvotes)
+          if (!selectedEvent) {
+            return { success: false, error: 'No event selected' }
+          }
+
+          if (!selectedVaultId) {
+            return { success: false, error: 'No vault ID found for this event' }
+          }
+
+          try {
+            setIsProcessing(true)
+
+            console.log('💰 FeedTab - Deposit calculation:', {
+              amount: amount.toString(),
+              depositInTRUST: (Number(amount) / 1e18).toFixed(4),
+              curveId
+            })
+
+            const result = await addWeight(selectedVaultId, amount, BigInt(curveId))
+            console.log('📊 FeedTab - addWeight result:', result)
+
+            if (result.success) {
+              console.log('✅ FeedTab - Transaction successful, txHash:', result.txHash)
+              // Don't refresh here - will refresh when modal closes to avoid re-render
+              setShouldRefreshOnClose(true)
+
+              setIsProcessing(false)
+              return { success: true, txHash: result.txHash }
+            } else {
+              setIsProcessing(false)
+              return { success: false, error: result.error || 'Transaction failed' }
+            }
+          } catch (error) {
+            console.error('❌ FeedTab - Transaction error:', error)
+            setIsProcessing(false)
+            return {
+              success: false,
+              error: error instanceof Error ? error.message : 'Transaction failed'
+            }
+          }
         }}
         subjectName="Feed"
         predicateName={selectedEvent?.type === 'AtomCreated' ? 'created' : 'supports'}
         objectName={selectedEvent ? selectedEvent.details : ''}
-        tripleId=""
+        tripleId={selectedVaultId}
         defaultCurve={1}
         isProcessing={isProcessing}
       />

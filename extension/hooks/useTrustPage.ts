@@ -15,6 +15,7 @@ export interface TrustPageResult {
   success: boolean
   tripleVaultId: string | null
   operationType: 'created' | 'deposit' | null
+  transactionHash: string | null
 }
 
 export const useTrustPage = (): TrustPageResult => {
@@ -33,6 +34,7 @@ export const useTrustPage = (): TrustPageResult => {
   const [error, setError] = useState<string | null>(null)
   const [tripleVaultId, setTripleVaultId] = useState<string | null>(null)
   const [operationType, setOperationType] = useState<'created' | 'deposit' | null>(null)
+  const [transactionHash, setTransactionHash] = useState<string | null>(null)
 
   const trustPage = useCallback(async (url: string, customWeight?: bigint, predicateName: PredicateType = 'trusts') => {
     try {
@@ -42,13 +44,16 @@ export const useTrustPage = (): TrustPageResult => {
 
       logger.info(`Creating ${predicateName} triplet for URL`, { url, predicateName, customWeight: customWeight?.toString() })
 
-      // Update refs and state
+      // Update refs and state - reset everything at the start of a new transaction
       loadingRef.current = true
       successRef.current = false
       errorRef.current = null
       setLoading(true)
       setSuccess(false)
       setError(null)
+      setTransactionHash(null)
+      setTripleVaultId(null)
+      setOperationType(null)
 
       // Extract domain and path from URL for atom name
       const urlObj = new URL(url)
@@ -96,6 +101,7 @@ export const useTrustPage = (): TrustPageResult => {
       setSuccess(true)
       setTripleVaultId(result.tripleVaultId)
       setOperationType(result.source as 'created' | 'deposit')
+      setTransactionHash(result.txHash)
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
@@ -130,6 +136,7 @@ export const useTrustPage = (): TrustPageResult => {
     error,
     success,
     tripleVaultId,
-    operationType
+    operationType,
+    transactionHash
   }
 }

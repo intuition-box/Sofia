@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import Iridescence from '../ui/Iridescence'
+import { useBalance } from 'wagmi'
+import { formatUnits, getAddress } from 'viem'
+// Removed Iridescence import - using CSS salmon gradient now
 import SofiaLoader from '../ui/SofiaLoader'
+import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import '../styles/Modal.css'
 
 interface FollowModalProps {
   accountLabel: string
-  onFollow: (trustAmount: string) => Promise<void>
+  onFollow: (trustAmount: string) => Promise<{ success: boolean, txHash?: string, error?: string }>
   onClose: () => void
 }
 
@@ -17,6 +21,24 @@ const FollowModal = ({
 }: FollowModalProps) => {
   const [trustAmount, setTrustAmount] = useState('0.01')
   const [loading, setLoading] = useState(false)
+  const [transactionHash, setTransactionHash] = useState<string | null>(null)
+  const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
+
+  // Get wallet address from storage
+  const { walletAddress } = useWalletFromStorage()
+
+  // Get checksum address for balance
+  const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
+
+  const { data: balanceData } = useBalance({
+    address: checksumAddress,
+  })
+
+  // Parse balance to number (in TRUST)
+  const userBalance = balanceData
+    ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
+    : 0
 
   // Predefined amounts
   const predefinedAmounts = [
@@ -53,12 +75,27 @@ const FollowModal = ({
     }
 
     setLoading(true)
+    setTransactionError(null)
+    setIsSuccess(false)
+    setTransactionHash(null)
     try {
-      await onFollow(trustAmount)
+      const result = await onFollow(trustAmount)
+      console.log('📊 FollowModal - Transaction result:', result)
+
+      if (result.success && result.txHash) {
+        console.log('✅ FollowModal - Success! Setting txHash:', result.txHash)
+        setTransactionHash(result.txHash)
+        setIsSuccess(true)
+      } else if (result.error) {
+        console.error('❌ FollowModal - Error:', result.error)
+        setTransactionError(result.error)
+      }
     } catch (error) {
       console.error('❌ FollowModal - Follow failed', error)
+      setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
     } finally {
       setLoading(false)
+      console.log('📊 FollowModal - Final state:', { isSuccess, transactionHash, transactionError })
     }
   }
 
@@ -67,6 +104,19 @@ const FollowModal = ({
       console.log('🚪 FollowModal - Backdrop clicked, closing modal')
       onClose()
     }
+  }
+
+  // Parse error message to show only essential info
+  const parseErrorMessage = (error: string): string => {
+    // Extract "Shares addition failed:" or "Weight addition failed:"
+    const failedMatch = error.match(/(Shares addition failed|Weight addition failed):/i)
+    const failedText = failedMatch ? failedMatch[0] : 'Transaction failed:'
+
+    // Extract "Details:" section
+    const detailsMatch = error.match(/Details:\s*(.+?)(?:\n|$)/i)
+    const detailsText = detailsMatch ? `Details: ${detailsMatch[1]}` : ''
+
+    return detailsText ? `${failedText}\n${detailsText}` : failedText
   }
 
   return createPortal(
@@ -127,9 +177,40 @@ const FollowModal = ({
                 ))}
               </div>
             </div>
+            {/* Balance display */}
+            <div className="stake-balance">Balance: {userBalance} TRUST</div>
           </div>
 
-          {loading && (
+          {/* Success State */}
+          {isSuccess && transactionHash && (
+            <div className="modal-processing-section modal-success-section">
+              <div className="modal-success-text">
+                <p className="modal-success-title">Transaction Validated</p>
+                <a
+                  href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="modal-tx-link"
+                >
+                  View on Explorer →
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {transactionError && !isSuccess && (
+            <div className="modal-error-section">
+              <div className="modal-error-icon">❌</div>
+              <div className="modal-error-text">
+                <p className="modal-error-title">Transaction Failed</p>
+                <p className="modal-error-message">{parseErrorMessage(transactionError)}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading && !isSuccess && (
             <div className="modal-processing-section">
               <SofiaLoader size={60} />
               <div className="modal-processing-text">
@@ -142,28 +223,26 @@ const FollowModal = ({
             <button
               onClick={onClose}
               disabled={loading}
-              className="modal-btn secondary"
+              className="stake-btn stake-btn-cancel"
             >
-              Cancel
+              {(isSuccess || transactionError) ? 'Close' : 'Cancel'}
             </button>
-            {!loading && (
+            {!loading && !isSuccess && !transactionError && (
               <button
                 onClick={handleConfirmFollow}
                 disabled={parseFloat(trustAmount) < 0.01}
                 className="modal-btn primary"
               >
-                <div className="modal-btn-background">
-                  <Iridescence
-                    color={[1, 0.4, 0.5]}
-                    speed={0.3}
-                    mouseReact={false}
-                    amplitude={0.1}
-                    zoom={0.05}
-                  />
-                </div>
-                <div className="modal-btn-content">
-                  Follow with {trustAmount} TRUST
-                </div>
+                Follow
+              </button>
+            )}
+            {transactionError && (
+              <button
+                onClick={handleConfirmFollow}
+                disabled={parseFloat(trustAmount) < 0.01}
+                className="modal-btn primary"
+              >
+                Retry
               </button>
             )}
           </div>
