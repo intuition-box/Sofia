@@ -44,6 +44,7 @@ yarn-error.log*
 components/SplineBackground.tsx
 
 .eliza
+.claude
 
 .env
 .internal_doc
