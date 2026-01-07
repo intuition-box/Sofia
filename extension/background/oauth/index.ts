@@ -7,6 +7,9 @@ import { SyncManager } from './core/SyncManager'
 import { MessageHandler } from './core/MessageHandler'
 import { PlatformRegistry } from './platforms/PlatformRegistry'
 
+// Disable Twitter profile fetch for now
+const TWITTER_FETCH_PROFILE_ENABLED = false
+
 /**
  * Main OAuth service orchestrating all components
  * Reduced from 837 lines to ~100 lines by splitting responsibilities
@@ -52,16 +55,32 @@ export class OAuthService {
     return this.flowManager.handleImplicitCallback(platform, accessToken, state)
   }
 
+  async handleExternalOAuthToken(
+    platform: string,
+    accessToken: string,
+    refreshToken?: string,
+    expiresIn?: number
+  ): Promise<void> {
+    return this.flowManager.handleExternalOAuthToken(platform, accessToken, refreshToken, expiresIn)
+  }
+
   async syncPlatformData(platform: string): Promise<any> {
     console.log(`🔍 [OAuth] Starting data sync for ${platform}`)
+
+    // Skip Twitter profile fetch for now
+    if (platform === 'twitter' && !TWITTER_FETCH_PROFILE_ENABLED) {
+      console.log(`⚠️ [OAuth] Twitter profile fetch disabled. Token stored successfully.`)
+      return { triplets: [], skipped: true }
+    }
+
     const userData = await this.dataFetcher.fetchUserData(platform)
     // Les triplets sont maintenant extraits pendant le fetch
     console.log(`🔍 [OAuth] Total triplets extracted for ${platform}:`, userData.triplets.length)
-    
+
     if (userData.triplets.length > 0) {
       await this.tripletExtractor.storeTriplets(platform, userData.triplets, userData)
     }
-    
+
     return { triplets: userData.triplets }
   }
 

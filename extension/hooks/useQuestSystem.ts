@@ -22,6 +22,7 @@ export interface Quest {
   xpReward: number
   type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust'
   milestone?: number // For milestone-based quests
+  claimable?: boolean // For quests that require on-chain claim (like Proof of Human)
 }
 
 // User progress data
@@ -45,6 +46,7 @@ export interface QuestSystemResult {
   xpForNextLevel: number
   loading: boolean
   refreshQuests: () => Promise<void>
+  markQuestCompleted: (questId: string) => Promise<void>
 }
 
 // XP calculation: Level N requires 100 * N XP
@@ -73,6 +75,7 @@ const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
   { id: 'bookmark-list-1', title: 'Create a bookmark list', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
   { id: 'bookmark-signal-1', title: 'Add a signal to a bookmark', description: 'Bookmark your first signal', total: 1, xpReward: 20, type: 'bookmark', milestone: 1 },
   { id: 'oauth-all', title: 'Connect all social accounts', description: 'Connect YouTube, Spotify, and Twitch', total: 3, xpReward: 100, type: 'oauth', milestone: 3 },
+  { id: 'proof-of-human', title: 'Proof of Human', description: 'Connect all 5 platforms and claim your humanity on-chain', total: 5, xpReward: 500, type: 'oauth', milestone: 5, claimable: true },
 
   // Progressive signal milestones (increasing difficulty and XP)
   { id: 'signal-10', title: 'Create 10 signals', description: 'Reach 10 signals created', total: 10, xpReward: 100, type: 'signal', milestone: 10 },
@@ -211,17 +214,21 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       const trustedUsers = trustResponse?.triples?.length || 0
 
-      // Query 4: Check OAuth connections
+      // Query 4: Check OAuth connections (all 5 platforms)
       const oauthResult = await chrome.storage.local.get([
         'oauth_token_youtube',
         'oauth_token_spotify',
         'oauth_token_twitch',
+        'oauth_token_discord',
+        'oauth_token_twitter',
       ])
 
       const oauthConnections = [
         oauthResult.oauth_token_youtube,
         oauthResult.oauth_token_spotify,
         oauthResult.oauth_token_twitch,
+        oauthResult.oauth_token_discord,
+        oauthResult.oauth_token_twitter,
       ].filter(Boolean).length
 
       // Local bookmark data
@@ -280,16 +287,25 @@ export const useQuestSystem = (): QuestSystemResult => {
       // Determine quest status
       let status: Quest['status'] = 'locked'
       let statusColor = '#6ACC93' // gray for locked
+      let claimable = false
 
       const isCompleted = completedQuestIds.has(questDef.id)
 
       if (current >= questDef.total) {
-        status = 'completed'
-        statusColor = '#48bb78' // green
+        // For claimable quests (like proof-of-human), only mark completed if already claimed
+        if (questDef.claimable && !isCompleted) {
+          // Quest is ready to claim but not yet claimed
+          status = 'active'
+          statusColor = '#FFD700' // gold for claimable
+          claimable = true
+        } else {
+          status = 'completed'
+          statusColor = '#48bb78' // green
 
-        // Auto-save newly completed quests
-        if (!isCompleted) {
-          saveCompletedQuest(questDef.id)
+          // Auto-save newly completed quests (only for non-claimable quests)
+          if (!isCompleted && !questDef.claimable) {
+            saveCompletedQuest(questDef.id)
+          }
         }
       } else if (current > 0 || questDef.milestone === 1) {
         // Quest is active if user has started progress or it's a first-time quest
@@ -302,6 +318,7 @@ export const useQuestSystem = (): QuestSystemResult => {
         current: Math.min(current, questDef.total),
         status,
         statusColor,
+        claimable,
       }
     }).sort((a, b) => {
       // Sort by: active first, then by milestone (lower milestones first), then completed last
@@ -332,6 +349,11 @@ export const useQuestSystem = (): QuestSystemResult => {
   const level = useMemo(() => calculateLevelFromXP(totalXP), [totalXP])
   const xpForNextLevel = useMemo(() => calculateXPForNextLevel(level), [level])
 
+  // Mark a claimable quest as completed (called after on-chain claim)
+  const markQuestCompleted = async (questId: string) => {
+    await saveCompletedQuest(questId)
+  }
+
   return {
     quests,
     activeQuests,
@@ -342,5 +364,6 @@ export const useQuestSystem = (): QuestSystemResult => {
     xpForNextLevel,
     loading,
     refreshQuests,
+    markQuestCompleted,
   }
 }
