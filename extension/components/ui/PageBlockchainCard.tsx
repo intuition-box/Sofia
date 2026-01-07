@@ -4,13 +4,13 @@ import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
 import WeightModal from '../modals/WeightModal'
 import StarBorder from './StarBorder'
-import Iridescence from './Iridescence'
+// Removed Iridescence import - using CSS salmon gradient now
 import type { PageBlockchainTriplet } from '../../types/page'
 import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
   const { triplets, loading, error, currentUrl, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
-  const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType } = useTrustPage()
+  const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType, transactionHash: trustTxHash } = useTrustPage()
   const [showDetails, setShowDetails] = useState(false)
 
   // Local state for Trust button UI
@@ -18,6 +18,7 @@ const PageBlockchainCard = () => {
   const [localTrustSuccess, setLocalTrustSuccess] = useState(false)
   const [localTrustError, setLocalTrustError] = useState<string | null>(null)
   const [localOperationType, setLocalOperationType] = useState<'created' | 'deposit' | null>(null)
+  const [localTransactionHash, setLocalTransactionHash] = useState<string | null>(null)
 
   // Local state for Distrust button UI
   const [localDistrustLoading, setLocalDistrustLoading] = useState(false)
@@ -39,12 +40,36 @@ const PageBlockchainCard = () => {
   const [faviconUrl, setFaviconUrl] = useState<string | null>(null)
   const [faviconError, setFaviconError] = useState(false)
 
-  // Sync operationType from hook to local state when transaction completes
+  // Sync hook states to local states - wait for loading to finish before updating
   React.useEffect(() => {
-    if (operationType && localTrustSuccess) {
-      setLocalOperationType(operationType)
+    console.log('📊 PageBlockchainCard - Hook state changed:', { trustLoading, trustSuccess, trustError, trustTxHash, operationType })
+
+    // Only update when not loading (transaction finished)
+    if (!trustLoading) {
+      if (trustSuccess && trustTxHash) {
+        console.log('✅ PageBlockchainCard - Success with txHash:', trustTxHash)
+        setLocalTrustSuccess(true)
+        setLocalTrustError(null)
+        setLocalTransactionHash(trustTxHash)
+        if (operationType) {
+          setLocalOperationType(operationType)
+        }
+      } else if (trustSuccess && !trustTxHash) {
+        console.log('✅ PageBlockchainCard - Success without txHash (triple exists)')
+        setLocalTrustSuccess(true)
+        setLocalTrustError(null)
+        setLocalTransactionHash(null)
+        if (operationType) {
+          setLocalOperationType(operationType)
+        }
+      } else if (trustError) {
+        console.log('❌ PageBlockchainCard - Error:', trustError)
+        setLocalTrustSuccess(false)
+        setLocalTrustError(trustError)
+        setLocalTransactionHash(null)
+      }
     }
-  }, [operationType, localTrustSuccess])
+  }, [trustLoading, trustSuccess, trustError, trustTxHash, operationType])
 
   // Load favicon when URL changes
   React.useEffect(() => {
@@ -146,21 +171,25 @@ const PageBlockchainCard = () => {
 
     try {
       const weight = customWeights[0] || undefined
+      console.log('📊 PageBlockchainCard - Starting trustPage call')
       // Pass the predicate name based on modal type
       await trustPage(currentUrl, weight as bigint | undefined, modalType === 'trust' ? 'trusts' : 'distrust')
-      setSuccess(true)
+      console.log('✅ PageBlockchainCard - trustPage completed, hook state:', { trustSuccess, trustError, trustTxHash, operationType })
 
-      // Don't close modal - let user see the success message
-      // Modal will be closed by user clicking Close button
+      // Don't set success here - let the useEffect sync from hook state
+      // This way we only show success if the hook actually succeeded
 
       // RESUME auto-refreshes after transaction completes
       resumeRefresh()
 
-      // Refresh blockchain data to show new triple
-      setTimeout(() => {
-        fetchDataForCurrentPage()
-      }, 1000)
+      // Refresh blockchain data to show new triple (only if successful)
+      if (trustSuccess) {
+        setTimeout(() => {
+          fetchDataForCurrentPage()
+        }, 1000)
+      }
     } catch (error) {
+      console.error('❌ PageBlockchainCard - trustPage error:', error)
       const errorMessage = error instanceof Error ? error.message : `Failed to create ${modalType}`
       setError(errorMessage)
 
@@ -168,6 +197,7 @@ const PageBlockchainCard = () => {
       resumeRefresh()
     } finally {
       setLoading(false)
+      console.log('📊 PageBlockchainCard - Final state:', { localTrustSuccess, localTransactionHash, trustSuccess, trustError })
     }
   }
 
@@ -178,6 +208,7 @@ const PageBlockchainCard = () => {
     setLocalTrustSuccess(false)
     setLocalTrustError(null)
     setLocalOperationType(null)
+    setLocalTransactionHash(null)
     // Reset distrust state
     setLocalDistrustSuccess(false)
     setLocalDistrustError(null)
@@ -368,27 +399,16 @@ const PageBlockchainCard = () => {
               onClick={handleTrustPage}
               disabled={localTrustLoading || localDistrustLoading || !currentUrl}
             >
-              <div className="trust-button-background">
-                <Iridescence
-                  color={[1, 0.4, 0.5]}
-                  speed={0.3}
-                  mouseReact={false}
-                  amplitude={0.1}
-                  zoom={0.05}
-                />
-              </div>
-              <span className="trust-button-content">
-                {localTrustLoading ? (
-                  <>
-                    <div className="button-spinner"></div>
-                    Creating...
-                  </>
-                ) : localTrustSuccess ? (
-                  <>✓ Trusted!</>
-                ) : (
-                  <>TRUST</>
-                )}
-              </span>
+              {localTrustLoading ? (
+                <>
+                  <div className="button-spinner"></div>
+                  Creating...
+                </>
+              ) : localTrustSuccess ? (
+                <>✓ Trusted!</>
+              ) : (
+                <>TRUST</>
+              )}
             </button>
 
             {/* Distrust Button */}
@@ -397,18 +417,16 @@ const PageBlockchainCard = () => {
               onClick={handleDistrustPage}
               disabled={localTrustLoading || localDistrustLoading || !currentUrl}
             >
-              <span className="trust-button-content">
-                {localDistrustLoading ? (
-                  <>
-                    <div className="button-spinner"></div>
-                    Creating...
-                  </>
-                ) : localDistrustSuccess ? (
-                  <>✓ Distrusted!</>
-                ) : (
-                  <>DISTRUST</>
-                )}
-              </span>
+              {localDistrustLoading ? (
+                <>
+                  <div className="button-spinner"></div>
+                  Creating...
+                </>
+              ) : localDistrustSuccess ? (
+                <>✓ Distrusted!</>
+              ) : (
+                <>DISTRUST</>
+              )}
             </button>
           </div>
 
@@ -569,6 +587,7 @@ const PageBlockchainCard = () => {
           isProcessing={modalType === 'trust' ? localTrustLoading : localDistrustLoading}
           transactionSuccess={modalType === 'trust' ? localTrustSuccess : localDistrustSuccess}
           transactionError={(modalType === 'trust' ? localTrustError : localDistrustError) || undefined}
+          transactionHash={localTransactionHash || undefined}
           createdCount={(modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'created' ? 1 : 0}
           depositCount={(modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'deposit' ? 1 : 0}
           onClose={handleModalClose}

@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import Iridescence from '../ui/Iridescence'
+import { useBalance } from 'wagmi'
+import { formatUnits, getAddress } from 'viem'
+import SofiaLoader from '../ui/SofiaLoader'
+// import { BondingCurveChart } from '../charts' // Removed - chart now in expanded view
+import { useDepositPreview } from '../../hooks/useDepositPreview'
+import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import type { CurveType } from '../../types/bonding-curve'
+import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import '../styles/Modal.css'
 
 interface StakeModalProps {
@@ -9,12 +16,9 @@ interface StakeModalProps {
   predicateName: string
   objectName: string
   tripleId: string
-  currentLinear: number           // Position en TRUST sur Curve 1
-  currentOffsetProgressive: number // Position en TRUST sur Curve 2
-  totalMarketCap: string          // Market cap pour Curve 2
   defaultCurve?: 1 | 2           // Curve pré-sélectionnée (défaut: 2)
   onClose: () => void
-  onSubmit: (amount: bigint, curveId: 1 | 2) => Promise<void>
+  onSubmit: (amount: bigint, curveId: 1 | 2) => Promise<{ success: boolean, txHash?: string, error?: string }>
   isProcessing?: boolean
 }
 
@@ -24,23 +28,76 @@ const StakeModal = ({
   predicateName,
   objectName,
   tripleId,
-  currentLinear,
-  currentOffsetProgressive,
-  totalMarketCap,
   defaultCurve = 2,
   onClose,
   onSubmit,
   isProcessing = false
 }: StakeModalProps) => {
   const [selectedCurve, setSelectedCurve] = useState<1 | 2>(defaultCurve)
-  const [amount, setAmount] = useState('')
+  const [amount, setAmount] = useState('10')
+  const [debouncedAmount, setDebouncedAmount] = useState('10')
+  const [transactionHash, setTransactionHash] = useState<string | null>(null)
+  const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
+
+  // Get wallet address from storage
+  const { walletAddress, authenticated } = useWalletFromStorage()
+
+  // Get checksum address for GraphQL queries and balance
+  const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
+
+  const { data: balanceData } = useBalance({
+    address: checksumAddress,
+  })
+
+  // Parse balance to number (in TRUST)
+  const userBalance = balanceData
+    ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
+    : 0
+
+  console.log('🟡 [StakeModal] Wallet info:', {
+    walletAddress,
+    checksumAddress,
+    authenticated,
+    userBalance,
+    tripleId,
+    selectedCurve
+  })
+
+  // Predefined amounts - Changed to 10, 25, 50, MAX
+  const predefinedAmounts = [
+    { label: '10 TRUST', value: '10' },
+    { label: '25 TRUST', value: '25' },
+    { label: '50 TRUST', value: '50' },
+    { label: 'MAX', value: userBalance.toFixed(2) }
+  ]
+
+  // Deposit preview hook with debounced amount
+  const preview = useDepositPreview(tripleId, selectedCurve as CurveType, debouncedAmount)
+
+  // Debounce effect for amount input (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedAmount(amount)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [amount])
 
   useEffect(() => {
     if (isOpen) {
-      setAmount('')
+      setAmount('10')
+      setDebouncedAmount('10')
       setSelectedCurve(defaultCurve)
+      setTransactionHash(null)
+      setTransactionError(null)
+      setIsSuccess(false)
     }
   }, [isOpen, defaultCurve])
+
+  const handleAmountSelect = (amountValue: string) => {
+    setAmount(amountValue)
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -50,17 +107,33 @@ const StakeModal = ({
     }
   }
 
-  const handleToggleCurve = () => {
-    setSelectedCurve(prev => prev === 1 ? 2 : 1)
-    setAmount('') // Reset amount when switching
-  }
-
   const handleSubmit = async () => {
     const numAmount = parseFloat(amount)
     if (numAmount > 0) {
-      // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
-      const weiAmount = BigInt(Math.floor(numAmount * 1e18))
-      await onSubmit(weiAmount, selectedCurve)
+      // Reset states at the start of transaction
+      setTransactionError(null)
+      setIsSuccess(false)
+      setTransactionHash(null)
+
+      try {
+        // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
+        const weiAmount = BigInt(Math.floor(numAmount * 1e18))
+        console.log('📊 StakeModal - Starting transaction:', { amount: numAmount, weiAmount: weiAmount.toString() })
+        const result = await onSubmit(weiAmount, selectedCurve)
+        console.log('📊 StakeModal - Transaction result:', result)
+
+        if (result.success && result.txHash) {
+          console.log('✅ StakeModal - Success! Setting txHash:', result.txHash)
+          setTransactionHash(result.txHash)
+          setIsSuccess(true)
+        } else if (result.error) {
+          console.error('❌ StakeModal - Error:', result.error)
+          setTransactionError(result.error)
+        }
+      } catch (error) {
+        console.error('❌ StakeModal - Transaction failed', error)
+        setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
+      }
     }
   }
 
@@ -70,16 +143,23 @@ const StakeModal = ({
     }
   }
 
+  // Parse error message to show only essential info
+  const parseErrorMessage = (error: string): string => {
+    // Extract "Shares addition failed:" or "Weight addition failed:"
+    const failedMatch = error.match(/(Shares addition failed|Weight addition failed):/i)
+    const failedText = failedMatch ? failedMatch[0] : 'Transaction failed:'
+
+    // Extract "Details:" section
+    const detailsMatch = error.match(/Details:\s*(.+?)(?:\n|$)/i)
+    const detailsText = detailsMatch ? `Details: ${detailsMatch[1]}` : ''
+
+    return detailsText ? `${failedText}\n${detailsText}` : failedText
+  }
+
   if (!isOpen) return null
 
   const numAmount = parseFloat(amount) || 0
   const canSubmit = numAmount > 0 && !isProcessing
-
-  // Get current position based on selected curve
-  const currentPosition = selectedCurve === 1 ? currentLinear : currentOffsetProgressive
-
-  // Get curve label
-  const curveLabel = selectedCurve === 1 ? 'Linear' : 'Offset Progressive'
 
   return createPortal(
     <div className="modal-overlay" onClick={handleBackdropClick}>
@@ -87,9 +167,6 @@ const StakeModal = ({
         <div className="modal-header">
           <div className="modal-title-row">
             <span className="modal-title">Stake</span>
-            <span className={`stake-curve-badge ${selectedCurve === 1 ? 'linear' : 'offset'}`}>
-              {curveLabel}
-            </span>
           </div>
           <button
             className="modal-close"
@@ -105,80 +182,157 @@ const StakeModal = ({
             Staking on a Triple enhances its discoverability in the Intuition system.
           </p>
 
-          {/* Triple Display */}
+          {/* Triple Display - WeightModal style */}
           <div
-            className="stake-triple-box clickable"
+            className="modal-triplet-info clickable"
             onClick={() => window.open(`https://portal.intuition.systems/explore/triple/${tripleId}?tab=positions`, '_blank')}
             title="View on Intuition Portal"
           >
-            <div className="stake-triple-icon">⭕</div>
-            <span className="stake-triple-name">
-              <span className="stake-triple-subject">{subjectName}</span>
-              {' '}
-              <span className="stake-triple-predicate">{predicateName}</span>
-              {' '}
-              <span className="stake-triple-object">{objectName}</span>
-            </span>
+            <p>
+              <span className="subject">{subjectName}</span>{' '}
+              <span className="action">{predicateName}</span>{' '}
+              <span className="object">{objectName}</span>
+            </p>
           </div>
 
-          {/* Your Active Position */}
-          <div className="stake-position-section">
-            <div className="stake-position-header">Your Active Position</div>
-            <div className="stake-position-display">
-              <span className={`stake-curve-badge-small ${selectedCurve === 1 ? 'linear' : 'offset'}`}>
-                {curveLabel}
-              </span>
-              <span className="stake-position-value">{currentPosition.toFixed(4)} shares</span>
+          {/* Bonding Curve Chart removed - now shown in expanded card view */}
+
+          {/* Amount Section - New Layout */}
+          <div className="stake-amount-section">
+            <div className="stake-amount-title">Amount</div>
+
+            {/* Input with integrated toggle */}
+            <div className="stake-input-container">
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={handleInputChange}
+                onFocus={(e) => e.target.select()}
+                className="stake-amount-input"
+                placeholder="Min Amount 0.01 TRUST"
+                disabled={isProcessing}
+              />
+
+              {/* Toggle switch integrated in input */}
+              <div className="stake-input-toggle">
+                <span className="stake-toggle-label">
+                  {selectedCurve === 1 ? 'Linear' : 'Offset'}
+                </span>
+                <label className="stake-toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={selectedCurve === 1}
+                    onChange={() => setSelectedCurve(selectedCurve === 1 ? 2 : 1)}
+                    disabled={isProcessing}
+                  />
+                  <span className="stake-toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            {/* Balance display */}
+            <div className="stake-balance">Balance: {userBalance} TRUST</div>
+
+            {/* Amount Pills */}
+            <div className="stake-amount-pills">
+              {predefinedAmounts.map(presetAmount => (
+                <button
+                  key={presetAmount.value}
+                  onClick={() => handleAmountSelect(presetAmount.value)}
+                  className={`stake-amount-pill ${amount === presetAmount.value ? 'selected' : ''}`}
+                  disabled={isProcessing}
+                >
+                  {presetAmount.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Curve Toggle */}
-          <div className="stake-toggle-section">
-            <span className="stake-toggle-label">{curveLabel}</span>
-            <label className="stake-toggle-switch">
-              <input
-                type="checkbox"
-                checked={selectedCurve === 2}
-                onChange={handleToggleCurve}
-                disabled={isProcessing}
-              />
-              <span className="stake-toggle-slider"></span>
-            </label>
-          </div>
+          {/* Preview Section */}
+          {preview.sharesOut && parseFloat(preview.sharesOut) > 0 && (
+            <div className="stake-preview-section">
+              <div className="stake-preview-row">
+                <span className="stake-preview-label">You will receive</span>
+                <span className="stake-preview-value">~{parseFloat(preview.sharesOut).toFixed(2)} shares</span>
+              </div>
+              <div className="stake-preview-row">
+                <span className="stake-preview-label">Effective price</span>
+                <span className="stake-preview-value">{parseFloat(preview.effectivePrice).toFixed(6)} TRUST/share</span>
+              </div>
+              <div className="stake-preview-row">
+                <span className="stake-preview-label">Fees</span>
+                <span className="stake-preview-value">{parseFloat(preview.fees).toFixed(4)} TRUST</span>
+              </div>
+            </div>
+          )}
 
-          {/* Amount Input */}
-          <div className="modal-section">
-            <div className="modal-custom-label">TRUST</div>
-            <input
-              type="text"
-              value={amount}
-              onChange={handleInputChange}
-              className="modal-custom-input"
-              placeholder="Enter an Amount"
-              disabled={isProcessing}
-            />
-          </div>
+          {/* Success State */}
+          {isSuccess && transactionHash && (
+            <div className="modal-processing-section modal-success-section">
+              <div className="modal-success-text">
+                <p className="modal-success-title">Transaction Validated</p>
+                <a
+                  href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="modal-tx-link"
+                >
+                  View on Explorer →
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {transactionError && !isSuccess && (
+            <div className="modal-error-section">
+              <div className="modal-error-icon">❌</div>
+              <div className="modal-error-text">
+                <p className="modal-error-title">Transaction Failed</p>
+                <p className="modal-error-message">{parseErrorMessage(transactionError)}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isProcessing && !isSuccess && (
+            <div className="modal-processing-section">
+              <SofiaLoader size={60} />
+              <div className="modal-processing-text">
+                <p className="modal-processing-title">Processing...</p>
+              </div>
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="modal-actions">
             <button
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className="modal-btn primary"
+              onClick={onClose}
+              disabled={isProcessing}
+              className="stake-btn stake-btn-cancel"
             >
-              <div className="modal-btn-background">
-                <Iridescence
-                  color={[1, 0.4, 0.5]}
-                  speed={0.3}
-                  mouseReact={false}
-                  amplitude={0.1}
-                  zoom={0.05}
-                />
-              </div>
-              <div className="modal-btn-content">
-                {isProcessing ? 'Processing...' : `Stake ${numAmount > 0 ? numAmount.toFixed(2) : '0'} TRUST`}
-              </div>
+              {(isSuccess || transactionError) ? 'Close' : 'Cancel'}
             </button>
+            {!isProcessing && !isSuccess && !transactionError && (
+              <button
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                className="stake-btn stake-btn-submit"
+              >
+                Stake
+              </button>
+            )}
+            {transactionError && (
+              <button
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                className="stake-btn stake-btn-submit"
+              >
+                Retry
+              </button>
+            )}
           </div>
         </div>
       </div>

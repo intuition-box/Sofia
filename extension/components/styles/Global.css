@@ -42,6 +42,7 @@ body {
   --color-accent: #A6AF6B;
   --color-hover: #FFB3C4;
   --color-hover-light: #FFE078;
+  --color-gradient-button: linear-gradient(135deg, #D790C7 0%, #d37cbf 20%, #ffc6b0 50%, #ffa7b1 80%, #cea2fd 100%);
   
 
 .figma-colors{

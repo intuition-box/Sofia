@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useTrustAccount } from '../../hooks/useTrustAccount'
 import WeightModal from '../modals/WeightModal'
@@ -11,10 +11,11 @@ interface TrustAccountButtonProps {
 }
 
 const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAccountButtonProps) => {
-  const { trustAccount, loading, error, success } = useTrustAccount()
+  const { trustAccount, loading, error, success, transactionHash } = useTrustAccount()
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [transactionSuccess, setTransactionSuccess] = useState(false)
   const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [localTransactionHash, setLocalTransactionHash] = useState<string | null>(null)
 
   // Create a fake triplet object for WeightModal display
   const mockTriplet: EchoTriplet = {
@@ -35,6 +36,7 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
     setShowWeightModal(true)
     setTransactionError(null)
     setTransactionSuccess(false)
+    setLocalTransactionHash(null)
   }
 
   const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
@@ -42,7 +44,8 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
       const customWeight = customWeights?.[0] || undefined
       await trustAccount(accountVaultId, accountLabel, customWeight)
 
-      setTransactionSuccess(true)
+      // Success will be detected by the useEffect watching the hook's success state
+      // The hook will update transactionHash and success states
 
       // Call success callback if provided
       if (onSuccess) {
@@ -54,10 +57,36 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
     }
   }
 
+  // Sync states from hook - wait for loading to finish before updating
+  useEffect(() => {
+    console.log('📊 TrustAccountButton - Hook state changed:', { loading, success, error, transactionHash })
+
+    // Only update when not loading (transaction finished)
+    if (!loading) {
+      if (success && transactionHash) {
+        console.log('✅ TrustAccountButton - Success with txHash:', transactionHash)
+        setTransactionSuccess(true)
+        setLocalTransactionHash(transactionHash)
+        setTransactionError(null)
+      } else if (success && !transactionHash) {
+        console.log('✅ TrustAccountButton - Success without txHash (triple exists)')
+        setTransactionSuccess(true)
+        setTransactionError(null)
+        setLocalTransactionHash(null)
+      } else if (error) {
+        console.log('❌ TrustAccountButton - Error:', error)
+        setTransactionSuccess(false)
+        setTransactionError(error)
+        setLocalTransactionHash(null)
+      }
+    }
+  }, [loading, success, error, transactionHash])
+
   const handleModalClose = () => {
     setShowWeightModal(false)
     setTransactionError(null)
     setTransactionSuccess(false)
+    setLocalTransactionHash(null)
   }
 
   return (
@@ -67,9 +96,7 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
         onClick={handleButtonClick}
         disabled={loading}
       >
-        <span className="trust-button-content">
-          {loading ? 'Processing...' : 'TRUST'}
-        </span>
+        {loading ? 'Processing...' : 'Trust'}
       </button>
 
       {showWeightModal && createPortal(
@@ -79,6 +106,7 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
           isProcessing={loading}
           transactionSuccess={transactionSuccess}
           transactionError={transactionError || error}
+          transactionHash={localTransactionHash || undefined}
           onClose={handleModalClose}
           onSubmit={handleWeightSubmit}
         />,

@@ -675,7 +675,7 @@ const FollowTab = () => {
           Following
         </button>
         <button
-          className={`filter-btn ${filterType === 'trust-circle' ? 'active' : ''}`}
+          className={`filter-btn ${filterType === 'trust-circle' ? 'trustactive' : ''}`}
           onClick={() => setFilterType('trust-circle')}
         >
           Trust Circle
@@ -807,19 +807,6 @@ const FollowTab = () => {
                     }}
                   />
                 )}
-                {filterType === 'trust-circle' && (
-                  <div
-                    className="upvote-badge upvote-badge-relative"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleUpvoteClick(account)
-                    }}
-                    title="Adjust trust weight"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    👍 {Math.round(account.trustAmount * 1000)}
-                  </div>
-                )}
               </div>
             </div>
           ))}
@@ -834,16 +821,46 @@ const FollowTab = () => {
           predicateName="trust"
           objectName={selectedAccount.label}
           tripleId={selectedAccount.tripleId}
-          currentLinear={selectedAccount.trustAmount}
-          currentOffsetProgressive={0}
-          totalMarketCap="0"
           defaultCurve={1}
           onClose={handleCloseUpvoteModal}
           onSubmit={async (amount: bigint, curveId: 1 | 2) => {
-            // Convert bigint Wei to number TRUST
-            const trustAmount = Number(amount) / 1e18
-            const newUpvotes = Math.round(trustAmount * 1000)
-            await handleUpvoteSubmit(newUpvotes)
+            try {
+              // Convert bigint Wei to number TRUST
+              const trustAmount = Number(amount) / 1e18
+              const newUpvotes = Math.round(trustAmount * 1000)
+
+              if (!selectedAccount || !address) {
+                return { success: false, error: 'No account selected' }
+              }
+
+              const currentUpvotes = Math.round(selectedAccount.trustAmount * 1000)
+              const difference = newUpvotes - currentUpvotes
+
+              if (difference === 0) {
+                return { success: true }
+              }
+
+              // Convert upvotes to Wei (1 upvote = 0.001 TRUST = 10^15 Wei)
+              const weightChange = BigInt(Math.abs(difference)) * BigInt(1e15)
+
+              let result
+              if (difference > 0) {
+                result = await addWeight(selectedAccount.tripleId, weightChange)
+              } else {
+                result = await removeWeight(selectedAccount.tripleId, weightChange)
+              }
+
+              if (result.success) {
+                await loadFollows()
+              }
+
+              return result
+            } catch (error) {
+              return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Transaction failed'
+              }
+            }
           }}
           isProcessing={isProcessingUpvote}
         />

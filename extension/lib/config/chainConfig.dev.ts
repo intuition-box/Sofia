@@ -47,7 +47,7 @@ export const API_CONFIG = {
 
 // Explorer URLs
 export const EXPLORER_URLS = {
-  TRANSACTION: "https://testnet.explorer.intuition.systems/txs/",
+  TRANSACTION: "https://testnet.explorer.intuition.systems/tx/",
   ADDRESS: "https://testnet.explorer.intuition.systems/address/",
   INTUITION: "https://testnet.explorer.intuition.systems"
 } as const

@@ -24,6 +24,7 @@ export interface TrustAccountResult {
   success: boolean
   tripleVaultId: string | null
   operationType: 'created' | 'deposit' | null
+  transactionHash: string | null
 }
 
 export const useTrustAccount = (): TrustAccountResult => {
@@ -42,6 +43,7 @@ export const useTrustAccount = (): TrustAccountResult => {
   const [error, setError] = useState<string | null>(null)
   const [tripleVaultId, setTripleVaultId] = useState<string | null>(null)
   const [operationType, setOperationType] = useState<'created' | 'deposit' | null>(null)
+  const [transactionHash, setTransactionHash] = useState<string | null>(null)
 
   // Get universal "I" subject atom (same for all users)
   const getUserAtom = useCallback(async () => {
@@ -74,13 +76,16 @@ export const useTrustAccount = (): TrustAccountResult => {
 
       logger.info('Creating trust triplet for account', { accountVaultId, accountLabel, customWeight: customWeight?.toString() })
 
-      // Update refs and state
+      // Update refs and state - reset everything at the start of a new transaction
       loadingRef.current = true
       successRef.current = false
       errorRef.current = null
       setLoading(true)
       setSuccess(false)
       setError(null)
+      setTransactionHash(null)
+      setTripleVaultId(null)
+      setOperationType(null)
 
       logger.debug('Step 1: Getting user atom (I)')
       const userAtom = await getUserAtom()
@@ -178,6 +183,7 @@ export const useTrustAccount = (): TrustAccountResult => {
         setSuccess(true)
         setTripleVaultId(tripleCheck.tripleVaultId!)
         setOperationType('deposit')
+        setTransactionHash(hash)
         return
       }
 
@@ -269,6 +275,7 @@ export const useTrustAccount = (): TrustAccountResult => {
       setSuccess(true)
       setTripleVaultId(expectedTripleVaultId)
       setOperationType('created')
+      setTransactionHash(hash)
 
     } catch (error) {
       logger.error('Trust account creation failed', error)
@@ -301,6 +308,7 @@ export const useTrustAccount = (): TrustAccountResult => {
     error,
     success,
     tripleVaultId,
-    operationType
+    operationType,
+    transactionHash
   }
 }

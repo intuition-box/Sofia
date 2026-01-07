@@ -29,7 +29,7 @@
 }
 
 .feed-item-container {
-  background: #ffffff05;
+  background: #000208 !important;
   border-bottom: 1px solid #ffffff14;
   align-items: flex-start;
   gap: 22px;
@@ -140,32 +140,80 @@
   white-space: nowrap;
 }
 
-/* Join Button */
+/* Join Button - orb gradient style (like trust-btn) */
 .trust-page-button.join-button-css {
-  background: linear-gradient(135deg, #ff8a65 0%, #ff6e40 50%, #ff8a65 100%);
-  background-size: 200% 200%;
-  animation: salmon-gradient 3s ease infinite;
+  border: none;
+  background: none;
+  box-shadow: 0 8px 32px rgba(86, 236, 72, 0.4);
+  color: #ffffff;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease;
+  font-family: 'Gotu', cursive;
 }
 
-.trust-page-button.join-button-css:hover {
+.trust-page-button.join-button-css::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.trust-page-button.join-button-css > * {
+  position: relative;
+  z-index: 1;
+}
+
+.trust-page-button.join-button-css:hover:not(:disabled) {
+  box-shadow: 0 12px 48px rgba(110, 236, 72, 0.6);
   transform: translateY(-2px);
+  background-color: rgba(86, 236, 72, 0.4);
 }
 
-@keyframes salmon-gradient {
+@keyframes orb-gradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* Decline Button */
+/* Decline Button - Outline/Ghost style (like distrust-btn) */
 .feed-decline-button {
-  background: rgba(255, 255, 255, 0.219);
+  border: none;
+  background: transparent;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
   color: white !important;
+  font-weight: 700;
+  overflow: hidden;
+  transition: all 0.5s ease;
   font-family: 'Gotu', cursive;
+  position: relative;
 }
 
-.feed-decline-button:hover {
-  background: rgba(255, 0, 0, 0.144);
+.feed-decline-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.feed-decline-button:hover:not(:disabled) {
+  box-shadow: 0 12px 48px rgba(255, 80, 80, 0.6);
+  transform: translateY(-2px);
+  background-color: rgba(253, 78, 78, 0.459);
+  color: white;
 }
 
 /* Empty State */
@@ -184,13 +232,14 @@
 .empty-state p {
   color: #9ca3af;
   font-size: 14px;
-  margin: 0;
+  line-height: 1px;
 }
 
 .empty-subtext {
   color: #6b7280;
   font-size: 13px;
   margin-top: 8px;
+  line-height: 0px;
 }
 
 /* Loading State */

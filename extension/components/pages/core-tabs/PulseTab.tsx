@@ -42,6 +42,9 @@ const PulseTab = () => {
   const [isCreating, setIsCreating] = useState(false)
   const [transactionSuccess, setTransactionSuccess] = useState(false)
   const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [transactionHash, setTransactionHash] = useState<string | undefined>(undefined)
+  const [createdCount, setCreatedCount] = useState(0)
+  const [depositCount, setDepositCount] = useState(0)
 
   // Create EchoTriplets from selected pulse triplets for publishing
   const createEchoTripletsFromSelection = (): EchoTriplet[] => {
@@ -277,15 +280,21 @@ const PulseTab = () => {
   // Handle modal weight submission - exact same logic as EchoesTab
   const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
     if (selectedTripletsForWeighting.length === 0) return
-    
+
     try {
       setIsCreating(true)
       setTransactionError(null)
       setTransactionSuccess(false)
-      
+      setTransactionHash(undefined)
+      setCreatedCount(0)
+      setDepositCount(0)
+
       // Use publishSelected with custom weights - same as EchoesTab
-      await publishSelected(customWeights)
-      
+      const result = await publishSelected(customWeights)
+
+      setCreatedCount(result.createdCount || 0)
+      setDepositCount(result.depositCount || 0)
+      setTransactionHash(result.txHash)
       setTransactionSuccess(true)
     } catch (error) {
       console.error('Failed to publish triplets with custom weights:', error)
@@ -301,6 +310,9 @@ const PulseTab = () => {
     setSelectedTripletsForWeighting([])
     setTransactionError(null)
     setTransactionSuccess(false)
+    setTransactionHash(undefined)
+    setCreatedCount(0)
+    setDepositCount(0)
     // Clear selection using the hook's clearSelection (same as EchoesTab)
     setSelectedTriplets(new Set())
   }
@@ -712,6 +724,9 @@ const PulseTab = () => {
         isProcessing={isCreating}
         transactionSuccess={transactionSuccess}
         transactionError={transactionError}
+        transactionHash={transactionHash}
+        createdCount={createdCount}
+        depositCount={depositCount}
         onClose={handleWeightModalClose}
         onSubmit={handleWeightSubmit}
       />

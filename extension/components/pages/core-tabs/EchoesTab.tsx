@@ -6,7 +6,7 @@ import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import { useEchoSelection } from '../../../hooks/useEchoSelection'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import WeightModal from '../../modals/WeightModal'
-import Iridescence from '../../ui/Iridescence'
+// Removed Iridescence import - using CSS salmon gradient now
 import SofiaLoader from '../../ui/SofiaLoader'
 import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/CoreComponents.css'
@@ -139,6 +139,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [isCreating, setIsCreating] = useState(false)
   const [transactionSuccess, setTransactionSuccess] = useState(false)
   const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [transactionHash, setTransactionHash] = useState<string | undefined>(undefined)
   const [createdCount, setCreatedCount] = useState(0)
   const [depositCount, setDepositCount] = useState(0)
 
@@ -173,6 +174,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
       setIsCreating(true)
       setTransactionError(null)
       setTransactionSuccess(false)
+      setTransactionHash(undefined)
       setCreatedCount(0)
       setDepositCount(0)
 
@@ -180,6 +182,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
 
       setCreatedCount(result.createdCount || 0)
       setDepositCount(result.depositCount || 0)
+      setTransactionHash(result.txHash)
       setTransactionSuccess(true)
     } catch (error) {
       console.error('Failed to publish triplets with custom weights:', error)
@@ -195,6 +198,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
     setSelectedTripletsForWeighting([])
     setTransactionError(null)
     setTransactionSuccess(false)
+    setTransactionHash(undefined)
     setCreatedCount(0)
     setDepositCount(0)
     clearSelection()
@@ -305,18 +309,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
                   onClick={handleAmplifyClick}
                   disabled={isCreating}
                 >
-                  <div className="iridescence-btn-background">
-                    <Iridescence
-                      color={[1, 0.4, 0.5]}
-                      speed={0.3}
-                      mouseReact={false}
-                      amplitude={0.1}
-                      zoom={0.05}
-                    />
-                  </div>
-                  <span className="iridescence-btn-content">
-                    Amplify ({selectedEchoes.size})
-                  </span>
+                  Amplify ({selectedEchoes.size})
                 </button>
                 <button 
                   className="batch-btn delete-selected"
@@ -466,6 +459,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
         isProcessing={isCreating}
         transactionSuccess={transactionSuccess}
         transactionError={transactionError}
+        transactionHash={transactionHash}
         createdCount={createdCount}
         depositCount={depositCount}
         onClose={handleWeightModalClose}
