@@ -29,6 +29,14 @@ const outputSchema = z.object({
   error: z.string().optional(),
 });
 
+// Constants - MAINNET
+const SOFIA_PROXY_ADDRESS = '0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c';
+const RPC_ENDPOINT = 'https://rpc.intuition.systems';
+
+// Atom URIs for the triple [User] [is_human] [verified]
+const ATOM_URI_IS_HUMAN = 'ipfs://bafkreieozejceuaepmev7cq7h5eiytzjd7nitvjx3ts5mm345yt4hn66dy';
+const ATOM_URI_VERIFIED = 'ipfs://bafkreifl5pvodlgr3p3oq7e3u7c6364pqhuw75g6pblxomoafaaz3be2vi';
+
 // Fonctions de vérification des tokens OAuth
 async function verifyYouTubeToken(token: string): Promise<boolean> {
   try {
@@ -83,73 +91,67 @@ async function verifyTwitchToken(token: string): Promise<boolean> {
 }
 
 // Pour Twitter, on vérifie juste la présence du token
-// (la vérification complète nécessiterait l'API Twitter payante)
 function verifyTwitterToken(token: string): boolean {
   return !!token && token.length > 0;
 }
 
 // Créer la transaction on-chain via Sofia Proxy
+// Triple: [User wallet atom] [is_human] [verified]
 async function createAttestationOnChain(walletAddress: string): Promise<{
   success: boolean;
   txHash?: string;
   blockNumber?: number;
   error?: string;
 }> {
-  // Import ethers dynamically to avoid bundling issues
   const { ethers } = await import('ethers');
 
   const botPrivateKey = process.env.BOT_PRIVATE_KEY;
-  const sofiaProxyAddress = process.env.SOFIA_PROXY_ADDRESS;
-  const rpcEndpoint = process.env.RPC_ENDPOINT;
 
-  if (!botPrivateKey || !sofiaProxyAddress || !rpcEndpoint) {
+  if (!botPrivateKey) {
     return {
       success: false,
-      error: 'Missing environment variables: BOT_PRIVATE_KEY, SOFIA_PROXY_ADDRESS, or RPC_ENDPOINT',
-    };
-  }
-
-  // Atom IDs pour le triple [I] [is_human] [verified]
-  const atomIdI = process.env.ATOM_ID_I;
-  const atomIdIsHuman = process.env.ATOM_ID_IS_HUMAN;
-  const atomIdVerified = process.env.ATOM_ID_VERIFIED;
-
-  if (!atomIdI || !atomIdIsHuman || !atomIdVerified) {
-    return {
-      success: false,
-      error: 'Missing ATOM_ID environment variables',
+      error: 'Missing BOT_PRIVATE_KEY environment variable',
     };
   }
 
   try {
-    const provider = new ethers.JsonRpcProvider(rpcEndpoint);
+    const provider = new ethers.JsonRpcProvider(RPC_ENDPOINT);
     const botWallet = new ethers.Wallet(botPrivateKey, provider);
 
-    // ABI minimal pour Sofia Proxy Fee contract
+    // ABI pour Sofia Proxy Fee contract
     const sofiaProxyAbi = [
-      'function createTriples(address receiver, bytes32[] subjectIds, bytes32[] predicateIds, bytes32[] objectIds, uint256[] assets, uint256 curveId) payable returns (bytes32[])',
-      'function getTripleCost() view returns (uint256)',
+      'function createTriple(address receiver, bytes subjectUri, bytes predicateUri, bytes objectUri) payable returns (uint256)',
+      'function getTripleCreationCost() view returns (uint256)',
+      'function getAtomCreationCost() view returns (uint256)',
     ];
 
-    const sofiaProxy = new ethers.Contract(sofiaProxyAddress, sofiaProxyAbi, botWallet);
+    const sofiaProxy = new ethers.Contract(SOFIA_PROXY_ADDRESS, sofiaProxyAbi, botWallet);
 
-    // Calculer le coût
-    const tripleCost = await sofiaProxy.getTripleCost();
-    const depositAmount = ethers.parseEther('0.001'); // Petit dépôt initial
-    const totalCost = tripleCost + depositAmount;
+    // L'atom du user est son adresse wallet
+    const userAtomUri = walletAddress;
+
+    // Calculer le coût (3 atoms potentiels + 1 triple)
+    const atomCost = await sofiaProxy.getAtomCreationCost();
+    const tripleCost = await sofiaProxy.getTripleCreationCost();
+    const totalCost = (atomCost * 3n) + tripleCost;
 
     console.log(`[HumanAttestor] Creating triple for ${walletAddress}`);
-    console.log(`[HumanAttestor] Triple cost: ${ethers.formatEther(tripleCost)} ETH`);
+    console.log(`[HumanAttestor] Subject (User): ${userAtomUri}`);
+    console.log(`[HumanAttestor] Predicate (is_human): ${ATOM_URI_IS_HUMAN}`);
+    console.log(`[HumanAttestor] Object (verified): ${ATOM_URI_VERIFIED}`);
     console.log(`[HumanAttestor] Total cost: ${ethers.formatEther(totalCost)} ETH`);
 
+    // Encoder les URIs en bytes
+    const subjectBytes = ethers.toUtf8Bytes(userAtomUri);
+    const predicateBytes = ethers.toUtf8Bytes(ATOM_URI_IS_HUMAN);
+    const objectBytes = ethers.toUtf8Bytes(ATOM_URI_VERIFIED);
+
     // Créer le triple
-    const tx = await sofiaProxy.createTriples(
-      walletAddress, // receiver = user (reçoit les shares)
-      [atomIdI],
-      [atomIdIsHuman],
-      [atomIdVerified],
-      [depositAmount],
-      1n, // curveId
+    const tx = await sofiaProxy.createTriple(
+      walletAddress,
+      subjectBytes,
+      predicateBytes,
+      objectBytes,
       { value: totalCost }
     );
 
@@ -232,5 +234,4 @@ export const humanAttestorTool = createTool({
   },
 });
 
-// Export schemas for reuse
 export { inputSchema, outputSchema };

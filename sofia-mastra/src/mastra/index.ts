@@ -31,6 +31,6 @@ export const mastra = new Mastra({
     default: { enabled: true },
   },
   bundler: {
-    externals: ['pino', 'pino-pretty'],
+    externals: ['pino', 'pino-pretty', 'bufferutil', 'utf-8-validate'],
   },
 });

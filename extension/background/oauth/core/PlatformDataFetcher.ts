@@ -65,7 +65,6 @@ export class PlatformDataFetcher {
       const profileResponse = await fetch(profileUrl, { headers })
 
       console.log(`🔍 [OAuth] Profile response status: ${profileResponse.status}`)
-      console.log(`🔍 [OAuth] Profile response headers:`, Object.fromEntries(profileResponse.headers.entries()))
 
       if (!profileResponse.ok) {
         const errorBody = await profileResponse.text()
