@@ -2,13 +2,15 @@
  * useClaimHumanity Hook
  * Handles the "Proof of Human" on-chain attestation via Mastra API
  * The bot pays all gas fees - free for the user!
+ *
+ * IMPORTANT: User must first approve the Sofia Proxy on MultiVault
+ * before the bot can create attestations on their behalf.
  */
 
 import { useState, useEffect, useCallback } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
-
-// Mastra API URL (TEE-secured on Phala)
-const MASTRA_API_URL = process.env.PLASMO_PUBLIC_MASTRA_URL || 'https://mastra.sofia.xyz'
+import { MASTRA_API_URL } from '../config'
+import { BlockchainService } from '../lib/services/blockchainService'
 
 // Storage key for human attestation
 const HUMAN_ATTESTATION_KEY = 'human_attestation'
@@ -110,6 +112,29 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
     try {
       console.log('🧬 [ClaimHumanity] Starting claim via Mastra API...')
 
+      // Step 0: Ensure user has approved Sofia Proxy on MultiVault
+      // This allows the bot to create attestations on behalf of the user
+      console.log('🔐 [ClaimHumanity] Checking/requesting proxy approval...')
+
+      const isApproved = await BlockchainService.checkProxyApproval(walletAddress)
+
+      if (!isApproved) {
+        console.log('🔐 [ClaimHumanity] Requesting user approval for Sofia Proxy...')
+
+        // Request approval transaction from user
+        const txHash = await BlockchainService.requestProxyApproval()
+        console.log(`🔐 [ClaimHumanity] Approval TX sent: ${txHash}`)
+
+        // Wait for confirmation
+        const success = await BlockchainService.waitForApprovalConfirmation(txHash)
+        if (!success) {
+          return { success: false, error: 'Proxy approval transaction failed' }
+        }
+        console.log('✅ [ClaimHumanity] Proxy approved!')
+      } else {
+        console.log('✅ [ClaimHumanity] Proxy already approved')
+      }
+
       // 1. Récupérer les 5 tokens OAuth
       const tokenResult = await chrome.storage.local.get([
         'oauth_token_youtube',
@@ -119,20 +144,24 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
         'oauth_token_twitter',
       ])
 
-      // 2. Appeler Mastra Tool via API
-      const response = await fetch(`${MASTRA_API_URL}/api/tools/human-attestor`, {
+      // 2. Appeler Human Attestor Agent via Mastra API
+      // Extract accessToken from each stored UserToken object
+      const requestData = {
+        walletAddress,
+        tokens: {
+          youtube: tokenResult.oauth_token_youtube?.accessToken,
+          spotify: tokenResult.oauth_token_spotify?.accessToken,
+          discord: tokenResult.oauth_token_discord?.accessToken,
+          twitch: tokenResult.oauth_token_twitch?.accessToken,
+          twitter: tokenResult.oauth_token_twitter?.accessToken,
+        },
+      }
+
+      // Use workflow instead of agent for deterministic execution (no LLM)
+      const response = await fetch(`${MASTRA_API_URL}/api/workflows/humanAttestorWorkflow/start-async`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          walletAddress,
-          tokens: {
-            youtube: tokenResult.oauth_token_youtube,
-            spotify: tokenResult.oauth_token_spotify,
-            discord: tokenResult.oauth_token_discord,
-            twitch: tokenResult.oauth_token_twitch,
-            twitter: tokenResult.oauth_token_twitter,
-          },
-        }),
+        body: JSON.stringify({ inputData: requestData }),
       })
 
       if (!response.ok) {
@@ -140,7 +169,15 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
         throw new Error(`API error: ${response.status} - ${errorText}`)
       }
 
-      const data = await response.json()
+      const result = await response.json()
+
+      console.log('📦 [ClaimHumanity] Raw workflow result:', JSON.stringify(result).substring(0, 500))
+
+      // Extract data from workflow result - Mastra workflows return nested structure
+      const data = result?.result
+        || result?.steps?.['execute-human-attestor']?.output
+        || result?.['execute-human-attestor']
+        || result
 
       // Update verification status from API response
       if (data.verified) {
