@@ -17,19 +17,20 @@
   box-shadow: var(--shadow-button-hover);
 }
 
-/* Modal Overlay pour les bookmarks */
+/* Modal Overlay pour les bookmarks - Positionné EN HAUT */
 .bookmark-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--color-bg-overlay);
   z-index: var(--z-modal);
   display: flex;
-  align-items: center;
+  align-items: flex-start;        /* Aligné en HAUT au lieu de center */
   justify-content: center;
   backdrop-filter: var(--backdrop-blur-light);
+  padding-top: 40px;              /* Espacement depuis le haut */
+  overflow-y: auto;               /* Permet le scroll si nécessaire */
 }
 
 /* Modal Content avec style echo-card border-green */
@@ -39,13 +40,25 @@
   max-width: 400px;
   width: 90%;
   border: 1px solid var(--color-border-muted);
-  background: linear-gradient(135deg, var(--color-primary) 0%, rgb(67, 67, 67) 50%, var(--color-primary) 100%);
-  box-shadow: var(--shadow-heavy);
-  max-height: 80vh;
+  background: #2d2b2c;
+  max-height: calc(100vh - 80px);  /* Hauteur max ajustée pour l'espace du haut */
   z-index: var(--z-modal);
   overflow: auto;
   pointer-events: auto;
   position: relative;
+  animation: bookmarkModalSlideDown 0.3s ease-out;  /* Animation depuis le haut */
+}
+
+/* Animation d'apparition depuis le haut */
+@keyframes bookmarkModalSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Titres dans les modals */
@@ -139,7 +152,7 @@
 
 .bookmark-button:hover {
   background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(199, 134, 108, 0.6);
+  border-color: rgba(209, 96, 92, 0.6);
 }
 
 /* Bouton primaire */
@@ -147,16 +160,17 @@
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border-muted);
-  background: var(--color-primary);
-  color: var(--color-text-secondary);
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  color: black;
   cursor: pointer;
   font-size: var(--font-size-base);
   transition: var(--transition-fast);
 }
 
 .bookmark-button-primary:hover {
-  background: rgba(199, 134, 108, 0.9);
-  border-color: rgba(199, 134, 108, 0.8);
+  border-color: rgb(255, 174, 142);
 }
 
 /* Bouton désactivé */
@@ -204,6 +218,26 @@
   margin-bottom: 16px;
   text-align: center;
   color: rgba(255, 255, 255, 0.79);
+}
+
+/* Empty state pour BookmarkTab */
+.bookmark-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.bookmark-empty-state p {
+  color: #9ca3af;
+  font-size: 14px;
+  line-height: 1.6;        /* Espacement normal entre les lignes */
+  margin: 0 0 12px 0;      /* Espacement entre les paragraphes */
+}
+
+.bookmark-empty-subtext {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 8px;
+  line-height: 1.6;        /* Espacement normal entre les lignes */
 }
 
 /* Conteneurs */
@@ -366,6 +400,13 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-lg);
+}
+
+/* Modal body styles */
+.bookmark-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .bookmark-modal-close {

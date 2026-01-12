@@ -153,17 +153,17 @@ const BookmarkTab = () => {
 
       {/* Create/Edit List Modal */}
       {(isCreatingList || isEditingList) && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <div className="modal-title">
+        <div className="bookmark-modal-overlay">
+          <div className="bookmark-modal-content">
+            <div className="bookmark-modal-header">
+              <div className="bookmark-modal-title">
                 {isCreatingList ? 'Create New List' : 'Edit List'}
               </div>
             </div>
-            
-            <div className="modal-body">
-              <div className="form-group">
-                <label className="label">
+
+            <div className="bookmark-modal-body">
+              <div className="bookmark-form-group">
+                <label className="bookmark-label">
                   List Name
                 </label>
                 <input
@@ -171,12 +171,12 @@ const BookmarkTab = () => {
                   value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
                   placeholder="Enter list name..."
-                  className="input"
+                  className="bookmark-input"
                 />
               </div>
-              
-              <div className="form-group">
-                <label className="label">
+
+              <div className="bookmark-form-group">
+                <label className="bookmark-label">
                   Description (optional)
                 </label>
                 <textarea
@@ -184,21 +184,21 @@ const BookmarkTab = () => {
                   onChange={(e) => setNewListDescription(e.target.value)}
                   placeholder="Enter description..."
                   rows={3}
-                  className="textarea"
+                  className="bookmark-textarea"
                 />
               </div>
-              
-              <div className="form-actions">
-                <button 
+
+              <div className="bookmark-button-group">
+                <button
                   onClick={cancelEdit}
-                  className="btn secondary"
+                  className="bookmark-button"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={() => isCreatingList ? handleCreateList() : handleUpdateList(isEditingList!)}
                   disabled={!newListName.trim()}
-                  className="btn primary"
+                  className={!newListName.trim() ? 'bookmark-button-disabled' : 'bookmark-button-primary'}
                 >
                   {isCreatingList ? 'Create' : 'Update'}
                 </button>
@@ -213,9 +213,9 @@ const BookmarkTab = () => {
         {selectedListId === null ? (
           /* Show all lists as cards */
           lists.length === 0 ? (
-            <div className="empty-state">
+            <div className="bookmark-empty-state">
               <p>No bookmark lists yet!</p>
-              <p className="empty-subtext">
+              <p className="bookmark-empty-subtext">
                 Create your first bookmark list to start organizing your favorite triplets.
               </p>
             </div>
@@ -265,9 +265,9 @@ const BookmarkTab = () => {
         ) : (
           /* Show triplets in selected list */
           displayedTriplets.length === 0 ? (
-            <div className="empty-state">
+            <div className="bookmark-empty-state">
               <p>No triplets in this list yet!</p>
-              <p className="empty-subtext">
+              <p className="bookmark-empty-subtext">
                 Add triplets to this list from your Knowledge Graph.
               </p>
             </div>

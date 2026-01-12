@@ -16,6 +16,7 @@
   padding: 0 16px;
   box-sizing: border-box;
   overflow-x: hidden;
+  min-height: 651px;
 }
 
 .bookmarks-container {
@@ -496,7 +497,7 @@
 }
 
 .triplet-url-link:hover {
-  color: #ECB8D1;
+  color: #ffb453;
 }
 
 .triplet-text-container {
