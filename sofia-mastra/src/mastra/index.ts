@@ -4,17 +4,16 @@ import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { sofiaWorkflow } from './workflows/sofia-workflow';
 import { chatbotWorkflow } from './workflows/chatbot-workflow';
+import { humanAttestorWorkflow } from './workflows/human-attestor-workflow';
 import { sofiaAgent } from './agents/sofia-agent';
 import { themeExtractorAgent } from './agents/theme-extractor-agent';
 import { pulseAgent } from './agents/pulse-agent';
 import { recommendationAgent } from './agents/recommendation-agent';
 import { chatbotAgent } from './agents/chatbot-agent';
-import { humanAttestorTool } from './tools/human-attestor';
 
 export const mastra = new Mastra({
-  workflows: { sofiaWorkflow, chatbotWorkflow },
+  workflows: { sofiaWorkflow, chatbotWorkflow, humanAttestorWorkflow },
   agents: { sofiaAgent, themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent },
-  tools: { humanAttestorTool },
   scorers: {
   },
   storage: new LibSQLStore({
