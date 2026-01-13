@@ -48,7 +48,7 @@ const AccountTab = () => {
   })
 
   // Quest system hook - provides real quests based on user progress
-  const { activeQuests, level, totalXP, loading: questsLoading, markQuestCompleted } = useQuestSystem()
+  const { activeQuests, completedQuests, level, totalXP, loading: questsLoading, markQuestCompleted } = useQuestSystem()
 
   // Claim Humanity hook - handles Proof of Human attestation
   const { isHuman, canClaim, isClaiming, claimHumanity } = useClaimHumanity()
@@ -345,8 +345,26 @@ const AccountTab = () => {
               {walletAddress.toLowerCase().slice(0, 6)}...{walletAddress.toLowerCase().slice(-4)}
             </p>
           )}
+          {/* Verified Human badge */}
+          {isHuman && (
+            <span className="verified-human-badge">Verified Human</span>
+          )}
         </div>
       </div>
+
+      {/* Badges Section - Show completed quest badges */}
+      {completedQuests.length > 0 && (
+        <div className="badges-section">
+          {completedQuests.slice(0, 6).map(quest => (
+            <div key={quest.id} className="badge-item" title={quest.description}>
+              {quest.title}
+            </div>
+          ))}
+          {completedQuests.length > 6 && (
+            <div className="badge-item badge-more">+{completedQuests.length - 6}</div>
+          )}
+        </div>
+      )}
 
       {/* Platform Icons */}
       <div className="platform-icons-container">
@@ -480,7 +498,8 @@ const AccountTab = () => {
                   </svg>
                 </div>
                 <div className="quest-details">
-                  <h4 className="quest-title">{quest.title}</h4>
+                  <span className="quest-badge-name">{quest.title}</span>
+                  <h4 className="quest-title">{quest.description}</h4>
                   <p className="quest-progress-text">{quest.current}/{quest.total}</p>
                   <span className="quest-status" style={{ color: quest.statusColor }}>
                     {quest.status === 'active' ? 'In Progress' : quest.status === 'completed' ? 'Completed' : 'Locked'} • +{quest.xpReward} XP

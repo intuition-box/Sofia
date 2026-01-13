@@ -296,6 +296,16 @@
   gap: 4px;
 }
 
+.quest-badge-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 2px 0;
+}
+
 .quest-title {
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
@@ -708,4 +718,73 @@
   100% {
     box-shadow: 0 0 16px rgba(255, 215, 0, 0.5), 0 0 32px rgba(255, 165, 0, 0.3);
   }
+}
+
+/* ========== VERIFIED HUMAN BADGE ========== */
+.verified-human-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.15) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  color: #FFD700;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+  animation: badgeGlow 2s ease-in-out infinite alternate;
+}
+
+.verified-human-badge::before {
+  content: '\2713';
+  font-size: 10px;
+  font-weight: bold;
+}
+
+@keyframes badgeGlow {
+  0% {
+    box-shadow: 0 0 4px rgba(255, 215, 0, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+  }
+}
+
+/* ========== BADGES SECTION ========== */
+.badges-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 8px 12px;
+  margin-top: -4px;
+}
+
+.badge-item {
+  background: linear-gradient(135deg, rgba(72, 187, 120, 0.2) 0%, rgba(72, 187, 120, 0.1) 100%);
+  border: 1px solid rgba(72, 187, 120, 0.4);
+  color: #48bb78;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.badge-item:hover {
+  background: linear-gradient(135deg, rgba(72, 187, 120, 0.3) 0%, rgba(72, 187, 120, 0.2) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}
+
+.badge-more {
+  background: linear-gradient(135deg, rgba(160, 160, 160, 0.2) 0%, rgba(160, 160, 160, 0.1) 100%);
+  border-color: rgba(160, 160, 160, 0.4);
+  color: #a0a0a0;
 }

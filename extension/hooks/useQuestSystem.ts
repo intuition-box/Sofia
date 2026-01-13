@@ -9,6 +9,7 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { getAddress } from 'viem'
 import { useBookmarks } from './useBookmarks'
+import { useClaimHumanity } from './useClaimHumanity'
 
 // Quest definition interface
 export interface Quest {
@@ -20,9 +21,10 @@ export interface Quest {
   status: 'locked' | 'active' | 'completed'
   statusColor: string
   xpReward: number
-  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust'
+  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social'
   milestone?: number // For milestone-based quests
   claimable?: boolean // For quests that require on-chain claim (like Proof of Human)
+  recurringType?: 'daily' | 'weekly' // For recurring quests
 }
 
 // User progress data
@@ -33,6 +35,11 @@ export interface UserProgress {
   oauthConnections: number
   followedUsers: number
   trustedUsers: number
+  // Streak and Pulse tracking
+  currentStreak: number
+  hasSignalToday: boolean
+  pulseLaunches: number
+  weeklyPulseUses: number
 }
 
 // Quest system result
@@ -71,36 +78,54 @@ const calculateXPForNextLevel = (currentLevel: number): number => {
 // Define all available quests with their milestones and XP rewards
 const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
   // First-time quests (easy, low XP)
-  { id: 'signal-1', title: 'Create your first signal', description: 'Create your very first signal on Intuition', total: 1, xpReward: 50, type: 'signal', milestone: 1 },
-  { id: 'bookmark-list-1', title: 'Create a bookmark list', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
-  { id: 'bookmark-signal-1', title: 'Add a signal to a bookmark', description: 'Bookmark your first signal', total: 1, xpReward: 20, type: 'bookmark', milestone: 1 },
-  { id: 'oauth-all', title: 'Connect all social accounts', description: 'Connect YouTube, Spotify, and Twitch', total: 3, xpReward: 100, type: 'oauth', milestone: 3 },
-  { id: 'proof-of-human', title: 'Proof of Human', description: 'Connect all 5 platforms and claim your humanity on-chain', total: 5, xpReward: 500, type: 'oauth', milestone: 5, claimable: true },
+  { id: 'signal-1', title: 'First Signal', description: 'Create your very first signal', total: 1, xpReward: 50, type: 'signal', milestone: 1 },
+  { id: 'bookmark-list-1', title: 'Organizer', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
+  { id: 'bookmark-signal-1', title: 'Bookworm', description: 'Bookmark your first signal', total: 1, xpReward: 20, type: 'bookmark', milestone: 1 },
+  { id: 'oauth-all', title: 'Connected', description: 'Connect YouTube, Spotify, and Twitch', total: 3, xpReward: 100, type: 'oauth', milestone: 3 },
+  { id: 'proof-of-human', title: 'Verified Human', description: 'Connect all 5 platforms and claim on-chain', total: 5, xpReward: 500, type: 'oauth', milestone: 5, claimable: true },
 
   // Progressive signal milestones (increasing difficulty and XP)
-  { id: 'signal-10', title: 'Create 10 signals', description: 'Reach 10 signals created', total: 10, xpReward: 100, type: 'signal', milestone: 10 },
-  { id: 'signal-50', title: 'Create 50 signals', description: 'Reach 50 signals created', total: 50, xpReward: 200, type: 'signal', milestone: 50 },
-  { id: 'signal-100', title: 'Create 100 signals', description: 'Reach 100 signals created', total: 100, xpReward: 400, type: 'signal', milestone: 100 },
-  { id: 'signal-500', title: 'Create 500 signals', description: 'Reach 500 signals created', total: 500, xpReward: 1000, type: 'signal', milestone: 500 },
-  { id: 'signal-1000', title: 'Create 1,000 signals', description: 'Reach 1,000 signals created', total: 1000, xpReward: 2000, type: 'signal', milestone: 1000 },
-  { id: 'signal-5000', title: 'Create 5,000 signals', description: 'Reach 5,000 signals created', total: 5000, xpReward: 5000, type: 'signal', milestone: 5000 },
-  { id: 'signal-10000', title: 'Create 10,000 signals', description: 'Reach 10,000 signals created', total: 10000, xpReward: 10000, type: 'signal', milestone: 10000 },
-  { id: 'signal-50000', title: 'Create 50,000 signals', description: 'Reach 50,000 signals created', total: 50000, xpReward: 25000, type: 'signal', milestone: 50000 },
-  { id: 'signal-100000', title: 'Create 100,000 signals', description: 'Reach 100,000 signals created', total: 100000, xpReward: 50000, type: 'signal', milestone: 100000 },
+  { id: 'signal-10', title: 'Signal Rookie', description: 'Create 10 signals', total: 10, xpReward: 100, type: 'signal', milestone: 10 },
+  { id: 'signal-50', title: 'Signal Maker', description: 'Create 50 signals', total: 50, xpReward: 200, type: 'signal', milestone: 50 },
+  { id: 'signal-100', title: 'Centurion', description: 'Create 100 signals', total: 100, xpReward: 400, type: 'signal', milestone: 100 },
+  { id: 'signal-500', title: 'Signal Pro', description: 'Create 500 signals', total: 500, xpReward: 1000, type: 'signal', milestone: 500 },
+  { id: 'signal-1000', title: 'Signal Master', description: 'Create 1,000 signals', total: 1000, xpReward: 2000, type: 'signal', milestone: 1000 },
+  { id: 'signal-5000', title: 'Signal Legend', description: 'Create 5,000 signals', total: 5000, xpReward: 5000, type: 'signal', milestone: 5000 },
+  { id: 'signal-10000', title: 'Signal Titan', description: 'Create 10,000 signals', total: 10000, xpReward: 10000, type: 'signal', milestone: 10000 },
+  { id: 'signal-50000', title: 'Signal God', description: 'Create 50,000 signals', total: 50000, xpReward: 25000, type: 'signal', milestone: 50000 },
+  { id: 'signal-100000', title: 'Signal Immortal', description: 'Create 100,000 signals', total: 100000, xpReward: 50000, type: 'signal', milestone: 100000 },
 
   // Bookmark milestones
-  { id: 'bookmark-signal-50', title: 'Add 50 signals to bookmarks', description: 'Bookmark 50 different signals', total: 50, xpReward: 250, type: 'bookmark', milestone: 50 },
+  { id: 'bookmark-signal-50', title: 'Archivist', description: 'Bookmark 50 signals', total: 50, xpReward: 250, type: 'bookmark', milestone: 50 },
 
   // Follow milestones
-  { id: 'follow-50', title: 'Follow 50 users', description: 'Follow 50 different users', total: 50, xpReward: 300, type: 'follow', milestone: 50 },
+  { id: 'follow-50', title: 'Influencer', description: 'Follow 50 users', total: 50, xpReward: 300, type: 'follow', milestone: 50 },
 
   // Trust milestones
-  { id: 'trust-10', title: 'Trust 10 users', description: 'Trust 10 different users', total: 10, xpReward: 200, type: 'trust', milestone: 10 },
+  { id: 'trust-10', title: 'Trustworthy', description: 'Trust 10 users', total: 10, xpReward: 200, type: 'trust', milestone: 10 },
+
+  // Streak quests
+  { id: 'streak-7', title: 'Committed', description: 'Maintain a 7-day signal streak', total: 7, xpReward: 200, type: 'streak', milestone: 7 },
+  { id: 'streak-30', title: 'Dedicated', description: 'Maintain a 30-day signal streak', total: 30, xpReward: 1000, type: 'streak', milestone: 30 },
+  { id: 'streak-100', title: 'Relentless', description: 'Maintain a 100-day signal streak', total: 100, xpReward: 5000, type: 'streak', milestone: 100 },
+
+  // Pulse quests
+  { id: 'pulse-first', title: 'Explorer', description: 'Launch your first Pulse analysis', total: 1, xpReward: 30, type: 'pulse', milestone: 1 },
+  { id: 'pulse-weekly-5', title: 'Pulse Master', description: 'Use Pulse 5 times this week', total: 5, xpReward: 150, type: 'pulse', recurringType: 'weekly' },
+
+  // Curator quests
+  { id: 'curator-10', title: 'Collector', description: 'Bookmark 10 signals', total: 10, xpReward: 150, type: 'curator', milestone: 10 },
+  { id: 'curator-50', title: 'Curator', description: 'Bookmark 50 signals', total: 50, xpReward: 400, type: 'curator', milestone: 50 },
+
+  // Social quests
+  { id: 'social-butterfly', title: 'Social Butterfly', description: 'Follow 10 users this week', total: 10, xpReward: 200, type: 'social', recurringType: 'weekly' },
+  { id: 'networker-25', title: 'Networker', description: 'Follow 25 users', total: 25, xpReward: 350, type: 'social', milestone: 25 },
 ]
 
 export const useQuestSystem = (): QuestSystemResult => {
   const { walletAddress } = useWalletFromStorage()
   const { lists, triplets } = useBookmarks()
+  const { isHuman } = useClaimHumanity()
 
   const [userProgress, setUserProgress] = useState<UserProgress>({
     signalsCreated: 0,
@@ -109,6 +134,10 @@ export const useQuestSystem = (): QuestSystemResult => {
     oauthConnections: 0,
     followedUsers: 0,
     trustedUsers: 0,
+    currentStreak: 0,
+    hasSignalToday: false,
+    pulseLaunches: 0,
+    weeklyPulseUses: 0,
   })
 
   const [loading, setLoading] = useState(true)
@@ -139,10 +168,19 @@ export const useQuestSystem = (): QuestSystemResult => {
       await chrome.storage.local.set({
         completed_quests: Array.from(newCompleted)
       })
+      console.log('✅ [QuestSystem] Saved completed quest:', questId)
     } catch (error) {
       console.error('Error saving completed quest:', error)
     }
   }
+
+  // Auto-save proof-of-human quest when isHuman becomes true
+  useEffect(() => {
+    if (isHuman && !completedQuestIds.has('proof-of-human')) {
+      console.log('🎉 [QuestSystem] Auto-completing proof-of-human quest (isHuman=true)')
+      saveCompletedQuest('proof-of-human')
+    }
+  }, [isHuman, completedQuestIds])
 
   // Fetch user progress data
   const refreshQuests = async () => {
@@ -242,6 +280,10 @@ export const useQuestSystem = (): QuestSystemResult => {
         oauthConnections,
         followedUsers,
         trustedUsers,
+        currentStreak: 0,
+        hasSignalToday: false,
+        pulseLaunches: 0,
+        weeklyPulseUses: 0,
       })
 
     } catch (error) {
@@ -282,6 +324,25 @@ export const useQuestSystem = (): QuestSystemResult => {
         case 'trust':
           current = userProgress.trustedUsers
           break
+        case 'streak':
+          current = userProgress.currentStreak
+          break
+        case 'pulse':
+          if (questDef.id === 'pulse-first') {
+            current = userProgress.pulseLaunches
+          } else if (questDef.id === 'pulse-weekly-5') {
+            current = userProgress.weeklyPulseUses
+          }
+          break
+        case 'curator':
+          current = userProgress.bookmarkedSignals
+          break
+        case 'social':
+          if (questDef.id === 'networker-25') {
+            current = userProgress.followedUsers
+          }
+          // social-butterfly uses weekly follows - not yet tracked separately
+          break
       }
 
       // Determine quest status
@@ -291,7 +352,11 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       const isCompleted = completedQuestIds.has(questDef.id)
 
-      if (current >= questDef.total) {
+      // Special handling for proof-of-human quest - use isHuman state directly
+      if (questDef.id === 'proof-of-human' && isHuman) {
+        status = 'completed'
+        statusColor = '#48bb78' // green
+      } else if (current >= questDef.total) {
         // For claimable quests (like proof-of-human), only mark completed if already claimed
         if (questDef.claimable && !isCompleted) {
           // Quest is ready to claim but not yet claimed
@@ -328,11 +393,11 @@ export const useQuestSystem = (): QuestSystemResult => {
       if (a.status !== 'completed' && b.status === 'completed') return -1
       return (a.milestone || 0) - (b.milestone || 0)
     })
-  }, [userProgress, completedQuestIds])
+  }, [userProgress, completedQuestIds, isHuman])
 
   // Filter active and completed quests
   const activeQuests = useMemo(() =>
-    quests.filter(q => q.status === 'active').slice(0, 4), // Show max 4 active quests
+    quests.filter(q => q.status === 'active'),
     [quests]
   )
 
