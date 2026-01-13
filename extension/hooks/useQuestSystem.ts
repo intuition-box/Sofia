@@ -7,8 +7,20 @@ import { useState, useEffect, useMemo } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
-import { getAddress } from 'viem'
+import { getAddress, stringToHex } from 'viem'
 import { useBookmarks } from './useBookmarks'
+import { useClaimHumanity } from './useClaimHumanity'
+import { useCreateAtom } from './useCreateAtom'
+import { getClients } from '../lib/clients/viemClients'
+import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
+import { MultiVaultAbi } from '../ABI/MultiVault'
+import { BlockchainService } from '../lib/services/blockchainService'
+import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS } from '../lib/config/chainConfig'
+import type { Address } from '../types/viem'
+
+// Constants for on-chain operations
+const MIN_DEPOSIT = 10000000000000000n // 0.01 TRUST
+const CURVE_ID = 1n
 
 // Quest definition interface
 export interface Quest {
@@ -17,12 +29,13 @@ export interface Quest {
   description: string
   current: number
   total: number
-  status: 'locked' | 'active' | 'completed'
+  status: 'locked' | 'active' | 'completed' | 'claimable_xp'
   statusColor: string
   xpReward: number
-  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust'
+  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social'
   milestone?: number // For milestone-based quests
   claimable?: boolean // For quests that require on-chain claim (like Proof of Human)
+  recurringType?: 'daily' | 'weekly' // For recurring quests
 }
 
 // User progress data
@@ -33,6 +46,11 @@ export interface UserProgress {
   oauthConnections: number
   followedUsers: number
   trustedUsers: number
+  // Streak and Pulse tracking
+  currentStreak: number
+  hasSignalToday: boolean
+  pulseLaunches: number
+  weeklyPulseUses: number
 }
 
 // Quest system result
@@ -40,13 +58,16 @@ export interface QuestSystemResult {
   quests: Quest[]
   activeQuests: Quest[]
   completedQuests: Quest[]
+  claimableQuests: Quest[]
   userProgress: UserProgress
   level: number
   totalXP: number
   xpForNextLevel: number
   loading: boolean
+  claimingQuestId: string | null
   refreshQuests: () => Promise<void>
   markQuestCompleted: (questId: string) => Promise<void>
+  claimQuestXP: (questId: string) => Promise<{ success: boolean; txHash?: string; error?: string }>
 }
 
 // XP calculation: Level N requires 100 * N XP
@@ -71,36 +92,54 @@ const calculateXPForNextLevel = (currentLevel: number): number => {
 // Define all available quests with their milestones and XP rewards
 const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
   // First-time quests (easy, low XP)
-  { id: 'signal-1', title: 'Create your first signal', description: 'Create your very first signal on Intuition', total: 1, xpReward: 50, type: 'signal', milestone: 1 },
-  { id: 'bookmark-list-1', title: 'Create a bookmark list', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
-  { id: 'bookmark-signal-1', title: 'Add a signal to a bookmark', description: 'Bookmark your first signal', total: 1, xpReward: 20, type: 'bookmark', milestone: 1 },
-  { id: 'oauth-all', title: 'Connect all social accounts', description: 'Connect YouTube, Spotify, and Twitch', total: 3, xpReward: 100, type: 'oauth', milestone: 3 },
-  { id: 'proof-of-human', title: 'Proof of Human', description: 'Connect all 5 platforms and claim your humanity on-chain', total: 5, xpReward: 500, type: 'oauth', milestone: 5, claimable: true },
+  { id: 'signal-1', title: 'First Signal', description: 'Create your very first signal', total: 1, xpReward: 50, type: 'signal', milestone: 1 },
+  { id: 'bookmark-list-1', title: 'Organizer', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
+  { id: 'bookmark-signal-1', title: 'Bookworm', description: 'Bookmark your first signal', total: 1, xpReward: 20, type: 'bookmark', milestone: 1 },
+  { id: 'oauth-all', title: 'Connected', description: 'Connect YouTube, Spotify, and Twitch', total: 3, xpReward: 100, type: 'oauth', milestone: 3 },
+  { id: 'proof-of-human', title: 'Verified Human', description: 'Connect all 5 platforms and claim on-chain', total: 5, xpReward: 500, type: 'oauth', milestone: 5, claimable: true },
 
   // Progressive signal milestones (increasing difficulty and XP)
-  { id: 'signal-10', title: 'Create 10 signals', description: 'Reach 10 signals created', total: 10, xpReward: 100, type: 'signal', milestone: 10 },
-  { id: 'signal-50', title: 'Create 50 signals', description: 'Reach 50 signals created', total: 50, xpReward: 200, type: 'signal', milestone: 50 },
-  { id: 'signal-100', title: 'Create 100 signals', description: 'Reach 100 signals created', total: 100, xpReward: 400, type: 'signal', milestone: 100 },
-  { id: 'signal-500', title: 'Create 500 signals', description: 'Reach 500 signals created', total: 500, xpReward: 1000, type: 'signal', milestone: 500 },
-  { id: 'signal-1000', title: 'Create 1,000 signals', description: 'Reach 1,000 signals created', total: 1000, xpReward: 2000, type: 'signal', milestone: 1000 },
-  { id: 'signal-5000', title: 'Create 5,000 signals', description: 'Reach 5,000 signals created', total: 5000, xpReward: 5000, type: 'signal', milestone: 5000 },
-  { id: 'signal-10000', title: 'Create 10,000 signals', description: 'Reach 10,000 signals created', total: 10000, xpReward: 10000, type: 'signal', milestone: 10000 },
-  { id: 'signal-50000', title: 'Create 50,000 signals', description: 'Reach 50,000 signals created', total: 50000, xpReward: 25000, type: 'signal', milestone: 50000 },
-  { id: 'signal-100000', title: 'Create 100,000 signals', description: 'Reach 100,000 signals created', total: 100000, xpReward: 50000, type: 'signal', milestone: 100000 },
+  { id: 'signal-10', title: 'Signal Rookie', description: 'Create 10 signals', total: 10, xpReward: 100, type: 'signal', milestone: 10 },
+  { id: 'signal-50', title: 'Signal Maker', description: 'Create 50 signals', total: 50, xpReward: 200, type: 'signal', milestone: 50 },
+  { id: 'signal-100', title: 'Centurion', description: 'Create 100 signals', total: 100, xpReward: 400, type: 'signal', milestone: 100 },
+  { id: 'signal-500', title: 'Signal Pro', description: 'Create 500 signals', total: 500, xpReward: 1000, type: 'signal', milestone: 500 },
+  { id: 'signal-1000', title: 'Signal Master', description: 'Create 1,000 signals', total: 1000, xpReward: 2000, type: 'signal', milestone: 1000 },
+  { id: 'signal-5000', title: 'Signal Legend', description: 'Create 5,000 signals', total: 5000, xpReward: 5000, type: 'signal', milestone: 5000 },
+  { id: 'signal-10000', title: 'Signal Titan', description: 'Create 10,000 signals', total: 10000, xpReward: 10000, type: 'signal', milestone: 10000 },
+  { id: 'signal-50000', title: 'Signal God', description: 'Create 50,000 signals', total: 50000, xpReward: 25000, type: 'signal', milestone: 50000 },
+  { id: 'signal-100000', title: 'Signal Immortal', description: 'Create 100,000 signals', total: 100000, xpReward: 50000, type: 'signal', milestone: 100000 },
 
   // Bookmark milestones
-  { id: 'bookmark-signal-50', title: 'Add 50 signals to bookmarks', description: 'Bookmark 50 different signals', total: 50, xpReward: 250, type: 'bookmark', milestone: 50 },
+  { id: 'bookmark-signal-50', title: 'Archivist', description: 'Bookmark 50 signals', total: 50, xpReward: 250, type: 'bookmark', milestone: 50 },
 
   // Follow milestones
-  { id: 'follow-50', title: 'Follow 50 users', description: 'Follow 50 different users', total: 50, xpReward: 300, type: 'follow', milestone: 50 },
+  { id: 'follow-50', title: 'Influencer', description: 'Follow 50 users', total: 50, xpReward: 300, type: 'follow', milestone: 50 },
 
   // Trust milestones
-  { id: 'trust-10', title: 'Trust 10 users', description: 'Trust 10 different users', total: 10, xpReward: 200, type: 'trust', milestone: 10 },
+  { id: 'trust-10', title: 'Trustworthy', description: 'Trust 10 users', total: 10, xpReward: 200, type: 'trust', milestone: 10 },
+
+  // Streak quests
+  { id: 'streak-7', title: 'Committed', description: 'Maintain a 7-day signal streak', total: 7, xpReward: 200, type: 'streak', milestone: 7 },
+  { id: 'streak-30', title: 'Dedicated', description: 'Maintain a 30-day signal streak', total: 30, xpReward: 1000, type: 'streak', milestone: 30 },
+  { id: 'streak-100', title: 'Relentless', description: 'Maintain a 100-day signal streak', total: 100, xpReward: 5000, type: 'streak', milestone: 100 },
+
+  // Pulse quests
+  { id: 'pulse-first', title: 'Explorer', description: 'Launch your first Pulse analysis', total: 1, xpReward: 30, type: 'pulse', milestone: 1 },
+  { id: 'pulse-weekly-5', title: 'Pulse Master', description: 'Use Pulse 5 times this week', total: 5, xpReward: 150, type: 'pulse', recurringType: 'weekly' },
+
+  // Curator quests
+  { id: 'curator-10', title: 'Collector', description: 'Bookmark 10 signals', total: 10, xpReward: 150, type: 'curator', milestone: 10 },
+  { id: 'curator-50', title: 'Curator', description: 'Bookmark 50 signals', total: 50, xpReward: 400, type: 'curator', milestone: 50 },
+
+  // Social quests
+  { id: 'social-butterfly', title: 'Social Butterfly', description: 'Follow 10 users this week', total: 10, xpReward: 200, type: 'social', recurringType: 'weekly' },
+  { id: 'networker-25', title: 'Networker', description: 'Follow 25 users', total: 25, xpReward: 350, type: 'social', milestone: 25 },
 ]
 
 export const useQuestSystem = (): QuestSystemResult => {
   const { walletAddress } = useWalletFromStorage()
   const { lists, triplets } = useBookmarks()
+  const { isHuman } = useClaimHumanity()
 
   const [userProgress, setUserProgress] = useState<UserProgress>({
     signalsCreated: 0,
@@ -109,25 +148,140 @@ export const useQuestSystem = (): QuestSystemResult => {
     oauthConnections: 0,
     followedUsers: 0,
     trustedUsers: 0,
+    currentStreak: 0,
+    hasSignalToday: false,
+    pulseLaunches: 0,
+    weeklyPulseUses: 0,
   })
 
   const [loading, setLoading] = useState(true)
   const [completedQuestIds, setCompletedQuestIds] = useState<Set<string>>(new Set())
+  const [claimedQuestIds, setClaimedQuestIds] = useState<Set<string>>(new Set())
+  const [claimingQuestId, setClaimingQuestId] = useState<string | null>(null)
+  const [onChainSyncDone, setOnChainSyncDone] = useState(false)
 
-  // Load completed quests from storage
+  // Get atom creation functions
+  const { pinAtomToIPFS, createAtomsFromPinned, ensureProxyApproval } = useCreateAtom()
+
+  // Check on-chain for existing quest badges (triples: [wallet] [has_tag] [quest_title])
+  const checkOnChainQuestBadges = async (): Promise<Set<string>> => {
+    if (!walletAddress) return new Set()
+
+    try {
+      console.log('🔍 [QuestSystem] Checking on-chain quest badges for:', walletAddress)
+
+      const { publicClient } = await getClients()
+
+      // Calculate user's atom ID from wallet address
+      const userAtomData = stringToHex(walletAddress)
+      const userAtomId = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS as Address,
+        abi: MultiVaultAbi,
+        functionName: 'calculateAtomId',
+        args: [userAtomData],
+        authorizationList: undefined,
+      }) as string
+
+      console.log('🔍 [QuestSystem] User atom ID:', userAtomId)
+
+      // Query for all triples where subject = user wallet AND predicate = has_tag
+      const query = `
+        query GetQuestBadges($subjectId: String!, $predicateId: String!) {
+          triples(
+            where: {
+              subject_id: { _eq: $subjectId },
+              predicate_id: { _eq: $predicateId }
+            }
+          ) {
+            term_id
+            object {
+              label
+            }
+          }
+        }
+      `
+
+      const data = await intuitionGraphqlClient.request(query, {
+        subjectId: userAtomId,
+        predicateId: CHAIN_PREDICATE_IDS.HAS_TAG
+      }) as { triples: Array<{ term_id: string; object: { label: string } }> }
+
+      if (!data.triples || data.triples.length === 0) {
+        console.log('🔍 [QuestSystem] No on-chain quest badges found')
+        return new Set()
+      }
+
+      // Map quest titles from on-chain to quest IDs
+      const claimedFromChain = new Set<string>()
+      const questTitleToId = new Map<string, string>()
+
+      // Build a map of quest titles to quest IDs
+      QUEST_DEFINITIONS.forEach(quest => {
+        questTitleToId.set(quest.title.toLowerCase(), quest.id)
+      })
+
+      // Check each on-chain badge against our quest definitions
+      for (const triple of data.triples) {
+        const objectLabel = triple.object?.label?.toLowerCase()
+        if (objectLabel) {
+          const questId = questTitleToId.get(objectLabel)
+          if (questId) {
+            console.log(`✅ [QuestSystem] Found on-chain badge for quest: ${questId} (${triple.object.label})`)
+            claimedFromChain.add(questId)
+          }
+        }
+      }
+
+      console.log(`🔍 [QuestSystem] Found ${claimedFromChain.size} on-chain quest badges`)
+      return claimedFromChain
+    } catch (error) {
+      console.error('❌ [QuestSystem] Error checking on-chain badges:', error)
+      return new Set()
+    }
+  }
+
+  // Load completed and claimed quests from storage, then sync with on-chain
   useEffect(() => {
-    const loadCompletedQuests = async () => {
+    const loadQuestStates = async () => {
       try {
-        const result = await chrome.storage.local.get('completed_quests')
+        const result = await chrome.storage.local.get(['completed_quests', 'claimed_quests'])
+
+        let localClaimed = new Set<string>()
         if (result.completed_quests) {
           setCompletedQuestIds(new Set(result.completed_quests))
         }
+        if (result.claimed_quests) {
+          localClaimed = new Set(result.claimed_quests)
+        }
+
+        // Sync with on-chain badges (only if wallet is available)
+        if (walletAddress && !onChainSyncDone) {
+          const onChainClaimed = await checkOnChainQuestBadges()
+
+          // Merge local and on-chain claimed quests
+          const mergedClaimed = new Set([...localClaimed, ...onChainClaimed])
+
+          // If on-chain has badges not in local storage, update storage
+          if (mergedClaimed.size > localClaimed.size) {
+            console.log('📝 [QuestSystem] Syncing on-chain badges to local storage')
+            await chrome.storage.local.set({
+              claimed_quests: Array.from(mergedClaimed),
+              completed_quests: Array.from(new Set([...completedQuestIds, ...onChainClaimed]))
+            })
+          }
+
+          setClaimedQuestIds(mergedClaimed)
+          setCompletedQuestIds(prev => new Set([...prev, ...onChainClaimed]))
+          setOnChainSyncDone(true)
+        } else {
+          setClaimedQuestIds(localClaimed)
+        }
       } catch (error) {
-        console.error('Error loading completed quests:', error)
+        console.error('Error loading quest states:', error)
       }
     }
-    loadCompletedQuests()
-  }, [])
+    loadQuestStates()
+  }, [walletAddress, onChainSyncDone])
 
   // Save completed quests to storage
   const saveCompletedQuest = async (questId: string) => {
@@ -139,10 +293,159 @@ export const useQuestSystem = (): QuestSystemResult => {
       await chrome.storage.local.set({
         completed_quests: Array.from(newCompleted)
       })
+      console.log('✅ [QuestSystem] Saved completed quest:', questId)
     } catch (error) {
       console.error('Error saving completed quest:', error)
     }
   }
+
+  // Claim XP for a quest - creates on-chain badge triple
+  const claimQuestXP = async (questId: string): Promise<{ success: boolean; txHash?: string; error?: string }> => {
+    if (!walletAddress) {
+      return { success: false, error: 'No wallet connected' }
+    }
+
+    // Find the quest to get its title
+    const quest = QUEST_DEFINITIONS.find(q => q.id === questId)
+    if (!quest) {
+      return { success: false, error: 'Quest not found' }
+    }
+
+    setClaimingQuestId(questId)
+
+    try {
+      console.log('🏆 [QuestSystem] Creating on-chain badge for quest:', quest.title)
+
+      // Ensure proxy is approved
+      await ensureProxyApproval()
+
+      const { walletClient, publicClient } = await getClients()
+      const contractAddress = BlockchainService.getContractAddress()
+
+      // 1. Get/Create user wallet atom as SUBJECT
+      const userAtomData = stringToHex(walletAddress)
+      const userAtomId = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS as Address,
+        abi: MultiVaultAbi,
+        functionName: 'calculateAtomId',
+        args: [userAtomData],
+        authorizationList: undefined,
+      }) as Address
+
+      // Check if user atom exists, create if not
+      const userAtomExists = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS as Address,
+        abi: MultiVaultAbi,
+        functionName: 'isTermCreated',
+        args: [userAtomId],
+        authorizationList: undefined,
+      }) as boolean
+
+      if (!userAtomExists) {
+        console.log('📝 [QuestSystem] Creating user atom...')
+        const atomCost = await BlockchainService.getAtomCost()
+        const atomMultiVaultCost = atomCost + MIN_DEPOSIT
+        const atomTotalCost = await BlockchainService.getTotalCreationCost(1, MIN_DEPOSIT, atomMultiVaultCost)
+
+        const atomTxHash = await walletClient.writeContract({
+          address: contractAddress as Address,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'createAtoms',
+          args: [walletAddress as Address, [userAtomData], [MIN_DEPOSIT], CURVE_ID],
+          value: atomTotalCost,
+          chain: SELECTED_CHAIN,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: walletAddress as Address,
+        })
+
+        const atomReceipt = await publicClient.waitForTransactionReceipt({ hash: atomTxHash })
+        if (atomReceipt.status !== 'success') {
+          throw new Error('User atom creation failed')
+        }
+        console.log('✅ [QuestSystem] User atom created')
+      }
+
+      // 2. PREDICATE = "has tag" (pre-existing)
+      const predicateId = CHAIN_PREDICATE_IDS.HAS_TAG as Address
+
+      // 3. Create OBJECT = quest title atom
+      console.log('📝 [QuestSystem] Creating quest badge atom...')
+      const pinnedAtom = await pinAtomToIPFS({
+        name: quest.title,
+        description: `Sofia Quest Badge: ${quest.description}`,
+        url: ''
+      })
+
+      const createdAtoms = await createAtomsFromPinned([pinnedAtom])
+      const objectId = createdAtoms[quest.title].vaultId as Address
+
+      // 4. Create triple: [wallet_atom] [has_tag] [quest_title]
+      console.log('📝 [QuestSystem] Creating badge triple...')
+
+      const tripleCost = await BlockchainService.getTripleCost()
+      const multiVaultCost = tripleCost + MIN_DEPOSIT
+      const totalCost = await BlockchainService.getTotalCreationCost(1, MIN_DEPOSIT, multiVaultCost)
+
+      // Simulate first
+      await publicClient.simulateContract({
+        address: contractAddress as Address,
+        abi: SofiaFeeProxyAbi,
+        functionName: 'createTriples',
+        args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
+        value: totalCost,
+        account: walletClient.account
+      })
+
+      const txHash = await walletClient.writeContract({
+        address: contractAddress as Address,
+        abi: SofiaFeeProxyAbi,
+        functionName: 'createTriples',
+        args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
+        value: totalCost,
+        chain: SELECTED_CHAIN,
+        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+        account: walletAddress as Address,
+      })
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      if (receipt.status !== 'success') {
+        throw new Error('Triple creation failed on-chain')
+      }
+
+      console.log('✅ [QuestSystem] Badge created on-chain:', txHash)
+
+      // Only mark as claimed after successful TX
+      const newClaimed = new Set(claimedQuestIds)
+      newClaimed.add(questId)
+      setClaimedQuestIds(newClaimed)
+
+      await chrome.storage.local.set({
+        claimed_quests: Array.from(newClaimed)
+      })
+
+      console.log('✅ [QuestSystem] Claimed XP for quest:', questId)
+
+      return { success: true, txHash }
+    } catch (error) {
+      console.error('❌ [QuestSystem] Claim failed:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    } finally {
+      setClaimingQuestId(null)
+    }
+  }
+
+  // Auto-save proof-of-human quest when isHuman becomes true
+  useEffect(() => {
+    if (isHuman && !completedQuestIds.has('proof-of-human')) {
+      console.log('🎉 [QuestSystem] Auto-completing proof-of-human quest (isHuman=true)')
+      saveCompletedQuest('proof-of-human')
+    }
+  }, [isHuman, completedQuestIds])
 
   // Fetch user progress data
   const refreshQuests = async () => {
@@ -242,6 +545,10 @@ export const useQuestSystem = (): QuestSystemResult => {
         oauthConnections,
         followedUsers,
         trustedUsers,
+        currentStreak: 0,
+        hasSignalToday: false,
+        pulseLaunches: 0,
+        weeklyPulseUses: 0,
       })
 
     } catch (error) {
@@ -282,6 +589,25 @@ export const useQuestSystem = (): QuestSystemResult => {
         case 'trust':
           current = userProgress.trustedUsers
           break
+        case 'streak':
+          current = userProgress.currentStreak
+          break
+        case 'pulse':
+          if (questDef.id === 'pulse-first') {
+            current = userProgress.pulseLaunches
+          } else if (questDef.id === 'pulse-weekly-5') {
+            current = userProgress.weeklyPulseUses
+          }
+          break
+        case 'curator':
+          current = userProgress.bookmarkedSignals
+          break
+        case 'social':
+          if (questDef.id === 'networker-25') {
+            current = userProgress.followedUsers
+          }
+          // social-butterfly uses weekly follows - not yet tracked separately
+          break
       }
 
       // Determine quest status
@@ -290,22 +616,33 @@ export const useQuestSystem = (): QuestSystemResult => {
       let claimable = false
 
       const isCompleted = completedQuestIds.has(questDef.id)
+      const isClaimed = claimedQuestIds.has(questDef.id)
 
-      if (current >= questDef.total) {
-        // For claimable quests (like proof-of-human), only mark completed if already claimed
-        if (questDef.claimable && !isCompleted) {
-          // Quest is ready to claim but not yet claimed
-          status = 'active'
-          statusColor = '#FFD700' // gold for claimable
-          claimable = true
-        } else {
+      // Special handling for proof-of-human quest - use isHuman state directly
+      if (questDef.id === 'proof-of-human' && isHuman) {
+        if (isClaimed) {
           status = 'completed'
-          statusColor = '#48bb78' // green
-
-          // Auto-save newly completed quests (only for non-claimable quests)
-          if (!isCompleted && !questDef.claimable) {
-            saveCompletedQuest(questDef.id)
-          }
+          statusColor = '#48bb78' // green - XP claimed
+        } else {
+          status = 'claimable_xp'
+          statusColor = '#FFD700' // gold - ready to claim XP
+        }
+        // Save to completed if not already
+        if (!isCompleted) {
+          saveCompletedQuest(questDef.id)
+        }
+      } else if (current >= questDef.total) {
+        // Quest objective is met
+        if (isClaimed) {
+          status = 'completed'
+          statusColor = '#48bb78' // green - XP claimed
+        } else {
+          status = 'claimable_xp'
+          statusColor = '#FFD700' // gold - ready to claim XP
+        }
+        // Save to completed if not already
+        if (!isCompleted) {
+          saveCompletedQuest(questDef.id)
         }
       } else if (current > 0 || questDef.milestone === 1) {
         // Quest is active if user has started progress or it's a first-time quest
@@ -321,18 +658,25 @@ export const useQuestSystem = (): QuestSystemResult => {
         claimable,
       }
     }).sort((a, b) => {
-      // Sort by: active first, then by milestone (lower milestones first), then completed last
+      // Sort by: claimable_xp first, then active, then by milestone, then completed last
+      if (a.status === 'claimable_xp' && b.status !== 'claimable_xp') return -1
+      if (a.status !== 'claimable_xp' && b.status === 'claimable_xp') return 1
       if (a.status === 'active' && b.status !== 'active') return -1
       if (a.status !== 'active' && b.status === 'active') return 1
       if (a.status === 'completed' && b.status !== 'completed') return 1
       if (a.status !== 'completed' && b.status === 'completed') return -1
       return (a.milestone || 0) - (b.milestone || 0)
     })
-  }, [userProgress, completedQuestIds])
+  }, [userProgress, completedQuestIds, claimedQuestIds, isHuman])
 
-  // Filter active and completed quests
+  // Filter active, claimable, and completed quests
   const activeQuests = useMemo(() =>
-    quests.filter(q => q.status === 'active').slice(0, 4), // Show max 4 active quests
+    quests.filter(q => q.status === 'active'),
+    [quests]
+  )
+
+  const claimableQuests = useMemo(() =>
+    quests.filter(q => q.status === 'claimable_xp'),
     [quests]
   )
 
@@ -341,10 +685,12 @@ export const useQuestSystem = (): QuestSystemResult => {
     [quests]
   )
 
-  // Calculate total XP and level
+  // Calculate total XP and level - only from CLAIMED quests
   const totalXP = useMemo(() => {
-    return completedQuests.reduce((sum, quest) => sum + quest.xpReward, 0)
-  }, [completedQuests])
+    return quests
+      .filter(quest => claimedQuestIds.has(quest.id))
+      .reduce((sum, quest) => sum + quest.xpReward, 0)
+  }, [quests, claimedQuestIds])
 
   const level = useMemo(() => calculateLevelFromXP(totalXP), [totalXP])
   const xpForNextLevel = useMemo(() => calculateXPForNextLevel(level), [level])
@@ -358,12 +704,15 @@ export const useQuestSystem = (): QuestSystemResult => {
     quests,
     activeQuests,
     completedQuests,
+    claimableQuests,
     userProgress,
     level,
     totalXP,
     xpForNextLevel,
     loading,
+    claimingQuestId,
     refreshQuests,
     markQuestCompleted,
+    claimQuestXP,
   }
 }

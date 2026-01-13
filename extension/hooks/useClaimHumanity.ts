@@ -16,6 +16,7 @@ import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG } from '../lib/config/chainConfig'
 import { BlockchainService } from '../lib/services/blockchainService'
+import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { stringToHex } from 'viem'
 import type { Address } from '../types/viem'
 
@@ -90,11 +91,84 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
     return connectedCount >= 5
   }, [])
 
-  // Load existing attestation from storage
+  // Check on-chain if the triple [wallet] [is_human] [verified] exists
+  // The predicate/object combo is specific enough - only Sofia creates these triples
+  const checkOnChainAttestation = useCallback(async (): Promise<boolean> => {
+    if (!walletAddress) return false
+
+    try {
+      console.log('🔍 [ClaimHumanity] Checking on-chain attestation for:', walletAddress)
+
+      // First, find the atom term_id for this wallet address
+      // The atom's data field contains the wallet address as hex
+      const userAtomData = stringToHex(walletAddress)
+
+      // Calculate the atom ID the same way we do when creating it
+      const { publicClient } = await getClients()
+      const userAtomId = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS as Address,
+        abi: MultiVaultAbi,
+        functionName: 'calculateAtomId',
+        args: [userAtomData],
+        authorizationList: undefined,
+      }) as string
+
+      console.log('🔍 [ClaimHumanity] User atom ID calculated:', userAtomId)
+
+      // Query for triples where subject_id matches the user's atom,
+      // predicate is "is_human" and object is "verified"
+      const query = `
+        query CheckHumanAttestation($subjectId: String!, $predicateId: String!, $objectId: String!) {
+          triples(
+            where: {
+              subject_id: { _eq: $subjectId },
+              predicate_id: { _eq: $predicateId },
+              object_id: { _eq: $objectId }
+            },
+            limit: 1
+          ) {
+            term_id
+            created_at
+          }
+        }
+      `
+
+      const data = await intuitionGraphqlClient.request(query, {
+        subjectId: userAtomId,
+        predicateId: TERM_ID_IS_HUMAN,
+        objectId: TERM_ID_VERIFIED
+      })
+
+      if (data.triples && data.triples.length > 0) {
+        const triple = data.triples[0]
+        console.log('✅ [ClaimHumanity] Found on-chain attestation:', triple)
+
+        // Save to local storage for future use
+        const attestation: HumanAttestation = {
+          txHash: triple.term_id || '',
+          claimedAt: triple.created_at ? new Date(triple.created_at).getTime() : Date.now(),
+          walletAddress
+        }
+        await chrome.storage.local.set({ [HUMAN_ATTESTATION_KEY]: attestation })
+        setAttestation(attestation)
+        setIsHuman(true)
+        return true
+      }
+
+      console.log('❌ [ClaimHumanity] No on-chain attestation found')
+      return false
+    } catch (error) {
+      console.error('Error checking on-chain attestation:', error)
+      return false
+    }
+  }, [walletAddress])
+
+  // Load existing attestation from storage, then verify on-chain if not found
   const loadAttestation = useCallback(async () => {
     if (!walletAddress) return
 
     try {
+      // First check local storage
       const result = await chrome.storage.local.get(HUMAN_ATTESTATION_KEY)
       const stored = result[HUMAN_ATTESTATION_KEY] as HumanAttestation | undefined
 
@@ -104,11 +178,15 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
         setIsHuman(true)
         return true
       }
+
+      // If not in local storage, check on-chain
+      const onChainResult = await checkOnChainAttestation()
+      return onChainResult
     } catch (error) {
       console.error('Error loading human attestation:', error)
     }
     return false
-  }, [walletAddress])
+  }, [walletAddress, checkOnChainAttestation])
 
   // Claim humanity - Bot verifies tokens, then USER signs the TX
   const claimHumanity = useCallback(async (): Promise<{ success: boolean; txHash?: string; error?: string }> => {
