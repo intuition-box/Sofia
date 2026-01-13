@@ -754,6 +754,32 @@
   }
 }
 
+/* ========== CLAIM XP BUTTON ========== */
+.claim-xp-button {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border: none;
+  border-radius: 8px;
+  color: #1a1a1a;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  margin-top: 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.claim-xp-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+.claim-xp-button:active {
+  transform: translateY(0);
+}
+
 /* ========== BADGES SECTION ========== */
 .badges-section {
   display: flex;

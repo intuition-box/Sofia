@@ -48,7 +48,7 @@ const AccountTab = () => {
   })
 
   // Quest system hook - provides real quests based on user progress
-  const { activeQuests, completedQuests, level, totalXP, loading: questsLoading, markQuestCompleted } = useQuestSystem()
+  const { activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, markQuestCompleted, claimQuestXP } = useQuestSystem()
 
   // Claim Humanity hook - handles Proof of Human attestation
   const { isHuman, canClaim, isClaiming, claimHumanity } = useClaimHumanity()
@@ -445,12 +445,12 @@ const AccountTab = () => {
       <div className="quests-section">
         {questsLoading ? (
           <div className="quests-loading">Loading quests...</div>
-        ) : activeQuests.length === 0 ? (
+        ) : (claimableQuests.length === 0 && activeQuests.length === 0) ? (
           <div className="quests-empty">
             <p>No active quests. Complete your first action to unlock quests!</p>
           </div>
         ) : (
-          activeQuests.map((quest) => {
+          [...claimableQuests, ...activeQuests].map((quest) => {
             const progress = calculateProgress(quest.current, quest.total)
             const radius = 28
             const circumference = 2 * Math.PI * radius
@@ -502,10 +502,21 @@ const AccountTab = () => {
                   <h4 className="quest-title">{quest.description}</h4>
                   <p className="quest-progress-text">{quest.current}/{quest.total}</p>
                   <span className="quest-status" style={{ color: quest.statusColor }}>
-                    {quest.status === 'active' ? 'In Progress' : quest.status === 'completed' ? 'Completed' : 'Locked'} • +{quest.xpReward} XP
+                    {quest.status === 'active' ? 'In Progress' :
+                     quest.status === 'claimable_xp' ? 'Ready to Claim!' :
+                     quest.status === 'completed' ? 'Claimed' : 'Locked'} • +{quest.xpReward} XP
                   </span>
-                  {/* Claim Humanity button for proof-of-human quest */}
-                  {quest.id === 'proof-of-human' && quest.claimable && canClaim && !isHuman && (
+                  {/* Claim XP button for completed quests */}
+                  {quest.status === 'claimable_xp' && quest.id !== 'proof-of-human' && (
+                    <button
+                      className="claim-xp-button"
+                      onClick={() => claimQuestXP(quest.id)}
+                    >
+                      Claim {quest.xpReward} XP
+                    </button>
+                  )}
+                  {/* Claim Humanity button for proof-of-human quest (first claim on-chain, then XP) */}
+                  {quest.id === 'proof-of-human' && quest.status === 'claimable_xp' && !isHuman && canClaim && (
                     <button
                       className="claim-humanity-button"
                       onClick={async () => {
@@ -522,7 +533,16 @@ const AccountTab = () => {
                       {isClaiming ? 'Claiming...' : 'Claim Humanity'}
                     </button>
                   )}
-                  {quest.id === 'proof-of-human' && isHuman && (
+                  {/* Claim XP button for proof-of-human after on-chain claim */}
+                  {quest.id === 'proof-of-human' && quest.status === 'claimable_xp' && isHuman && (
+                    <button
+                      className="claim-xp-button"
+                      onClick={() => claimQuestXP(quest.id)}
+                    >
+                      Claim {quest.xpReward} XP
+                    </button>
+                  )}
+                  {quest.id === 'proof-of-human' && quest.status === 'completed' && (
                     <span className="human-badge">Verified Human</span>
                   )}
                 </div>

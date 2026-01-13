@@ -18,7 +18,7 @@ export interface Quest {
   description: string
   current: number
   total: number
-  status: 'locked' | 'active' | 'completed'
+  status: 'locked' | 'active' | 'completed' | 'claimable_xp'
   statusColor: string
   xpReward: number
   type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social'
@@ -47,6 +47,7 @@ export interface QuestSystemResult {
   quests: Quest[]
   activeQuests: Quest[]
   completedQuests: Quest[]
+  claimableQuests: Quest[]
   userProgress: UserProgress
   level: number
   totalXP: number
@@ -54,6 +55,7 @@ export interface QuestSystemResult {
   loading: boolean
   refreshQuests: () => Promise<void>
   markQuestCompleted: (questId: string) => Promise<void>
+  claimQuestXP: (questId: string) => Promise<void>
 }
 
 // XP calculation: Level N requires 100 * N XP
@@ -142,20 +144,24 @@ export const useQuestSystem = (): QuestSystemResult => {
 
   const [loading, setLoading] = useState(true)
   const [completedQuestIds, setCompletedQuestIds] = useState<Set<string>>(new Set())
+  const [claimedQuestIds, setClaimedQuestIds] = useState<Set<string>>(new Set())
 
-  // Load completed quests from storage
+  // Load completed and claimed quests from storage
   useEffect(() => {
-    const loadCompletedQuests = async () => {
+    const loadQuestStates = async () => {
       try {
-        const result = await chrome.storage.local.get('completed_quests')
+        const result = await chrome.storage.local.get(['completed_quests', 'claimed_quests'])
         if (result.completed_quests) {
           setCompletedQuestIds(new Set(result.completed_quests))
         }
+        if (result.claimed_quests) {
+          setClaimedQuestIds(new Set(result.claimed_quests))
+        }
       } catch (error) {
-        console.error('Error loading completed quests:', error)
+        console.error('Error loading quest states:', error)
       }
     }
-    loadCompletedQuests()
+    loadQuestStates()
   }, [])
 
   // Save completed quests to storage
@@ -171,6 +177,22 @@ export const useQuestSystem = (): QuestSystemResult => {
       console.log('✅ [QuestSystem] Saved completed quest:', questId)
     } catch (error) {
       console.error('Error saving completed quest:', error)
+    }
+  }
+
+  // Claim XP for a quest
+  const claimQuestXP = async (questId: string) => {
+    const newClaimed = new Set(claimedQuestIds)
+    newClaimed.add(questId)
+    setClaimedQuestIds(newClaimed)
+
+    try {
+      await chrome.storage.local.set({
+        claimed_quests: Array.from(newClaimed)
+      })
+      console.log('✅ [QuestSystem] Claimed XP for quest:', questId)
+    } catch (error) {
+      console.error('Error claiming quest XP:', error)
     }
   }
 
@@ -351,26 +373,33 @@ export const useQuestSystem = (): QuestSystemResult => {
       let claimable = false
 
       const isCompleted = completedQuestIds.has(questDef.id)
+      const isClaimed = claimedQuestIds.has(questDef.id)
 
       // Special handling for proof-of-human quest - use isHuman state directly
       if (questDef.id === 'proof-of-human' && isHuman) {
-        status = 'completed'
-        statusColor = '#48bb78' // green
-      } else if (current >= questDef.total) {
-        // For claimable quests (like proof-of-human), only mark completed if already claimed
-        if (questDef.claimable && !isCompleted) {
-          // Quest is ready to claim but not yet claimed
-          status = 'active'
-          statusColor = '#FFD700' // gold for claimable
-          claimable = true
-        } else {
+        if (isClaimed) {
           status = 'completed'
-          statusColor = '#48bb78' // green
-
-          // Auto-save newly completed quests (only for non-claimable quests)
-          if (!isCompleted && !questDef.claimable) {
-            saveCompletedQuest(questDef.id)
-          }
+          statusColor = '#48bb78' // green - XP claimed
+        } else {
+          status = 'claimable_xp'
+          statusColor = '#FFD700' // gold - ready to claim XP
+        }
+        // Save to completed if not already
+        if (!isCompleted) {
+          saveCompletedQuest(questDef.id)
+        }
+      } else if (current >= questDef.total) {
+        // Quest objective is met
+        if (isClaimed) {
+          status = 'completed'
+          statusColor = '#48bb78' // green - XP claimed
+        } else {
+          status = 'claimable_xp'
+          statusColor = '#FFD700' // gold - ready to claim XP
+        }
+        // Save to completed if not already
+        if (!isCompleted) {
+          saveCompletedQuest(questDef.id)
         }
       } else if (current > 0 || questDef.milestone === 1) {
         // Quest is active if user has started progress or it's a first-time quest
@@ -386,18 +415,25 @@ export const useQuestSystem = (): QuestSystemResult => {
         claimable,
       }
     }).sort((a, b) => {
-      // Sort by: active first, then by milestone (lower milestones first), then completed last
+      // Sort by: claimable_xp first, then active, then by milestone, then completed last
+      if (a.status === 'claimable_xp' && b.status !== 'claimable_xp') return -1
+      if (a.status !== 'claimable_xp' && b.status === 'claimable_xp') return 1
       if (a.status === 'active' && b.status !== 'active') return -1
       if (a.status !== 'active' && b.status === 'active') return 1
       if (a.status === 'completed' && b.status !== 'completed') return 1
       if (a.status !== 'completed' && b.status === 'completed') return -1
       return (a.milestone || 0) - (b.milestone || 0)
     })
-  }, [userProgress, completedQuestIds, isHuman])
+  }, [userProgress, completedQuestIds, claimedQuestIds, isHuman])
 
-  // Filter active and completed quests
+  // Filter active, claimable, and completed quests
   const activeQuests = useMemo(() =>
     quests.filter(q => q.status === 'active'),
+    [quests]
+  )
+
+  const claimableQuests = useMemo(() =>
+    quests.filter(q => q.status === 'claimable_xp'),
     [quests]
   )
 
@@ -406,10 +442,12 @@ export const useQuestSystem = (): QuestSystemResult => {
     [quests]
   )
 
-  // Calculate total XP and level
+  // Calculate total XP and level - only from CLAIMED quests
   const totalXP = useMemo(() => {
-    return completedQuests.reduce((sum, quest) => sum + quest.xpReward, 0)
-  }, [completedQuests])
+    return quests
+      .filter(quest => claimedQuestIds.has(quest.id))
+      .reduce((sum, quest) => sum + quest.xpReward, 0)
+  }, [quests, claimedQuestIds])
 
   const level = useMemo(() => calculateLevelFromXP(totalXP), [totalXP])
   const xpForNextLevel = useMemo(() => calculateXPForNextLevel(level), [level])
@@ -423,6 +461,7 @@ export const useQuestSystem = (): QuestSystemResult => {
     quests,
     activeQuests,
     completedQuests,
+    claimableQuests,
     userProgress,
     level,
     totalXP,
@@ -430,5 +469,6 @@ export const useQuestSystem = (): QuestSystemResult => {
     loading,
     refreshQuests,
     markQuestCompleted,
+    claimQuestXP,
   }
 }
