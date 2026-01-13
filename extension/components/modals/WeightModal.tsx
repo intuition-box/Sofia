@@ -80,7 +80,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
   useEffect(() => {
     if (isProcessing) {
       const steps = [
-        'Preparing triplet...',
+        'Preparing triples...',
         'Creating atoms...',
         'Publishing to blockchain...',
         'Confirming transaction...'
