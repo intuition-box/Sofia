@@ -332,7 +332,7 @@ const AccountTab = () => {
         <Avatar
           imgSrc={displayAvatar}
           name={displayLabel || walletAddress}
-          avatarClassName="profile-avatar"
+          avatarClassName={`profile-avatar ${isHuman ? 'verified-human' : ''}`}
           size="large"
         />
         <div className="profile-info">
