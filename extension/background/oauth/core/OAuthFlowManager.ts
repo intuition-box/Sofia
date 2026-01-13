@@ -238,7 +238,8 @@ export class OAuthFlowManager {
       twitter: 'https://sofia.intuition.box/auth/twitter',
       youtube: 'https://sofia.intuition.box/auth/youtube',
       spotify: 'https://sofia.intuition.box/auth/spotify',
-      discord: 'https://sofia.intuition.box/auth/discord'
+      discord: 'https://sofia.intuition.box/auth/discord',
+      twitch: 'https://sofia.intuition.box/auth/twitch'
     }
 
     const baseUrl = authUrls[platform]

@@ -68,13 +68,14 @@ export class PlatformRegistry {
       externalOAuth: true
     })
 
-    // Twitch Configuration
+    // Twitch Configuration - Uses external OAuth via landing page
     this.platforms.set('twitch', {
       name: 'Twitch',
       clientId: oauthConfig.twitch.clientId,
-      flow: OAuthFlow.IMPLICIT,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
       scope: ['user:read:follows', 'user:read:subscriptions'],
       authUrl: 'https://id.twitch.tv/oauth2/authorize',
+      tokenUrl: 'https://id.twitch.tv/oauth2/token',
       apiBaseUrl: 'https://api.twitch.tv/helix',
       endpoints: {
         profile: '/users',
@@ -82,7 +83,8 @@ export class PlatformRegistry {
       },
       dataStructure: 'data',
       idField: 'broadcaster_id',
-      requiresClientId: true
+      requiresClientId: true,
+      externalOAuth: true
     })
 
     // Discord Configuration - Uses external OAuth via landing page

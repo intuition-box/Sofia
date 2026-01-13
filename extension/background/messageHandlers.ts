@@ -152,7 +152,7 @@ const ALLOWED_EXTERNAL_ORIGINS = [
 ]
 
 // Supported OAuth platforms
-const SUPPORTED_OAUTH_PLATFORMS = ['twitter', 'youtube', 'spotify', 'discord']
+const SUPPORTED_OAUTH_PLATFORMS = ['twitter', 'youtube', 'spotify', 'discord', 'twitch']
 
 export function setupMessageHandlers(): void {
   // 🔥 FIX: Prevent duplicate handler registration
