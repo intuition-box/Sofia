@@ -29,7 +29,8 @@ export class BlockchainService {
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
       functionName: 'calculateDepositFee',
-      args: [BigInt(depositCount), totalDeposit]
+      args: [BigInt(depositCount), totalDeposit],
+      authorizationList: undefined
     }) as bigint
   }
 
@@ -42,7 +43,8 @@ export class BlockchainService {
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
       functionName: 'getTotalDepositCost',
-      args: [depositAmount]
+      args: [depositAmount],
+      authorizationList: undefined
     }) as bigint
   }
 
@@ -58,7 +60,8 @@ export class BlockchainService {
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
       functionName: 'getTotalCreationCost',
-      args: [BigInt(depositCount), totalDeposit, multiVaultCost]
+      args: [BigInt(depositCount), totalDeposit, multiVaultCost],
+      authorizationList: undefined
     }) as bigint
   }
 
@@ -74,7 +77,8 @@ export class BlockchainService {
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
       functionName: 'calculateAtomId',
-      args: [encodedData]
+      args: [encodedData],
+      authorizationList: undefined
     }) as string
   }
 
@@ -89,7 +93,8 @@ export class BlockchainService {
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
       functionName: 'isTermCreated',
-      args: [atomHash as `0x${string}`]
+      args: [atomHash as `0x${string}`],
+      authorizationList: undefined
     }) as boolean
 
     return {
@@ -127,7 +132,8 @@ export class BlockchainService {
           subjectVaultId as `0x${string}`,
           predicateVaultId as `0x${string}`,
           objectVaultId as `0x${string}`
-        ]
+        ],
+        authorizationList: undefined
       }) as `0x${string}`
 
       console.log('🔍 BlockchainService.checkTripleExists - Triple ID calculated', {
@@ -142,7 +148,8 @@ export class BlockchainService {
           address: this.MULTIVAULT_ADDRESS as `0x${string}`,
           abi: MultiVaultAbi,
           functionName: 'getTriple',
-          args: [tripleId]
+          args: [tripleId],
+          authorizationList: undefined
         }) as [string, string, string] // [subjectId, predicateId, objectId]
 
         console.log('🔍 BlockchainService.checkTripleExists - Triple data retrieved', {
@@ -223,7 +230,8 @@ export class BlockchainService {
     return await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
-      functionName: 'getAtomCost'
+      functionName: 'getAtomCost',
+      authorizationList: undefined
     }) as bigint
   }
 
@@ -236,7 +244,8 @@ export class BlockchainService {
     const cost = await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
-      functionName: 'getTripleCost'
+      functionName: 'getTripleCost',
+      authorizationList: undefined
     }) as bigint
 
     console.log('[BlockchainService] getTripleCost returned:', {
@@ -300,7 +309,8 @@ export class BlockchainService {
         address: this.MULTIVAULT_ADDRESS as `0x${string}`,
         abi: MultiVaultAbi,
         functionName: 'approvals',
-        args: [userAddress as `0x${string}`, this.PROXY_ADDRESS as `0x${string}`]
+        args: [userAddress as `0x${string}`, this.PROXY_ADDRESS as `0x${string}`],
+        authorizationList: undefined
       }) as number
 
       // ApprovalTypes: 0=NONE, 1=DEPOSIT, 2=REDEMPTION, 3=BOTH
