@@ -574,7 +574,8 @@ export const useCreateTripleOnChain = () => {
                   triple.subjectId as Address,
                   triple.predicateId as Address,
                   triple.objectId as Address
-                ]
+                ],
+                authorizationList: undefined
               }) as Address
 
               // For deposit, use customWeight or MIN_TRIPLE_DEPOSIT as fallback
