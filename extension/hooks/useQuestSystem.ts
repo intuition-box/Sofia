@@ -7,9 +7,20 @@ import { useState, useEffect, useMemo } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
-import { getAddress } from 'viem'
+import { getAddress, stringToHex } from 'viem'
 import { useBookmarks } from './useBookmarks'
 import { useClaimHumanity } from './useClaimHumanity'
+import { useCreateAtom } from './useCreateAtom'
+import { getClients } from '../lib/clients/viemClients'
+import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
+import { MultiVaultAbi } from '../ABI/MultiVault'
+import { BlockchainService } from '../lib/services/blockchainService'
+import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS } from '../lib/config/chainConfig'
+import type { Address } from '../types/viem'
+
+// Constants for on-chain operations
+const MIN_DEPOSIT = 10000000000000000n // 0.01 TRUST
+const CURVE_ID = 1n
 
 // Quest definition interface
 export interface Quest {
@@ -53,9 +64,10 @@ export interface QuestSystemResult {
   totalXP: number
   xpForNextLevel: number
   loading: boolean
+  claimingQuestId: string | null
   refreshQuests: () => Promise<void>
   markQuestCompleted: (questId: string) => Promise<void>
-  claimQuestXP: (questId: string) => Promise<void>
+  claimQuestXP: (questId: string) => Promise<{ success: boolean; txHash?: string; error?: string }>
 }
 
 // XP calculation: Level N requires 100 * N XP
@@ -145,6 +157,10 @@ export const useQuestSystem = (): QuestSystemResult => {
   const [loading, setLoading] = useState(true)
   const [completedQuestIds, setCompletedQuestIds] = useState<Set<string>>(new Set())
   const [claimedQuestIds, setClaimedQuestIds] = useState<Set<string>>(new Set())
+  const [claimingQuestId, setClaimingQuestId] = useState<string | null>(null)
+
+  // Get atom creation functions
+  const { pinAtomToIPFS, createAtomsFromPinned, ensureProxyApproval } = useCreateAtom()
 
   // Load completed and claimed quests from storage
   useEffect(() => {
@@ -180,19 +196,143 @@ export const useQuestSystem = (): QuestSystemResult => {
     }
   }
 
-  // Claim XP for a quest
-  const claimQuestXP = async (questId: string) => {
-    const newClaimed = new Set(claimedQuestIds)
-    newClaimed.add(questId)
-    setClaimedQuestIds(newClaimed)
+  // Claim XP for a quest - creates on-chain badge triple
+  const claimQuestXP = async (questId: string): Promise<{ success: boolean; txHash?: string; error?: string }> => {
+    if (!walletAddress) {
+      return { success: false, error: 'No wallet connected' }
+    }
+
+    // Find the quest to get its title
+    const quest = QUEST_DEFINITIONS.find(q => q.id === questId)
+    if (!quest) {
+      return { success: false, error: 'Quest not found' }
+    }
+
+    setClaimingQuestId(questId)
 
     try {
+      console.log('🏆 [QuestSystem] Creating on-chain badge for quest:', quest.title)
+
+      // Ensure proxy is approved
+      await ensureProxyApproval()
+
+      const { walletClient, publicClient } = await getClients()
+      const contractAddress = BlockchainService.getContractAddress()
+
+      // 1. Get/Create user wallet atom as SUBJECT
+      const userAtomData = stringToHex(walletAddress)
+      const userAtomId = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS as Address,
+        abi: MultiVaultAbi,
+        functionName: 'calculateAtomId',
+        args: [userAtomData],
+        authorizationList: undefined,
+      }) as Address
+
+      // Check if user atom exists, create if not
+      const userAtomExists = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS as Address,
+        abi: MultiVaultAbi,
+        functionName: 'isTermCreated',
+        args: [userAtomId],
+        authorizationList: undefined,
+      }) as boolean
+
+      if (!userAtomExists) {
+        console.log('📝 [QuestSystem] Creating user atom...')
+        const atomCost = await BlockchainService.getAtomCost()
+        const atomMultiVaultCost = atomCost + MIN_DEPOSIT
+        const atomTotalCost = await BlockchainService.getTotalCreationCost(1, MIN_DEPOSIT, atomMultiVaultCost)
+
+        const atomTxHash = await walletClient.writeContract({
+          address: contractAddress as Address,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'createAtoms',
+          args: [walletAddress as Address, [userAtomData], [MIN_DEPOSIT], CURVE_ID],
+          value: atomTotalCost,
+          chain: SELECTED_CHAIN,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: walletAddress as Address,
+        })
+
+        const atomReceipt = await publicClient.waitForTransactionReceipt({ hash: atomTxHash })
+        if (atomReceipt.status !== 'success') {
+          throw new Error('User atom creation failed')
+        }
+        console.log('✅ [QuestSystem] User atom created')
+      }
+
+      // 2. PREDICATE = "has tag" (pre-existing)
+      const predicateId = CHAIN_PREDICATE_IDS.HAS_TAG as Address
+
+      // 3. Create OBJECT = quest title atom
+      console.log('📝 [QuestSystem] Creating quest badge atom...')
+      const pinnedAtom = await pinAtomToIPFS({
+        name: quest.title,
+        description: `Sofia Quest Badge: ${quest.description}`,
+        url: ''
+      })
+
+      const createdAtoms = await createAtomsFromPinned([pinnedAtom])
+      const objectId = createdAtoms[quest.title].vaultId as Address
+
+      // 4. Create triple: [wallet_atom] [has_tag] [quest_title]
+      console.log('📝 [QuestSystem] Creating badge triple...')
+
+      const tripleCost = await BlockchainService.getTripleCost()
+      const multiVaultCost = tripleCost + MIN_DEPOSIT
+      const totalCost = await BlockchainService.getTotalCreationCost(1, MIN_DEPOSIT, multiVaultCost)
+
+      // Simulate first
+      await publicClient.simulateContract({
+        address: contractAddress as Address,
+        abi: SofiaFeeProxyAbi,
+        functionName: 'createTriples',
+        args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
+        value: totalCost,
+        account: walletClient.account
+      })
+
+      const txHash = await walletClient.writeContract({
+        address: contractAddress as Address,
+        abi: SofiaFeeProxyAbi,
+        functionName: 'createTriples',
+        args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
+        value: totalCost,
+        chain: SELECTED_CHAIN,
+        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+        account: walletAddress as Address,
+      })
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      if (receipt.status !== 'success') {
+        throw new Error('Triple creation failed on-chain')
+      }
+
+      console.log('✅ [QuestSystem] Badge created on-chain:', txHash)
+
+      // Only mark as claimed after successful TX
+      const newClaimed = new Set(claimedQuestIds)
+      newClaimed.add(questId)
+      setClaimedQuestIds(newClaimed)
+
       await chrome.storage.local.set({
         claimed_quests: Array.from(newClaimed)
       })
+
       console.log('✅ [QuestSystem] Claimed XP for quest:', questId)
+
+      return { success: true, txHash }
     } catch (error) {
-      console.error('Error claiming quest XP:', error)
+      console.error('❌ [QuestSystem] Claim failed:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    } finally {
+      setClaimingQuestId(null)
     }
   }
 
@@ -467,6 +607,7 @@ export const useQuestSystem = (): QuestSystemResult => {
     totalXP,
     xpForNextLevel,
     loading,
+    claimingQuestId,
     refreshQuests,
     markQuestCompleted,
     claimQuestXP,

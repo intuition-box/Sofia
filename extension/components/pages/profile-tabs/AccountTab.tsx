@@ -48,7 +48,7 @@ const AccountTab = () => {
   })
 
   // Quest system hook - provides real quests based on user progress
-  const { activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, markQuestCompleted, claimQuestXP } = useQuestSystem()
+  const { activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP } = useQuestSystem()
 
   // Claim Humanity hook - handles Proof of Human attestation
   const { isHuman, canClaim, isClaiming, claimHumanity } = useClaimHumanity()
@@ -432,10 +432,6 @@ const AccountTab = () => {
           <div className="stat-value">{userStats.loading ? '...' : userStats.signalsCreated}</div>
           <div className="stat-label">Signals</div>
         </div>
-        <div className="stat-item">
-          <div className="stat-value">{userStats.loading ? '...' : userStats.totalMarketCap.toFixed(3)}</div>
-          <div className="stat-label">Total Market Cap</div>
-        </div>
       </div>
 
       {/* Separator */}
@@ -509,10 +505,17 @@ const AccountTab = () => {
                   {/* Claim XP button for completed quests */}
                   {quest.status === 'claimable_xp' && quest.id !== 'proof-of-human' && (
                     <button
-                      className="claim-xp-button"
-                      onClick={() => claimQuestXP(quest.id)}
+                      className={`claim-xp-button ${claimingQuestId === quest.id ? 'claiming' : ''}`}
+                      onClick={async () => {
+                        const result = await claimQuestXP(quest.id)
+                        if (!result.success) {
+                          console.error('Claim failed:', result.error)
+                          alert(`Claim failed: ${result.error}`)
+                        }
+                      }}
+                      disabled={claimingQuestId !== null}
                     >
-                      Claim {quest.xpReward} XP
+                      {claimingQuestId === quest.id ? 'Claiming...' : `Claim ${quest.xpReward} XP`}
                     </button>
                   )}
                   {/* Claim Humanity button for proof-of-human quest (first claim on-chain, then XP) */}
@@ -536,10 +539,17 @@ const AccountTab = () => {
                   {/* Claim XP button for proof-of-human after on-chain claim */}
                   {quest.id === 'proof-of-human' && quest.status === 'claimable_xp' && isHuman && (
                     <button
-                      className="claim-xp-button"
-                      onClick={() => claimQuestXP(quest.id)}
+                      className={`claim-xp-button ${claimingQuestId === quest.id ? 'claiming' : ''}`}
+                      onClick={async () => {
+                        const result = await claimQuestXP(quest.id)
+                        if (!result.success) {
+                          console.error('Claim failed:', result.error)
+                          alert(`Claim failed: ${result.error}`)
+                        }
+                      }}
+                      disabled={claimingQuestId !== null}
                     >
-                      Claim {quest.xpReward} XP
+                      {claimingQuestId === quest.id ? 'Claiming...' : `Claim ${quest.xpReward} XP`}
                     </button>
                   )}
                   {quest.id === 'proof-of-human' && quest.status === 'completed' && (

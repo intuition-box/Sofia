@@ -780,6 +780,17 @@
   transform: translateY(0);
 }
 
+.claim-xp-button.claiming {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.claim-xp-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* ========== BADGES SECTION ========== */
 .badges-section {
   display: flex;
