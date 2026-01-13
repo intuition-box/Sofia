@@ -158,27 +158,130 @@ export const useQuestSystem = (): QuestSystemResult => {
   const [completedQuestIds, setCompletedQuestIds] = useState<Set<string>>(new Set())
   const [claimedQuestIds, setClaimedQuestIds] = useState<Set<string>>(new Set())
   const [claimingQuestId, setClaimingQuestId] = useState<string | null>(null)
+  const [onChainSyncDone, setOnChainSyncDone] = useState(false)
 
   // Get atom creation functions
   const { pinAtomToIPFS, createAtomsFromPinned, ensureProxyApproval } = useCreateAtom()
 
-  // Load completed and claimed quests from storage
+  // Check on-chain for existing quest badges (triples: [wallet] [has_tag] [quest_title])
+  const checkOnChainQuestBadges = async (): Promise<Set<string>> => {
+    if (!walletAddress) return new Set()
+
+    try {
+      console.log('🔍 [QuestSystem] Checking on-chain quest badges for:', walletAddress)
+
+      const { publicClient } = await getClients()
+
+      // Calculate user's atom ID from wallet address
+      const userAtomData = stringToHex(walletAddress)
+      const userAtomId = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS as Address,
+        abi: MultiVaultAbi,
+        functionName: 'calculateAtomId',
+        args: [userAtomData],
+        authorizationList: undefined,
+      }) as string
+
+      console.log('🔍 [QuestSystem] User atom ID:', userAtomId)
+
+      // Query for all triples where subject = user wallet AND predicate = has_tag
+      const query = `
+        query GetQuestBadges($subjectId: String!, $predicateId: String!) {
+          triples(
+            where: {
+              subject_id: { _eq: $subjectId },
+              predicate_id: { _eq: $predicateId }
+            }
+          ) {
+            term_id
+            object {
+              label
+            }
+          }
+        }
+      `
+
+      const data = await intuitionGraphqlClient.request(query, {
+        subjectId: userAtomId,
+        predicateId: CHAIN_PREDICATE_IDS.HAS_TAG
+      }) as { triples: Array<{ term_id: string; object: { label: string } }> }
+
+      if (!data.triples || data.triples.length === 0) {
+        console.log('🔍 [QuestSystem] No on-chain quest badges found')
+        return new Set()
+      }
+
+      // Map quest titles from on-chain to quest IDs
+      const claimedFromChain = new Set<string>()
+      const questTitleToId = new Map<string, string>()
+
+      // Build a map of quest titles to quest IDs
+      QUEST_DEFINITIONS.forEach(quest => {
+        questTitleToId.set(quest.title.toLowerCase(), quest.id)
+      })
+
+      // Check each on-chain badge against our quest definitions
+      for (const triple of data.triples) {
+        const objectLabel = triple.object?.label?.toLowerCase()
+        if (objectLabel) {
+          const questId = questTitleToId.get(objectLabel)
+          if (questId) {
+            console.log(`✅ [QuestSystem] Found on-chain badge for quest: ${questId} (${triple.object.label})`)
+            claimedFromChain.add(questId)
+          }
+        }
+      }
+
+      console.log(`🔍 [QuestSystem] Found ${claimedFromChain.size} on-chain quest badges`)
+      return claimedFromChain
+    } catch (error) {
+      console.error('❌ [QuestSystem] Error checking on-chain badges:', error)
+      return new Set()
+    }
+  }
+
+  // Load completed and claimed quests from storage, then sync with on-chain
   useEffect(() => {
     const loadQuestStates = async () => {
       try {
         const result = await chrome.storage.local.get(['completed_quests', 'claimed_quests'])
+
+        let localClaimed = new Set<string>()
         if (result.completed_quests) {
           setCompletedQuestIds(new Set(result.completed_quests))
         }
         if (result.claimed_quests) {
-          setClaimedQuestIds(new Set(result.claimed_quests))
+          localClaimed = new Set(result.claimed_quests)
+        }
+
+        // Sync with on-chain badges (only if wallet is available)
+        if (walletAddress && !onChainSyncDone) {
+          const onChainClaimed = await checkOnChainQuestBadges()
+
+          // Merge local and on-chain claimed quests
+          const mergedClaimed = new Set([...localClaimed, ...onChainClaimed])
+
+          // If on-chain has badges not in local storage, update storage
+          if (mergedClaimed.size > localClaimed.size) {
+            console.log('📝 [QuestSystem] Syncing on-chain badges to local storage')
+            await chrome.storage.local.set({
+              claimed_quests: Array.from(mergedClaimed),
+              completed_quests: Array.from(new Set([...completedQuestIds, ...onChainClaimed]))
+            })
+          }
+
+          setClaimedQuestIds(mergedClaimed)
+          setCompletedQuestIds(prev => new Set([...prev, ...onChainClaimed]))
+          setOnChainSyncDone(true)
+        } else {
+          setClaimedQuestIds(localClaimed)
         }
       } catch (error) {
         console.error('Error loading quest states:', error)
       }
     }
     loadQuestStates()
-  }, [])
+  }, [walletAddress, onChainSyncDone])
 
   // Save completed quests to storage
   const saveCompletedQuest = async (questId: string) => {
