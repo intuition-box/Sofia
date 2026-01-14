@@ -651,83 +651,60 @@
   border-top: 1px solid var(--color-border-secondary);
 }
 
-/* ========== CLAIM HUMANITY BUTTON ========== */
-.claim-humanity-button {
+/* ========== SOCIAL LINK BUTTON ========== */
+.social-link-button {
   margin-top: 8px;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
   border: none;
   border-radius: 8px;
-  color: #1a1a1a;
+  color: #ffffff;
   font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
 }
 
-.claim-humanity-button:hover:not(:disabled) {
+.social-link-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
 }
 
-.claim-humanity-button:disabled {
+.social-link-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* ========== HUMAN BADGE ========== */
-.human-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 8px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  border-radius: 20px;
-  color: #1a1a1a;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
-}
-
-.human-badge::before {
-  content: '\2713';
-  font-size: 10px;
-}
-
-/* ========== VERIFIED HUMAN AVATAR BORDER ========== */
-.profile-avatar.verified-human {
+/* ========== SOCIAL LINKED AVATAR BORDER ========== */
+.profile-avatar.social-linked {
   border: 3px solid transparent;
   background:
     linear-gradient(#1a1a1a, #1a1a1a) padding-box,
-    linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%) border-box;
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.4), 0 0 24px rgba(255, 165, 0, 0.2);
-  animation: humanGlow 2s ease-in-out infinite alternate;
+    linear-gradient(135deg, #7C3AED 0%, #5B21B6 50%, #7C3AED 100%) border-box;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.4), 0 0 24px rgba(91, 33, 182, 0.2);
+  animation: socialGlow 2s ease-in-out infinite alternate;
 }
 
-@keyframes humanGlow {
+@keyframes socialGlow {
   0% {
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3), 0 0 16px rgba(255, 165, 0, 0.15);
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.3), 0 0 16px rgba(91, 33, 182, 0.15);
   }
   100% {
-    box-shadow: 0 0 16px rgba(255, 215, 0, 0.5), 0 0 32px rgba(255, 165, 0, 0.3);
+    box-shadow: 0 0 16px rgba(124, 58, 237, 0.5), 0 0 32px rgba(91, 33, 182, 0.3);
   }
 }
 
-/* ========== VERIFIED HUMAN BADGE ========== */
-.verified-human-badge {
+/* ========== SOCIAL LINKED BADGE ========== */
+.social-linked-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.15) 100%);
-  border: 1px solid rgba(255, 215, 0, 0.5);
-  color: #FFD700;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(91, 33, 182, 0.15) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.5);
+  color: #A78BFA;
   font-size: 10px;
   font-weight: 700;
   padding: 3px 10px;
@@ -735,22 +712,22 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 4px;
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
-  animation: badgeGlow 2s ease-in-out infinite alternate;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
+  animation: socialBadgeGlow 2s ease-in-out infinite alternate;
 }
 
-.verified-human-badge::before {
+.social-linked-badge::before {
   content: '\2713';
   font-size: 10px;
   font-weight: bold;
 }
 
-@keyframes badgeGlow {
+@keyframes socialBadgeGlow {
   0% {
-    box-shadow: 0 0 4px rgba(255, 215, 0, 0.2);
+    box-shadow: 0 0 4px rgba(124, 58, 237, 0.2);
   }
   100% {
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
   }
 }
 

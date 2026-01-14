@@ -76,7 +76,7 @@ async function verifyTwitchToken(token: string): Promise<boolean> {
   try {
     const clientId = process.env.TWITCH_CLIENT_ID;
     if (!clientId) {
-      console.warn('[HumanAttestorWorkflow] TWITCH_CLIENT_ID not set');
+      console.warn('[SocialVerifierWorkflow] TWITCH_CLIENT_ID not set');
       return false;
     }
     const res = await fetch('https://api.twitch.tv/helix/users', {
@@ -103,14 +103,16 @@ async function verifyTwitterToken(token: string): Promise<boolean> {
 }
 
 /**
- * Human Attestor Workflow - BOT CREATES THE TRIPLE
+ * Social Verifier Workflow - BOT CREATES THE TRIPLE
  *
  * This workflow verifies OAuth tokens AND creates the triple on-chain using the bot's wallet.
  * The bot pays for the TX and keeps the shares.
  *
+ * Triple created: [wallet] [socials_platform] [verified]
+ *
  * Flow:
  * 1. Bot verifies all 5 OAuth tokens against their respective APIs
- * 2. If 5/5 verified:
+ * 2. If 4/5+ verified:
  *    - Check if user atom exists, create if not
  *    - Check if triple already exists
  *    - Bot signs and sends the createTriple TX to MultiVault directly
@@ -119,8 +121,8 @@ async function verifyTwitterToken(token: string): Promise<boolean> {
  */
 
 // Step: Verify OAuth tokens and create triple if verified
-const executeHumanAttestor = createStep({
-  id: 'execute-human-attestor',
+const executeSocialVerifier = createStep({
+  id: 'execute-social-verifier',
   description: 'Verify OAuth tokens and create triple on-chain if all verified',
   inputSchema,
   outputSchema,
@@ -145,7 +147,7 @@ const executeHumanAttestor = createStep({
 
     const { walletAddress, tokens } = inputData;
 
-    console.log(`[HumanAttestorWorkflow] Starting verification for ${walletAddress}`);
+    console.log(`[SocialVerifierWorkflow] Starting verification for ${walletAddress}`);
 
     // Verify all 5 tokens in parallel
     const [youtube, spotify, discord, twitch, twitter] = await Promise.all([
@@ -159,7 +161,7 @@ const executeHumanAttestor = createStep({
     const verified = { youtube, spotify, discord, twitch, twitter };
     const verifiedCount = Object.values(verified).filter(Boolean).length;
 
-    console.log(`[HumanAttestorWorkflow] Verified ${verifiedCount}/5 platforms:`, verified);
+    console.log(`[SocialVerifierWorkflow] Verified ${verifiedCount}/5 platforms:`, verified);
 
     // If not 4/5, return error (temporarily lowered from 5/5 for testing due to Twitter rate limits)
     if (verifiedCount < 4) {
@@ -172,7 +174,7 @@ const executeHumanAttestor = createStep({
     }
 
     // All 5 verified! Now create the triple on-chain
-    console.log(`[HumanAttestorWorkflow] All tokens verified! Creating triple on-chain...`);
+    console.log(`[SocialVerifierWorkflow] All tokens verified! Creating triple on-chain...`);
 
     // Check for BOT_PRIVATE_KEY
     const botPrivateKey = process.env.BOT_PRIVATE_KEY;
@@ -198,7 +200,7 @@ const executeHumanAttestor = createStep({
         transport: http(RPC_URL),
       });
 
-      console.log(`[HumanAttestorWorkflow] Bot address: ${account.address}`);
+      console.log(`[SocialVerifierWorkflow] Bot address: ${account.address}`);
 
       // Calculate user's atom ID from their wallet address
       // Extension uses stringToHex(walletAddress) WITHOUT toLowerCase - case matters for atom ID!
@@ -210,7 +212,7 @@ const executeHumanAttestor = createStep({
         args: [userAtomData],
       });
 
-      console.log(`[HumanAttestorWorkflow] User atom ID: ${userAtomId}`);
+      console.log(`[SocialVerifierWorkflow] User atom ID: ${userAtomId}`);
 
       // Check if user atom exists
       const userAtomExists = await publicClient.readContract({
@@ -220,7 +222,7 @@ const executeHumanAttestor = createStep({
         args: [userAtomId],
       });
 
-      console.log(`[HumanAttestorWorkflow] User atom exists: ${userAtomExists}`);
+      console.log(`[SocialVerifierWorkflow] User atom exists: ${userAtomExists}`);
 
       let atomCreated = false;
 
@@ -242,11 +244,11 @@ const executeHumanAttestor = createStep({
       };
 
       const minDeposit = generalConfig.minDeposit;
-      console.log(`[HumanAttestorWorkflow] minDeposit from contract: ${minDeposit}`);
+      console.log(`[SocialVerifierWorkflow] minDeposit from contract: ${minDeposit}`);
 
       // Create user atom if it doesn't exist
       if (!userAtomExists) {
-        console.log(`[HumanAttestorWorkflow] Creating user atom...`);
+        console.log(`[SocialVerifierWorkflow] Creating user atom...`);
 
         const atomCost = await publicClient.readContract({
           address: MULTIVAULT_ADDRESS,
@@ -257,7 +259,7 @@ const executeHumanAttestor = createStep({
         // Use 2 TRUST deposit to ensure sufficient balance
         const depositAmount = 2000000000000000000n; // 2 TRUST
         const atomTotalCost = atomCost + depositAmount;
-        console.log(`[HumanAttestorWorkflow] Atom cost: ${atomCost}, deposit: ${depositAmount}, total: ${atomTotalCost}`);
+        console.log(`[SocialVerifierWorkflow] Atom cost: ${atomCost}, deposit: ${depositAmount}, total: ${atomTotalCost}`);
 
         // Encode the function call data manually to bypass viem simulation issues
         const atomCallData = encodeFunctionData({
@@ -274,7 +276,7 @@ const executeHumanAttestor = createStep({
           gas: 500000n, // Reasonable gas limit for atom creation
         });
 
-        console.log(`[HumanAttestorWorkflow] Atom TX sent: ${createAtomHash}`);
+        console.log(`[SocialVerifierWorkflow] Atom TX sent: ${createAtomHash}`);
         const atomReceipt = await publicClient.waitForTransactionReceipt({ hash: createAtomHash });
 
         if (atomReceipt.status !== 'success') {
@@ -286,7 +288,7 @@ const executeHumanAttestor = createStep({
           };
         }
 
-        console.log(`[HumanAttestorWorkflow] Atom created in block ${atomReceipt.blockNumber}`);
+        console.log(`[SocialVerifierWorkflow] Atom created in block ${atomReceipt.blockNumber}`);
         atomCreated = true;
       }
 
@@ -303,8 +305,8 @@ const executeHumanAttestor = createStep({
         functionName: 'isTermCreated',
         args: [TERM_ID_VERIFIED],
       });
-      console.log(`[HumanAttestorWorkflow] Predicate (SOCIALS_PLATFORM) exists: ${predicateExists}`);
-      console.log(`[HumanAttestorWorkflow] Object (VERIFIED) exists: ${objectExists}`);
+      console.log(`[SocialVerifierWorkflow] Predicate (SOCIALS_PLATFORM) exists: ${predicateExists}`);
+      console.log(`[SocialVerifierWorkflow] Object (VERIFIED) exists: ${objectExists}`);
 
       if (!predicateExists || !objectExists) {
         return {
@@ -324,7 +326,7 @@ const executeHumanAttestor = createStep({
         args: [userAtomId, TERM_ID_SOCIALS_PLATFORM, TERM_ID_VERIFIED],
       });
 
-      console.log(`[HumanAttestorWorkflow] Triple ID would be: ${tripleId}`);
+      console.log(`[SocialVerifierWorkflow] Triple ID would be: ${tripleId}`);
 
       const tripleExists = await publicClient.readContract({
         address: MULTIVAULT_ADDRESS,
@@ -334,7 +336,7 @@ const executeHumanAttestor = createStep({
       });
 
       if (tripleExists) {
-        console.log(`[HumanAttestorWorkflow] Triple already exists: ${tripleId}`);
+        console.log(`[SocialVerifierWorkflow] Triple already exists: ${tripleId}`);
         return {
           success: true,
           verified,
@@ -345,7 +347,7 @@ const executeHumanAttestor = createStep({
       }
 
       // Create the triple [user] [socials_platform] [verified]
-      console.log(`[HumanAttestorWorkflow] Creating triple...`);
+      console.log(`[SocialVerifierWorkflow] Creating triple...`);
 
       const tripleCost = await publicClient.readContract({
         address: MULTIVAULT_ADDRESS,
@@ -355,7 +357,7 @@ const executeHumanAttestor = createStep({
 
       // Check bot balance
       const botBalance = await publicClient.getBalance({ address: account.address });
-      console.log(`[HumanAttestorWorkflow] Bot balance: ${botBalance} wei (${Number(botBalance) / 1e18} ETH)`);
+      console.log(`[SocialVerifierWorkflow] Bot balance: ${botBalance} wei (${Number(botBalance) / 1e18} ETH)`);
 
       // IMPORTANT: MultiVault v2 contract logic:
       // 1. _validatePayment(assets) checks: msg.value == sum(assets[])
@@ -378,8 +380,8 @@ const executeHumanAttestor = createStep({
 
       // msg.value must equal sum(assets[])
       const tripleTotalCost = tripleDepositAmount;
-      console.log(`[HumanAttestorWorkflow] Triple cost: ${tripleCost}, extra deposit: ${extraDeposit}, total: ${tripleTotalCost}`);
-      console.log(`[HumanAttestorWorkflow] Bot has enough balance: ${botBalance >= tripleTotalCost}`);
+      console.log(`[SocialVerifierWorkflow] Triple cost: ${tripleCost}, extra deposit: ${extraDeposit}, total: ${tripleTotalCost}`);
+      console.log(`[SocialVerifierWorkflow] Bot has enough balance: ${botBalance >= tripleTotalCost}`);
 
       // Ensure IDs are properly typed as bytes32 (hex strings with 0x prefix)
       const subjectId = userAtomId as `0x${string}`;
@@ -387,7 +389,7 @@ const executeHumanAttestor = createStep({
       const objectId = TERM_ID_VERIFIED as `0x${string}`;
 
       // Log the args for debugging
-      console.log(`[HumanAttestorWorkflow] createTriples args:`);
+      console.log(`[SocialVerifierWorkflow] createTriples args:`);
       console.log(`  - subjectIds: [${subjectId}]`);
       console.log(`  - predicateIds: [${predicateId}]`);
       console.log(`  - objectIds: [${objectId}]`);
@@ -412,7 +414,7 @@ const executeHumanAttestor = createStep({
         functionName: 'isAtom',
         args: [objectId],
       });
-      console.log(`[HumanAttestorWorkflow] Subject isAtom: ${subjectIsAtom}, Predicate isAtom: ${predicateIsAtom}, Object isAtom: ${objectIsAtom}`);
+      console.log(`[SocialVerifierWorkflow] Subject isAtom: ${subjectIsAtom}, Predicate isAtom: ${predicateIsAtom}, Object isAtom: ${objectIsAtom}`);
 
       if (!subjectIsAtom || !predicateIsAtom || !objectIsAtom) {
         return {
@@ -436,7 +438,7 @@ const executeHumanAttestor = createStep({
         ],
       });
 
-      console.log(`[HumanAttestorWorkflow] Encoded calldata: ${tripleCallData.slice(0, 100)}...`);
+      console.log(`[SocialVerifierWorkflow] Encoded calldata: ${tripleCallData.slice(0, 100)}...`);
 
       // Try to estimate gas first
       try {
@@ -446,9 +448,9 @@ const executeHumanAttestor = createStep({
           data: tripleCallData,
           value: tripleTotalCost,
         });
-        console.log(`[HumanAttestorWorkflow] Gas estimate: ${gasEstimate}`);
+        console.log(`[SocialVerifierWorkflow] Gas estimate: ${gasEstimate}`);
       } catch (estimateError) {
-        console.error(`[HumanAttestorWorkflow] Gas estimation failed:`, estimateError);
+        console.error(`[SocialVerifierWorkflow] Gas estimation failed:`, estimateError);
         // Continue anyway since we'll use manual gas limit
       }
 
@@ -460,17 +462,17 @@ const executeHumanAttestor = createStep({
         gas: 800000n, // Increased gas limit for triple creation (was failing at 500k)
       });
 
-      console.log(`[HumanAttestorWorkflow] Triple TX sent: ${txHash}`);
+      console.log(`[SocialVerifierWorkflow] Triple TX sent: ${txHash}`);
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
 
-      console.log(`[HumanAttestorWorkflow] TX receipt status: ${receipt.status}`);
-      console.log(`[HumanAttestorWorkflow] Gas used: ${receipt.gasUsed}`);
-      console.log(`[HumanAttestorWorkflow] Block number: ${receipt.blockNumber}`);
+      console.log(`[SocialVerifierWorkflow] TX receipt status: ${receipt.status}`);
+      console.log(`[SocialVerifierWorkflow] Gas used: ${receipt.gasUsed}`);
+      console.log(`[SocialVerifierWorkflow] Block number: ${receipt.blockNumber}`);
 
       if (receipt.status !== 'success') {
         // Try to get more details about the failure
-        console.error(`[HumanAttestorWorkflow] TX failed! Receipt:`, JSON.stringify(receipt, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
+        console.error(`[SocialVerifierWorkflow] TX failed! Receipt:`, JSON.stringify(receipt, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
 
         // Check if triple was created by someone else in the meantime
         const tripleExistsNow = await publicClient.readContract({
@@ -481,7 +483,7 @@ const executeHumanAttestor = createStep({
         });
 
         if (tripleExistsNow) {
-          console.log(`[HumanAttestorWorkflow] Triple was created by someone else! Returning success.`);
+          console.log(`[SocialVerifierWorkflow] Triple was created by someone else! Returning success.`);
           return {
             success: true,
             verified,
@@ -507,7 +509,7 @@ const executeHumanAttestor = createStep({
             account: account.address,
           });
         } catch (simError: unknown) {
-          console.error(`[HumanAttestorWorkflow] Simulation error:`, simError);
+          console.error(`[SocialVerifierWorkflow] Simulation error:`, simError);
           const errorMessage = simError instanceof Error ? simError.message : String(simError);
           return {
             success: false,
@@ -527,7 +529,7 @@ const executeHumanAttestor = createStep({
         };
       }
 
-      console.log(`[HumanAttestorWorkflow] Triple created in block ${receipt.blockNumber}`);
+      console.log(`[SocialVerifierWorkflow] Triple created in block ${receipt.blockNumber}`);
 
       return {
         success: true,
@@ -538,7 +540,7 @@ const executeHumanAttestor = createStep({
         atomCreated,
       };
     } catch (error) {
-      console.error('[HumanAttestorWorkflow] Blockchain error:', error);
+      console.error('[SocialVerifierWorkflow] Blockchain error:', error);
       return {
         success: false,
         verified,
@@ -550,12 +552,12 @@ const executeHumanAttestor = createStep({
 });
 
 // Create the workflow
-const humanAttestorWorkflow = createWorkflow({
-  id: 'human-attestor-workflow',
+const socialVerifierWorkflow = createWorkflow({
+  id: 'social-verifier-workflow',
   inputSchema,
   outputSchema,
-}).then(executeHumanAttestor);
+}).then(executeSocialVerifier);
 
-humanAttestorWorkflow.commit();
+socialVerifierWorkflow.commit();
 
-export { humanAttestorWorkflow };
+export { socialVerifierWorkflow };

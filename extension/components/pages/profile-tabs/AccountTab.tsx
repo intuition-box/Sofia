@@ -14,7 +14,7 @@ import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../../../lib/config/constants'
 import Avatar from '../../ui/Avatar'
 import { useQuestSystem } from '../../../hooks/useQuestSystem'
-import { useClaimHumanity } from '../../../hooks/useClaimHumanity'
+import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
 import '../../styles/AccountTab.css'
 
 const AccountTab = () => {
@@ -50,8 +50,8 @@ const AccountTab = () => {
   // Quest system hook - provides real quests based on user progress
   const { activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP } = useQuestSystem()
 
-  // Claim Humanity hook - handles Proof of Human attestation
-  const { isHuman, canClaim, isClaiming, claimHumanity } = useClaimHumanity()
+  // Social Verifier hook - handles Social Linked attestation
+  const { isSocialVerified, canVerify, isVerifying, verifySocials } = useSocialVerifier()
 
   // Load user avatar and label from GraphQL
   useEffect(() => {
@@ -332,7 +332,7 @@ const AccountTab = () => {
         <Avatar
           imgSrc={displayAvatar}
           name={displayLabel || walletAddress}
-          avatarClassName={`profile-avatar ${isHuman ? 'verified-human' : ''}`}
+          avatarClassName={`profile-avatar ${isSocialVerified ? 'social-linked' : ''}`}
           size="large"
         />
         <div className="profile-info">
@@ -345,9 +345,9 @@ const AccountTab = () => {
               {walletAddress.toLowerCase().slice(0, 6)}...{walletAddress.toLowerCase().slice(-4)}
             </p>
           )}
-          {/* Verified Human badge */}
-          {isHuman && (
-            <span className="verified-human-badge">Verified Human</span>
+          {/* Social Linked badge */}
+          {isSocialVerified && (
+            <span className="social-linked-badge">Social Linked</span>
           )}
         </div>
       </div>
@@ -503,7 +503,7 @@ const AccountTab = () => {
                      quest.status === 'completed' ? 'Claimed' : 'Locked'} • +{quest.xpReward} XP
                   </span>
                   {/* Claim XP button for completed quests */}
-                  {quest.status === 'claimable_xp' && quest.id !== 'proof-of-human' && (
+                  {quest.status === 'claimable_xp' && quest.id !== 'social-linked' && (
                     <button
                       className={`claim-xp-button ${claimingQuestId === quest.id ? 'claiming' : ''}`}
                       onClick={async () => {
@@ -518,26 +518,26 @@ const AccountTab = () => {
                       {claimingQuestId === quest.id ? 'Claiming...' : `Claim ${quest.xpReward} XP`}
                     </button>
                   )}
-                  {/* Claim Humanity button for proof-of-human quest (first claim on-chain, then XP) */}
-                  {quest.id === 'proof-of-human' && quest.status === 'claimable_xp' && !isHuman && canClaim && (
+                  {/* Social Linked button for social-linked quest (first verify on-chain, then XP) */}
+                  {quest.id === 'social-linked' && quest.status === 'claimable_xp' && !isSocialVerified && canVerify && (
                     <button
-                      className="claim-humanity-button"
+                      className="social-link-button"
                       onClick={async () => {
-                        const result = await claimHumanity()
+                        const result = await verifySocials()
                         if (result.success) {
-                          markQuestCompleted('proof-of-human')
+                          markQuestCompleted('social-linked')
                         } else {
-                          console.error('Claim failed:', result.error)
-                          alert(`Claim failed: ${result.error}`)
+                          console.error('Verification failed:', result.error)
+                          alert(`Verification failed: ${result.error}`)
                         }
                       }}
-                      disabled={isClaiming}
+                      disabled={isVerifying}
                     >
-                      {isClaiming ? 'Claiming...' : 'Claim Humanity'}
+                      {isVerifying ? 'Verifying...' : 'Verify Socials'}
                     </button>
                   )}
-                  {/* Claim XP button for proof-of-human after on-chain claim */}
-                  {quest.id === 'proof-of-human' && quest.status === 'claimable_xp' && isHuman && (
+                  {/* Claim XP button for social-linked after on-chain verification */}
+                  {quest.id === 'social-linked' && quest.status === 'claimable_xp' && isSocialVerified && (
                     <button
                       className={`claim-xp-button ${claimingQuestId === quest.id ? 'claiming' : ''}`}
                       onClick={async () => {
@@ -552,8 +552,8 @@ const AccountTab = () => {
                       {claimingQuestId === quest.id ? 'Claiming...' : `Claim ${quest.xpReward} XP`}
                     </button>
                   )}
-                  {quest.id === 'proof-of-human' && quest.status === 'completed' && (
-                    <span className="human-badge">Verified Human</span>
+                  {quest.id === 'social-linked' && quest.status === 'completed' && (
+                    <span className="social-linked-badge">Social Linked</span>
                   )}
                 </div>
               </div>

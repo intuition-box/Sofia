@@ -1,10 +1,12 @@
 /**
- * useClaimHumanity Hook
- * Handles the "Proof of Human" on-chain attestation
+ * useSocialVerifier Hook
+ * Handles the "Social Linked" on-chain attestation
+ *
+ * Triple created: [wallet] [socials_platform] [verified]
  *
  * FLOW:
  * 1. Bot verifies the 5 OAuth tokens via Mastra API
- * 2. If all 5 verified, bot creates the triple on-chain (bot pays, bot keeps shares)
+ * 2. If 4/5+ verified, bot creates the triple on-chain (bot pays, bot keeps shares)
  * 3. Extension receives txHash and stores attestation locally
  */
 
@@ -18,14 +20,14 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { stringToHex } from 'viem'
 import type { Address } from '../types/viem'
 
-// Storage key for human attestation
-const HUMAN_ATTESTATION_KEY = 'human_attestation'
+// Storage key for social attestation
+const SOCIAL_ATTESTATION_KEY = 'social_attestation'
 
-// Pre-existing Term IDs for the triple [User] [is_human] [verified]
-const TERM_ID_IS_HUMAN = '0x004614d581d091be4b93f4a56321f00b7e187190011b6683b955dcd43a611248' as Address
+// Pre-existing Term IDs for the triple [User] [socials_platform] [verified]
+const TERM_ID_SOCIALS_PLATFORM = '0x004614d581d091be4b93f4a56321f00b7e187190011b6683b955dcd43a611248' as Address
 const TERM_ID_VERIFIED = '0xcdffac0eb431ba084e18d5af7c55b4414c153f5c0df693c2d1454079186f975c' as Address
 
-export interface HumanAttestation {
+export interface SocialAttestation {
   txHash: string
   claimedAt: number
   walletAddress: string
@@ -40,26 +42,26 @@ export interface VerificationStatus {
   twitter: boolean
 }
 
-export interface ClaimHumanityResult {
-  isHuman: boolean
-  attestation: HumanAttestation | null
-  canClaim: boolean
-  isClaiming: boolean
-  claimHumanity: () => Promise<{ success: boolean; txHash?: string; error?: string }>
+export interface SocialVerifierResult {
+  isSocialVerified: boolean
+  attestation: SocialAttestation | null
+  canVerify: boolean
+  isVerifying: boolean
+  verifySocials: () => Promise<{ success: boolean; txHash?: string; error?: string }>
   verificationStatus: VerificationStatus | null
 }
 
-export const useClaimHumanity = (): ClaimHumanityResult => {
+export const useSocialVerifier = (): SocialVerifierResult => {
   const { walletAddress } = useWalletFromStorage()
 
-  const [isHuman, setIsHuman] = useState(false)
-  const [attestation, setAttestation] = useState<HumanAttestation | null>(null)
-  const [canClaim, setCanClaim] = useState(false)
-  const [isClaiming, setIsClaiming] = useState(false)
+  const [isSocialVerified, setIsSocialVerified] = useState(false)
+  const [attestation, setAttestation] = useState<SocialAttestation | null>(null)
+  const [canVerify, setCanVerify] = useState(false)
+  const [isVerifying, setIsVerifying] = useState(false)
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | null>(null)
 
   // Check if user has all 5 OAuth connections locally
-  const checkCanClaim = useCallback(async () => {
+  const checkCanVerify = useCallback(async () => {
     const result = await chrome.storage.local.get([
       'oauth_token_youtube',
       'oauth_token_spotify',
@@ -79,16 +81,16 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
     setVerificationStatus(status)
 
     const connectedCount = Object.values(status).filter(Boolean).length
-    setCanClaim(connectedCount >= 5)
+    setCanVerify(connectedCount >= 5)
     return connectedCount >= 5
   }, [])
 
-  // Check on-chain if the triple [wallet] [is_human] [verified] exists
+  // Check on-chain if the triple [wallet] [socials_platform] [verified] exists
   const checkOnChainAttestation = useCallback(async (): Promise<boolean> => {
     if (!walletAddress) return false
 
     try {
-      console.log('🔍 [ClaimHumanity] Checking on-chain attestation for:', walletAddress)
+      console.log('🔍 [SocialVerifier] Checking on-chain attestation for:', walletAddress)
 
       // Calculate the atom ID for this wallet address
       const userAtomData = stringToHex(walletAddress.toLowerCase())
@@ -101,11 +103,11 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
         authorizationList: undefined,
       }) as string
 
-      console.log('�� [ClaimHumanity] User atom ID calculated:', userAtomId)
+      console.log('🔢 [SocialVerifier] User atom ID calculated:', userAtomId)
 
       // Query for triples where subject_id matches the user's atom
       const query = `
-        query CheckHumanAttestation($subjectId: String!, $predicateId: String!, $objectId: String!) {
+        query CheckSocialAttestation($subjectId: String!, $predicateId: String!, $objectId: String!) {
           triples(
             where: {
               subject_id: { _eq: $subjectId },
@@ -122,26 +124,26 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
 
       const data = await intuitionGraphqlClient.request(query, {
         subjectId: userAtomId,
-        predicateId: TERM_ID_IS_HUMAN,
+        predicateId: TERM_ID_SOCIALS_PLATFORM,
         objectId: TERM_ID_VERIFIED
       })
 
       if (data.triples && data.triples.length > 0) {
         const triple = data.triples[0]
-        console.log('✅ [ClaimHumanity] Found on-chain attestation:', triple)
+        console.log('✅ [SocialVerifier] Found on-chain attestation:', triple)
 
-        const attestation: HumanAttestation = {
+        const attestation: SocialAttestation = {
           txHash: triple.term_id || '',
           claimedAt: triple.created_at ? new Date(triple.created_at).getTime() : Date.now(),
           walletAddress
         }
-        await chrome.storage.local.set({ [HUMAN_ATTESTATION_KEY]: attestation })
+        await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: attestation })
         setAttestation(attestation)
-        setIsHuman(true)
+        setIsSocialVerified(true)
         return true
       }
 
-      console.log('❌ [ClaimHumanity] No on-chain attestation found')
+      console.log('❌ [SocialVerifier] No on-chain attestation found')
       return false
     } catch (error) {
       console.error('Error checking on-chain attestation:', error)
@@ -154,12 +156,12 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
     if (!walletAddress) return
 
     try {
-      const result = await chrome.storage.local.get(HUMAN_ATTESTATION_KEY)
-      const stored = result[HUMAN_ATTESTATION_KEY] as HumanAttestation | undefined
+      const result = await chrome.storage.local.get(SOCIAL_ATTESTATION_KEY)
+      const stored = result[SOCIAL_ATTESTATION_KEY] as SocialAttestation | undefined
 
       if (stored && stored.walletAddress.toLowerCase() === walletAddress.toLowerCase()) {
         setAttestation(stored)
-        setIsHuman(true)
+        setIsSocialVerified(true)
         return true
       }
 
@@ -167,29 +169,29 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
       const onChainResult = await checkOnChainAttestation()
       return onChainResult
     } catch (error) {
-      console.error('Error loading human attestation:', error)
+      console.error('Error loading social attestation:', error)
     }
     return false
   }, [walletAddress, checkOnChainAttestation])
 
-  // Claim humanity - Bot verifies tokens AND creates the triple
-  const claimHumanity = useCallback(async (): Promise<{ success: boolean; txHash?: string; error?: string }> => {
+  // Verify socials - Bot verifies tokens AND creates the triple
+  const verifySocials = useCallback(async (): Promise<{ success: boolean; txHash?: string; error?: string }> => {
     if (!walletAddress) {
       return { success: false, error: 'No wallet connected' }
     }
 
-    if (!canClaim) {
+    if (!canVerify) {
       return { success: false, error: 'Must connect all 5 platforms first' }
     }
 
-    if (isHuman) {
-      return { success: false, error: 'Already claimed humanity' }
+    if (isSocialVerified) {
+      return { success: false, error: 'Already verified socials' }
     }
 
-    setIsClaiming(true)
+    setIsVerifying(true)
 
     try {
-      console.log('🧬 [ClaimHumanity] Starting claim...')
+      console.log('🧬 [SocialVerifier] Starting verification...')
 
       // Get OAuth tokens
       const tokenResult = await chrome.storage.local.get([
@@ -201,7 +203,7 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
       ])
 
       // Call Mastra API - bot will verify AND create the triple
-      console.log('🔍 [ClaimHumanity] Calling Mastra workflow (bot will create triple)...')
+      console.log('🔍 [SocialVerifier] Calling Mastra workflow (bot will create triple)...')
 
       const requestData = {
         walletAddress,
@@ -214,7 +216,7 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
         },
       }
 
-      const response = await fetch(`${MASTRA_API_URL}/api/workflows/humanAttestorWorkflow/start-async`, {
+      const response = await fetch(`${MASTRA_API_URL}/api/workflows/social-verifier-workflow/start-async`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inputData: requestData }),
@@ -227,12 +229,12 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
 
       const result = await response.json()
 
-      console.log('📦 [ClaimHumanity] Workflow result:', JSON.stringify(result).substring(0, 500))
+      console.log('📦 [SocialVerifier] Workflow result:', JSON.stringify(result).substring(0, 500))
 
       // Extract data from workflow result
       const data = result?.result
-        || result?.steps?.['execute-human-attestor']?.output
-        || result?.['execute-human-attestor']
+        || result?.steps?.['execute-social-verifier']?.output
+        || result?.['execute-social-verifier']
         || result
 
       // Update verification status from API response
@@ -242,7 +244,7 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
 
       // Check if verification failed
       if (!data.success) {
-        console.error('❌ [ClaimHumanity] Workflow failed:', data)
+        console.error('❌ [SocialVerifier] Workflow failed:', data)
         return {
           success: false,
           error: data.error || `Only ${data.verifiedCount}/5 platforms verified`,
@@ -251,55 +253,55 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
 
       // Check if triple already existed
       if (data.tripleAlreadyExists) {
-        console.log('✅ [ClaimHumanity] Triple already exists, attestation valid')
+        console.log('✅ [SocialVerifier] Triple already exists, attestation valid')
 
-        const attestation: HumanAttestation = {
+        const attestation: SocialAttestation = {
           txHash: 'existing',
           claimedAt: Date.now(),
           walletAddress,
         }
-        await chrome.storage.local.set({ [HUMAN_ATTESTATION_KEY]: attestation })
+        await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: attestation })
         setAttestation(attestation)
-        setIsHuman(true)
+        setIsSocialVerified(true)
 
         return { success: true }
       }
 
       // Success - bot created the triple
       if (data.txHash) {
-        console.log('✅ [ClaimHumanity] Triple created by bot! TX:', data.txHash)
+        console.log('✅ [SocialVerifier] Triple created by bot! TX:', data.txHash)
 
-        const newAttestation: HumanAttestation = {
+        const newAttestation: SocialAttestation = {
           txHash: data.txHash,
           claimedAt: Date.now(),
           walletAddress,
           blockNumber: data.blockNumber,
         }
 
-        await chrome.storage.local.set({ [HUMAN_ATTESTATION_KEY]: newAttestation })
+        await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: newAttestation })
         setAttestation(newAttestation)
-        setIsHuman(true)
+        setIsSocialVerified(true)
 
         return { success: true, txHash: data.txHash }
       }
 
       return { success: false, error: 'No txHash returned from workflow' }
     } catch (error) {
-      console.error('❌ [ClaimHumanity] Claim failed:', error)
+      console.error('❌ [SocialVerifier] Verification failed:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       }
     } finally {
-      setIsClaiming(false)
+      setIsVerifying(false)
     }
-  }, [walletAddress, canClaim, isHuman])
+  }, [walletAddress, canVerify, isSocialVerified])
 
   // Load on mount
   useEffect(() => {
     loadAttestation()
-    checkCanClaim()
-  }, [loadAttestation, checkCanClaim])
+    checkCanVerify()
+  }, [loadAttestation, checkCanVerify])
 
   // Listen for OAuth token changes
   useEffect(() => {
@@ -313,20 +315,20 @@ export const useClaimHumanity = (): ClaimHumanityResult => {
       ]
 
       if (oauthKeys.some(key => key in changes)) {
-        checkCanClaim()
+        checkCanVerify()
       }
     }
 
     chrome.storage.onChanged.addListener(handleStorageChange)
     return () => chrome.storage.onChanged.removeListener(handleStorageChange)
-  }, [checkCanClaim])
+  }, [checkCanVerify])
 
   return {
-    isHuman,
+    isSocialVerified,
     attestation,
-    canClaim,
-    isClaiming,
-    claimHumanity,
+    canVerify,
+    isVerifying,
+    verifySocials,
     verificationStatus,
   }
 }

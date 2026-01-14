@@ -9,18 +9,20 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { getAddress, stringToHex } from 'viem'
 import { useBookmarks } from './useBookmarks'
-import { useClaimHumanity } from './useClaimHumanity'
 import { useCreateAtom } from './useCreateAtom'
 import { getClients } from '../lib/clients/viemClients'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { BlockchainService } from '../lib/services/blockchainService'
-import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS } from '../lib/config/chainConfig'
+import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, API_CONFIG } from '../lib/config/chainConfig'
 import type { Address } from '../types/viem'
 
 // Constants for on-chain operations
 const MIN_DEPOSIT = 10000000000000000n // 0.01 TRUST
 const CURVE_ID = 1n
+
+// Social platform type
+type SocialPlatform = 'discord' | 'youtube' | 'spotify' | 'twitch' | 'twitter'
 
 // Quest definition interface
 export interface Quest {
@@ -32,10 +34,11 @@ export interface Quest {
   status: 'locked' | 'active' | 'completed' | 'claimable_xp'
   statusColor: string
   xpReward: number
-  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social'
+  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social' | 'social-link'
   milestone?: number // For milestone-based quests
   claimable?: boolean // For quests that require on-chain claim (like Proof of Human)
   recurringType?: 'daily' | 'weekly' // For recurring quests
+  platform?: SocialPlatform // For social-link quests
 }
 
 // User progress data
@@ -51,6 +54,12 @@ export interface UserProgress {
   hasSignalToday: boolean
   pulseLaunches: number
   weeklyPulseUses: number
+  // Individual social platform connections
+  discordConnected: boolean
+  youtubeConnected: boolean
+  spotifyConnected: boolean
+  twitchConnected: boolean
+  twitterConnected: boolean
 }
 
 // Quest system result
@@ -95,8 +104,16 @@ const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
   { id: 'signal-1', title: 'First Signal', description: 'Create your very first signal', total: 1, xpReward: 50, type: 'signal', milestone: 1 },
   { id: 'bookmark-list-1', title: 'Organizer', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
   { id: 'bookmark-signal-1', title: 'Bookworm', description: 'Bookmark your first signal', total: 1, xpReward: 20, type: 'bookmark', milestone: 1 },
-  { id: 'oauth-all', title: 'Connected', description: 'Connect YouTube, Spotify, and Twitch', total: 3, xpReward: 100, type: 'oauth', milestone: 3 },
-  { id: 'proof-of-human', title: 'Verified Human', description: 'Connect all 5 platforms and claim on-chain', total: 5, xpReward: 500, type: 'oauth', milestone: 5, claimable: true },
+
+  // Social Link quests - one per platform (replaces oauth-all)
+  { id: 'link-discord', title: 'Discord Linked', description: 'Link your Discord account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'discord' },
+  { id: 'link-youtube', title: 'YouTube Linked', description: 'Link your YouTube account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'youtube' },
+  { id: 'link-spotify', title: 'Spotify Linked', description: 'Link your Spotify account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'spotify' },
+  { id: 'link-twitch', title: 'Twitch Linked', description: 'Link your Twitch account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'twitch' },
+  { id: 'link-twitter', title: 'Twitter Linked', description: 'Link your Twitter account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'twitter' },
+
+  // Social Linked - bonus quest when all 5 platforms are linked
+  { id: 'social-linked', title: 'Social Linked', description: 'Link all 5 social platforms on-chain', total: 5, xpReward: 500, type: 'oauth', milestone: 5, claimable: true },
 
   // Progressive signal milestones (increasing difficulty and XP)
   { id: 'signal-10', title: 'Signal Rookie', description: 'Create 10 signals', total: 10, xpReward: 100, type: 'signal', milestone: 10 },
@@ -139,7 +156,6 @@ const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
 export const useQuestSystem = (): QuestSystemResult => {
   const { walletAddress } = useWalletFromStorage()
   const { lists, triplets } = useBookmarks()
-  const { isHuman } = useClaimHumanity()
 
   const [userProgress, setUserProgress] = useState<UserProgress>({
     signalsCreated: 0,
@@ -152,6 +168,11 @@ export const useQuestSystem = (): QuestSystemResult => {
     hasSignalToday: false,
     pulseLaunches: 0,
     weeklyPulseUses: 0,
+    discordConnected: false,
+    youtubeConnected: false,
+    spotifyConnected: false,
+    twitchConnected: false,
+    twitterConnected: false,
   })
 
   const [loading, setLoading] = useState(true)
@@ -164,6 +185,7 @@ export const useQuestSystem = (): QuestSystemResult => {
   const { pinAtomToIPFS, createAtomsFromPinned, ensureProxyApproval } = useCreateAtom()
 
   // Check on-chain for existing quest badges (triples: [wallet] [has_tag] [quest_title])
+  // AND check for social links (triples: [wallet] [verified] [platform:userId])
   const checkOnChainQuestBadges = async (): Promise<Set<string>> => {
     if (!walletAddress) return new Set()
 
@@ -184,13 +206,24 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       console.log('🔍 [QuestSystem] User atom ID:', userAtomId)
 
-      // Query for all triples where subject = user wallet AND predicate = has_tag
+      // Query for all triples where subject = user wallet (for both has_tag badges AND verified social links)
       const query = `
-        query GetQuestBadges($subjectId: String!, $predicateId: String!) {
-          triples(
+        query GetQuestBadgesAndSocialLinks($subjectId: String!, $hasTagPredicateId: String!, $verifiedPredicateId: String!) {
+          badges: triples(
             where: {
               subject_id: { _eq: $subjectId },
-              predicate_id: { _eq: $predicateId }
+              predicate_id: { _eq: $hasTagPredicateId }
+            }
+          ) {
+            term_id
+            object {
+              label
+            }
+          }
+          socialLinks: triples(
+            where: {
+              subject_id: { _eq: $subjectId },
+              predicate_id: { _eq: $verifiedPredicateId }
             }
           ) {
             term_id
@@ -201,17 +234,18 @@ export const useQuestSystem = (): QuestSystemResult => {
         }
       `
 
+      // Use the verified predicate ID for social links
+      const TERM_ID_VERIFIED = '0xcdffac0eb431ba084e18d5af7c55b4414c153f5c0df693c2d1454079186f975c'
+
       const data = await intuitionGraphqlClient.request(query, {
         subjectId: userAtomId,
-        predicateId: CHAIN_PREDICATE_IDS.HAS_TAG
-      }) as { triples: Array<{ term_id: string; object: { label: string } }> }
-
-      if (!data.triples || data.triples.length === 0) {
-        console.log('🔍 [QuestSystem] No on-chain quest badges found')
-        return new Set()
+        hasTagPredicateId: CHAIN_PREDICATE_IDS.HAS_TAG,
+        verifiedPredicateId: TERM_ID_VERIFIED
+      }) as {
+        badges: Array<{ term_id: string; object: { label: string } }>
+        socialLinks: Array<{ term_id: string; object: { label: string } }>
       }
 
-      // Map quest titles from on-chain to quest IDs
       const claimedFromChain = new Set<string>()
       const questTitleToId = new Map<string, string>()
 
@@ -220,19 +254,46 @@ export const useQuestSystem = (): QuestSystemResult => {
         questTitleToId.set(quest.title.toLowerCase(), quest.id)
       })
 
-      // Check each on-chain badge against our quest definitions
-      for (const triple of data.triples) {
-        const objectLabel = triple.object?.label?.toLowerCase()
-        if (objectLabel) {
-          const questId = questTitleToId.get(objectLabel)
-          if (questId) {
-            console.log(`✅ [QuestSystem] Found on-chain badge for quest: ${questId} (${triple.object.label})`)
-            claimedFromChain.add(questId)
+      // Check quest badges (has_tag triples)
+      if (data.badges && data.badges.length > 0) {
+        for (const triple of data.badges) {
+          const objectLabel = triple.object?.label?.toLowerCase()
+          if (objectLabel) {
+            const questId = questTitleToId.get(objectLabel)
+            if (questId) {
+              console.log(`✅ [QuestSystem] Found on-chain badge for quest: ${questId} (${triple.object.label})`)
+              claimedFromChain.add(questId)
+            }
           }
         }
       }
 
-      console.log(`🔍 [QuestSystem] Found ${claimedFromChain.size} on-chain quest badges`)
+      // Check social links (verified triples) - format: "platform:userId"
+      if (data.socialLinks && data.socialLinks.length > 0) {
+        const platformToQuestId: Record<string, string> = {
+          'discord': 'link-discord',
+          'youtube': 'link-youtube',
+          'spotify': 'link-spotify',
+          'twitch': 'link-twitch',
+          'twitter': 'link-twitter',
+        }
+
+        for (const triple of data.socialLinks) {
+          const objectLabel = triple.object?.label?.toLowerCase()
+          if (objectLabel) {
+            // Check if the label starts with a platform name (e.g., "discord:123456")
+            for (const [platform, questId] of Object.entries(platformToQuestId)) {
+              if (objectLabel.startsWith(`${platform}:`)) {
+                console.log(`✅ [QuestSystem] Found on-chain social link for: ${questId} (${triple.object.label})`)
+                claimedFromChain.add(questId)
+                break
+              }
+            }
+          }
+        }
+      }
+
+      console.log(`🔍 [QuestSystem] Found ${claimedFromChain.size} on-chain quest badges/social links`)
       return claimedFromChain
     } catch (error) {
       console.error('❌ [QuestSystem] Error checking on-chain badges:', error)
@@ -299,6 +360,38 @@ export const useQuestSystem = (): QuestSystemResult => {
     }
   }
 
+  // Call Mastra API to link social account on-chain
+  const callLinkSocialWorkflow = async (platform: SocialPlatform, oauthToken: string): Promise<{ success: boolean; txHash?: string; error?: string }> => {
+    const mastraUrl = (API_CONFIG as any).MASTRA_API_URL || 'http://localhost:4111'
+
+    console.log(`🔗 [QuestSystem] Calling link-social-workflow for ${platform}...`)
+
+    const response = await fetch(`${mastraUrl}/api/workflows/link-social-workflow/start-async`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        inputData: {
+          walletAddress,
+          platform,
+          oauthToken
+        }
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Mastra API error: ${response.status}`)
+    }
+
+    const result = await response.json()
+
+    if (result.result?.success) {
+      console.log(`✅ [QuestSystem] Social link created on-chain: ${result.result.txHash}`)
+      return { success: true, txHash: result.result.txHash }
+    } else {
+      throw new Error(result.result?.error || 'Link social workflow failed')
+    }
+  }
+
   // Claim XP for a quest - creates on-chain badge triple
   const claimQuestXP = async (questId: string): Promise<{ success: boolean; txHash?: string; error?: string }> => {
     if (!walletAddress) {
@@ -316,6 +409,38 @@ export const useQuestSystem = (): QuestSystemResult => {
     try {
       console.log('🏆 [QuestSystem] Creating on-chain badge for quest:', quest.title)
 
+      // Special handling for social-link quests
+      if (quest.type === 'social-link' && quest.platform) {
+        // Get the OAuth token for this platform
+        const tokenKey = `oauth_token_${quest.platform}`
+        const oauthResult = await chrome.storage.local.get([tokenKey])
+        const tokenData = oauthResult[tokenKey]
+
+        if (!tokenData?.accessToken) {
+          return { success: false, error: `No ${quest.platform} token found. Please connect your ${quest.platform} account first.` }
+        }
+
+        // Call Mastra API to create the social link triple on-chain (bot pays)
+        const linkResult = await callLinkSocialWorkflow(quest.platform, tokenData.accessToken)
+
+        if (!linkResult.success) {
+          return linkResult
+        }
+
+        // Mark quest as claimed after successful link
+        const newClaimed = new Set(claimedQuestIds)
+        newClaimed.add(questId)
+        setClaimedQuestIds(newClaimed)
+
+        await chrome.storage.local.set({
+          claimed_quests: Array.from(newClaimed)
+        })
+
+        console.log(`✅ [QuestSystem] Claimed XP for social-link quest: ${questId}`)
+        return { success: true, txHash: linkResult.txHash }
+      }
+
+      // Standard quest badge creation (user pays)
       // Ensure proxy is approved
       await ensureProxyApproval()
 
@@ -439,14 +564,6 @@ export const useQuestSystem = (): QuestSystemResult => {
     }
   }
 
-  // Auto-save proof-of-human quest when isHuman becomes true
-  useEffect(() => {
-    if (isHuman && !completedQuestIds.has('proof-of-human')) {
-      console.log('🎉 [QuestSystem] Auto-completing proof-of-human quest (isHuman=true)')
-      saveCompletedQuest('proof-of-human')
-    }
-  }, [isHuman, completedQuestIds])
-
   // Fetch user progress data
   const refreshQuests = async () => {
     if (!walletAddress) {
@@ -526,12 +643,18 @@ export const useQuestSystem = (): QuestSystemResult => {
         'oauth_token_twitter',
       ])
 
+      const discordConnected = !!oauthResult.oauth_token_discord?.accessToken
+      const youtubeConnected = !!oauthResult.oauth_token_youtube?.accessToken
+      const spotifyConnected = !!oauthResult.oauth_token_spotify?.accessToken
+      const twitchConnected = !!oauthResult.oauth_token_twitch?.accessToken
+      const twitterConnected = !!oauthResult.oauth_token_twitter?.accessToken
+
       const oauthConnections = [
-        oauthResult.oauth_token_youtube,
-        oauthResult.oauth_token_spotify,
-        oauthResult.oauth_token_twitch,
-        oauthResult.oauth_token_discord,
-        oauthResult.oauth_token_twitter,
+        discordConnected,
+        youtubeConnected,
+        spotifyConnected,
+        twitchConnected,
+        twitterConnected,
       ].filter(Boolean).length
 
       // Local bookmark data
@@ -549,6 +672,11 @@ export const useQuestSystem = (): QuestSystemResult => {
         hasSignalToday: false,
         pulseLaunches: 0,
         weeklyPulseUses: 0,
+        discordConnected,
+        youtubeConnected,
+        spotifyConnected,
+        twitchConnected,
+        twitterConnected,
       })
 
     } catch (error) {
@@ -581,7 +709,30 @@ export const useQuestSystem = (): QuestSystemResult => {
           }
           break
         case 'oauth':
-          current = userProgress.oauthConnections
+          // For social-linked, count claimed social-link quests
+          if (questDef.id === 'social-linked') {
+            const linkedCount = ['link-discord', 'link-youtube', 'link-spotify', 'link-twitch', 'link-twitter']
+              .filter(id => claimedQuestIds.has(id)).length
+            current = linkedCount
+          } else {
+            current = userProgress.oauthConnections
+          }
+          break
+        case 'social-link':
+          // If already claimed on-chain, mark as complete
+          if (claimedQuestIds.has(questDef.id)) {
+            current = questDef.total
+          } else if (questDef.platform) {
+            // Check if this specific platform is connected locally
+            const platformConnected = {
+              discord: userProgress.discordConnected,
+              youtube: userProgress.youtubeConnected,
+              spotify: userProgress.spotifyConnected,
+              twitch: userProgress.twitchConnected,
+              twitter: userProgress.twitterConnected,
+            }[questDef.platform]
+            current = platformConnected ? 1 : 0
+          }
           break
         case 'follow':
           current = userProgress.followedUsers
@@ -618,20 +769,7 @@ export const useQuestSystem = (): QuestSystemResult => {
       const isCompleted = completedQuestIds.has(questDef.id)
       const isClaimed = claimedQuestIds.has(questDef.id)
 
-      // Special handling for proof-of-human quest - use isHuman state directly
-      if (questDef.id === 'proof-of-human' && isHuman) {
-        if (isClaimed) {
-          status = 'completed'
-          statusColor = '#48bb78' // green - XP claimed
-        } else {
-          status = 'claimable_xp'
-          statusColor = '#FFD700' // gold - ready to claim XP
-        }
-        // Save to completed if not already
-        if (!isCompleted) {
-          saveCompletedQuest(questDef.id)
-        }
-      } else if (current >= questDef.total) {
+      if (current >= questDef.total) {
         // Quest objective is met
         if (isClaimed) {
           status = 'completed'
@@ -667,7 +805,7 @@ export const useQuestSystem = (): QuestSystemResult => {
       if (a.status !== 'completed' && b.status === 'completed') return -1
       return (a.milestone || 0) - (b.milestone || 0)
     })
-  }, [userProgress, completedQuestIds, claimedQuestIds, isHuman])
+  }, [userProgress, completedQuestIds, claimedQuestIds])
 
   // Filter active, claimable, and completed quests
   const activeQuests = useMemo(() =>

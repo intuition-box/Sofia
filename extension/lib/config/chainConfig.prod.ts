@@ -42,6 +42,7 @@ export const BLOCKCHAIN_CONFIG = {
 // API Configuration
 export const API_CONFIG = {
   GRAPHQL_ENDPOINT: "https://mainnet.intuition.sh/v1/graphql",
+  MASTRA_API_URL: "https://sofia-mastra.onrender.com", // Production Mastra API
   REQUEST_TIMEOUT: 30000,
   MAX_RESULTS: 50
 } as const

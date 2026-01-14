@@ -41,6 +41,7 @@ export const BLOCKCHAIN_CONFIG = {
 // API Configuration
 export const API_CONFIG = {
   GRAPHQL_ENDPOINT: "https://testnet.intuition.sh/v1/graphql",
+  MASTRA_API_URL: "http://localhost:4111", // Local Mastra API for dev
   REQUEST_TIMEOUT: 30000,
   MAX_RESULTS: 50
 } as const

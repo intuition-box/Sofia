@@ -4,7 +4,7 @@ import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { sofiaWorkflow } from './workflows/sofia-workflow';
 import { chatbotWorkflow } from './workflows/chatbot-workflow';
-import { humanAttestorWorkflow } from './workflows/human-attestor-workflow';
+import { socialVerifierWorkflow } from './workflows/social-verifier-workflow';
 import { linkSocialWorkflow } from './workflows/link-social-workflow';
 import { sofiaAgent } from './agents/sofia-agent';
 import { themeExtractorAgent } from './agents/theme-extractor-agent';
@@ -13,7 +13,7 @@ import { recommendationAgent } from './agents/recommendation-agent';
 import { chatbotAgent } from './agents/chatbot-agent';
 
 export const mastra = new Mastra({
-  workflows: { sofiaWorkflow, chatbotWorkflow, humanAttestorWorkflow, linkSocialWorkflow },
+  workflows: { sofiaWorkflow, chatbotWorkflow, socialVerifierWorkflow, linkSocialWorkflow },
   agents: { sofiaAgent, themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent },
   scorers: {
   },
