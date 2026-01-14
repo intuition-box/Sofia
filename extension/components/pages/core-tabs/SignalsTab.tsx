@@ -256,7 +256,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       <div className="signals-search-input-container">
         <input
           type="text"
-          placeholder="Search your triplets..."
+          placeholder="Search your Signals..."
           className="input"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

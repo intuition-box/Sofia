@@ -189,7 +189,7 @@ const BookmarkTab = () => {
           <div className="bookmark-search-container">
             <input
               type="text"
-              placeholder="Search bookmarked triplets..."
+              placeholder="Search bookmarked Signals..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input"
@@ -273,7 +273,7 @@ const BookmarkTab = () => {
             <div className="bookmark-empty-state">
               <p>No bookmark lists yet!</p>
               <p className="bookmark-empty-subtext">
-                Create your first bookmark list to start organizing your favorite triplets.
+                Create your first bookmark list to start organizing your favorite Signals.
               </p>
             </div>
           ) : (

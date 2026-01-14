@@ -526,7 +526,7 @@ const PulseTab = () => {
           <div className="pulse-selection-info">
             <label className="pulse-select-all-label">
               <span onClick={toggleSelectAllTriplets} className="pulse-cursor-pointer">
-                Select All Triplets for Publishing
+                Select All Signals for Publishing
               </span>
             </label>
           </div>
@@ -539,7 +539,7 @@ const PulseTab = () => {
           <div className="pulse-selection-info">
             <label className="pulse-select-all-label">
               <span className="pulse-cursor-default">
-                {selectedTriplets.size} triplets selected for publishing
+                {selectedTriplets.size} Signals selected for publishing
               </span>
             </label>
           </div>
