@@ -113,8 +113,8 @@
   border-radius: 0;
   backdrop-filter: blur(10px);
   padding: 0;
-  height: 860px;
-  max-height: 860px;
+  height: 1100px;
+  max-height: 1100px;
 }
 
 /* États de chargement - utilise .loading-state de CoreComponents.css comme base */
