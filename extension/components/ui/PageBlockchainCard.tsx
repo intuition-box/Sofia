@@ -783,7 +783,7 @@ const PageBlockchainCard = () => {
                 {/* Triplets List Section - Collapsible */}
                 {showTripletsList && triplets.length > 0 && (
                   <div className="triplets-section">
-                    <div className="section-title">Triplets on this page</div>
+                    <div className="section-title">Signals on this page</div>
                     <div className="triplets-list">
                       {triplets.map((triplet: PageBlockchainTriplet) => {
                         const totalShares = getTotalShares(triplet)
