@@ -15,7 +15,7 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { MASTRA_API_URL } from '../config'
 import { getClients } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
-import { MULTIVAULT_CONTRACT_ADDRESS } from '../lib/config/chainConfig'
+import { MULTIVAULT_CONTRACT_ADDRESS, BOT_VERIFIER_ADDRESS } from '../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { stringToHex } from 'viem'
 import type { Address } from '../types/viem'
@@ -90,7 +90,8 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       console.log('🔍 [SocialVerifier] Checking on-chain social links for:', walletAddress)
 
       // Calculate the atom ID for this wallet address
-      const userAtomData = stringToHex(walletAddress.toLowerCase())
+      // Note: Do NOT lowercase - must match the exact format used when creating the triple
+      const userAtomData = stringToHex(walletAddress)
       const { publicClient } = await getClients()
       const userAtomId = await publicClient.readContract({
         address: MULTIVAULT_CONTRACT_ADDRESS as Address,
@@ -103,11 +104,17 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       console.log('🔢 [SocialVerifier] User atom ID calculated:', userAtomId)
 
       // Query for triples with social verification predicates
+      // Filter by creator_id = BOT_VERIFIER_ADDRESS to only count official verifications
+      // Also check for legacy triple [wallet] [socials_platform] [verified]
+      const botVerifierLower = BOT_VERIFIER_ADDRESS.toLowerCase()
+      console.log('🤖 [SocialVerifier] Checking social links verified by bot:', botVerifierLower)
+
       const query = `
-        query CheckSocialLinks($subjectId: String!) {
-          triples(
+        query CheckSocialLinks($subjectId: String!, $botVerifierId: String!) {
+          newSystemTriples: triples(
             where: {
               subject_id: { _eq: $subjectId },
+              creator_id: { _eq: $botVerifierId },
               predicate: {
                 label: { _in: [
                   "has verified discord id",
@@ -121,6 +128,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
           ) {
             term_id
             created_at
+            creator_id
             predicate {
               label
             }
@@ -128,15 +136,51 @@ export const useSocialVerifier = (): SocialVerifierResult => {
               label
             }
           }
+          legacyTriple: triples(
+            where: {
+              subject_id: { _eq: $subjectId },
+              creator_id: { _eq: $botVerifierId },
+              predicate: {
+                label: { _eq: "socials_platform" }
+              },
+              object: {
+                label: { _eq: "verified" }
+              }
+            }
+          ) {
+            term_id
+            created_at
+            creator_id
+          }
         }
       `
 
       const data = await intuitionGraphqlClient.request(query, {
-        subjectId: userAtomId
-      }) as { triples: Array<{ term_id: string; created_at: string; predicate: { label: string }; object: { label: string } }> }
+        subjectId: userAtomId,
+        botVerifierId: botVerifierLower
+      }) as {
+        newSystemTriples: Array<{ term_id: string; created_at: string; creator_id: string; predicate: { label: string }; object: { label: string } }>
+        legacyTriple: Array<{ term_id: string; created_at: string; creator_id: string }>
+      }
+
+      // Check for legacy triple first (backward compatibility)
+      if (data.legacyTriple && data.legacyTriple.length > 0) {
+        const legacyTriple = data.legacyTriple[0]
+        console.log('✅ [SocialVerifier] Found LEGACY triple [wallet] [socials_platform] [verified] - GOLDEN BORDER ENABLED')
+
+        const attestation: SocialAttestation = {
+          txHash: legacyTriple.term_id || '',
+          claimedAt: legacyTriple.created_at ? new Date(legacyTriple.created_at).getTime() : Date.now(),
+          walletAddress
+        }
+        await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: attestation })
+        setAttestation(attestation)
+        setIsSocialVerified(true)
+        return true
+      }
 
       // Filter out invalid triples (old buggy ones with [object Object] labels)
-      const validTriples = data.triples?.filter(triple => {
+      const validTriples = data.newSystemTriples?.filter(triple => {
         const objectLabel = triple.object?.label
         if (!objectLabel || objectLabel.includes('[object') || objectLabel.includes('{')) {
           console.log(`⚠️ [SocialVerifier] Skipping invalid triple: predicate=${triple.predicate?.label}, object=${objectLabel}`)
@@ -146,9 +190,9 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       }) || []
 
       if (validTriples.length >= 5) {
-        // All 5 platforms are linked with valid IDs
+        // All 5 platforms are linked with valid IDs (verified by bot)
         const latestTriple = validTriples[0]
-        console.log('✅ [SocialVerifier] All 5 social platforms linked on-chain')
+        console.log('✅ [SocialVerifier] All 5 social platforms verified by bot on-chain - GOLDEN BORDER ENABLED')
 
         const attestation: SocialAttestation = {
           txHash: latestTriple.term_id || '',
@@ -161,7 +205,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
         return true
       }
 
-      console.log(`❌ [SocialVerifier] Only ${validTriples.length}/5 social platforms linked (valid triples)`)
+      console.log(`❌ [SocialVerifier] Only ${validTriples.length}/5 social platforms verified by bot (golden border requires 5/5, or legacy triple)`)
       return false
     } catch (error) {
       console.error('Error checking on-chain attestation:', error)
