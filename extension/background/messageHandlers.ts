@@ -10,6 +10,7 @@ import {
   getPredicateUpgradeSuggestions,
   getIntentionGlobalStats
 } from "./intentionRanking"
+import { getScrollStats } from "./behavior"
 import { badgeService } from "../lib/services/BadgeService"
 import { pageDataService } from "../lib/services/PageDataService"
 import { pulseService } from "../lib/services/PulseService"
@@ -449,6 +450,40 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true, data: { url } })
         } catch (error) {
           console.error("❌ GET_PAGE_BLOCKCHAIN_DATA error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "GET_PAGE_ATTENTION":
+        try {
+          const url = message.data?.url
+          if (!url) {
+            sendResponse({ success: false, error: "URL parameter required" })
+            return true
+          }
+
+          // Get scroll stats for the page
+          const scrollStats = getScrollStats(url)
+
+          // Get domain intention stats which includes time tracking
+          const domain = new URL(url).hostname.replace('www.', '')
+          const domainStats = getDomainIntentionStats(domain)
+
+          // Calculate time spent based on domain stats
+          const timeSpent = domainStats?.avgDuration
+            ? Math.floor(domainStats.avgDuration / 1000)
+            : 0
+
+          sendResponse({
+            success: true,
+            data: {
+              timeSpent,
+              scrollStats,
+              hasInteracted: scrollStats ? scrollStats.count >= 2 : false
+            }
+          })
+        } catch (error) {
+          console.error("❌ GET_PAGE_ATTENTION error:", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true

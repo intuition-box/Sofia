@@ -58,7 +58,13 @@ export const PREDICATE_IDS = {
   FOLLOW: "0xffd07650dc7ab341184362461ebf52144bf8bcac5a19ef714571de15f1319260",
   TRUSTS: "0x3a73f3b1613d166eea141a25a2adc70db9304ab3c4e90daecad05f86487c3ee9",
   DISTRUST: "0x93dd055a971886b66c5f4d9c29098ebdd9b7991890b6372a7e184c64321c9710",
-  HAS_TAG: "0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5"
+  HAS_TAG: "0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5",
+  // Discovery/Intention predicates (will be created on first use if empty)
+  VISITS_FOR_WORK: "",
+  VISITS_FOR_LEARNING: "",
+  VISITS_FOR_FUN: "",
+  VISITS_FOR_INSPIRATION: "",
+  VISITS_FOR_BUYING: ""
 } as const
 
 // Subject IDs (Testnet) - Verified via GraphQL queries
@@ -74,5 +80,14 @@ export const PREDICATE_NAMES = {
   FOLLOW: "follow",
   TRUSTS: "trusts",
   DISTRUST: "distrust",
-  HAS_TAG: "has tag"
+  HAS_TAG: "has tag",
+  // Discovery/Intention predicates
+  VISITS_FOR_WORK: "visits for work",
+  VISITS_FOR_LEARNING: "visits for learning",
+  VISITS_FOR_FUN: "visits for fun",
+  VISITS_FOR_INSPIRATION: "visits for inspiration",
+  VISITS_FOR_BUYING: "visits for buying"
 } as const
+
+// Minimum stake for intention certification (1 TRUST = 1e18 wei)
+export const INTENTION_MIN_STAKE = 1000000000000000000n // 1 TRUST

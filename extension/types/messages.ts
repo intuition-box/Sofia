@@ -45,6 +45,7 @@ export type MessageType =
   | 'GENERATE_RECOMMENDATIONS'
   | 'WALLET_CONNECTED'
   | 'WALLET_DISCONNECTED'
+  | 'GET_PAGE_ATTENTION'
 
 // Specific message interfaces
 export interface ChromeMessage extends BaseMessage {

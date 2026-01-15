@@ -2,15 +2,29 @@ import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
+import { useIntentionCertify } from '../../hooks/useIntentionCertify'
+import { useProofOfAttention } from '../../hooks/useProofOfAttention'
 import WeightModal from '../modals/WeightModal'
 import StarBorder from './StarBorder'
-// Removed Iridescence import - using CSS salmon gradient now
+import { IntentionBubbleSelector } from './IntentionBubbleSelector'
 import type { PageBlockchainTriplet } from '../../types/page'
+import type { IntentionPurpose } from '../../types/discovery'
+import { INTENTION_LABELS } from '../../types/discovery'
 import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
   const { triplets, loading, error, currentUrl, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
   const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType, transactionHash: trustTxHash } = useTrustPage()
+  const {
+    certifyWithIntention,
+    loading: intentionLoading,
+    success: intentionSuccess,
+    error: intentionError,
+    operationType: intentionOperationType,
+    transactionHash: intentionTxHash,
+    currentIntention
+  } = useIntentionCertify()
+  const { isEligible: isAttentionEligible } = useProofOfAttention(currentUrl)
   const [showDetails, setShowDetails] = useState(false)
 
   // Local state for Trust button UI
