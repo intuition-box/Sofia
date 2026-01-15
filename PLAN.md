@@ -14,7 +14,7 @@
 Pour que les intentions aient une **valeur réelle** et soient crédibles :
 
 ### 1. Stake Minimum Obligatoire
-- **Montant minimum** pour certifier une intention (ex: 0.001 ETH ou équivalent)
+- **Montant minimum** pour certifier une intention (ex: 1 TRUST ou équivalent)
 - L'utilisateur met de l'argent en jeu → réflexion avant de cliquer
 - Le WeightModal force un minimum, pas de certification gratuite
 
