@@ -1,393 +1,424 @@
-# Plan d'Action - Proof of Human Attestor (Bot signe la TX)
+# Plan: Système de Découverte avec Intentions pour Sofia
 
-## Vue d'Ensemble
+## Résumé
 
-Le workflow `human-attestor-workflow` va être modifié pour que le **bot verifie les tokens ET cree le triple on-chain lui-meme** avec ses propres fonds.
+Étendre le composant trust/distrust de `PageBlockchainCard` avec:
+1. **Sélecteur d'intention** : "I am here for..." (work, learning, fun, inspiration, buying) - **séparé du trust/distrust**
+2. **Statut de découverte** : Pioneer / Explorer / Contributor selon l'ordre d'arrivée
+3. **Discovery Score** : Affiché en **compact dans PageBlockchainCard + détails dans une page profil**
 
-**Avantage** : Gratuit pour l'utilisateur, pas de signature requise de sa part.
+---
+
+## Garanties d'Engagement (Skin in the Game)
+
+Pour que les intentions aient une **valeur réelle** et soient crédibles :
+
+### 1. Stake Minimum Obligatoire
+- **Montant minimum** pour certifier une intention (ex: 0.001 ETH ou équivalent)
+- L'utilisateur met de l'argent en jeu → réflexion avant de cliquer
+- Le WeightModal force un minimum, pas de certification gratuite
+
+### 2. Proof of Attention (temps sur la page)
+- L'utilisateur doit passer **minimum X secondes** sur la page avant de pouvoir certifier
+- Détection via `PageDataService` existant (scroll, temps, interactions)
+- Si temps insuffisant → boutons d'intention désactivés avec message "Explore the page first"
+
+### 3. Combinaison des deux
+```
+┌─────────────────────────────────────────────────────────┐
+│  AVANT de pouvoir certifier :                           │
+│                                                         │
+│  ✓ Temps minimum sur page : 30 secondes                │
+│  ✓ Interactions détectées : scroll, clics              │
+│  ✓ Stake minimum : 1 TRUST                             │
+│                                                         │
+│  → Intention = engagement réel, données de qualité     │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Pas de contestation pour l'instant** - on garde le système simple.
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                                                                              │
-│  ┌──────────────┐                                                           │
-│  │  EXTENSION   │  1. User clique "Claim Humanity"                          │
-│  │              │  2. Recupere les 5 tokens OAuth du storage                │
-│  │  5 tokens    │  3. POST vers Mastra API workflow                         │
-│  └──────┬───────┘                                                           │
-│         │                                                                    │
-│         │  POST /api/workflows/humanAttestorWorkflow/start-async            │
-│         │  { walletAddress, tokens: { youtube, spotify, discord,            │
-│         │    twitch, twitter } }                                            │
-│         ▼                                                                    │
-│  ┌──────────────────────────────────────────────────────────────┐           │
-│  │  MASTRA (TEE Phala) - sofia-mastra                           │           │
-│  │                                                               │           │
-│  │  human-attestor-workflow.ts                                  │           │
-│  │                                                               │           │
-│  │  1. Verifie chaque token aupres de l'API                     │           │
-│  │     - YouTube  → googleapis.com/youtube/v3/channels          │           │
-│  │     - Spotify  → api.spotify.com/v1/me                       │           │
-│  │     - Discord  → discord.com/api/users/@me                   │           │
-│  │     - Twitch   → api.twitch.tv/helix/users                   │           │
-│  │     - Twitter  → api.twitter.com/2/users/me                  │           │
-│  │                                                               │           │
-│  │  2. Si 5/5 OK:                                               │           │
-│  │     - Verifie si user atom existe (sinon le cree)            │           │
-│  │     - Verifie si triple existe deja                          │           │
-│  │     - BOT_PRIVATE_KEY signe la TX                            │           │
-│  │     - Appelle DIRECTEMENT MultiVault (pas de proxy)          │           │
-│  │     - receiver = userWalletAddress                           │           │
-│  │                                                               │           │
-│  │  3. Retourne { success, txHash, blockNumber }                │           │
-│  └──────────────────────────────────────────────────────────────┘           │
-│         │                                                                    │
-│         ▼                                                                    │
-│  ┌──────────────────────────────────────────────────────────────┐           │
-│  │  INTUITION MULTIVAULT (appel direct, pas de proxy)            │           │
-│  │  - Bot paie le gas + deposit                                 │           │
-│  │  - Cree le triple [user_wallet] [is_human] [verified]        │           │
-│  │  - USER recoit les shares (gratuit pour lui!)                │           │
-│  └──────────────────────────────────────────────────────────────┘           │
-│         │                                                                    │
-│         ▼                                                                    │
-│  ┌──────────────┐                                                           │
-│  │  EXTENSION   │  4. Recoit { success: true, txHash }                      │
-│  │              │  5. Stocke l'attestation localement                       │
-│  │  Badge 🏆    │  6. Affiche le badge sur l'avatar                         │
-│  └──────────────┘                                                           │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
+PageBlockchainCard.tsx (existant)
+├── Trust/Distrust buttons (inchangé)
+├── [NEW] Discovery Section
+│   ├── DiscoveryStatusBadge (Pioneer/Explorer/Contributor)
+│   └── IntentionSelector (5 pills cliquables)
+└── Extended metrics (inchangé)
+
+Nouveaux fichiers:
+├── types/discovery.ts           # Types TypeScript
+├── hooks/usePageDiscovery.ts    # Statut Pioneer/Explorer/Contributor
+├── hooks/useIntentionCertify.ts # Créer triples d'intention
+├── hooks/useDiscoveryScore.ts   # Calcul du score
+├── components/ui/IntentionSelector.tsx
+└── components/ui/DiscoveryStatusBadge.tsx
 ```
 
 ---
 
-## Fichier Principal a Modifier
+## Fichiers à Modifier/Créer
 
-### sofia-mastra/src/mastra/workflows/human-attestor-workflow.ts
+### 1. Types - `extension/types/discovery.ts` (NOUVEAU)
 
-**Modifications** :
-- Ajouter viem pour interagir avec la blockchain
-- Ajouter l'ABI MultiVault (PAS de Sofia proxy)
-- Ajouter les constantes (adresses, term IDs)
-- Apres verification 5/5, creer l'atom user si besoin, puis le triple
-
-**Constantes necessaires** :
 ```typescript
-import { createPublicClient, createWalletClient, http, parseEther, stringToHex, keccak256 } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+export type IntentionPurpose = 'for_work' | 'for_learning' | 'for_fun' | 'for_inspiration' | 'for_buying'
+export type DiscoveryStatus = 'Pioneer' | 'Explorer' | 'Contributor' | null
 
-// Adresse MultiVault (appel direct, pas de proxy)
-const MULTIVAULT_ADDRESS = '0x6E35cF57A41fA15eA0EaE9C33e751b01A784Fe7e' as const;
-const RPC_URL = 'https://rpc.intuition.systems';
-
-// Term IDs pre-existants pour [user] [is_human] [verified]
-const TERM_ID_IS_HUMAN = '0x004614d581d091be4b93f4a56321f00b7e187190011b6683b955dcd43a611248' as const;
-const TERM_ID_VERIFIED = '0xcdffac0eb431ba084e18d5af7c55b4414c153f5c0df693c2d1454079186f975c' as const;
-
-// Deposit minimum
-const MIN_DEPOSIT = 10000000000000000n; // 0.01 TRUST
-const CURVE_ID = 1n;
-```
-
-**Nouveau output schema** :
-```typescript
-const outputSchema = z.object({
-  success: z.boolean(),
-  verified: z.object({
-    youtube: z.boolean(),
-    spotify: z.boolean(),
-    discord: z.boolean(),
-    twitch: z.boolean(),
-    twitter: z.boolean(),
-  }),
-  verifiedCount: z.number(),
-  // Nouveau: infos de la TX
-  txHash: z.string().optional(),
-  blockNumber: z.number().optional(),
-  error: z.string().optional(),
-});
-```
-
-**Logique a ajouter apres verification** :
-```typescript
-// Apres verification 5/5
-if (verifiedCount === 5) {
-  const botPrivateKey = process.env.BOT_PRIVATE_KEY;
-  if (!botPrivateKey) {
-    return { ...verified, error: 'BOT_PRIVATE_KEY not configured' };
-  }
-
-  // 1. Creer les clients viem
-  const account = privateKeyToAccount(botPrivateKey as `0x${string}`);
-  const walletClient = createWalletClient({
-    account,
-    chain: intuitionChain,
-    transport: http(RPC_URL)
-  });
-  const publicClient = createPublicClient({
-    chain: intuitionChain,
-    transport: http(RPC_URL)
-  });
-
-  // 2. Calculer l'atomId de l'utilisateur
-  const userAtomData = stringToHex(walletAddress.toLowerCase());
-  const userAtomId = keccak256(userAtomData);
-
-  // 3. Verifier si l'atom existe, sinon le creer (appel DIRECT MultiVault)
-  const atomExists = await checkAtomExists(publicClient, userAtomId);
-  if (!atomExists) {
-    const atomCost = await publicClient.readContract({
-      address: MULTIVAULT_ADDRESS,
-      abi: MultiVaultAbi,
-      functionName: 'getAtomCost'
-    });
-    const createAtomHash = await walletClient.writeContract({
-      address: MULTIVAULT_ADDRESS,
-      abi: MultiVaultAbi,
-      functionName: 'createAtom',
-      args: [walletAddress, userAtomData],  // receiver, atomData
-      value: atomCost + MIN_DEPOSIT
-    });
-    await publicClient.waitForTransactionReceipt({ hash: createAtomHash });
-  }
-
-  // 4. Verifier si le triple existe deja
-  const tripleId = await publicClient.readContract({
-    address: MULTIVAULT_ADDRESS,
-    abi: MultiVaultAbi,
-    functionName: 'calculateTripleId',
-    args: [userAtomId, TERM_ID_IS_HUMAN, TERM_ID_VERIFIED]
-  });
-
-  const tripleData = await publicClient.readContract({
-    address: MULTIVAULT_ADDRESS,
-    abi: MultiVaultAbi,
-    functionName: 'getTriple',
-    args: [tripleId]
-  });
-
-  if (tripleData[0] !== '0x0000...') {
-    return { success: true, verified, verifiedCount, error: 'Triple already exists' };
-  }
-
-  // 5. Calculer le cout total (DIRECT MultiVault, pas de fees proxy!)
-  const tripleCost = await publicClient.readContract({
-    address: MULTIVAULT_ADDRESS,
-    abi: MultiVaultAbi,
-    functionName: 'getTripleCost'
-  });
-  const totalCost = tripleCost + MIN_DEPOSIT;  // Pas de Sofia fees!
-
-  // 6. Executer createTriple (appel DIRECT MultiVault)
-  const txHash = await walletClient.writeContract({
-    address: MULTIVAULT_ADDRESS,
-    abi: MultiVaultAbi,
-    functionName: 'createTriple',
-    args: [
-      walletAddress,           // receiver (l'utilisateur recoit les shares)
-      userAtomId,              // subjectId
-      TERM_ID_IS_HUMAN,        // predicateId
-      TERM_ID_VERIFIED         // objectId
-    ],
-    value: totalCost
-  });
-
-  // 7. Attendre confirmation
-  const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
-
-  return {
-    success: true,
-    verified,
-    verifiedCount,
-    txHash,
-    blockNumber: Number(receipt.blockNumber)
-  };
+export interface PageDiscoveryRecord {
+  pageUrl: string
+  certificationCount: number
+  userStatus: DiscoveryStatus
+  intentionPurposes: Record<IntentionPurpose, number>
 }
 ```
 
----
+### 2. Config - `lib/config/chainConfig.dev.ts` (MODIFIER)
 
-## Fichier Extension a Simplifier
+Ajouter les nouveaux prédicats:
+- `DISCOVERED` - pour certification de page
+- `VISITS_FOR_WORK`, `VISITS_FOR_LEARNING`, `VISITS_FOR_FUN`, `VISITS_FOR_INSPIRATION`, `VISITS_FOR_BUYING`
 
-### extension/hooks/useClaimHumanity.ts
+### 3. Hook Discovery - `hooks/usePageDiscovery.ts` (NOUVEAU)
 
-**Simplifications** :
-- Ne plus creer la TX cote extension
-- Juste appeler le workflow et recuperer le txHash
-- Stocker l'attestation avec le txHash retourne
+- Query GraphQL pour compter les certifications existantes
+- Calcul du statut: Pioneer (1er), Explorer (2-10), Contributor (11+)
+- Retourne: `discoveryStatus`, `certificationCount`, `isPioneer`
 
-```typescript
-const claimHumanity = async () => {
-  setIsClaiming(true);
+### 4. Hook Intention - `hooks/useIntentionCertify.ts` (NOUVEAU)
 
-  try {
-    // Recuperer les tokens OAuth
-    const tokenResult = await chrome.storage.local.get([...]);
+- Créer triple `[I] [visits_for_X] [page]` on-chain
+- Gérer loading/success/error states
 
-    // Appeler le workflow Mastra (bot cree la TX)
-    const response = await fetch(`${MASTRA_API_URL}/api/workflows/humanAttestorWorkflow/start-async`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        inputData: {
-          walletAddress,
-          tokens: { youtube, spotify, discord, twitch, twitter }
-        }
-      })
-    });
+### 4b. Hook Proof of Attention - `hooks/useProofOfAttention.ts` (NOUVEAU)
 
-    const result = await response.json();
-
-    // Attendre le resultat
-    const finalResult = await pollForResult(result.runId);
-
-    if (finalResult.success && finalResult.txHash) {
-      // Stocker l'attestation
-      await chrome.storage.local.set({
-        [HUMAN_ATTESTATION_KEY]: {
-          txHash: finalResult.txHash,
-          blockNumber: finalResult.blockNumber,
-          walletAddress,
-          claimedAt: Date.now()
-        }
-      });
-      setIsHuman(true);
-    }
-
-    return finalResult;
-  } finally {
-    setIsClaiming(false);
-  }
-};
-```
-
----
-
-## Pre-requis
-
-### 1. sofia-mastra/.env
-
-Verifier que ces variables sont configurees :
-```env
-BOT_PRIVATE_KEY=0x...  # Cle privee du bot
-TWITCH_CLIENT_ID=...   # Pour verifier les tokens Twitch
-```
-
-### 2. Fonds du Bot
-
-Le bot doit avoir :
-- ETH pour le gas
-- TRUST pour les deposits (~0.01 TRUST par attestation)
-
-Verifier avec :
-```bash
-cast balance <BOT_ADDRESS> --rpc-url https://rpc.intuition.systems
-```
-
-### 3. Approval du Proxy (une seule fois)
-
-Le bot doit approuver le Sofia Proxy :
-```bash
-cd sofia-mastra && npx ts-node scripts/approve-proxy.ts
-```
-
----
-
-## ABIs Necessaires
-
-Copier les ABIs depuis `extension/ABI/` ou les definir inline :
-
-**SofiaFeeProxy** :
-- `createTriples(address, bytes32[], bytes32[], bytes32[], uint256[], uint256) payable`
-- `createAtoms(address, bytes[], uint256[], uint256) payable`
-- `getTripleCost() view returns (uint256)`
-- `getAtomCost() view returns (uint256)`
-
-**MultiVault** :
-- `calculateTripleId(bytes32, bytes32, bytes32) view returns (bytes32)`
-- `getTriple(bytes32) view returns (bytes32, bytes32, bytes32)`
-- `getAtom(bytes32) view returns (bytes)`
-
----
-
-## Fonctions Utilitaires a Implementer
-
-Tout dans le fichier workflow :
+Vérifie que l'utilisateur a vraiment exploré la page avant de certifier :
 
 ```typescript
-// Verifier si un atom existe
-async function checkAtomExists(
-  publicClient: PublicClient,
-  atomId: `0x${string}`
-): Promise<boolean> {
-  const atomData = await publicClient.readContract({
-    address: MULTIVAULT_ADDRESS,
-    abi: MultiVaultAbi,
-    functionName: 'getAtom',
-    args: [atomId]
-  });
-  return atomData !== '0x';
+interface ProofOfAttention {
+  isEligible: boolean        // true si conditions remplies
+  timeSpent: number          // secondes passées sur la page
+  hasScrolled: boolean       // a scrollé ?
+  hasInteracted: boolean     // clics, sélections ?
 }
 
-// Calculer le cout total avec fees Sofia
-async function getTotalCreationCost(
-  publicClient: PublicClient,
-  depositAmount: bigint
-): Promise<bigint> {
-  const tripleCost = await publicClient.readContract({
-    address: SOFIA_PROXY_ADDRESS,
-    abi: SofiaFeeProxyAbi,
-    functionName: 'getTripleCost'
-  });
-  // Sofia fees: 0.1 TRUST fixed + 5% of deposit
-  const sofiaFixedFee = parseEther('0.1');
-  const sofiaPercentFee = (depositAmount * 5n) / 100n;
-  return tripleCost + depositAmount + sofiaFixedFee + sofiaPercentFee;
+const MINIMUM_TIME = 30      // 30 secondes minimum
+const MINIMUM_SCROLL = 0.3   // 30% de la page scrollée
+```
+
+**Utilise les données de `PageDataService` existant** (déjà tracké dans le background)
+
+**UI si pas éligible:**
+```
+┌─────────────────────────────────────────────┐
+│  I visit      [     ?     ]      this page  │
+│                                             │
+│  (work)  (learning)  (fun)  (inspiration)  (buying) │
+│     ↑ grisés, non cliquables                │
+│                                             │
+│  Explore the page first                     │
+└─────────────────────────────────────────────┘
+```
+
+### 5. Hook Score - `hooks/useDiscoveryScore.ts` (NOUVEAU)
+
+**Scores séparés par type de découverte** (affichés dans le profil):
+- **Pioneer Score** : Nombre de pages où l'utilisateur est le 1er à certifier
+- **Explorer Score** : Nombre de pages où l'utilisateur est parmi les premiers (2-10)
+- **Contributor Score** : Nombre de pages certifiées après les 10 premiers
+
+**Conversion en XP** (utilise le système existant):
+- +50 XP par Pioneer discovery (1er sur une page)
+- +20 XP par Explorer discovery (2-10ème)
+- +5 XP par Contributor discovery (11+)
+
+### 6. Composant IntentionSelector - `components/ui/IntentionBubbleSelector.tsx` (NOUVEAU)
+
+**Design minimaliste avec phrase à compléter + bulles texte:**
+
+```
+┌─────────────────────────────────────────────┐
+│  I visit      [     ?     ]      this page  │
+│                    ↑                        │
+│           placeholder animé                 │
+│                                             │
+│  (work)  (learning)  (fun)  (inspiration)  (buying) │
+│                                             │
+│   ↑ bulles texte cliquables alignées        │
+└─────────────────────────────────────────────┘
+```
+
+**Comportement:**
+- Placeholder vide avec "?" ou animation subtile
+- Clic sur bulle → **ouvre le WeightModal** (comme trust/distrust) avec le triple pré-rempli
+- Triple affiché dans le modal: `[I] [visits for work] [page URL]`
+
+**Bulles (texte uniquement, pas d'emoji):**
+- `for work`
+- `for learning`
+- `for fun`
+- `for inspiration`
+- `for buying`
+
+**Flow identique à trust/distrust:**
+1. User clique sur une bulle (ex: "for learning")
+2. Modal s'ouvre avec le triple: `I → visits for learning → [page]`
+3. User choisit le weight et confirme
+4. Transaction on-chain créée
+
+### 7. Affichage Discovery Scores - Dans le profil (pas de badge séparé)
+
+**Dans DiscoveryProfilePage, afficher 3 compteurs:**
+```
+┌─────────────────────────────────────┐
+│  Pioneer         │  12 pages       │
+│  Explorer        │  45 pages       │
+│  Contributor     │  128 pages      │
+└─────────────────────────────────────┘
+```
+
+**Dans PageBlockchainCard (compact + cliquable):**
+- Afficher le statut actuel pour cette page: "You are Pioneer on this page!" ou "Explorer #7"
+- **Cliquable** → redirige vers `DiscoveryProfilePage` avec toutes les stats
+
+### 8. PageBlockchainCard.tsx (MODIFIER)
+
+Ajouter section entre trust buttons et metrics:
+
+```tsx
+{/* Trust & Distrust Buttons - existant, INCHANGÉ */}
+
+{/* NEW: Discovery Section (séparé du trust) */}
+<div className="discovery-section">
+  {/* Statut compact pour cette page - CLIQUABLE */}
+  {discoveryStatus && (
+    <div
+      className="discovery-status-line clickable"
+      onClick={() => navigateTo('DiscoveryProfile')}
+    >
+      {discoveryStatus === 'Pioneer' && "You are Pioneer on this page!"}
+      {discoveryStatus === 'Explorer' && `Explorer #${certificationRank}`}
+      {discoveryStatus === 'Contributor' && `Contributor #${certificationRank}`}
+      <span className="view-stats-hint">View all stats →</span>
+    </div>
+  )}
+
+  {/* Intention Bubble Selector - ouvre le WeightModal au clic */}
+  <IntentionBubbleSelector
+    onBubbleClick={handleIntentionClick}  // Ouvre WeightModal avec le triple
+    pageUrl={currentUrl}
+    pageLabel={pageLabel}
+  />
+</div>
+
+{/* WeightModal - réutilisé comme pour trust/distrust */}
+<WeightModal
+  isOpen={showIntentionModal}
+  onClose={() => setShowIntentionModal(false)}
+  triplets={intentionTriplets}
+  modalType="intention"
+  onSubmit={handleIntentionSubmit}
+/>
+
+{/* Extended Metrics - existant */}
+```
+
+**Réutilisation du WeightModal existant:**
+- Même composant que pour trust/distrust
+- Affiche le triple sélectionné: `I → visits for [intention] → [page]`
+- Permet de choisir le weight avant confirmation
+
+### 9. Page Profil Discovery - `components/pages/DiscoveryProfilePage.tsx` (NOUVEAU)
+
+Page dédiée aux statistiques de découverte complètes :
+
+**Section 1 - Compteurs de statut:**
+```
+┌─────────────────────────────────────┐
+│  DISCOVERY STATS                    │
+├─────────────────────────────────────┤
+│  Pioneer       │  12 pages         │
+│  Explorer      │  45 pages         │
+│  Contributor   │  128 pages        │
+│                                     │
+│  Total pages certified: 185         │
+└─────────────────────────────────────┘
+```
+
+**Section 2 - XP Discovery:**
+```
+┌─────────────────────────────────────┐
+│  DISCOVERY XP                       │
+├─────────────────────────────────────┤
+│  From Pioneer discoveries: 600 XP   │
+│  From Explorer discoveries: 900 XP  │
+│  From Contributor discoveries: 640 XP│
+│                                     │
+│  Total Discovery XP: 2,140          │
+└─────────────────────────────────────┘
+```
+
+**Section 3 - Répartition par intention:**
+```
+┌─────────────────────────────────────┐
+│  INTENTIONS BREAKDOWN               │
+├─────────────────────────────────────┤
+│  for work         ████████░░  35    │
+│  for learning     ██████████  82    │
+│  for fun          █████░░░░░  28    │
+│  for inspiration  ███░░░░░░░  15    │
+│  for buying       █████░░░░░  25    │
+└─────────────────────────────────────┘
+```
+
+**Section 4 - Historique récent:**
+```
+┌─────────────────────────────────────────────────┐
+│  RECENT DISCOVERIES                             │
+├─────────────────────────────────────────────────┤
+│  github.com/...     │ Pioneer  │ for learning  │
+│  docs.react.dev/... │ Explorer │ for work      │
+│  medium.com/...     │ Pioneer  │ for inspiration│
+│  ...                                            │
+└─────────────────────────────────────────────────┘
+```
+(Liste scrollable des 10 dernières découvertes avec URL, statut, intention)
+
+**Accès:** Clic sur le statut discovery dans PageBlockchainCard (ex: "You are Pioneer on this page!")
+
+### 10. Styles - `components/styles/IntentionBubbleSelector.css` (NOUVEAU)
+
+```css
+/* Phrase avec placeholder */
+.intention-phrase {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.intention-placeholder {
+  min-width: 100px;
+  padding: 6px 12px;
+  border: 2px dashed rgba(255,255,255,0.3);
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.intention-placeholder.filled {
+  border: 2px solid #10B981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+/* Bulles cliquables */
+.intention-bubbles {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.intention-bubble {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.1);
+}
+
+.intention-bubble:hover {
+  transform: scale(1.1);
+  background: rgba(255,255,255,0.1);
+}
+
+.intention-bubble.selected {
+  transform: scale(1.15);
+  border-color: #F59E0B;
+  background: rgba(245, 158, 11, 0.2);
 }
 ```
 
----
+### 11. Quest System - `hooks/useQuestSystem.ts` (MODIFIER)
 
-## Tests
-
-1. **Test local** :
-   ```bash
-   cd sofia-mastra && pnpm dev
-   # Appeler le workflow avec curl ou Postman
-   ```
-
-2. **Verifier le triple on-chain** :
-   - Via GraphQL Intuition
-   - Ou via `cast call` sur le MultiVault
-
-3. **Test E2E** :
-   - Connecter 5 OAuth dans l'extension
-   - Cliquer "Claim Humanity"
-   - Verifier que le badge apparait
+Ajouter nouvelles quêtes:
+- `discovery-first`: "First Step" - 1ère page certifiée (50 XP)
+- `discovery-pioneer`: "Pioneer" - Être le 1er sur une page (200 XP)
+- `discovery-10/50/100`: "Pathfinder/Cartographer/Explorer" (100-500 XP)
+- `intention-variety`: "Multi-Purpose" - Utiliser les 5 intentions (150 XP)
+- `multi-domain`: "Multi-domain Explorer" - 10 domaines différents (200 XP)
 
 ---
 
-## Risques et Mitigations
+## Ordre d'Implémentation par Phases
 
-| Risque | Mitigation |
-|--------|------------|
-| Bot n'a plus de fonds | Alerter si balance < 0.1 ETH |
-| Double attestation | Verifier si triple existe avant creation |
-| Token OAuth expire pendant la TX | Verifier les 5 tokens AVANT de commencer la TX |
-| TX echoue | Retourner l'erreur, user peut re-essayer |
-| Bot rate limited | Ajouter un delay entre les attestations si besoin |
+### PHASE 1 : Foundation (MVP minimal)
+**Objectif:** Permettre de certifier une page avec une intention + garanties d'engagement
+
+- [ ] 1.1 Créer `types/discovery.ts` - Types de base
+- [ ] 1.2 Ajouter prédicats dans `chainConfig.dev.ts`
+- [ ] 1.3 Créer `useIntentionCertify.ts` - Hook pour créer le triple
+- [ ] 1.4 Créer `useProofOfAttention.ts` - Hook pour vérifier temps/scroll sur la page
+- [ ] 1.5 Créer `IntentionBubbleSelector.tsx` - UI des bulles (désactivées si pas assez d'attention)
+- [ ] 1.6 Intégrer dans `PageBlockchainCard.tsx` - Ajouter la section
+- [ ] 1.7 Configurer stake minimum dans WeightModal pour les intentions
+
+**Livrable Phase 1:** User doit explorer la page (30s+) → peut cliquer bulle → WeightModal avec minimum → Transaction
 
 ---
 
-## Resume
+### PHASE 2 : Discovery Status
+**Objectif:** Afficher Pioneer/Explorer/Contributor
 
-```
-User connecte 5 OAuth → Clique "Claim" → Mastra verifie → Bot cree atom + triple → Badge 🏆
-                                              ↑
-                                        BOT signe la TX
-                                        Gratuit pour user
-```
+- [ ] 2.1 Créer `usePageDiscovery.ts` - Query pour compter les certifications
+- [ ] 2.2 Ajouter l'affichage du statut dans `PageBlockchainCard.tsx`
+- [ ] 2.3 Ajouter les styles CSS
+
+**Livrable Phase 2:** User voit "You are Pioneer!" après avoir certifié
+
+---
+
+### PHASE 3 : Profil Discovery
+**Objectif:** Page avec toutes les stats
+
+- [ ] 3.1 Créer `useDiscoveryScore.ts` - Calcul des scores globaux
+- [ ] 3.2 Créer `DiscoveryProfilePage.tsx` - UI de la page
+- [ ] 3.3 Ajouter la navigation (clic sur statut → profil)
+- [ ] 3.4 Ajouter la route dans le router
+
+**Livrable Phase 3:** User peut voir ses stats complètes
+
+---
+
+### PHASE 4 : Gamification (optionnel)
+**Objectif:** Intégrer avec le système de quêtes existant
+
+- [ ] 4.1 Ajouter les quêtes discovery dans `useQuestSystem.ts`
+- [ ] 4.2 Connecter les XP discovery au système existant
+- [ ] 4.3 Tester le flow complet
+
+**Livrable Phase 4:** Quêtes de découverte fonctionnelles
+
+---
+
+## Vérification
+
+1. Ouvrir l'extension sur une page non certifiée → pas de statut discovery affiché (ou "Be first!")
+2. Trust/Distrust fonctionne toujours normalement (indépendant)
+3. Cliquer sur une bulle d'intention (ex: "for learning") → WeightModal s'ouvre avec triple `I → visits for learning → [page]`
+4. Confirmer dans le modal → transaction créée, statut "You are Pioneer on this page!" affiché
+5. Cliquer sur le statut "You are Pioneer..." → navigation vers DiscoveryProfilePage
+6. Dans DiscoveryProfilePage → voir Pioneer Score: 1, XP gagné
+7. Ouvrir sur même page depuis autre compte → voir "Explorer #2" (si 2-10) ou "Contributor #X" (si 11+)
+8. Vérifier nouvelles quêtes débloquées dans le système de quêtes
