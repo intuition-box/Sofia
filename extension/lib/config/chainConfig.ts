@@ -41,7 +41,8 @@ export const {
   EXPLORER_URLS,
   PREDICATE_IDS,
   SUBJECT_IDS,
-  PREDICATE_NAMES
+  PREDICATE_NAMES,
+  BOT_VERIFIER_ADDRESS
 } = config
 
 // Export Sofia proxy address (only available in local config)

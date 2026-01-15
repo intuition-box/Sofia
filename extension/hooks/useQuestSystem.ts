@@ -14,7 +14,8 @@ import { getClients } from '../lib/clients/viemClients'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { BlockchainService } from '../lib/services/blockchainService'
-import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, API_CONFIG } from '../lib/config/chainConfig'
+import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, BOT_VERIFIER_ADDRESS } from '../lib/config/chainConfig'
+import { MASTRA_API_URL } from '../config'
 import type { Address } from '../types/viem'
 
 // Constants for on-chain operations
@@ -206,9 +207,12 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       console.log('🔍 [QuestSystem] User atom ID:', userAtomId)
 
-      // Query for all triples where subject = user wallet (for both has_tag badges AND verified social links)
+      // Query for all triples where subject = user wallet
+      // Check both has_tag badges AND social links by predicate label
+      // For social links, filter by creator = bot verifier address
+      const botVerifierLower = BOT_VERIFIER_ADDRESS.toLowerCase()
       const query = `
-        query GetQuestBadgesAndSocialLinks($subjectId: String!, $hasTagPredicateId: String!, $verifiedPredicateId: String!) {
+        query GetQuestBadgesAndSocialLinks($subjectId: String!, $hasTagPredicateId: String!, $botVerifierId: String!) {
           badges: triples(
             where: {
               subject_id: { _eq: $subjectId },
@@ -223,10 +227,23 @@ export const useQuestSystem = (): QuestSystemResult => {
           socialLinks: triples(
             where: {
               subject_id: { _eq: $subjectId },
-              predicate_id: { _eq: $verifiedPredicateId }
+              creator_id: { _eq: $botVerifierId },
+              predicate: {
+                label: { _in: [
+                  "has verified discord id",
+                  "has verified youtube id",
+                  "has verified spotify id",
+                  "has verified twitch id",
+                  "has verified twitter id"
+                ]}
+              }
             }
           ) {
             term_id
+            creator_id
+            predicate {
+              label
+            }
             object {
               label
             }
@@ -234,16 +251,13 @@ export const useQuestSystem = (): QuestSystemResult => {
         }
       `
 
-      // Use the verified predicate ID for social links
-      const TERM_ID_VERIFIED = '0xcdffac0eb431ba084e18d5af7c55b4414c153f5c0df693c2d1454079186f975c'
-
       const data = await intuitionGraphqlClient.request(query, {
         subjectId: userAtomId,
         hasTagPredicateId: CHAIN_PREDICATE_IDS.HAS_TAG,
-        verifiedPredicateId: TERM_ID_VERIFIED
+        botVerifierId: botVerifierLower
       }) as {
         badges: Array<{ term_id: string; object: { label: string } }>
-        socialLinks: Array<{ term_id: string; object: { label: string } }>
+        socialLinks: Array<{ term_id: string; creator_id: string; predicate: { label: string }; object: { label: string } }>
       }
 
       const claimedFromChain = new Set<string>()
@@ -268,27 +282,32 @@ export const useQuestSystem = (): QuestSystemResult => {
         }
       }
 
-      // Check social links (verified triples) - format: "platform:userId"
+      // Check social links by predicate label (filtered by bot verifier creator)
+      // The query already filters by creator_id = BOT_VERIFIER_ADDRESS
+      console.log(`🤖 [QuestSystem] Checking social links verified by bot: ${botVerifierLower}`)
       if (data.socialLinks && data.socialLinks.length > 0) {
-        const platformToQuestId: Record<string, string> = {
-          'discord': 'link-discord',
-          'youtube': 'link-youtube',
-          'spotify': 'link-spotify',
-          'twitch': 'link-twitch',
-          'twitter': 'link-twitter',
+        const predicateToQuestId: Record<string, string> = {
+          'has verified discord id': 'link-discord',
+          'has verified youtube id': 'link-youtube',
+          'has verified spotify id': 'link-spotify',
+          'has verified twitch id': 'link-twitch',
+          'has verified twitter id': 'link-twitter',
         }
 
         for (const triple of data.socialLinks) {
-          const objectLabel = triple.object?.label?.toLowerCase()
-          if (objectLabel) {
-            // Check if the label starts with a platform name (e.g., "discord:123456")
-            for (const [platform, questId] of Object.entries(platformToQuestId)) {
-              if (objectLabel.startsWith(`${platform}:`)) {
-                console.log(`✅ [QuestSystem] Found on-chain social link for: ${questId} (${triple.object.label})`)
-                claimedFromChain.add(questId)
-                break
-              }
-            }
+          const predicateLabel = triple.predicate?.label?.toLowerCase()
+          const objectLabel = triple.object?.label
+
+          // Skip invalid labels (old buggy triples with [object Object] or similar)
+          if (!objectLabel || objectLabel.includes('[object') || objectLabel.includes('{')) {
+            console.log(`⚠️ [QuestSystem] Skipping invalid social link: predicate=${predicateLabel}, object=${objectLabel}`)
+            continue
+          }
+
+          if (predicateLabel && predicateToQuestId[predicateLabel]) {
+            const questId = predicateToQuestId[predicateLabel]
+            console.log(`✅ [QuestSystem] Found verified social link: ${questId} (userId: ${objectLabel}, verifier: ${triple.creator_id})`)
+            claimedFromChain.add(questId)
           }
         }
       }
@@ -315,7 +334,7 @@ export const useQuestSystem = (): QuestSystemResult => {
           localClaimed = new Set(result.claimed_quests)
         }
 
-        // Sync with on-chain badges (only if wallet is available)
+        // Sync with on-chain badges
         if (walletAddress && !onChainSyncDone) {
           const onChainClaimed = await checkOnChainQuestBadges()
 
@@ -362,11 +381,9 @@ export const useQuestSystem = (): QuestSystemResult => {
 
   // Call Mastra API to link social account on-chain
   const callLinkSocialWorkflow = async (platform: SocialPlatform, oauthToken: string): Promise<{ success: boolean; txHash?: string; error?: string }> => {
-    const mastraUrl = (API_CONFIG as any).MASTRA_API_URL || 'http://localhost:4111'
-
     console.log(`🔗 [QuestSystem] Calling link-social-workflow for ${platform}...`)
 
-    const response = await fetch(`${mastraUrl}/api/workflows/link-social-workflow/start-async`, {
+    const response = await fetch(`${MASTRA_API_URL}/api/workflows/linkSocialWorkflow/start-async`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

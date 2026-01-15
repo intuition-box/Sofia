@@ -23,10 +23,6 @@ import type { Address } from '../types/viem'
 // Storage key for social attestation
 const SOCIAL_ATTESTATION_KEY = 'social_attestation'
 
-// Pre-existing Term IDs for the triple [User] [socials_platform] [verified]
-const TERM_ID_SOCIALS_PLATFORM = '0x004614d581d091be4b93f4a56321f00b7e187190011b6683b955dcd43a611248' as Address
-const TERM_ID_VERIFIED = '0xcdffac0eb431ba084e18d5af7c55b4414c153f5c0df693c2d1454079186f975c' as Address
-
 export interface SocialAttestation {
   txHash: string
   claimedAt: number
@@ -85,12 +81,13 @@ export const useSocialVerifier = (): SocialVerifierResult => {
     return connectedCount >= 5
   }, [])
 
-  // Check on-chain if the triple [wallet] [socials_platform] [verified] exists
+  // Check on-chain if all 5 social platforms are linked
+  // by checking for triples with predicates "has verified {platform} id"
   const checkOnChainAttestation = useCallback(async (): Promise<boolean> => {
     if (!walletAddress) return false
 
     try {
-      console.log('🔍 [SocialVerifier] Checking on-chain attestation for:', walletAddress)
+      console.log('🔍 [SocialVerifier] Checking on-chain social links for:', walletAddress)
 
       // Calculate the atom ID for this wallet address
       const userAtomData = stringToHex(walletAddress.toLowerCase())
@@ -105,36 +102,57 @@ export const useSocialVerifier = (): SocialVerifierResult => {
 
       console.log('🔢 [SocialVerifier] User atom ID calculated:', userAtomId)
 
-      // Query for triples where subject_id matches the user's atom
+      // Query for triples with social verification predicates
       const query = `
-        query CheckSocialAttestation($subjectId: String!, $predicateId: String!, $objectId: String!) {
+        query CheckSocialLinks($subjectId: String!) {
           triples(
             where: {
               subject_id: { _eq: $subjectId },
-              predicate_id: { _eq: $predicateId },
-              object_id: { _eq: $objectId }
-            },
-            limit: 1
+              predicate: {
+                label: { _in: [
+                  "has verified discord id",
+                  "has verified youtube id",
+                  "has verified spotify id",
+                  "has verified twitch id",
+                  "has verified twitter id"
+                ]}
+              }
+            }
           ) {
             term_id
             created_at
+            predicate {
+              label
+            }
+            object {
+              label
+            }
           }
         }
       `
 
       const data = await intuitionGraphqlClient.request(query, {
-        subjectId: userAtomId,
-        predicateId: TERM_ID_SOCIALS_PLATFORM,
-        objectId: TERM_ID_VERIFIED
-      })
+        subjectId: userAtomId
+      }) as { triples: Array<{ term_id: string; created_at: string; predicate: { label: string }; object: { label: string } }> }
 
-      if (data.triples && data.triples.length > 0) {
-        const triple = data.triples[0]
-        console.log('✅ [SocialVerifier] Found on-chain attestation:', triple)
+      // Filter out invalid triples (old buggy ones with [object Object] labels)
+      const validTriples = data.triples?.filter(triple => {
+        const objectLabel = triple.object?.label
+        if (!objectLabel || objectLabel.includes('[object') || objectLabel.includes('{')) {
+          console.log(`⚠️ [SocialVerifier] Skipping invalid triple: predicate=${triple.predicate?.label}, object=${objectLabel}`)
+          return false
+        }
+        return true
+      }) || []
+
+      if (validTriples.length >= 5) {
+        // All 5 platforms are linked with valid IDs
+        const latestTriple = validTriples[0]
+        console.log('✅ [SocialVerifier] All 5 social platforms linked on-chain')
 
         const attestation: SocialAttestation = {
-          txHash: triple.term_id || '',
-          claimedAt: triple.created_at ? new Date(triple.created_at).getTime() : Date.now(),
+          txHash: latestTriple.term_id || '',
+          claimedAt: latestTriple.created_at ? new Date(latestTriple.created_at).getTime() : Date.now(),
           walletAddress
         }
         await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: attestation })
@@ -143,7 +161,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
         return true
       }
 
-      console.log('❌ [SocialVerifier] No on-chain attestation found')
+      console.log(`❌ [SocialVerifier] Only ${validTriples.length}/5 social platforms linked (valid triples)`)
       return false
     } catch (error) {
       console.error('Error checking on-chain attestation:', error)
@@ -216,7 +234,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
         },
       }
 
-      const response = await fetch(`${MASTRA_API_URL}/api/workflows/social-verifier-workflow/start-async`, {
+      const response = await fetch(`${MASTRA_API_URL}/api/workflows/socialVerifierWorkflow/start-async`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inputData: requestData }),

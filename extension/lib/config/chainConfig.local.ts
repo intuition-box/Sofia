@@ -70,6 +70,9 @@ export const SUBJECT_IDS = {
   I: "0x0000000000000000000000000000000000000000000000000000000000000003"
 } as const
 
+// Bot Verifier Address (not used in local but needed for type compatibility)
+export const BOT_VERIFIER_ADDRESS = "0x0000000000000000000000000000000000000000" as const
+
 // Predicate Names (for display)
 export const PREDICATE_NAMES = {
   FOLLOW: "follow",

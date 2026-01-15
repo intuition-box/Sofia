@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   sofia:
-    image: maximesaintjoannis/sofia-mastra:v1.2.8
+    image: maximesaintjoannis/sofia-mastra:v1.2.12
     container_name: sofia
     environment:
       # GaiaNet configuration

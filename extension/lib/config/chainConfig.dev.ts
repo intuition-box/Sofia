@@ -66,6 +66,9 @@ export const SUBJECT_IDS = {
   I: "0x7ab197b346d386cd5926dbfeeb85dade42f113c7ed99ff2046a5123bb5cd016b"
 } as const
 
+// Bot Verifier Address (creates social verification triples)
+export const BOT_VERIFIER_ADDRESS = "0xCd62c554bdEF0501158Bd6513e0654cd3cc8ae88" as const
+
 // Predicate Names (for display)
 export const PREDICATE_NAMES = {
   FOLLOW: "follow",

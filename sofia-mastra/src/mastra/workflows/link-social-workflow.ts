@@ -4,11 +4,72 @@ import { createPublicClient, createWalletClient, http, stringToHex, encodeFuncti
 import { privateKeyToAccount } from 'viem/accounts';
 
 import { intuitionMainnet, RPC_URL } from '../config/chain';
-import { MULTIVAULT_ADDRESS, TERM_ID_VERIFIED } from '../config/constants';
+import { MULTIVAULT_ADDRESS } from '../config/constants';
 import { MultiVaultAbi } from '../config/abi';
+
+// Intuition GraphQL endpoint for pinning
+const INTUITION_GRAPHQL_ENDPOINT = 'https://mainnet.intuition.sh/v1/graphql';
+
+/**
+ * Pin data to IPFS via Intuition's pinThing mutation
+ * Returns the IPFS URI that will be used as the atom data
+ */
+async function pinToIPFS(name: string, description: string): Promise<string> {
+  const mutation = `
+    mutation PinThing($thing: PinThingInput!) {
+      pinThing(thing: $thing) {
+        uri
+      }
+    }
+  `;
+
+  const response = await fetch(INTUITION_GRAPHQL_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: mutation,
+      variables: {
+        thing: {
+          name,
+          description,
+          image: '',
+          url: ''
+        }
+      }
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`IPFS pinning failed: ${response.status}`);
+  }
+
+  const result = await response.json();
+
+  if (result.errors) {
+    throw new Error(`IPFS pinning error: ${result.errors[0].message}`);
+  }
+
+  const uri = result.data?.pinThing?.uri;
+  if (!uri) {
+    throw new Error('No IPFS URI returned from pinThing');
+  }
+
+  return uri;
+}
 
 // Platform type
 type Platform = 'discord' | 'youtube' | 'spotify' | 'twitch' | 'twitter';
+
+// Predicate names for each platform (with spaces - Intuition format)
+const PREDICATE_NAMES: Record<Platform, string> = {
+  discord: 'has verified discord id',
+  youtube: 'has verified youtube id',
+  spotify: 'has verified spotify id',
+  twitch: 'has verified twitch id',
+  twitter: 'has verified twitter id',
+};
 
 // Input schema
 const inputSchema = z.object({
@@ -26,6 +87,7 @@ const outputSchema = z.object({
   txHash: z.string().optional(),
   blockNumber: z.number().optional(),
   walletAtomCreated: z.boolean().optional(),
+  predicateAtomCreated: z.boolean().optional(),
   socialAtomCreated: z.boolean().optional(),
   error: z.string().optional(),
 });
@@ -94,6 +156,8 @@ async function verifyAndGetUserId(
 
     const data = await response.json();
 
+    console.log(`[LinkSocialWorkflow] ${platform} API response:`, JSON.stringify(data).substring(0, 500));
+
     // Extract userId based on platform
     let userId: string | undefined;
     let username: string | undefined;
@@ -101,33 +165,35 @@ async function verifyAndGetUserId(
     switch (platform) {
       case 'discord':
         // Discord: { id: "123456789", username: "user" }
-        userId = data.id;
-        username = data.username;
+        userId = data.id ? String(data.id) : undefined;
+        username = data.username ? String(data.username) : undefined;
         break;
       case 'youtube':
         // YouTube: { items: [{ id: "UCxxxxx", snippet: { title: "Channel Name" } }] }
-        userId = data.items?.[0]?.id;
-        username = data.items?.[0]?.snippet?.title;
+        userId = data.items?.[0]?.id ? String(data.items[0].id) : undefined;
+        username = data.items?.[0]?.snippet?.title ? String(data.items[0].snippet.title) : undefined;
         break;
       case 'spotify':
         // Spotify: { id: "user123", display_name: "User Name" }
-        userId = data.id;
-        username = data.display_name;
+        userId = data.id ? String(data.id) : undefined;
+        username = data.display_name ? String(data.display_name) : undefined;
         break;
       case 'twitch':
         // Twitch: { data: [{ id: "123456", login: "username" }] }
-        userId = data.data?.[0]?.id;
-        username = data.data?.[0]?.login;
+        userId = data.data?.[0]?.id ? String(data.data[0].id) : undefined;
+        username = data.data?.[0]?.login ? String(data.data[0].login) : undefined;
         break;
       case 'twitter':
         // Twitter: { data: { id: "123456789", username: "user" } }
-        userId = data.data?.id;
-        username = data.data?.username;
+        userId = data.data?.id ? String(data.data.id) : undefined;
+        username = data.data?.username ? String(data.data.username) : undefined;
         break;
     }
 
+    console.log(`[LinkSocialWorkflow] ${platform} extracted userId: ${userId}, username: ${username}`);
+
     if (!userId) {
-      return { valid: false, error: 'Could not extract user ID from response' };
+      return { valid: false, error: `Could not extract user ID from ${platform} response` };
     }
 
     return { valid: true, userId, username };
@@ -141,13 +207,14 @@ async function verifyAndGetUserId(
  * Link Social Workflow
  *
  * Links a social account to a wallet by creating a triple on-chain:
- * [wallet] [TERM_ID_VERIFIED] [platform:userId]
+ * [wallet] [has verified {platform} id] [userId]
  *
  * Flow:
  * 1. Verify OAuth token and extract userId
  * 2. Create wallet atom if needed
- * 3. Create social atom (platform:userId) - reverts if already exists
- * 4. Create triple [wallet] [TERM_ID_VERIFIED] [social]
+ * 3. Create predicate atom if needed (e.g., "has verified discord id")
+ * 4. Create social atom (userId only)
+ * 5. Create triple [wallet] [predicate] [userId]
  */
 const executeLinkSocial = createStep({
   id: 'execute-link-social',
@@ -209,33 +276,53 @@ const executeLinkSocial = createStep({
 
       console.log(`[LinkSocialWorkflow] Bot address: ${account.address}`);
 
-      // Build social atom data: "platform:userId"
-      const socialAtomData = `${platform}:${verification.userId}`;
-      const socialAtomDataHex = stringToHex(socialAtomData);
+      // Build atom data
+      // Social atom = pin to IPFS with name = userId, so the label will be the userId
+      const userId = verification.userId;
+      const socialDescription = `Verified ${platform} account ID`;
 
-      console.log(`[LinkSocialWorkflow] Social atom data: ${socialAtomData}`);
+      console.log(`[LinkSocialWorkflow] Pinning social atom to IPFS: name=${userId}, description=${socialDescription}`);
+      const socialIpfsUri = await pinToIPFS(userId, socialDescription);
+      console.log(`[LinkSocialWorkflow] Social atom IPFS URI: ${socialIpfsUri}`);
+
+      const socialAtomDataHex = stringToHex(socialIpfsUri);
+
+      // Predicate atom = "has verified {platform} id"
+      const predicateName = PREDICATE_NAMES[platform];
+      const predicateDataHex = stringToHex(predicateName);
+
+      console.log(`[LinkSocialWorkflow] Social atom data (IPFS URI): ${socialIpfsUri}`);
+      console.log(`[LinkSocialWorkflow] Predicate: ${predicateName}`);
 
       // Calculate atom IDs
       const walletAtomData = stringToHex(walletAddress);
-      const walletAtomId = await publicClient.readContract({
-        address: MULTIVAULT_ADDRESS,
-        abi: MultiVaultAbi,
-        functionName: 'calculateAtomId',
-        args: [walletAtomData],
-      });
-
-      const socialAtomId = await publicClient.readContract({
-        address: MULTIVAULT_ADDRESS,
-        abi: MultiVaultAbi,
-        functionName: 'calculateAtomId',
-        args: [socialAtomDataHex],
-      });
+      const [walletAtomId, socialAtomId, predicateAtomId] = await Promise.all([
+        publicClient.readContract({
+          address: MULTIVAULT_ADDRESS,
+          abi: MultiVaultAbi,
+          functionName: 'calculateAtomId',
+          args: [walletAtomData],
+        }),
+        publicClient.readContract({
+          address: MULTIVAULT_ADDRESS,
+          abi: MultiVaultAbi,
+          functionName: 'calculateAtomId',
+          args: [socialAtomDataHex],
+        }),
+        publicClient.readContract({
+          address: MULTIVAULT_ADDRESS,
+          abi: MultiVaultAbi,
+          functionName: 'calculateAtomId',
+          args: [predicateDataHex],
+        }),
+      ]);
 
       console.log(`[LinkSocialWorkflow] Wallet atom ID: ${walletAtomId}`);
       console.log(`[LinkSocialWorkflow] Social atom ID: ${socialAtomId}`);
+      console.log(`[LinkSocialWorkflow] Predicate atom ID: ${predicateAtomId}`);
 
       // Check if atoms exist
-      const [walletAtomExists, socialAtomExists] = await Promise.all([
+      const [walletAtomExists, socialAtomExists, predicateAtomExists] = await Promise.all([
         publicClient.readContract({
           address: MULTIVAULT_ADDRESS,
           abi: MultiVaultAbi,
@@ -248,21 +335,20 @@ const executeLinkSocial = createStep({
           functionName: 'isTermCreated',
           args: [socialAtomId],
         }),
+        publicClient.readContract({
+          address: MULTIVAULT_ADDRESS,
+          abi: MultiVaultAbi,
+          functionName: 'isTermCreated',
+          args: [predicateAtomId],
+        }),
       ]);
 
       console.log(`[LinkSocialWorkflow] Wallet atom exists: ${walletAtomExists}`);
       console.log(`[LinkSocialWorkflow] Social atom exists: ${socialAtomExists}`);
+      console.log(`[LinkSocialWorkflow] Predicate atom exists: ${predicateAtomExists}`);
 
-      // If social atom already exists, this account is already linked
-      if (socialAtomExists) {
-        return {
-          success: false,
-          platform,
-          userId: verification.userId,
-          username: verification.username,
-          error: `This ${platform} account is already linked to a wallet`,
-        };
-      }
+      // Note: We don't check if social atom exists anymore because the same userId
+      // could be used across different platforms. The uniqueness is in the triple itself.
 
       // Get costs and config from contract
       const [atomCost, tripleCost, generalConfig] = await Promise.all([
@@ -292,13 +378,12 @@ const executeLinkSocial = createStep({
 
       let walletAtomCreated = false;
       let socialAtomCreated = false;
+      let predicateAtomCreated = false;
 
       // Step 2: Create wallet atom if needed
       if (!walletAtomExists) {
         console.log(`[LinkSocialWorkflow] Creating wallet atom...`);
 
-        // msg.value must equal sum(assets[]) exactly
-        // atomCost is deducted from assets internally
         const atomTotalValue = atomCost + atomDeposit;
 
         const atomCallData = encodeFunctionData({
@@ -331,64 +416,83 @@ const executeLinkSocial = createStep({
         walletAtomCreated = true;
       }
 
-      // Step 3: Create social atom
-      console.log(`[LinkSocialWorkflow] Creating social atom: ${socialAtomData}`);
+      // Step 3: Create predicate atom if needed (e.g., "has verified discord id")
+      if (!predicateAtomExists) {
+        console.log(`[LinkSocialWorkflow] Creating predicate atom: ${predicateName}`);
 
-      // msg.value must equal sum(assets[]) exactly
-      const socialAtomTotalValue = atomCost + atomDeposit;
+        const predicateAtomTotalValue = atomCost + atomDeposit;
 
-      const socialAtomCallData = encodeFunctionData({
-        abi: MultiVaultAbi,
-        functionName: 'createAtoms',
-        args: [[socialAtomDataHex], [socialAtomTotalValue]],
-      });
+        const predicateAtomCallData = encodeFunctionData({
+          abi: MultiVaultAbi,
+          functionName: 'createAtoms',
+          args: [[predicateDataHex], [predicateAtomTotalValue]],
+        });
 
-      const createSocialAtomHash = await walletClient.sendTransaction({
-        to: MULTIVAULT_ADDRESS,
-        data: socialAtomCallData,
-        value: socialAtomTotalValue,
-        gas: 500000n,
-      });
+        const createPredicateHash = await walletClient.sendTransaction({
+          to: MULTIVAULT_ADDRESS,
+          data: predicateAtomCallData,
+          value: predicateAtomTotalValue,
+          gas: 500000n,
+        });
 
-      console.log(`[LinkSocialWorkflow] Social atom TX: ${createSocialAtomHash}`);
-      const socialAtomReceipt = await publicClient.waitForTransactionReceipt({ hash: createSocialAtomHash });
+        console.log(`[LinkSocialWorkflow] Predicate atom TX: ${createPredicateHash}`);
+        const predicateReceipt = await publicClient.waitForTransactionReceipt({ hash: createPredicateHash });
 
-      if (socialAtomReceipt.status !== 'success') {
-        return {
-          success: false,
-          platform,
-          userId: verification.userId,
-          username: verification.username,
-          walletAtomCreated,
-          error: `Social atom creation failed (may already exist). TX: ${createSocialAtomHash}`,
-        };
+        if (predicateReceipt.status !== 'success') {
+          return {
+            success: false,
+            platform,
+            userId: verification.userId,
+            username: verification.username,
+            walletAtomCreated,
+            error: `Predicate atom creation failed. TX: ${createPredicateHash}`,
+          };
+        }
+
+        console.log(`[LinkSocialWorkflow] Predicate atom created in block ${predicateReceipt.blockNumber}`);
+        predicateAtomCreated = true;
       }
 
-      console.log(`[LinkSocialWorkflow] Social atom created in block ${socialAtomReceipt.blockNumber}`);
-      socialAtomCreated = true;
+      // Step 4: Create social atom (userId) if needed
+      if (!socialAtomExists) {
+        console.log(`[LinkSocialWorkflow] Creating social atom: ${userId} (IPFS: ${socialIpfsUri})`);
 
-      // Step 4: Create triple [wallet] [TERM_ID_VERIFIED] [social]
-      console.log(`[LinkSocialWorkflow] Creating triple...`);
+        const socialAtomTotalValue = atomCost + atomDeposit;
 
-      // Verify TERM_ID_VERIFIED exists
-      const predicateExists = await publicClient.readContract({
-        address: MULTIVAULT_ADDRESS,
-        abi: MultiVaultAbi,
-        functionName: 'isTermCreated',
-        args: [TERM_ID_VERIFIED],
-      });
+        const socialAtomCallData = encodeFunctionData({
+          abi: MultiVaultAbi,
+          functionName: 'createAtoms',
+          args: [[socialAtomDataHex], [socialAtomTotalValue]],
+        });
 
-      if (!predicateExists) {
-        return {
-          success: false,
-          platform,
-          userId: verification.userId,
-          username: verification.username,
-          walletAtomCreated,
-          socialAtomCreated,
-          error: 'TERM_ID_VERIFIED atom does not exist on-chain',
-        };
+        const createSocialAtomHash = await walletClient.sendTransaction({
+          to: MULTIVAULT_ADDRESS,
+          data: socialAtomCallData,
+          value: socialAtomTotalValue,
+          gas: 500000n,
+        });
+
+        console.log(`[LinkSocialWorkflow] Social atom TX: ${createSocialAtomHash}`);
+        const socialAtomReceipt = await publicClient.waitForTransactionReceipt({ hash: createSocialAtomHash });
+
+        if (socialAtomReceipt.status !== 'success') {
+          return {
+            success: false,
+            platform,
+            userId: verification.userId,
+            username: verification.username,
+            walletAtomCreated,
+            predicateAtomCreated,
+            error: `Social atom creation failed. TX: ${createSocialAtomHash}`,
+          };
+        }
+
+        console.log(`[LinkSocialWorkflow] Social atom created in block ${socialAtomReceipt.blockNumber}`);
+        socialAtomCreated = true;
       }
+
+      // Step 5: Create triple [wallet] [has verified {platform} id] [userId]
+      console.log(`[LinkSocialWorkflow] Creating triple: [${walletAddress}] [${predicateName}] [${userId}]`);
 
       const tripleDepositAmount = tripleCost + tripleExtraDeposit;
 
@@ -397,8 +501,8 @@ const executeLinkSocial = createStep({
         functionName: 'createTriples',
         args: [
           [walletAtomId as `0x${string}`],      // subjectIds - wallet
-          [TERM_ID_VERIFIED as `0x${string}`],  // predicateIds - verified
-          [socialAtomId as `0x${string}`],      // objectIds - social account
+          [predicateAtomId as `0x${string}`],   // predicateIds - has verified {platform} id
+          [socialAtomId as `0x${string}`],      // objectIds - userId
           [tripleDepositAmount],                // assets
         ],
       });
@@ -435,6 +539,7 @@ const executeLinkSocial = createStep({
         txHash: tripleTxHash,
         blockNumber: Number(tripleReceipt.blockNumber),
         walletAtomCreated,
+        predicateAtomCreated,
         socialAtomCreated,
       };
     } catch (error) {
