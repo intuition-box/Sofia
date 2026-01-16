@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils/avatar'
-import './Avatar.css'
+import '../styles/Avatar.css'
 
 interface AvatarProps {
   imgSrc?: string          // URL de l'image (depuis ENS ou autre)

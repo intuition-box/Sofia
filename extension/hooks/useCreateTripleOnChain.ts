@@ -51,8 +51,23 @@ export const useCreateTripleOnChain = () => {
       return PREDICATE_IDS.TRUSTS
     }
     if (predicateName === 'distrust') {
-      // Return ID if it exists (non-empty), otherwise null to create it
       return PREDICATE_IDS.DISTRUST || null
+    }
+    // Intention predicates
+    if (predicateName === 'visits for work') {
+      return PREDICATE_IDS.VISITS_FOR_WORK || null
+    }
+    if (predicateName === 'visits for learning') {
+      return PREDICATE_IDS.VISITS_FOR_LEARNING || null
+    }
+    if (predicateName === 'visits for fun') {
+      return PREDICATE_IDS.VISITS_FOR_FUN || null
+    }
+    if (predicateName === 'visits for inspiration') {
+      return PREDICATE_IDS.VISITS_FOR_INSPIRATION || null
+    }
+    if (predicateName === 'visits for buying') {
+      return PREDICATE_IDS.VISITS_FOR_BUYING || null
     }
     return null
   }
@@ -230,11 +245,20 @@ export const useCreateTripleOnChain = () => {
         const predicateId = predicateAtom.vaultId as Address
         const objectId = objectAtom.vaultId as Address
 
+        // Calculate tripleId BEFORE transaction (deterministic hash from the 3 IDs)
+        const tripleVaultId = await publicClient.readContract({
+          address: BLOCKCHAIN_CONFIG.CONTRACT_ADDRESS as Address,
+          abi: MultiVaultAbi,
+          functionName: 'calculateTripleId',
+          args: [subjectId, predicateId, objectId]
+        }) as Address
+
         // Debug: Log all IDs before creating triple
         console.log('🔍 [createTripleOnChain] Creating triple with:', {
           subjectId,
           predicateId,
           objectId,
+          tripleVaultId,
           depositAmount: depositAmount.toString(),
           totalCost: totalCost.toString(),
           receiver: address
@@ -283,19 +307,6 @@ export const useCreateTripleOnChain = () => {
         if (receipt.status !== 'success') {
           throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
         }
-
-        // Simulate to get the result after successful transaction
-        const simulation = await publicClient.simulateContract({
-          address: contractAddress as Address,
-          abi: SofiaFeeProxyAbi,
-          functionName: 'createTriples',
-          args: [address as Address, [subjectId], [predicateId], [objectId], [depositAmount], CREATION_CURVE_ID],
-          value: totalCost,
-          account: walletClient.account
-        })
-
-        const tripleIds = simulation.result as Address[]
-        const tripleVaultId = tripleIds[0]
 
         return {
           success: true,

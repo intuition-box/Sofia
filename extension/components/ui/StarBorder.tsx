@@ -1,5 +1,5 @@
 import React from 'react';
-import './StarBorder.css';
+import '../styles/StarBorder.css';
 
 type StarBorderProps<T extends React.ElementType> = React.ComponentPropsWithoutRef<T> & {
   as?: T;

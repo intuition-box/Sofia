@@ -9,7 +9,7 @@ import StarBorder from './StarBorder'
 import { IntentionBubbleSelector } from './IntentionBubbleSelector'
 import type { PageBlockchainTriplet } from '../../types/page'
 import type { IntentionPurpose } from '../../types/discovery'
-import { INTENTION_LABELS } from '../../types/discovery'
+import { INTENTION_PREDICATES } from '../../types/discovery'
 import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
@@ -172,6 +172,26 @@ const PageBlockchainCard = () => {
     // PAUSE all auto-refreshes during transaction
     pauseRefresh()
 
+    // Check if this is an intention certification
+    const intentionFromTriplet = modalTriplets[0]?.intention as IntentionPurpose | undefined
+
+    if (intentionFromTriplet) {
+      // Handle intention certification
+      try {
+        const weight = customWeights[0] || undefined
+        console.log('📊 PageBlockchainCard - Starting intention certification', { intention: intentionFromTriplet })
+        await certifyWithIntention(currentUrl, intentionFromTriplet, weight as bigint | undefined)
+        console.log('✅ PageBlockchainCard - Intention certification completed')
+        resumeRefresh()
+        setTimeout(() => fetchDataForCurrentPage(), 1000)
+      } catch (error) {
+        console.error('❌ PageBlockchainCard - Intention certification error:', error)
+        resumeRefresh()
+      }
+      return
+    }
+
+    // Handle trust/distrust
     const isTrust = modalType === 'trust'
     const setLoading = isTrust ? setLocalTrustLoading : setLocalDistrustLoading
     const setError = isTrust ? setLocalTrustError : setLocalDistrustError
@@ -450,6 +470,42 @@ const PageBlockchainCard = () => {
               <small>{localTrustError || localDistrustError}</small>
             </div>
           )}
+
+          {/* Discovery Section - Intention Certification */}
+          <div className="discovery-section">
+            <IntentionBubbleSelector
+              onBubbleClick={(intention) => {
+                if (!currentUrl) return
+                // Extract page label for the triplet
+                const urlObj = new URL(currentUrl)
+                const domain = urlObj.hostname
+                const pathname = urlObj.pathname
+                const pageLabel = pathname && pathname !== '/'
+                  ? `${domain}${pathname}`
+                  : domain
+
+                // Prepare triplet for intention modal
+                const triplet = {
+                  id: `intention-${intention}`,
+                  triplet: {
+                    subject: 'I',
+                    predicate: INTENTION_PREDICATES[intention],
+                    object: pageLabel
+                  },
+                  description: `I ${INTENTION_PREDICATES[intention]} ${pageLabel}`,
+                  url: currentUrl,
+                  intention: intention
+                }
+
+                setModalTriplets([triplet])
+                setModalType('trust') // Use trust type for now, will handle in submit
+                setShowWeightModal(true)
+              }}
+              disabled={intentionLoading}
+              isEligible={true} // TODO: réactiver isAttentionEligible après debug
+              selectedIntention={currentIntention}
+            />
+          </div>
         </div>
       )}
 
