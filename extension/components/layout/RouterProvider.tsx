@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 
-type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'Sofia' | 'recommendations' | 'resonance' | 'chat' | 'user-profile'
+type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'Sofia' | 'recommendations' | 'resonance' | 'chat' | 'user-profile' | 'discovery-profile'
 
 export interface UserProfileData {
   termId: string

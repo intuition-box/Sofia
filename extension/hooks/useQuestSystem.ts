@@ -9,6 +9,7 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { getAddress, stringToHex } from 'viem'
 import { useBookmarks } from './useBookmarks'
+import { useDiscoveryScore } from './useDiscoveryScore'
 import { useCreateAtom } from './useCreateAtom'
 import { getClients } from '../lib/clients/viemClients'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
@@ -35,7 +36,7 @@ export interface Quest {
   status: 'locked' | 'active' | 'completed' | 'claimable_xp'
   statusColor: string
   xpReward: number
-  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social' | 'social-link'
+  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social' | 'social-link' | 'discovery'
   milestone?: number // For milestone-based quests
   claimable?: boolean // For quests that require on-chain claim (like Proof of Human)
   recurringType?: 'daily' | 'weekly' // For recurring quests
@@ -61,6 +62,12 @@ export interface UserProgress {
   spotifyConnected: boolean
   twitchConnected: boolean
   twitterConnected: boolean
+  // Discovery progress
+  pioneerCount: number
+  explorerCount: number
+  contributorCount: number
+  totalDiscoveries: number
+  uniqueIntentionTypes: number
 }
 
 // Quest system result
@@ -152,11 +159,20 @@ const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
   // Social quests
   { id: 'social-butterfly', title: 'Social Butterfly', description: 'Follow 10 users this week', total: 10, xpReward: 200, type: 'social', recurringType: 'weekly' },
   { id: 'networker-25', title: 'Networker', description: 'Follow 25 users', total: 25, xpReward: 350, type: 'social', milestone: 25 },
+
+  // Discovery quests
+  { id: 'discovery-first', title: 'First Step', description: 'Certify your first page', total: 1, xpReward: 50, type: 'discovery', milestone: 1 },
+  { id: 'discovery-pioneer', title: 'Trailblazer', description: 'Be the first to certify a page (Pioneer)', total: 1, xpReward: 200, type: 'discovery', milestone: 1 },
+  { id: 'discovery-10', title: 'Pathfinder', description: 'Certify 10 pages', total: 10, xpReward: 100, type: 'discovery', milestone: 10 },
+  { id: 'discovery-50', title: 'Cartographer', description: 'Certify 50 pages', total: 50, xpReward: 300, type: 'discovery', milestone: 50 },
+  { id: 'discovery-100', title: 'World Explorer', description: 'Certify 100 pages', total: 100, xpReward: 500, type: 'discovery', milestone: 100 },
+  { id: 'intention-variety', title: 'Multi-Purpose', description: 'Use all 5 intention types', total: 5, xpReward: 150, type: 'discovery', milestone: 5 },
 ]
 
 export const useQuestSystem = (): QuestSystemResult => {
   const { walletAddress } = useWalletFromStorage()
   const { lists, triplets } = useBookmarks()
+  const { stats: discoveryStats } = useDiscoveryScore()
 
   const [userProgress, setUserProgress] = useState<UserProgress>({
     signalsCreated: 0,
@@ -174,6 +190,11 @@ export const useQuestSystem = (): QuestSystemResult => {
     spotifyConnected: false,
     twitchConnected: false,
     twitterConnected: false,
+    pioneerCount: 0,
+    explorerCount: 0,
+    contributorCount: 0,
+    totalDiscoveries: 0,
+    uniqueIntentionTypes: 0,
   })
 
   const [loading, setLoading] = useState(true)
@@ -181,6 +202,29 @@ export const useQuestSystem = (): QuestSystemResult => {
   const [claimedQuestIds, setClaimedQuestIds] = useState<Set<string>>(new Set())
   const [claimingQuestId, setClaimingQuestId] = useState<string | null>(null)
   const [onChainSyncDone, setOnChainSyncDone] = useState(false)
+  const [claimedDiscoveryXP, setClaimedDiscoveryXP] = useState(0)
+
+  // Load claimed discovery XP from storage and listen for changes
+  useEffect(() => {
+    const loadDiscoveryXP = async () => {
+      try {
+        const result = await chrome.storage.local.get(['claimed_discovery_xp'])
+        setClaimedDiscoveryXP(result.claimed_discovery_xp || 0)
+      } catch (err) {
+        console.error('❌ [QuestSystem] Failed to load discovery XP:', err)
+      }
+    }
+    loadDiscoveryXP()
+
+    // Listen for changes to discovery XP
+    const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
+      if (changes.claimed_discovery_xp) {
+        setClaimedDiscoveryXP(changes.claimed_discovery_xp.newValue || 0)
+      }
+    }
+    chrome.storage.onChanged.addListener(listener)
+    return () => chrome.storage.onChanged.removeListener(listener)
+  }, [])
 
   // Get atom creation functions
   const { pinAtomToIPFS, createAtomsFromPinned, ensureProxyApproval } = useCreateAtom()
@@ -379,6 +423,56 @@ export const useQuestSystem = (): QuestSystemResult => {
     }
   }
 
+  // Check if a social link triple already exists on-chain for this platform
+  const checkSocialLinkExists = async (platform: SocialPlatform): Promise<boolean> => {
+    if (!walletAddress) return false
+
+    try {
+      const { publicClient } = await getClients()
+
+      // Calculate user's atom ID from wallet address
+      const userAtomData = stringToHex(walletAddress)
+      const userAtomId = await publicClient.readContract({
+        address: MULTIVAULT_CONTRACT_ADDRESS as Address,
+        abi: MultiVaultAbi,
+        functionName: 'calculateAtomId',
+        args: [userAtomData],
+        authorizationList: undefined,
+      }) as string
+
+      const botVerifierLower = BOT_VERIFIER_ADDRESS.toLowerCase()
+      const predicateLabel = `has verified ${platform} id`
+
+      const query = `
+        query CheckSocialLink($subjectId: String!, $botVerifierId: String!, $predicateLabel: String!) {
+          triples(
+            where: {
+              subject_id: { _eq: $subjectId }
+              creator_id: { _eq: $botVerifierId }
+              predicate: { label: { _eq: $predicateLabel } }
+            }
+            limit: 1
+          ) {
+            term_id
+          }
+        }
+      `
+
+      const data = await intuitionGraphqlClient.request(query, {
+        subjectId: userAtomId,
+        botVerifierId: botVerifierLower,
+        predicateLabel
+      }) as { triples: Array<{ term_id: string }> }
+
+      const exists = data.triples && data.triples.length > 0
+      console.log(`🔍 [QuestSystem] Social link check for ${platform}: ${exists ? 'EXISTS' : 'NOT FOUND'}`)
+      return exists
+    } catch (error) {
+      console.error(`❌ [QuestSystem] Error checking social link for ${platform}:`, error)
+      return false
+    }
+  }
+
   // Call Mastra API to link social account on-chain
   const callLinkSocialWorkflow = async (platform: SocialPlatform, oauthToken: string): Promise<{ success: boolean; txHash?: string; error?: string }> => {
     console.log(`🔗 [QuestSystem] Calling link-social-workflow for ${platform}...`)
@@ -437,14 +531,24 @@ export const useQuestSystem = (): QuestSystemResult => {
           return { success: false, error: `No ${quest.platform} token found. Please connect your ${quest.platform} account first.` }
         }
 
-        // Call Mastra API to create the social link triple on-chain (bot pays)
-        const linkResult = await callLinkSocialWorkflow(quest.platform, tokenData.accessToken)
+        // Check if social link already exists on-chain BEFORE calling Mastra API
+        const alreadyLinked = await checkSocialLinkExists(quest.platform)
+        let txHash: string | undefined
 
-        if (!linkResult.success) {
-          return linkResult
+        if (alreadyLinked) {
+          console.log(`✅ [QuestSystem] Social link already exists on-chain for ${quest.platform}, skipping TX`)
+          // No TX needed, just mark as claimed
+        } else {
+          // Call Mastra API to create the social link triple on-chain (bot pays)
+          const linkResult = await callLinkSocialWorkflow(quest.platform, tokenData.accessToken)
+
+          if (!linkResult.success) {
+            return linkResult
+          }
+          txHash = linkResult.txHash
         }
 
-        // Mark quest as claimed after successful link
+        // Mark quest as claimed after successful link (or if already linked)
         const newClaimed = new Set(claimedQuestIds)
         newClaimed.add(questId)
         setClaimedQuestIds(newClaimed)
@@ -454,7 +558,7 @@ export const useQuestSystem = (): QuestSystemResult => {
         })
 
         console.log(`✅ [QuestSystem] Claimed XP for social-link quest: ${questId}`)
-        return { success: true, txHash: linkResult.txHash }
+        return { success: true, txHash }
       }
 
       // Standard quest badge creation (user pays)
@@ -572,9 +676,32 @@ export const useQuestSystem = (): QuestSystemResult => {
       return { success: true, txHash }
     } catch (error) {
       console.error('❌ [QuestSystem] Claim failed:', error)
+
+      // Check if error is "TripleExists" or "Triple creation failed" - means badge/link already exists on-chain
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const isTripleExistsError =
+        errorMessage.includes('TripleExists') ||
+        errorMessage.includes('MultiVault_TripleExists') ||
+        errorMessage.includes('Triple creation failed')
+
+      if (isTripleExistsError) {
+        console.log('✅ [QuestSystem] Badge/link already exists on-chain, marking as claimed')
+
+        // Mark as claimed since it already exists on-chain
+        const newClaimed = new Set(claimedQuestIds)
+        newClaimed.add(questId)
+        setClaimedQuestIds(newClaimed)
+
+        await chrome.storage.local.set({
+          claimed_quests: Array.from(newClaimed)
+        })
+
+        return { success: true, error: 'Badge already claimed on-chain' }
+      }
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage
       }
     } finally {
       setClaimingQuestId(null)
@@ -678,6 +805,11 @@ export const useQuestSystem = (): QuestSystemResult => {
       const bookmarkListsCreated = lists.length
       const bookmarkedSignals = triplets.length
 
+      // Calculate unique intention types used
+      const uniqueIntentionTypes = discoveryStats?.intentionBreakdown
+        ? Object.values(discoveryStats.intentionBreakdown).filter(count => count > 0).length
+        : 0
+
       setUserProgress({
         signalsCreated,
         bookmarkListsCreated,
@@ -694,6 +826,11 @@ export const useQuestSystem = (): QuestSystemResult => {
         spotifyConnected,
         twitchConnected,
         twitterConnected,
+        pioneerCount: discoveryStats?.pioneerCount || 0,
+        explorerCount: discoveryStats?.explorerCount || 0,
+        contributorCount: discoveryStats?.contributorCount || 0,
+        totalDiscoveries: discoveryStats?.totalCertifications || 0,
+        uniqueIntentionTypes,
       })
 
     } catch (error) {
@@ -706,7 +843,7 @@ export const useQuestSystem = (): QuestSystemResult => {
   // Load data on mount and when wallet changes
   useEffect(() => {
     refreshQuests()
-  }, [walletAddress, lists.length, triplets.length])
+  }, [walletAddress, lists.length, triplets.length, discoveryStats])
 
   // Generate quests based on user progress
   const quests = useMemo<Quest[]>(() => {
@@ -776,6 +913,17 @@ export const useQuestSystem = (): QuestSystemResult => {
           }
           // social-butterfly uses weekly follows - not yet tracked separately
           break
+        case 'discovery':
+          if (questDef.id === 'discovery-first') {
+            current = userProgress.totalDiscoveries
+          } else if (questDef.id === 'discovery-pioneer') {
+            current = userProgress.pioneerCount
+          } else if (questDef.id === 'discovery-10' || questDef.id === 'discovery-50' || questDef.id === 'discovery-100') {
+            current = userProgress.totalDiscoveries
+          } else if (questDef.id === 'intention-variety') {
+            current = userProgress.uniqueIntentionTypes
+          }
+          break
       }
 
       // Determine quest status
@@ -840,12 +988,13 @@ export const useQuestSystem = (): QuestSystemResult => {
     [quests]
   )
 
-  // Calculate total XP and level - only from CLAIMED quests
+  // Calculate total XP and level - from CLAIMED quests + discovery XP
   const totalXP = useMemo(() => {
-    return quests
+    const questXP = quests
       .filter(quest => claimedQuestIds.has(quest.id))
       .reduce((sum, quest) => sum + quest.xpReward, 0)
-  }, [quests, claimedQuestIds])
+    return questXP + claimedDiscoveryXP
+  }, [quests, claimedQuestIds, claimedDiscoveryXP])
 
   const level = useMemo(() => calculateLevelFromXP(totalXP), [totalXP])
   const xpForNextLevel = useMemo(() => calculateXPForNextLevel(level), [level])

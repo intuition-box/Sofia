@@ -12,11 +12,13 @@
   opacity: 0.6;
 }
 
-.intention-label {
+.intention-selector .intention-label {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
   font-family: 'Gotu', cursive;
   letter-spacing: 0.3px;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .intention-pills {

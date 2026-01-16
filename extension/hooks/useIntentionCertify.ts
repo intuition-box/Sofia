@@ -15,6 +15,7 @@ export interface IntentionCertifyResult {
     intention: IntentionPurpose,
     customWeight?: bigint
   ) => Promise<void>
+  reset: () => void
   loading: boolean
   error: string | null
   success: boolean
@@ -160,8 +161,25 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
     }
   }, [address, createTripleOnChain])
 
+  // Reset all state - call this when closing modal or changing page
+  const reset = useCallback(() => {
+    loadingRef.current = false
+    successRef.current = false
+    errorRef.current = null
+    tripleVaultIdRef.current = null
+
+    setLoading(false)
+    setSuccess(false)
+    setError(null)
+    setTripleVaultId(null)
+    setOperationType(null)
+    setTransactionHash(null)
+    setCurrentIntention(null)
+  }, [])
+
   return {
     certifyWithIntention,
+    reset,
     loading,
     error,
     success,

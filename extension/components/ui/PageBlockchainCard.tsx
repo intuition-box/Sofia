@@ -1,9 +1,13 @@
 import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useRouter } from '../layout/RouterProvider'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
 import { useIntentionCertify } from '../../hooks/useIntentionCertify'
 import { useProofOfAttention } from '../../hooks/useProofOfAttention'
+import { usePageDiscovery } from '../../hooks/usePageDiscovery'
+import { usePageIntentionStats } from '../../hooks/usePageIntentionStats'
+import { useDiscoveryScore } from '../../hooks/useDiscoveryScore'
 import WeightModal from '../modals/WeightModal'
 import StarBorder from './StarBorder'
 import { IntentionBubbleSelector } from './IntentionBubbleSelector'
@@ -13,10 +17,12 @@ import { INTENTION_PREDICATES } from '../../types/discovery'
 import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
+  const { navigateTo } = useRouter()
   const { triplets, loading, error, currentUrl, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
   const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType, transactionHash: trustTxHash } = useTrustPage()
   const {
     certifyWithIntention,
+    reset: resetIntention,
     loading: intentionLoading,
     success: intentionSuccess,
     error: intentionError,
@@ -25,6 +31,20 @@ const PageBlockchainCard = () => {
     currentIntention
   } = useIntentionCertify()
   const { isEligible: isAttentionEligible } = useProofOfAttention(currentUrl)
+  const {
+    discoveryStatus,
+    certificationRank,
+    totalCertifications,
+    userHasCertified,
+    refetch: refetchDiscovery
+  } = usePageDiscovery(currentUrl)
+  const {
+    intentions: intentionStats,
+    totalCertifications: intentionTotal,
+    maxIntentionCount,
+    loading: intentionStatsLoading
+  } = usePageIntentionStats(currentUrl)
+  const { claimDiscoveryXP } = useDiscoveryScore()
   const [showDetails, setShowDetails] = useState(false)
 
   // Local state for Trust button UI
@@ -53,6 +73,14 @@ const PageBlockchainCard = () => {
   // Favicon state
   const [faviconUrl, setFaviconUrl] = useState<string | null>(null)
   const [faviconError, setFaviconError] = useState(false)
+
+  // Celebration animation state
+  const [showCelebration, setShowCelebration] = useState(false)
+  const [xpEarned, setXpEarned] = useState<number | null>(null)
+
+  // Discovery reward state for modal
+  const [discoveryReward, setDiscoveryReward] = useState<{ status: 'Pioneer' | 'Explorer' | 'Contributor', xp: number } | null>(null)
+  const [rewardClaimed, setRewardClaimed] = useState(false)
 
   // Sync hook states to local states - wait for loading to finish before updating
   React.useEffect(() => {
@@ -179,10 +207,47 @@ const PageBlockchainCard = () => {
       // Handle intention certification
       try {
         const weight = customWeights[0] || undefined
+        // Remember previous state to detect if we became Pioneer
+        const wasCertified = userHasCertified
+        const prevTotal = totalCertifications
+
         console.log('📊 PageBlockchainCard - Starting intention certification', { intention: intentionFromTriplet })
         await certifyWithIntention(currentUrl, intentionFromTriplet, weight as bigint | undefined)
         console.log('✅ PageBlockchainCard - Intention certification completed')
+
         resumeRefresh()
+
+        // Refetch discovery status to update badge
+        await refetchDiscovery()
+
+        // Determine discovery reward based on rank
+        // If prevTotal was 0 and we just certified, we're Pioneer!
+        if (!wasCertified && prevTotal === 0) {
+          setDiscoveryReward({ status: 'Pioneer', xp: 50 })
+          setXpEarned(50)
+          setShowCelebration(true)
+          setTimeout(() => {
+            setShowCelebration(false)
+            setXpEarned(null)
+          }, 3000)
+        } else if (!wasCertified && prevTotal < 10) {
+          setDiscoveryReward({ status: 'Explorer', xp: 20 })
+          setXpEarned(20)
+          setShowCelebration(true)
+          setTimeout(() => {
+            setShowCelebration(false)
+            setXpEarned(null)
+          }, 3000)
+        } else if (!wasCertified) {
+          setDiscoveryReward({ status: 'Contributor', xp: 5 })
+          setXpEarned(5)
+          setShowCelebration(true)
+          setTimeout(() => {
+            setShowCelebration(false)
+            setXpEarned(null)
+          }, 3000)
+        }
+
         setTimeout(() => fetchDataForCurrentPage(), 1000)
       } catch (error) {
         console.error('❌ PageBlockchainCard - Intention certification error:', error)
@@ -247,6 +312,23 @@ const PageBlockchainCard = () => {
     setLocalDistrustSuccess(false)
     setLocalDistrustError(null)
     setLocalDistrustOperationType(null)
+    // Reset intention state
+    resetIntention()
+    // Reset discovery reward state
+    setDiscoveryReward(null)
+    setRewardClaimed(false)
+  }
+
+  // Handle claiming discovery XP reward
+  const handleClaimReward = async () => {
+    if (!discoveryReward) return
+    try {
+      await claimDiscoveryXP(discoveryReward.xp)
+      setRewardClaimed(true)
+      console.log('✅ PageBlockchainCard - Discovery XP claimed:', discoveryReward.xp)
+    } catch (error) {
+      console.error('❌ PageBlockchainCard - Failed to claim reward:', error)
+    }
   }
 
   const handleAtomClick = (atomId: string) => {
@@ -391,36 +473,43 @@ const PageBlockchainCard = () => {
                 <span className="website-url-full">{currentUrl}</span>
               </div>
 
-              {/* Credibility Circle - Moved to Header */}
-              <div className="credibility-circle-compact">
-                <svg width="70" height="70" viewBox="0 0 70 70">
-                  <circle
-                    cx="35"
-                    cy="35"
-                    r="30"
-                    fill="none"
-                    stroke="#2D3748"
-                    strokeWidth="6"
-                  />
-                  <circle
-                    cx="35"
-                    cy="35"
-                    r="30"
-                    fill="none"
-                    stroke={analysis.scoreColor}
-                    strokeWidth="6"
-                    strokeDasharray="188.4"
-                    strokeDashoffset={188.4 - (188.4 * analysis.credibilityScore / 100)}
-                    transform="rotate(-90 35 35)"
-                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                  />
-                </svg>
-                <div className="circle-content-compact">
-                  <div className="score-number-compact">{analysis.credibilityScore}</div>
-                  <div className="score-label-compact" style={{ color: analysis.scoreColor }}>
-                    {analysis.scoreLabel}
+              {/* Discovery Badge - Replaces Credibility Circle - Clickable */}
+              <div
+                className="discovery-badge-compact clickable"
+                onClick={() => navigateTo('discovery-profile')}
+                title="View discovery stats"
+              >
+                {userHasCertified ? (
+                  // User has certified - show their status
+                  <div className={`discovery-badge discovery-badge-${discoveryStatus?.toLowerCase()} ${showCelebration ? 'celebration-pulse' : ''}`}>
+                    <span className="badge-rank">
+                      {discoveryStatus === 'Pioneer' && '#1'}
+                      {discoveryStatus === 'Explorer' && `#${certificationRank}`}
+                      {discoveryStatus === 'Contributor' && `#${certificationRank}`}
+                    </span>
+                    <span className="badge-status">
+                      {discoveryStatus}
+                    </span>
                   </div>
-                </div>
+                ) : (
+                  // User has not certified - show opportunity
+                  <div className={`discovery-badge discovery-badge-opportunity ${
+                    totalCertifications === 0 ? 'discovery-badge-be-first' :
+                    totalCertifications < 10 ? 'discovery-badge-explorer-spot' :
+                    'discovery-badge-info'
+                  }`}>
+                    <span className="badge-rank">
+                      {totalCertifications === 0 && '#1'}
+                      {totalCertifications > 0 && totalCertifications < 10 && `#${totalCertifications + 1}`}
+                      {totalCertifications >= 10 && totalCertifications}
+                    </span>
+                    <span className="badge-status">
+                      {totalCertifications === 0 && 'Be First!'}
+                      {totalCertifications > 0 && totalCertifications < 10 && 'Explorer'}
+                      {totalCertifications >= 10 && 'certified'}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </StarBorder>
@@ -530,48 +619,117 @@ const PageBlockchainCard = () => {
             {/* Unified Extended Panel */}
             {showExtendedMetrics && (
               <div className="extended-metrics-panel">
-                {/* Metrics Section - Grid Layout */}
-                <div className="metrics-section">
-                  {/* Credibility Score Card */}
-                  <div className="metric-item metric-item-credibility" style={{ borderColor: `${analysis.scoreColor}40` }}>
-                    <div className="metric-info">
-                      <div className="metric-value" style={{ color: analysis.scoreColor }}>{analysis.credibilityScore}</div>
-                      <div className="metric-label">Credibility Score</div>
-                    </div>
+                {/* Credibility Score Section */}
+                <div className="credibility-score-section">
+                  <div className="section-header">
+                    <span className="section-title">Credibility Score</span>
+                    <span className="credibility-value" style={{ color: analysis.scoreColor }}>
+                      {analysis.credibilityScore}/100
+                    </span>
+                  </div>
+                  <div className="credibility-progress-track">
+                    <div
+                      className="credibility-progress-fill"
+                      style={{
+                        width: `${analysis.credibilityScore}%`,
+                        background: analysis.scoreColor
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Intentions Section */}
+                <div className="intentions-stats-section">
+                  <div className="section-header">
+                    <span className="section-title">Intentions on this page</span>
+                    <span className="intentions-total">{intentionTotal} total</span>
                   </div>
 
-                  {/* Total Market Cap Card */}
-                  <div className="metric-item" style={{ borderColor: `${analysis.scoreColor}40` }}>
-                    <div className="metric-info">
-                      <div className="metric-value" style={{ color: analysis.scoreColor }}>{analysis.totalShares.toFixed(3)}</div>
-                      <div className="metric-label">Market Cap</div>
+                  {intentionStatsLoading ? (
+                    <div className="intentions-loading">
+                      <div className="loading-spinner small"></div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="intentions-progress-list">
+                      {/* For Work */}
+                      <div className="intention-progress-item">
+                        <span className="intention-label">work</span>
+                        <div className="progress-track">
+                          <div
+                            className="progress-fill work"
+                            style={{ width: `${maxIntentionCount > 0 ? (intentionStats.for_work / maxIntentionCount) * 100 : 0}%` }}
+                          />
+                        </div>
+                        <span className="intention-count">{intentionStats.for_work}</span>
+                      </div>
 
-                  {/* Triplets Card */}
-                  <div
-                    className="metric-item clickable"
-                    onClick={() => setShowTripletsList(!showTripletsList)}
-                    style={{ cursor: 'pointer', borderColor: `${analysis.scoreColor}40` }}
-                  >
-                    <div className="metric-info">
-                      <div className="metric-value" style={{ color: analysis.scoreColor }}>{(triplets as any)._counts?.triplesCount || triplets.length}</div>
-                      <div className="metric-label">Triples</div>
+                      {/* For Learning */}
+                      <div className="intention-progress-item">
+                        <span className="intention-label">learning</span>
+                        <div className="progress-track">
+                          <div
+                            className="progress-fill learning"
+                            style={{ width: `${maxIntentionCount > 0 ? (intentionStats.for_learning / maxIntentionCount) * 100 : 0}%` }}
+                          />
+                        </div>
+                        <span className="intention-count">{intentionStats.for_learning}</span>
+                      </div>
+
+                      {/* For Fun */}
+                      <div className="intention-progress-item">
+                        <span className="intention-label">fun</span>
+                        <div className="progress-track">
+                          <div
+                            className="progress-fill fun"
+                            style={{ width: `${maxIntentionCount > 0 ? (intentionStats.for_fun / maxIntentionCount) * 100 : 0}%` }}
+                          />
+                        </div>
+                        <span className="intention-count">{intentionStats.for_fun}</span>
+                      </div>
+
+                      {/* For Inspiration */}
+                      <div className="intention-progress-item">
+                        <span className="intention-label">inspiration</span>
+                        <div className="progress-track">
+                          <div
+                            className="progress-fill inspiration"
+                            style={{ width: `${maxIntentionCount > 0 ? (intentionStats.for_inspiration / maxIntentionCount) * 100 : 0}%` }}
+                          />
+                        </div>
+                        <span className="intention-count">{intentionStats.for_inspiration}</span>
+                      </div>
+
+                      {/* For Buying */}
+                      <div className="intention-progress-item">
+                        <span className="intention-label">buying</span>
+                        <div className="progress-track">
+                          <div
+                            className="progress-fill buying"
+                            style={{ width: `${maxIntentionCount > 0 ? (intentionStats.for_buying / maxIntentionCount) * 100 : 0}%` }}
+                          />
+                        </div>
+                        <span className="intention-count">{intentionStats.for_buying}</span>
+                      </div>
                     </div>
-                  </div>
-                  
-                  {/* Atoms Card */}
+                  )}
+                </div>
+
+                {/* Collapsible: Atoms & Triples Lists */}
+                <div className="collapsible-lists-section">
                   <div
-                    className="metric-item clickable"
+                    className="collapsible-toggle clickable"
                     onClick={() => setShowAtomsList(!showAtomsList)}
-                    style={{ cursor: 'pointer', borderColor: `${analysis.scoreColor}40` }}
                   >
-                    <div className="metric-info">
-                      <div className="metric-value" style={{ color: analysis.scoreColor }}>{(triplets as any)._counts?.atomsCount || 0}</div>
-                      <div className="metric-label">Atoms</div>
-                    </div>
+                    <span>Atoms ({(triplets as any)._counts?.atomsCount || 0})</span>
+                    <span className={`toggle-arrow ${showAtomsList ? 'expanded' : ''}`}>▼</span>
                   </div>
-
+                  <div
+                    className="collapsible-toggle clickable"
+                    onClick={() => setShowTripletsList(!showTripletsList)}
+                  >
+                    <span>Triples ({(triplets as any)._counts?.triplesCount || triplets.length})</span>
+                    <span className={`toggle-arrow ${showTripletsList ? 'expanded' : ''}`}>▼</span>
+                  </div>
                 </div>
 
                 {/* Atoms List Section - Collapsible */}
@@ -684,6 +842,10 @@ const PageBlockchainCard = () => {
               ? (intentionOperationType === 'deposit' ? 1 : 0)
               : ((modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'deposit' ? 1 : 0)
           }
+          isIntentionCertification={!!modalTriplets[0]?.intention}
+          discoveryReward={discoveryReward}
+          onClaimReward={handleClaimReward}
+          rewardClaimed={rewardClaimed}
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
         />,

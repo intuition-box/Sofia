@@ -19,6 +19,7 @@ import CorePage from "./components/pages/CorePage"
 import ResonancePage from "./components/pages/ResonancePage"
 import ChatPage from "./components/pages/ChatPage"
 import UserProfilePage from "./components/pages/UserProfilePage"
+import DiscoveryProfilePage from "./components/pages/DiscoveryProfilePage"
 
 
 const SidePanelContent = () => {
@@ -55,6 +56,8 @@ const SidePanelContent = () => {
         return <ChatPage />
       case 'user-profile':
         return <UserProfilePage />
+      case 'discovery-profile':
+        return <DiscoveryProfilePage />
       default:
         return <HomeConnectedPage />
     }

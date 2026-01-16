@@ -21,6 +21,11 @@ interface EchoTriplet {
   url: string
 }
 
+interface DiscoveryReward {
+  status: 'Pioneer' | 'Explorer' | 'Contributor'
+  xp: number
+}
+
 interface WeightModalProps {
   isOpen: boolean
   triplets: EchoTriplet[]
@@ -30,6 +35,11 @@ interface WeightModalProps {
   transactionHash?: string  // Transaction hash for block explorer link
   createdCount?: number   // Number of newly created triples
   depositCount?: number   // Number of deposits on existing triples
+  // Discovery reward props
+  isIntentionCertification?: boolean
+  discoveryReward?: DiscoveryReward | null
+  onClaimReward?: () => Promise<void>
+  rewardClaimed?: boolean
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
@@ -48,7 +58,7 @@ const weightOptions: WeightOption[] = [
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -256,6 +266,30 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   </a>
                 )}
               </div>
+
+              {/* Discovery Reward Section */}
+              {isIntentionCertification && discoveryReward && !rewardClaimed && (
+                <div className="discovery-reward-section">
+                  <div className="reward-badge">
+                    <span className="reward-status">{discoveryReward.status}</span>
+                    <span className="reward-xp">+{discoveryReward.xp} XP</span>
+                  </div>
+                  <button
+                    className="claim-reward-btn"
+                    onClick={onClaimReward}
+                  >
+                    Claim Reward
+                  </button>
+                </div>
+              )}
+
+              {/* Reward Claimed Confirmation */}
+              {isIntentionCertification && rewardClaimed && (
+                <div className="reward-claimed-section">
+                  <span className="reward-claimed-icon">✓</span>
+                  <span className="reward-claimed-text">+{discoveryReward?.xp} XP Claimed!</span>
+                </div>
+              )}
             </div>
           )}
 

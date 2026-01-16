@@ -81,7 +81,145 @@
   text-overflow: ellipsis;
 }
 
-/* Credibility Circle Compact - In Header */
+/* Discovery Badge Compact - In Header (replaces credibility circle) */
+.discovery-badge-compact {
+  flex-shrink: 0;
+  margin-left: auto;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.discovery-badge-compact:hover {
+  transform: scale(1.05);
+}
+
+.discovery-badge-compact:active {
+  transform: scale(0.98);
+}
+
+.discovery-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  height: 70px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.badge-rank {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.badge-status {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* Pioneer Badge - Gold */
+.discovery-badge-pioneer {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.15) 100%);
+  border: 2px solid rgba(245, 158, 11, 0.6);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+
+.discovery-badge-pioneer .badge-rank {
+  color: #FCD34D;
+}
+
+.discovery-badge-pioneer .badge-status {
+  color: #F59E0B;
+}
+
+/* Explorer Badge - Blue */
+.discovery-badge-explorer {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(37, 99, 235, 0.15) 100%);
+  border: 2px solid rgba(59, 130, 246, 0.6);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+.discovery-badge-explorer .badge-rank {
+  color: #93C5FD;
+}
+
+.discovery-badge-explorer .badge-status {
+  color: #3B82F6;
+}
+
+/* Contributor Badge - Purple */
+.discovery-badge-contributor {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(109, 40, 217, 0.15) 100%);
+  border: 2px solid rgba(139, 92, 246, 0.6);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+}
+
+.discovery-badge-contributor .badge-rank {
+  color: #C4B5FD;
+}
+
+.discovery-badge-contributor .badge-status {
+  color: #8B5CF6;
+}
+
+/* Opportunity Badges */
+.discovery-badge-opportunity {
+  border: 2px dashed;
+}
+
+/* Be First! Badge - Gold */
+.discovery-badge-be-first {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%);
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+}
+
+.discovery-badge-be-first .badge-rank {
+  color: #FCD34D;
+}
+
+.discovery-badge-be-first .badge-status {
+  color: #F59E0B;
+}
+
+/* Explorer Spot Badge - Blue */
+.discovery-badge-explorer-spot {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.08) 100%);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+}
+
+.discovery-badge-explorer-spot .badge-rank {
+  color: #93C5FD;
+}
+
+.discovery-badge-explorer-spot .badge-status {
+  color: #3B82F6;
+}
+
+/* Info Badge - Gray */
+.discovery-badge-info {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, rgba(75, 85, 99, 0.1) 100%);
+  border-color: rgba(107, 114, 128, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.discovery-badge-info .badge-rank {
+  color: #D1D5DB;
+}
+
+.discovery-badge-info .badge-status {
+  color: #9CA3AF;
+}
+
+/* Legacy Credibility Circle Compact - In Header (kept for backward compatibility) */
 .credibility-circle-compact {
   position: relative;
   width: 70px;
@@ -812,6 +950,230 @@
 
 .distrust-btn .button-spinner {
   border-top: 2px solid rgba(239, 68, 68, 0.8);
+}
+
+/* Extended Panel - New Design with Intentions */
+.credibility-score-section {
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.section-header .section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0;
+}
+
+.credibility-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.credibility-progress-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.credibility-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Intentions Stats Section */
+.intentions-stats-section {
+  margin-bottom: 16px;
+}
+
+.intentions-total {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.intentions-loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.loading-spinner.small {
+  width: 16px;
+  height: 16px;
+}
+
+.intentions-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.intention-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.intention-label {
+  width: 90px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.progress-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+.progress-fill.work {
+  background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
+}
+
+.progress-fill.learning {
+  background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+}
+
+.progress-fill.fun {
+  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
+}
+
+.progress-fill.inspiration {
+  background: linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%);
+}
+
+.progress-fill.buying {
+  background: linear-gradient(90deg, #EF4444 0%, #F87171 100%);
+}
+
+.intention-count {
+  min-width: 24px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Collapsible Lists Section */
+.collapsible-lists-section {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.collapsible-toggle {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.collapsible-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.collapsible-toggle .toggle-arrow {
+  font-size: 8px;
+  transition: transform 0.2s ease;
+}
+
+.collapsible-toggle .toggle-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+/* Celebration Animation for Discovery Badge */
+@keyframes celebration-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+  25% { transform: scale(1.12); box-shadow: 0 0 20px 8px rgba(245, 158, 11, 0.5); }
+  50% { transform: scale(1.08); box-shadow: 0 0 15px 5px rgba(245, 158, 11, 0.3); }
+  75% { transform: scale(1.12); box-shadow: 0 0 20px 8px rgba(245, 158, 11, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.discovery-badge.celebration-pulse {
+  animation: celebration-pulse 0.8s ease-out 3;
+}
+
+/* XP Notification */
+.xp-notification {
+  position: absolute;
+  top: -10px;
+  right: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.9) 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5);
+  animation: xp-float-in 0.5s ease-out, xp-glow 1s ease-in-out infinite alternate;
+  z-index: 100;
+}
+
+@keyframes xp-float-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes xp-glow {
+  0% {
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5);
+  }
+  100% {
+    box-shadow: 0 4px 30px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.4);
+  }
+}
+
+.xp-amount {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.xp-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(26, 26, 26, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
 }
 
 /* Responsive Design */
