@@ -8,6 +8,16 @@ import { useCreateTripleOnChain } from './useCreateTripleOnChain'
 import { elizaDataService } from '../lib/database/indexedDB-methods'
 import type { EchoTriplet, TripleOnChainResult, BatchTripleResult } from '../types/blockchain'
 
+/**
+ * Clean AI analysis artifacts from description
+ * Simply use the object name (page title) as description - cleaner and more reliable
+ */
+const cleanDescription = (objectName: string): string => {
+  // Just use the object name (page title) as description
+  // This is cleaner than trying to parse AI-generated descriptions
+  return objectName.slice(0, 150)
+}
+
 interface UseEchoPublishingParams {
   echoTriplets: EchoTriplet[]
   selectedEchoes: Set<string>
@@ -53,7 +63,7 @@ export const useEchoPublishing = ({
         triplet.triplet.predicate,
         {
           name: triplet.triplet.object,
-          description: triplet.description,
+          description: cleanDescription(triplet.triplet.object),
           url: triplet.url,
           image: faviconUrl
         },
@@ -95,7 +105,7 @@ export const useEchoPublishing = ({
           predicateName: triplet.triplet.predicate,
           objectData: {
             name: triplet.triplet.object,
-            description: triplet.description,
+            description: cleanDescription(triplet.triplet.object),
             url: triplet.url,
             image: faviconUrl
           },

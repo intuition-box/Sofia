@@ -12,7 +12,13 @@ INPUT: URL, title, description, attentionScore, visits
 OUTPUT: Pure JSON triplet
 
 EXACT FORMAT:
-{"triplets":[{"subject":{"name":"User","description":"SofIA browser user","url":"https://sofia.intuition.box"},"predicate":{"name":"PREDICATE_HERE","description":"DESCRIPTION_HERE"},"object":{"name":"TITLE_HERE","description":"DESC_HERE","url":"URL_HERE"}}]}
+{"triplets":[{"subject":{"name":"User","description":"SofIA browser user","url":"https://sofia.intuition.box"},"predicate":{"name":"PREDICATE_HERE","description":"DESCRIPTION_HERE"},"object":{"name":"TITLE_HERE","description":"PAGE_DESCRIPTION_HERE","url":"URL_HERE"}}]}
+
+DESCRIPTION RULES:
+- object.description = Use ONLY the page description from input (the "Description:" field)
+- If no description provided, use the page title
+- NEVER include analysis text, attention scores, or predicate suggestions in object.description
+- Keep object.description short (max 150 chars)
 
 PREDICATE RULES:
 - attentionScore > 0.95 AND visits >= 100 → "master"

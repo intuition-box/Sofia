@@ -654,12 +654,36 @@ const PageBlockchainCard = () => {
         <WeightModal
           isOpen={showWeightModal}
           triplets={modalTriplets}
-          isProcessing={modalType === 'trust' ? localTrustLoading : localDistrustLoading}
-          transactionSuccess={modalType === 'trust' ? localTrustSuccess : localDistrustSuccess}
-          transactionError={(modalType === 'trust' ? localTrustError : localDistrustError) || undefined}
-          transactionHash={localTransactionHash || undefined}
-          createdCount={(modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'created' ? 1 : 0}
-          depositCount={(modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'deposit' ? 1 : 0}
+          isProcessing={
+            modalTriplets[0]?.intention
+              ? intentionLoading
+              : (modalType === 'trust' ? localTrustLoading : localDistrustLoading)
+          }
+          transactionSuccess={
+            modalTriplets[0]?.intention
+              ? intentionSuccess
+              : (modalType === 'trust' ? localTrustSuccess : localDistrustSuccess)
+          }
+          transactionError={
+            modalTriplets[0]?.intention
+              ? (intentionError || undefined)
+              : ((modalType === 'trust' ? localTrustError : localDistrustError) || undefined)
+          }
+          transactionHash={
+            modalTriplets[0]?.intention
+              ? (intentionTxHash || undefined)
+              : (localTransactionHash || undefined)
+          }
+          createdCount={
+            modalTriplets[0]?.intention
+              ? (intentionOperationType === 'created' ? 1 : 0)
+              : ((modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'created' ? 1 : 0)
+          }
+          depositCount={
+            modalTriplets[0]?.intention
+              ? (intentionOperationType === 'deposit' ? 1 : 0)
+              : ((modalType === 'trust' ? localOperationType : localDistrustOperationType) === 'deposit' ? 1 : 0)
+          }
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
         />,
