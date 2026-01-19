@@ -168,25 +168,88 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         }
       `
 
+      // Query to get trust/distrust positions for this page
+      // We look for triples where:
+      // - predicate is "trusts" or "distrust"
+      // - object contains this page URL (hostname)
+      const trustDistustQuery = `
+        query TrustDistrustByPage($likeStr: String!) {
+          trustTriples: triples(
+            where: {
+              predicate: { label: { _eq: "trusts" } }
+              object: { label: { _ilike: $likeStr } }
+              positions: { shares: { _gt: "0" } }
+            }
+          ) {
+            term_id
+            positions(where: { shares: { _gt: "0" } }) {
+              account_id
+              shares
+            }
+          }
+          distrustTriples: triples(
+            where: {
+              predicate: { label: { _eq: "distrust" } }
+              object: { label: { _ilike: $likeStr } }
+              positions: { shares: { _gt: "0" } }
+            }
+          ) {
+            term_id
+            positions(where: { shares: { _gt: "0" } }) {
+              account_id
+              shares
+            }
+          }
+        }
+      `
+
       let triplesResponse
       let totalTriplesCount = 0
+      let trustDistrustData = { trustTriples: [], distrustTriples: [] }
 
       if (atomIds.length > 0) {
-        // Fetch count and data in parallel
-        const [triplesCountResponse, triplesDataResponse] = await Promise.all([
+        // Fetch count, data and trust/distrust in parallel
+        const [triplesCountResponse, triplesDataResponse, trustDistrustResponse] = await Promise.all([
           intuitionGraphqlClient.request(triplesCountQuery, { atomIds }),
-          intuitionGraphqlClient.request(triplesQuery, { atomIds })
+          intuitionGraphqlClient.request(triplesQuery, { atomIds }),
+          intuitionGraphqlClient.request(trustDistustQuery, { likeStr: `%${hostname}%` })
         ])
 
         totalTriplesCount = triplesCountResponse?.triples_aggregate?.aggregate?.count || 0
         triplesResponse = triplesDataResponse
+        trustDistrustData = trustDistrustResponse || { trustTriples: [], distrustTriples: [] }
 
         console.log('📥 Total triples count:', totalTriplesCount)
         console.log('📥 Triples response (first 100):', triplesResponse)
+        console.log('📥 Trust/Distrust data:', trustDistrustData)
       } else {
         console.log('📥 No atoms found, skipping triplets query')
         triplesResponse = { triples: [] }
       }
+
+      // Calculate trust/distrust support counts
+      // Count unique position holders (accounts) for trust and distrust
+      const trustPositions = new Set<string>()
+      const distrustPositions = new Set<string>()
+
+      for (const triple of trustDistrustData.trustTriples || []) {
+        for (const pos of (triple as any).positions || []) {
+          if (pos.account_id) trustPositions.add(pos.account_id.toLowerCase())
+        }
+      }
+
+      for (const triple of trustDistrustData.distrustTriples || []) {
+        for (const pos of (triple as any).positions || []) {
+          if (pos.account_id) distrustPositions.add(pos.account_id.toLowerCase())
+        }
+      }
+
+      const trustCount = trustPositions.size
+      const distrustCount = distrustPositions.size
+      const totalSupport = trustCount + distrustCount
+      const trustRatio = totalSupport > 0 ? Math.round((trustCount / totalSupport) * 100) : 50
+
+      console.log('📊 Trust/Distrust stats:', { trustCount, distrustCount, trustRatio })
 
       const allResults = []
       const atomsList = []
@@ -251,7 +314,12 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         displayedTriplesCount: triples.length, // How many we're showing
         totalShares,
         totalPositions,
-        attestationsCount: totalAtomsCount + totalTriplesCount
+        attestationsCount: totalAtomsCount + totalTriplesCount,
+        // Trust/Distrust support data
+        trustCount,
+        distrustCount,
+        totalSupport,
+        trustRatio
       };
 
       // Attach atomsList to results for external access
