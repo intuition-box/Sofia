@@ -352,81 +352,46 @@ const PageBlockchainCard = () => {
     const counts = (triplets as any)._counts || {}
     const atomsList = (triplets as any)._atomsList || []
 
-    // Use metadata counts if available, otherwise fall back to calculation
-    const totalPositions = counts.totalPositions || triplets.reduce((sum, triplet) => {
-      return sum + (triplet.positions?.reduce((posSum, pos) => posSum + (pos.position_count || 0), 0) || 0)
-    }, 0)
-    const totalShares = counts.totalShares || triplets.reduce((sum, triplet) => sum + getTotalShares(triplet), 0)
-    const attestationsCount = counts.attestationsCount || triplets.length
+    // Trust/Distrust support data
+    const trustCount = counts.trustCount || 0
+    const distrustCount = counts.distrustCount || 0
+    const totalSupport = counts.totalSupport || 0
+    const trustRatio = counts.trustRatio ?? 50  // Default to 50% if no data
+
+    // Use metadata counts if available
     const atomsCount = counts.atomsCount || 0
     const triplesCount = counts.triplesCount || triplets.length
-    const tripletsWithPositions = triplets.filter(t => t.positions && t.positions.length > 0)
 
-    // Advanced Credibility Score Calculation (v2.0)
-    const credibilityScore = (() => {
-      if (attestationsCount === 0) return 0
-
-      // 1. Diversity Score (0-30 points) - Rewards variety of attestations
-      const diversityScore = Math.min(30,
-        (Math.log10(atomsCount + 1) * 8) +
-        (Math.log10(triplesCount + 1) * 10)
-      )
-
-      // 2. Community Engagement Score (0-35 points) - Number of unique positions
-      const engagementScore = Math.min(35, Math.sqrt(totalPositions) * 3.5)
-
-      // 3. Economic Confidence Score (0-25 points) - Market cap investment
-      const economicScore = Math.min(25, Math.log10(totalShares + 1) * 12)
-
-      // 4. Activity Ratio (0-10 points) - Percentage of active attestations
-      const activityRatio = attestationsCount > 0
-        ? (tripletsWithPositions.length / attestationsCount) * 10
-        : 0
-
-      const rawScore = diversityScore + engagementScore + economicScore + activityRatio
-
-      // Sigmoid scaling with adjusted parameter (30) for better high-score distribution
-      const scaledScore = (rawScore / (rawScore + 30)) * 100
-
-      return Math.round(scaledScore)
-    })()
-
-    const getScoreColor = (score: number) => {
-      if (score >= 70) return '#7fdf91'  // Green - High credibility
-      if (score >= 50) return '#6081fd'  // Blue - Good credibility
-      if (score >= 30) return '#d19661'  // Orange - Moderate
-      if (score >= 15) return '#f78e8e'  // Red - Low
-      return '#c8d1e1'                    // Gray - Minimal/None
-    }
-
-    const getScoreLabel = (score: number) => {
-      if (score >= 70) return 'HIGH'
-      if (score >= 50) return 'GOOD'
-      if (score >= 30) return 'MID'
-      if (score >= 15) return 'LOW'
-      return 'MINIMAL'
+    // Determine bar color based on trust ratio
+    const getBarColor = (ratio: number) => {
+      if (totalSupport === 0) return '#6B7280'  // Gray if no support
+      if (ratio >= 80) return '#22c55e'  // Green - High trust
+      if (ratio >= 60) return '#84cc16'  // Light green
+      if (ratio >= 40) return '#eab308'  // Yellow - Mixed
+      if (ratio >= 20) return '#f97316'  // Orange
+      return '#ef4444'  // Red - High distrust
     }
 
     return {
-      totalPositions,
-      totalShares,
-      attestationsCount,
-      activeAttestations: tripletsWithPositions.length,
-      credibilityScore,
-      scoreColor: getScoreColor(credibilityScore),
-      scoreLabel: getScoreLabel(credibilityScore),
+      trustCount,
+      distrustCount,
+      totalSupport,
+      trustRatio,
+      barColor: getBarColor(trustRatio),
+      atomsCount,
+      triplesCount,
       atomsList
     }
   }
 
   const analysis = getCredibilityAnalysis() || {
-    totalPositions: 0,
-    totalShares: 0,
-    attestationsCount: 0,
-    activeAttestations: 0,
-    credibilityScore: 0,
-    scoreColor: '#6B7280',
-    scoreLabel: 'UNVERIFIED',
+    trustCount: 0,
+    distrustCount: 0,
+    totalSupport: 0,
+    trustRatio: 50,
+    barColor: '#6B7280',
+    atomsCount: 0,
+    triplesCount: 0,
     atomsList: []
   }
 
@@ -438,7 +403,13 @@ const PageBlockchainCard = () => {
           {/* Website Info Container with Icon + URL + Credibility Circle */}
           <StarBorder
             as="div"
-            color={analysis.scoreColor}
+            color={
+              totalCertifications === 0
+                ? '#FFD700'  // Gold - Pioneer opportunity
+                : totalCertifications < 10
+                  ? '#3B82F6'  // Blue - Explorer opportunity
+                  : '#9CA3AF'  // Gray - Contributor
+            }
             speed="10s"
             thickness={5}
           >
@@ -473,43 +444,28 @@ const PageBlockchainCard = () => {
                 <span className="website-url-full">{currentUrl}</span>
               </div>
 
-              {/* Discovery Badge - Replaces Credibility Circle - Clickable */}
+              {/* Discovery Badge - Shows opportunity based on total certifications */}
               <div
                 className="discovery-badge-compact clickable"
                 onClick={() => navigateTo('discovery-profile')}
                 title="View discovery stats"
               >
-                {userHasCertified ? (
-                  // User has certified - show their status
-                  <div className={`discovery-badge discovery-badge-${discoveryStatus?.toLowerCase()} ${showCelebration ? 'celebration-pulse' : ''}`}>
-                    <span className="badge-rank">
-                      {discoveryStatus === 'Pioneer' && '#1'}
-                      {discoveryStatus === 'Explorer' && `#${certificationRank}`}
-                      {discoveryStatus === 'Contributor' && `#${certificationRank}`}
-                    </span>
-                    <span className="badge-status">
-                      {discoveryStatus}
-                    </span>
-                  </div>
-                ) : (
-                  // User has not certified - show opportunity
-                  <div className={`discovery-badge discovery-badge-opportunity ${
-                    totalCertifications === 0 ? 'discovery-badge-be-first' :
-                    totalCertifications < 10 ? 'discovery-badge-explorer-spot' :
-                    'discovery-badge-info'
-                  }`}>
-                    <span className="badge-rank">
-                      {totalCertifications === 0 && '#1'}
-                      {totalCertifications > 0 && totalCertifications < 10 && `#${totalCertifications + 1}`}
-                      {totalCertifications >= 10 && totalCertifications}
-                    </span>
-                    <span className="badge-status">
-                      {totalCertifications === 0 && 'Be First!'}
-                      {totalCertifications > 0 && totalCertifications < 10 && 'Explorer'}
-                      {totalCertifications >= 10 && 'certified'}
-                    </span>
-                  </div>
-                )}
+                <div className={`discovery-badge discovery-badge-opportunity ${
+                  totalCertifications === 0 ? 'discovery-badge-be-first' :
+                  totalCertifications < 10 ? 'discovery-badge-explorer-spot' :
+                  'discovery-badge-info'
+                }`}>
+                  <span className="badge-rank">
+                    {totalCertifications === 0 && '#1'}
+                    {totalCertifications > 0 && totalCertifications < 10 && `#${totalCertifications + 1}`}
+                    {totalCertifications >= 10 && totalCertifications}
+                  </span>
+                  <span className="badge-status">
+                    {totalCertifications === 0 && 'Pioneer'}
+                    {totalCertifications > 0 && totalCertifications < 10 && 'Explorer'}
+                    {totalCertifications >= 10 && 'certified'}
+                  </span>
+                </div>
               </div>
             </div>
           </StarBorder>
@@ -619,22 +575,49 @@ const PageBlockchainCard = () => {
             {/* Unified Extended Panel */}
             {showExtendedMetrics && (
               <div className="extended-metrics-panel">
-                {/* Credibility Score Section */}
-                <div className="credibility-score-section">
+                {/* Trust/Distrust Support Section */}
+                <div className="trust-support-section">
                   <div className="section-header">
-                    <span className="section-title">Credibility Score</span>
-                    <span className="credibility-value" style={{ color: analysis.scoreColor }}>
-                      {analysis.credibilityScore}/100
+                    <span className="section-title">Community Support</span>
+                    <span className="support-ratio" style={{ color: analysis.barColor }}>
+                      {analysis.totalSupport > 0 ? `${analysis.trustRatio}% Trust` : 'No votes yet'}
                     </span>
                   </div>
-                  <div className="credibility-progress-track">
+
+                  {/* Trust/Distrust Bar - Green (trust) to Red (distrust) */}
+                  <div className="trust-distrust-bar">
                     <div
-                      className="credibility-progress-fill"
+                      className="trust-fill"
                       style={{
-                        width: `${analysis.credibilityScore}%`,
-                        background: analysis.scoreColor
+                        width: `${analysis.trustRatio}%`,
+                        background: 'linear-gradient(90deg, #22c55e 0%, #84cc16 100%)'
                       }}
                     />
+                    <div
+                      className="distrust-fill"
+                      style={{
+                        width: `${100 - analysis.trustRatio}%`,
+                        background: 'linear-gradient(90deg, #f97316 0%, #ef4444 100%)'
+                      }}
+                    />
+                  </div>
+
+                  {/* Support counts */}
+                  <div className="support-counts">
+                    <span className="trust-count">
+                      <svg className="count-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="7" r="4" fill="currentColor"/>
+                        <path d="M4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      {analysis.trustCount} people
+                    </span>
+                    <span className="distrust-count">
+                      <svg className="count-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="7" r="4" fill="currentColor"/>
+                        <path d="M4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      {analysis.distrustCount} people
+                    </span>
                   </div>
                 </div>
 

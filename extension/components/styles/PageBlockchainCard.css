@@ -953,7 +953,7 @@
 }
 
 /* Extended Panel - New Design with Intentions */
-.credibility-score-section {
+.trust-support-section {
   margin-bottom: 20px;
 }
 
@@ -973,22 +973,66 @@
   margin-bottom: 0;
 }
 
-.credibility-value {
+.support-ratio {
   font-size: 14px;
   font-weight: 700;
 }
 
-.credibility-progress-track {
-  height: 8px;
+/* Trust/Distrust Bar - Single bar green to red */
+.trust-distrust-bar {
+  display: flex;
+  height: 12px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
+  margin-bottom: 10px;
 }
 
-.credibility-progress-fill {
+.trust-fill {
   height: 100%;
-  border-radius: 4px;
   transition: width 0.5s ease;
+  border-radius: 6px 0 0 6px;
+}
+
+.distrust-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Support counts display */
+.support-counts {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trust-count,
+.distrust-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.trust-count {
+  color: #22c55e;
+}
+
+.distrust-count {
+  color: #ef4444;
+}
+
+.count-icon {
+  font-size: 14px;
+}
+
+.count-icon-svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  vertical-align: middle;
 }
 
 /* Intentions Stats Section */

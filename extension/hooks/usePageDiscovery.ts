@@ -13,13 +13,15 @@ import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('usePageDiscovery')
 
-// Predicate IDs for all intention types
-const INTENTION_PREDICATE_IDS = [
+// Predicate IDs for all certification types (intentions + trust/distrust)
+const CERTIFICATION_PREDICATE_IDS = [
   PREDICATE_IDS.VISITS_FOR_WORK,
   PREDICATE_IDS.VISITS_FOR_LEARNING,
   PREDICATE_IDS.VISITS_FOR_FUN,
   PREDICATE_IDS.VISITS_FOR_INSPIRATION,
-  PREDICATE_IDS.VISITS_FOR_BUYING
+  PREDICATE_IDS.VISITS_FOR_BUYING,
+  PREDICATE_IDS.TRUSTS,
+  PREDICATE_IDS.DISTRUST
 ].filter(id => id) // Filter out empty strings (dev config)
 
 export interface PageDiscoveryResult {
@@ -42,7 +44,7 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
   const [error, setError] = useState<string | null>(null)
 
   const fetchDiscoveryStatus = useCallback(async () => {
-    if (!pageUrl || INTENTION_PREDICATE_IDS.length === 0) {
+    if (!pageUrl || CERTIFICATION_PREDICATE_IDS.length === 0) {
       setDiscoveryStatus(null)
       setCertificationRank(null)
       setTotalCertifications(0)
@@ -59,71 +61,82 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
 
       logger.debug('Fetching discovery status', { pageUrl, hostname, walletAddress })
       console.log('🔍 [usePageDiscovery] Query params:', {
-        predicateIds: INTENTION_PREDICATE_IDS,
+        predicateIds: CERTIFICATION_PREDICATE_IDS,
         hostnameLike: `%${hostname}%`,
-        predicateCount: INTENTION_PREDICATE_IDS.length
+        predicateCount: CERTIFICATION_PREDICATE_IDS.length
       })
 
-      // Query to find all intention triples for this page
+      // Query to find all certification triples for this page via POSITIONS
+      // The creator_id is the proxy, so we use positions to identify users
       // We look for triples where:
-      // - predicate is one of the intention predicates
+      // - predicate is one of the certification predicates (intentions + trust/distrust)
       // - object atom label contains the hostname
+      // - positions have shares > 0 (active positions)
       const query = `
-        query IntentionTriples($predicateIds: [String!]!, $hostnameLike: String!) {
+        query CertificationTriples($predicateIds: [String!]!, $hostnameLike: String!) {
           triples(
             where: {
               predicate_id: { _in: $predicateIds }
               object: { label: { _ilike: $hostnameLike } }
+              positions: { shares: { _gt: "0" } }
             }
-            order_by: { block_number: asc }
           ) {
             term_id
-            subject {
-              label
-            }
             predicate {
               label
             }
-            object {
-              label
+            positions(
+              where: { shares: { _gt: "0" } }
+              order_by: { created_at: asc }
+            ) {
+              account_id
+              created_at
+              shares
             }
-            creator_id
-            block_number
           }
         }
       `
 
       const response = await intuitionGraphqlClient.request(query, {
-        predicateIds: INTENTION_PREDICATE_IDS,
+        predicateIds: CERTIFICATION_PREDICATE_IDS,
         hostnameLike: `%${hostname}%`
       })
 
       const triples = response?.triples || []
 
-      logger.debug('Found intention triples', { count: triples.length })
+      console.log('🔍 [usePageDiscovery] Found triples:', triples.length, triples)
+      logger.debug('Found certification triples', { count: triples.length })
 
-      // Count unique creators (each person counts once, even if they certified multiple intentions)
-      const uniqueCreators = new Map<string, number>() // creator_id -> first block_number
+      // Count unique position holders (each person counts once, even if they certified multiple types)
+      // Use created_at to determine order (who arrived first = Pioneer)
+      const uniqueHolders = new Map<string, string>() // account_id -> first created_at
 
       for (const triple of triples) {
-        const creatorId = triple.creator_id?.toLowerCase()
-        if (creatorId && !uniqueCreators.has(creatorId)) {
-          uniqueCreators.set(creatorId, triple.block_number)
+        for (const pos of triple.positions || []) {
+          const accountId = pos.account_id?.toLowerCase()
+          const createdAt = pos.created_at
+          if (accountId && createdAt) {
+            // Only keep the earliest created_at for each account
+            if (!uniqueHolders.has(accountId) || createdAt < uniqueHolders.get(accountId)!) {
+              uniqueHolders.set(accountId, createdAt)
+            }
+          }
         }
       }
 
-      // Sort creators by block number to get the order
-      const sortedCreators = Array.from(uniqueCreators.entries())
-        .sort((a, b) => a[1] - b[1])
-        .map(([creatorId]) => creatorId)
+      // Sort holders by created_at to get the order
+      const sortedHolders = Array.from(uniqueHolders.entries())
+        .sort((a, b) => new Date(a[1]).getTime() - new Date(b[1]).getTime())
+        .map(([accountId]) => accountId)
 
-      const total = sortedCreators.length
+      const total = sortedHolders.length
+      console.log('🔍 [usePageDiscovery] Unique holders:', total, 'sortedHolders:', sortedHolders)
       setTotalCertifications(total)
 
-      // Check if current user has certified
+      // Check if current user has certified (use _ilike matching for checksummed addresses)
       const userAddress = walletAddress?.toLowerCase()
       const userRank = userAddress
-        ? sortedCreators.indexOf(userAddress) + 1
+        ? sortedHolders.indexOf(userAddress) + 1
         : 0
 
       if (userRank > 0) {
@@ -156,7 +169,7 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch discovery status'
       logger.error('Failed to fetch discovery status', err)
       console.error('❌ [usePageDiscovery] Full error:', err)
-      console.error('❌ [usePageDiscovery] INTENTION_PREDICATE_IDS:', INTENTION_PREDICATE_IDS)
+      console.error('❌ [usePageDiscovery] CERTIFICATION_PREDICATE_IDS:', CERTIFICATION_PREDICATE_IDS)
       setError(errorMessage)
     } finally {
       setLoading(false)

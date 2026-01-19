@@ -189,7 +189,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
           }
           distrustTriples: triples(
             where: {
-              predicate: { label: { _eq: "distrust" } }
+              predicate: { label: { _ilike: "distrust" } }
               object: { label: { _ilike: $likeStr } }
               positions: { shares: { _gt: "0" } }
             }
@@ -205,14 +205,17 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
       let triplesResponse
       let totalTriplesCount = 0
-      let trustDistrustData = { trustTriples: [], distrustTriples: [] }
+      let trustDistrustData: { trustTriples: any[], distrustTriples: any[] } = { trustTriples: [], distrustTriples: [] }
+
+      // Always fetch trust/distrust data (doesn't depend on atomIds)
+      const trustDistrustPromise = intuitionGraphqlClient.request(trustDistustQuery, { likeStr: `%${hostname}%` })
 
       if (atomIds.length > 0) {
         // Fetch count, data and trust/distrust in parallel
         const [triplesCountResponse, triplesDataResponse, trustDistrustResponse] = await Promise.all([
           intuitionGraphqlClient.request(triplesCountQuery, { atomIds }),
           intuitionGraphqlClient.request(triplesQuery, { atomIds }),
-          intuitionGraphqlClient.request(trustDistustQuery, { likeStr: `%${hostname}%` })
+          trustDistrustPromise
         ])
 
         totalTriplesCount = triplesCountResponse?.triples_aggregate?.aggregate?.count || 0
@@ -223,8 +226,11 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         console.log('📥 Triples response (first 100):', triplesResponse)
         console.log('📥 Trust/Distrust data:', trustDistrustData)
       } else {
-        console.log('📥 No atoms found, skipping triplets query')
+        console.log('📥 No atoms found, skipping triplets query but fetching trust/distrust')
         triplesResponse = { triples: [] }
+        // Still fetch trust/distrust even without atoms
+        trustDistrustData = await trustDistrustPromise || { trustTriples: [], distrustTriples: [] }
+        console.log('📥 Trust/Distrust data:', trustDistrustData)
       }
 
       // Calculate trust/distrust support counts
@@ -250,6 +256,10 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const trustRatio = totalSupport > 0 ? Math.round((trustCount / totalSupport) * 100) : 50
 
       console.log('📊 Trust/Distrust stats:', { trustCount, distrustCount, trustRatio })
+      console.log('📊 Trust positions (unique accounts):', Array.from(trustPositions))
+      console.log('📊 Distrust positions (unique accounts):', Array.from(distrustPositions))
+      console.log('📊 Trust triples found:', trustDistrustData.trustTriples?.length || 0)
+      console.log('📊 Distrust triples found:', trustDistrustData.distrustTriples?.length || 0)
 
       const allResults = []
       const atomsList = []

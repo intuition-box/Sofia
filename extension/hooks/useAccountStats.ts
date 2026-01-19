@@ -39,10 +39,27 @@ export const useAccountStats = (accountAddress: string | undefined) => {
 
         const checksumAddress = getAddress(accountAddress)
 
-        // Query 1: Get signals created and total market cap
+        // Query 1: Get signals created count using aggregate (no limit)
+        // And total market cap from positions
         const statsQuery = `
           query GetUserStats($accountId: String!, $subjectId: String!) {
+            # Use aggregate for accurate count (no 100 limit)
+            signalsCount: terms_aggregate(
+              where: {
+                _and: [
+                  { type: { _eq: Triple } },
+                  { triple: { subject: { term_id: { _eq: $subjectId } } } },
+                  { positions: { account: { id: { _eq: $accountId } } } }
+                ]
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+            # Get market cap data (limited sample for calculation)
             triples: terms(
+              limit: 500
               where: {
                 _and: [
                   { type: { _eq: Triple } },
@@ -62,10 +79,13 @@ export const useAccountStats = (accountAddress: string | undefined) => {
         const statsResponse = await intuitionGraphqlClient.request(statsQuery, {
           accountId: checksumAddress,
           subjectId: SUBJECT_IDS.I
-        }) as { triples: Array<{ id: string; vaults?: Array<{ total_shares: string }> }> }
+        }) as {
+          signalsCount: { aggregate: { count: number } }
+          triples: Array<{ id: string; vaults?: Array<{ total_shares: string }> }>
+        }
 
-        // Calculate signals created
-        const signalsCreated = statsResponse?.triples?.length || 0
+        // Use aggregate count for accurate signals created
+        const signalsCreated = statsResponse?.signalsCount?.aggregate?.count || 0
 
         // Calculate total market cap
         let totalMarketCap = 0
