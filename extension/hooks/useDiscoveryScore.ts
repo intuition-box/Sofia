@@ -18,9 +18,10 @@ import { createHookLogger } from '../lib/utils/logger'
 const logger = createHookLogger('useDiscoveryScore')
 
 // Predicate labels for intention types - used for GraphQL query by label
+// NOTE: 'visits for learning ' has a trailing space due to a bug in atom creation
 const INTENTION_PREDICATE_LABELS = [
   'visits for work',
-  'visits for learning',
+  'visits for learning ',  // trailing space (official atom)
   'visits for fun',
   'visits for inspiration',
   'visits for buying'
@@ -29,7 +30,7 @@ const INTENTION_PREDICATE_LABELS = [
 // Map predicate labels to intention purposes
 const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
   'visits for work': 'for_work',
-  'visits for learning': 'for_learning',
+  'visits for learning ': 'for_learning',  // trailing space (official atom)
   'visits for fun': 'for_fun',
   'visits for inspiration': 'for_inspiration',
   'visits for buying': 'for_buying'
