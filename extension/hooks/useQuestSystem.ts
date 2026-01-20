@@ -203,23 +203,37 @@ export const useQuestSystem = (): QuestSystemResult => {
   const [claimingQuestId, setClaimingQuestId] = useState<string | null>(null)
   const [onChainSyncDone, setOnChainSyncDone] = useState(false)
   const [claimedDiscoveryXP, setClaimedDiscoveryXP] = useState(0)
+  const [groupCertificationXP, setGroupCertificationXP] = useState(0)
+  const [spentXP, setSpentXP] = useState(0)
 
-  // Load claimed discovery XP from storage and listen for changes
+  // Load XP from storage and listen for changes
   useEffect(() => {
-    const loadDiscoveryXP = async () => {
+    const loadXPData = async () => {
       try {
-        const result = await chrome.storage.local.get(['claimed_discovery_xp'])
+        const result = await chrome.storage.local.get([
+          'claimed_discovery_xp',
+          'group_certification_xp',
+          'spent_xp'
+        ])
         setClaimedDiscoveryXP(result.claimed_discovery_xp || 0)
+        setGroupCertificationXP(result.group_certification_xp || 0)
+        setSpentXP(result.spent_xp || 0)
       } catch (err) {
-        console.error('❌ [QuestSystem] Failed to load discovery XP:', err)
+        console.error('❌ [QuestSystem] Failed to load XP data:', err)
       }
     }
-    loadDiscoveryXP()
+    loadXPData()
 
-    // Listen for changes to discovery XP
+    // Listen for changes to XP values
     const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
       if (changes.claimed_discovery_xp) {
         setClaimedDiscoveryXP(changes.claimed_discovery_xp.newValue || 0)
+      }
+      if (changes.group_certification_xp) {
+        setGroupCertificationXP(changes.group_certification_xp.newValue || 0)
+      }
+      if (changes.spent_xp) {
+        setSpentXP(changes.spent_xp.newValue || 0)
       }
     }
     chrome.storage.onChanged.addListener(listener)
@@ -988,13 +1002,14 @@ export const useQuestSystem = (): QuestSystemResult => {
     [quests]
   )
 
-  // Calculate total XP and level - from CLAIMED quests + discovery XP
+  // Calculate total XP and level - from ALL sources: quests + discovery + group certifications - spent
   const totalXP = useMemo(() => {
     const questXP = quests
       .filter(quest => claimedQuestIds.has(quest.id))
       .reduce((sum, quest) => sum + quest.xpReward, 0)
-    return questXP + claimedDiscoveryXP
-  }, [quests, claimedQuestIds, claimedDiscoveryXP])
+    // Total = quests + discovery + group certifications - spent on level ups
+    return questXP + claimedDiscoveryXP + groupCertificationXP - spentXP
+  }, [quests, claimedQuestIds, claimedDiscoveryXP, groupCertificationXP, spentXP])
 
   const level = useMemo(() => calculateLevelFromXP(totalXP), [totalXP])
   const xpForNextLevel = useMemo(() => calculateXPForNextLevel(level), [level])

@@ -20,6 +20,7 @@ import { oauthService } from "./oauth"
 import { groupManager } from "../lib/services/GroupManager"
 import { xpService, getLevelUpCost } from "../lib/services/XPService"
 import { sessionTracker } from "../lib/services/SessionTracker"
+import { levelUpService } from "../lib/services/LevelUpService"
 
 // 🔥 FIX: Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
@@ -660,6 +661,44 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true, clustersCount: clusters.length })
         } catch (error) {
           console.error("❌ FORCE_FLUSH_TRACKER error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "LEVEL_UP_GROUP":
+        try {
+          const { groupId: levelUpGroupId } = message.data || message
+          if (!levelUpGroupId) {
+            sendResponse({ success: false, error: "groupId required" })
+            return true
+          }
+          console.log(`🎮 [messageHandlers] Level up request for group: ${levelUpGroupId}`)
+          const levelUpResult = await levelUpService.levelUp(levelUpGroupId)
+          sendResponse({
+            success: levelUpResult.success,
+            ...levelUpResult
+          })
+        } catch (error) {
+          console.error("❌ LEVEL_UP_GROUP error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "PREVIEW_LEVEL_UP":
+        try {
+          const { groupId: previewGroupId } = message.data || message
+          if (!previewGroupId) {
+            sendResponse({ success: false, error: "groupId required" })
+            return true
+          }
+          const preview = await levelUpService.previewLevelUp(previewGroupId)
+          if (preview) {
+            sendResponse({ success: true, ...preview })
+          } else {
+            sendResponse({ success: false, error: "Group not found" })
+          }
+        } catch (error) {
+          console.error("❌ PREVIEW_LEVEL_UP error:", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true

@@ -209,3 +209,65 @@ export async function sendSofiaToMastra(
     return null
   }
 }
+
+/**
+ * Input data for predicate generation
+ */
+export interface PredicateInput {
+  domain: string
+  title: string
+  level: number
+  certifications: Record<string, number>  // { work: 2, fun: 3, learning: 1, ... }
+  previousPredicate?: string | null
+}
+
+/**
+ * Output from predicate generation
+ */
+export interface PredicateOutput {
+  predicate: string
+  reason: string
+}
+
+/**
+ * Generate a predicate for a group level-up using PredicateAgent
+ * @param input - Group data including domain, level, and certifications
+ * @returns Generated predicate (2-4 words) with reasoning
+ */
+export async function generatePredicate(input: PredicateInput): Promise<PredicateOutput> {
+  const prompt = JSON.stringify({
+    domain: input.domain,
+    title: input.title,
+    level: input.level,
+    certifications: input.certifications,
+    previousPredicate: input.previousPredicate
+  })
+
+  console.log(`🎯 [Mastra] Generating predicate for ${input.domain} (level ${input.level})`)
+
+  try {
+    const result = await callMastraAgent('predicateAgent', prompt)
+
+    if (result && typeof result.predicate === 'string') {
+      console.log(`✅ [Mastra] Generated predicate: "${result.predicate}" - ${result.reason}`)
+      return {
+        predicate: result.predicate,
+        reason: result.reason || 'AI generated'
+      }
+    }
+
+    // Fallback if response is malformed
+    console.warn(`⚠️ [Mastra] Malformed predicate response, using fallback`)
+    return {
+      predicate: 'explore',
+      reason: 'Fallback predicate'
+    }
+  } catch (error) {
+    console.error(`❌ [Mastra] PredicateAgent error:`, error)
+    // Return a safe fallback
+    return {
+      predicate: 'explore',
+      reason: 'Error fallback'
+    }
+  }
+}

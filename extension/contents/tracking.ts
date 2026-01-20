@@ -139,13 +139,58 @@ function startWhenReady() {
 
 // Variables for duration tracking
 let pageStartTime = Date.now()
+let trackingTimerId: ReturnType<typeof setTimeout> | null = null
+let hasTrackedUrl = false
+
+// Minimum time on page before tracking (3 seconds)
+const MIN_TIME_BEFORE_TRACK = 3000
+
+// Track URL for Intention Groups after minimum time
+async function trackUrlAfterDelay() {
+  if (hasTrackedUrl) return
+
+  const enabled = await isTrackingEnabled()
+  if (!enabled) return
+
+  if (shouldIgnoreFrame()) return
+
+  hasTrackedUrl = true
+  const url = window.location.href
+  const title = document.title || url
+
+  console.log("📍 [TRACKING] Tracking URL after 3s:", url)
+
+  try {
+    chrome.runtime.sendMessage({
+      type: "TRACK_URL",
+      data: {
+        url,
+        title,
+        duration: Date.now() - pageStartTime
+      }
+    })
+  } catch (error) {
+    console.error("❌ [TRACKING] Error tracking URL:", error)
+  }
+}
+
+// Start tracking timer when page loads
+function startTrackingTimer() {
+  if (trackingTimerId) {
+    clearTimeout(trackingTimerId)
+  }
+  hasTrackedUrl = false
+  pageStartTime = Date.now()
+
+  trackingTimerId = setTimeout(trackUrlAfterDelay, MIN_TIME_BEFORE_TRACK)
+}
 
 // Track page duration on visibility change or before unload
 async function sendPageDuration() {
   const duration = Date.now() - pageStartTime
   const url = window.location.href
   console.log("⏱️ [TRACKING DEBUG] Sending PAGE_DURATION:", duration, "for URL:", url)
-  
+
   try {
     chrome.runtime.sendMessage({
       type: "PAGE_DURATION",
@@ -162,6 +207,10 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") {
     console.log("👁️ [TRACKING DEBUG] Page hidden - sending duration")
     sendPageDuration()
+    // Also track URL if user stayed long enough
+    if (Date.now() - pageStartTime >= MIN_TIME_BEFORE_TRACK) {
+      trackUrlAfterDelay()
+    }
   }
 })
 
@@ -171,5 +220,21 @@ window.addEventListener("beforeunload", () => {
   sendPageDuration()
 })
 
+// Track URL changes in SPAs (like GitHub)
+let lastTrackedUrl = window.location.href
+
+function checkUrlChange() {
+  const currentUrl = window.location.href
+  if (currentUrl !== lastTrackedUrl) {
+    console.log("🔄 [TRACKING] SPA navigation detected:", currentUrl)
+    lastTrackedUrl = currentUrl
+    startTrackingTimer()
+  }
+}
+
+// Check for URL changes periodically (for SPAs)
+setInterval(checkUrlChange, 1000)
+
 // Initialize tracking
 startWhenReady()
+startTrackingTimer()

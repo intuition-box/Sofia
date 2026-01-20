@@ -33,7 +33,7 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   const [selectedPredicate, setSelectedPredicate] = useState<string>('all')
   const [isPredicateDropdownOpen, setIsPredicateDropdownOpen] = useState(false)
 
-  // Hook IndexedDB pour les messages Eliza parsés uniquement
+  // Hook IndexedDB pour les messages parsés uniquement
   const {
     allMessages,
     loadMessages

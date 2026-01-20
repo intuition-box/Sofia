@@ -18,7 +18,8 @@ const EchoesGroupsSection = () => {
     loadGroups,
     selectGroup,
     certifyUrl,
-    removeUrl
+    removeUrl,
+    refreshGroup
   } = useIntentionGroups()
 
   // Show detail view if a group is selected
@@ -29,6 +30,7 @@ const EchoesGroupsSection = () => {
         onBack={() => selectGroup(null)}
         onCertifyUrl={(url, cert) => certifyUrl(selectedGroup.id, url, cert)}
         onRemoveUrl={(url) => removeUrl(selectedGroup.id, url)}
+        onRefresh={() => refreshGroup(selectedGroup.id)}
       />
     )
   }

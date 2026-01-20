@@ -11,6 +11,7 @@ import { recordScroll, clearScrolls } from '../../background/behavior'
 import type { PageData } from '../../background/types'
 import type { ChromeMessage } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
+import { sessionTracker } from './SessionTracker'
 
 const logger = createServiceLogger('PageDataService')
 
@@ -151,9 +152,16 @@ export class PageDataService {
     clearScrolls(parsedData.url)
     sendToAgent(message)
     clearOldSentMessages()
-    
+
     // Record page for intention ranking system
     recordPageForIntention(parsedData)
+
+    // Track URL for Intention Groups (SessionTracker → GroupManager)
+    sessionTracker.trackUrl({
+      url: parsedData.url,
+      title: parsedData.title,
+      duration: parsedData.duration || 0
+    })
   }
 }
 

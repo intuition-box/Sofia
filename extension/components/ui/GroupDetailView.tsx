@@ -4,7 +4,7 @@
  * Shows on-chain certification status and allows creating new certifications
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { IntentionGroupWithStats } from '../../hooks/useIntentionGroups'
 import type { GroupUrlRecord } from '../../lib/database/indexedDB'
@@ -13,6 +13,8 @@ import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { useIntentionCertify } from '../../hooks/useIntentionCertify'
 import { useGroupOnChainCertifications, type UrlCertificationStatus } from '../../hooks/useGroupOnChainCertifications'
+import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
+import { useGroupAmplify } from '../../hooks/useGroupAmplify'
 import WeightModal from '../modals/WeightModal'
 import { IntentionBubbleSelector } from './IntentionBubbleSelector'
 
@@ -21,6 +23,7 @@ interface GroupDetailViewProps {
   onBack: () => void
   onCertifyUrl: (url: string, certification: CertificationType) => Promise<boolean>
   onRemoveUrl: (url: string) => Promise<boolean>
+  onRefresh?: () => Promise<void>
 }
 
 // Certification options (for display/filtering)
@@ -84,10 +87,15 @@ const UrlRow = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Determine certification status - prefer on-chain status
-  const isCertified = onChainStatus?.isCertifiedOnChain || !!urlRecord.certification
-  const certLabel = onChainStatus?.certificationLabel || urlRecord.certification
-  const certInfo = certLabel ? CERTIFICATIONS.find(c => c.type === certLabel) : null
+  // ONLY on-chain certifications count for badges
+  // Local certification (urlRecord.certification) is just for pre-fill, not for display
+  const isCertifiedOnChain = onChainStatus?.isCertifiedOnChain === true
+
+  // Get all certification labels from on-chain ONLY
+  const allCertLabels = onChainStatus?.allCertificationLabels || []
+  const allCertInfos = allCertLabels
+    .map(label => CERTIFICATIONS.find(c => c.type === label))
+    .filter(Boolean) as typeof CERTIFICATIONS
 
   return (
     <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''}`}>
@@ -120,17 +128,26 @@ const UrlRow = ({
           </div>
         </div>
 
-        {/* Certification badge or menu button */}
+        {/* Certification badge AND menu buttons */}
         <div className="url-actions">
-          {isCertified ? (
-            <span
-              className={`cert-badge ${onChainStatus?.isCertifiedOnChain ? 'on-chain' : ''}`}
-              style={{ backgroundColor: certInfo?.color }}
-              title={`Certified as ${certInfo?.label}${onChainStatus?.isCertifiedOnChain ? ' (on-chain)' : ''}`}
-            >
-              {certInfo?.label.charAt(0)}
-            </span>
-          ) : !urlRecord.removed && (
+          {/* Show all certification badges if certified ON-CHAIN */}
+          {isCertifiedOnChain && allCertInfos.length > 0 && (
+            <div className="cert-badges">
+              {allCertInfos.map((certInfo) => (
+                <span
+                  key={certInfo.type}
+                  className="cert-badge on-chain"
+                  style={{ backgroundColor: certInfo.color }}
+                  title={`Certified as ${certInfo.label} (on-chain)`}
+                >
+                  {certInfo.label.charAt(0)}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Always show menu for non-removed URLs */}
+          {!urlRecord.removed && (
             <>
               <button
                 className="menu-dots-btn"
@@ -139,7 +156,7 @@ const UrlRow = ({
                   setIsExpanded(!isExpanded)
                 }}
                 disabled={isProcessing}
-                title="Expand to certify"
+                title={isCertifiedOnChain ? "Add another certification" : "Certify this URL"}
               >
                 <span className="dot"></span>
                 <span className="dot"></span>
@@ -162,7 +179,7 @@ const UrlRow = ({
       </div>
 
       {/* Expanded section with intention bubbles */}
-      {isExpanded && !isCertified && (
+      {isExpanded && (
         <div className="url-expanded-section">
           <IntentionBubbleSelector
             onBubbleClick={(intention) => {
@@ -178,12 +195,16 @@ const UrlRow = ({
   )
 }
 
-const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl }: GroupDetailViewProps) => {
+const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }: GroupDetailViewProps) => {
   const [processingUrls, setProcessingUrls] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState<'all' | 'uncertified' | CertificationType>('all')
+  const [levelUpPreview, setLevelUpPreview] = useState<LevelUpPreview | null>(null)
 
-  // Get active URLs for on-chain query
-  const activeUrls = group.urls.filter(u => !u.removed).map(u => u.url)
+  // Get active URLs for on-chain query - memoize to prevent unnecessary refetches
+  const activeUrls = useMemo(
+    () => group.urls.filter(u => !u.removed).map(u => u.url),
+    [group.urls]
+  )
 
   // Fetch on-chain certification status
   const {
@@ -193,6 +214,23 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl }: GroupDeta
     refetch: refetchOnChain
   } = useGroupOnChainCertifications(group.domain, activeUrls)
 
+  // Level up hook
+  const {
+    levelUp,
+    preview: previewLevelUp,
+    loading: levelUpLoading,
+    result: levelUpResult,
+    reset: resetLevelUp
+  } = useLevelUp()
+
+  // Amplify hook (publish group identity on-chain)
+  const {
+    amplify,
+    loading: amplifyLoading,
+    result: amplifyResult,
+    reset: resetAmplify
+  } = useGroupAmplify()
+
   // Modal state for on-chain certification
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [modalTriplets, setModalTriplets] = useState<any[]>([])
@@ -200,6 +238,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl }: GroupDeta
     url: string
     intention: IntentionPurpose
   } | null>(null)
+  const [intentionRewardClaimed, setIntentionRewardClaimed] = useState(false)
 
   // On-chain certification hook
   const {
@@ -212,33 +251,61 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl }: GroupDeta
     transactionHash: intentionTxHash
   } = useIntentionCertify()
 
+  // Fetch level up preview when group changes
+  useEffect(() => {
+    const fetchPreview = async () => {
+      const preview = await previewLevelUp(group.id)
+      setLevelUpPreview(preview)
+    }
+    fetchPreview()
+  }, [group.id, group.level, previewLevelUp])
+
+  // Handle level up
+  const handleLevelUp = async () => {
+    const result = await levelUp(group.id)
+    if (result.success) {
+      // Refresh the preview after successful level up
+      const newPreview = await previewLevelUp(group.id)
+      setLevelUpPreview(newPreview)
+      // Refresh the group to get updated predicate
+      if (onRefresh) {
+        await onRefresh()
+      }
+    }
+  }
+
+  // Handle amplify (publish identity on-chain)
+  const handleAmplify = async () => {
+    await amplify(group.id)
+  }
+
   // Use on-chain stats for counts
   const certifiedCount = onChainStats?.certifiedCount ?? group.certifiedCount
   const currentLevel = onChainStats?.currentLevel ?? group.level
   const progressPercent = onChainStats?.progressPercent ?? 0
   const xpToNextLevel = onChainStats?.xpToNextLevel ?? 0
 
-  // Filter URLs - use on-chain status when available
+  // Filter URLs - ONLY use on-chain status (not local certification)
   const filteredUrls = group.urls.filter(url => {
     if (url.removed) return false
     const onChainStatus = getUrlCertification(url.url)
-    const isCertified = onChainStatus?.isCertifiedOnChain || !!url.certification
+    const isCertifiedOnChain = onChainStatus?.isCertifiedOnChain === true
 
     if (filter === 'all') return true
-    if (filter === 'uncertified') return !isCertified
-    // For certification type filters, check on-chain first
-    const certType = onChainStatus?.certificationLabel || url.certification
-    return certType === filter
+    if (filter === 'uncertified') return !isCertifiedOnChain
+    // For certification type filters, check on-chain labels only
+    const certLabels = onChainStatus?.allCertificationLabels || []
+    return certLabels.includes(filter)
   })
 
   // Sort by most recent first
   const sortedUrls = [...filteredUrls].sort((a, b) => b.addedAt - a.addedAt)
 
-  // Calculate uncertified count using on-chain data
+  // Calculate uncertified count using ONLY on-chain data
   const uncertifiedCount = group.urls.filter(u => {
     if (u.removed) return false
     const onChainStatus = getUrlCertification(u.url)
-    return !onChainStatus?.isCertifiedOnChain && !u.certification
+    return onChainStatus?.isCertifiedOnChain !== true
   }).length
 
   // Handle intention selection - opens the WeightModal
@@ -307,6 +374,20 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl }: GroupDeta
     setModalTriplets([])
     setPendingCertification(null)
     resetIntention()
+    setIntentionRewardClaimed(false)
+  }
+
+  // Handle claiming XP reward for URL certification
+  const handleClaimIntentionReward = async () => {
+    try {
+      await chrome.runtime.sendMessage({
+        type: 'AWARD_XP',
+        data: { amount: 10, source: 'intention_certification' }
+      })
+      setIntentionRewardClaimed(true)
+    } catch (error) {
+      console.error('Failed to claim XP reward:', error)
+    }
   }
 
   const handleRemove = async (url: string) => {
@@ -350,6 +431,52 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl }: GroupDeta
           <span className="stat-text">To certify</span>
         </div>
       </div>
+
+      {/* Identity Hero Section - Visible triple with Amplify button */}
+      {group.currentPredicate && (
+        <div className="identity-hero-section">
+          <div className="identity-content">
+            <div className="identity-triple">
+              <span className="identity-subject">I</span>
+              <span className="identity-predicate">{group.currentPredicate}</span>
+              <span className="identity-object">{group.domain}</span>
+            </div>
+            {/* Amplify Success */}
+            {amplifyResult?.success && (
+              <div className="amplify-success-inline">
+                <span>✓ On-chain</span>
+                {amplifyResult.txHash && (
+                  <a
+                    href={`https://basescan.org/tx/${amplifyResult.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tx-link-inline"
+                  >
+                    TX ↗
+                  </a>
+                )}
+                <button className="dismiss-btn-small" onClick={resetAmplify}>×</button>
+              </div>
+            )}
+            {/* Amplify Error */}
+            {amplifyResult?.error && !amplifyResult.success && (
+              <div className="amplify-error-inline">
+                <span>⚠️ {amplifyResult.error}</span>
+                <button className="dismiss-btn-small" onClick={resetAmplify}>×</button>
+              </div>
+            )}
+          </div>
+          {!amplifyResult?.success && (
+            <button
+              className="amplify-btn-inline"
+              onClick={handleAmplify}
+              disabled={amplifyLoading}
+            >
+              {amplifyLoading ? '...' : '⛓️ Amplify'}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Level Progress */}
       <div className="level-progress-section">
@@ -431,6 +558,65 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl }: GroupDeta
         </div>
       )}
 
+      {/* Level Up Section */}
+      <div className="level-up-section">
+        {/* Level Up Result */}
+        {levelUpResult?.success && (
+          <div className="level-up-success">
+            <span className="success-icon">🎉</span>
+            <div className="success-content">
+              <span className="success-title">Level Up!</span>
+              <span className="success-predicate">
+                New identity: I {levelUpResult.newPredicate} {group.domain}
+              </span>
+            </div>
+            <button className="dismiss-btn" onClick={resetLevelUp}>×</button>
+          </div>
+        )}
+
+        {levelUpResult?.error && !levelUpResult.success && (
+          <div className="level-up-error">
+            <span className="error-icon">⚠️</span>
+            <span className="error-text">{levelUpResult.error}</span>
+            {levelUpResult.required && levelUpResult.available !== undefined && (
+              <span className="error-detail">
+                Need {levelUpResult.required} XP, have {levelUpResult.available} XP
+              </span>
+            )}
+            <button className="dismiss-btn" onClick={resetLevelUp}>×</button>
+          </div>
+        )}
+
+        {/* Level Up Button */}
+        {levelUpPreview && !levelUpResult?.success && (
+          <button
+            className={`level-up-btn ${levelUpPreview.canLevelUp ? 'can-afford' : 'cannot-afford'}`}
+            onClick={handleLevelUp}
+            disabled={!levelUpPreview.canLevelUp || levelUpLoading}
+          >
+            {levelUpLoading ? (
+              <span className="loading-text">Generating predicate...</span>
+            ) : (
+              <>
+                <span className="btn-icon">⬆️</span>
+                <span className="btn-text">
+                  Level Up to {levelUpPreview.nextLevel}
+                </span>
+                <span className="btn-cost">
+                  {levelUpPreview.cost} XP
+                </span>
+              </>
+            )}
+          </button>
+        )}
+
+        {levelUpPreview && !levelUpPreview.canLevelUp && (
+          <div className="xp-needed">
+            Need {levelUpPreview.cost - levelUpPreview.availableXP} more XP
+          </div>
+        )}
+      </div>
+
       {/* Weight Modal for on-chain certification */}
       {showWeightModal && createPortal(
         <WeightModal
@@ -443,6 +629,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl }: GroupDeta
           createdCount={intentionOperationType === 'created' ? 1 : 0}
           depositCount={intentionOperationType === 'deposit' ? 1 : 0}
           isIntentionCertification={true}
+          discoveryReward={intentionSuccess ? { status: 'Contributor' as const, xp: 10 } : null}
+          onClaimReward={handleClaimIntentionReward}
+          rewardClaimed={intentionRewardClaimed}
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
         />,

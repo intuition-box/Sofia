@@ -21,7 +21,7 @@ export interface DomainCluster {
 }
 
 // Configuration
-const BUFFER_SIZE_THRESHOLD = 15  // Flush after 15 URLs
+const BUFFER_SIZE_THRESHOLD = 5  // Flush after 5 URLs (for testing)
 const BUFFER_TIME_THRESHOLD = 30 * 60 * 1000  // Or after 30 minutes
 
 /**

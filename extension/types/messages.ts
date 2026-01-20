@@ -54,6 +54,7 @@ export type MessageType =
   | 'REMOVE_URL_FROM_GROUP'
   | 'GET_LEVEL_UP_COST'
   | 'LEVEL_UP_GROUP'
+  | 'PREVIEW_LEVEL_UP'
   | 'AMPLIFY_GROUP'
   | 'TRACK_URL'
   | 'FORCE_FLUSH_TRACKER'
