@@ -108,7 +108,8 @@ export const useWeightOnChain = () => {
         address: contractAddress,
         abi: MultiVaultAbi,
         functionName: 'getShares',
-        args: [address as Address, tripleVaultId as `0x${string}`, curveId]
+        args: [address as Address, tripleVaultId as `0x${string}`, curveId],
+        authorizationList: undefined
       }) as bigint
 
       // Preview how much assets we get for all shares
@@ -116,7 +117,8 @@ export const useWeightOnChain = () => {
         address: contractAddress,
         abi: MultiVaultAbi,
         functionName: 'previewRedeem',
-        args: [tripleVaultId as `0x${string}`, curveId, userShares]
+        args: [tripleVaultId as `0x${string}`, curveId, userShares],
+        authorizationList: undefined
       }) as [bigint, bigint] // [assetsAfterFees, sharesUsed]
 
       const totalAssets = previewResult[0]
