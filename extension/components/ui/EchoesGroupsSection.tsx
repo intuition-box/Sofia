@@ -68,10 +68,8 @@ const EchoesGroupsSection = () => {
     )
   }
 
-  // Assign sizes to cards for visual interest
-  const getCardSize = (index: number, urlCount: number): 'small' | 'tall' => {
-    // Make cards with more URLs taller
-    if (urlCount >= 5 && index % 3 === 0) return 'tall'
+  // All cards same size
+  const getCardSize = (): 'small' | 'tall' => {
     return 'small'
   }
 
@@ -83,12 +81,12 @@ const EchoesGroupsSection = () => {
       </div>
 
       <div className="bento-grid">
-        {groups.map((group, index) => (
+        {groups.map((group) => (
           <GroupBentoCard
             key={group.id}
             group={group}
             onClick={() => selectGroup(group.id)}
-            size={getCardSize(index, group.activeUrlCount)}
+            size={getCardSize()}
           />
         ))}
       </div>

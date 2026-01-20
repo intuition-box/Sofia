@@ -127,19 +127,29 @@ const GroupBentoCard = ({ group, onClick, size = 'small' }: GroupBentoCardProps)
         </span>
       </div>
 
-      {/* Certification breakdown dots */}
-      {Object.values(certificationBreakdown).some(v => v > 0) && (
+      {/* Certification breakdown dots - ONLY show on-chain certifications */}
+      {onChainStats && onChainStats.certifiedUrls.size > 0 && (
         <div className="certification-dots">
-          {Object.entries(certificationBreakdown)
-            .filter(([_, count]) => count > 0)
-            .map(([cert, count]) => (
-              <div
-                key={cert}
-                className="cert-dot"
-                style={{ backgroundColor: CERTIFICATION_COLORS[cert as CertificationType] }}
-                title={`${cert}: ${count}`}
-              />
-            ))}
+          {(() => {
+            // Count certifications by type from on-chain data
+            const onChainBreakdown: Record<string, number> = {}
+            onChainStats.certifiedUrls.forEach((status) => {
+              const labels = status.allCertificationLabels || []
+              labels.forEach(label => {
+                onChainBreakdown[label] = (onChainBreakdown[label] || 0) + 1
+              })
+            })
+            return Object.entries(onChainBreakdown)
+              .filter(([_, count]) => count > 0)
+              .map(([cert, count]) => (
+                <div
+                  key={cert}
+                  className="cert-dot"
+                  style={{ backgroundColor: CERTIFICATION_COLORS[cert as CertificationType] }}
+                  title={`${cert}: ${count}`}
+                />
+              ))
+          })()}
         </div>
       )}
     </div>
