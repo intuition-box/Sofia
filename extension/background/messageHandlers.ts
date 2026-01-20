@@ -17,6 +17,9 @@ import { pulseService } from "../lib/services/PulseService"
 import { tripletStorageService } from "../lib/services/TripletStorageService"
 import { initializeSocketsOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
+import { groupManager } from "../lib/services/GroupManager"
+import { xpService, getLevelUpCost } from "../lib/services/XPService"
+import { sessionTracker } from "../lib/services/SessionTracker"
 
 // 🔥 FIX: Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
@@ -531,6 +534,132 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true })
         } catch (error) {
           console.error("❌ WALLET_DISCONNECTED error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      // =====================================================
+      // 🆕 INTENTION GROUPS HANDLERS
+      // =====================================================
+
+      case "GET_INTENTION_GROUPS":
+        try {
+          const groups = await groupManager.getAllGroups()
+          sendResponse({ success: true, groups })
+        } catch (error) {
+          console.error("❌ GET_INTENTION_GROUPS error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "GET_GROUP_DETAILS":
+        try {
+          const groupId = message.groupId || message.data?.groupId
+          if (!groupId) {
+            sendResponse({ success: false, error: "Group ID required" })
+            return true
+          }
+          const group = await groupManager.getGroup(groupId)
+          if (group) {
+            const stats = groupManager.getGroupStats(group)
+            sendResponse({ success: true, group, stats })
+          } else {
+            sendResponse({ success: false, error: "Group not found" })
+          }
+        } catch (error) {
+          console.error("❌ GET_GROUP_DETAILS error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "GET_USER_XP":
+        try {
+          const xpStats = await xpService.getStats()
+          sendResponse({ success: true, ...xpStats })
+        } catch (error) {
+          console.error("❌ GET_USER_XP error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "CERTIFY_URL":
+        try {
+          const { groupId: certGroupId, url: certUrl, certification } = message.data || message
+          if (!certGroupId || !certUrl || !certification) {
+            sendResponse({ success: false, error: "groupId, url, and certification required" })
+            return true
+          }
+          const certResult = await groupManager.certifyUrl(certGroupId, certUrl, certification)
+          sendResponse({ success: certResult.success, xpGained: certResult.xpGained, error: certResult.error })
+        } catch (error) {
+          console.error("❌ CERTIFY_URL error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "REMOVE_URL_FROM_GROUP":
+        try {
+          const { groupId: removeGroupId, url: removeUrl } = message.data || message
+          if (!removeGroupId || !removeUrl) {
+            sendResponse({ success: false, error: "groupId and url required" })
+            return true
+          }
+          const removed = await groupManager.removeUrl(removeGroupId, removeUrl)
+          sendResponse({ success: removed })
+        } catch (error) {
+          console.error("❌ REMOVE_URL_FROM_GROUP error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "GET_LEVEL_UP_COST":
+        try {
+          const { groupId: lvlGroupId } = message.data || message
+          if (!lvlGroupId) {
+            sendResponse({ success: false, error: "groupId required" })
+            return true
+          }
+          const lvlGroup = await groupManager.getGroup(lvlGroupId)
+          if (!lvlGroup) {
+            sendResponse({ success: false, error: "Group not found" })
+            return true
+          }
+          const cost = getLevelUpCost(lvlGroup.level)
+          const xpStats = await xpService.getStats()
+          sendResponse({
+            success: true,
+            cost,
+            currentLevel: lvlGroup.level,
+            availableXP: xpStats.netCertificationXP,
+            canAfford: xpStats.netCertificationXP >= cost
+          })
+        } catch (error) {
+          console.error("❌ GET_LEVEL_UP_COST error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "TRACK_URL":
+        try {
+          const { url: trackUrl, title: trackTitle, duration, favicon } = message.data || message
+          if (!trackUrl) {
+            sendResponse({ success: false, error: "url required" })
+            return true
+          }
+          sessionTracker.trackUrl({ url: trackUrl, title: trackTitle || trackUrl, duration, favicon })
+          sendResponse({ success: true })
+        } catch (error) {
+          console.error("❌ TRACK_URL error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "FORCE_FLUSH_TRACKER":
+        try {
+          const clusters = await sessionTracker.forceFlush()
+          sendResponse({ success: true, clustersCount: clusters.length })
+        } catch (error) {
+          console.error("❌ FORCE_FLUSH_TRACKER error:", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true

@@ -46,6 +46,17 @@ export type MessageType =
   | 'WALLET_CONNECTED'
   | 'WALLET_DISCONNECTED'
   | 'GET_PAGE_ATTENTION'
+  // 🆕 Intention Groups messages
+  | 'GET_INTENTION_GROUPS'
+  | 'GET_GROUP_DETAILS'
+  | 'GET_USER_XP'
+  | 'CERTIFY_URL'
+  | 'REMOVE_URL_FROM_GROUP'
+  | 'GET_LEVEL_UP_COST'
+  | 'LEVEL_UP_GROUP'
+  | 'AMPLIFY_GROUP'
+  | 'TRACK_URL'
+  | 'FORCE_FLUSH_TRACKER'
 
 // Specific message interfaces
 export interface ChromeMessage extends BaseMessage {
@@ -58,6 +69,10 @@ export interface ChromeMessage extends BaseMessage {
   timestamp?: number
   payload?: any
   walletAddress?: string
+  // 🆕 Intention Groups properties
+  groupId?: string
+  url?: string
+  certification?: string
 }
 
 export interface TripletMessage extends BaseMessage {
