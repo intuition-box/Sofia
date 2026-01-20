@@ -2,7 +2,7 @@
  * Specialized methods for SofIA IndexedDB operations
  */
 
-import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type AgentChannelRecord } from './indexedDB'
+import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type IntentionGroupRecord, type UserXPRecord } from './indexedDB'
 import { MessageBus } from '../services/MessageBus'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
 import { parseSofiaMessage } from '../utils/parseSofiaMessage'
@@ -999,134 +999,96 @@ export class RecommendationsService {
 }
 
 /**
- * 🆕 Agent Channels Service
- * Manages persistent storage of channel IDs for multi-user support
+ * 🆕 Intention Groups Service
+ * Manages persistent storage of domain-based intention groups
  */
-export class AgentChannelsService {
+export class IntentionGroupsService {
   /**
-   * Store channel ID for a user-agent pair
+   * Get all intention groups
    */
-  static async storeChannelId(
-    walletAddress: string,
-    agentName: string,
-    channelId: string,
-    agentId: string
-  ): Promise<void> {
-    const key = `${walletAddress.toLowerCase()}:${agentName}`
-    const record: AgentChannelRecord = {
-      key,
-      channelId,
-      walletAddress: walletAddress.toLowerCase(),
-      agentName,
-      agentId,
-      createdAt: Date.now(),
-      lastUsed: Date.now()
+  static async getAllGroups(): Promise<IntentionGroupRecord[]> {
+    const groups = await sofiaDB.getAll<IntentionGroupRecord>(STORES.INTENTION_GROUPS)
+    return groups.sort((a, b) => b.updatedAt - a.updatedAt)
+  }
+
+  /**
+   * Get a specific group by ID (domain)
+   */
+  static async getGroup(groupId: string): Promise<IntentionGroupRecord | null> {
+    return await sofiaDB.get<IntentionGroupRecord>(STORES.INTENTION_GROUPS, groupId) || null
+  }
+
+  /**
+   * Save or update an intention group
+   */
+  static async saveGroup(group: IntentionGroupRecord): Promise<void> {
+    group.updatedAt = Date.now()
+    await sofiaDB.put(STORES.INTENTION_GROUPS, group)
+    console.log(`💾 [IntentionGroups] Saved group: ${group.id}`)
+  }
+
+  /**
+   * Delete a group
+   */
+  static async deleteGroup(groupId: string): Promise<void> {
+    await sofiaDB.delete(STORES.INTENTION_GROUPS, groupId)
+    console.log(`🗑️ [IntentionGroups] Deleted group: ${groupId}`)
+  }
+
+  /**
+   * Clear all groups
+   */
+  static async clearAll(): Promise<void> {
+    await sofiaDB.clear(STORES.INTENTION_GROUPS)
+    console.log('🗑️ [IntentionGroups] Cleared all groups')
+  }
+}
+
+/**
+ * 🆕 User XP Service
+ * Manages user XP storage
+ */
+export class UserXPService {
+  /**
+   * Get current user XP
+   */
+  static async getUserXP(): Promise<UserXPRecord | null> {
+    return await sofiaDB.get<UserXPRecord>(STORES.USER_XP, 'user') || null
+  }
+
+  /**
+   * Save user XP
+   */
+  static async saveUserXP(xp: UserXPRecord): Promise<void> {
+    xp.lastUpdated = Date.now()
+    await sofiaDB.put(STORES.USER_XP, xp)
+    console.log(`💾 [UserXP] Saved XP: ${xp.totalXP}`)
+  }
+
+  /**
+   * Initialize user XP if not exists
+   */
+  static async initializeIfNeeded(): Promise<UserXPRecord> {
+    let xp = await this.getUserXP()
+    if (!xp) {
+      xp = {
+        id: 'user',
+        totalXP: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        lastUpdated: Date.now()
+      }
+      await this.saveUserXP(xp)
     }
-
-    await sofiaDB.put(STORES.AGENT_CHANNELS, record)
-    console.log(`💾 [AgentChannels] Stored channel for ${agentName}:`, channelId)
+    return xp
   }
 
   /**
-   * Get stored channel ID for a user-agent pair
+   * Clear user XP
    */
-  static async getStoredChannelId(
-    walletAddress: string,
-    agentName: string
-  ): Promise<string | null> {
-    const key = `${walletAddress.toLowerCase()}:${agentName}`
-    const record = await sofiaDB.get<AgentChannelRecord>(STORES.AGENT_CHANNELS, key)
-
-    if (record?.channelId) {
-      // Update lastUsed timestamp
-      record.lastUsed = Date.now()
-      await sofiaDB.put(STORES.AGENT_CHANNELS, record)
-
-      console.log(`♻️ [AgentChannels] Retrieved channel for ${agentName}:`, record.channelId)
-      return record.channelId
-    }
-
-    console.log(`🆕 [AgentChannels] No existing channel for ${agentName}`)
-    return null
-  }
-
-  /**
-   * Get all channels for a specific wallet address
-   */
-  static async getAllUserChannels(walletAddress: string): Promise<AgentChannelRecord[]> {
-    const allChannels = await sofiaDB.getAllByIndex<AgentChannelRecord>(
-      STORES.AGENT_CHANNELS,
-      'walletAddress',
-      walletAddress.toLowerCase()
-    )
-    return allChannels
-  }
-
-  /**
-   * Get all channels for a specific agent (across all users)
-   */
-  static async getAllAgentChannels(agentName: string): Promise<AgentChannelRecord[]> {
-    const allChannels = await sofiaDB.getAllByIndex<AgentChannelRecord>(
-      STORES.AGENT_CHANNELS,
-      'agentName',
-      agentName
-    )
-    return allChannels
-  }
-
-  /**
-   * Delete a specific channel
-   */
-  static async deleteChannel(walletAddress: string, agentName: string): Promise<void> {
-    const key = `${walletAddress.toLowerCase()}:${agentName}`
-    await sofiaDB.delete(STORES.AGENT_CHANNELS, key)
-    console.log(`🗑️ [AgentChannels] Deleted channel for ${agentName}`)
-  }
-
-  /**
-   * Clear all channels for a specific wallet (useful for logout)
-   */
-  static async clearUserChannels(walletAddress: string): Promise<number> {
-    const userChannels = await this.getAllUserChannels(walletAddress)
-
-    for (const channel of userChannels) {
-      await sofiaDB.delete(STORES.AGENT_CHANNELS, channel.key)
-    }
-
-    console.log(`🗑️ [AgentChannels] Cleared ${userChannels.length} channels for wallet ${walletAddress}`)
-    return userChannels.length
-  }
-
-  /**
-   * Clear ALL channels (for debugging)
-   */
-  static async clearAllChannels(): Promise<void> {
-    await sofiaDB.clear(STORES.AGENT_CHANNELS)
-    console.log('🗑️ [AgentChannels] Cleared all channels')
-  }
-
-  /**
-   * Get channel statistics (for debugging)
-   */
-  static async getChannelStats(): Promise<{
-    totalChannels: number
-    uniqueWallets: number
-    channelsByAgent: Record<string, number>
-  }> {
-    const allChannels = await sofiaDB.getAll<AgentChannelRecord>(STORES.AGENT_CHANNELS)
-
-    const uniqueWallets = new Set(allChannels.map(c => c.walletAddress)).size
-    const channelsByAgent: Record<string, number> = {}
-
-    for (const channel of allChannels) {
-      channelsByAgent[channel.agentName] = (channelsByAgent[channel.agentName] || 0) + 1
-    }
-
-    return {
-      totalChannels: allChannels.length,
-      uniqueWallets,
-      channelsByAgent
-    }
+  static async clearAll(): Promise<void> {
+    await sofiaDB.clear(STORES.USER_XP)
+    console.log('🗑️ [UserXP] Cleared user XP')
   }
 }
 
@@ -1138,6 +1100,7 @@ export const userSettingsService = UserSettingsService
 export const searchHistoryService = SearchHistoryService
 export const bookmarkService = BookmarkService
 export const recommendationsService = RecommendationsService
-export const agentChannelsService = AgentChannelsService  // 🆕 Export agent channels service
+export const intentionGroupsService = IntentionGroupsService  // 🆕 Export intention groups service
+export const userXPService = UserXPService  // 🆕 Export user XP service
 
 // Published triplet storage exports removed - using Intuition indexer as single source of truth

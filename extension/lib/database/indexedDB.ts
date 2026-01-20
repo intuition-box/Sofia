@@ -10,7 +10,7 @@ import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
-const DB_VERSION = 6  // 🆕 Incrémenté pour ajouter agent_channels
+const DB_VERSION = 7  // 🆕 Incrémenté pour ajouter INTENTION_GROUPS et USER_XP
 
 // Object store names
 export const STORES = {
@@ -23,7 +23,8 @@ export const STORES = {
   BOOKMARKED_TRIPLETS: 'bookmarked_triplets',
   DOMAIN_INTENTIONS: 'domain_intentions',
   RECOMMENDATIONS: 'recommendations',
-  AGENT_CHANNELS: 'agent_channels'  // 🆕 Store pour la persistance des channels
+  INTENTION_GROUPS: 'intention_groups',  // 🆕 Groupes d'intention persistants
+  USER_XP: 'user_xp'  // 🆕 XP global utilisateur
 } as const
 
 // Record types for IndexedDB
@@ -92,15 +93,51 @@ export interface RecommendationRecord {
   lastUpdated: number
 }
 
-// 🆕 Agent channel record for multi-user persistence
-export interface AgentChannelRecord {
-  key: string  // Format: "wallet_address:agent_name"
-  channelId: string
-  walletAddress: string
-  agentName: string
-  agentId: string
+// 🆕 Intention Group record for persistent domain groups
+export interface IntentionGroupRecord {
+  id: string                          // = domain (ex: "twitch.tv")
+  domain: string
+  title: string                       // = domain par défaut
   createdAt: number
-  lastUsed: number
+  updatedAt: number
+  urls: GroupUrlRecord[]
+  level: number                       // Commence à 1
+  currentPredicate: string | null     // null jusqu'au premier LVL UP
+  predicateHistory: PredicateChangeRecord[]
+  totalAttentionTime: number
+  totalCertifications: number
+  dominantCertification: string | null
+}
+
+export interface GroupUrlRecord {
+  url: string
+  title: string
+  domain: string
+  favicon?: string
+  addedAt: number
+  attentionTime: number
+  certification: 'work' | 'learning' | 'fun' | 'inspiration' | 'buying' | null
+  certifiedAt?: number
+  removed: boolean
+}
+
+export interface PredicateChangeRecord {
+  fromPredicate: string | null
+  toPredicate: string
+  fromLevel: number
+  toLevel: number
+  changedAt: number
+  xpSpent: number
+  reason: string
+}
+
+// 🆕 User XP record
+export interface UserXPRecord {
+  id: 'user'
+  totalXP: number
+  totalEarned: number
+  totalSpent: number
+  lastUpdated: number
 }
 
 /**
@@ -238,15 +275,20 @@ export class SofiaIndexedDB {
       recommendationsStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
     }
 
-    // 🆕 Agent channels store (pour persistance multi-user)
-    if (!db.objectStoreNames.contains(STORES.AGENT_CHANNELS)) {
-      const agentChannelsStore = db.createObjectStore(STORES.AGENT_CHANNELS, {
-        keyPath: 'key'  // Format: "wallet_address:agent_name"
+    // 🆕 Intention Groups store (groupes de domaines persistants)
+    if (!db.objectStoreNames.contains(STORES.INTENTION_GROUPS)) {
+      const intentionGroupsStore = db.createObjectStore(STORES.INTENTION_GROUPS, {
+        keyPath: 'id'  // = domain
       })
-      agentChannelsStore.createIndex('walletAddress', 'walletAddress', { unique: false })
-      agentChannelsStore.createIndex('agentName', 'agentName', { unique: false })
-      agentChannelsStore.createIndex('channelId', 'channelId', { unique: false })
-      agentChannelsStore.createIndex('lastUsed', 'lastUsed', { unique: false })
+      intentionGroupsStore.createIndex('domain', 'domain', { unique: true })
+      intentionGroupsStore.createIndex('level', 'level', { unique: false })
+      intentionGroupsStore.createIndex('createdAt', 'createdAt', { unique: false })
+      intentionGroupsStore.createIndex('updatedAt', 'updatedAt', { unique: false })
+    }
+
+    // 🆕 User XP store (XP global utilisateur)
+    if (!db.objectStoreNames.contains(STORES.USER_XP)) {
+      db.createObjectStore(STORES.USER_XP, { keyPath: 'id' })
     }
 
     console.log('✅ Object stores created successfully')
