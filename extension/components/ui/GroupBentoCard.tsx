@@ -1,0 +1,149 @@
+/**
+ * GroupBentoCard Component
+ * Displays an intention group as a Bento card with domain info and stats
+ * Shows XP progress toward next level based on on-chain certifications
+ */
+
+import type { IntentionGroupWithStats } from '../../hooks/useIntentionGroups'
+import type { CertificationType } from '../../lib/services/GroupManager'
+import { useGroupOnChainCertifications } from '../../hooks/useGroupOnChainCertifications'
+
+interface GroupBentoCardProps {
+  group: IntentionGroupWithStats
+  onClick: () => void
+  size?: 'small' | 'tall'
+}
+
+// Certification colors
+const CERTIFICATION_COLORS: Record<CertificationType, string> = {
+  work: '#3B82F6',      // blue
+  learning: '#10B981',  // green
+  fun: '#F59E0B',       // yellow/orange
+  inspiration: '#8B5CF6', // purple
+  buying: '#EF4444'     // red
+}
+
+// Get favicon URL from domain
+const getFaviconUrl = (domain: string): string => {
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
+}
+
+// Format duration for display
+const formatDuration = (ms: number): string => {
+  const minutes = Math.floor(ms / 60000)
+  const hours = Math.floor(minutes / 60)
+
+  if (hours > 0) {
+    return `${hours}h ${minutes % 60}m`
+  }
+  return `${minutes}m`
+}
+
+const GroupBentoCard = ({ group, onClick, size = 'small' }: GroupBentoCardProps) => {
+  const { domain, activeUrlCount, totalAttentionTime, currentPredicate, certificationBreakdown, urls } = group
+
+  // Get active URLs for on-chain query
+  const activeUrls = urls.filter(u => !u.removed).map(u => u.url)
+
+  // Fetch on-chain certification status
+  const { stats: onChainStats, loading: onChainLoading } = useGroupOnChainCertifications(domain, activeUrls)
+
+  // Use on-chain stats if available, otherwise fall back to local
+  const certifiedCount = onChainStats?.certifiedCount ?? group.certifiedCount
+  const currentLevel = onChainStats?.currentLevel ?? group.level
+  const progressPercent = onChainStats?.progressPercent ?? 0
+  const xpToNextLevel = onChainStats?.xpToNextLevel ?? 0
+
+  // Get dominant certification for styling
+  const dominantCert = Object.entries(certificationBreakdown)
+    .filter(([_, count]) => count > 0)
+    .sort(([, a], [, b]) => b - a)[0]
+
+  const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as CertificationType] : '#C7866C'
+
+  return (
+    <div
+      className={`bento-card bento-${size} group-bento-card`}
+      onClick={onClick}
+      style={{
+        borderColor: dominantCert ? `${dominantColor}40` : undefined
+      }}
+    >
+      {/* Header with domain info */}
+      <div className="group-bento-header">
+        <img
+          src={getFaviconUrl(domain)}
+          alt={domain}
+          className="group-bento-favicon"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            target.style.display = 'none'
+          }}
+        />
+        <div className="group-bento-domain-info">
+          <h3 className="group-bento-title">{domain}</h3>
+          {currentPredicate && (
+            <span className="group-bento-predicate">"{currentPredicate}"</span>
+          )}
+        </div>
+        <div className="group-bento-level">
+          <span className="level-badge">LVL {currentLevel}</span>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="group-bento-stats">
+        <div className="stat-item">
+          <span className="stat-value">{activeUrlCount}</span>
+          <span className="stat-label">URLs</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-value">{onChainLoading ? '...' : certifiedCount}</span>
+          <span className="stat-label">On-chain</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-value">{formatDuration(totalAttentionTime)}</span>
+          <span className="stat-label">Time</span>
+        </div>
+      </div>
+
+      {/* Level progress bar - shows progress toward next level */}
+      <div className="group-bento-progress">
+        <div className="progress-bar-container">
+          <div
+            className="progress-bar-fill"
+            style={{
+              width: `${progressPercent}%`,
+              background: dominantColor
+            }}
+          />
+        </div>
+        <span className="progress-label">
+          {onChainLoading ? '...' : (
+            xpToNextLevel > 0
+              ? `${xpToNextLevel} XP to LVL ${currentLevel + 1}`
+              : 'Max level!'
+          )}
+        </span>
+      </div>
+
+      {/* Certification breakdown dots */}
+      {Object.values(certificationBreakdown).some(v => v > 0) && (
+        <div className="certification-dots">
+          {Object.entries(certificationBreakdown)
+            .filter(([_, count]) => count > 0)
+            .map(([cert, count]) => (
+              <div
+                key={cert}
+                className="cert-dot"
+                style={{ backgroundColor: CERTIFICATION_COLORS[cert as CertificationType] }}
+                title={`${cert}: ${count}`}
+              />
+            ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default GroupBentoCard

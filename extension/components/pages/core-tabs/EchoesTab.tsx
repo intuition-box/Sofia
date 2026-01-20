@@ -6,11 +6,12 @@ import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import { useEchoSelection } from '../../../hooks/useEchoSelection'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import WeightModal from '../../modals/WeightModal'
-// Removed Iridescence import - using CSS salmon gradient now
 import SofiaLoader from '../../ui/SofiaLoader'
+import EchoesGroupsSection from '../../ui/EchoesGroupsSection'
 import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
+import '../../styles/CommonPage.css'
 
 interface EchoesTabProps {
   expandedTriplet: { msgIndex: number; tripletIndex: number } | null
@@ -293,6 +294,18 @@ const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
   
   return (
     <div className="triples-container">
+      {/* Intention Groups Section */}
+      <EchoesGroupsSection />
+
+      {/* Separator */}
+      {(availableCount > 0 || echoTriplets.length > 0) && (
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '16px 0', paddingTop: '16px' }}>
+          <h3 style={{ color: '#faf7f3', fontSize: '16px', fontWeight: 600, margin: '0 0 12px 0' }}>
+            Echoes to amplify
+          </h3>
+        </div>
+      )}
+
       {(selectedEchoes.size > 0 || availableCount > 0) && (
         <div className="selection-panel">
           <div className="selection-info">
