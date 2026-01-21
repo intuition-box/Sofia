@@ -150,6 +150,7 @@ export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => 
                 shares: { _gt: "0" }
               }
             }
+            limit: 10000
           ) {
             term_id
             predicate_id

@@ -96,16 +96,11 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
 
       logger.debug('Fetching discovery score', { userAddress })
 
-      // Query using POSITIONS to find user's triples (proxy creates, user has position)
-      // The creator_id is the proxy contract, not the user
-      // User is identified by having a position in the triple vault
-      // Rank is determined by position created_at (when user took their position)
-      // NOTE: Using _ilike for case-insensitive matching (checksummed addresses, predicate labels)
-      // NOTE: Filter positions by shares > 0 to exclude closed positions
-      const query = `
-        query UserIntentionTriples($predicateLabels: [String!]!, $userAddress: String!) {
-          # Get user's intention triples via positions (user has shares in the triple vault)
-          userTriples: triples(
+      // PAGINATED QUERIES - fetch all user triples and all triples for rank calculation
+      // Query 1: Get user's intention triples via positions
+      const userTriplesQuery = `
+        query UserIntentionTriples($predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
+          triples(
             where: {
               predicate: { label: { _in: $predicateLabels } }
               positions: {
@@ -113,6 +108,8 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
                 shares: { _gt: "0" }
               }
             }
+            limit: $limit
+            offset: $offset
           ) {
             term_id
             predicate {
@@ -131,15 +128,19 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
               shares
             }
           }
+        }
+      `
 
-          # Get ALL intention triples with their positions to calculate ranks
-          # Positions are ordered by created_at to determine who arrived first
-          # Only include positions with shares > 0 (active positions)
-          allTriples: triples(
+      // Query 2: Get ALL intention triples with positions for rank calculation
+      const allTriplesQuery = `
+        query AllIntentionTriples($predicateLabels: [String!]!, $limit: Int!, $offset: Int!) {
+          triples(
             where: {
               predicate: { label: { _in: $predicateLabels } }
               positions: { shares: { _gt: "0" } }
             }
+            limit: $limit
+            offset: $offset
           ) {
             term_id
             predicate {
@@ -159,15 +160,40 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
         }
       `
 
-      const response = await intuitionGraphqlClient.request(query, {
-        predicateLabels: INTENTION_PREDICATE_LABELS,
-        userAddress
-      })
+      // Types for the query results
+      interface UserTripleResult {
+        term_id: string
+        predicate: { label: string }
+        object: { term_id: string; label: string }
+        positions: Array<{ account_id: string; created_at: string; shares: string }>
+      }
 
-      console.log('🔍 [useDiscoveryScore] GraphQL response:', response)
+      interface AllTripleResult {
+        term_id: string
+        predicate: { label: string }
+        object: { term_id: string }
+        positions: Array<{ account_id: string; created_at: string }>
+      }
 
-      const userTriples = response?.userTriples || []
-      const allTriples = response?.allTriples || []
+      // Fetch both in parallel with pagination
+      const [userTriples, allTriples] = await Promise.all([
+        intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
+          userTriplesQuery,
+          { predicateLabels: INTENTION_PREDICATE_LABELS, userAddress },
+          'triples',
+          100,
+          100
+        ),
+        intuitionGraphqlClient.fetchAllPages<AllTripleResult>(
+          allTriplesQuery,
+          { predicateLabels: INTENTION_PREDICATE_LABELS },
+          'triples',
+          100,
+          100
+        )
+      ])
+
+      console.log('🔍 [useDiscoveryScore] Paginated results:', { userTriples: userTriples.length, allTriples: allTriples.length })
 
       // Debug: show all predicate labels found vs what we're looking for
       const foundPredicateLabels = new Set<string>()

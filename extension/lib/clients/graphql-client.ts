@@ -91,6 +91,45 @@ export const intuitionGraphqlClient = {
   // Clear cache (useful after mutations)
   clearCache: () => {
     queryCache.clear()
+  },
+
+  /**
+   * Paginated fetch - fetches all pages of results
+   * @param query - GraphQL query with $limit and $offset variables
+   * @param variables - Query variables (without limit/offset)
+   * @param resultKey - Key in response to extract array from (e.g., 'triples')
+   * @param pageSize - Number of items per page (default 100)
+   * @param maxPages - Maximum pages to fetch (default 100 = 10000 items)
+   */
+  fetchAllPages: async <T>(
+    query: string,
+    variables: any,
+    resultKey: string,
+    pageSize: number = 100,
+    maxPages: number = 100
+  ): Promise<T[]> => {
+    const allResults: T[] = []
+    let offset = 0
+    let hasMore = true
+    let pageCount = 0
+
+    while (hasMore && pageCount < maxPages) {
+      const pageVariables = { ...variables, limit: pageSize, offset }
+      const response = await intuitionGraphqlClient.request(query, pageVariables)
+      const pageResults = response?.[resultKey] || []
+
+      allResults.push(...pageResults)
+
+      // If we got fewer results than page size, we've reached the end
+      if (pageResults.length < pageSize) {
+        hasMore = false
+      } else {
+        offset += pageSize
+        pageCount++
+      }
+    }
+
+    return allResults
   }
 }
 

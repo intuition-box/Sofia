@@ -181,10 +181,10 @@ const AccountTab = () => {
       try {
         const checksumAddress = getAddress(walletAddress)
 
-        // Load user stats: signals created and total market cap
+        // Load user stats: signals created and total market cap - PAGINATED
         // Use terms table to get vaults data (like PageBlockchainCard)
         const statsQuery = `
-          query GetUserStats($accountId: String!, $subjectId: String!) {
+          query GetUserStats($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
             triples: terms(
               where: {
                 _and: [
@@ -193,6 +193,8 @@ const AccountTab = () => {
                   { positions: { account: { id: { _eq: $accountId } } } }
                 ]
               }
+              limit: $limit
+              offset: $offset
             ) {
               id
               vaults {
@@ -202,27 +204,32 @@ const AccountTab = () => {
           }
         `
 
-        const statsResponse = await intuitionGraphqlClient.request(statsQuery, {
-          accountId: checksumAddress,
-          subjectId: SUBJECT_IDS.I
-        }) as { triples: Array<{ id: string; vaults?: Array<{ total_shares: string }> }> }
+        interface StatsTripleResult {
+          id: string
+          vaults?: Array<{ total_shares: string }>
+        }
 
-        console.log('📊 User stats response:', statsResponse)
-        console.log('📊 Triples count:', statsResponse?.triples?.length)
+        const allTriples = await intuitionGraphqlClient.fetchAllPages<StatsTripleResult>(
+          statsQuery,
+          { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
+          'triples',
+          100,
+          1000  // max 100k signals
+        )
+
+        console.log('📊 Triples count (paginated):', allTriples.length)
 
         // Calculate signals created and total market cap
-        const signalsCreated = statsResponse?.triples?.length || 0
+        const signalsCreated = allTriples.length
 
         let totalMarketCap = 0
-        if (statsResponse?.triples) {
-          statsResponse.triples.forEach((triple) => {
-            if (triple.vaults) {
-              triple.vaults.forEach((vault) => {
-                totalMarketCap += Number(vault.total_shares || 0) / 1e18
-              })
-            }
-          })
-        }
+        allTriples.forEach((triple) => {
+          if (triple.vaults) {
+            triple.vaults.forEach((vault) => {
+              totalMarketCap += Number(vault.total_shares || 0) / 1e18
+            })
+          }
+        })
 
         console.log('📊 Signals created:', signalsCreated)
         console.log('📊 Total market cap:', totalMarketCap)

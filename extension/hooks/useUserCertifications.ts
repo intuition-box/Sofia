@@ -118,11 +118,11 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
   emitChange()
 
   try {
-    logger.info('Fetching ALL user certifications in single query', { predicateLabels: ALL_PREDICATE_LABELS })
+    logger.info('Fetching ALL user certifications with pagination', { predicateLabels: ALL_PREDICATE_LABELS })
 
-    // Use predicate labels instead of IDs for testnet compatibility
+    // Use predicate labels instead of IDs for testnet compatibility - PAGINATED
     const query = `
-      query UserAllCertifications($predicateLabels: [String!]!, $userAddress: String!) {
+      query UserAllCertifications($predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
         triples(
           where: {
             predicate: { label: { _in: $predicateLabels } }
@@ -131,6 +131,8 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
               shares: { _gt: "0" }
             }
           }
+          limit: $limit
+          offset: $offset
         ) {
           predicate {
             label
@@ -142,13 +144,19 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
       }
     `
 
-    const response = await intuitionGraphqlClient.request(query, {
-      predicateLabels: ALL_PREDICATE_LABELS,
-      userAddress: walletAddress.toLowerCase()
-    })
+    interface CertTripleResult {
+      predicate: { label: string }
+      object: { label: string }
+    }
 
-    const triples = response?.triples || []
-    logger.info('Fetched user certifications', { count: triples.length })
+    const triples = await intuitionGraphqlClient.fetchAllPages<CertTripleResult>(
+      query,
+      { predicateLabels: ALL_PREDICATE_LABELS, userAddress: walletAddress.toLowerCase() },
+      'triples',
+      100,
+      100
+    )
+    logger.info('Fetched user certifications (paginated)', { count: triples.length })
 
     // Debug: Log all raw triples for investigation
     logger.debug('Raw triples from GraphQL:', triples.map((t: { predicate?: { label?: string }, object?: { label?: string } }) => ({

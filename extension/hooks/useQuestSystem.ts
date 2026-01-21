@@ -276,6 +276,7 @@ export const useQuestSystem = (): QuestSystemResult => {
               subject_id: { _eq: $subjectId },
               predicate_id: { _eq: $hasTagPredicateId }
             }
+            limit: 1000
           ) {
             term_id
             object {
@@ -296,6 +297,7 @@ export const useQuestSystem = (): QuestSystemResult => {
                 ]}
               }
             }
+            limit: 100
           ) {
             term_id
             creator_id
@@ -733,9 +735,9 @@ export const useQuestSystem = (): QuestSystemResult => {
       setLoading(true)
       const checksumAddress = getAddress(walletAddress)
 
-      // Query 1: Get signals created (triples with subject = "I")
+      // Query 1: Get signals created (triples with subject = "I") - PAGINATED
       const signalsQuery = `
-        query GetUserSignals($accountId: String!, $subjectId: String!) {
+        query GetUserSignals($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
           triples: terms(
             where: {
               _and: [
@@ -744,18 +746,23 @@ export const useQuestSystem = (): QuestSystemResult => {
                 { positions: { account: { id: { _eq: $accountId } } } }
               ]
             }
+            limit: $limit
+            offset: $offset
           ) {
             id
           }
         }
       `
 
-      const signalsResponse = await intuitionGraphqlClient.request(signalsQuery, {
-        accountId: checksumAddress,
-        subjectId: SUBJECT_IDS.I
-      }) as { triples: Array<{ id: string }> }
+      const allSignals = await intuitionGraphqlClient.fetchAllPages<{ id: string }>(
+        signalsQuery,
+        { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
+        'triples',
+        100,  // page size
+        1000  // max pages (100k signals max)
+      )
 
-      const signalsCreated = signalsResponse?.triples?.length || 0
+      const signalsCreated = allSignals.length
 
       // Query 2: Get followed users count
       const followQuery = `
@@ -769,6 +776,7 @@ export const useQuestSystem = (): QuestSystemResult => {
                 { object: { type: { _eq: "Account" } } }
               ]
             }
+            limit: 10000
           ) {
             term_id
           }
