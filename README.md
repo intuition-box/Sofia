@@ -127,8 +127,10 @@ Model Context Protocol server for Intuition knowledge graph.
 
 ```bash
 # Clone and install
-cd core
+cd core/extension
 pnpm install
+pnpm run build ( prod .env )
+ppm run dev ( dev .env ) 
 ```
 
 ### Development
@@ -136,6 +138,7 @@ pnpm install
 **Terminal 1 - MCP Server:**
 ```bash
 cd intuition-mcp-server
+pnpm install
 pnpm run start:http
 # → http://localhost:3001
 ```
@@ -143,6 +146,7 @@ pnpm run start:http
 **Terminal 2 - Mastra Backend:**
 ```bash
 cd sofia-mastra
+pnpm install 
 pnpm dev
 # → http://localhost:4111
 ```
@@ -151,7 +155,7 @@ pnpm dev
 ```bash
 cd extension
 pnpm dev
-# → Loads in Chrome automatically
+# → Loads in Chrome 
 ```
 
 ---
