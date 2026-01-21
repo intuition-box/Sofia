@@ -8,7 +8,6 @@ import {
   sendThemeExtractionToMastra,
   sendPulseToMastra,
   sendRecommendationToMastra,
-  sendSofiaToMastra,
   sendChatbotToMastra
 } from "./mastraClient"
 
@@ -83,7 +82,7 @@ export async function sendRecommendationRequest(walletData: any): Promise<any> {
  * @param agentType - Which agent to send to
  * @param text - Message text to send
  */
-export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACTOR' | 'PULSEAGENT' | 'RECOMMENDATION', text: string): Promise<any> {
+export async function sendMessage(agentType: 'CHATBOT' | 'THEMEEXTRACTOR' | 'PULSEAGENT' | 'RECOMMENDATION', text: string): Promise<any> {
   switch (agentType) {
     case 'CHATBOT':
       // ChatBot uses Mastra HTTP with MCP tools
@@ -109,53 +108,6 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
           text: "Sorry, I encountered an error. Please try again."
         }).catch(() => {})
         throw error
-      }
-
-    case 'SOFIA':
-      // SofIA uses Mastra HTTP - parse the text to extract fields
-      console.log(`🧠 [SOFIA] Sending to Mastra:`, text.substring(0, 100))
-      // For SofIA, the text format is: "URL: ...\nTitle: ...\nDescription: ...\nAttention Score: ...\nVisits: ..."
-      const urlMatch = text.match(/URL:\s*(.+)/i)
-      const titleMatch = text.match(/Title:\s*(.+)/i)
-      const descMatch = text.match(/Description:\s*(.*)/i)
-      const attentionMatch = text.match(/Attention\s*Score:\s*([\d.]+)/i)
-      const visitsMatch = text.match(/Visits:\s*(\d+)/i)
-
-      try {
-        const sofiaResult = await sendSofiaToMastra(
-          urlMatch?.[1]?.trim() || '',
-          titleMatch?.[1]?.trim() || '',
-          descMatch?.[1]?.trim() || '',
-          parseFloat(attentionMatch?.[1] || '0'),
-          parseInt(visitsMatch?.[1] || '0', 10)
-        )
-
-        // Store SofIA triplets in IndexedDB
-        if (sofiaResult && sofiaResult.triplets && sofiaResult.triplets.length > 0) {
-          const sofiaRecord = {
-            messageId: `sofia_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            content: {
-              triplets: sofiaResult.triplets,
-              intention: `Analyzed: ${titleMatch?.[1]?.trim() || urlMatch?.[1]?.trim() || 'page'}`
-            },
-            timestamp: Date.now(),
-            type: 'parsed_message'
-          }
-          await sofiaDB.put(STORES.ELIZA_DATA, sofiaRecord)
-          console.log("✅ [SofIA] Triplets stored in IndexedDB:", { id: sofiaRecord.messageId, count: sofiaResult.triplets.length })
-
-          // Notify UI that new echoes are available
-          try {
-            chrome.runtime.sendMessage({ type: "ECHOES_UPDATED" })
-          } catch (e) {
-            console.warn("⚠️ [SofIA] Could not notify UI:", e)
-          }
-        }
-
-        return sofiaResult
-      } catch (sofiaError) {
-        console.error("❌ [SOFIA] Failed to process:", sofiaError)
-        return null
       }
 
     case 'THEMEEXTRACTOR':

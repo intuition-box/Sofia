@@ -21,10 +21,9 @@ export const STORES = {
   SEARCH_HISTORY: 'search_history',
   BOOKMARK_LISTS: 'bookmark_lists',
   BOOKMARKED_TRIPLETS: 'bookmarked_triplets',
-  DOMAIN_INTENTIONS: 'domain_intentions',
   RECOMMENDATIONS: 'recommendations',
-  INTENTION_GROUPS: 'intention_groups',  // 🆕 Groupes d'intention persistants
-  USER_XP: 'user_xp'  // 🆕 XP global utilisateur
+  INTENTION_GROUPS: 'intention_groups',
+  USER_XP: 'user_xp'
 } as const
 
 // Record types for IndexedDB
@@ -71,18 +70,6 @@ export interface BookmarkListRecord extends Omit<BookmarkList, 'id'> {
 
 export interface BookmarkedTripletRecord extends Omit<BookmarkedTriplet, 'id'> {
   id?: string
-}
-
-export interface DomainIntentionRecord {
-  domain: string
-  visitCount: number
-  totalDuration: number
-  avgDuration: number
-  maxAttentionScore: number
-  lastVisit: number
-  firstVisit: number
-  predicates: Record<string, number>
-  intentionScore: number
 }
 
 export interface RecommendationRecord {
@@ -254,16 +241,6 @@ export class SofiaIndexedDB {
       bookmarkedTripletsStore.createIndex('sourceType', 'sourceType', { unique: false })
       bookmarkedTripletsStore.createIndex('sourceId', 'sourceId', { unique: false })
       bookmarkedTripletsStore.createIndex('addedAt', 'addedAt', { unique: false })
-    }
-
-    // Domain intentions store
-    if (!db.objectStoreNames.contains(STORES.DOMAIN_INTENTIONS)) {
-      const domainIntentionsStore = db.createObjectStore(STORES.DOMAIN_INTENTIONS, {
-        keyPath: 'domain'
-      })
-      domainIntentionsStore.createIndex('visitCount', 'visitCount', { unique: false })
-      domainIntentionsStore.createIndex('lastVisit', 'lastVisit', { unique: false })
-      domainIntentionsStore.createIndex('intentionScore', 'intentionScore', { unique: false })
     }
 
     // Recommendations store

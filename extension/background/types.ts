@@ -1,28 +1,9 @@
 import type { PlasmoMessage } from "~types/messaging";
 
-export interface ScrollStats {
-  count: number
-  avgDelta: number
-  maxDelta: number
-  minDelta: number
-  scrollAttentionScore: number
-}
-
-
 export type RawMessage = {
   text: string;
   thought?: string;
   actions?: string[];
-};
-
-export type AgentMessagePayload = {
-  channel_id: string;
-  server_id: string;
-  author_id: string;
-  content: string;
-  source_type: string;
-  raw_message: RawMessage;
-  metadata?: Record<string, any>;
 };
 
 export interface MessageData {
@@ -42,10 +23,6 @@ export interface MessageData {
   | "GET_BOOKMARKS"
   | "GET_HISTORY"
   | "STORE_BOOKMARK_TRIPLETS"
-  | "GET_INTENTION_RANKING"
-  | "GET_DOMAIN_INTENTIONS"
-  | "RECORD_PREDICATE"
-  | "GET_UPGRADE_SUGGESTIONS"
   | "CONNECT_DISCORD"
   | "CONNECT_X"
   | "STORE_DETECTED_TRIPLETS"

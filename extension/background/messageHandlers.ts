@@ -3,14 +3,6 @@ import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
 import { getAllBookmarks, getAllHistory } from "./messageSenders"
-import {
-  recordUserPredicate,
-  getTopIntentions,
-  getDomainIntentionStats,
-  getPredicateUpgradeSuggestions,
-  getIntentionGlobalStats
-} from "./intentionRanking"
-import { getScrollStats } from "./behavior"
 import { badgeService } from "../lib/services/BadgeService"
 import { pageDataService } from "../lib/services/PageDataService"
 import { pulseService } from "../lib/services/PulseService"
@@ -352,68 +344,6 @@ export function setupMessageHandlers(): void {
         tripletStorageService.handleStoreDetectedTriplets(message, sendResponse)
         return true
 
-
-      case "GET_INTENTION_RANKING":
-        try {
-          const limit = message.data?.limit || 10
-          const rankings = getTopIntentions(limit)
-          sendResponse({ success: true, data: rankings })
-        } catch (error) {
-          console.error("❌ GET_INTENTION_RANKING error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "GET_DOMAIN_INTENTIONS":
-        try {
-          const domain = message.data?.domain
-          if (!domain) {
-            sendResponse({ success: false, error: "Domain parameter required" })
-            return true
-          }
-          const stats = getDomainIntentionStats(domain)
-          sendResponse({ success: true, data: stats })
-        } catch (error) {
-          console.error("❌ GET_DOMAIN_INTENTIONS error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "RECORD_PREDICATE":
-        try {
-          const { url, predicate } = message.data || {}
-          if (!url || !predicate) {
-            sendResponse({ success: false, error: "URL and predicate parameters required" })
-            return true
-          }
-          recordUserPredicate(url, predicate)
-          console.log(`🎯 [messageHandlers] Predicate "${predicate}" recorded for ${url}`)
-          sendResponse({ success: true })
-        } catch (error) {
-          console.error("❌ RECORD_PREDICATE error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "GET_UPGRADE_SUGGESTIONS":
-        try {
-          const minConfidence = message.data?.minConfidence || 0.7
-          const suggestions = getPredicateUpgradeSuggestions(minConfidence)
-          const globalStats = getIntentionGlobalStats()
-          sendResponse({ 
-            success: true, 
-            data: { 
-              suggestions, 
-              globalStats 
-            }
-          })
-        } catch (error) {
-          console.error("❌ GET_UPGRADE_SUGGESTIONS error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-
       case "START_PULSE_ANALYSIS":
         pulseService.handlePulseAnalysis(sendResponse)
         return true
@@ -454,40 +384,6 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true, data: { url } })
         } catch (error) {
           console.error("❌ GET_PAGE_BLOCKCHAIN_DATA error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "GET_PAGE_ATTENTION":
-        try {
-          const url = message.data?.url
-          if (!url) {
-            sendResponse({ success: false, error: "URL parameter required" })
-            return true
-          }
-
-          // Get scroll stats for the page
-          const scrollStats = getScrollStats(url)
-
-          // Get domain intention stats which includes time tracking
-          const domain = new URL(url).hostname.replace('www.', '')
-          const domainStats = getDomainIntentionStats(domain)
-
-          // Calculate time spent based on domain stats
-          const timeSpent = domainStats?.avgDuration
-            ? Math.floor(domainStats.avgDuration / 1000)
-            : 0
-
-          sendResponse({
-            success: true,
-            data: {
-              timeSpent,
-              scrollStats,
-              hasInteracted: scrollStats ? scrollStats.count >= 2 : false
-            }
-          })
-        } catch (error) {
-          console.error("❌ GET_PAGE_ATTENTION error:", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -631,8 +527,8 @@ export function setupMessageHandlers(): void {
             success: true,
             cost,
             currentLevel: lvlGroup.level,
-            availableXP: xpStats.netCertificationXP,
-            canAfford: xpStats.netCertificationXP >= cost
+            availableXP: xpStats.totalXP,
+            canAfford: xpStats.totalXP >= cost
           })
         } catch (error) {
           console.error("❌ GET_LEVEL_UP_COST error:", error)

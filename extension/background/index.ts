@@ -1,4 +1,3 @@
-import { loadDomainIntentions } from "./intentionRanking";
 import { setupMessageHandlers } from "./messageHandlers";
 import { MessageBus } from "../lib/services/MessageBus";
 import { initializeThemeIconManager } from "./themeIconManager";
@@ -45,10 +44,6 @@ async function init(): Promise<void> {
     }
 
     console.log("✅ [index.ts] Wallet connected:", walletAddress)
-
-    // Load domain intentions
-    console.log("🎯 [index.ts] Loading domain intentions...")
-    await loadDomainIntentions()
 
     // Initialize badge count
     console.log("🔔 [index.ts] Initializing badge count...")

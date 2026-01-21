@@ -2,13 +2,11 @@
  * Centralized class to manage Chrome runtime messages
  * Provides safe messaging 
  */
-import type { 
-  ChromeMessage, 
-  MessageResponse, 
-  TripletMessage, 
-  BadgeMessage, 
+import type {
+  ChromeMessage,
+  MessageResponse,
   MetamaskMessage,
-  MessageType 
+  MessageType
 } from '../../types/messages'
 
 export class MessageBus {
@@ -153,35 +151,6 @@ export class MessageBus {
     return this.sendMessage({
       type: 'STORE_BOOKMARK_TRIPLETS',
       data: { text, timestamp }
-    });
-  }
-
-  // Intention and ranking
-  public async getIntentionRanking(limit?: number): Promise<MessageResponse | null> {
-    return this.sendMessage({
-      type: 'GET_INTENTION_RANKING',
-      data: { limit }
-    });
-  }
-
-  public async getDomainIntentions(domain: string): Promise<MessageResponse | null> {
-    return this.sendMessage({
-      type: 'GET_DOMAIN_INTENTIONS',
-      data: { domain }
-    });
-  }
-
-  public async recordPredicate(url: string, predicate: string): Promise<MessageResponse | null> {
-    return this.sendMessage({
-      type: 'RECORD_PREDICATE',
-      data: { url, predicate }
-    });
-  }
-
-  public async getUpgradeSuggestions(minConfidence?: number): Promise<MessageResponse | null> {
-    return this.sendMessage({
-      type: 'GET_UPGRADE_SUGGESTIONS',
-      data: { minConfidence }
     });
   }
 

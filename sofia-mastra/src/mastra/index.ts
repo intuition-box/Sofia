@@ -6,7 +6,6 @@ import { sofiaWorkflow } from './workflows/sofia-workflow';
 import { chatbotWorkflow } from './workflows/chatbot-workflow';
 import { socialVerifierWorkflow } from './workflows/social-verifier-workflow';
 import { linkSocialWorkflow } from './workflows/link-social-workflow';
-import { sofiaAgent } from './agents/sofia-agent';
 import { themeExtractorAgent } from './agents/theme-extractor-agent';
 import { pulseAgent } from './agents/pulse-agent';
 import { recommendationAgent } from './agents/recommendation-agent';
@@ -15,7 +14,7 @@ import { predicateAgent } from './agents/predicate-agent';
 
 export const mastra = new Mastra({
   workflows: { sofiaWorkflow, chatbotWorkflow, socialVerifierWorkflow, linkSocialWorkflow },
-  agents: { sofiaAgent, themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent, predicateAgent },
+  agents: { themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent, predicateAgent },
   scorers: {
   },
   storage: new LibSQLStore({

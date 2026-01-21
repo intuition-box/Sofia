@@ -94,50 +94,6 @@ export async function sendRecommendationToMastra(walletData: any): Promise<any> 
 }
 
 /**
- * Call a Mastra workflow via HTTP REST API
- * @param workflowName - Name of the workflow (e.g., 'chatbotWorkflow')
- * @param inputData - Input data for the workflow
- * @returns Workflow result
- */
-async function callMastraWorkflow(workflowName: string, inputData: Record<string, unknown>): Promise<any> {
-  console.log(`📤 [Mastra] Calling workflow ${workflowName}`)
-
-  // Step 1: Create a run
-  const createResponse = await fetch(`${MASTRA_API_URL}/api/workflows/${workflowName}/create-run`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({})
-  })
-
-  if (!createResponse.ok) {
-    const errorText = await createResponse.text()
-    console.error(`❌ [Mastra] Workflow create-run error:`, createResponse.status, errorText)
-    throw new Error(`Mastra workflow error: ${createResponse.status} - ${errorText}`)
-  }
-
-  const { runId } = await createResponse.json()
-  console.log(`🔄 [Mastra] Workflow run created: ${runId}`)
-
-  // Step 2: Start the run with input data (runId goes in query params)
-  const startResponse = await fetch(`${MASTRA_API_URL}/api/workflows/${workflowName}/start?runId=${runId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ inputData })
-  })
-
-  if (!startResponse.ok) {
-    const errorText = await startResponse.text()
-    console.error(`❌ [Mastra] Workflow start error:`, startResponse.status, errorText)
-    throw new Error(`Mastra workflow error: ${startResponse.status} - ${errorText}`)
-  }
-
-  const result = await startResponse.json()
-  console.log(`✅ [Mastra] Workflow completed`)
-
-  return result
-}
-
-/**
  * Send chatbot message to Mastra ChatBot workflow (with MCP tool support)
  * Uses start-async endpoint which waits for the workflow to complete
  * @param message - User's chat message
@@ -178,35 +134,6 @@ export async function sendChatbotToMastra(message: string): Promise<string> {
   } catch (error) {
     console.error(`❌ [Mastra] ChatBot workflow error:`, error);
     throw error;
-  }
-}
-
-/**
- * Send Sofia triplet request to Mastra SofiaAgent
- * @param url - URL to analyze
- * @param title - Page title
- * @param description - Page description
- * @param attentionScore - User attention score
- * @param visits - Number of visits
- * @returns Triplet data
- */
-export async function sendSofiaToMastra(
-  url: string,
-  title: string,
-  description: string,
-  attentionScore: number,
-  visits: number
-): Promise<any> {
-  const prompt = `URL: ${url}\nTitle: ${title}\nDescription: ${description}\nAttention Score: ${attentionScore}\nVisits: ${visits}`
-
-  console.log(`🧠 [Mastra] Sending to SofiaAgent:`, url)
-
-  try {
-    const result = await callMastraAgent('sofiaAgent', prompt)
-    return result
-  } catch (error) {
-    console.error(`❌ [Mastra] SofiaAgent error:`, error)
-    return null
   }
 }
 
