@@ -269,6 +269,20 @@
   min-height: 120px;
 }
 
+/* Subtle glow effect for cards ready to level up */
+.group-bento-card.can-level-up {
+  animation: subtleGlow 3s ease-in-out infinite;
+}
+
+@keyframes subtleGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 8px 1px rgba(255, 215, 0, 0.15);
+  }
+}
+
 .group-bento-header {
   display: flex;
   align-items: flex-start;
@@ -1331,8 +1345,8 @@
 /* ========== INTEGRATED LEVEL UP BUTTON (when XP bar is full) ========== */
 
 .level-progress-section.ready-to-level-up {
-  background: linear-gradient(135deg, rgba(199, 134, 108, 0.15), rgba(212, 165, 116, 0.1));
-  border-color: rgba(199, 134, 108, 0.4);
+  background: transparent;
+  border-color: transparent;
   padding: 0;
 }
 
@@ -1342,25 +1356,35 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #C7866C 0%, #D4A574 100%);
-  border: none;
+  background: linear-gradient(135deg, #B8860B 0%, #DAA520 25%, #FFD700 50%, #DAA520 75%, #B8860B 100%);
+  background-size: 200% 100%;
+  border: 1px solid rgba(255, 215, 0, 0.5);
   border-radius: 10px;
   color: #1a1a1a;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(218, 165, 32, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  animation: goldShimmer 3s ease infinite;
+}
+
+@keyframes goldShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .level-up-integrated-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(199, 134, 108, 0.5);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .level-up-integrated-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+  animation: none;
 }
 
 .level-up-integrated-content {
@@ -1369,13 +1393,10 @@
   gap: 10px;
 }
 
-.level-up-integrated-btn .level-up-icon {
-  font-size: 18px;
-}
-
 .level-up-integrated-btn .level-up-text {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .level-up-integrated-btn .level-up-cost {
@@ -1383,7 +1404,7 @@
   background: rgba(0, 0, 0, 0.15);
   border-radius: 6px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .level-up-integrated-btn .loading-text {

@@ -296,11 +296,22 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     await amplify(group.id)
   }
 
-  // Use on-chain stats for counts
+  // Use on-chain stats for certification count
   const certifiedCount = onChainStats?.certifiedCount ?? group.certifiedCount
-  const currentLevel = onChainStats?.currentLevel ?? group.level
-  const progressPercent = onChainStats?.progressPercent ?? 0
-  const xpToNextLevel = onChainStats?.xpToNextLevel ?? 0
+
+  // IMPORTANT: currentLevel is the CONFIRMED level (from group.level after explicit level up)
+  // NOT the calculated level from certifications count
+  const currentLevel = group.level
+
+  // Calculate progress toward NEXT level based on current confirmed level
+  // Level thresholds: [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
+  const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
+  const currentThreshold = LEVEL_THRESHOLDS[currentLevel - 1] || 0
+  const nextThreshold = LEVEL_THRESHOLDS[currentLevel] || currentThreshold + 10
+  const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
+  const progressPercent = Math.min(100, Math.max(0,
+    ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
+  ))
 
   // Filter URLs - ONLY use on-chain status (not local certification)
   const filteredUrls = group.urls.filter(url => {
@@ -472,7 +483,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       </div>
 
       {/* Identity Hero Section - Visible triple with Amplify button */}
-      {group.currentPredicate && (
+      {/* Hide when Level Up is available to focus user attention on leveling up */}
+      {group.currentPredicate && !(progressPercent >= 100 && levelUpPreview?.canLevelUp && !levelUpResult?.success) && (
         <div className="identity-hero-section">
           <div className="identity-content">
             <div className="identity-triple">
@@ -530,10 +542,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               <span className="loading-text">Generating predicate...</span>
             ) : (
               <>
-                <div className="level-up-integrated-content">
-                  <span className="level-up-icon">⬆️</span>
-                  <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
-                </div>
+                <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
                 <span className="level-up-cost">{levelUpPreview.cost} XP</span>
               </>
             )}

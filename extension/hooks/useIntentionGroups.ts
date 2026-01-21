@@ -12,6 +12,20 @@ import { EXCLUDED_URL_PATTERNS } from '~background/constants'
 import { useOnChainIntentionGroups, type OnChainUrl } from './useOnChainIntentionGroups'
 
 /**
+ * Normalize domain by removing common subdomains (www, open, m, mobile, etc.)
+ */
+function normalizeDomain(domain: string): string {
+  const lower = domain.toLowerCase()
+  const prefixes = ['www.', 'open.', 'm.', 'mobile.', 'app.', 'web.']
+  for (const prefix of prefixes) {
+    if (lower.startsWith(prefix)) {
+      return lower.slice(prefix.length)
+    }
+  }
+  return lower
+}
+
+/**
  * Check if a domain should be excluded from display
  */
 function shouldExcludeDomain(domain: string): boolean {
@@ -144,16 +158,33 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
    * Merge local groups with on-chain data
    * - If domain exists locally AND on-chain → enrich local with on-chain URLs
    * - If domain exists ONLY on-chain → create "virtual" group
+   * Uses normalized domains to merge www.youtube.com with youtube.com etc.
    */
   const mergedGroups = useMemo(() => {
     const merged = new Map<string, IntentionGroupWithStats>()
 
-    // 1. Add all local groups first
+    // 1. Add all local groups first (using normalized domain as key)
     for (const local of localGroups) {
-      merged.set(local.domain, { ...local, urls: [...local.urls] })
+      const normalizedDomain = normalizeDomain(local.domain)
+      const existing = merged.get(normalizedDomain)
+      if (existing) {
+        // Merge URLs from duplicate domain (e.g., www.youtube.com into youtube.com)
+        for (const url of local.urls) {
+          if (!existing.urls.find(u => u.url === url.url)) {
+            existing.urls.push(url)
+          }
+        }
+        existing.activeUrlCount = existing.urls.filter(u => !u.removed).length
+      } else {
+        merged.set(normalizedDomain, {
+          ...local,
+          domain: normalizedDomain, // Use normalized domain for display
+          urls: [...local.urls]
+        })
+      }
     }
 
-    // 2. Enrich/add with on-chain data
+    // 2. Enrich/add with on-chain data (domain already normalized in useOnChainIntentionGroups)
     for (const onChain of onChainGroups) {
       // Skip excluded domains
       if (shouldExcludeDomain(onChain.domain)) continue

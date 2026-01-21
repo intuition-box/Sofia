@@ -56,6 +56,21 @@ export interface UseOnChainIntentionGroupsResult {
 }
 
 /**
+ * Normalize domain by removing common subdomains (www, open, m, mobile, etc.)
+ */
+function normalizeDomain(domain: string): string {
+  const lower = domain.toLowerCase()
+  // Remove common subdomains
+  const prefixes = ['www.', 'open.', 'm.', 'mobile.', 'app.', 'web.']
+  for (const prefix of prefixes) {
+    if (lower.startsWith(prefix)) {
+      return lower.slice(prefix.length)
+    }
+  }
+  return lower
+}
+
+/**
  * Extract domain from a label (format: "domain.com" or "domain.com/path")
  */
 function extractDomain(label: string): string | null {
@@ -68,7 +83,7 @@ function extractDomain(label: string): string | null {
     const domain = parts[0]
     // Basic validation
     if (domain && domain.includes('.')) {
-      return domain.toLowerCase()
+      return normalizeDomain(domain)
     }
     return null
   } catch {
