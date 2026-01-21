@@ -1,39 +1,18 @@
 /**
  * useGroupOnChainCertifications Hook
- * Fetches on-chain certification status for all URLs in an intention group
- * Determines which URLs the user has already certified on-chain
+ * Uses the global certifications cache to determine certification status for group URLs
+ * NO GraphQL queries - just local matching from the cached data
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { useUserCertifications } from './useUserCertifications'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { PREDICATE_IDS } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useGroupOnChainCertifications')
 
-// Minimum interval between fetches (ms)
-const FETCH_DEBOUNCE_MS = 2000
-
-// Predicate IDs for intention certifications
-const INTENTION_PREDICATE_IDS = [
-  PREDICATE_IDS.VISITS_FOR_WORK,
-  PREDICATE_IDS.VISITS_FOR_LEARNING,
-  PREDICATE_IDS.VISITS_FOR_FUN,
-  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
-  PREDICATE_IDS.VISITS_FOR_BUYING
-].filter(id => id) // Filter out empty strings
-
-// Map predicate IDs to intention types (built dynamically to avoid duplicate key errors)
-const PREDICATE_TO_INTENTION: Record<string, IntentionPurpose> = {}
-if (PREDICATE_IDS.VISITS_FOR_WORK) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_WORK] = 'for_work'
-if (PREDICATE_IDS.VISITS_FOR_LEARNING) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_LEARNING] = 'for_learning'
-if (PREDICATE_IDS.VISITS_FOR_FUN) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_FUN] = 'for_fun'
-if (PREDICATE_IDS.VISITS_FOR_INSPIRATION) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_INSPIRATION] = 'for_inspiration'
-if (PREDICATE_IDS.VISITS_FOR_BUYING) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_BUYING] = 'for_buying'
-
-// Map IntentionPurpose to CertificationType (for local DB sync)
+// Map IntentionPurpose to CertificationType (for display)
 const intentionToCertification: Record<IntentionPurpose, string> = {
   for_work: 'work',
   for_learning: 'learning',
@@ -46,10 +25,11 @@ export interface UrlCertificationStatus {
   url: string
   isCertifiedOnChain: boolean
   intention?: IntentionPurpose
-  certificationLabel?: string // 'work', 'learning', etc.
+  certificationLabel?: string // 'work', 'learning', 'follow', etc.
   // Support multiple certifications per URL
   allIntentions?: IntentionPurpose[]
-  allCertificationLabels?: string[]
+  allCertificationLabels?: string[]  // Includes both intention labels and OAuth predicates
+  oauthPredicates?: string[]         // OAuth predicates like 'follow', 'member_of'
 }
 
 export interface GroupCertificationStats {
@@ -86,6 +66,37 @@ function calculateLevelProgress(certifiedCount: number): { level: number; xpToNe
   return { level, xpToNext: Math.max(0, xpToNext), progress: Math.min(100, Math.max(0, progress)) }
 }
 
+/**
+ * Normalize a URL to the label format for matching
+ * IMPORTANT: Must match the normalization in useUserCertifications (all lowercase)
+ */
+function normalizeUrlToLabel(url: string): { label: string; isRootDomain: boolean } | null {
+  try {
+    const urlObj = new URL(url)
+    let hostname = urlObj.hostname.toLowerCase()
+    const pathname = urlObj.pathname
+    const search = urlObj.search
+
+    // Remove www.
+    if (hostname.startsWith('www.')) {
+      hostname = hostname.slice(4)
+    }
+
+    // Build full path with query params
+    const fullPath = pathname + search
+    const hasPath = fullPath && fullPath !== '/'
+
+    // IMPORTANT: Lowercase the entire label to match cache keys
+    const label = hasPath
+      ? `${hostname}${fullPath.replace(/\/$/, '')}`.toLowerCase()
+      : hostname
+
+    return { label, isRootDomain: !hasPath }
+  } catch {
+    return null
+  }
+}
+
 export interface UseGroupOnChainCertificationsResult {
   stats: GroupCertificationStats | null
   loading: boolean
@@ -96,228 +107,117 @@ export interface UseGroupOnChainCertificationsResult {
 }
 
 /**
- * Hook to fetch on-chain certifications for a group's URLs
+ * Hook to get on-chain certifications for a group's URLs
+ * Uses the global cache - NO GraphQL queries!
  */
 export const useGroupOnChainCertifications = (
   domain: string | null,
   urls: string[]
 ): UseGroupOnChainCertificationsResult => {
   const { walletAddress } = useWalletFromStorage()
+  const { certifications, loading: globalLoading, error: globalError, refetch: globalRefetch } = useUserCertifications(walletAddress)
   const [stats, setStats] = useState<GroupCertificationStats | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  // Refs to prevent infinite loops and duplicate fetches
-  const isFetchingRef = useRef(false)
-  const lastFetchTimeRef = useRef(0)
-  const lastFetchKeyRef = useRef('')
-
-  // Stabilize urls reference to prevent unnecessary refetches
+  // Stabilize urls reference
   const urlsKey = urls.join('|')
-  const fetchKey = `${domain}|${urlsKey}|${walletAddress || ''}`
 
-  const fetchCertifications = useCallback(async (force = false) => {
-    // Skip if no domain or no URLs
-    if (!domain || urls.length === 0 || INTENTION_PREDICATE_IDS.length === 0) {
+  // Compute stats from the global cache
+  useEffect(() => {
+    if (!domain || urls.length === 0) {
       setStats(null)
       return
     }
 
-    // Prevent concurrent fetches
-    if (isFetchingRef.current) {
-      logger.debug('Skipping fetch - already in progress')
+    // Skip if global cache is still loading
+    if (globalLoading) {
       return
     }
 
-    // Debounce: skip if we fetched recently with the same params (unless forced)
-    const now = Date.now()
-    if (!force && lastFetchKeyRef.current === fetchKey && now - lastFetchTimeRef.current < FETCH_DEBOUNCE_MS) {
-      logger.debug('Skipping fetch - debounced', { msSinceLast: now - lastFetchTimeRef.current })
-      return
-    }
+    logger.debug('Computing group certifications from cache', { domain, urlCount: urls.length, cacheSize: certifications.size })
 
-    isFetchingRef.current = true
-    lastFetchTimeRef.current = now
-    lastFetchKeyRef.current = fetchKey
+    const certifiedUrls = new Map<string, UrlCertificationStatus>()
 
-    setLoading(true)
-    setError(null)
+    for (const url of urls) {
+      const normalized = normalizeUrlToLabel(url)
+      if (!normalized) continue
 
-    try {
-      logger.debug('Fetching on-chain certifications for group', { domain, urlCount: urls.length })
+      const { label: normalizedLabel, isRootDomain: urlIsRootDomain } = normalized
 
-      // Query for all intention triples where:
-      // - predicate is one of the intention predicates
-      // - object atom label contains the domain
-      // - user has a position (shares > 0)
-      const query = `
-        query GroupCertifications($predicateIds: [String!]!, $domainLike: String!, $userAddress: String) {
-          triples(
-            where: {
-              predicate_id: { _in: $predicateIds }
-              object: { label: { _ilike: $domainLike } }
-            }
-          ) {
-            term_id
-            predicate_id
-            object {
-              label
-            }
-            positions(
-              where: {
-                account_id: { _ilike: $userAddress }
-                shares: { _gt: "0" }
-              }
-            ) {
-              account_id
-              shares
-            }
-          }
-        }
-      `
+      // Look up in the global cache
+      const certification = certifications.get(normalizedLabel)
 
-      const userAddress = walletAddress?.toLowerCase() || ''
+      // Debug: Log URL matching attempts for domains like github
+      if (normalizedLabel.includes('github') || url.includes('github')) {
+        logger.debug('URL matching attempt:', {
+          originalUrl: url,
+          normalizedLabel,
+          urlIsRootDomain,
+          foundInCache: !!certification,
+          cacheKeys: Array.from(certifications.keys()).filter(k => k.includes('github'))
+        })
+      }
 
-      const response = await intuitionGraphqlClient.request(query, {
-        predicateIds: INTENTION_PREDICATE_IDS,
-        domainLike: `%${domain}%`,
-        userAddress: userAddress ? `%${userAddress}%` : '%impossible%'
-      })
+      if (certification) {
+        // STRICT MATCHING RULE:
+        // - Root domain certification (e.g., "youtube.com") only matches root domain URLs
+        // - Page certification (e.g., "youtube.com/watch?v=xxx") only matches that exact page
+        // This prevents "youtube.com" from matching all YouTube URLs
 
-      const triples = response?.triples || []
-      logger.debug('Found certification triples', { count: triples.length })
-
-      // Debug: log what triples we found
-      for (const triple of triples) {
-        const hasUserPosition = triple.positions && triple.positions.length > 0
-        if (hasUserPosition) {
-          logger.debug('Triple with user position', {
-            objectLabel: triple.object?.label,
-            predicateId: triple.predicate_id
+        if (certification.isRootDomain && !urlIsRootDomain) {
+          // Root domain certification should NOT match URLs with paths
+          logger.debug('Skipping root domain match for URL with path', {
+            url,
+            certificationLabel: certification.label
           })
+          continue
         }
+
+        // Build all certification labels (intentions + OAuth predicates)
+        const intentionLabels = certification.intentions.map(i => intentionToCertification[i])
+        const oauthLabels = certification.oauthPredicates || []
+        const allLabels = [...intentionLabels, ...oauthLabels]
+
+        // Primary label: prefer intention, fall back to OAuth predicate
+        const primaryIntention = certification.intentions[0]
+        const primaryLabel = primaryIntention
+          ? intentionToCertification[primaryIntention]
+          : oauthLabels[0]
+
+        certifiedUrls.set(url, {
+          url,
+          isCertifiedOnChain: true,
+          intention: primaryIntention,
+          certificationLabel: primaryLabel,
+          allIntentions: certification.intentions,
+          allCertificationLabels: allLabels,
+          oauthPredicates: oauthLabels
+        })
       }
-
-      // Build a map of certified URLs
-      const certifiedUrls = new Map<string, UrlCertificationStatus>()
-
-      for (const triple of triples) {
-        // Only count if user has a position
-        const hasUserPosition = triple.positions && triple.positions.length > 0
-        if (!hasUserPosition) continue
-
-        const objectLabel = triple.object?.label || ''
-        const predicateId = triple.predicate_id
-        const intention = PREDICATE_TO_INTENTION[predicateId]
-
-        if (!intention) continue
-
-        // Try to match with group URLs
-        for (const url of urls) {
-          try {
-            const urlObj = new URL(url)
-            const urlHostname = urlObj.hostname
-            const urlPath = urlObj.pathname
-
-            // Normalize the URL to a label format for comparison
-            // Remove trailing slash for consistency
-            const normalizedUrlLabel = urlPath && urlPath !== '/'
-              ? `${urlHostname}${urlPath.replace(/\/$/, '')}`
-              : urlHostname
-
-            // Normalize objectLabel too (remove trailing slash)
-            const normalizedObjectLabel = objectLabel.replace(/\/$/, '')
-
-            // VERY STRICT matching: the objectLabel must EXACTLY match the URL's label
-            // - "github.com" only matches URLs that are exactly "github.com" or "github.com/"
-            // - "github.com/intuition-box/Sofia" only matches that exact URL
-            // NO partial matching, NO "starts with" logic
-            const isExactMatch = normalizedObjectLabel === normalizedUrlLabel
-
-            // Debug log for troubleshooting
-            if (normalizedObjectLabel.includes(urlHostname)) {
-              logger.debug('URL matching check', {
-                url,
-                normalizedUrlLabel,
-                normalizedObjectLabel,
-                isExactMatch
-              })
-            }
-
-            if (isExactMatch) {
-              // Check if URL already has certifications (support multiple)
-              const existing = certifiedUrls.get(url)
-              if (existing) {
-                // Add this intention to the existing ones
-                const allIntentions = existing.allIntentions || [existing.intention!]
-                const allLabels = existing.allCertificationLabels || [existing.certificationLabel!]
-                if (!allIntentions.includes(intention)) {
-                  allIntentions.push(intention)
-                  allLabels.push(intentionToCertification[intention])
-                }
-                certifiedUrls.set(url, {
-                  ...existing,
-                  allIntentions,
-                  allCertificationLabels: allLabels
-                })
-              } else {
-                certifiedUrls.set(url, {
-                  url,
-                  isCertifiedOnChain: true,
-                  intention,
-                  certificationLabel: intentionToCertification[intention],
-                  allIntentions: [intention],
-                  allCertificationLabels: [intentionToCertification[intention]]
-                })
-              }
-            }
-          } catch {
-            // Invalid URL, skip
-          }
-        }
-      }
-
-      // Calculate stats
-      const certifiedCount = certifiedUrls.size
-      const { level, xpToNext, progress } = calculateLevelProgress(certifiedCount)
-
-      const newStats: GroupCertificationStats = {
-        certifiedCount,
-        totalUrls: urls.length,
-        certifiedUrls,
-        xpEarned: certifiedCount * 10,
-        xpToNextLevel: xpToNext * 10, // Convert certification count to XP
-        currentLevel: level,
-        progressPercent: progress
-      }
-
-      setStats(newStats)
-      logger.info('Group certification stats calculated', {
-        domain,
-        certifiedCount,
-        totalUrls: urls.length,
-        level,
-        progress
-      })
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch certifications'
-      logger.error('Failed to fetch group certifications', err)
-      setError(errorMessage)
-    } finally {
-      setLoading(false)
-      isFetchingRef.current = false
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [domain, urlsKey, walletAddress, fetchKey])
 
-  // Fetch on mount and when dependencies change (with debounce protection)
-  useEffect(() => {
-    // Only trigger fetch if params actually changed
-    if (lastFetchKeyRef.current !== fetchKey || !stats) {
-      fetchCertifications()
+    // Calculate stats
+    const certifiedCount = certifiedUrls.size
+    const { level, xpToNext, progress } = calculateLevelProgress(certifiedCount)
+
+    const newStats: GroupCertificationStats = {
+      certifiedCount,
+      totalUrls: urls.length,
+      certifiedUrls,
+      xpEarned: certifiedCount * 10,
+      xpToNextLevel: xpToNext * 10,
+      currentLevel: level,
+      progressPercent: progress
     }
-  }, [fetchKey, fetchCertifications, stats])
+
+    setStats(newStats)
+    logger.info('Group certification stats calculated', {
+      domain,
+      certifiedCount,
+      totalUrls: urls.length,
+      level,
+      progress
+    })
+  }, [domain, urlsKey, certifications, globalLoading])
 
   // Helper to check if a specific URL is certified
   const isUrlCertified = useCallback((url: string): boolean => {
@@ -329,16 +229,11 @@ export const useGroupOnChainCertifications = (
     return stats?.certifiedUrls.get(url)
   }, [stats])
 
-  // Refetch function that forces a new fetch (bypasses debounce)
-  const refetch = useCallback(async () => {
-    await fetchCertifications(true)
-  }, [fetchCertifications])
-
   return {
     stats,
-    loading,
-    error,
-    refetch,
+    loading: globalLoading,
+    error: globalError,
+    refetch: globalRefetch,
     isUrlCertified,
     getUrlCertification
   }

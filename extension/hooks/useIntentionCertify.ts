@@ -15,6 +15,12 @@ export interface IntentionCertifyResult {
     intention: IntentionPurpose,
     customWeight?: bigint
   ) => Promise<void>
+  certifyWithCustomPredicate: (
+    url: string,
+    predicateName: string,
+    objectLabel?: string,  // Deprecated - ignored, URL is normalized instead
+    customWeight?: bigint
+  ) => Promise<void>
   reset: () => void
   loading: boolean
   error: string | null
@@ -82,17 +88,24 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       setCurrentIntention(intention)
 
       // Extract domain and path from URL for atom name
+      // IMPORTANT: Normalize consistently with useUserCertifications and useGroupOnChainCertifications
       const urlObj = new URL(url)
-      const domain = urlObj.hostname
+      let hostname = urlObj.hostname.toLowerCase()
       const pathname = urlObj.pathname
 
-      // Create a more descriptive label: domain + path (without query params)
+      // Remove www. for consistent matching
+      if (hostname.startsWith('www.')) {
+        hostname = hostname.slice(4)
+      }
+
+      // Create normalized label: domain + path (same format everywhere)
+      // IMPORTANT: Lowercase entire label for consistent matching with cache
       const pageLabel = pathname && pathname !== '/'
-        ? `${domain}${pathname}`
-        : domain
+        ? `${hostname}${pathname.replace(/\/$/, '')}`.toLowerCase()
+        : hostname
 
       // Get favicon URL from Google's service
-      const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+      const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`
 
       logger.debug(`Creating intention triple via useCreateTripleOnChain`, {
         pageLabel,
@@ -161,6 +174,124 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
     }
   }, [address, createTripleOnChain])
 
+  // Certify with a custom predicate (for OAuth URLs like "follow", "member_of", etc.)
+  // Note: objectLabel parameter kept for backward compatibility but ignored - we use normalized URL instead
+  const certifyWithCustomPredicate = useCallback(async (
+    url: string,
+    predicateName: string,
+    _objectLabel?: string,  // Ignored - we use normalized URL for consistency
+    customWeight?: bigint
+  ) => {
+    try {
+      if (!address) {
+        throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
+      }
+
+      // Ensure minimum stake is respected
+      const weight = customWeight && customWeight >= INTENTION_MIN_STAKE
+        ? customWeight
+        : INTENTION_MIN_STAKE
+
+      // Normalize URL to create object label (unified with intention certifications)
+      const urlObj = new URL(url)
+      let hostname = urlObj.hostname.toLowerCase()
+      const pathname = urlObj.pathname
+
+      // Remove www.
+      if (hostname.startsWith('www.')) {
+        hostname = hostname.slice(4)
+      }
+
+      // Create normalized label: domain + path (same format as intention certifications)
+      // IMPORTANT: Lowercase entire label for consistent matching with cache
+      const normalizedLabel = pathname && pathname !== '/'
+        ? `${hostname}${pathname.replace(/\/$/, '')}`.toLowerCase()
+        : hostname
+
+      logger.info(`Creating custom predicate certification`, {
+        url,
+        predicateName,
+        normalizedLabel,
+        weight: weight.toString()
+      })
+
+      // Update refs and state - reset everything at the start of a new transaction
+      loadingRef.current = true
+      successRef.current = false
+      errorRef.current = null
+      setLoading(true)
+      setSuccess(false)
+      setError(null)
+      setTransactionHash(null)
+      setTripleVaultId(null)
+      setOperationType(null)
+      setCurrentIntention(null)
+
+      // Get favicon URL from Google's service
+      const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`
+
+      logger.debug(`Creating custom triple via useCreateTripleOnChain`, {
+        normalizedLabel,
+        predicateName
+      })
+
+      // Use useCreateTripleOnChain with the custom predicate
+      // Object label is the normalized URL (e.g., "youtube.com/channel/UCxxx")
+      const result = await createTripleOnChain(
+        predicateName,  // e.g., 'follow', 'member_of', etc.
+        {
+          name: normalizedLabel,  // Normalized URL for consistent matching
+          description: `${predicateName}: ${normalizedLabel}`,
+          url: url,
+          image: faviconUrl
+        },
+        weight
+      )
+
+      logger.info('Custom predicate certification successful', {
+        tripleVaultId: result.tripleVaultId,
+        txHash: result.txHash,
+        source: result.source,
+        predicateName
+      })
+
+      loadingRef.current = false
+      successRef.current = true
+      tripleVaultIdRef.current = result.tripleVaultId
+
+      setLoading(false)
+      setSuccess(true)
+      setTripleVaultId(result.tripleVaultId)
+      setOperationType(result.source as 'created' | 'deposit')
+      setTransactionHash(result.txHash)
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      const errorStack = error instanceof Error ? error.stack : String(error)
+      console.error('Custom predicate certification failed:', errorMessage)
+      console.error('Stack trace:', errorStack)
+      logger.error('Custom predicate certification failed', { message: errorMessage, stack: errorStack })
+
+      // Check if error is due to triple already existing
+      if (errorMessage.includes('MultiVault_TripleExists')) {
+        logger.info('Triple already exists (caught from transaction error), treating as success')
+
+        loadingRef.current = false
+        successRef.current = true
+
+        setLoading(false)
+        setSuccess(true)
+        setError(null)
+      } else {
+        loadingRef.current = false
+        errorRef.current = errorMessage
+
+        setLoading(false)
+        setError(errorMessage)
+      }
+    }
+  }, [address, createTripleOnChain])
+
   // Reset all state - call this when closing modal or changing page
   const reset = useCallback(() => {
     loadingRef.current = false
@@ -179,6 +310,7 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
 
   return {
     certifyWithIntention,
+    certifyWithCustomPredicate,
     reset,
     loading,
     error,

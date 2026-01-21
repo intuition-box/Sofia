@@ -15,6 +15,7 @@ export type IntentionPurpose =
 export type DiscoveryStatus = 'Pioneer' | 'Explorer' | 'Contributor' | null
 
 // Predicate names for intention triples
+// All predicates use clean labels WITHOUT trailing spaces
 export const INTENTION_PREDICATES: Record<IntentionPurpose, string> = {
   for_work: 'visits for work',
   for_learning: 'visits for learning',

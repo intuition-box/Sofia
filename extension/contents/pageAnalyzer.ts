@@ -30,8 +30,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
   if (message.type === "GET_CLEAN_URL") {
     const cleanUrl = sanitizeUrl(window.location.href)
-    console.log("🔍 [Page Analyzer] Returning clean URL:", cleanUrl)
-    sendResponse({ success: true, url: cleanUrl })
+    const pageTitle = document.title || ""
+    console.log("🔍 [Page Analyzer] Returning clean URL:", cleanUrl, "title:", pageTitle)
+    sendResponse({ success: true, url: cleanUrl, title: pageTitle })
     return true
   }
   

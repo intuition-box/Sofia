@@ -94,5 +94,5 @@ export const PREDICATE_NAMES = {
   VISITS_FOR_BUYING: "visits for buying"
 } as const
 
-// Minimum stake for intention certification (1 TRUST = 1e18 wei)
-export const INTENTION_MIN_STAKE = 1000000000000000000n // 1 TRUST
+// Minimum stake for intention certification (0.1 TRUST = 1e17 wei)
+export const INTENTION_MIN_STAKE = 100000000000000000n // 0.1 TRUST

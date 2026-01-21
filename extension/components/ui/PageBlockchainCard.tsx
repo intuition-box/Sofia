@@ -18,7 +18,7 @@ import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
   const { navigateTo } = useRouter()
-  const { triplets, loading, error, currentUrl, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
+  const { triplets, loading, error, currentUrl, pageTitle, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
   const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType, transactionHash: trustTxHash } = useTrustPage()
   const {
     certifyWithIntention,
@@ -440,8 +440,8 @@ const PageBlockchainCard = () => {
                 )}
               </div>
               <div className="website-url-container">
-                <span className="website-url-text">{new URL(currentUrl).hostname}</span>
-                <span className="website-url-full">{currentUrl}</span>
+                <span className="website-url-text">{pageTitle || new URL(currentUrl).hostname}</span>
+                <span className="website-url-full">{new URL(currentUrl).hostname}</span>
               </div>
 
               {/* Discovery Badge - Shows opportunity based on total certifications */}
