@@ -509,6 +509,21 @@ export function setupMessageHandlers(): void {
         }
         return true
 
+      case "DELETE_GROUP":
+        try {
+          const { groupId: deleteGroupId } = message.data || message
+          if (!deleteGroupId) {
+            sendResponse({ success: false, error: "groupId required" })
+            return true
+          }
+          await groupManager.deleteGroup(deleteGroupId)
+          sendResponse({ success: true })
+        } catch (error) {
+          console.error("❌ DELETE_GROUP error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
       case "GET_LEVEL_UP_COST":
         try {
           const { groupId: lvlGroupId } = message.data || message

@@ -3,7 +3,7 @@
  * Displays intention groups as a bento grid with detail view
  */
 
-import { useIntentionGroups } from '../../hooks/useIntentionGroups'
+import { useIntentionGroups, SortOption } from '../../hooks/useIntentionGroups'
 import GroupBentoCard from './GroupBentoCard'
 import GroupDetailView from './GroupDetailView'
 import SofiaLoader from './SofiaLoader'
@@ -15,12 +15,37 @@ const EchoesGroupsSection = () => {
     selectedGroup,
     isLoading,
     error,
+    sortBy,
+    setSortBy,
     loadGroups,
     selectGroup,
     certifyUrl,
     removeUrl,
-    refreshGroup
+    refreshGroup,
+    deleteGroup
   } = useIntentionGroups()
+
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'level', label: 'Level' },
+    { value: 'urls', label: 'URLs' },
+    { value: 'alphabetic', label: 'A-Z' },
+    { value: 'recent', label: 'Recent' }
+  ]
+
+  const handleDeleteGroup = async (groupId: string) => {
+    const group = groups.find(g => g.id === groupId)
+    if (!group) return
+
+    const confirmed = window.confirm(
+      `Delete "${group.domain}"?\n\n` +
+      `⚠️ This will only remove the group from your local view.\n` +
+      `Your on-chain certifications will remain on the blockchain and won't be affected.`
+    )
+
+    if (confirmed) {
+      await deleteGroup(groupId)
+    }
+  }
 
   // Show detail view if a group is selected
   if (selectedGroup) {
@@ -77,6 +102,17 @@ const EchoesGroupsSection = () => {
     <div className="groups-section">
       <div className="groups-header">
         <span className="groups-count">{groups.length} domains</span>
+        <div className="sort-buttons">
+          {sortOptions.map(option => (
+            <button
+              key={option.value}
+              className={`sort-btn ${sortBy === option.value ? 'active' : ''}`}
+              onClick={() => setSortBy(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="bento-grid">
@@ -85,6 +121,7 @@ const EchoesGroupsSection = () => {
             key={group.id}
             group={group}
             onClick={() => selectGroup(group.id)}
+            onDelete={handleDeleteGroup}
             size={getCardSize()}
           />
         ))}

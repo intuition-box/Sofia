@@ -106,6 +106,12 @@ export interface GroupUrlRecord {
   certification: 'work' | 'learning' | 'fun' | 'inspiration' | 'buying' | null
   certifiedAt?: number
   removed: boolean
+  // OAuth-extracted URLs have predicate info
+  oauthPredicate?: string  // ex: "follow", "top_artist", "member_of"
+  oauthSource?: string     // ex: "youtube", "spotify", "discord"
+  // On-chain certification status (from GraphQL)
+  isOnChain?: boolean              // true if certified on-chain
+  onChainCertification?: string    // 'work', 'learning', etc.
 }
 
 export interface PredicateChangeRecord {

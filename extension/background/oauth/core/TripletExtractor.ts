@@ -3,6 +3,17 @@ import { UserData, Triplet } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
 import { tripletsDataService } from '../../../lib/database/indexedDB-methods'
 import { badgeService } from '../../../lib/services/BadgeService'
+import { groupManager } from '../../../lib/services/GroupManager'
+import type { GroupUrlRecord } from '../../../lib/database/indexedDB'
+
+// Platform to domain mapping
+const PLATFORM_DOMAINS: Record<string, string> = {
+  youtube: 'youtube.com',
+  spotify: 'open.spotify.com',
+  twitch: 'twitch.tv',
+  discord: 'discord.com',
+  twitter: 'x.com'
+}
 
 export class TripletExtractor {
   constructor(private platformRegistry: PlatformRegistry) {}
@@ -89,7 +100,7 @@ export class TripletExtractor {
       }
       
       console.log(`✅ [OAuth] Triplets stored successfully for ${platform}`)
-      
+
       // Update badge count after storing OAuth triplets
       try {
         const availableCount = await badgeService.countAvailableEchoes()
@@ -98,6 +109,30 @@ export class TripletExtractor {
       } catch (badgeError) {
         console.error(`❌ [OAuth] Failed to update badge after ${platform} import:`, badgeError)
       }
+
+      // Route OAuth triplets to IntentionGroups
+      const domain = PLATFORM_DOMAINS[platform] || `${platform}.com`
+      console.log(`📦 [OAuth] Adding ${triplets.length} URLs to group: ${domain}`)
+
+      for (const triplet of triplets) {
+        const tripletUrl = triplet.objectUrl || this.generateUserProfileUrl(platform, userData)
+
+        const groupUrlRecord: GroupUrlRecord = {
+          url: tripletUrl,
+          title: triplet.object,
+          domain: domain,
+          addedAt: Date.now(),
+          attentionTime: 0,
+          certification: null,
+          removed: false,
+          oauthPredicate: triplet.predicate,
+          oauthSource: platform
+        }
+
+        await groupManager.addOAuthUrlToGroup(domain, groupUrlRecord)
+      }
+
+      console.log(`✅ [OAuth] URLs added to IntentionGroup: ${domain}`)
 
     } catch (error) {
       console.error(`❌ [OAuth] Failed to store triplets for ${platform}:`, error)

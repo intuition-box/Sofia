@@ -1,29 +1,72 @@
 /**
  * useIntentionGroups Hook
  * Manages intention groups data via Chrome runtime messages
+ * Merges local groups with on-chain certifications
  * Used by the UI to display and interact with domain-based groups
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { IntentionGroupRecord, GroupUrlRecord } from '~lib/database/indexedDB'
 import type { CertificationType } from '~lib/services/GroupManager'
+import { EXCLUDED_URL_PATTERNS } from '~background/constants'
+import { useOnChainIntentionGroups, type OnChainUrl } from './useOnChainIntentionGroups'
+
+/**
+ * Check if a domain should be excluded from display
+ */
+function shouldExcludeDomain(domain: string): boolean {
+  return EXCLUDED_URL_PATTERNS.some(pattern =>
+    domain.toLowerCase().includes(pattern.toLowerCase())
+  )
+}
 
 export interface IntentionGroupWithStats extends IntentionGroupRecord {
   activeUrlCount: number
   certifiedCount: number
   certificationBreakdown: Record<CertificationType, number>
+  isVirtualGroup?: boolean  // true if group created from on-chain only (no local data)
 }
+
+export type SortOption = 'level' | 'urls' | 'alphabetic' | 'recent'
 
 interface UseIntentionGroupsResult {
   groups: IntentionGroupWithStats[]
   selectedGroup: IntentionGroupWithStats | null
   isLoading: boolean
   error: string | null
+  sortBy: SortOption
+  setSortBy: (sort: SortOption) => void
   loadGroups: () => Promise<void>
   selectGroup: (groupId: string | null) => void
   certifyUrl: (groupId: string, url: string, certification: CertificationType) => Promise<boolean>
   removeUrl: (groupId: string, url: string) => Promise<boolean>
   refreshGroup: (groupId: string) => Promise<void>
+  deleteGroup: (groupId: string) => Promise<boolean>
+}
+
+/**
+ * Sort groups based on selected option
+ */
+function sortGroups(groups: IntentionGroupWithStats[], sortBy: SortOption): IntentionGroupWithStats[] {
+  return [...groups].sort((a, b) => {
+    switch (sortBy) {
+      case 'level':
+        // Higher level first, then by URL count
+        if (b.level !== a.level) return b.level - a.level
+        return b.activeUrlCount - a.activeUrlCount
+      case 'urls':
+        // More URLs first
+        return b.activeUrlCount - a.activeUrlCount
+      case 'alphabetic':
+        // A-Z by domain
+        return a.domain.localeCompare(b.domain)
+      case 'recent':
+        // Most recently updated first
+        return b.updatedAt - a.updatedAt
+      default:
+        return 0
+    }
+  })
 }
 
 /**
@@ -57,15 +100,20 @@ function calculateGroupStats(group: IntentionGroupRecord): IntentionGroupWithSta
 
 /**
  * Hook for managing intention groups
+ * Merges local groups with on-chain certifications
  */
 export const useIntentionGroups = (): UseIntentionGroupsResult => {
-  const [groups, setGroups] = useState<IntentionGroupWithStats[]>([])
+  const [localGroups, setLocalGroups] = useState<IntentionGroupWithStats[]>([])
   const [selectedGroup, setSelectedGroup] = useState<IntentionGroupWithStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<SortOption>('level') // Default: sort by level
+
+  // Fetch on-chain intention groups
+  const { groups: onChainGroups, loading: onChainLoading } = useOnChainIntentionGroups()
 
   /**
-   * Load all groups from background service
+   * Load all groups from background service (local IndexedDB)
    */
   const loadGroups = useCallback(async () => {
     try {
@@ -75,14 +123,12 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       const response = await chrome.runtime.sendMessage({ type: 'GET_INTENTION_GROUPS' })
 
       if (response.success && response.groups) {
-        const groupsWithStats = response.groups.map(calculateGroupStats)
-        setGroups(groupsWithStats)
-
-        // Update selected group if it exists
-        if (selectedGroup) {
-          const updated = groupsWithStats.find(g => g.id === selectedGroup.id)
-          setSelectedGroup(updated || null)
-        }
+        // Filter out excluded domains (auth pages, system pages, etc.)
+        const filteredGroups = response.groups.filter(
+          (g: IntentionGroupRecord) => !shouldExcludeDomain(g.domain)
+        )
+        const groupsWithStats = filteredGroups.map(calculateGroupStats)
+        setLocalGroups(groupsWithStats)
       } else {
         setError(response.error || 'Failed to load groups')
       }
@@ -92,7 +138,108 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedGroup?.id])
+  }, [])
+
+  /**
+   * Merge local groups with on-chain data
+   * - If domain exists locally AND on-chain → enrich local with on-chain URLs
+   * - If domain exists ONLY on-chain → create "virtual" group
+   */
+  const mergedGroups = useMemo(() => {
+    const merged = new Map<string, IntentionGroupWithStats>()
+
+    // 1. Add all local groups first
+    for (const local of localGroups) {
+      merged.set(local.domain, { ...local, urls: [...local.urls] })
+    }
+
+    // 2. Enrich/add with on-chain data
+    for (const onChain of onChainGroups) {
+      // Skip excluded domains
+      if (shouldExcludeDomain(onChain.domain)) continue
+
+      const existing = merged.get(onChain.domain)
+
+      if (existing) {
+        // CASE 1: Domain exists locally → enrich with on-chain URLs
+        for (const onChainUrl of onChain.urls) {
+          // Normalize URLs for comparison
+          const normalizedOnChainUrl = onChainUrl.url.replace(/\/$/, '').toLowerCase()
+          const localUrl = existing.urls.find(u =>
+            u.url.replace(/\/$/, '').toLowerCase() === normalizedOnChainUrl
+          )
+
+          if (localUrl) {
+            // URL exists locally → mark as certified on-chain
+            localUrl.isOnChain = true
+            localUrl.onChainCertification = onChainUrl.certification
+          } else {
+            // URL doesn't exist locally → add as "virtual" URL
+            existing.urls.push({
+              url: onChainUrl.url,
+              title: onChainUrl.label,
+              domain: onChain.domain,
+              addedAt: onChainUrl.certifiedAt ? Date.parse(onChainUrl.certifiedAt) : Date.now(),
+              attentionTime: 0,
+              certification: null,
+              removed: false,
+              isOnChain: true,
+              onChainCertification: onChainUrl.certification
+            })
+          }
+        }
+
+        // Recalculate stats after enrichment
+        const activeUrls = existing.urls.filter(u => !u.removed)
+        existing.activeUrlCount = activeUrls.length
+        existing.certifiedCount = activeUrls.filter(u => u.isOnChain).length
+        existing.level = Math.max(existing.level, onChain.level)
+
+      } else {
+        // CASE 2: Domain exists ONLY on-chain → create "virtual" group
+        const virtualGroup: IntentionGroupWithStats = {
+          id: `onchain-${onChain.domain}`,
+          domain: onChain.domain,
+          title: onChain.domain,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          urls: onChain.urls.map((u: OnChainUrl) => ({
+            url: u.url,
+            title: u.label,
+            domain: onChain.domain,
+            addedAt: u.certifiedAt ? Date.parse(u.certifiedAt) : Date.now(),
+            attentionTime: 0,
+            certification: null,
+            removed: false,
+            isOnChain: true,
+            onChainCertification: u.certification
+          })),
+          level: onChain.level,
+          activeUrlCount: onChain.urls.length,
+          certifiedCount: onChain.certifiedCount,
+          certificationBreakdown: { work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0 },
+          isVirtualGroup: true,
+          currentPredicate: null,
+          predicateHistory: [],
+          totalAttentionTime: 0,
+          totalCertifications: onChain.certifiedCount,
+          dominantCertification: null
+        }
+
+        // Calculate certification breakdown from on-chain data
+        for (const u of onChain.urls) {
+          const cert = u.certification as CertificationType
+          if (cert && virtualGroup.certificationBreakdown[cert] !== undefined) {
+            virtualGroup.certificationBreakdown[cert]++
+          }
+        }
+
+        merged.set(onChain.domain, virtualGroup)
+      }
+    }
+
+    return Array.from(merged.values())
+  }, [localGroups, onChainGroups])
 
   /**
    * Select a group to view details
@@ -103,15 +250,21 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       return
     }
 
-    const group = groups.find(g => g.id === groupId)
+    const group = mergedGroups.find(g => g.id === groupId)
     setSelectedGroup(group || null)
-  }, [groups])
+  }, [mergedGroups])
 
   /**
    * Refresh a specific group's data
    */
   const refreshGroup = useCallback(async (groupId: string) => {
     try {
+      // For virtual (on-chain only) groups, just reload
+      if (groupId.startsWith('onchain-')) {
+        await loadGroups()
+        return
+      }
+
       const response = await chrome.runtime.sendMessage({
         type: 'GET_GROUP_DETAILS',
         groupId
@@ -120,8 +273,8 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       if (response.success && response.group) {
         const groupWithStats = calculateGroupStats(response.group)
 
-        // Update in groups array
-        setGroups(prev => prev.map(g =>
+        // Update in local groups array
+        setLocalGroups(prev => prev.map(g =>
           g.id === groupId ? groupWithStats : g
         ))
 
@@ -133,7 +286,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
     } catch (err) {
       console.error('❌ [useIntentionGroups] Error refreshing group:', err)
     }
-  }, [selectedGroup?.id])
+  }, [selectedGroup?.id, loadGroups])
 
   /**
    * Certify a URL in a group
@@ -190,6 +343,40 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
   }, [refreshGroup])
 
   /**
+   * Delete a group entirely
+   */
+  const deleteGroup = useCallback(async (groupId: string): Promise<boolean> => {
+    try {
+      // Virtual groups (on-chain only) cannot be deleted locally
+      if (groupId.startsWith('onchain-')) {
+        console.warn('⚠️ Cannot delete on-chain only groups')
+        return false
+      }
+
+      const response = await chrome.runtime.sendMessage({
+        type: 'DELETE_GROUP',
+        groupId
+      })
+
+      if (response.success) {
+        // Remove from local state
+        setLocalGroups(prev => prev.filter(g => g.id !== groupId))
+        // Clear selection if this was the selected group
+        if (selectedGroup?.id === groupId) {
+          setSelectedGroup(null)
+        }
+        return true
+      } else {
+        console.error('❌ Delete group failed:', response.error)
+        return false
+      }
+    } catch (err) {
+      console.error('❌ [useIntentionGroups] Error deleting group:', err)
+      return false
+    }
+  }, [selectedGroup?.id])
+
+  /**
    * Load groups on mount
    */
   useEffect(() => {
@@ -213,16 +400,32 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
     }
   }, [loadGroups])
 
+  // Update selected group when merged groups change
+  useEffect(() => {
+    if (selectedGroup) {
+      const updated = mergedGroups.find(g => g.id === selectedGroup.id)
+      if (updated && JSON.stringify(updated) !== JSON.stringify(selectedGroup)) {
+        setSelectedGroup(updated)
+      }
+    }
+  }, [mergedGroups, selectedGroup])
+
+  // Apply sorting to merged groups
+  const sortedGroups = sortGroups(mergedGroups, sortBy)
+
   return {
-    groups,
+    groups: sortedGroups,
     selectedGroup,
-    isLoading,
+    isLoading: isLoading || onChainLoading,
     error,
+    sortBy,
+    setSortBy,
     loadGroups,
     selectGroup,
     certifyUrl,
     removeUrl,
-    refreshGroup
+    refreshGroup,
+    deleteGroup
   }
 }
 

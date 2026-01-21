@@ -303,6 +303,43 @@ class GroupManagerService {
     await IntentionGroupsService.clearAll()
     console.log('🧹 [GroupManager] Cleared all groups')
   }
+
+  /**
+   * Add OAuth-extracted URL to a group with its predicate
+   * Creates group if it doesn't exist
+   */
+  async addOAuthUrlToGroup(domain: string, urlRecord: GroupUrlRecord): Promise<void> {
+    const existingGroup = await IntentionGroupsService.getGroup(domain)
+
+    if (existingGroup) {
+      // Avoid duplicates
+      const exists = existingGroup.urls.find(u => u.url === urlRecord.url)
+      if (!exists) {
+        existingGroup.urls.push(urlRecord)
+        existingGroup.updatedAt = Date.now()
+        await IntentionGroupsService.saveGroup(existingGroup)
+        console.log(`📌 [GroupManager] Added OAuth URL: ${urlRecord.oauthPredicate} ${urlRecord.title}`)
+      }
+    } else {
+      // Create new group for OAuth domain
+      const newGroup: IntentionGroupRecord = {
+        id: domain,
+        domain,
+        title: domain,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        urls: [urlRecord],
+        level: 1,
+        currentPredicate: null,
+        predicateHistory: [],
+        totalAttentionTime: 0,
+        totalCertifications: 0,
+        dominantCertification: null
+      }
+      await IntentionGroupsService.saveGroup(newGroup)
+      console.log(`🆕 [GroupManager] Created OAuth group: ${domain}`)
+    }
+  }
 }
 
 // Singleton instance

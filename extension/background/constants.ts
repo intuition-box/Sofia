@@ -38,6 +38,10 @@ export const EXCLUDED_URL_PATTERNS = [
   // Sites techniques
   'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
   'widget', 'chrome-extension://', 'sandbox', 'about:blank', 'CookieSync Page',
+  // Sofia/Intuition system pages
+  'intuition.box/auth',
+  // OAuth challenge pages
+  'challenge.spotify.com', 'id.twitch.tv',
   // Services de mail
   'mail.', 'gmail.', 'outlook.', 'yahoo.', 'hotmail.',
   // Captcha and verification services
@@ -53,7 +57,7 @@ export const EXCLUDED_URL_PATTERNS = [
   'doubleclick.net', 'googlesyndication.com', 'adsense',
   'cloudflare.com/cdn-cgi', 'jsdelivr.net', 'unpkg.com',
   'polyfill.io', 'sentry.io', 'hotjar.com', 'intercom.io',
-  'cookielaw.org', 'onetrust.com', 'trustarc.com',
+  'cookielaw.org', 'onetrust.com', 'trustarc.com','adswizz.com',
   // Unknown and empty content
   'unknown', 'undefined', 'null', 'blank', 'empty',
   'about:blank', 'about:srcdoc', 'data:', 'javascript:',

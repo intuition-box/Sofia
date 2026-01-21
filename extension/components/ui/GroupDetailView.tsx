@@ -76,12 +76,14 @@ const UrlRow = ({
   urlRecord,
   onChainStatus,
   onIntentionSelect,
+  onOAuthCertify,
   onRemove,
   isProcessing
 }: {
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
   onIntentionSelect: (intention: IntentionPurpose) => void
+  onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
 }) => {
@@ -178,17 +180,32 @@ const UrlRow = ({
         </div>
       </div>
 
-      {/* Expanded section with intention bubbles */}
+      {/* Expanded section with intention bubbles OR OAuth predicate button */}
       {isExpanded && (
         <div className="url-expanded-section">
-          <IntentionBubbleSelector
-            onBubbleClick={(intention) => {
-              onIntentionSelect(intention)
-              setIsExpanded(false)
-            }}
-            disabled={isProcessing}
-            isEligible={true}
-          />
+          {urlRecord.oauthPredicate ? (
+            // OAuth URL: show single predicate button
+            <button
+              className="oauth-predicate-btn"
+              onClick={() => {
+                onOAuthCertify(urlRecord)
+                setIsExpanded(false)
+              }}
+              disabled={isProcessing}
+            >
+              {urlRecord.oauthPredicate}
+            </button>
+          ) : (
+            // Navigation URL: show standard intention bubbles
+            <IntentionBubbleSelector
+              onBubbleClick={(intention) => {
+                onIntentionSelect(intention)
+                setIsExpanded(false)
+              }}
+              disabled={isProcessing}
+              isEligible={true}
+            />
+          )}
         </div>
       )}
     </div>
@@ -340,6 +357,28 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     }
   }
 
+  // Handle OAuth certification - uses predicate from OAuth extraction
+  const handleOAuthCertify = (urlRecord: GroupUrlRecord) => {
+    if (!urlRecord.oauthPredicate) return
+
+    // Prepare triplet with OAuth predicate
+    const triplet = {
+      id: `oauth-${urlRecord.oauthPredicate}-${Date.now()}`,
+      triplet: {
+        subject: 'I',
+        predicate: urlRecord.oauthPredicate,
+        object: urlRecord.title
+      },
+      description: `I ${urlRecord.oauthPredicate} ${urlRecord.title}`,
+      url: urlRecord.url,
+      intention: 'for_fun' as IntentionPurpose // Default, will be overridden by predicate
+    }
+
+    setPendingCertification({ url: urlRecord.url, intention: 'for_fun' })
+    setModalTriplets([triplet])
+    setShowWeightModal(true)
+  }
+
   // Handle modal submit - create on-chain triple
   const handleModalSubmit = async (customWeights?: (bigint | null)[]) => {
     if (!pendingCertification || !customWeights || customWeights.length === 0) return
@@ -478,27 +517,51 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         </div>
       )}
 
-      {/* Level Progress */}
-      <div className="level-progress-section">
-        <div className="level-progress-header">
-          <span className="level-label">Level {currentLevel}</span>
-          <span className="level-xp">
-            {onChainLoading ? '...' : (
-              xpToNextLevel > 0
-                ? `${xpToNextLevel} XP to Level ${currentLevel + 1}`
-                : 'Max level!'
+      {/* Level Progress - transforms into Level Up when ready */}
+      <div className={`level-progress-section ${progressPercent >= 100 && levelUpPreview?.canLevelUp ? 'ready-to-level-up' : ''}`}>
+        {progressPercent >= 100 && levelUpPreview?.canLevelUp && !levelUpResult?.success ? (
+          /* Ready to Level Up - show integrated button */
+          <button
+            className="level-up-integrated-btn"
+            onClick={handleLevelUp}
+            disabled={levelUpLoading}
+          >
+            {levelUpLoading ? (
+              <span className="loading-text">Generating predicate...</span>
+            ) : (
+              <>
+                <div className="level-up-integrated-content">
+                  <span className="level-up-icon">⬆️</span>
+                  <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
+                </div>
+                <span className="level-up-cost">{levelUpPreview.cost} XP</span>
+              </>
             )}
-          </span>
-        </div>
-        <div className="progress-bar-container level-bar">
-          <div
-            className="progress-bar-fill"
-            style={{
-              width: `${progressPercent}%`,
-              background: 'linear-gradient(90deg, #C7866C, #D4A574)'
-            }}
-          />
-        </div>
+          </button>
+        ) : (
+          /* Normal progress display */
+          <>
+            <div className="level-progress-header">
+              <span className="level-label">Level {currentLevel}</span>
+              <span className="level-xp">
+                {onChainLoading ? '...' : (
+                  xpToNextLevel > 0
+                    ? `${xpToNextLevel} XP to Level ${currentLevel + 1}`
+                    : 'Max level!'
+                )}
+              </span>
+            </div>
+            <div className="progress-bar-container level-bar">
+              <div
+                className="progress-bar-fill"
+                style={{
+                  width: `${progressPercent}%`,
+                  background: 'linear-gradient(90deg, #C7866C, #D4A574)'
+                }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Certification Filter */}
@@ -544,6 +607,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               urlRecord={urlRecord}
               onChainStatus={getUrlCertification(urlRecord.url)}
               onIntentionSelect={(intention) => handleIntentionSelect(urlRecord.url, intention)}
+              onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
               isProcessing={processingUrls.has(urlRecord.url) || intentionLoading}
             />
@@ -558,9 +622,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         </div>
       )}
 
-      {/* Level Up Section */}
+      {/* Level Up Section - shows result messages and button when progress < 100% */}
       <div className="level-up-section">
-        {/* Level Up Result */}
+        {/* Level Up Result - always show */}
         {levelUpResult?.success && (
           <div className="level-up-success">
             <span className="success-icon">🎉</span>
@@ -587,8 +651,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           </div>
         )}
 
-        {/* Level Up Button */}
-        {levelUpPreview && !levelUpResult?.success && (
+        {/* Level Up Button - only show when progress bar is NOT full (< 100%) */}
+        {/* When progress >= 100%, the button is integrated into the progress section above */}
+        {levelUpPreview && !levelUpResult?.success && progressPercent < 100 && (
           <button
             className={`level-up-btn ${levelUpPreview.canLevelUp ? 'can-afford' : 'cannot-afford'}`}
             onClick={handleLevelUp}
@@ -610,7 +675,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           </button>
         )}
 
-        {levelUpPreview && !levelUpPreview.canLevelUp && (
+        {levelUpPreview && !levelUpPreview.canLevelUp && progressPercent < 100 && (
           <div className="xp-needed">
             Need {levelUpPreview.cost - levelUpPreview.availableXP} more XP
           </div>

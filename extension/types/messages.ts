@@ -47,6 +47,7 @@ export type MessageType =
   | 'GET_USER_XP'
   | 'CERTIFY_URL'
   | 'REMOVE_URL_FROM_GROUP'
+  | 'DELETE_GROUP'
   | 'GET_LEVEL_UP_COST'
   | 'LEVEL_UP_GROUP'
   | 'PREVIEW_LEVEL_UP'

@@ -307,6 +307,38 @@
 
 .group-bento-level {
   flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.group-delete-btn {
+  display: none;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.group-bento-level:hover .group-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.group-bento-level:hover .level-badge {
+  display: none;
+}
+
+.group-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.5);
+  color: #fff;
 }
 
 .level-badge {
@@ -799,6 +831,33 @@
   font-size: 12px;
 }
 
+.sort-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.sort-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sort-btn.active {
+  background: rgba(199, 134, 108, 0.2);
+  border-color: rgba(199, 134, 108, 0.4);
+  color: #c7866c;
+}
+
 .groups-loading,
 .groups-error,
 .groups-empty {
@@ -889,6 +948,31 @@
 .url-expanded-section .intention-pill {
   padding: 6px 12px;
   font-size: 11px;
+}
+
+/* OAuth Predicate Button */
+.oauth-predicate-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #C7866C, #D4A574);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: lowercase;
+  transition: all 0.2s ease;
+}
+
+.oauth-predicate-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(199, 134, 108, 0.3);
+}
+
+.oauth-predicate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ========== LEVEL PROGRESS SECTION ========== */
@@ -1242,4 +1326,67 @@
   color: #EF4444;
   font-size: 13px;
   flex: 1;
+}
+
+/* ========== INTEGRATED LEVEL UP BUTTON (when XP bar is full) ========== */
+
+.level-progress-section.ready-to-level-up {
+  background: linear-gradient(135deg, rgba(199, 134, 108, 0.15), rgba(212, 165, 116, 0.1));
+  border-color: rgba(199, 134, 108, 0.4);
+  padding: 0;
+}
+
+.level-up-integrated-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #C7866C 0%, #D4A574 100%);
+  border: none;
+  border-radius: 10px;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.level-up-integrated-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(199, 134, 108, 0.5);
+}
+
+.level-up-integrated-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.level-up-integrated-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.level-up-integrated-btn .level-up-icon {
+  font-size: 18px;
+}
+
+.level-up-integrated-btn .level-up-text {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.level-up-integrated-btn .level-up-cost {
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.level-up-integrated-btn .loading-text {
+  font-style: italic;
+  color: #1a1a1a;
 }

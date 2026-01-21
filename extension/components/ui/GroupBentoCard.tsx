@@ -11,6 +11,7 @@ import { useGroupOnChainCertifications } from '../../hooks/useGroupOnChainCertif
 interface GroupBentoCardProps {
   group: IntentionGroupWithStats
   onClick: () => void
+  onDelete?: (groupId: string) => void
   size?: 'small' | 'tall'
 }
 
@@ -39,7 +40,7 @@ const formatDuration = (ms: number): string => {
   return `${minutes}m`
 }
 
-const GroupBentoCard = ({ group, onClick, size = 'small' }: GroupBentoCardProps) => {
+const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBentoCardProps) => {
   const { domain, activeUrlCount, totalAttentionTime, currentPredicate, certificationBreakdown, urls } = group
 
   // Get active URLs for on-chain query
@@ -87,6 +88,18 @@ const GroupBentoCard = ({ group, onClick, size = 'small' }: GroupBentoCardProps)
           )}
         </div>
         <div className="group-bento-level">
+          {onDelete && (
+            <button
+              className="group-delete-btn"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(group.id)
+              }}
+              title="Delete group"
+            >
+              ×
+            </button>
+          )}
           <span className="level-badge">LVL {currentLevel}</span>
         </div>
       </div>
