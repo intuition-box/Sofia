@@ -6,7 +6,7 @@ import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
 import { cleanupProvider } from '../../lib/services/metamask'
-import { elizaDataService } from '../../lib/database/indexedDB-methods'
+import { tripletsDataService } from '../../lib/database/indexedDB-methods'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
 import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
 import '../styles/Global.css'
@@ -41,8 +41,8 @@ const SettingsPage = () => {
       // Clear Plasmo storage
       await storage.clear()
 
-      // Clear custom IndexedDB data (Eliza messages, triplets, etc.)
-      await elizaDataService.clearAll()
+      // Clear custom IndexedDB data (triplets, etc.)
+      await tripletsDataService.clearAll()
 
       // Clear OAuth tokens, sync info, and platform profiles
       await chrome.storage.local.remove([

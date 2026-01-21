@@ -41,7 +41,7 @@ export async function sendThemeExtractionRequest(urls: string[]): Promise<any[]>
         type: 'parsed_message'
       }
 
-      await sofiaDB.put(STORES.ELIZA_DATA, parsedRecord)
+      await sofiaDB.put(STORES.TRIPLETS_DATA, parsedRecord)
       console.log("✅ [ThemeExtractor] Triplets stored in IndexedDB:", { count: enrichedTriplets.length })
 
       try {
@@ -129,7 +129,7 @@ export async function sendMessage(agentType: 'CHATBOT' | 'THEMEEXTRACTOR' | 'PUL
             timestamp: Date.now(),
             type: 'parsed_message'
           }
-          await sofiaDB.put(STORES.ELIZA_DATA, themeRecord)
+          await sofiaDB.put(STORES.TRIPLETS_DATA, themeRecord)
           console.log("✅ [ThemeExtractor] Triplets stored in IndexedDB:", { id: themeRecord.messageId, count: themeResult.length })
 
           // Notify UI that new echoes are available
@@ -162,7 +162,7 @@ export async function sendMessage(agentType: 'CHATBOT' | 'THEMEEXTRACTOR' | 'PUL
           timestamp: Date.now(),
           type: 'pulse_analysis'
         }
-        await sofiaDB.put(STORES.ELIZA_DATA, pulseRecord)
+        await sofiaDB.put(STORES.TRIPLETS_DATA, pulseRecord)
         console.log("✅ [PulseAgent] Pulse analysis stored:", { themes: themesData.themes?.length || 0 })
 
         try {

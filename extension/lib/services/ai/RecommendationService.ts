@@ -166,7 +166,7 @@ export class RecommendationService {
   }
 
   /**
-   * Generate recommendations with RecommendationAgent (ElizaOS)
+   * Generate recommendations with RecommendationAgent (Mastra)
    */
   private static async generateWithAgent(walletData: WalletData): Promise<Recommendation[]> {
     try {

@@ -2,7 +2,7 @@
  * Specialized methods for SofIA IndexedDB operations
  */
 
-import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type IntentionGroupRecord, type UserXPRecord } from './indexedDB'
+import sofiaDB, { STORES, type TripletsRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type IntentionGroupRecord, type UserXPRecord } from './indexedDB'
 import { MessageBus } from '../services/MessageBus'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
 import { parseSofiaMessage } from '../utils/parseSofiaMessage'
@@ -11,11 +11,11 @@ import type { ExtensionSettings } from '~types/storage'
 import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
 /**
- * Eliza Data Methods
+ * Triplets Data Methods
  */
-export class ElizaDataService {
+export class TripletsDataService {
   /**
-   * Store a message from Eliza - only store if parsing succeeds
+   * Store a message - only store if parsing succeeds
    */
   static async storeMessage(message: Message, messageId?: string): Promise<number> {
     // Try to parse the message first
@@ -35,14 +35,14 @@ export class ElizaDataService {
    * Store a parsed Sofia message with triplets
    */
   static async storeParsedMessage(parsedMessage: ParsedSofiaMessage, messageId?: string): Promise<number> {
-    const record: ElizaRecord = {
+    const record: TripletsRecord = {
       messageId: messageId || `parsed_${Date.now()}_${Math.random()}`,
       content: parsedMessage,
       timestamp: Date.now(),
       type: 'parsed_message'
     }
 
-    const result = await sofiaDB.add(STORES.ELIZA_DATA, record)
+    const result = await sofiaDB.add(STORES.TRIPLETS_DATA, record)
     console.log('🧠 Parsed Sofia message stored:', messageId)
 
     // Note: Badge update is handled differently based on context:
@@ -53,24 +53,24 @@ export class ElizaDataService {
   }
 
   /**
-   * Get all Eliza messages
+   * Get all triplet records
    */
-  static async getAllMessages(): Promise<ElizaRecord[]> {
-    return await sofiaDB.getAll<ElizaRecord>(STORES.ELIZA_DATA)
+  static async getAllMessages(): Promise<TripletsRecord[]> {
+    return await sofiaDB.getAll<TripletsRecord>(STORES.TRIPLETS_DATA)
   }
 
   /**
    * Get messages by type
    */
-  static async getMessagesByType(type: 'message' | 'parsed_message' | 'triplet'): Promise<ElizaRecord[]> {
-    return await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'type', type)
+  static async getMessagesByType(type: 'message' | 'parsed_message' | 'triplet'): Promise<TripletsRecord[]> {
+    return await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'type', type)
   }
 
   /**
    * Get recent messages (last N messages)
    */
-  static async getRecentMessages(limit: number = 50): Promise<ElizaRecord[]> {
-    const allMessages = await sofiaDB.getAll<ElizaRecord>(STORES.ELIZA_DATA)
+  static async getRecentMessages(limit: number = 50): Promise<TripletsRecord[]> {
+    const allMessages = await sofiaDB.getAll<TripletsRecord>(STORES.TRIPLETS_DATA)
     return allMessages
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit)
@@ -81,17 +81,17 @@ export class ElizaDataService {
    */
   static async deleteOldMessages(daysToKeep: number = 30): Promise<number> {
     const cutoffDate = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000)
-    const allMessages = await sofiaDB.getAll<ElizaRecord>(STORES.ELIZA_DATA)
+    const allMessages = await sofiaDB.getAll<TripletsRecord>(STORES.TRIPLETS_DATA)
     
     let deletedCount = 0
     for (const message of allMessages) {
       if (message.timestamp < cutoffDate && message.id) {
-        await sofiaDB.delete(STORES.ELIZA_DATA, message.id)
+        await sofiaDB.delete(STORES.TRIPLETS_DATA, message.id)
         deletedCount++
       }
     }
     
-    console.log(`🧹 Deleted ${deletedCount} old Eliza messages`)
+    console.log(`🧹 Deleted ${deletedCount} old triplet records`)
     return deletedCount
   }
 
@@ -100,22 +100,22 @@ export class ElizaDataService {
    */
   static async storeTripletStates(tripletStates: any[]): Promise<number> {
     // Remove existing triplet states first
-    const existing = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_triplet_states')
+    const existing = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_triplet_states')
     for (const record of existing) {
       if (record.id) {
-        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+        await sofiaDB.delete(STORES.TRIPLETS_DATA, record.id)
       }
     }
     
     // Store new triplet states
-    const record: ElizaRecord = {
+    const record: TripletsRecord = {
       messageId: 'echoesTab_triplet_states',
       content: tripletStates as any,
       timestamp: Date.now(),
       type: 'triplet'
     }
     
-    const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
+    const result = await sofiaDB.put(STORES.TRIPLETS_DATA, record)
     console.log('💾 EchoesTab triplet states persisted:', tripletStates.length)
     return result as number
   }
@@ -124,7 +124,7 @@ export class ElizaDataService {
    * Load triplet states for EchoesTab
    */
   static async loadTripletStates(): Promise<any[]> {
-    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_triplet_states')
+    const records = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_triplet_states')
     if (records.length > 0 && records[0].content) {
       return records[0].content as any[]
     }
@@ -136,22 +136,22 @@ export class ElizaDataService {
    */
   static async storePublishedTripletIds(publishedIds: string[]): Promise<number> {
     // Remove existing published triplet IDs first
-    const existing = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_published_triplets')
+    const existing = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_published_triplets')
     for (const record of existing) {
       if (record.id) {
-        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+        await sofiaDB.delete(STORES.TRIPLETS_DATA, record.id)
       }
     }
     
     // Store new published triplet IDs
-    const record: ElizaRecord = {
+    const record: TripletsRecord = {
       messageId: 'echoesTab_published_triplets',
       content: publishedIds as any,
       timestamp: Date.now(),
       type: 'published_triplets'
     }
     
-    const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
+    const result = await sofiaDB.put(STORES.TRIPLETS_DATA, record)
     console.log('🚫 Published triplet IDs stored:', publishedIds.length)
     return result as number
   }
@@ -160,7 +160,7 @@ export class ElizaDataService {
    * Load published triplet IDs
    */
   static async loadPublishedTripletIds(): Promise<string[]> {
-    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_published_triplets')
+    const records = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_published_triplets')
     if (records.length > 0 && records[0].content) {
       const ids = records[0].content as string[]
       return ids
@@ -195,14 +195,14 @@ export class ElizaDataService {
     await this.cleanupOldTripletRecords()
     
     // Check if this triplet already exists by looking for existing record
-    const existingRecord = await sofiaDB.getByIndex<ElizaRecord>(
-      STORES.ELIZA_DATA, 
+    const existingRecord = await sofiaDB.getByIndex<TripletsRecord>(
+      STORES.TRIPLETS_DATA, 
       'messageId', 
       `published_triplet_${tripletDetails.originalId || tripletDetails.tripleVaultId}`
     )
     
     // Create or update individual triplet record with unique messageId
-    const record: ElizaRecord = {
+    const record: TripletsRecord = {
       messageId: `published_triplet_${tripletDetails.originalId || tripletDetails.tripleVaultId}`,
       content: tripletDetails,
       timestamp: Date.now(),
@@ -215,7 +215,7 @@ export class ElizaDataService {
     }
     
     try {
-      const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
+      const result = await sofiaDB.put(STORES.TRIPLETS_DATA, record)
       console.log('🔗 Published triplet details stored:', tripletDetails.tripleVaultId || tripletDetails.originalId)
       return result as number
     } catch (error) {
@@ -223,7 +223,7 @@ export class ElizaDataService {
         console.warn('⚠️ Constraint error detected, attempting to resolve...', error.message)
         // Try to clean up conflicts and retry once
         await this.cleanupOldTripletRecords()
-        const retryResult = await sofiaDB.put(STORES.ELIZA_DATA, record)
+        const retryResult = await sofiaDB.put(STORES.TRIPLETS_DATA, record)
         console.log('🔗 Published triplet details stored (retry):', tripletDetails.tripleVaultId || tripletDetails.originalId)
         return retryResult as number
       }
@@ -243,7 +243,7 @@ export class ElizaDataService {
       // Continue without cleanup if it fails
     }
     
-    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'type', 'published_triplets_details')
+    const records = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'type', 'published_triplets_details')
     // Filter to only get individual triplet records (not the old format)
     const tripletRecords = records.filter(record => 
       record.messageId.startsWith('published_triplet_') && record.content
@@ -257,15 +257,15 @@ export class ElizaDataService {
   static async cleanupOldTripletRecords(): Promise<void> {
     try {
       // Remove old format records that use 'published_triplets_details' as messageId
-      const oldRecords = await sofiaDB.getAllByIndex<ElizaRecord>(
-        STORES.ELIZA_DATA, 
+      const oldRecords = await sofiaDB.getAllByIndex<TripletsRecord>(
+        STORES.TRIPLETS_DATA, 
         'messageId', 
         'published_triplets_details'
       )
       
       for (const record of oldRecords) {
         if (record.id && record.messageId === 'published_triplets_details') {
-          await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+          await sofiaDB.delete(STORES.TRIPLETS_DATA, record.id)
           console.log('🧹 Cleaned up old triplet record format')
         }
       }
@@ -282,8 +282,8 @@ export class ElizaDataService {
     const messageToDelete = allMessages.find(msg => msg.messageId === messageId)
     
     if (messageToDelete && messageToDelete.id) {
-      await sofiaDB.delete(STORES.ELIZA_DATA, messageToDelete.id)
-      console.log('🗑️ Eliza message deleted:', messageId)
+      await sofiaDB.delete(STORES.TRIPLETS_DATA, messageToDelete.id)
+      console.log('🗑️ Triplet record deleted:', messageId)
     } else {
       console.warn('⚠️ Message not found for deletion:', messageId)
     }
@@ -294,19 +294,19 @@ export class ElizaDataService {
    */
   static async deleteMessageById(id: number): Promise<void> {
     try {
-      await sofiaDB.delete(STORES.ELIZA_DATA, id)
-      console.log('🗑️ Eliza message deleted by ID:', id)
+      await sofiaDB.delete(STORES.TRIPLETS_DATA, id)
+      console.log('🗑️ Triplet record deleted by ID:', id)
     } catch (error) {
       console.warn('⚠️ Failed to delete message by ID:', id, error)
     }
   }
 
   /**
-   * Clear all Eliza data
+   * Clear all triplets data
    */
   static async clearAll(): Promise<void> {
-    await sofiaDB.clear(STORES.ELIZA_DATA)
-    console.log('🗑️ All Eliza data cleared')
+    await sofiaDB.clear(STORES.TRIPLETS_DATA)
+    console.log('🗑️ All triplets data cleared')
   }
 }
 
@@ -1093,7 +1093,7 @@ export class UserXPService {
 }
 
 // Export all services
-export const elizaDataService = ElizaDataService
+export const tripletsDataService = TripletsDataService
 export const navigationDataService = NavigationDataService
 export const userProfileService = UserProfileService
 export const userSettingsService = UserSettingsService

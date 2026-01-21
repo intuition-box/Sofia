@@ -1,4 +1,4 @@
-import { elizaDataService } from "../lib/database/indexedDB-methods"
+import { tripletsDataService } from "../lib/database/indexedDB-methods"
 
 // Function to convert themes directly to triplets
 export function convertThemesToTriplets(themes: any[]): any {
@@ -83,7 +83,7 @@ export async function processUrlsWithThemeAnalysis(
         processed: false
       }
       
-      await elizaDataService.storeMessage(newMessage, newMessage.id)
+      await tripletsDataService.storeMessage(newMessage, newMessage.id)
       console.log(`✅ ${type} triplets stored in IndexedDB:`, newMessage.id)
       console.log(`🔍 Stored message content:`, newMessage.content.text)
       

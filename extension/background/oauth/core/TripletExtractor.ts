@@ -1,7 +1,7 @@
 // Triplet extraction and storage logic
 import { UserData, Triplet } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
-import { elizaDataService } from '../../../lib/database/indexedDB-methods'
+import { tripletsDataService } from '../../../lib/database/indexedDB-methods'
 import { badgeService } from '../../../lib/services/BadgeService'
 
 export class TripletExtractor {
@@ -85,7 +85,7 @@ export class TripletExtractor {
           rawObjectDescription: ` ${platform} - ${triplet.object}`
         }
 
-        await elizaDataService.storeParsedMessage(parsedMessage, `oauth_${platform}_${Date.now()}_${i}`)
+        await tripletsDataService.storeParsedMessage(parsedMessage, `oauth_${platform}_${Date.now()}_${i}`)
       }
       
       console.log(`✅ [OAuth] Triplets stored successfully for ${platform}`)

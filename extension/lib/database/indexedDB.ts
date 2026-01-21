@@ -1,6 +1,6 @@
 /**
  * IndexedDB service for SofIA extension
- * Manages local storage of Eliza messages, navigation data, user profile, and settings
+ * Manages local storage of triplets, navigation data, user profile, and settings
  */
 
 import type { ParsedSofiaMessage} from '../../types/messages'
@@ -10,11 +10,11 @@ import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
-const DB_VERSION = 7  // 🆕 Incrémenté pour ajouter INTENTION_GROUPS et USER_XP
+const DB_VERSION = 8  // Incremented to rename ELIZA_DATA to TRIPLETS_DATA
 
 // Object store names
 export const STORES = {
-  ELIZA_DATA: 'eliza_data',
+  TRIPLETS_DATA: 'triplets_data',
   NAVIGATION_DATA: 'navigation_data',
   USER_PROFILE: 'user_profile',
   USER_SETTINGS: 'user_settings',
@@ -27,7 +27,7 @@ export const STORES = {
 } as const
 
 // Record types for IndexedDB
-export interface ElizaRecord {
+export interface TripletsRecord {
   id?: number
   messageId: string
   content: ParsedSofiaMessage | any[] | string[]
@@ -175,15 +175,15 @@ export class SofiaIndexedDB {
   private createObjectStores(db: IDBDatabase): void {
     console.log('🔧 Creating IndexedDB object stores...')
 
-    // Eliza data store
-    if (!db.objectStoreNames.contains(STORES.ELIZA_DATA)) {
-      const elizaStore = db.createObjectStore(STORES.ELIZA_DATA, { 
-        keyPath: 'id', 
-        autoIncrement: true 
+    // Triplets data store
+    if (!db.objectStoreNames.contains(STORES.TRIPLETS_DATA)) {
+      const tripletsStore = db.createObjectStore(STORES.TRIPLETS_DATA, {
+        keyPath: 'id',
+        autoIncrement: true
       })
-      elizaStore.createIndex('messageId', 'messageId', { unique: true })
-      elizaStore.createIndex('timestamp', 'timestamp', { unique: false })
-      elizaStore.createIndex('type', 'type', { unique: false })
+      tripletsStore.createIndex('messageId', 'messageId', { unique: true })
+      tripletsStore.createIndex('timestamp', 'timestamp', { unique: false })
+      tripletsStore.createIndex('type', 'type', { unique: false })
     }
 
     // Navigation data store

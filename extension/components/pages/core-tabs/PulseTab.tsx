@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
-import { elizaDataService } from '../../../lib/database/indexedDB-methods'
+import { tripletsDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import WeightModal from '../../modals/WeightModal'
@@ -182,7 +182,7 @@ const PulseTab = () => {
 
   // Helper function to update message themes in IndexedDB
   const updateMessageThemes = async (messageId: number, newThemes: PulseTheme[]) => {
-    const allMessages = await elizaDataService.getAllMessages()
+    const allMessages = await tripletsDataService.getAllMessages()
     const originalMessage = allMessages.find(msg => msg.id === messageId)
     if (!originalMessage || !originalMessage.content) return
 
@@ -210,7 +210,7 @@ const PulseTab = () => {
           }
         }
         
-        await sofiaDB.put(STORES.ELIZA_DATA, updatedMessage)
+        await sofiaDB.put(STORES.TRIPLETS_DATA, updatedMessage)
       }
     }
   }
@@ -220,7 +220,7 @@ const PulseTab = () => {
     const fetchPulseAnalyses = async () => {
       try {
         console.log("🫀 [PulseTab] Fetching pulse analyses from IndexedDB...")
-        const messages = await elizaDataService.getAllMessages()
+        const messages = await tripletsDataService.getAllMessages()
         
         console.log("🫀 [PulseTab] Total messages in IndexedDB:", messages.length)
         console.log("🫀 [PulseTab] Message types distribution:", messages.reduce((acc, m) => {
@@ -417,7 +417,7 @@ const PulseTab = () => {
       
       for (const sessionIndex of sortedIndices) {
         const analysisToDelete = pulseAnalyses[sessionIndex]
-        await elizaDataService.deleteMessageById(analysisToDelete.messageId)
+        await tripletsDataService.deleteMessageById(analysisToDelete.messageId)
       }
       
       // Remove from local state
@@ -460,7 +460,7 @@ const PulseTab = () => {
         
         if (filteredThemes.length === 0) {
           // Delete entire message if no themes left
-          await elizaDataService.deleteMessageById(analysis.messageId)
+          await tripletsDataService.deleteMessageById(analysis.messageId)
         } else {
           // Update message with filtered themes using helper function
           await updateMessageThemes(analysis.messageId, filteredThemes)

@@ -3,7 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import '../styles/Global.css'
 import '../styles/CorePage.css'
 
-// Lazy loading des composants d'onglets
+// Lazy load tab components
 const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
 const SignalsTab = lazy(() => import('./core-tabs/SignalsTab'))
 const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
@@ -13,14 +13,13 @@ const BookmarkTab = lazy(() => import('./core-tabs/BookmarkTab'))
 const CorePage = () => {
   const { navigateTo } = useRouter()
   const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse' | 'Bookmarks'>('Echoes')
-  const [expandedTriplet, setExpandedTriplet] = useState<{ msgIndex: number; tripletIndex: number } | null>(null)
   const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
 
   useEffect(() => {
     const targetTab = localStorage.getItem('targetTab')
     if (targetTab === 'Pulse') {
       setActiveGraphTab('Pulse')
-      localStorage.removeItem('targetTab') // Nettoyer après utilisation
+      localStorage.removeItem('targetTab') // Clean up after use
     }
   }, [])
 
@@ -40,12 +39,7 @@ const CorePage = () => {
 
       <div className="page-content">
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
-          {activeGraphTab === 'Echoes' && (
-            <EchoesTab 
-              expandedTriplet={expandedTriplet}
-              setExpandedTriplet={setExpandedTriplet}
-            />
-          )}
+          {activeGraphTab === 'Echoes' && <EchoesTab />}
           {activeGraphTab === 'Signals' && (
             <SignalsTab 
               expandedTriplet={expandedSignalTriplet}

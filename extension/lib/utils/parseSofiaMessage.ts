@@ -34,7 +34,7 @@ export function parseSofiaMessage(text: string, created_at: number): ParsedSofia
       rawObjectDescription
     }
   } catch (error) {
-    // Try to extract JSON structure manually from broken Eliza output
+    // Try to extract JSON structure manually from broken output
     try {
       // Extract triplets section
       const tripletMatch = text.match(/"triplets"\s*:\s*\[(.*?)\]/s)

@@ -3,7 +3,7 @@
  * Centralizes all badge-related operations
  */
 
-import { elizaDataService } from '../database/indexedDB-methods'
+import { tripletsDataService } from '../database/indexedDB-methods'
 import type { MessageResponse } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
 
@@ -45,10 +45,10 @@ export class BadgeService {
   public async countAvailableEchoes(): Promise<number> {
     try {
       // Load published triplet IDs to exclude them
-      const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
+      const publishedTripletIds = await tripletsDataService.loadPublishedTripletIds()
       
       // Get all parsed messages from IndexedDB
-      const messages = await elizaDataService.getMessagesByType('parsed_message')
+      const messages = await tripletsDataService.getMessagesByType('parsed_message')
       
       let availableCount = 0
       

@@ -5,7 +5,7 @@
  * Each wallet generates a unique, deterministic UUID for user identification.
  */
 
-// Global server ID (shared across all users) - must match ElizaOS default
+// Global server ID (shared across all users)
 const GLOBAL_SERVER_ID = "00000000-0000-0000-0000-000000000000"
 
 /**
@@ -126,7 +126,7 @@ export async function getUserAgentIds(
       ROOM_ID: "",                  // Will be set after REST API channel creation
       CHANNEL_ID: "",               // Will be set after REST API channel creation
       AGENT_ID: baseAgentId,        // Agent UUID (from constants.ts - UNCHANGED)
-      SERVER_ID: GLOBAL_SERVER_ID,  // Global - must match ElizaOS default server
+      SERVER_ID: GLOBAL_SERVER_ID,  // Global server ID
       AGENT_NAME: agentName         // For logging
     }
 

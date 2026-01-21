@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
-import { elizaDataService } from '../lib/database/indexedDB-methods'
+import { tripletsDataService } from '../lib/database/indexedDB-methods'
 import type { EchoTriplet, TripleOnChainResult, BatchTripleResult } from '../types/blockchain'
 
 /**
@@ -71,7 +71,7 @@ export const useEchoPublishing = ({
       )
 
       // Mark as published in local storage (to hide from EchoesTab)
-      await elizaDataService.addPublishedTripletId(tripletId)
+      await tripletsDataService.addPublishedTripletId(tripletId)
       
       onTripletsUpdate(echoTriplets.filter(t => t.id !== tripletId))
       
@@ -122,7 +122,7 @@ export const useEchoPublishing = ({
           const correspondingResult = result.results[i]
           
           if (correspondingResult) {
-            await elizaDataService.addPublishedTripletId(triplet.id)
+            await tripletsDataService.addPublishedTripletId(triplet.id)
           }
         }
         
