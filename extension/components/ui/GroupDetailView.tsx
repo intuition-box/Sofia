@@ -405,8 +405,17 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       const certification = intentionToCertification[intention]
       await onCertifyUrl(url, certification)
 
+      // Wait for GraphQL indexer to process the transaction before refetching
+      // The indexer typically needs 2-5 seconds to index new transactions
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
       // Refetch on-chain data to update stats
       await refetchOnChain()
+
+      // Also refresh the parent group to update merged data
+      if (onRefresh) {
+        await onRefresh()
+      }
     } catch (error) {
       console.error('Certification failed:', error)
     } finally {
@@ -539,7 +548,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             disabled={levelUpLoading}
           >
             {levelUpLoading ? (
-              <span className="loading-text">Generating predicate...</span>
+              <span className="loading-text">Generating signal...</span>
             ) : (
               <>
                 <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
@@ -555,7 +564,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               <span className="level-xp">
                 {onChainLoading ? '...' : (
                   xpToNextLevel > 0
-                    ? `${xpToNextLevel} XP to Level ${currentLevel + 1}`
+                    ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to Level ${currentLevel + 1}`
                     : 'Max level!'
                 )}
               </span>
@@ -662,31 +671,27 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
         {/* Level Up Button - only show when progress bar is NOT full (< 100%) */}
         {/* When progress >= 100%, the button is integrated into the progress section above */}
+        {/* Button is disabled if not enough certifications OR not enough XP */}
         {levelUpPreview && !levelUpResult?.success && progressPercent < 100 && (
           <button
             className={`level-up-btn ${levelUpPreview.canLevelUp ? 'can-afford' : 'cannot-afford'}`}
             onClick={handleLevelUp}
-            disabled={!levelUpPreview.canLevelUp || levelUpLoading}
+            disabled={true}
+            title="Complete more certifications to level up"
           >
-            {levelUpLoading ? (
-              <span className="loading-text">Generating predicate...</span>
-            ) : (
-              <>
-                <span className="btn-icon">⬆️</span>
-                <span className="btn-text">
-                  Level Up to {levelUpPreview.nextLevel}
-                </span>
-                <span className="btn-cost">
-                  {levelUpPreview.cost} XP
-                </span>
-              </>
-            )}
+            <span className="btn-icon">🔒</span>
+            <span className="btn-text">
+              Level Up to {levelUpPreview.nextLevel}
+            </span>
+            <span className="btn-cost">
+              {levelUpPreview.cost} XP
+            </span>
           </button>
         )}
 
-        {levelUpPreview && !levelUpPreview.canLevelUp && progressPercent < 100 && (
+        {progressPercent < 100 && (
           <div className="xp-needed">
-            Need {levelUpPreview.cost - levelUpPreview.availableXP} more XP
+            Need {xpToNextLevel} more certification{xpToNextLevel > 1 ? 's' : ''} to unlock
           </div>
         )}
       </div>

@@ -124,7 +124,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
   const [sortBy, setSortBy] = useState<SortOption>('level') // Default: sort by level
 
   // Fetch on-chain intention groups
-  const { groups: onChainGroups, loading: onChainLoading } = useOnChainIntentionGroups()
+  const { groups: onChainGroups, loading: onChainLoading, refetch: refetchOnChain } = useOnChainIntentionGroups()
 
   /**
    * Load all groups from background service (local IndexedDB)
@@ -290,7 +290,10 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
    */
   const refreshGroup = useCallback(async (groupId: string) => {
     try {
-      // For virtual (on-chain only) groups, just reload
+      // Always refresh on-chain data to get latest certifications
+      await refetchOnChain()
+
+      // For virtual (on-chain only) groups, just reload local groups too
       if (groupId.startsWith('onchain-')) {
         await loadGroups()
         return
@@ -317,7 +320,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
     } catch (err) {
       console.error('❌ [useIntentionGroups] Error refreshing group:', err)
     }
-  }, [selectedGroup?.id, loadGroups])
+  }, [selectedGroup?.id, loadGroups, refetchOnChain])
 
   /**
    * Certify a URL in a group

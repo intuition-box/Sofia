@@ -147,7 +147,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
         <span className="progress-label">
           {onChainLoading ? '...' : (
             xpToNextLevel > 0
-              ? `${xpToNextLevel} XP to LVL ${confirmedLevel + 1}`
+              ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${confirmedLevel + 1}`
               : 'Max level!'
           )}
         </span>
