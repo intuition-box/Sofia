@@ -21,6 +21,7 @@ export interface UsePageBlockchainDataResult {
   loading: boolean
   error: string | null
   currentUrl: string | null
+  pageTitle: string | null
   fetchDataForCurrentPage: () => Promise<void>
   pauseRefresh: () => void
   resumeRefresh: () => void

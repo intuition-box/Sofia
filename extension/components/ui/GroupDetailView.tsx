@@ -15,6 +15,7 @@ import { useIntentionCertify } from '../../hooks/useIntentionCertify'
 import { useGroupOnChainCertifications, type UrlCertificationStatus } from '../../hooks/useGroupOnChainCertifications'
 import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
 import { useGroupAmplify } from '../../hooks/useGroupAmplify'
+import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
 import { IntentionBubbleSelector } from './IntentionBubbleSelector'
 
@@ -254,12 +255,14 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const [pendingCertification, setPendingCertification] = useState<{
     url: string
     intention: IntentionPurpose
+    oauthPredicate?: string  // For OAuth URLs, use this predicate directly instead of intention
   } | null>(null)
   const [intentionRewardClaimed, setIntentionRewardClaimed] = useState(false)
 
   // On-chain certification hook
   const {
     certifyWithIntention,
+    certifyWithCustomPredicate,
     reset: resetIntention,
     loading: intentionLoading,
     success: intentionSuccess,
@@ -382,10 +385,16 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       },
       description: `I ${urlRecord.oauthPredicate} ${urlRecord.title}`,
       url: urlRecord.url,
-      intention: 'for_fun' as IntentionPurpose // Default, will be overridden by predicate
+      intention: 'for_fun' as IntentionPurpose // For display only
     }
 
-    setPendingCertification({ url: urlRecord.url, intention: 'for_fun' })
+    // Store OAuth predicate to use the correct predicate on-chain
+    // Note: oauthObjectLabel not needed - certifyWithCustomPredicate normalizes the URL
+    setPendingCertification({
+      url: urlRecord.url,
+      intention: 'for_fun', // Fallback only
+      oauthPredicate: urlRecord.oauthPredicate
+    })
     setModalTriplets([triplet])
     setShowWeightModal(true)
   }
@@ -394,20 +403,30 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const handleModalSubmit = async (customWeights?: (bigint | null)[]) => {
     if (!pendingCertification || !customWeights || customWeights.length === 0) return
 
-    const { url, intention } = pendingCertification
+    const { url, intention, oauthPredicate } = pendingCertification
     setProcessingUrls(prev => new Set(prev).add(url))
 
     try {
       const weight = customWeights[0] || undefined
-      await certifyWithIntention(url, intention, weight as bigint | undefined)
+
+      // Use OAuth predicate if available, otherwise use intention predicate
+      // certifyWithCustomPredicate normalizes the URL internally for consistent matching
+      if (oauthPredicate) {
+        await certifyWithCustomPredicate(url, oauthPredicate, undefined, weight as bigint | undefined)
+      } else {
+        await certifyWithIntention(url, intention, weight as bigint | undefined)
+      }
 
       // Also update local database
-      const certification = intentionToCertification[intention]
-      await onCertifyUrl(url, certification)
+      const certification = oauthPredicate || intentionToCertification[intention]
+      await onCertifyUrl(url, certification as CertificationType)
 
       // Wait for GraphQL indexer to process the transaction before refetching
       // The indexer typically needs 2-5 seconds to index new transactions
       await new Promise(resolve => setTimeout(resolve, 3000))
+
+      // Clear GraphQL cache to force fresh data
+      intuitionGraphqlClient.clearCache()
 
       // Refetch on-chain data to update stats
       await refetchOnChain()
@@ -597,7 +616,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           Uncertified ({uncertifiedCount})
         </button>
         {CERTIFICATIONS.map(cert => {
-          const count = group.certificationBreakdown[cert.type]
+          // Count from on-chain data only (not local certificationBreakdown)
+          const count = onChainStats?.certifiedUrls
+            ? Array.from(onChainStats.certifiedUrls.values()).filter(
+                status => status.allCertificationLabels?.includes(cert.type)
+              ).length
+            : 0
           if (count === 0) return null
           return (
             <button

@@ -14,21 +14,22 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
+  const [pageTitle, setPageTitle] = useState<string | null>(null)
   const { walletAddress: account } = useWalletFromStorage()
 
   // Pause flag to prevent refreshes during transactions
   const pauseRefreshRef = useRef(false)
 
-  // Get current page URL - fallback to direct access if content script fails
-  const getCurrentPageUrl = useCallback(async (): Promise<string | null> => {
+  // Get current page URL and title - fallback to direct access if content script fails
+  const getCurrentPageUrl = useCallback(async (): Promise<{ url: string | null, title: string | null }> => {
     try {
       console.log('🔍 [usePageBlockchainData] Attempting to get clean URL from content script...')
       const response = await messageBus.getCleanUrl()
       console.log('🔍 [usePageBlockchainData] Response from content script:', response)
-      
+
       if (response?.success && response.url) {
-        console.log('🔍 [usePageBlockchainData] Got clean URL:', response.url)
-        return response.url
+        console.log('🔍 [usePageBlockchainData] Got clean URL:', response.url, 'title:', response.title)
+        return { url: response.url, title: response.title || null }
       }
       
       // Fallback: get URL from active tab
@@ -38,22 +39,22 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         return new Promise((resolve) => {
           chrome.tabs.get(tabResponse.tabId, (tab) => {
             if (tab?.url) {
-              console.log('🔍 [usePageBlockchainData] Got URL from tab:', tab.url)
+              console.log('🔍 [usePageBlockchainData] Got URL from tab:', tab.url, 'title:', tab.title)
               // Simple URL cleaning
               const cleanUrl = tab.url.split('?')[0].split('#')[0]
-              resolve(cleanUrl)
+              resolve({ url: cleanUrl, title: tab.title || null })
             } else {
-              resolve(null)
+              resolve({ url: null, title: null })
             }
           })
         })
       }
-      
+
       console.log('🔍 [usePageBlockchainData] All methods failed')
-      return null
+      return { url: null, title: null }
     } catch (error) {
       console.error('🔍 [usePageBlockchainData] Failed to get current page URL:', error)
-      return null
+      return { url: null, title: null }
     }
   }, [])
 
@@ -372,16 +373,18 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     setError(null)
 
     try {
-      // Get current page URL
-      const url = await getCurrentPageUrl()
+      // Get current page URL and title
+      const { url, title } = await getCurrentPageUrl()
       if (!url) {
         setError('Unable to get current page URL')
         setCurrentUrl(null)
+        setPageTitle(null)
         setTriplets([])
         return
       }
 
       setCurrentUrl(url)
+      setPageTitle(title)
 
       // Fetch blockchain data for this URL
       const blockchainTriplets = await fetchPageBlockchainData(url)
@@ -474,6 +477,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     loading,
     error,
     currentUrl,
+    pageTitle,
     fetchDataForCurrentPage,
     pauseRefresh,
     resumeRefresh
