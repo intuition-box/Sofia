@@ -490,7 +490,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         </button>
         <div className="group-detail-title-section">
           <h2 className="group-detail-domain">{group.domain}</h2>
-          <span className="group-detail-level">Level {currentLevel}</span>
+          <span className={`group-detail-level level-${Math.min(currentLevel, 10)}`}>Level {currentLevel}</span>
         </div>
       </div>
 

@@ -356,13 +356,23 @@
 }
 
 .level-badge {
-  background: rgba(199, 134, 108, 0.3);
-  color: #C7866C;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 10px;
   font-weight: 600;
 }
+
+/* Level colors by rank */
+.level-badge.level-1 { color: #8B7355; background: rgba(139, 115, 85, 0.3); }   /* Wood */
+.level-badge.level-2 { color: #CD7F32; background: rgba(205, 127, 50, 0.3); }   /* Bronze */
+.level-badge.level-3 { color: #C0C0C0; background: rgba(192, 192, 192, 0.3); }  /* Silver */
+.level-badge.level-4 { color: #FFD700; background: rgba(255, 215, 0, 0.3); }    /* Gold */
+.level-badge.level-5 { color: #E5E4E2; background: rgba(229, 228, 226, 0.3); }  /* Platinum */
+.level-badge.level-6 { color: #B9F2FF; background: rgba(185, 242, 255, 0.3); }  /* Diamond */
+.level-badge.level-7 { color: #9B30FF; background: rgba(155, 48, 255, 0.3); }   /* Master */
+.level-badge.level-8 { color: #FF4500; background: rgba(255, 69, 0, 0.3); }     /* Grand Master */
+.level-badge.level-9 { color: #FF69B4; background: rgba(255, 105, 180, 0.3); }  /* Legendary */
+.level-badge.level-10 { color: #00CED1; background: rgba(0, 206, 209, 0.3); }   /* Mythic */
 
 .group-bento-stats {
   display: flex;
@@ -472,13 +482,23 @@
 }
 
 .group-detail-level {
-  background: rgba(199, 134, 108, 0.3);
-  color: #C7866C;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
 }
+
+/* Level colors for detail view */
+.group-detail-level.level-1 { color: #8B7355; background: rgba(139, 115, 85, 0.3); }
+.group-detail-level.level-2 { color: #CD7F32; background: rgba(205, 127, 50, 0.3); }
+.group-detail-level.level-3 { color: #C0C0C0; background: rgba(192, 192, 192, 0.3); }
+.group-detail-level.level-4 { color: #FFD700; background: rgba(255, 215, 0, 0.3); }
+.group-detail-level.level-5 { color: #E5E4E2; background: rgba(229, 228, 226, 0.3); }
+.group-detail-level.level-6 { color: #B9F2FF; background: rgba(185, 242, 255, 0.3); }
+.group-detail-level.level-7 { color: #9B30FF; background: rgba(155, 48, 255, 0.3); }
+.group-detail-level.level-8 { color: #FF4500; background: rgba(255, 69, 0, 0.3); }
+.group-detail-level.level-9 { color: #FF69B4; background: rgba(255, 105, 180, 0.3); }
+.group-detail-level.level-10 { color: #00CED1; background: rgba(0, 206, 209, 0.3); }
 
 .group-detail-stats {
   display: flex;

@@ -113,7 +113,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
               ×
             </button>
           )}
-          <span className="level-badge">LVL {confirmedLevel}</span>
+          <span className={`level-badge level-${Math.min(confirmedLevel, 10)}`}>LVL {confirmedLevel}</span>
         </div>
       </div>
 
