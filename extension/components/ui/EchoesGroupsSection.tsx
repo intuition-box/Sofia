@@ -76,7 +76,6 @@ const EchoesGroupsSection = () => {
   return (
     <div className="groups-section">
       <div className="groups-header">
-        <h3 className="groups-title">Your browsing groups</h3>
         <span className="groups-count">{groups.length} domains</span>
       </div>
 
