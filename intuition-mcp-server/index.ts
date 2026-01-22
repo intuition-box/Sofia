@@ -20,6 +20,7 @@ import { searchListsOperation } from './operations/search-lists.js';
 import { getFollowingOperation } from './operations/get-following.js';
 import { getFollowersOperation } from './operations/get-followers.js';
 import { searchAccountIdsOperation } from './operations/search-account-ids.js';
+import { getAccountActivityOperation } from './operations/get-account-activity.js';
 
 // Configure global error handlers with detailed logging
 process.on('uncaughtException', (error) => {
@@ -71,6 +72,11 @@ const TOOLS = [
     name: 'search_account_ids',
     description: searchAccountIdsOperation.description,
     inputSchema: zodToJsonSchema(searchAccountIdsOperation.parameters),
+  },
+  {
+    name: 'get_account_activity',
+    description: getAccountActivityOperation.description,
+    inputSchema: zodToJsonSchema(getAccountActivityOperation.parameters),
   },
 ] as const;
 
@@ -189,6 +195,7 @@ const server = new Server(SERVER_CONFIG, {
       get_following: true,
       get_followers: true,
       search_account_ids: true,
+      get_account_activity: true,
     },
   },
 });
@@ -257,6 +264,13 @@ server.setRequestHandler(
             request.params.arguments
           );
           result = await searchAccountIdsOperation.execute(args);
+          break;
+        }
+        case 'get_account_activity': {
+          const args = getAccountActivityOperation.parameters.parse(
+            request.params.arguments
+          );
+          result = await getAccountActivityOperation.execute(args);
           break;
         }
         default:
