@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
-import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
+import { 
+  useGetTrustCircleAccountsQuery,
+  useGetSofiaTrustedActivityQuery
+} from '@0xsofia/graphql'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
+import { SOFIA_PROXY_ADDRESS } from '../../../lib/config/chainConfig'
 import { getAddress } from 'viem'
 import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
 import StakeModal from '../../modals/StakeModal'
@@ -9,12 +13,6 @@ import Avatar from '../../ui/Avatar'
 import '../../styles/CoreComponents.css'
 import '../../styles/PageBlockchainCard.css'
 import '../../styles/FeedTab.css'
-
-interface TrustCircleAccount {
-  termId: string
-  label: string
-  wallet: string
-}
 
 interface FeedEvent {
   id: string
@@ -26,418 +24,205 @@ interface FeedEvent {
   description: string
   details: string
   portalLink?: string
-  amount?: string // Amount in TRUST tokens
-  amountLabel?: string // e.g., "shares" or "assets"
+  amount?: string
+  amountLabel?: string
 }
 
 const FeedTab = () => {
   const { walletAddress: address } = useWalletFromStorage()
   const [feedItems, setFeedItems] = useState<FeedEvent[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<FeedEvent | null>(null)
   const [selectedVaultId, setSelectedVaultId] = useState<string>('')
   const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [shouldRefreshOnClose, setShouldRefreshOnClose] = useState(false)
   const [declinedEvents, setDeclinedEvents] = useState<string[]>([])
-  const { addWeight, removeWeight } = useWeightOnChain()
+  const [trustedWallets, setTrustedWallets] = useState<string[]>([])
+  const [walletToLabel, setWalletToLabel] = useState<Map<string, string>>(new Map())
+  const { addWeight } = useWeightOnChain()
 
+  const checksumAddress = address ? getAddress(address) : ''
 
+  console.log('🔍 FeedTab - Address:', address, 'Checksum:', checksumAddress)
+  console.log('🔍 FeedTab - SOFIA_PROXY_ADDRESS:', SOFIA_PROXY_ADDRESS)
+
+  // Step 1: Get Trust Circle accounts
+  const { data: trustCircleData, isLoading: trustCircleLoading, error: trustCircleError } = useGetTrustCircleAccountsQuery(
+    {
+      subjectId: SUBJECT_IDS.I,
+      predicateId: PREDICATE_IDS.TRUSTS,
+      walletAddress: checksumAddress
+    },
+    {
+      enabled: !!checksumAddress,
+      refetchOnWindowFocus: false
+    }
+  )
+
+  console.log('📊 Trust Circle Query - Loading:', trustCircleLoading, 'Error:', trustCircleError)
+  console.log('📊 Trust Circle Data:', trustCircleData)
+
+  // Extract trusted wallets from Trust Circle data
   useEffect(() => {
-    if (!address) {
-      setLoading(false)
+    if (!trustCircleData?.triples) {
+      console.log('⚠️ No trust circle data available')
       return
     }
 
-    loadTrustCircleFeed()
-  }, [address])
+    console.log('📊 Processing Trust Circle - Total triples:', trustCircleData.triples.length)
 
-  const loadTrustCircleFeed = async () => {
-    try {
-      setLoading(true)
-      setError(null)
+    // Filter client-side: only keep triples where user has positions (curve_id=2)
+    const triplesWithPositions = trustCircleData.triples.filter(triple => {
+      const vault = triple.term?.vaults?.[0]
+      const hasPosition = vault && vault.positions && vault.positions.length > 0
+      console.log('  Triple:', triple.object?.label, 'Has position:', hasPosition)
+      return hasPosition
+    })
 
-      if (!address) {
-        setError('No account connected')
-        return
-      }
+    console.log('📊 Triples with positions:', triplesWithPositions.length)
 
-      const checksumAddress = getAddress(address)
-
-      // Step 1: Get all accounts in my Trust Circle
-      const trustCircleQuery = `
-        query GetTrustCircle($where: triples_bool_exp, $walletAddress: String!) {
-          triples(where: $where) {
-            object {
-              label
-              term_id
-              type
-            }
-            term {
-              vaults(where: {curve_id: {_eq: "1"}}, order_by: {curve_id: asc}) {
-                positions(where: {account_id: {_eq: $walletAddress}}) {
-                  account_id
-                  shares
-                }
-              }
-            }
-          }
-        }
-      `
-
-      const trustCircleWhere = {
-        "_and": [
-          {
-            "subject_id": {
-              "_eq": SUBJECT_IDS.I
-            }
-          },
-          {
-            "predicate_id": {
-              "_eq": PREDICATE_IDS.TRUSTS
-            }
-          },
-          {
-            "object": {
-              "type": {
-                "_eq": "Account"
-              }
-            }
-          }
-        ]
-      }
-
-      const trustCircleResponse = await intuitionGraphqlClient.request(trustCircleQuery, {
-        where: trustCircleWhere,
-        walletAddress: checksumAddress
-      }) as { triples: Array<{ object: any; term: { vaults: Array<{ positions: Array<any> }> } }> }
-
-      // Filter client-side: only keep triples where user has positions
-      const triplesWithPositions = trustCircleResponse.triples?.filter(triple => {
-        const vault = triple.term?.vaults?.[0]
-        return vault && vault.positions && vault.positions.length > 0
-      }) || []
-
-      if (triplesWithPositions.length === 0) {
-        setFeedItems([])
-        setLoading(false)
-        return
-      }
-
-      // Get wallet addresses for these Account atoms via separate query
-      const accountTermIds = triplesWithPositions.map(t => t.object.term_id)
-
-      const atomsQuery = `
-        query GetAccountAtoms($termIds: [String!]!) {
-          atoms(where: { term_id: { _in: $termIds } }) {
-            term_id
-            label
-            data
-          }
-        }
-      `
-
-      const atomsResponse = await intuitionGraphqlClient.request(atomsQuery, {
-        termIds: accountTermIds
-      }) as { atoms: Array<{ term_id: string; label: string; data: string }> }
-
-      // Extract wallet addresses from Account atoms
-      const trustCircleAccounts: TrustCircleAccount[] = atomsResponse.atoms?.map(atom => ({
-        termId: atom.term_id,
-        label: atom.label,
-        wallet: atom.data || atom.label // data contains the wallet address
-      })) || []
-
-      console.log('📊 Trust Circle accounts:', trustCircleAccounts)
-
-      if (trustCircleAccounts.length === 0) {
-        setFeedItems([])
-        setLoading(false)
-        return
-      }
-
-      // Step 2: Get all activity events from these accounts using the events table
-      // Include both lowercase and checksum versions
-      const walletAddressesLower = trustCircleAccounts
-        .map(acc => acc.wallet.toLowerCase())
-        .filter(w => w.startsWith('0x'))
-
-      const walletAddressesChecksum = trustCircleAccounts
-        .map(acc => {
-          try {
-            return getAddress(acc.wallet)
-          } catch {
-            return acc.wallet
-          }
-        })
-        .filter(w => w.startsWith('0x'))
-
-      // Combine both to cover all cases
-      const walletAddresses = [...new Set([...walletAddressesLower, ...walletAddressesChecksum])]
-
-      console.log('📊 Wallet addresses for feed query (combined):', walletAddresses)
-
-      if (walletAddresses.length === 0) {
-        console.log('⚠️ No valid wallet addresses found')
-        setFeedItems([])
-        setLoading(false)
-        return
-      }
-
-      // GraphQL query to fetch all events with full deposit/redemption data
-      // Filters by Trust Circle users (creator for atoms/triples, sender for deposits/redemptions)
-      const feedQuery = `
-        query GetEvents($limit: Int, $offset: Int, $orderBy: [events_order_by!], $where: events_bool_exp) {
-          events(limit: $limit, offset: $offset, order_by: $orderBy, where: $where) {
-            id
-            created_at
-            type
-            transaction_hash
-            atom_id
-            triple_id
-            deposit_id
-            redemption_id
-            atom {
-              term_id
-              data
-              image
-              label
-              type
-              wallet_id
-              creator {
-                id
-                label
-                image
-              }
-            }
-            triple {
-              term_id
-              creator {
-                label
-                image
-                id
-                atom_id
-                type
-              }
-              subject {
-                term_id
-                data
-                image
-                label
-                type
-              }
-              predicate {
-                term_id
-                data
-                image
-                label
-                type
-              }
-              object {
-                term_id
-                data
-                image
-                label
-                type
-              }
-            }
-            deposit {
-              curve_id
-              sender_id
-              sender {
-                id
-                atom_id
-                label
-                image
-              }
-              shares
-              assets_after_fees
-            }
-            redemption {
-              curve_id
-              sender_id
-              sender {
-                id
-                atom_id
-                label
-                image
-              }
-              assets
-              shares
-            }
-          }
-        }
-      `
-
-      const whereClause = {
-        "_and": [
-          {
-            "type": {
-              "_neq": "FeesTransfered"
-            }
-          },
-          {
-            "_not": {
-              "_and": [
-                {
-                  "type": {
-                    "_eq": "Deposited"
-                  }
-                },
-                {
-                  "deposit": {
-                    "assets_after_fees": {
-                      "_eq": "0"
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "_or": [
-              { "atom": { "creator": { "id": { "_in": walletAddresses } } } },
-              { "triple": { "creator": { "id": { "_in": walletAddresses } } } },
-              { "deposit": { "sender_id": { "_in": walletAddresses } } },
-              { "redemption": { "sender_id": { "_in": walletAddresses } } }
-            ]
-          }
-        ]
-      }
-
-      // Use portal API endpoint for events query (supports deposit/redemption)
-      const portalEndpoint = "https://portal.intuition.systems/api/graphql"
-      const feedResponse = await fetch(portalEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: feedQuery,
-          variables: {
-            limit: 500,
-            offset: 0,
-            orderBy: [{ "created_at": "desc" }],
-            where: whereClause
-          }
-        }),
-      }).then(res => res.json()).then(json => {
-        if (json.errors) {
-          throw new Error(`GraphQL error: ${json.errors[0].message}`)
-        }
-        return json.data
-      }) as { events: Array<any> }
-
-      console.log('📊 Feed response:', feedResponse)
-      console.log('📊 Events count:', feedResponse.events?.length || 0)
-      console.log('📊 Events:', feedResponse.events)
-
-      // Create wallet to label mapping
-      const walletToLabel = new Map(
-        trustCircleAccounts.map(acc => [acc.wallet.toLowerCase(), acc.label])
-      )
-
-      const feedEvents: FeedEvent[] = []
-
-      for (const event of feedResponse.events || []) {
-        console.log('📊 Processing event:', event.type, event)
-        let accountLabel = ''
-        let accountWallet = ''
-        let accountImage = ''
-        let description = ''
-        let details = ''
-        let portalLink = ''
-
-        // Process AtomCreated and TripleCreated events
-        if (event.type === 'AtomCreated' && event.atom) {
-          accountWallet = event.atom.creator.id
-          accountLabel = walletToLabel.get(event.atom.creator.id.toLowerCase()) || event.atom.creator.label
-          accountImage = event.atom.creator.image
-          description = 'created identity'
-          details = event.atom.label
-          portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
-        } else if (event.type === 'TripleCreated' && event.triple) {
-          accountWallet = event.triple.creator.id
-          accountLabel = walletToLabel.get(event.triple.creator.id.toLowerCase()) || event.triple.creator.label
-          accountImage = event.triple.creator.image
-          description = 'created claim'
-          details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
-          portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
-        } else if (event.type === 'Deposited' && event.deposit) {
-          accountWallet = event.deposit.sender_id
-          accountLabel = walletToLabel.get(event.deposit.sender_id.toLowerCase()) || event.deposit.sender.label
-          accountImage = event.deposit.sender.image
-          description = 'deposited into'
-
-          // Determine what was deposited into (atom or triple)
-          if (event.atom) {
-            details = event.atom.label
-            portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
-          } else if (event.triple) {
-            details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
-            portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
-          }
-        } else if (event.type === 'Redeemed' && event.redemption) {
-          accountWallet = event.redemption.sender_id
-          accountLabel = walletToLabel.get(event.redemption.sender_id.toLowerCase()) || event.redemption.sender.label
-          accountImage = event.redemption.sender.image
-          description = 'redeemed from'
-
-          // Determine what was redeemed from (atom or triple)
-          if (event.atom) {
-            details = event.atom.label
-            portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
-          } else if (event.triple) {
-            details = `${event.triple.subject.label} ${event.triple.predicate.label} ${event.triple.object.label}`
-            portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
-          }
-        }
-
-        if (accountLabel && accountWallet) {
-          // Calculate amount for deposit/redemption events
-          let amount: string | undefined
-          let amountLabel: string | undefined
-
-          if (event.type === 'Deposited' && event.deposit) {
-            const assets = BigInt(event.deposit.assets_after_fees)
-            amount = (Number(assets) / 1e18).toFixed(4)
-            amountLabel = 'TRUST'
-          } else if (event.type === 'Redeemed' && event.redemption) {
-            const assets = BigInt(event.redemption.assets)
-            amount = (Number(assets) / 1e18).toFixed(4)
-            amountLabel = 'TRUST'
-          }
-
-          console.log('✅ Adding feed event:', { accountLabel, accountWallet, accountImage, description, details, amount })
-          feedEvents.push({
-            id: event.id,
-            type: event.type,
-            created_at: event.created_at,
-            accountLabel,
-            accountWallet,
-            accountImage,
-            description,
-            details,
-            portalLink,
-            amount,
-            amountLabel
-          })
-        } else {
-          console.log('⚠️ Skipping event - no accountLabel:', event.type)
-        }
-      }
-
-      console.log('📊 Total feed events:', feedEvents.length)
-      setFeedItems(feedEvents)
-
-    } catch (error) {
-      console.error('❌ Failed to load Trust Circle feed:', error)
-      setError(error instanceof Error ? error.message : 'Unknown error')
-    } finally {
-      setLoading(false)
+    if (triplesWithPositions.length === 0) {
+      console.log('⚠️ No triples with positions found')
+      setTrustedWallets([])
+      return
     }
-  }
+
+    // Extract wallet addresses from object.accounts
+    const wallets: string[] = []
+    const labelMap = new Map<string, string>()
+
+    for (const triple of triplesWithPositions) {
+      const accounts = triple.object?.accounts || []
+      const label = triple.object?.label || ''
+
+      console.log('  Object:', label, 'Accounts:', accounts.length)
+
+      for (const account of accounts) {
+        if (account?.id) {
+          try {
+            const checksumWallet = getAddress(account.id)
+            wallets.push(checksumWallet)
+            wallets.push(checksumWallet.toLowerCase())
+            labelMap.set(checksumWallet.toLowerCase(), account.label || label || checksumWallet)
+            console.log('    ✅ Added wallet:', checksumWallet, 'Label:', account.label || label)
+          } catch {
+            console.log('    ❌ Invalid wallet address:', account.id)
+            continue
+          }
+        }
+      }
+    }
+
+    const uniqueWallets = [...new Set(wallets)]
+    console.log('📊 Total unique trusted wallets:', uniqueWallets.length)
+    console.log('📊 Trusted wallets:', uniqueWallets.slice(0, 5), '...')
+
+    setTrustedWallets(uniqueWallets)
+    setWalletToLabel(labelMap)
+  }, [trustCircleData])
+
+  // Step 2: Get events from trusted wallets
+  const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useGetSofiaTrustedActivityQuery(
+    {
+      trustedWallets: trustedWallets,
+      proxy: SOFIA_PROXY_ADDRESS,
+      limit: 500,
+      offset: 0
+    },
+    {
+      enabled: trustedWallets.length > 0,
+      refetchOnWindowFocus: false
+    }
+  )
+
+  console.log('📊 Events Query - Enabled:', trustedWallets.length > 0, 'Loading:', eventsLoading, 'Error:', eventsError)
+  console.log('📊 Events Data:', eventsData?.events?.length || 0, 'events')
+
+  // Process events into feed items
+  useEffect(() => {
+    if (!eventsData?.events) {
+      console.log('⚠️ No events data available')
+      return
+    }
+
+    console.log('📊 Processing', eventsData.events.length, 'events')
+
+    // Events are already filtered by the SofiaTrustedActivity query
+    // No need for additional filtering
+    const feedEvents: FeedEvent[] = []
+
+    for (const event of eventsData.events) {
+      let accountLabel = ''
+      let accountWallet = ''
+      let accountImage = ''
+      let description = ''
+      let details = ''
+      let portalLink = ''
+      let amount = ''
+      let amountLabel = ''
+
+      if (event.type === 'Deposited' && event.deposit) {
+        // Sender is proxy, show the receiver (the actual user from Trust Circle)
+        const receiver = event.deposit.receiver
+        accountLabel = receiver?.label || walletToLabel.get(receiver?.id?.toLowerCase() || '') || 'User'
+        accountWallet = receiver?.id || ''
+        accountImage = receiver?.image || ''
+        description = 'deposited into'
+        
+        if (event.atom) {
+          details = event.atom.label || 'Unknown'
+          portalLink = `https://portal.intuition.systems/app/explore/atom/${event.atom.term_id}`
+        } else if (event.triple) {
+          details = `${event.triple.subject?.label || '?'} • ${event.triple.predicate?.label || '?'} • ${event.triple.object?.label || '?'}`
+          portalLink = `https://portal.intuition.systems/app/explore/triple/${event.triple.term_id}`
+        }
+        
+        amount = (parseFloat(event.deposit.assets_after_fees || '0') / 1e18).toFixed(4)
+        amountLabel = 'TRUST'
+      } 
+      else if (event.type === 'Redeemed' && event.redemption) {
+        // Sender is the trusted user who redeemed
+        const sender = event.redemption.sender
+        accountLabel = sender?.label || walletToLabel.get(sender?.id?.toLowerCase() || '') || 'User'
+        accountWallet = sender?.id || ''
+        accountImage = sender?.image || ''
+        description = 'redeemed from'
+        
+        if (event.atom) {
+          details = event.atom.label || 'Unknown'
+          portalLink = `https://portal.intuition.systems/app/explore/atom/${event.atom.term_id}`
+        } else if (event.triple) {
+          details = `${event.triple.subject?.label || '?'} • ${event.triple.predicate?.label || '?'} • ${event.triple.object?.label || '?'}`
+          portalLink = `https://portal.intuition.systems/app/explore/triple/${event.triple.term_id}`
+        }
+        
+        amount = (parseFloat(event.redemption.assets || '0') / 1e18).toFixed(4)
+        amountLabel = 'TRUST'
+      }
+
+      if (accountLabel && accountWallet) {
+        feedEvents.push({
+          id: event.id,
+          type: event.type,
+          created_at: event.created_at,
+          accountLabel,
+          accountWallet,
+          accountImage,
+          description,
+          details,
+          portalLink,
+          amount,
+          amountLabel
+        })
+      }
+    }
+
+    console.log('📊 Total feed events:', feedEvents.length)
+    setFeedItems(feedEvents)
+  }, [eventsData, walletToLabel])
+
+  const loading = trustCircleLoading || eventsLoading
+  const error = (trustCircleError ? String(trustCircleError) : null) || (eventsError ? String(eventsError) : null)
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp)
@@ -477,7 +262,6 @@ const FeedTab = () => {
     e.preventDefault()
     e.stopPropagation()
 
-    // Add this event to the declined list
     setDeclinedEvents((prev) => [...(prev || []), itemId])
   }
 
@@ -486,67 +270,8 @@ const FeedTab = () => {
     setSelectedEvent(null)
     setSelectedVaultId('')
     setIsProcessing(false)
-
-    // Refresh feed if transaction was successful
-    if (shouldRefreshOnClose) {
-      setShouldRefreshOnClose(false)
-      loadTrustCircleFeed()
-    }
+    setShouldRefreshOnClose(false)
   }
-
-  const handleSubmit = async (newUpvotes: number) => {
-    if (!selectedEvent) return
-
-    // Determine the vault ID (term_id) to deposit on
-    let vaultId: string | null = null
-
-    // For AtomCreated or deposits/redemptions on atoms, use atom term_id
-    if (selectedEvent.type === 'AtomCreated' || (selectedEvent.portalLink?.includes('/atom/'))) {
-      const match = selectedEvent.portalLink?.match(/\/atom\/(.+)$/)
-      vaultId = match ? match[1] : null
-    }
-    // For TripleCreated or deposits/redemptions on triples, use triple term_id
-    else if (selectedEvent.type === 'TripleCreated' || (selectedEvent.portalLink?.includes('/triple/'))) {
-      const match = selectedEvent.portalLink?.match(/\/triple\/(.+)$/)
-      vaultId = match ? match[1] : null
-    }
-
-    if (!vaultId) {
-      console.error('No vault ID found for this event')
-      return
-    }
-
-    try {
-      setIsProcessing(true)
-
-      // Convert upvotes to Wei: 1 upvote = 0.001 ETH = 10^15 Wei
-      const depositAmount = BigInt(Math.floor(newUpvotes)) * BigInt(10 ** 15)
-
-      console.log('💰 Deposit calculation:', {
-        upvotes: newUpvotes,
-        depositAmount: depositAmount.toString(),
-        depositInETH: (Number(depositAmount) / 10**18).toFixed(4)
-      })
-
-      const result = await addWeight(vaultId, depositAmount)
-
-      if (result.success) {
-        console.log('✅ Successfully joined:', result.txHash)
-        handleCloseModal()
-        // Refresh the feed after successful deposit
-        await loadTrustCircleFeed()
-      } else {
-        console.error('❌ Failed to join:', result.error)
-        throw new Error(result.error)
-      }
-    } catch (error) {
-      console.error('❌ Error joining:', error)
-      throw error
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
 
   if (!address) {
     return (
@@ -575,7 +300,7 @@ const FeedTab = () => {
         <div className="error-state">
           <h3>Error Loading Feed</h3>
           <p>{error}</p>
-          <button onClick={loadTrustCircleFeed} className="retry-button">
+          <button onClick={() => window.location.reload()} className="retry-button">
             Try Again
           </button>
         </div>

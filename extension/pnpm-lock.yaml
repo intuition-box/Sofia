@@ -11,6 +11,9 @@ importers:
       '@0xintuition/1ui':
         specifier: ^0.4.1
         version: 0.4.1(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@0xintuition/graphql':
+        specifier: 1.0.0-alpha.0
+        version: 1.0.0-alpha.0(react@18.2.0)
       '@0xintuition/protocol':
         specifier: 1.0.0-alpha.3
         version: 1.0.0-alpha.3(viem@2.41.2(bufferutil@4.0.9)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@4.1.13))
@@ -251,6 +254,9 @@ packages:
 
   '@0xintuition/graphql@0.6.0':
     resolution: {integrity: sha512-2KfAINWWdrfcggVlcM1huZve8iYVgPNuztRgKbWEW0FR88phaaBEDD0UBHkj10OD3iDG1DbIi0G1Hy/Kb9wVyg==}
+
+  '@0xintuition/graphql@1.0.0-alpha.0':
+    resolution: {integrity: sha512-3Ov7dPOsMf3tk96Gk3ILCf996SfjqCSDEFZMuHN+vsDO1k0YcfURHtXcyXTh7DpfSQFAule0esfQv9olWuK8pw==}
 
   '@0xintuition/protocol@1.0.0-alpha.3':
     resolution: {integrity: sha512-vNyTPPsytjOFLFO8v/zqftK3Lla5ut4ZLLq49XePUWtUEwey+cZu6Ls846qWehMNlZ3D+DabK2JUI9zmNdlc7Q==}
@@ -10598,6 +10604,16 @@ snapshots:
       - encoding
       - react
 
+  '@0xintuition/graphql@1.0.0-alpha.0(react@18.2.0)':
+    dependencies:
+      '@graphql-codegen/typescript-document-nodes': 4.0.16(graphql@16.12.0)
+      '@tanstack/react-query': 5.90.12(react@18.2.0)
+      graphql: 16.12.0
+      graphql-request: 7.3.5(graphql@16.12.0)
+    transitivePeerDependencies:
+      - encoding
+      - react
+
   '@0xintuition/protocol@1.0.0-alpha.3(viem@2.41.2(bufferutil@4.0.9)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@4.1.13))':
     dependencies:
       viem: 2.41.2(bufferutil@4.0.9)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@4.1.13)
@@ -20804,10 +20820,10 @@ snapshots:
   ox@0.6.7(typescript@5.3.3)(zod@4.1.13):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.8.1
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
-      '@scure/bip32': 1.6.2
-      '@scure/bip39': 1.5.4
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
       abitype: 1.0.8(typescript@5.3.3)(zod@4.1.13)
       eventemitter3: 5.0.1
     optionalDependencies:
