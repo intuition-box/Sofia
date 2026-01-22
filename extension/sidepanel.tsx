@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { configureClient } from '@0xintuition/graphql'
+import { configureClient } from '@0xsofia/graphql'
 import "./components/styles/Global.css"
 
 import { wagmiConfig } from "./lib/config/wagmi"

@@ -19,6 +19,7 @@
     "@0xintuition/1ui": "^0.4.1",
     "@0xintuition/graphql": "1.0.0-alpha.0",
     "@0xintuition/protocol": "1.0.0-alpha.3",
+    "@0xsofia/graphql": "workspace:*",
     "@apollo/client": "^3.13.8",
     "@dicebear/collection": "^9.2.4",
     "@dicebear/core": "^9.2.4",

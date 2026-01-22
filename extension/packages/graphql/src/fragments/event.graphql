@@ -1,0 +1,63 @@
+fragment EventDetails on events {
+  block_number
+  created_at
+  type
+  transaction_hash
+  atom_id
+  triple_id
+  deposit_id
+  redemption_id
+  ...DepositEventFragment
+  ...RedemptionEventFragment
+  atom {
+    ...AtomMetadata
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        position_count
+        positions {
+          account_id
+          shares
+          account {
+            id
+            label
+            image
+          }
+        }
+      }
+    }
+  }
+  triple {
+    ...TripleMetadata
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        position_count
+        positions {
+          account_id
+          shares
+          account {
+            id
+            label
+            image
+          }
+        }
+      }
+    }
+    counter_term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        position_count
+        positions {
+          account_id
+          shares
+          account {
+            id
+            label
+            image
+          }
+        }
+      }
+    }
+  }
+}

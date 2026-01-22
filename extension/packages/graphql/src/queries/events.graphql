@@ -1,0 +1,221 @@
+# Main pagination query
+query GetEvents(
+  $limit: Int
+  $offset: Int
+  $orderBy: [events_order_by!]
+  $where: events_bool_exp
+  $addresses: [String!]
+) {
+  total: events_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+  events(limit: $limit, offset: $offset, order_by: $orderBy, where: $where) {
+    id
+    block_number
+    created_at
+    type
+    transaction_hash
+    atom_id
+    triple_id
+    deposit_id
+    redemption_id
+    atom {
+      ...AtomMetadata
+      term {
+        vaults(where: { curve_id: { _eq: "1" } }) {
+          total_shares
+          position_count
+          positions(where: { account: { id: { _in: $addresses } } }) {
+            account_id
+            shares
+            account {
+              id
+              label
+              image
+            }
+          }
+        }
+      }
+    }
+    triple {
+      term_id
+      creator {
+        ...AccountMetadata
+      }
+      subject {
+        data
+        term_id
+        image
+        label
+        emoji
+        type
+        ...AtomValue
+        creator {
+          ...AccountMetadata
+        }
+      }
+      predicate {
+        data
+        term_id
+        image
+        label
+        emoji
+        type
+        ...AtomValue
+        creator {
+          ...AccountMetadata
+        }
+      }
+      object {
+        data
+        term_id
+        image
+        label
+        emoji
+        type
+        ...AtomValue
+        creator {
+          ...AccountMetadata
+        }
+      }
+      term {
+        vaults(where: { curve_id: { _eq: "1" } }) {
+          total_shares
+          position_count
+          positions(where: { account: { id: { _in: $addresses } } }) {
+            account_id
+            shares
+            account {
+              id
+              label
+              image
+            }
+          }
+        }
+      }
+      counter_term {
+        vaults(where: { curve_id: { _eq: "1" } }) {
+          total_shares
+          position_count
+          positions(where: { account: { id: { _in: $addresses } } }) {
+            account_id
+            shares
+            account {
+              id
+              label
+              image
+            }
+          }
+        }
+      }
+    }
+    deposit {
+      sender_id
+      sender {
+        id
+      }
+      shares
+      assets_after_fees
+      vault {
+        total_shares
+        position_count
+        positions(where: { account: { id: { _in: $addresses } } }) {
+          account_id
+          shares
+          account {
+            id
+            label
+            image
+          }
+        }
+      }
+    }
+    redemption {
+      sender_id
+      sender {
+        id
+      }
+    }
+  }
+}
+
+# Combined query with aggregates and nodes
+query GetEventsWithAggregates(
+  $limit: Int
+  $offset: Int
+  $orderBy: [events_order_by!]
+  $where: events_bool_exp
+  $addresses: [String!]
+) {
+  events_aggregate(
+    where: $where
+    limit: $limit
+    offset: $offset
+    order_by: $orderBy
+  ) {
+    aggregate {
+      count
+      max {
+        created_at
+        block_number
+      }
+      min {
+        created_at
+        block_number
+      }
+    }
+    nodes {
+      ...EventDetails
+    }
+  }
+}
+
+query GetEventsCount($where: events_bool_exp) {
+  events_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}
+
+query GetEventsData($where: events_bool_exp) {
+  events_aggregate(where: $where) {
+    aggregate {
+      count
+      max {
+        created_at
+        block_number
+      }
+      min {
+        created_at
+        block_number
+      }
+      avg {
+        block_number
+      }
+    }
+  }
+}
+
+# Debug query with explicit address and position filtering
+query GetDebugEvents($addresses: [String!]) {
+  debug_events: events {
+    id
+    atom {
+      term {
+        positions(where: { account_id: { _in: $addresses } }) {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}
+
+query GetTransactionEvents($hash: String!) {
+  events(where: { transaction_hash: { _eq: $hash } }) {
+    transaction_hash
+  }
+}

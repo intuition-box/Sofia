@@ -134,4 +134,4 @@ export const intuitionGraphqlClient = {
 }
 
 // Export useful types and functions from SDK
-export * from '@0xintuition/graphql'
+export * from '@0xsofia/graphql'

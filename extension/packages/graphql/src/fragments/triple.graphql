@@ -1,0 +1,107 @@
+fragment TripleMetadata on triples {
+  term_id
+  subject_id
+  predicate_id
+  object_id
+  subject {
+    data
+    term_id
+    image
+    label
+    emoji
+    type
+    ...AtomValue
+    creator {
+      ...AccountMetadata
+    }
+  }
+  predicate {
+    data
+    term_id
+    image
+    label
+    emoji
+    type
+    ...AtomValue
+    creator {
+      ...AccountMetadata
+    }
+  }
+  object {
+    data
+    term_id
+    image
+    label
+    emoji
+    type
+    ...AtomValue
+    creator {
+      ...AccountMetadata
+    }
+  }
+  term {
+    vaults(where: { curve_id: { _eq: "1" } }) {
+      total_shares
+      current_share_price
+      allPositions: positions_aggregate {
+        ...PositionAggregateFields
+      }
+      positions {
+        ...PositionFields
+      }
+    }
+  }
+  counter_term {
+    vaults(where: { curve_id: { _eq: "1" } }) {
+      total_shares
+      current_share_price
+      allPositions: positions_aggregate {
+        ...PositionAggregateFields
+      }
+      positions {
+        ...PositionFields
+      }
+    }
+  }
+}
+
+fragment TripleTxn on triples {
+  block_number
+  created_at
+  transaction_hash
+  creator_id
+}
+
+fragment TripleVaultDetails on triples {
+  term_id
+  counter_term_id
+  term {
+    vaults(where: { curve_id: { _eq: "1" } }) {
+      positions {
+        ...PositionDetails
+      }
+    }
+  }
+  counter_term {
+    vaults(where: { curve_id: { _eq: "1" } }) {
+      positions {
+        ...PositionDetails
+      }
+    }
+  }
+}
+
+fragment TripleVaultCouterVaultDetailsWithPositions on triples {
+  term_id
+  counter_term_id
+  term {
+    vaults(where: { curve_id: { _eq: "1" } }) {
+      ...VaultDetailsWithFilteredPositions
+    }
+  }
+  counter_term {
+    vaults(where: { curve_id: { _eq: "1" } }) {
+      ...VaultDetailsWithFilteredPositions
+    }
+  }
+}

@@ -1,0 +1,58 @@
+query GetVaults(
+  $limit: Int
+  $offset: Int
+  $orderBy: [vaults_order_by!]
+  $where: vaults_bool_exp
+) {
+  vaults_aggregate(
+    limit: $limit
+    offset: $offset
+    order_by: $orderBy
+    where: $where
+  ) {
+    aggregate {
+      count
+    }
+    nodes {
+      term_id
+      term {
+        atom {
+          term_id
+          label
+        }
+        triple {
+          term_id
+          subject {
+            term_id
+            label
+          }
+          predicate {
+            term_id
+            label
+          }
+          object {
+            term_id
+            label
+          }
+        }
+      }
+      positions_aggregate {
+        nodes {
+          account {
+            atom_id
+            label
+          }
+          shares
+        }
+      }
+      current_share_price
+      total_shares
+    }
+  }
+}
+
+query GetVault($termId: String!, $curveId: numeric!) {
+  vault(term_id: $termId, curve_id: $curveId) {
+    ...VaultDetails
+  }
+}

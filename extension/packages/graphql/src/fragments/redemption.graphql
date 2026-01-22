@@ -1,0 +1,9 @@
+fragment RedemptionEventFragment on events {
+  redemption {
+    term_id
+    curve_id
+    receiver_id
+    shares
+    assets
+  }
+}
