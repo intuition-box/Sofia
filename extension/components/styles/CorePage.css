@@ -130,19 +130,57 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Reveal Skills CTA */
+.reveal-skills-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.reveal-skills-btn {
+  background: linear-gradient(135deg, #8276ED 0%, #F6427B 50%, #FFBF33 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Gotu', cursive;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(130, 118, 237, 0.3);
+}
+
+.reveal-skills-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(130, 118, 237, 0.6);
+  filter: brightness(1.1);
+}
+
+.reveal-skills-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 12px rgba(130, 118, 237, 0.4);
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 480px) {
   .tabs {
     gap: 16px;
     margin-bottom: 20px;
   }
-  
+
   .tab {
     font-size: 14px;
     padding: 8px 0;
   }
-  
+
   .page-content {
     padding: 0;
+  }
+
+  .reveal-skills-btn {
+    padding: 12px 24px;
+    font-size: 14px;
   }
 }

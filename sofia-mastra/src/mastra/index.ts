@@ -11,10 +11,11 @@ import { pulseAgent } from './agents/pulse-agent';
 import { recommendationAgent } from './agents/recommendation-agent';
 import { chatbotAgent } from './agents/chatbot-agent';
 import { predicateAgent } from './agents/predicate-agent';
+import { skillsAnalysisAgent } from './agents/skills-analysis-agent';
 
 export const mastra = new Mastra({
   workflows: { sofiaWorkflow, chatbotWorkflow, socialVerifierWorkflow, linkSocialWorkflow },
-  agents: { themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent, predicateAgent },
+  agents: { themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent, predicateAgent, skillsAnalysisAgent },
   scorers: {
   },
   storage: new LibSQLStore({

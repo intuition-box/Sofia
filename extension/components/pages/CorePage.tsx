@@ -8,17 +8,18 @@ const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
 const SignalsTab = lazy(() => import('./core-tabs/SignalsTab'))
 const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
 const BookmarkTab = lazy(() => import('./core-tabs/BookmarkTab'))
+const SkillsTab = lazy(() => import('./core-tabs/SkillsTab'))
 
 
 const CorePage = () => {
   const { navigateTo } = useRouter()
-  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse' | 'Bookmarks'>('Echoes')
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse' | 'Proofs' | 'Bookmarks'>('Echoes')
   const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
 
   useEffect(() => {
     const targetTab = localStorage.getItem('targetTab')
-    if (targetTab === 'Pulse') {
-      setActiveGraphTab('Pulse')
+    if (targetTab === 'Pulse' || targetTab === 'Proofs') {
+      setActiveGraphTab(targetTab as 'Pulse' | 'Proofs')
       localStorage.removeItem('targetTab') // Clean up after use
     }
   }, [])
@@ -26,7 +27,7 @@ const CorePage = () => {
   return (
     <div className="page">
       <div className="tabs">
-        {['Echoes', 'Signals', 'Pulse', 'Bookmarks'].map(tab => (
+        {['Echoes', 'Pulse', 'Proofs', 'Signals', 'Bookmarks'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveGraphTab(tab as any)}
@@ -39,7 +40,7 @@ const CorePage = () => {
 
       <div className="page-content">
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
-          {activeGraphTab === 'Echoes' && <EchoesTab />}
+          {activeGraphTab === 'Echoes' && <EchoesTab onNavigateToProofs={() => setActiveGraphTab('Proofs')} />}
           {activeGraphTab === 'Signals' && (
             <SignalsTab 
               expandedTriplet={expandedSignalTriplet}
@@ -47,6 +48,7 @@ const CorePage = () => {
             />
           )}
           {activeGraphTab === 'Pulse' && <PulseTab />}
+          {activeGraphTab === 'Proofs' && <SkillsTab />}
           {activeGraphTab === 'Bookmarks' && <BookmarkTab />}
         </Suspense>
       </div>

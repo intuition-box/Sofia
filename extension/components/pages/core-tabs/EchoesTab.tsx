@@ -11,7 +11,11 @@ import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
 
-const EchoesTab = () => {
+interface EchoesTabProps {
+  onNavigateToProofs?: () => void
+}
+
+const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
   const {
     groups,
     selectedGroup,
@@ -124,6 +128,16 @@ const EchoesTab = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Unlock Proofs CTA */}
+        <div className="reveal-skills-cta">
+          <button
+            className="reveal-skills-btn"
+            onClick={onNavigateToProofs}
+          >
+            Unlock Proofs
+          </button>
         </div>
 
         <div className="bento-grid">
