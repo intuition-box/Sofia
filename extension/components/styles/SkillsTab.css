@@ -207,25 +207,26 @@
   cursor: help;
 }
 
-.level-badge {
+/* Skill card level badge - higher specificity to override CommonPage.css */
+.skill-card .level-badge {
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: white;
+  color: white !important;
 }
 
-/* Level colors */
-.level-1 { background: #9CA3AF; }
-.level-2 { background: #22C55E; }
-.level-3 { background: #3B82F6; }
-.level-4 { background: #8B5CF6; }
-.level-5 { background: #F59E0B; }
-.level-6 { background: #EF4444; }
-.level-7 { background: #EC4899; }
-.level-8 { background: #06B6D4; }
-.level-9 { background: #F97316; }
-.level-10 { background: linear-gradient(135deg, #FFD700, #FFA500); }
+/* Level colors for skill cards */
+.skill-card .level-badge.level-1 { background: #9CA3AF !important; }
+.skill-card .level-badge.level-2 { background: #22C55E !important; }
+.skill-card .level-badge.level-3 { background: #3B82F6 !important; }
+.skill-card .level-badge.level-4 { background: #8B5CF6 !important; }
+.skill-card .level-badge.level-5 { background: #F59E0B !important; }
+.skill-card .level-badge.level-6 { background: #EF4444 !important; }
+.skill-card .level-badge.level-7 { background: #EC4899 !important; }
+.skill-card .level-badge.level-8 { background: #06B6D4 !important; }
+.skill-card .level-badge.level-9 { background: #F97316 !important; }
+.skill-card .level-badge.level-10 { background: linear-gradient(135deg, #FFD700, #FFA500) !important; }
 
 .skill-card-progress {
   margin-bottom: 12px;

@@ -578,13 +578,13 @@ export function setupMessageHandlers(): void {
 
       case "LEVEL_UP_GROUP":
         try {
-          const { groupId: levelUpGroupId } = message.data || message
+          const { groupId: levelUpGroupId, certificationBreakdown } = message.data || message
           if (!levelUpGroupId) {
             sendResponse({ success: false, error: "groupId required" })
             return true
           }
           console.log(`🎮 [messageHandlers] Level up request for group: ${levelUpGroupId}`)
-          const levelUpResult = await levelUpService.levelUp(levelUpGroupId)
+          const levelUpResult = await levelUpService.levelUp(levelUpGroupId, certificationBreakdown)
           sendResponse({
             success: levelUpResult.success,
             ...levelUpResult

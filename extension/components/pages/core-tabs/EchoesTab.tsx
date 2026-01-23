@@ -134,7 +134,11 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
         <div className="reveal-skills-cta">
           <button
             className="reveal-skills-btn"
-            onClick={onNavigateToProofs}
+            onClick={() => {
+              // Set flag to trigger analysis when Proofs tab loads
+              localStorage.setItem('triggerProofsAnalysis', 'true');
+              onNavigateToProofs?.();
+            }}
           >
             Unlock Proofs
           </button>

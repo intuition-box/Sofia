@@ -224,7 +224,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         const activeUrls = existing.urls.filter(u => !u.removed)
         existing.activeUrlCount = activeUrls.length
         existing.certifiedCount = activeUrls.filter(u => u.isOnChain).length
-        existing.level = Math.max(existing.level, onChain.level)
+        // NOTE: Do NOT auto-update level here - level should only change via explicit "Level Up" action
 
       } else {
         // CASE 2: Domain exists ONLY on-chain → create "virtual" group

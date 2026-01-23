@@ -46,6 +46,25 @@ export class QuestTrackingService {
     return signal_activity_dates.includes(this.getToday())
   }
 
+  // Called after each successful certification
+  async recordCertificationActivity(): Promise<void> {
+    const today = this.getToday()
+    const { certification_activity_dates = [] } = await chrome.storage.local.get('certification_activity_dates')
+    if (!certification_activity_dates.includes(today)) {
+      certification_activity_dates.push(today)
+      // Keep only last 120 days
+      const cutoff = new Date(Date.now() - 120 * 86400000).toISOString().split('T')[0]
+      await chrome.storage.local.set({
+        certification_activity_dates: certification_activity_dates.filter((d: string) => d >= cutoff)
+      })
+    }
+  }
+
+  async hasCertificationToday(): Promise<boolean> {
+    const { certification_activity_dates = [] } = await chrome.storage.local.get('certification_activity_dates')
+    return certification_activity_dates.includes(this.getToday())
+  }
+
   async getCurrentStreak(): Promise<number> {
     const { signal_activity_dates = [] } = await chrome.storage.local.get('signal_activity_dates')
     if (signal_activity_dates.length === 0) return 0

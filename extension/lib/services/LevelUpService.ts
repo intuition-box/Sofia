@@ -6,6 +6,8 @@
 import { groupManager, type CertificationType } from './GroupManager'
 import { xpService, getLevelUpCost } from './XPService'
 import { generatePredicate, type PredicateInput } from '../../background/mastraClient'
+import { IntentionGroupsService } from '../database/indexedDB-methods'
+import type { IntentionGroupRecord } from '../database/indexedDB'
 
 export interface LevelUpResult {
   success: boolean
@@ -35,9 +37,26 @@ class LevelUpServiceClass {
   /**
    * Preview a level up (check if user can afford it)
    * Uses total XP from ALL sources (quests + discovery + certifications)
+   * Supports both local groups and virtual (on-chain only) groups
    */
   async previewLevelUp(groupId: string): Promise<LevelUpPreview | null> {
-    const group = await groupManager.getGroup(groupId)
+    let group = await groupManager.getGroup(groupId)
+
+    // Handle virtual groups (on-chain only)
+    if (!group && groupId.startsWith('onchain-')) {
+      // For virtual groups, use default level 1 for preview
+      const cost = getLevelUpCost(1)
+      const xpState = await xpService.getXPState()
+
+      return {
+        canLevelUp: xpState.totalXP >= cost,
+        cost,
+        availableXP: xpState.totalXP,
+        currentLevel: 1,
+        nextLevel: 2
+      }
+    }
+
     if (!group) return null
 
     const cost = getLevelUpCost(group.level)
@@ -58,12 +77,44 @@ class LevelUpServiceClass {
    * 2. Generate predicate via AI
    * 3. Spend XP
    * 4. Update group
+   * Supports both local groups and virtual (on-chain only) groups
+   * @param groupId - The group ID (can be "onchain-domain" for virtual groups)
+   * @param providedCertifications - Optional certification breakdown for virtual groups
    */
-  async levelUp(groupId: string): Promise<LevelUpResult> {
+  async levelUp(groupId: string, providedCertifications?: Record<CertificationType, number>): Promise<LevelUpResult> {
     console.log(`🎮 [LevelUpService] Starting level up for ${groupId}`)
 
     // Get group
-    const group = await groupManager.getGroup(groupId)
+    let group = await groupManager.getGroup(groupId)
+    let actualGroupId = groupId
+
+    // Handle virtual groups (on-chain only) - materialize them into IndexedDB
+    if (!group && groupId.startsWith('onchain-')) {
+      const domain = groupId.replace('onchain-', '')
+      console.log(`🔄 [LevelUpService] Materializing virtual group: ${domain}`)
+
+      // Create the group in IndexedDB
+      const newGroup: IntentionGroupRecord = {
+        id: domain,  // Use domain as ID (not onchain-domain)
+        domain: domain,
+        title: domain,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        urls: [],  // URLs are tracked on-chain, not needed locally
+        level: 1,
+        currentPredicate: null,
+        predicateHistory: [],
+        totalAttentionTime: 0,
+        totalCertifications: 0,
+        dominantCertification: null
+      }
+
+      await IntentionGroupsService.saveGroup(newGroup)
+      group = newGroup
+      actualGroupId = domain
+      console.log(`✅ [LevelUpService] Virtual group materialized: ${domain}`)
+    }
+
     if (!group) {
       return { success: false, error: 'Group not found' }
     }
@@ -85,12 +136,17 @@ class LevelUpServiceClass {
     }
 
     // Collect certifications for AI
-    const certifications = groupManager.getCertificationBreakdown(group)
-    console.log(`📊 [LevelUpService] Certifications:`, certifications)
+    // For virtual groups, use provided certificationBreakdown; otherwise use local data
+    const isVirtualGroup = groupId.startsWith('onchain-')
+    const certifications = (isVirtualGroup && providedCertifications)
+      ? providedCertifications
+      : groupManager.getCertificationBreakdown(group)
+    console.log(`📊 [LevelUpService] Certifications:`, certifications, isVirtualGroup ? '(from UI)' : '(from local)')
 
     // Check if there are any certifications
+    // For virtual groups (materialized), skip this check - they have on-chain certs
     const totalCertifications = Object.values(certifications).reduce((sum, count) => sum + count, 0)
-    if (totalCertifications === 0) {
+    if (totalCertifications === 0 && !isVirtualGroup) {
       return {
         success: false,
         error: 'No certifications yet. Certify some URLs first!'
@@ -120,10 +176,10 @@ class LevelUpServiceClass {
       }
     }
 
-    // Update group
+    // Update group (use actualGroupId for virtual groups that were materialized)
     const reason = this.buildReason(certifications, group.level + 1)
     const updated = await groupManager.updateAfterLevelUp(
-      groupId,
+      actualGroupId,
       group.level + 1,
       predicateResult.predicate,
       reason,

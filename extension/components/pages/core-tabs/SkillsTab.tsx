@@ -24,12 +24,14 @@ const SkillsTab = () => {
     reset,
   } = useSkillsAnalysis();
 
-  // Auto-analyze when wallet is available and no data yet
+  // Check for trigger flag from "Unlock Proofs" button in Echoes tab
   useEffect(() => {
-    if (walletAddress && !analyzedAt && !isLoading && !error) {
+    const shouldTrigger = localStorage.getItem('triggerProofsAnalysis');
+    if (shouldTrigger === 'true' && walletAddress && !isLoading) {
+      localStorage.removeItem('triggerProofsAnalysis');
       analyzeSkills(walletAddress);
     }
-  }, [walletAddress, analyzedAt, isLoading, error, analyzeSkills]);
+  }, [walletAddress, isLoading, analyzeSkills]);
 
   // Reset when wallet changes
   useEffect(() => {
@@ -86,7 +88,22 @@ const SkillsTab = () => {
     );
   }
 
-  // Empty state (no skills found)
+  // Not analyzed yet state
+  if (!analyzedAt && skills.length === 0) {
+    return (
+      <div className="skills-tab">
+        <div className="skills-empty">
+          <span className="skills-empty-icon"></span>
+          <h3 className="skills-empty-title">Proofs Locked</h3>
+          <p className="skills-empty-text">
+            Create intention certifications in Echoes to unlock ProofTab
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state (no skills found after analysis)
   if (skills.length === 0 && analyzedAt) {
     return (
       <div className="skills-tab">

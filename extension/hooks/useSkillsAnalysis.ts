@@ -69,17 +69,53 @@ function saveCachedProofs(accountId: string, data: CachedProofsData): void {
 }
 
 /**
+ * Check if two skill names are similar enough to be merged
+ * Handles cases like "Blockchain" vs "Blockchain Technology"
+ */
+function areSkillNamesSimilar(name1: string, name2: string): boolean {
+  const n1 = name1.toLowerCase().trim();
+  const n2 = name2.toLowerCase().trim();
+
+  // Exact match
+  if (n1 === n2) return true;
+
+  // One contains the other (e.g., "Blockchain" in "Blockchain Technology")
+  if (n1.includes(n2) || n2.includes(n1)) return true;
+
+  // Get the first word of each name
+  const firstWord1 = n1.split(/\s+/)[0];
+  const firstWord2 = n2.split(/\s+/)[0];
+
+  // If first words match and are substantial (> 4 chars), consider similar
+  if (firstWord1 === firstWord2 && firstWord1.length > 4) return true;
+
+  return false;
+}
+
+/**
+ * Find the best matching skill index for a new skill
+ * Uses fuzzy matching to avoid duplicates like "Blockchain" and "Blockchain Technology"
+ */
+function findSimilarSkillIndex(skills: Skill[], newSkillName: string): number {
+  for (let i = 0; i < skills.length; i++) {
+    if (areSkillNamesSimilar(skills[i].name, newSkillName)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
  * Merge cached skills with new skills
  * - Updates existing skills (by name) with new domains/certifications
  * - Adds completely new skills
+ * - Uses fuzzy matching to avoid duplicates
  */
 function mergeSkills(cached: Skill[], newSkills: Skill[]): Skill[] {
   const merged = [...cached];
 
   for (const newSkill of newSkills) {
-    const existingIndex = merged.findIndex(
-      (s) => s.name.toLowerCase() === newSkill.name.toLowerCase()
-    );
+    const existingIndex = findSimilarSkillIndex(merged, newSkill.name);
 
     if (existingIndex >= 0) {
       // Update existing skill: merge domains, take max certifications
@@ -98,8 +134,12 @@ function mergeSkills(cached: Skill[], newSkills: Skill[]): Skill[] {
       const xp = totalCerts * XP_PER_CERTIFICATION;
       const level = calculateLevel(xp);
 
+      // Prefer the shorter name (usually more generic and better)
+      const bestName = existing.name.length <= newSkill.name.length ? existing.name : newSkill.name;
+
       merged[existingIndex] = {
         ...existing,
+        name: bestName,
         domains: mergedDomains,
         certifications: mergedCerts,
         totalCertifications: totalCerts,
@@ -110,7 +150,7 @@ function mergeSkills(cached: Skill[], newSkills: Skill[]): Skill[] {
         reasoning: newSkill.reasoning || existing.reasoning,
       };
 
-      logger.info('Updated existing skill', { name: existing.name, newXp: xp });
+      logger.info('Merged similar skills', { existing: existing.name, new: newSkill.name, merged: bestName, newXp: xp });
     } else {
       // Add new skill
       merged.push(newSkill);

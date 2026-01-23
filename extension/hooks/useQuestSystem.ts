@@ -18,6 +18,7 @@ import { BlockchainService } from '../lib/services/blockchainService'
 import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, BOT_VERIFIER_ADDRESS } from '../lib/config/chainConfig'
 import { MASTRA_API_URL } from '../config'
 import type { Address } from '../types/viem'
+import { questTrackingService } from '../lib/services/QuestTrackingService'
 
 // Constants for on-chain operations
 const MIN_DEPOSIT = 10000000000000000n // 0.01 TRUST
@@ -54,6 +55,7 @@ export interface UserProgress {
   // Streak and Pulse tracking
   currentStreak: number
   hasSignalToday: boolean
+  hasCertificationToday: boolean
   pulseLaunches: number
   weeklyPulseUses: number
   // Individual social platform connections
@@ -108,6 +110,10 @@ const calculateXPForNextLevel = (currentLevel: number): number => {
 
 // Define all available quests with their milestones and XP rewards
 const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
+  // Daily quests (reset every day)
+  { id: 'daily-signal', title: 'Daily Signal', description: 'Create a signal today', total: 1, xpReward: 25, type: 'signal', recurringType: 'daily' },
+  { id: 'daily-certification', title: 'Daily Certification', description: 'Certify a page today', total: 1, xpReward: 25, type: 'discovery', recurringType: 'daily' },
+
   // First-time quests (easy, low XP)
   { id: 'signal-1', title: 'First Signal', description: 'Create your very first signal', total: 1, xpReward: 50, type: 'signal', milestone: 1 },
   { id: 'bookmark-list-1', title: 'Organizer', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
@@ -183,6 +189,7 @@ export const useQuestSystem = (): QuestSystemResult => {
     trustedUsers: 0,
     currentStreak: 0,
     hasSignalToday: false,
+    hasCertificationToday: false,
     pulseLaunches: 0,
     weeklyPulseUses: 0,
     discordConnected: false,
@@ -832,6 +839,12 @@ export const useQuestSystem = (): QuestSystemResult => {
         ? Object.values(discoveryStats.intentionBreakdown).filter(count => count > 0).length
         : 0
 
+      // Get streak and pulse data from QuestTrackingService
+      const currentStreak = await questTrackingService.getCurrentStreak()
+      const hasSignalToday = await questTrackingService.hasSignalToday()
+      const hasCertificationToday = await questTrackingService.hasCertificationToday()
+      const pulseStats = await questTrackingService.getPulseStats()
+
       setUserProgress({
         signalsCreated,
         bookmarkListsCreated,
@@ -839,10 +852,11 @@ export const useQuestSystem = (): QuestSystemResult => {
         oauthConnections,
         followedUsers,
         trustedUsers,
-        currentStreak: 0,
-        hasSignalToday: false,
-        pulseLaunches: 0,
-        weeklyPulseUses: 0,
+        currentStreak,
+        hasSignalToday,
+        hasCertificationToday,
+        pulseLaunches: pulseStats.total,
+        weeklyPulseUses: pulseStats.weekly,
         discordConnected,
         youtubeConnected,
         spotifyConnected,
@@ -872,11 +886,19 @@ export const useQuestSystem = (): QuestSystemResult => {
     return QUEST_DEFINITIONS.map(questDef => {
       let current = 0
 
-      // Determine current progress based on quest type
-      switch (questDef.type) {
-        case 'signal':
-          current = userProgress.signalsCreated
-          break
+      // Handle daily quests specially - use today's progress
+      if (questDef.recurringType === 'daily') {
+        if (questDef.id === 'daily-signal') {
+          current = userProgress.hasSignalToday ? 1 : 0
+        } else if (questDef.id === 'daily-certification') {
+          current = userProgress.hasCertificationToday ? 1 : 0
+        }
+      } else {
+        // Determine current progress based on quest type
+        switch (questDef.type) {
+          case 'signal':
+            current = userProgress.signalsCreated
+            break
         case 'bookmark':
           if (questDef.id === 'bookmark-list-1') {
             current = userProgress.bookmarkListsCreated
@@ -946,6 +968,7 @@ export const useQuestSystem = (): QuestSystemResult => {
             current = userProgress.uniqueIntentionTypes
           }
           break
+        }
       }
 
       // Determine quest status
