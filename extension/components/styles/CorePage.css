@@ -113,7 +113,7 @@
   border-radius: 0;
   backdrop-filter: blur(10px);
   padding: 0;
-
+  min-height: 900px;
 }
 
 /* États de chargement - utilise .loading-state de CoreComponents.css comme base */
