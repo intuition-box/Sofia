@@ -47,5 +47,5 @@ releases/
 .claude
 
 my-agent/.env
-
+.github/
 components/SplineBackground.tsx
