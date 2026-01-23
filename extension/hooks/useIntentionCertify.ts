@@ -6,6 +6,7 @@ import { ERROR_MESSAGES } from '../lib/config/constants'
 import { INTENTION_MIN_STAKE, PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { INTENTION_PREDICATES } from '../types/discovery'
+import { questTrackingService } from '../lib/services/QuestTrackingService'
 
 const logger = createHookLogger('useIntentionCertify')
 
@@ -147,6 +148,9 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       setOperationType(result.source as 'created' | 'deposit')
       setTransactionHash(result.txHash)
 
+      // Track certification for daily quest
+      questTrackingService.recordCertificationActivity()
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
       const errorStack = error instanceof Error ? error.stack : String(error)
@@ -164,6 +168,9 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
         setLoading(false)
         setSuccess(true)
         setError(null)
+
+        // Track certification for daily quest (even if triple existed)
+        questTrackingService.recordCertificationActivity()
       } else {
         loadingRef.current = false
         errorRef.current = errorMessage
@@ -265,6 +272,9 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       setOperationType(result.source as 'created' | 'deposit')
       setTransactionHash(result.txHash)
 
+      // Track certification for daily quest
+      questTrackingService.recordCertificationActivity()
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
       const errorStack = error instanceof Error ? error.stack : String(error)
@@ -282,6 +292,9 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
         setLoading(false)
         setSuccess(true)
         setError(null)
+
+        // Track certification for daily quest (even if triple existed)
+        questTrackingService.recordCertificationActivity()
       } else {
         loadingRef.current = false
         errorRef.current = errorMessage

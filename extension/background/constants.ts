@@ -36,7 +36,7 @@ export const SENSITIVE_URL_PATTERNS = [
 // Specific exclusion patterns (technical + sensitive)
 export const EXCLUDED_URL_PATTERNS = [
   // Sites techniques
-  'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',
+  'accounts.google.com', 'RotateCookiesPage', 'ogs.google.com',"usercentrics.eu",
   'widget', 'chrome-extension://', 'sandbox', 'about:blank', 'CookieSync Page',
   // Sofia/Intuition system pages
   'intuition.box/auth',
@@ -50,7 +50,7 @@ export const EXCLUDED_URL_PATTERNS = [
   'captcha', 'challenge-platform', 'geo.captcha-delivery.com',
   'arkoselabs.com', 'funcaptcha.com',
   // Technical frames, CDNs and embeds
-  'iframe', 'embed', 'player',"insight.adsrvr.org",
+  'iframe', 'embed', 'player',"insight.adsrvr.org","match.adsrvr.org","sync.creativedot2.net","google-bidout-d.openx.net", 
   'cdn.', 'static.', 'assets.', 'media.', "googleadservices.com",
   'fonts.googleapis.com', 'fonts.gstatic.com',"nolan.wetransfer.net","tagging.wetransfer.com",
   'googletagmanager.com', 'google-analytics.com', 'analytics.',"us-u.openx.net",

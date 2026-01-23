@@ -30,7 +30,7 @@ export interface LevelUpResult {
 }
 
 export interface UseLevelUpResult {
-  levelUp: (groupId: string) => Promise<LevelUpResult>
+  levelUp: (groupId: string, certificationBreakdown?: Record<string, number>) => Promise<LevelUpResult>
   preview: (groupId: string) => Promise<LevelUpPreview | null>
   loading: boolean
   error: string | null
@@ -78,18 +78,20 @@ export const useLevelUp = (): UseLevelUpResult => {
 
   /**
    * Execute a level up
+   * @param groupId - The group ID
+   * @param certificationBreakdown - Optional certification breakdown for virtual groups
    */
-  const levelUp = useCallback(async (groupId: string): Promise<LevelUpResult> => {
+  const levelUp = useCallback(async (groupId: string, certificationBreakdown?: Record<string, number>): Promise<LevelUpResult> => {
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
-      logger.info('Starting level up', { groupId })
+      logger.info('Starting level up', { groupId, hasCertBreakdown: !!certificationBreakdown })
 
       const response = await chrome.runtime.sendMessage({
         type: 'LEVEL_UP_GROUP',
-        data: { groupId }
+        data: { groupId, certificationBreakdown }
       })
 
       if (response.success) {

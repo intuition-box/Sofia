@@ -18,6 +18,7 @@ import { BlockchainService } from '../lib/services/blockchainService'
 import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, BOT_VERIFIER_ADDRESS } from '../lib/config/chainConfig'
 import { MASTRA_API_URL } from '../config'
 import type { Address } from '../types/viem'
+import { questTrackingService } from '../lib/services/QuestTrackingService'
 
 // Constants for on-chain operations
 const MIN_DEPOSIT = 10000000000000000n // 0.01 TRUST
@@ -54,6 +55,7 @@ export interface UserProgress {
   // Streak and Pulse tracking
   currentStreak: number
   hasSignalToday: boolean
+  hasCertificationToday: boolean
   pulseLaunches: number
   weeklyPulseUses: number
   // Individual social platform connections
@@ -108,6 +110,9 @@ const calculateXPForNextLevel = (currentLevel: number): number => {
 
 // Define all available quests with their milestones and XP rewards
 const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
+  // Daily quests (reset every day)
+  { id: 'daily-certification', title: 'Daily Certification', description: 'Certify a page today', total: 1, xpReward: 25, type: 'discovery', recurringType: 'daily' },
+
   // First-time quests (easy, low XP)
   { id: 'signal-1', title: 'First Signal', description: 'Create your very first signal', total: 1, xpReward: 50, type: 'signal', milestone: 1 },
   { id: 'bookmark-list-1', title: 'Organizer', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
@@ -169,6 +174,9 @@ const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
   { id: 'intention-variety', title: 'Multi-Purpose', description: 'Use all 5 intention types', total: 5, xpReward: 150, type: 'discovery', milestone: 5 },
 ]
 
+// Cache duration in milliseconds (2 minutes)
+const QUEST_CACHE_DURATION = 120000
+
 export const useQuestSystem = (): QuestSystemResult => {
   const { walletAddress } = useWalletFromStorage()
   const { lists, triplets } = useBookmarks()
@@ -183,6 +191,7 @@ export const useQuestSystem = (): QuestSystemResult => {
     trustedUsers: 0,
     currentStreak: 0,
     hasSignalToday: false,
+    hasCertificationToday: false,
     pulseLaunches: 0,
     weeklyPulseUses: 0,
     discordConnected: false,
@@ -198,6 +207,8 @@ export const useQuestSystem = (): QuestSystemResult => {
   })
 
   const [loading, setLoading] = useState(true)
+  const [cacheLoaded, setCacheLoaded] = useState(false)
+  const [lastCacheWallet, setLastCacheWallet] = useState<string | null>(null)
   const [completedQuestIds, setCompletedQuestIds] = useState<Set<string>>(new Set())
   const [claimedQuestIds, setClaimedQuestIds] = useState<Set<string>>(new Set())
   const [claimingQuestId, setClaimingQuestId] = useState<string | null>(null)
@@ -239,6 +250,38 @@ export const useQuestSystem = (): QuestSystemResult => {
     chrome.storage.onChanged.addListener(listener)
     return () => chrome.storage.onChanged.removeListener(listener)
   }, [])
+
+  // Load cached user progress on mount
+  useEffect(() => {
+    const loadCache = async () => {
+      try {
+        const result = await chrome.storage.local.get(['quest_progress_cache', 'quest_progress_timestamp', 'quest_progress_wallet'])
+
+        if (result.quest_progress_cache && result.quest_progress_wallet === walletAddress) {
+          const cacheAge = Date.now() - (result.quest_progress_timestamp || 0)
+
+          // Use cache if it's fresh (< 30 seconds) and same wallet
+          if (cacheAge < QUEST_CACHE_DURATION) {
+            console.log('📦 [QuestSystem] Using cached progress (age:', Math.round(cacheAge / 1000), 's)')
+            setUserProgress(result.quest_progress_cache)
+            setCacheLoaded(true)
+            setLastCacheWallet(walletAddress)
+            setLoading(false)
+            return
+          }
+        }
+
+        setCacheLoaded(true)
+      } catch (err) {
+        console.error('❌ [QuestSystem] Failed to load cache:', err)
+        setCacheLoaded(true)
+      }
+    }
+
+    if (walletAddress) {
+      loadCache()
+    }
+  }, [walletAddress])
 
   // Get atom creation functions
   const { pinAtomToIPFS, createAtomsFromPinned, ensureProxyApproval } = useCreateAtom()
@@ -520,6 +563,15 @@ export const useQuestSystem = (): QuestSystemResult => {
   }
 
   // Claim XP for a quest - creates on-chain badge triple
+  // Helper to get claim ID for a quest (includes date for daily quests)
+  const getClaimId = (questId: string, questDef?: typeof QUEST_DEFINITIONS[0]) => {
+    const def = questDef || QUEST_DEFINITIONS.find(q => q.id === questId)
+    if (def?.recurringType === 'daily') {
+      return `${questId}-${new Date().toISOString().split('T')[0]}`
+    }
+    return questId
+  }
+
   const claimQuestXP = async (questId: string): Promise<{ success: boolean; txHash?: string; error?: string }> => {
     if (!walletAddress) {
       return { success: false, error: 'No wallet connected' }
@@ -530,6 +582,9 @@ export const useQuestSystem = (): QuestSystemResult => {
     if (!quest) {
       return { success: false, error: 'Quest not found' }
     }
+
+    // Get the claim ID (includes date for daily quests)
+    const claimId = getClaimId(questId, quest)
 
     setClaimingQuestId(questId)
 
@@ -566,14 +621,14 @@ export const useQuestSystem = (): QuestSystemResult => {
 
         // Mark quest as claimed after successful link (or if already linked)
         const newClaimed = new Set(claimedQuestIds)
-        newClaimed.add(questId)
+        newClaimed.add(claimId)
         setClaimedQuestIds(newClaimed)
 
         await chrome.storage.local.set({
           claimed_quests: Array.from(newClaimed)
         })
 
-        console.log(`✅ [QuestSystem] Claimed XP for social-link quest: ${questId}`)
+        console.log(`✅ [QuestSystem] Claimed XP for social-link quest: ${claimId}`)
         return { success: true, txHash }
       }
 
@@ -680,14 +735,14 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       // Only mark as claimed after successful TX
       const newClaimed = new Set(claimedQuestIds)
-      newClaimed.add(questId)
+      newClaimed.add(claimId)
       setClaimedQuestIds(newClaimed)
 
       await chrome.storage.local.set({
         claimed_quests: Array.from(newClaimed)
       })
 
-      console.log('✅ [QuestSystem] Claimed XP for quest:', questId)
+      console.log('✅ [QuestSystem] Claimed XP for quest:', claimId)
 
       return { success: true, txHash }
     } catch (error) {
@@ -705,7 +760,7 @@ export const useQuestSystem = (): QuestSystemResult => {
 
         // Mark as claimed since it already exists on-chain
         const newClaimed = new Set(claimedQuestIds)
-        newClaimed.add(questId)
+        newClaimed.add(claimId)
         setClaimedQuestIds(newClaimed)
 
         await chrome.storage.local.set({
@@ -832,17 +887,24 @@ export const useQuestSystem = (): QuestSystemResult => {
         ? Object.values(discoveryStats.intentionBreakdown).filter(count => count > 0).length
         : 0
 
-      setUserProgress({
+      // Get streak and pulse data from QuestTrackingService
+      const currentStreak = await questTrackingService.getCurrentStreak()
+      const hasSignalToday = await questTrackingService.hasSignalToday()
+      const hasCertificationToday = await questTrackingService.hasCertificationToday()
+      const pulseStats = await questTrackingService.getPulseStats()
+
+      const newProgress = {
         signalsCreated,
         bookmarkListsCreated,
         bookmarkedSignals,
         oauthConnections,
         followedUsers,
         trustedUsers,
-        currentStreak: 0,
-        hasSignalToday: false,
-        pulseLaunches: 0,
-        weeklyPulseUses: 0,
+        currentStreak,
+        hasSignalToday,
+        hasCertificationToday,
+        pulseLaunches: pulseStats.total,
+        weeklyPulseUses: pulseStats.weekly,
         discordConnected,
         youtubeConnected,
         spotifyConnected,
@@ -853,7 +915,17 @@ export const useQuestSystem = (): QuestSystemResult => {
         contributorCount: discoveryStats?.contributorCount || 0,
         totalDiscoveries: discoveryStats?.totalCertifications || 0,
         uniqueIntentionTypes,
+      }
+
+      setUserProgress(newProgress)
+
+      // Save to cache
+      await chrome.storage.local.set({
+        quest_progress_cache: newProgress,
+        quest_progress_timestamp: Date.now(),
+        quest_progress_wallet: walletAddress
       })
+      console.log('💾 [QuestSystem] Progress cached')
 
     } catch (error) {
       console.error('Error fetching quest data:', error)
@@ -863,20 +935,46 @@ export const useQuestSystem = (): QuestSystemResult => {
   }
 
   // Load data on mount and when wallet changes
+  // Only refresh if cache has been checked and is stale
   useEffect(() => {
-    refreshQuests()
-  }, [walletAddress, lists.length, triplets.length, discoveryStats])
+    const checkAndRefresh = async () => {
+      // Wait for cache check to complete
+      if (!cacheLoaded) return
+
+      // Check if cache is still valid
+      const result = await chrome.storage.local.get(['quest_progress_timestamp', 'quest_progress_wallet'])
+      const cacheAge = Date.now() - (result.quest_progress_timestamp || 0)
+      const sameWallet = result.quest_progress_wallet === walletAddress
+
+      // Only refresh if cache is stale or wallet changed
+      if (cacheAge >= QUEST_CACHE_DURATION || !sameWallet || lastCacheWallet !== walletAddress) {
+        console.log('🔄 [QuestSystem] Cache stale or wallet changed, refreshing...')
+        refreshQuests()
+        setLastCacheWallet(walletAddress)
+      }
+    }
+
+    checkAndRefresh()
+  }, [walletAddress, cacheLoaded, lists.length, triplets.length, discoveryStats])
 
   // Generate quests based on user progress
   const quests = useMemo<Quest[]>(() => {
     return QUEST_DEFINITIONS.map(questDef => {
       let current = 0
 
-      // Determine current progress based on quest type
-      switch (questDef.type) {
-        case 'signal':
-          current = userProgress.signalsCreated
-          break
+      // Handle daily quests specially - use today's progress
+      if (questDef.recurringType === 'daily') {
+        if (questDef.id === 'daily-signal') {
+          current = userProgress.hasSignalToday ? 1 : 0
+        } else if (questDef.id === 'daily-certification') {
+          current = userProgress.hasCertificationToday ? 1 : 0
+        }
+      } else {
+        // Determine current progress based on quest type
+        switch (questDef.type) {
+          case 'signal':
+            current = userProgress.signalsCreated
+            break
         case 'bookmark':
           if (questDef.id === 'bookmark-list-1') {
             current = userProgress.bookmarkListsCreated
@@ -946,6 +1044,7 @@ export const useQuestSystem = (): QuestSystemResult => {
             current = userProgress.uniqueIntentionTypes
           }
           break
+        }
       }
 
       // Determine quest status
@@ -958,19 +1057,24 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       if (current >= questDef.total) {
         // Quest objective is met
-        if (isClaimed) {
+        // For daily quests, check if already claimed TODAY (not just ever)
+        const isClaimedToday = questDef.recurringType === 'daily'
+          ? claimedQuestIds.has(`${questDef.id}-${new Date().toISOString().split('T')[0]}`)
+          : isClaimed
+
+        if (isClaimedToday) {
           status = 'completed'
           statusColor = '#48bb78' // green - XP claimed
         } else {
           status = 'claimable_xp'
           statusColor = '#FFD700' // gold - ready to claim XP
         }
-        // Save to completed if not already
-        if (!isCompleted) {
+        // Save to completed if not already (skip for daily quests as they reset)
+        if (!isCompleted && !questDef.recurringType) {
           saveCompletedQuest(questDef.id)
         }
-      } else if (current > 0 || questDef.milestone === 1) {
-        // Quest is active if user has started progress or it's a first-time quest
+      } else if (current > 0 || questDef.milestone === 1 || questDef.recurringType) {
+        // Quest is active if user has started progress, it's a first-time quest, or it's a recurring quest
         status = 'active'
         statusColor = '#EAB67A' // purple
       }
@@ -983,9 +1087,12 @@ export const useQuestSystem = (): QuestSystemResult => {
         claimable,
       }
     }).sort((a, b) => {
-      // Sort by: claimable_xp first, then active, then by milestone, then completed last
+      // Sort by: claimable_xp first, then daily quests, then active, then by milestone, then completed last
       if (a.status === 'claimable_xp' && b.status !== 'claimable_xp') return -1
       if (a.status !== 'claimable_xp' && b.status === 'claimable_xp') return 1
+      // Daily quests first (when active)
+      if (a.recurringType === 'daily' && b.recurringType !== 'daily') return -1
+      if (a.recurringType !== 'daily' && b.recurringType === 'daily') return 1
       if (a.status === 'active' && b.status !== 'active') return -1
       if (a.status !== 'active' && b.status === 'active') return 1
       if (a.status === 'completed' && b.status !== 'completed') return 1

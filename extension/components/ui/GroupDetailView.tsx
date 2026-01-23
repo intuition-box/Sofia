@@ -282,7 +282,11 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   // Handle level up
   const handleLevelUp = async () => {
-    const result = await levelUp(group.id)
+    // For virtual groups, pass the certification breakdown from on-chain data
+    const isVirtualGroup = group.isVirtualGroup || group.id.startsWith('onchain-')
+    const certBreakdown = isVirtualGroup ? group.certificationBreakdown : undefined
+
+    const result = await levelUp(group.id, certBreakdown)
     if (result.success) {
       // Refresh the preview after successful level up
       const newPreview = await previewLevelUp(group.id)

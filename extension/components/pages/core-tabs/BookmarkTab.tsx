@@ -1,22 +1,34 @@
 import { useState } from 'react'
 import { useBookmarks } from '../../../hooks/useBookmarks'
+import { useIntentionCategories } from '../../../hooks/useIntentionCategories'
+import CategoryCard from '../../ui/CategoryCard'
+import CategoryDetailView from '../../ui/CategoryDetailView'
 // Removed Iridescence import - using CSS salmon gradient now
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/Modal.css'
 import '../../styles/BookmarkStyles.css'
+import '../../styles/CategoryStyles.css'
 
 const BookmarkTab = () => {
-  const { 
-    lists, 
+  const {
+    lists,
     triplets,
-    createList, 
-    deleteList, 
+    createList,
+    deleteList,
     updateList,
     getTripletsByList,
     searchTriplets,
-    refreshFromLocal 
+    refreshFromLocal
   } = useBookmarks()
+
+  // Intention categories (on-chain certified URLs)
+  const {
+    categories,
+    selectedCategory,
+    loading: categoriesLoading,
+    selectCategory
+  } = useIntentionCategories()
 
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [isCreatingList, setIsCreatingList] = useState(false)
@@ -112,16 +124,61 @@ const BookmarkTab = () => {
     throw new Error('Function not implemented.')
   }
 
+  // Calculate total certified URLs across all categories
+  const totalCertifiedUrls = categories.reduce((sum, cat) => sum + cat.urlCount, 0)
+
+  // If a category is selected, show the detail view
+  if (selectedCategory) {
+    return (
+      <div className="bookmarks-container">
+        <CategoryDetailView
+          category={selectedCategory}
+          onBack={() => selectCategory(null)}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="bookmarks-container">
-      {/* Header with lists navigation */}
-      <div className="bookmark-header">
-        {/* New List Button - Full Width */}
-        <div className="bookmark-header-flex">
+      {/* Collections Section - Intention Categories */}
+      <div className="categories-section">
+        <div className="section-header">
+          <span className="section-title">Collections</span>
+          <span className="section-count">{totalCertifiedUrls} certified URLs</span>
+        </div>
+        {categoriesLoading ? (
+          <div className="categories-grid">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="category-card loading">
+                <div className="category-card-header">
+                  <div className="category-color-dot" style={{ backgroundColor: '#666' }} />
+                  <span className="category-name">...</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="categories-grid">
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                onClick={() => selectCategory(category.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* My Lists Section - Manual bookmark lists */}
+      <div className="lists-section">
+        <div className="section-header">
+          <span className="section-title">My Lists</span>
           <button
             onClick={() => setIsCreatingList(true)}
             className="btn iridescence-btn"
-            style={{ width: '100%' }}
+            style={{ padding: '6px 12px', fontSize: '12px' }}
           >
             + New List
           </button>
