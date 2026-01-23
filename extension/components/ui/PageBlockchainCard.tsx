@@ -263,6 +263,10 @@ const PageBlockchainCard = () => {
     const setSuccess = isTrust ? setLocalTrustSuccess : setLocalDistrustSuccess
     const setOpType = isTrust ? setLocalOperationType : setLocalDistrustOperationType
 
+    // Remember previous state to detect if we became Pioneer/Explorer/Contributor
+    const wasCertified = userHasCertified
+    const prevTotal = totalCertifications
+
     setLoading(true)
     setError(null)
     setSuccess(false)
@@ -281,12 +285,38 @@ const PageBlockchainCard = () => {
       // RESUME auto-refreshes after transaction completes
       resumeRefresh()
 
-      // Refresh blockchain data to show new triple (only if successful)
-      if (trustSuccess) {
+      // Refetch discovery status to update badge
+      await refetchDiscovery()
+
+      // Determine discovery reward based on rank (same logic as intention certifications)
+      if (!wasCertified && prevTotal === 0) {
+        setDiscoveryReward({ status: 'Pioneer', xp: 50 })
+        setXpEarned(50)
+        setShowCelebration(true)
         setTimeout(() => {
-          fetchDataForCurrentPage()
-        }, 1000)
+          setShowCelebration(false)
+          setXpEarned(null)
+        }, 3000)
+      } else if (!wasCertified && prevTotal < 10) {
+        setDiscoveryReward({ status: 'Explorer', xp: 20 })
+        setXpEarned(20)
+        setShowCelebration(true)
+        setTimeout(() => {
+          setShowCelebration(false)
+          setXpEarned(null)
+        }, 3000)
+      } else if (!wasCertified) {
+        setDiscoveryReward({ status: 'Contributor', xp: 5 })
+        setXpEarned(5)
+        setShowCelebration(true)
+        setTimeout(() => {
+          setShowCelebration(false)
+          setXpEarned(null)
+        }, 3000)
       }
+
+      // Refresh blockchain data to show new triple
+      setTimeout(() => fetchDataForCurrentPage(), 1000)
     } catch (error) {
       console.error('❌ PageBlockchainCard - trustPage error:', error)
       const errorMessage = error instanceof Error ? error.message : `Failed to create ${modalType}`

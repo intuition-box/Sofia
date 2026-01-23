@@ -22,20 +22,23 @@
 }
 
 .skills-analyze-btn {
-  background: linear-gradient(135deg, #C7866C 0%, #9F6B54 100%);
+  background: linear-gradient(135deg, #8276ED 0%, #F6427B 50%, #FFBF33 100%);
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
+  font-family: 'Gotu', cursive;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(130, 118, 237, 0.3);
 }
 
 .skills-analyze-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(199, 134, 108, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(130, 118, 237, 0.6);
+  filter: brightness(1.1);
 }
 
 .skills-analyze-btn:disabled {

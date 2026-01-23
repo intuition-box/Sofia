@@ -168,6 +168,9 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
         setLoading(false)
         setSuccess(true)
         setError(null)
+
+        // Track certification for daily quest (even if triple existed)
+        questTrackingService.recordCertificationActivity()
       } else {
         loadingRef.current = false
         errorRef.current = errorMessage
@@ -289,6 +292,9 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
         setLoading(false)
         setSuccess(true)
         setError(null)
+
+        // Track certification for daily quest (even if triple existed)
+        questTrackingService.recordCertificationActivity()
       } else {
         loadingRef.current = false
         errorRef.current = errorMessage
