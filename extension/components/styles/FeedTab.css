@@ -28,6 +28,25 @@
   gap: 0;
 }
 
+.feed-item-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feed-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-header-text {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 .feed-item-container {
   background: #000208 !important;
   border-bottom: 1px solid #ffffff14;
@@ -36,14 +55,14 @@
   padding: 16px 20px;
   transition: all .2s;
   display: flex;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
   border-radius: 10px;
 }
 
 /* Avatar */
 .feed-avatar {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   flex-shrink: 0;
   overflow: hidden;
@@ -74,16 +93,19 @@
 .feed-account-name {
   color: #fff;
   font-weight: 600;
+  font-size: 16px;
 }
 
 .feed-action {
   color: #fff;
   font-weight: 400;
+  font-size: 16px;
 }
 
 .feed-details-link {
   color: #fff;
   font-weight: 600;
+  padding-top: 3px;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -95,6 +117,28 @@
 .feed-details-text {
   color: #fff;
   font-weight: 600;
+}
+
+/* Link Button */
+.feed-link-button {
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  margin-left: auto;
+  display: inline-block;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.8;
+}
+
+.feed-link-button:hover {
+  transform: scale(1.2);
+  opacity: 1;
+  text-decoration: none;
+}
+
+.feed-link-button:visited {
+  color: #fff;
+  text-decoration: none;
 }
 
 /* Meta info (timestamp and category) */

@@ -24,6 +24,7 @@ interface FeedEvent {
   description: string
   details: string
   portalLink?: string
+  objectUrl?: string
   amount?: string
   amountLabel?: string
 }
@@ -114,7 +115,6 @@ const FeedTab = () => {
     }
 
     const uniqueWallets = [...new Set(wallets)]
-    console.log('📊 Total unique trusted wallets:', uniqueWallets.length)
     console.log('📊 Trusted wallets:', uniqueWallets.slice(0, 5), '...')
 
     setTrustedWallets(uniqueWallets)
@@ -158,6 +158,7 @@ const FeedTab = () => {
       let description = ''
       let details = ''
       let portalLink = ''
+      let objectUrl = ''
       let amount = ''
       let amountLabel = ''
 
@@ -171,10 +172,17 @@ const FeedTab = () => {
         
         if (event.atom) {
           details = event.atom.label || 'Unknown'
-          portalLink = `https://portal.intuition.systems/app/explore/atom/${event.atom.term_id}`
+          portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
         } else if (event.triple) {
           details = `${event.triple.subject?.label || '?'} • ${event.triple.predicate?.label || '?'} • ${event.triple.object?.label || '?'}`
-          portalLink = `https://portal.intuition.systems/app/explore/triple/${event.triple.term_id}`
+          portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
+          
+          const objectWithValue = event.triple.object as { 
+            label?: string | null
+            term_id: string
+            value?: { thing?: { url?: string | null } | null } | null 
+          }
+          objectUrl = objectWithValue?.value?.thing?.url || ''
         }
         
         amount = (parseFloat(event.deposit.assets_after_fees || '0') / 1e18).toFixed(4)
@@ -190,10 +198,17 @@ const FeedTab = () => {
         
         if (event.atom) {
           details = event.atom.label || 'Unknown'
-          portalLink = `https://portal.intuition.systems/app/explore/atom/${event.atom.term_id}`
+          portalLink = `https://portal.intuition.systems/explore/atom/${event.atom.term_id}`
         } else if (event.triple) {
           details = `${event.triple.subject?.label || '?'} • ${event.triple.predicate?.label || '?'} • ${event.triple.object?.label || '?'}`
-          portalLink = `https://portal.intuition.systems/app/explore/triple/${event.triple.term_id}`
+          portalLink = `https://portal.intuition.systems/explore/triple/${event.triple.term_id}`
+          
+          const objectWithValue = event.triple.object as { 
+            label?: string | null
+            term_id: string
+            value?: { thing?: { url?: string | null } | null } | null 
+          }
+          objectUrl = objectWithValue?.value?.thing?.url || ''
         }
         
         amount = (parseFloat(event.redemption.assets || '0') / 1e18).toFixed(4)
@@ -211,6 +226,7 @@ const FeedTab = () => {
           description,
           details,
           portalLink,
+          objectUrl,
           amount,
           amountLabel
         })
@@ -332,40 +348,57 @@ const FeedTab = () => {
               else if (item.type === 'Redeemed') category = 'Redemption'
 
               return (
-                <div key={item.id} className="feed-item-container">
-                  <Avatar
-                    imgSrc={item.accountImage}
-                    name={item.accountWallet}
-                    avatarClassName="feed-avatar"
-                    size="medium"
-                  />
-
-                  <div className="feed-content">
-                    <div className="feed-text">
+                <div key={item.id} className="feed-item-wrapper">
+                  <div className="feed-item-header">
+                    <Avatar
+                      imgSrc={item.accountImage}
+                      name={item.accountWallet}
+                      avatarClassName="feed-avatar"
+                      size="medium"
+                    />
+                    <div className="feed-header-text">
                       <span className="feed-account-name">{item.accountLabel}</span>
                       {' '}
-                      <span className="feed-action">{item.description}</span>
-                      {' '}
-                      {item.portalLink ? (
-                        <a
-                          href={item.portalLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="feed-details-link"
-                        >
-                          {item.details}
-                        </a>
-                      ) : (
-                        <span className="feed-details-text">{item.details}</span>
-                      )}
-                      {item.amount && item.amountLabel && (
-                        <>
-                          {' '}
-                          <span className="feed-amount">
-                            ({item.amount} {item.amountLabel})
-                          </span>
-                        </>
-                      )}
+                      <span className="feed-action">{item.description} :</span>
+                    </div>
+                  </div>
+                  <div className="feed-item-container">
+                  <div className="feed-content">
+                    <div className="feed-text">
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <div style={{ flex: 1 }}>
+                          {item.portalLink ? (
+                            <a
+                              href={item.portalLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="feed-details-link"
+                            >
+                              {item.details}
+                            </a>
+                          ) : (
+                            <span className="feed-details-text">{item.details}</span>
+                          )}
+                          {item.amount && item.amountLabel && (
+                            <>
+                              {' '}
+                              <span className="feed-amount">
+                                ({item.amount} {item.amountLabel})
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        {item.objectUrl && (
+                          <a 
+                            href={item.objectUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="feed-link-button"
+                          >
+                            🔗
+                          </a>
+                        )}
+                      </div>
                     </div>
                     <div className="feed-meta">
                       <span className="feed-timestamp">{formatTimestamp(item.created_at)}</span>
@@ -388,10 +421,12 @@ const FeedTab = () => {
                         </button>
                       </div>
                     )}
+                    </div>
                   </div>
                 </div>
               )
             })}
+            <br />
         </div>
       ) : (
         <div className="empty-state">

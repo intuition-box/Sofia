@@ -121,7 +121,15 @@ query GetSofiaTrustedActivity(
       creator { id label image }
       subject { label term_id }
       predicate { label term_id }
-      object { label term_id }
+      object { 
+        label
+        term_id
+        value {
+          thing {
+              url
+          }
+        }
+      }
     }
   }
 }

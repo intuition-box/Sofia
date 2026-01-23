@@ -4,6 +4,11 @@ export interface IntuitionAtomResponse {
   type?: string
   created_at: string
   transaction_hash?: string
+  value?: {
+    thing?: {
+      url?: string | null
+    }
+  }
 }
 
 export interface IntuitionTripleResponse {
@@ -21,6 +26,11 @@ export interface IntuitionTripleResponse {
   object: {
     label: string | null
     term_id: string | null
+    value?: {
+      thing?: {
+        url?: string | null
+      }
+    }
   }
   positions?: Array<{
     shares: string

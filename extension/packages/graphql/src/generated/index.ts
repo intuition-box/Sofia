@@ -16425,6 +16425,10 @@ export type GetSofiaTrustedActivityQuery = {
         __typename?: "atoms"
         label?: string | null
         term_id: string
+        value?: {
+          __typename?: "atom_values"
+          thing?: { __typename?: "things"; url?: string | null } | null
+        } | null
       } | null
     } | null
   }>
@@ -25469,6 +25473,11 @@ export const GetSofiaTrustedActivityDocument = `
       object {
         label
         term_id
+        value {
+          thing {
+            url
+          }
+        }
       }
     }
   }
@@ -44621,6 +44630,28 @@ export const GetSofiaTrustedActivity = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "term_id" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "value" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "thing" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "url" }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
                             }
                           ]
                         }
