@@ -362,17 +362,17 @@
   font-weight: 600;
 }
 
-/* Level colors by rank */
-.level-badge.level-1 { color: #8B7355; background: rgba(139, 115, 85, 0.3); }   /* Wood */
-.level-badge.level-2 { color: #CD7F32; background: rgba(205, 127, 50, 0.3); }   /* Bronze */
-.level-badge.level-3 { color: #C0C0C0; background: rgba(192, 192, 192, 0.3); }  /* Silver */
-.level-badge.level-4 { color: #FFD700; background: rgba(255, 215, 0, 0.3); }    /* Gold */
-.level-badge.level-5 { color: #E5E4E2; background: rgba(229, 228, 226, 0.3); }  /* Platinum */
-.level-badge.level-6 { color: #B9F2FF; background: rgba(185, 242, 255, 0.3); }  /* Diamond */
-.level-badge.level-7 { color: #9B30FF; background: rgba(155, 48, 255, 0.3); }   /* Master */
-.level-badge.level-8 { color: #FF4500; background: rgba(255, 69, 0, 0.3); }     /* Grand Master */
-.level-badge.level-9 { color: #FF69B4; background: rgba(255, 105, 180, 0.3); }  /* Legendary */
-.level-badge.level-10 { color: #00CED1; background: rgba(0, 206, 209, 0.3); }   /* Mythic */
+/* Level colors - distinct colors */
+.level-badge.level-1 { color: #9CA3AF; background: rgba(156, 163, 175, 0.3); }   /* Gray */
+.level-badge.level-2 { color: #22C55E; background: rgba(34, 197, 94, 0.3); }     /* Green */
+.level-badge.level-3 { color: #3B82F6; background: rgba(59, 130, 246, 0.3); }    /* Blue */
+.level-badge.level-4 { color: #8B5CF6; background: rgba(139, 92, 246, 0.3); }    /* Purple */
+.level-badge.level-5 { color: #F59E0B; background: rgba(245, 158, 11, 0.3); }    /* Amber */
+.level-badge.level-6 { color: #EF4444; background: rgba(239, 68, 68, 0.3); }     /* Red */
+.level-badge.level-7 { color: #EC4899; background: rgba(236, 72, 153, 0.3); }    /* Pink */
+.level-badge.level-8 { color: #06B6D4; background: rgba(6, 182, 212, 0.3); }     /* Cyan */
+.level-badge.level-9 { color: #F97316; background: rgba(249, 115, 22, 0.3); }    /* Orange */
+.level-badge.level-10 { color: #FFD700; background: rgba(255, 215, 0, 0.3); }    /* Gold */
 
 .group-bento-stats {
   display: flex;
@@ -489,16 +489,16 @@
 }
 
 /* Level colors for detail view */
-.group-detail-level.level-1 { color: #8B7355; background: rgba(139, 115, 85, 0.3); }
-.group-detail-level.level-2 { color: #CD7F32; background: rgba(205, 127, 50, 0.3); }
-.group-detail-level.level-3 { color: #C0C0C0; background: rgba(192, 192, 192, 0.3); }
-.group-detail-level.level-4 { color: #FFD700; background: rgba(255, 215, 0, 0.3); }
-.group-detail-level.level-5 { color: #E5E4E2; background: rgba(229, 228, 226, 0.3); }
-.group-detail-level.level-6 { color: #B9F2FF; background: rgba(185, 242, 255, 0.3); }
-.group-detail-level.level-7 { color: #9B30FF; background: rgba(155, 48, 255, 0.3); }
-.group-detail-level.level-8 { color: #FF4500; background: rgba(255, 69, 0, 0.3); }
-.group-detail-level.level-9 { color: #FF69B4; background: rgba(255, 105, 180, 0.3); }
-.group-detail-level.level-10 { color: #00CED1; background: rgba(0, 206, 209, 0.3); }
+.group-detail-level.level-1 { color: #9CA3AF; background: rgba(156, 163, 175, 0.3); }
+.group-detail-level.level-2 { color: #22C55E; background: rgba(34, 197, 94, 0.3); }
+.group-detail-level.level-3 { color: #3B82F6; background: rgba(59, 130, 246, 0.3); }
+.group-detail-level.level-4 { color: #8B5CF6; background: rgba(139, 92, 246, 0.3); }
+.group-detail-level.level-5 { color: #F59E0B; background: rgba(245, 158, 11, 0.3); }
+.group-detail-level.level-6 { color: #EF4444; background: rgba(239, 68, 68, 0.3); }
+.group-detail-level.level-7 { color: #EC4899; background: rgba(236, 72, 153, 0.3); }
+.group-detail-level.level-8 { color: #06B6D4; background: rgba(6, 182, 212, 0.3); }
+.group-detail-level.level-9 { color: #F97316; background: rgba(249, 115, 22, 0.3); }
+.group-detail-level.level-10 { color: #FFD700; background: rgba(255, 215, 0, 0.3); }
 
 .group-detail-stats {
   display: flex;
