@@ -1,0 +1,108 @@
+fragment PositionDetails on positions {
+  id
+  account {
+    id
+    label
+    image
+  }
+  vault {
+    term_id
+    term {
+      atom {
+        term_id
+        label
+        image
+      }
+      triple {
+        term_id
+        term {
+          vaults(where: { curve_id: { _eq: "1" } }) {
+            term_id
+            position_count
+            positions_aggregate {
+              aggregate {
+                sum {
+                  shares
+                }
+              }
+            }
+          }
+        }
+        counter_term {
+          vaults(where: { curve_id: { _eq: "1" } }) {
+            term_id
+            position_count
+            positions_aggregate {
+              aggregate {
+                sum {
+                  shares
+                }
+              }
+            }
+          }
+        }
+        subject {
+          data
+          term_id
+          label
+          image
+          emoji
+          type
+          ...AtomValue
+          creator {
+            ...AccountMetadata
+          }
+        }
+        predicate {
+          data
+          term_id
+          label
+          image
+          emoji
+          type
+          ...AtomValue
+          creator {
+            ...AccountMetadata
+          }
+        }
+        object {
+          data
+          term_id
+          label
+          image
+          emoji
+          type
+          ...AtomValue
+          creator {
+            ...AccountMetadata
+          }
+        }
+      }
+    }
+  }
+  shares
+  term_id
+  curve_id
+}
+
+fragment PositionFields on positions {
+  account {
+    id
+    label
+  }
+  shares
+  vault {
+    term_id
+    total_shares
+    current_share_price
+  }
+}
+
+fragment PositionAggregateFields on positions_aggregate {
+  aggregate {
+    count
+    sum {
+      shares
+    }
+  }
+}

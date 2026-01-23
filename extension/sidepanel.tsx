@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { configureClient } from '@0xintuition/graphql'
+import { configureClient } from '@0xsofia/graphql'
 import "./components/styles/Global.css"
 
 import { wagmiConfig } from "./lib/config/wagmi"
@@ -20,6 +20,20 @@ import ResonancePage from "./components/pages/ResonancePage"
 import ChatPage from "./components/pages/ChatPage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import DiscoveryProfilePage from "./components/pages/DiscoveryProfilePage"
+
+// Configure GraphQL client BEFORE creating QueryClient
+configureClient({
+  apiUrl: 'https://mainnet.intuition.sh/v1/graphql'
+})
+
+// Query client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+})
 
 
 const SidePanelContent = () => {
@@ -70,20 +84,6 @@ const SidePanelContent = () => {
     </AppLayout>
   )
 }
-
-// Configure GraphQL client to use testnet endpoint
-configureClient({
-  apiUrl: 'https://testnet.intuition.sh/v1/graphql'
-})
-
-// Query client for React Query
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-    },
-  },
-})
 
 function SidePanel() {
   return (

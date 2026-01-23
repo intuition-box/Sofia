@@ -1,0 +1,135 @@
+query GetTrustCircleAccounts(
+  $subjectId: String!
+  $predicateId: String!
+  $walletAddress: String!
+) {
+  triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+      ]
+    }
+  ) {
+    object {
+      term_id
+      label
+      type
+      accounts {
+        id
+        label
+      }
+    }
+    term {
+      vaults(
+        where: { curve_id: { _eq: "2" } }
+        order_by: { curve_id: asc }
+      ) {
+        positions(where: { account_id: { _eq: $walletAddress } }) {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}
+
+
+
+query GetSofiaTrustedActivity(
+  $trustedWallets: [String!]!
+  $proxy: String!
+  $limit: Int!
+  $offset: Int!
+) {
+  events(
+    limit: $limit
+    offset: $offset
+    order_by: { created_at: desc }
+    where: {
+      _and: [
+        { type: { _neq: "FeesTransfered" } }
+
+        {
+          _or: [
+            {
+              _and: [
+                { type: { _eq: "Deposited" } }
+                { deposit: { sender_id: { _eq: $proxy } } }
+                { deposit: { receiver: { id: { _in: $trustedWallets } } } }
+                { deposit: { assets_after_fees: { _neq: "0" } } }
+              ]
+            }
+
+            {
+              _and: [
+                { type: { _eq: "Redeemed" } }
+                { redemption: { sender_id: { _in: $trustedWallets } } }
+                {
+                  _or: [
+                    {
+                      _and: [
+                        { triple_id: { _is_null: false } }
+                        { triple: { creator: { id: { _eq: $proxy } } } }
+                      ]
+                    }
+                    {
+                      _and: [
+                        { atom_id: { _is_null: false } }
+                        { atom: { creator: { id: { _eq: $proxy } } } }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ) {
+    id
+    type
+    created_at
+    transaction_hash
+
+    deposit {
+      sender_id
+      assets_after_fees
+      shares
+      sender { id label image }
+      receiver { id label image }
+    }
+
+    redemption {
+      sender_id
+      assets
+      shares
+      sender { id label image }
+    }
+
+    atom {
+      term_id
+      label
+      type
+      creator { id label image }
+    }
+
+    triple {
+      term_id
+      creator { id label image }
+      subject { label term_id }
+      predicate { label term_id }
+      object { 
+        label
+        term_id
+        value {
+          thing {
+              url
+          }
+        }
+      }
+    }
+  }
+}

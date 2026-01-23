@@ -1,4 +1,4 @@
-import { usePinThingMutation } from "@0xintuition/graphql"
+import { usePinThingMutation } from "@0xsofia/graphql"
 import { getClients } from '../lib/clients/viemClients'
 import { stringToHex } from 'viem'
 import { MultiVaultAbi } from '../ABI/MultiVault'

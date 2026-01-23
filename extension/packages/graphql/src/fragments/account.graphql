@@ -1,0 +1,172 @@
+fragment AccountMetadata on accounts {
+  label
+  image
+  id
+  atom_id
+  type
+}
+
+fragment AccountPositionsAggregate on accounts {
+  positions_aggregate(order_by: { shares: desc }) {
+    aggregate {
+      count
+    }
+    nodes {
+      id
+      shares
+      vault {
+        term_id
+        total_shares
+        current_share_price
+        term {
+          atom {
+            term_id
+            label
+          }
+          triple {
+            term_id
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment AccountPositions on accounts {
+  positions(
+    order_by: { shares: desc }
+    limit: $positionsLimit
+    offset: $positionsOffset
+    where: $positionsWhere
+  ) {
+    id
+    shares
+    vault {
+      term_id
+      total_shares
+      current_share_price
+      term {
+        atom {
+          term_id
+          label
+        }
+        triple {
+          term_id
+        }
+      }
+    }
+  }
+}
+
+fragment AccountAtoms on accounts {
+  atoms(
+    where: $atomsWhere
+    order_by: $atomsOrderBy
+    limit: $atomsLimit
+    offset: $atomsOffset
+  ) {
+    term_id
+    label
+    data
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        positions_aggregate(where: { account_id: { _eq: $address } }) {
+          nodes {
+            account {
+              id
+            }
+            shares
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment AccountAtomsAggregate on accounts {
+  atoms_aggregate(
+    where: $atomsWhere
+    order_by: $atomsOrderBy
+    limit: $atomsLimit
+    offset: $atomsOffset
+  ) {
+    aggregate {
+      count
+    }
+    nodes {
+      term_id
+      label
+      data
+      term {
+        vaults(where: { curve_id: { _eq: "1" } }) {
+          total_shares
+          positions_aggregate(where: { account_id: { _eq: $address } }) {
+            nodes {
+              account {
+                id
+              }
+              shares
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment AccountTriples on accounts {
+  triples_aggregate(
+    where: $triplesWhere
+    order_by: $triplesOrderBy
+    limit: $triplesLimit
+    offset: $triplesOffset
+  ) {
+    aggregate {
+      count
+    }
+    nodes {
+      term_id
+      subject {
+        term_id
+        label
+      }
+      predicate {
+        term_id
+        label
+      }
+      object {
+        term_id
+        label
+      }
+    }
+  }
+}
+
+fragment AccountTriplesAggregate on accounts {
+  triples_aggregate(
+    where: $triplesWhere
+    order_by: $triplesOrderBy
+    limit: $triplesLimit
+    offset: $triplesOffset
+  ) {
+    aggregate {
+      count
+    }
+    nodes {
+      term_id
+      subject {
+        term_id
+        label
+      }
+      predicate {
+        term_id
+        label
+      }
+      object {
+        term_id
+        label
+      }
+    }
+  }
+}

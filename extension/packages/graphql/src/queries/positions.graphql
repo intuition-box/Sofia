@@ -1,0 +1,141 @@
+# Main pagination query
+query GetPositions(
+  $limit: Int
+  $offset: Int
+  $orderBy: [positions_order_by!]
+  $where: positions_bool_exp
+) {
+  total: positions_aggregate(where: $where) {
+    aggregate {
+      count
+      sum {
+        shares
+      }
+    }
+  }
+  positions(limit: $limit, offset: $offset, order_by: $orderBy, where: $where) {
+    ...PositionDetails
+  }
+}
+
+query GetTriplePositionsByAddress(
+  $limit: Int
+  $offset: Int
+  $orderBy: [positions_order_by!]
+  $where: positions_bool_exp
+  $address: String!
+) {
+  total: positions_aggregate(where: $where) {
+    aggregate {
+      count
+      sum {
+        shares
+      }
+    }
+  }
+  positions(limit: $limit, offset: $offset, order_by: $orderBy, where: $where) {
+    ...PositionDetails
+    vault {
+      term_id
+      term {
+        triple {
+          term {
+            positions(where: { account_id: { _ilike: $address } }) {
+              account {
+                id
+                label
+                image
+              }
+              shares
+            }
+          }
+          counter_term {
+            positions(where: { account_id: { _ilike: $address } }) {
+              account {
+                id
+                label
+                image
+              }
+              shares
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# Combined query with aggregates and nodes
+query GetPositionsWithAggregates(
+  $limit: Int
+  $offset: Int
+  $orderBy: [positions_order_by!]
+  $where: positions_bool_exp
+) {
+  positions_aggregate(
+    limit: $limit
+    offset: $offset
+    order_by: $orderBy
+    where: $where
+  ) {
+    aggregate {
+      count
+    }
+    nodes {
+      ...PositionDetails
+    }
+  }
+}
+
+query GetPositionsCount($where: positions_bool_exp) {
+  positions_aggregate(where: $where) {
+    total: aggregate {
+      count
+      sum {
+        shares
+      }
+    }
+  }
+}
+
+query GetPosition($positionId: String!) {
+  position(id: $positionId) {
+    ...PositionDetails
+  }
+}
+
+query GetPositionsCountByType($where: positions_bool_exp) {
+  positions_aggregate(where: $where) {
+    total: aggregate {
+      count
+      sum {
+        shares
+      }
+    }
+  }
+  positions {
+    vault {
+      term_id
+    }
+  }
+}
+
+query SearchPositions($addresses: _text, $search_fields: jsonb) {
+  positions: search_positions_on_subject(
+    args: { addresses: $addresses, search_fields: $search_fields }
+  ) {
+    term {
+      triple {
+        subject {
+          data
+        }
+        predicate {
+          data
+        }
+        object {
+          data
+        }
+      }
+    }
+  }
+}

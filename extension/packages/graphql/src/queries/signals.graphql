@@ -1,0 +1,211 @@
+query GetSignals(
+  $limit: Int
+  $offset: Int
+  $orderBy: [signals_order_by!]
+  $addresses: [String!]
+) {
+  total: events_aggregate {
+    aggregate {
+      count
+    }
+  }
+  signals(limit: $limit, offset: $offset, order_by: $orderBy) {
+    id
+    block_number
+    created_at
+    transaction_hash
+    atom_id
+    triple_id
+    deposit_id
+    redemption_id
+    term {
+      atom {
+        ...AtomMetadata
+        term {
+          vaults {
+            total_shares
+            position_count
+            positions(where: { account: { id: { _in: $addresses } } }) {
+              account_id
+              shares
+              account {
+                id
+                label
+                image
+              }
+            }
+          }
+        }
+      }
+      triple {
+        term_id
+        creator {
+          ...AccountMetadata
+        }
+        subject {
+          data
+          term_id
+          image
+          label
+          emoji
+          type
+          ...AtomValue
+          creator {
+            ...AccountMetadata
+          }
+        }
+        predicate {
+          data
+          term_id
+          image
+          label
+          emoji
+          type
+          ...AtomValue
+          creator {
+            ...AccountMetadata
+          }
+        }
+        object {
+          data
+          term_id
+          image
+          label
+          emoji
+          type
+          ...AtomValue
+          creator {
+            ...AccountMetadata
+          }
+        }
+        term {
+          vaults {
+            total_shares
+            position_count
+            positions(where: { account: { id: { _in: $addresses } } }) {
+              account_id
+              shares
+              account {
+                id
+                label
+                image
+              }
+            }
+          }
+        }
+        counter_term {
+          vaults {
+            total_shares
+            position_count
+            positions(where: { account: { id: { _in: $addresses } } }) {
+              account_id
+              shares
+              account {
+                id
+                label
+                image
+              }
+            }
+          }
+        }
+      }
+    }
+    deposit {
+      sender_id
+      sender {
+        id
+        label
+        image
+      }
+      receiver_id
+      receiver {
+        id
+        label
+        image
+      }
+      shares
+      assets_after_fees
+      vault {
+        total_shares
+        position_count
+        positions(where: { account: { id: { _in: $addresses } } }) {
+          account_id
+          shares
+          account {
+            id
+            label
+            image
+          }
+        }
+      }
+    }
+    redemption {
+      sender_id
+      sender {
+        id
+        label
+        image
+      }
+      receiver_id
+      receiver {
+        id
+        label
+        image
+      }
+      assets
+      shares
+    }
+  }
+}
+
+fragment AtomValue on atoms {
+  value {
+    person {
+      name
+      image
+      description
+      url
+    }
+    thing {
+      name
+      image
+      description
+      url
+    }
+    organization {
+      name
+      image
+      description
+      url
+    }
+    account {
+      id
+      label
+      image
+    }
+  }
+}
+
+fragment AtomMetadataMAYBEDELETETHIS on atoms {
+  term_id
+  data
+  image
+  label
+  emoji
+  type
+  wallet_id
+  creator {
+    id
+    label
+    image
+  }
+  ...AtomValue
+}
+
+fragment AccountMetadata on accounts {
+  label
+  image
+  id
+  atom_id
+  type
+}

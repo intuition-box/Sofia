@@ -54,6 +54,7 @@ task
 
 /docs
 .claude
+.github
 
 # Docker build artifacts (keep start-agents.sh)
 /docker-build/agent/
