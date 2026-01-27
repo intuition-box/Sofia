@@ -7,12 +7,11 @@
 
 import { ethers } from 'ethers';
 import * as dotenv from 'dotenv';
+import { MULTIVAULT_ADDRESS, SOFIA_PROXY_ADDRESS } from '../src/mastra/config/constants';
 
 dotenv.config();
 
 const RPC_ENDPOINT = 'https://rpc.intuition.systems';
-const SOFIA_PROXY_ADDRESS = '0x26F81d723Ad1648194FAA4b7E235105Fd1212c6c';
-const MULTIVAULT_ADDRESS = '0x6E35cF57A41fA15eA0EaE9C33e751b01A784Fe7e';
 
 async function main() {
   const botPrivateKey = process.env.BOT_PRIVATE_KEY;
