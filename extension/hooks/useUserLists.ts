@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
+import { PREDICATE_IDS } from '../lib/config/chainConfig'
 
 export interface UserList {
   predicateTermId: string
@@ -43,7 +44,7 @@ export const useUserLists = (
   const [hasMore, setHasMore] = useState(true)
 
   // Predicate ID for "has tag" - used to find lists
-  const HAS_TAG_PREDICATE_ID = '0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5'
+  const HAS_TAG_PREDICATE_ID = PREDICATE_IDS.HAS_TAG
 
   useEffect(() => {
     if (!userTermId) {

@@ -22,7 +22,15 @@ const SkillsTab = () => {
     analyzedAt,
     analyzeSkills,
     reset,
+    loadFromCache,
   } = useSkillsAnalysis();
+
+  // Load cached data on mount
+  useEffect(() => {
+    if (walletAddress) {
+      loadFromCache(walletAddress);
+    }
+  }, [walletAddress, loadFromCache]);
 
   // Check for trigger flag from "Unlock Proofs" button in Echoes tab
   useEffect(() => {
