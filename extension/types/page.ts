@@ -22,6 +22,8 @@ export interface UsePageBlockchainDataResult {
   error: string | null
   currentUrl: string | null
   pageTitle: string | null
+  isRestricted: boolean
+  restrictionMessage: string | null
   fetchDataForCurrentPage: () => Promise<void>
   pauseRefresh: () => void
   resumeRefresh: () => void

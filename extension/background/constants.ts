@@ -69,3 +69,32 @@ export const EXCLUDED_URL_PATTERNS = [
 export const SENSITIVE_URL_PARAMS = [
   'token', 'session', 'auth', 'key', 'password', 'secret', 'api_key'
 ];
+
+// Protocoles où les content scripts ne peuvent pas s'exécuter (wallet indisponible)
+export const RESTRICTED_PROTOCOLS = [
+  'chrome:', 'chrome-extension:', 'chrome-search:', 'chrome-devtools:',
+  'devtools:', 'edge:', 'about:', 'brave:', 'opera:', 'vivaldi:', 'file:',
+]
+
+// Domaines restreints (stores d'extensions + ads/tracking)
+export const RESTRICTED_DOMAINS = [
+  // Browser extension stores
+  'chrome.google.com', 'chromewebstore.google.com',
+  'microsoftedge.microsoft.com', 'addons.mozilla.org',
+  // Ad/tracking domains (not certifiable)
+  's0.2mdn.net', 'ssp.disqus.com', 'ad5.ad-srv.net',
+  'ads.servenobid.com', 'cs.ns1p.net', '2mdn.net',
+  'doubleclick.net', 'googlesyndication.com', 'googleadservices.com',
+  'adsrvr.org', 'adnxs.com', 'criteo.com', 'taboola.com',
+  'outbrain.com', 'pubmatic.com', 'rubiconproject.com',
+]
+
+// Messages user-friendly pour l'UI
+export const RESTRICTION_MESSAGES: Record<string, string> = {
+  'chrome:': 'Page interne Chrome',
+  'chrome-extension:': 'Page d\'extension',
+  'about:': 'Page système',
+  'file:': 'Fichier local',
+  'ad': 'Page publicitaire',
+  'default': 'Page système du navigateur',
+}

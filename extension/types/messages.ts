@@ -51,6 +51,9 @@ export type MessageType =
   | 'AMPLIFY_GROUP'
   | 'TRACK_URL'
   | 'FORCE_FLUSH_TRACKER'
+  // Wallet bridge messages
+  | 'WALLET_REQUEST'
+  | 'WALLET_EVENT'
 
 // Specific message interfaces
 export interface ChromeMessage extends BaseMessage {
@@ -178,4 +181,27 @@ export interface MessageResponse {
   url?: string
   tabId?: number
   recommendations?: any[]
+}
+
+// Wallet bridge message types
+export interface WalletRequestMessage extends BaseMessage {
+  type: 'WALLET_REQUEST'
+  requestId: string
+  method: string
+  params?: any[]
+}
+
+export interface WalletResponseMessage {
+  requestId: string
+  result?: any
+  error?: {
+    code: number
+    message: string
+  }
+}
+
+export interface WalletEventMessage extends BaseMessage {
+  type: 'WALLET_EVENT'
+  event: 'accountsChanged' | 'chainChanged' | 'connect' | 'disconnect'
+  data?: any
 }

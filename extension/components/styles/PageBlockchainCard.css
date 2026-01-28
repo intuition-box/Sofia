@@ -857,6 +857,42 @@
   font-size: 11px;
 }
 
+/* Restricted Page Warning */
+.restricted-page-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 152, 0, 0.1);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  border-radius: 12px;
+  margin-top: 12px;
+}
+
+.restricted-page-warning .warning-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.restricted-page-warning .warning-content {
+  flex: 1;
+}
+
+.restricted-page-warning .warning-content strong {
+  display: block;
+  color: #ff9800;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.restricted-page-warning .warning-content p {
+  margin: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
 /* Trust & Distrust Buttons Row */
 .trust-buttons-row {
   display: flex;
