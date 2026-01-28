@@ -17,11 +17,13 @@ import { getClients } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { MULTIVAULT_CONTRACT_ADDRESS, BOT_VERIFIER_ADDRESS } from '../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { stringToHex } from 'viem'
+import { stringToHex, getAddress } from 'viem'
 import type { Address } from '../types/viem'
 
-// Storage key for social attestation
-const SOCIAL_ATTESTATION_KEY = 'social_attestation'
+// Helper to generate per-wallet storage keys
+const getWalletKey = (baseKey: string, walletAddress: string): string => {
+  return `${baseKey}_${walletAddress}`
+}
 
 export interface SocialAttestation {
   txHash: string
@@ -56,22 +58,31 @@ export const useSocialVerifier = (): SocialVerifierResult => {
   const [isVerifying, setIsVerifying] = useState(false)
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | null>(null)
 
-  // Check if user has all 5 OAuth connections locally
+  // Check if user has all 5 OAuth connections locally (per-wallet)
   const checkCanVerify = useCallback(async () => {
+    if (!walletAddress) {
+      setVerificationStatus(null)
+      setCanVerify(false)
+      return false
+    }
+
+    const checksumAddr = getAddress(walletAddress)
+    const youtubeKey = getWalletKey('oauth_token_youtube', checksumAddr)
+    const spotifyKey = getWalletKey('oauth_token_spotify', checksumAddr)
+    const twitchKey = getWalletKey('oauth_token_twitch', checksumAddr)
+    const discordKey = getWalletKey('oauth_token_discord', checksumAddr)
+    const twitterKey = getWalletKey('oauth_token_twitter', checksumAddr)
+
     const result = await chrome.storage.local.get([
-      'oauth_token_youtube',
-      'oauth_token_spotify',
-      'oauth_token_twitch',
-      'oauth_token_discord',
-      'oauth_token_twitter',
+      youtubeKey, spotifyKey, twitchKey, discordKey, twitterKey
     ])
 
     const status: VerificationStatus = {
-      youtube: !!result.oauth_token_youtube,
-      spotify: !!result.oauth_token_spotify,
-      discord: !!result.oauth_token_discord,
-      twitch: !!result.oauth_token_twitch,
-      twitter: !!result.oauth_token_twitter,
+      youtube: !!result[youtubeKey],
+      spotify: !!result[spotifyKey],
+      discord: !!result[discordKey],
+      twitch: !!result[twitchKey],
+      twitter: !!result[twitterKey],
     }
 
     setVerificationStatus(status)
@@ -79,7 +90,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
     const connectedCount = Object.values(status).filter(Boolean).length
     setCanVerify(connectedCount >= 5)
     return connectedCount >= 5
-  }, [])
+  }, [walletAddress])
 
   // Check on-chain if all 5 social platforms are linked
   // by checking for triples with predicates "has verified {platform} id"
@@ -173,7 +184,8 @@ export const useSocialVerifier = (): SocialVerifierResult => {
           claimedAt: legacyTriple.created_at ? new Date(legacyTriple.created_at).getTime() : Date.now(),
           walletAddress
         }
-        await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: attestation })
+        const attestationKey = getWalletKey('social_attestation', getAddress(walletAddress))
+        await chrome.storage.local.set({ [attestationKey]: attestation })
         setAttestation(attestation)
         setIsSocialVerified(true)
         return true
@@ -199,7 +211,8 @@ export const useSocialVerifier = (): SocialVerifierResult => {
           claimedAt: latestTriple.created_at ? new Date(latestTriple.created_at).getTime() : Date.now(),
           walletAddress
         }
-        await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: attestation })
+        const attestationKey = getWalletKey('social_attestation', getAddress(walletAddress))
+        await chrome.storage.local.set({ [attestationKey]: attestation })
         setAttestation(attestation)
         setIsSocialVerified(true)
         return true
@@ -218,8 +231,10 @@ export const useSocialVerifier = (): SocialVerifierResult => {
     if (!walletAddress) return
 
     try {
-      const result = await chrome.storage.local.get(SOCIAL_ATTESTATION_KEY)
-      const stored = result[SOCIAL_ATTESTATION_KEY] as SocialAttestation | undefined
+      const checksumAddr = getAddress(walletAddress)
+      const attestationKey = getWalletKey('social_attestation', checksumAddr)
+      const result = await chrome.storage.local.get(attestationKey)
+      const stored = result[attestationKey] as SocialAttestation | undefined
 
       if (stored && stored.walletAddress.toLowerCase() === walletAddress.toLowerCase()) {
         setAttestation(stored)
@@ -255,13 +270,16 @@ export const useSocialVerifier = (): SocialVerifierResult => {
     try {
       console.log('🧬 [SocialVerifier] Starting verification...')
 
-      // Get OAuth tokens
+      // Get OAuth tokens (per-wallet)
+      const checksumAddr = getAddress(walletAddress)
+      const youtubeKey = getWalletKey('oauth_token_youtube', checksumAddr)
+      const spotifyKey = getWalletKey('oauth_token_spotify', checksumAddr)
+      const discordKey = getWalletKey('oauth_token_discord', checksumAddr)
+      const twitchKey = getWalletKey('oauth_token_twitch', checksumAddr)
+      const twitterKey = getWalletKey('oauth_token_twitter', checksumAddr)
+
       const tokenResult = await chrome.storage.local.get([
-        'oauth_token_youtube',
-        'oauth_token_spotify',
-        'oauth_token_discord',
-        'oauth_token_twitch',
-        'oauth_token_twitter',
+        youtubeKey, spotifyKey, discordKey, twitchKey, twitterKey
       ])
 
       // Call Mastra API - bot will verify AND create the triple
@@ -270,11 +288,11 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       const requestData = {
         walletAddress,
         tokens: {
-          youtube: tokenResult.oauth_token_youtube?.accessToken,
-          spotify: tokenResult.oauth_token_spotify?.accessToken,
-          discord: tokenResult.oauth_token_discord?.accessToken,
-          twitch: tokenResult.oauth_token_twitch?.accessToken,
-          twitter: tokenResult.oauth_token_twitter?.accessToken,
+          youtube: tokenResult[youtubeKey]?.accessToken,
+          spotify: tokenResult[spotifyKey]?.accessToken,
+          discord: tokenResult[discordKey]?.accessToken,
+          twitch: tokenResult[twitchKey]?.accessToken,
+          twitter: tokenResult[twitterKey]?.accessToken,
         },
       }
 
@@ -322,7 +340,8 @@ export const useSocialVerifier = (): SocialVerifierResult => {
           claimedAt: Date.now(),
           walletAddress,
         }
-        await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: attestation })
+        const attestationKey = getWalletKey('social_attestation', checksumAddr)
+        await chrome.storage.local.set({ [attestationKey]: attestation })
         setAttestation(attestation)
         setIsSocialVerified(true)
 
@@ -340,7 +359,8 @@ export const useSocialVerifier = (): SocialVerifierResult => {
           blockNumber: data.blockNumber,
         }
 
-        await chrome.storage.local.set({ [SOCIAL_ATTESTATION_KEY]: newAttestation })
+        const attestationKey = getWalletKey('social_attestation', checksumAddr)
+        await chrome.storage.local.set({ [attestationKey]: newAttestation })
         setAttestation(newAttestation)
         setIsSocialVerified(true)
 
@@ -365,18 +385,14 @@ export const useSocialVerifier = (): SocialVerifierResult => {
     checkCanVerify()
   }, [loadAttestation, checkCanVerify])
 
-  // Listen for OAuth token changes
+  // Listen for OAuth token changes (per-wallet)
   useEffect(() => {
     const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      const oauthKeys = [
-        'oauth_token_youtube',
-        'oauth_token_spotify',
-        'oauth_token_twitch',
-        'oauth_token_discord',
-        'oauth_token_twitter',
-      ]
+      // Check if any OAuth token changed (for any wallet)
+      const changedKeys = Object.keys(changes)
+      const hasOAuthChange = changedKeys.some(key => key.startsWith('oauth_token_'))
 
-      if (oauthKeys.some(key => key in changes)) {
+      if (hasOAuthChange) {
         checkCanVerify()
       }
     }
