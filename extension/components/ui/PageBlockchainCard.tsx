@@ -505,8 +505,8 @@ const PageBlockchainCard = () => {
             <div className="restricted-page-warning">
               <span className="warning-icon">⚠️</span>
               <div className="warning-content">
-                <strong>Page non certifiable</strong>
-                <p>{restrictionMessage || 'Cette page ne peut pas être certifiée'}</p>
+                <strong>Page not certifiable</strong>
+                <p>{restrictionMessage || 'This page cannot be certified'}</p>
               </div>
             </div>
           )}

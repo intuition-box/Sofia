@@ -15,7 +15,7 @@ export interface RestrictionInfo {
  */
 export function isRestrictedUrl(url: string | null): RestrictionInfo {
   if (!url) {
-    return { restricted: true, message: 'Aucune page chargée' }
+    return { restricted: true, message: 'No page loaded' }
   }
 
   try {
@@ -38,13 +38,13 @@ export function isRestrictedUrl(url: string | null): RestrictionInfo {
         const isAdDomain = ['2mdn', 'doubleclick', 'googlesyndication', 'googleadservices',
           'adsrvr', 'adnxs', 'criteo', 'taboola', 'outbrain', 'pubmatic', 'rubicon',
           'disqus', 'ad-srv', 'servenobid'].some(ad => domain.includes(ad))
-        const message = isAdDomain ? RESTRICTION_MESSAGES.ad : 'Store d\'extensions'
+        const message = isAdDomain ? RESTRICTION_MESSAGES.ad : 'Extension store'
         return { restricted: true, message }
       }
     }
 
     return { restricted: false }
   } catch {
-    return { restricted: true, message: 'URL invalide' }
+    return { restricted: true, message: 'Invalid URL' }
   }
 }

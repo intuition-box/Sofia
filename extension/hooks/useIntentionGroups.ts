@@ -224,7 +224,12 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         const activeUrls = existing.urls.filter(u => !u.removed)
         existing.activeUrlCount = activeUrls.length
         existing.certifiedCount = activeUrls.filter(u => u.isOnChain).length
-        // NOTE: Do NOT auto-update level here - level should only change via explicit "Level Up" action
+        // Restore level from on-chain if local level is lower (e.g., after cache clear)
+        // Use MAX of local level and on-chain calculated level
+        if (onChain.level > existing.level) {
+          console.log(`📊 [useIntentionGroups] Restoring level for ${existing.domain}: ${existing.level} → ${onChain.level} (from on-chain certifications)`)
+          existing.level = onChain.level
+        }
 
       } else {
         // CASE 2: Domain exists ONLY on-chain → create "virtual" group
