@@ -5,7 +5,7 @@
  * Used by the UI to display and interact with domain-based groups
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { IntentionGroupRecord, GroupUrlRecord } from '~lib/database/indexedDB'
 import type { CertificationType } from '~lib/services/GroupManager'
 import { EXCLUDED_URL_PATTERNS } from '~background/constants'
@@ -126,6 +126,9 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
   // Fetch on-chain intention groups
   const { groups: onChainGroups, loading: onChainLoading, refetch: refetchOnChain } = useOnChainIntentionGroups()
 
+  // Track groups that need level persistence (to avoid side effects in useMemo)
+  const pendingLevelUpdatesRef = useRef<Array<{ groupId: string; domain: string; level: number; certifiedCount: number }>>([])
+
   /**
    * Load all groups from background service (local IndexedDB)
    */
@@ -163,6 +166,11 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
   const mergedGroups = useMemo(() => {
     const merged = new Map<string, IntentionGroupWithStats>()
 
+    // DEBUG: Log inputs
+    console.log(`🔍 [useIntentionGroups] MERGE START - localGroups: ${localGroups.length}, onChainGroups: ${onChainGroups.length}`)
+    console.log(`🔍 [useIntentionGroups] Local groups:`, localGroups.map(g => ({ domain: g.domain, level: g.level, id: g.id })))
+    console.log(`🔍 [useIntentionGroups] On-chain groups:`, onChainGroups.map(g => ({ domain: g.domain, level: g.level, certifiedCount: g.certifiedCount })))
+
     // 1. Add all local groups first (using normalized domain as key)
     for (const local of localGroups) {
       const normalizedDomain = normalizeDomain(local.domain)
@@ -190,6 +198,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       if (shouldExcludeDomain(onChain.domain)) continue
 
       const existing = merged.get(onChain.domain)
+      console.log(`🔍 [useIntentionGroups] Looking for ${onChain.domain} (level ${onChain.level}) → found: ${existing ? `yes (local level ${existing.level})` : 'no'}`)
 
       if (existing) {
         // CASE 1: Domain exists locally → enrich with on-chain URLs
@@ -228,7 +237,16 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         // Use MAX of local level and on-chain calculated level
         if (onChain.level > existing.level) {
           console.log(`📊 [useIntentionGroups] Restoring level for ${existing.domain}: ${existing.level} → ${onChain.level} (from on-chain certifications)`)
+          const oldLevel = existing.level
           existing.level = onChain.level
+          // Track for persistence in useEffect (no side effects in useMemo)
+          pendingLevelUpdatesRef.current.push({
+            groupId: existing.id,
+            domain: existing.domain,
+            level: onChain.level,
+            certifiedCount: onChain.certifiedCount
+          })
+          console.log(`📝 [useIntentionGroups] Queued level update: ${existing.domain} ${oldLevel} → ${onChain.level}`)
         }
 
       } else {
@@ -276,6 +294,38 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
 
     return Array.from(merged.values())
   }, [localGroups, onChainGroups])
+
+  /**
+   * Persist pending level updates to IndexedDB
+   * This runs after mergedGroups is computed to avoid side effects in useMemo
+   */
+  useEffect(() => {
+    const updates = pendingLevelUpdatesRef.current
+    if (updates.length === 0) return
+
+    // Clear the ref immediately to avoid duplicate processing
+    pendingLevelUpdatesRef.current = []
+
+    console.log(`💾 [useIntentionGroups] Persisting ${updates.length} level update(s)...`)
+
+    // Persist each level update
+    for (const update of updates) {
+      chrome.runtime.sendMessage({
+        type: 'UPDATE_GROUP_LEVEL',
+        groupId: update.groupId,
+        level: update.level,
+        certifiedCount: update.certifiedCount
+      }).then(response => {
+        if (response?.success) {
+          console.log(`✅ [useIntentionGroups] Persisted level ${update.level} for ${update.domain}`)
+        } else {
+          console.warn(`⚠️ [useIntentionGroups] Failed to persist level for ${update.domain}:`, response?.error)
+        }
+      }).catch(err => {
+        console.warn(`❌ [useIntentionGroups] Error persisting level for ${update.domain}:`, err)
+      })
+    }
+  }, [mergedGroups]) // Run when mergedGroups changes
 
   /**
    * Select a group to view details

@@ -323,17 +323,24 @@ const AccountTab = () => {
     chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
   }
 
-  // OAuth disconnect function (soft - keeps sync info)
+  // OAuth disconnect function (hard - clears token AND sync info for fresh re-connection)
   const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter') => {
     if (!walletAddress) return
     const checksumAddr = getAddress(walletAddress)
+
+    // Remove OAuth token
     await chrome.storage.local.remove(`oauth_token_${platform}_${checksumAddr}`)
+
+    // Remove sync info to allow fresh data fetch on re-connection
+    await chrome.storage.local.remove(`sync_info_${platform}_${checksumAddr}`)
+
     // Clear Discord profile on disconnect
     if (platform === 'discord') {
       await chrome.storage.local.remove(`discord_profile_${checksumAddr}`)
       setDiscordProfile(null)
     }
-    // Note: Keep sync_info to avoid re-downloading data
+
+    console.log(`🗑️ [OAuth] Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
   }
 
   // Calculate circular progress for quests

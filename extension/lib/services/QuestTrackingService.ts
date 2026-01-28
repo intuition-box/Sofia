@@ -4,6 +4,8 @@
  * Data is stored per-wallet to isolate user identities
  */
 
+import { getAddress } from 'viem'
+
 export class QuestTrackingService {
   private static instance: QuestTrackingService
 
@@ -15,11 +17,13 @@ export class QuestTrackingService {
   }
 
   /**
-   * Get current wallet address from session storage
+   * Get current wallet address from session storage (checksummed)
    */
   private async getWalletAddress(): Promise<string | null> {
     const result = await chrome.storage.session.get('walletAddress')
-    return result.walletAddress || null
+    if (!result.walletAddress) return null
+    // Always return checksummed address for consistent storage keys
+    return getAddress(result.walletAddress)
   }
 
   /**

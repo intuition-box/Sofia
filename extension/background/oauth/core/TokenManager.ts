@@ -2,6 +2,7 @@
 // Tokens are stored per-wallet to isolate user identities
 import { UserToken } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
+import { getAddress } from 'viem'
 
 const TOKEN_REFRESH_MARGIN = 5 * 60 * 1000 // 5 minutes
 
@@ -9,11 +10,13 @@ export class TokenManager {
   constructor(private platformRegistry: PlatformRegistry) {}
 
   /**
-   * Get current wallet address from session storage
+   * Get current wallet address from session storage (checksummed)
    */
   private async getWalletAddress(): Promise<string | null> {
     const result = await chrome.storage.session.get('walletAddress')
-    return result.walletAddress || null
+    if (!result.walletAddress) return null
+    // Always return checksummed address for consistent storage keys
+    return getAddress(result.walletAddress)
   }
 
   /**

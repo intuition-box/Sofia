@@ -112,14 +112,23 @@ function clearProviderSelection(): void {
   selectedProviderName = ""
 }
 
+// Normalize wallet type for matching (handles various formats like "rabby_wallet" → "rabby")
+function normalizeWalletType(walletType: string): string {
+  return walletType
+    .toLowerCase()
+    .replace(/_wallet$/, "")  // Remove "_wallet" suffix
+    .replace(/_/g, " ")       // Replace underscores with spaces
+    .trim()
+}
+
 // Select provider by name/rdns (the proper way - no guessing)
 function selectProviderByName(walletType: string): boolean {
   if (!providerStore) return false
 
   const providers = providerStore.getProviders()
-  const normalizedType = walletType.toLowerCase()
+  const normalizedType = normalizeWalletType(walletType)
 
-  console.log("🔍 [WalletBridge] Looking for provider by name:", walletType)
+  console.log("🔍 [WalletBridge] Looking for provider by name:", walletType, "→ normalized:", normalizedType)
   console.log("🔍 [WalletBridge] Available providers:", providers.map(p => ({ name: p.info.name, rdns: p.info.rdns })))
 
   for (const providerDetail of providers) {
@@ -127,7 +136,8 @@ function selectProviderByName(walletType: string): boolean {
     const rdns = (providerDetail.info.rdns || "").toLowerCase()
 
     // Match by name or rdns (e.g., "metamask" matches "MetaMask" or "io.metamask")
-    if (name.includes(normalizedType) || rdns.includes(normalizedType)) {
+    // Also check if normalized type is contained in name (e.g., "rabby" in "rabby wallet")
+    if (name.includes(normalizedType) || rdns.includes(normalizedType) || normalizedType.includes(name.split(" ")[0])) {
       selectedProvider = providerDetail.provider
       selectedProviderName = providerDetail.info.name
       console.log("✅ [WalletBridge] Selected provider by name:", selectedProviderName)

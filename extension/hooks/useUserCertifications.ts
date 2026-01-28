@@ -25,12 +25,12 @@ const INTENTION_PREDICATE_LABELS = [
 
 // OAuth predicate labels (from PlatformRegistry.ts)
 const OAUTH_PREDICATE_LABELS = [
-  PREDICATE_NAMES.FOLLOW,      // "follow" - YouTube subs, Spotify, Twitch
-  'member_of',                  // Discord guilds
-  'owner_of',                   // Discord guild owner
-  'created_playlist',           // YouTube playlists
-  'top_track',                  // Spotify
-  'top_artist',                 // Spotify
+  PREDICATE_NAMES.FOLLOW,           // "follow" - YouTube subs, Spotify, Twitch
+  PREDICATE_NAMES.MEMBER_OF,        // Discord guilds
+  PREDICATE_NAMES.OWNER_OF,         // Discord guild owner
+  PREDICATE_NAMES.CREATED_PLAYLIST, // YouTube playlists
+  PREDICATE_NAMES.TOP_TRACK,        // Spotify
+  PREDICATE_NAMES.TOP_ARTIST,       // Spotify
 ].filter(Boolean)
 
 // All predicate labels to query

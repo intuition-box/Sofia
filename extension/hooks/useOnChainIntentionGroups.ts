@@ -1,18 +1,19 @@
 /**
  * useOnChainIntentionGroups Hook
- * Fetches all intention certifications from on-chain where the user has a position
+ * Fetches all intention AND OAuth certifications from on-chain where the user has a position
  * Groups them by domain for display in Echoes
+ * Both intention predicates (visits for X) and OAuth predicates (follow, top_artist, etc.) count toward level
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { PREDICATE_IDS } from '../lib/config/chainConfig'
+import { PREDICATE_IDS, PREDICATE_NAMES } from '../lib/config/chainConfig'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useOnChainIntentionGroups')
 
-// Intention predicate IDs
+// Intention predicate IDs (for visits for work/learning/fun/etc)
 const INTENTION_PREDICATE_IDS = [
   PREDICATE_IDS.VISITS_FOR_WORK,
   PREDICATE_IDS.VISITS_FOR_LEARNING,
@@ -21,13 +22,35 @@ const INTENTION_PREDICATE_IDS = [
   PREDICATE_IDS.VISITS_FOR_BUYING
 ].filter(Boolean)
 
+// OAuth predicate IDs (for follow, top_artist, top_track, member_of, owner_of)
+const OAUTH_PREDICATE_IDS = [
+  PREDICATE_IDS.FOLLOW,
+  PREDICATE_IDS.MEMBER_OF,
+  PREDICATE_IDS.OWNER_OF,
+  PREDICATE_IDS.TOP_ARTIST,
+  PREDICATE_IDS.TOP_TRACK
+].filter(Boolean)
+
+// All predicate IDs to query (intention + OAuth) - both count toward level
+const ALL_PREDICATE_IDS = [
+  ...INTENTION_PREDICATE_IDS,
+  ...OAUTH_PREDICATE_IDS
+]
+
 // Map predicate IDs to certification labels
 const PREDICATE_TO_CERTIFICATION: Record<string, string> = {}
+// Intention predicates
 if (PREDICATE_IDS.VISITS_FOR_WORK) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_WORK] = 'work'
 if (PREDICATE_IDS.VISITS_FOR_LEARNING) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_LEARNING] = 'learning'
 if (PREDICATE_IDS.VISITS_FOR_FUN) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_FUN] = 'fun'
 if (PREDICATE_IDS.VISITS_FOR_INSPIRATION) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_INSPIRATION] = 'inspiration'
 if (PREDICATE_IDS.VISITS_FOR_BUYING) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_BUYING] = 'buying'
+// OAuth predicates
+if (PREDICATE_IDS.FOLLOW) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.FOLLOW] = PREDICATE_NAMES.FOLLOW
+if (PREDICATE_IDS.MEMBER_OF) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.MEMBER_OF] = PREDICATE_NAMES.MEMBER_OF
+if (PREDICATE_IDS.OWNER_OF) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.OWNER_OF] = PREDICATE_NAMES.OWNER_OF
+if (PREDICATE_IDS.TOP_ARTIST) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.TOP_ARTIST] = PREDICATE_NAMES.TOP_ARTIST
+if (PREDICATE_IDS.TOP_TRACK) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.TOP_TRACK] = PREDICATE_NAMES.TOP_TRACK
 
 // Level thresholds (certifications needed per level)
 const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
@@ -118,7 +141,7 @@ export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => 
 
   const fetchGroups = useCallback(async () => {
     // Skip if no wallet or no predicate IDs configured
-    if (!walletAddress || INTENTION_PREDICATE_IDS.length === 0) {
+    if (!walletAddress || ALL_PREDICATE_IDS.length === 0) {
       setGroups([])
       setLoading(false)
       return
@@ -171,12 +194,12 @@ export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => 
       `
 
       const response = await intuitionGraphqlClient.request(query, {
-        predicateIds: INTENTION_PREDICATE_IDS,
+        predicateIds: ALL_PREDICATE_IDS,
         userAddress: `%${walletAddress.toLowerCase()}%`
       })
 
       const triples = response?.triples || []
-      logger.debug('Found intention triples with user positions', { count: triples.length })
+      logger.debug('Found intention + OAuth triples with user positions', { count: triples.length })
 
       // Group by domain
       const domainMap = new Map<string, OnChainUrl[]>()

@@ -1,207 +1,94 @@
-# Plan: Storage par Wallet (Per-Wallet Identity)
+# Plan: Per-Wallet Storage + OAuth Predicates
 
-## Le Problème
+## Statut Global
 
-Actuellement, quand tu changes de wallet dans l'extension :
-- **Wallet A** (MetaMask) → tu lies Discord, tu fais des quêtes
-- **Wallet B** (Rabby) → tu vois ENCORE les données de Wallet A (Discord, quêtes, etc.)
-
-C'est parce que les données locales sont stockées **sans** être liées à l'adresse wallet.
-
----
-
-## La Solution
-
-Stocker chaque donnée avec l'adresse wallet comme clé :
-
-```
-AVANT (partagé entre tous les wallets):
-  oauth_token_discord
-  completed_quests
-  discord_profile
-
-APRÈS (isolé par wallet):
-  oauth_token_discord_0x78e8...6962   ← Wallet A
-  oauth_token_discord_0xc634...d551   ← Wallet B
-  completed_quests_0x78e8...6962      ← Wallet A
-  completed_quests_0xc634...d551      ← Wallet B
-```
+| Tâche | Fichier | Statut |
+|-------|---------|--------|
+| TokenManager per-wallet | `background/oauth/core/TokenManager.ts` | ✅ Done |
+| SyncManager per-wallet | `background/oauth/core/SyncManager.ts` | ✅ Done |
+| PlatformDataFetcher per-wallet | `background/oauth/core/PlatformDataFetcher.ts` | ✅ Done |
+| QuestTrackingService per-wallet | `lib/services/QuestTrackingService.ts` | ✅ Done |
+| useQuestSystem per-wallet | `hooks/useQuestSystem.ts` | ✅ Done |
+| AccountTab per-wallet | `components/pages/profile-tabs/AccountTab.tsx` | ✅ Done |
+| useSocialVerifier per-wallet | `hooks/useSocialVerifier.ts` | ✅ Done |
+| WalletBridge provider selection | `contents/walletBridge.ts` | ✅ Done |
+| useIntentionGroups fix useMemo | `hooks/useIntentionGroups.ts` | ✅ Done |
+| **OAuth predicates → level** | `hooks/useOnChainIntentionGroups.ts` | ✅ Done |
 
 ---
 
-## Ce qui est DÉJÀ par wallet ✅
+## Tâches Complétées ✅
 
-Ces données viennent de la **blockchain** via GraphQL et utilisent déjà `walletAddress` :
+### 1. TokenManager.ts
+- `getWalletAddress()` helper avec checksummed address
+- Clés: `oauth_token_${platform}_${walletAddress}`
 
-| Donnée | Source |
-|--------|--------|
-| Signals créés | GraphQL → `triples` avec positions du wallet |
-| Follows/Trusts | GraphQL → `triples` avec positions du wallet |
-| Quest badges | On-chain → `checkOnChainQuestBadges()` sync auto |
-| Social links vérifiés | On-chain → triples créés par le bot verifier |
+### 2. SyncManager.ts
+- `getWalletAddress()` helper
+- Clés: `sync_info_${platform}_${walletAddress}`
 
-**Pas besoin de modifier** - ça marche déjà !
+### 3. PlatformDataFetcher.ts
+- Discord profile: `discord_profile_${checksumAddr}`
+
+### 4. QuestTrackingService.ts
+- `signal_activity_dates_${wallet}`
+- `certification_activity_dates_${wallet}`
+- `pulse_launches_${wallet}`
+- `weekly_pulse_uses_${wallet}`
+- `weekly_pulse_start_${wallet}`
+
+### 5. useQuestSystem.ts
+- `completed_quests_${checksumAddress}`
+- `claimed_quests_${checksumAddress}`
+- `claimed_discovery_xp_${checksumAddress}`
+- `group_certification_xp_${checksumAddress}`
+- `spent_xp_${checksumAddress}`
+- `quest_progress_cache_${checksumAddress}`
+- Reset `onChainSyncDone` quand wallet change
+
+### 6. AccountTab.tsx
+- Lecture OAuth tokens avec clé wallet
+- Lecture Discord profile avec clé wallet
+
+### 7. useSocialVerifier.ts
+- Lecture OAuth tokens avec clé wallet
+
+### 8. WalletBridge (walletBridge.ts)
+- `normalizeWalletType()` : "rabby_wallet" → "rabby"
+- `selectProviderByName()` amélioré
+- `clearProviderSelection()` au disconnect
+
+### 9. useIntentionGroups.ts
+- `chrome.runtime.sendMessage` déplacé de `useMemo` → `useEffect`
+- Debug logging pour tracer le merge local/on-chain
 
 ---
 
-## Ce qui doit être modifié ❌ → ✅
+### 10. OAuth predicates → level (useOnChainIntentionGroups.ts)
 
-### 1. OAuth Tokens (TokenManager.ts)
-
+**IDs ajoutés à `chainConfig.prod.ts`:**
 ```typescript
-// AVANT
-oauth_token_discord
-oauth_token_youtube
-oauth_token_spotify
-oauth_token_twitch
-oauth_token_twitter
-
-// APRÈS
-oauth_token_discord_0x78e8...
-oauth_token_youtube_0x78e8...
-// etc.
+MEMBER_OF: "0x928694ed3c5b9f2e119618524ab777177a74e657f09fc488fca98d2790242fd0"
+OWNER_OF: "0x1c83db8148bee049fb7ba383924762f4d0cc2d686e8bdd57dd9fabde05b8bb4a"
+TOP_ARTIST: "0x97c6389ca484e835e8c1d9221ad5ae2a6fdd927c5cfa255bae6a2467b8753ece"
+TOP_TRACK: "0x504301d33841aaebbdc1300d1e4ca8db3eb8763078a4d38addb7176e653aac5e"
 ```
 
-**Fichier:** `background/oauth/core/TokenManager.ts`
+**NAMES ajoutés:** `MEMBER_OF`, `OWNER_OF`, `TOP_ARTIST`, `TOP_TRACK`, `CREATED_PLAYLIST`
+
+**Fichiers mis à jour:**
+- `useOnChainIntentionGroups.ts` - Query avec `ALL_PREDICATE_IDS`
+- `PlatformRegistry.ts` - Utilise `PREDICATE_NAMES.*`
+- `useUserCertifications.ts` - Utilise `PREDICATE_NAMES.*`
+
+**Note:** `CREATED_PLAYLIST` n'a pas d'ID on-chain (créé dynamiquement)
 
 ---
 
-### 2. Discord Profile (AccountTab.tsx)
-
-```typescript
-// AVANT
-discord_profile
-
-// APRÈS
-discord_profile_0x78e8...
-```
-
-**Fichier:** `components/pages/profile-tabs/AccountTab.tsx`
-
----
-
-### 3. Quest Progress (useQuestSystem.ts)
-
-```typescript
-// AVANT
-completed_quests
-claimed_quests
-claimed_discovery_xp
-group_certification_xp
-spent_xp
-quest_progress_cache
-
-// APRÈS
-completed_quests_0x78e8...
-claimed_quests_0x78e8...
-claimed_discovery_xp_0x78e8...
-group_certification_xp_0x78e8...
-spent_xp_0x78e8...
-quest_progress_cache_0x78e8...
-```
-
-**Fichier:** `hooks/useQuestSystem.ts`
-
----
-
-### 4. Streaks & Pulse (QuestTrackingService.ts)
-
-```typescript
-// AVANT
-signal_activity_dates
-certification_activity_dates
-pulse_launches
-weekly_pulse_uses
-
-// APRÈS
-signal_activity_dates_0x78e8...
-certification_activity_dates_0x78e8...
-pulse_launches_0x78e8...
-weekly_pulse_uses_0x78e8...
-```
-
-**Fichier:** `lib/services/QuestTrackingService.ts`
-
----
-
-### 5. Bookmarks (IndexedDB)
-
-```typescript
-// AVANT
-interface BookmarkList {
-  id: string
-  name: string
-  // ...
-}
-
-// APRÈS
-interface BookmarkList {
-  walletAddress: string  // NEW - pour filtrer par wallet
-  id: string
-  name: string
-  // ...
-}
-```
-
-**Fichiers:**
-- `lib/database/indexedDB.ts`
-- `lib/database/indexedDB-methods.ts`
-- `hooks/useBookmarks.ts`
-
----
-
-## Fichiers à modifier (6 fichiers)
-
-| # | Fichier | Changement |
-|---|---------|------------|
-| 1 | `background/oauth/core/TokenManager.ts` | Ajouter wallet aux clés de tokens |
-| 2 | `lib/services/QuestTrackingService.ts` | Ajouter wallet aux clés de tracking |
-| 3 | `hooks/useQuestSystem.ts` | Ajouter wallet aux clés de quêtes/XP |
-| 4 | `components/pages/profile-tabs/AccountTab.tsx` | Lire OAuth/Discord avec wallet |
-| 5 | `hooks/useSocialVerifier.ts` | Lire OAuth avec wallet |
-| 6 | `lib/database/indexedDB-methods.ts` | Ajouter wallet aux bookmarks |
-
----
-
-## Migration des données existantes
-
-**Choix : Ne pas migrer**
-
-- Les anciennes données restent orphelines (sans wallet dans la clé)
-- Les données importantes (badges, social links) sont on-chain et seront auto-sync
-- Plus simple et plus propre
-
----
-
-## Résultat attendu
-
-1. **Connexion Wallet A** → voit ses données A (Discord lié, quêtes complétées)
-2. **Déconnexion → Connexion Wallet B** → voit ses données B (vide si nouveau)
-3. **Retour à Wallet A** → retrouve ses données A intactes
-
----
-
-## Test de vérification
+## Vérification
 
 1. `pnpm dev` pour rebuild
-2. Se connecter avec Wallet A (MetaMask)
-3. Lier Discord → vérifier dans DevTools que la clé est `oauth_token_discord_0x78e8...`
-4. Se déconnecter
-5. Se connecter avec Wallet B (Rabby, autre adresse)
-6. Vérifier que Discord n'est PAS lié (nouvelle identité vierge)
-7. Revenir à Wallet A → Discord est toujours lié
-
----
-
-## Commit message
-
-```
-feat: implement per-wallet storage for user identity isolation
-
-- Store OAuth tokens per wallet address
-- Store Discord profile per wallet address
-- Store quest progress and XP per wallet address
-- Store streak/pulse tracking per wallet address
-- Add walletAddress to bookmark records
-- Each wallet now has isolated identity and progress
-```
+2. Wallet A: Lier Discord → vérifier stockage per-wallet
+3. Wallet B: Vérifier que Discord n'est pas lié
+4. **Spotify avec 4 OAuth certs → Level 2** (pas Level 1)
+5. Retour Wallet A → Discord toujours lié

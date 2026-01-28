@@ -265,6 +265,11 @@ export const useQuestSystem = (): QuestSystemResult => {
     return () => chrome.storage.onChanged.removeListener(listener)
   }, [walletAddress])
 
+  // Reset on-chain sync state when wallet changes to force re-sync
+  useEffect(() => {
+    setOnChainSyncDone(false)
+  }, [walletAddress])
+
   // Load cached user progress on mount (per-wallet)
   useEffect(() => {
     const loadCache = async () => {

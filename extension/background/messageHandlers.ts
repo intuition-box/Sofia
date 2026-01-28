@@ -9,6 +9,7 @@ import { tripletStorageService } from "../lib/services/TripletStorageService"
 import { initializeSocketsOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
 import { groupManager } from "../lib/services/GroupManager"
+import { IntentionGroupsService } from "../lib/database/indexedDB-methods"
 import { xpService, getLevelUpCost } from "../lib/services/XPService"
 import { sessionTracker } from "../lib/services/SessionTracker"
 import { levelUpService } from "../lib/services/LevelUpService"
@@ -503,6 +504,36 @@ export function setupMessageHandlers(): void {
           sendResponse({ success: true })
         } catch (error) {
           console.error("❌ DELETE_GROUP error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "UPDATE_GROUP_LEVEL":
+        // Restore level from on-chain data (used when local cache is stale)
+        try {
+          const { groupId: updateLvlGroupId, level: newLevel, certifiedCount } = message.data || message
+          if (!updateLvlGroupId || !newLevel) {
+            sendResponse({ success: false, error: "groupId and level required" })
+            return true
+          }
+          const groupToUpdate = await groupManager.getGroup(updateLvlGroupId)
+          if (!groupToUpdate) {
+            sendResponse({ success: false, error: "Group not found" })
+            return true
+          }
+          // Only update if on-chain level is higher (don't downgrade)
+          if (newLevel > groupToUpdate.level) {
+            groupToUpdate.level = newLevel
+            if (certifiedCount) {
+              groupToUpdate.totalCertifications = certifiedCount
+            }
+            groupToUpdate.updatedAt = Date.now()
+            await IntentionGroupsService.saveGroup(groupToUpdate)
+            console.log(`📊 [messageHandlers] Restored level for ${updateLvlGroupId}: ${newLevel}`)
+          }
+          sendResponse({ success: true })
+        } catch (error) {
+          console.error("❌ UPDATE_GROUP_LEVEL error:", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true

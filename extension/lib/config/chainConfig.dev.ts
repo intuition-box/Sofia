@@ -64,7 +64,12 @@ export const PREDICATE_IDS = {
   VISITS_FOR_LEARNING: "",
   VISITS_FOR_FUN: "",
   VISITS_FOR_INSPIRATION: "",
-  VISITS_FOR_BUYING: ""
+  VISITS_FOR_BUYING: "",
+  // OAuth predicates (will be created on first use if empty on testnet)
+  MEMBER_OF: "",
+  OWNER_OF: "",
+  TOP_ARTIST: "",
+  TOP_TRACK: ""
 } as const
 
 // Subject IDs (Testnet) - Verified via GraphQL queries
@@ -75,7 +80,7 @@ export const SUBJECT_IDS = {
 // Bot Verifier Address (creates social verification triples)
 export const BOT_VERIFIER_ADDRESS = "0xCd62c554bdEF0501158Bd6513e0654cd3cc8ae88" as const
 
-// Predicate Names (for display)
+// Predicate Names (for display and GraphQL queries by label)
 export const PREDICATE_NAMES = {
   FOLLOW: "follow",
   TRUSTS: "trusts",
@@ -86,7 +91,13 @@ export const PREDICATE_NAMES = {
   VISITS_FOR_LEARNING: "visits for learning",
   VISITS_FOR_FUN: "visits for fun",
   VISITS_FOR_INSPIRATION: "visits for inspiration",
-  VISITS_FOR_BUYING: "visits for buying"
+  VISITS_FOR_BUYING: "visits for buying",
+  // OAuth predicates (from platform imports)
+  MEMBER_OF: "member_of",
+  OWNER_OF: "owner_of",
+  TOP_ARTIST: "top_artist",
+  TOP_TRACK: "top_track",
+  CREATED_PLAYLIST: "created_playlist"
 } as const
 
 // Minimum stake for intention certification (0.1 TRUST = 1e17 wei)
