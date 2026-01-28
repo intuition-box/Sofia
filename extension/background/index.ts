@@ -62,10 +62,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'WALLET_CONNECTED') {
     // Support both formats: message.address (old) and message.walletAddress (new external auth)
     const walletAddress = message.walletAddress || message.data?.walletAddress || message.address
+    const walletType = message.walletType || message.data?.walletType || null
     if (walletAddress) {
       // Store in chrome.storage.session (survives reload, cleared on browser close)
-      chrome.storage.session.set({ walletAddress })
-      console.log('✅ [index.ts] Wallet connected:', walletAddress)
+      chrome.storage.session.set({ walletAddress, walletType })
+      console.log('✅ [index.ts] Wallet connected:', walletAddress, 'type:', walletType)
       // Reinitialize extension with new wallet
       init()
       sendResponse({ success: true })
@@ -75,7 +76,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     return true
   } else if (message.type === 'WALLET_DISCONNECTED') {
-    chrome.storage.session.remove('walletAddress')
+    chrome.storage.session.remove(['walletAddress', 'walletType'])
     console.log('🔌 [index.ts] Wallet disconnected')
     sendResponse({ success: true })
     return true

@@ -176,9 +176,10 @@ export function setupMessageHandlers(): void {
 
     if (message.type === 'WALLET_CONNECTED') {
       const walletAddress = message.data?.walletAddress || message.walletAddress
+      const walletType = message.data?.walletType || message.walletType || null
       if (walletAddress) {
-        chrome.storage.session.set({ walletAddress }).then(async () => {
-          console.log('✅ Wallet connected from external page:', walletAddress)
+        chrome.storage.session.set({ walletAddress, walletType }).then(async () => {
+          console.log('✅ Wallet connected from external page:', walletAddress, 'type:', walletType)
           // Initialize sockets now that wallet is connected
           await initializeSocketsOnWalletConnect()
           sendResponse({ success: true })
@@ -193,7 +194,7 @@ export function setupMessageHandlers(): void {
     }
 
     if (message.type === 'WALLET_DISCONNECTED') {
-      chrome.storage.session.remove('walletAddress').then(() => {
+      chrome.storage.session.remove(['walletAddress', 'walletType']).then(() => {
         console.log('✅ Wallet disconnected from external page')
         sendResponse({ success: true })
       }).catch((error) => {
@@ -392,9 +393,10 @@ export function setupMessageHandlers(): void {
       case "WALLET_CONNECTED":
         try {
           const walletAddress = message.data?.walletAddress || message.walletAddress
+          const walletType = message.data?.walletType || message.walletType || null
           if (walletAddress) {
-            await chrome.storage.session.set({ walletAddress })
-            console.log("✅ Wallet connected:", walletAddress)
+            await chrome.storage.session.set({ walletAddress, walletType })
+            console.log("✅ Wallet connected:", walletAddress, "type:", walletType)
             sendResponse({ success: true })
           } else {
             sendResponse({ success: false, error: "No wallet address provided" })
@@ -407,7 +409,7 @@ export function setupMessageHandlers(): void {
 
       case "WALLET_DISCONNECTED":
         try {
-          await chrome.storage.session.remove('walletAddress')
+          await chrome.storage.session.remove(['walletAddress', 'walletType'])
           console.log("✅ Wallet disconnected")
           sendResponse({ success: true })
         } catch (error) {

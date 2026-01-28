@@ -7,8 +7,26 @@ export const config: PlasmoCSConfig = {
   world: "MAIN" // Important: run in MAIN world to access window.ethereum
 }
 
-// Allowed RPC methods for security (whitelist)
-const ALLOWED_METHODS = [
+// =============================================================================
+// METHOD WHITELISTS
+// =============================================================================
+
+/**
+ * Internal bridge methods - handled locally, never sent to external wallet
+ * These are for managing the bridge state (provider selection, etc.)
+ */
+const INTERNAL_BRIDGE_METHODS = [
+  "wallet_listProviders",
+  "wallet_selectProviderByName",
+  "wallet_selectProviderByAddress",
+  "wallet_clearProviderSelection",
+]
+
+/**
+ * Allowed Ethereum RPC methods - forwarded to the selected wallet provider
+ * Security whitelist to prevent malicious sites from calling dangerous methods
+ */
+const ALLOWED_RPC_METHODS = [
   // Account/connection
   "eth_requestAccounts",
   "eth_accounts",
@@ -52,6 +70,7 @@ const ALLOWED_METHODS = [
 // Store for discovered providers
 let providerStore: ReturnType<typeof createStore> | null = null
 let selectedProvider: any = null
+let selectedProviderName: string = ""
 
 // Initialize mipd store for EIP-6963 provider discovery
 function initializeProviderStore() {
@@ -64,15 +83,17 @@ function initializeProviderStore() {
     providerStore.subscribe((providers) => {
       console.log("🔌 [WalletBridge] Providers discovered:", providers.map(p => p.info.name))
 
-      // Select the first available provider (or priority: Rabby > MetaMask > others)
-      if (providers.length > 0) {
-        const rabby = providers.find(p => p.info.rdns?.includes("rabby"))
-        const metamask = providers.find(p => p.info.rdns?.includes("metamask"))
+      // Don't auto-select if we already have a manually selected provider
+      if (selectedProvider && selectedProviderName) {
+        console.log("🔌 [WalletBridge] Keeping manually selected provider:", selectedProviderName)
+        return
+      }
 
-        selectedProvider = rabby?.provider || metamask?.provider || providers[0].provider
-        console.log("✅ [WalletBridge] Selected provider:",
-          rabby ? "Rabby" : metamask ? "MetaMask" : providers[0].info.name
-        )
+      // Default: select first available (will be overridden by selectProviderByAddress)
+      if (providers.length > 0 && !selectedProvider) {
+        selectedProvider = providers[0].provider
+        selectedProviderName = providers[0].info.name
+        console.log("✅ [WalletBridge] Default provider:", selectedProviderName)
       }
     })
 
@@ -82,6 +103,72 @@ function initializeProviderStore() {
     console.error("❌ [WalletBridge] Failed to initialize mipd store:", error)
     return null
   }
+}
+
+// Clear provider selection (used on disconnect)
+function clearProviderSelection(): void {
+  console.log("🧹 [WalletBridge] Clearing provider selection")
+  selectedProvider = null
+  selectedProviderName = ""
+}
+
+// Select provider by name/rdns (the proper way - no guessing)
+function selectProviderByName(walletType: string): boolean {
+  if (!providerStore) return false
+
+  const providers = providerStore.getProviders()
+  const normalizedType = walletType.toLowerCase()
+
+  console.log("🔍 [WalletBridge] Looking for provider by name:", walletType)
+  console.log("🔍 [WalletBridge] Available providers:", providers.map(p => ({ name: p.info.name, rdns: p.info.rdns })))
+
+  for (const providerDetail of providers) {
+    const name = providerDetail.info.name.toLowerCase()
+    const rdns = (providerDetail.info.rdns || "").toLowerCase()
+
+    // Match by name or rdns (e.g., "metamask" matches "MetaMask" or "io.metamask")
+    if (name.includes(normalizedType) || rdns.includes(normalizedType)) {
+      selectedProvider = providerDetail.provider
+      selectedProviderName = providerDetail.info.name
+      console.log("✅ [WalletBridge] Selected provider by name:", selectedProviderName)
+      return true
+    }
+  }
+
+  console.warn("⚠️ [WalletBridge] No provider found with name:", walletType)
+  return false
+}
+
+// Select provider by matching the connected address (fallback, less reliable)
+async function selectProviderByAddress(targetAddress: string): Promise<boolean> {
+  if (!providerStore) return false
+
+  const providers = providerStore.getProviders()
+  const normalizedTarget = targetAddress.toLowerCase()
+
+  console.log("🔍 [WalletBridge] Looking for provider with address:", normalizedTarget)
+
+  for (const providerDetail of providers) {
+    try {
+      // Get accounts from this provider without prompting
+      const accounts = await providerDetail.provider.request({ method: "eth_accounts", params: [] })
+      const normalizedAccounts = (accounts as string[]).map(a => a.toLowerCase())
+
+      console.log(`🔍 [WalletBridge] ${providerDetail.info.name} accounts:`, normalizedAccounts)
+
+      if (normalizedAccounts.includes(normalizedTarget)) {
+        selectedProvider = providerDetail.provider
+        selectedProviderName = providerDetail.info.name
+        console.log("✅ [WalletBridge] Selected provider by address:", selectedProviderName)
+        return true
+      }
+    } catch (error) {
+      console.warn(`⚠️ [WalletBridge] Could not get accounts from ${providerDetail.info.name}:`, error)
+    }
+  }
+
+  console.warn("⚠️ [WalletBridge] No provider found with address:", normalizedTarget)
+  return false
 }
 
 // Fallback to window.ethereum if no EIP-6963 providers found
@@ -121,18 +208,11 @@ async function handleWalletRequest(event: MessageEvent) {
 
   console.log("📨 [WalletBridge] Received request:", method, params)
 
-  // Security: check if method is allowed
-  if (!ALLOWED_METHODS.includes(method)) {
-    console.warn("🚫 [WalletBridge] Method not allowed:", method)
-    window.postMessage({
-      type: "SOFIA_WALLET_RESPONSE",
-      requestId,
-      error: { code: -32601, message: `Method not allowed: ${method}` }
-    }, "*")
-    return
-  }
+  // ==========================================================================
+  // INTERNAL BRIDGE METHODS - handled locally, no external wallet involved
+  // ==========================================================================
 
-  // Special case: list providers
+  // List providers
   if (method === "wallet_listProviders") {
     window.postMessage({
       type: "SOFIA_WALLET_RESPONSE",
@@ -142,6 +222,73 @@ async function handleWalletRequest(event: MessageEvent) {
     return
   }
 
+  // Clear provider selection (on disconnect)
+  if (method === "wallet_clearProviderSelection") {
+    clearProviderSelection()
+    window.postMessage({
+      type: "SOFIA_WALLET_RESPONSE",
+      requestId,
+      result: { cleared: true }
+    }, "*")
+    return
+  }
+
+  // Select provider by name/type (the proper way)
+  if (method === "wallet_selectProviderByName") {
+    const walletType = params?.[0]
+    if (!walletType) {
+      window.postMessage({
+        type: "SOFIA_WALLET_RESPONSE",
+        requestId,
+        error: { code: -32602, message: "Missing walletType parameter" }
+      }, "*")
+      return
+    }
+    const found = selectProviderByName(walletType)
+    window.postMessage({
+      type: "SOFIA_WALLET_RESPONSE",
+      requestId,
+      result: { found, selectedProvider: selectedProviderName }
+    }, "*")
+    return
+  }
+
+  // Select provider by address (fallback, less reliable)
+  if (method === "wallet_selectProviderByAddress") {
+    const address = params?.[0]
+    if (!address) {
+      window.postMessage({
+        type: "SOFIA_WALLET_RESPONSE",
+        requestId,
+        error: { code: -32602, message: "Missing address parameter" }
+      }, "*")
+      return
+    }
+    const found = await selectProviderByAddress(address)
+    window.postMessage({
+      type: "SOFIA_WALLET_RESPONSE",
+      requestId,
+      result: { found, selectedProvider: selectedProviderName }
+    }, "*")
+    return
+  }
+
+  // ==========================================================================
+  // EXTERNAL RPC METHODS - forwarded to selected wallet provider
+  // ==========================================================================
+
+  // Security: check if method is in the allowed RPC whitelist
+  if (!ALLOWED_RPC_METHODS.includes(method)) {
+    console.warn("🚫 [WalletBridge] Method not allowed:", method)
+    window.postMessage({
+      type: "SOFIA_WALLET_RESPONSE",
+      requestId,
+      error: { code: -32601, message: `Method not allowed: ${method}` }
+    }, "*")
+    return
+  }
+
+  // Forward to wallet provider
   const provider = getProvider()
 
   if (!provider) {

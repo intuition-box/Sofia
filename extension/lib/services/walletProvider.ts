@@ -180,3 +180,43 @@ export const listWalletProviders = async (): Promise<Array<{ name: string; rdns:
     return []
   }
 }
+
+// Select the wallet provider by name/type (the proper way)
+// walletType can be: 'metamask', 'rabby', 'coinbase', etc.
+export const selectProviderByName = async (walletType: string): Promise<{ found: boolean; selectedProvider: string }> => {
+  try {
+    console.log("🔍 [WalletProvider] Selecting provider by name:", walletType)
+    const result = await sendWalletRequest("wallet_selectProviderByName", [walletType])
+    console.log("✅ [WalletProvider] Provider selected:", result)
+    return result
+  } catch (error) {
+    console.error("Failed to select provider by name:", error)
+    return { found: false, selectedProvider: "" }
+  }
+}
+
+// Select the wallet provider that owns the given address (fallback, less reliable)
+// This ensures transactions go through the correct wallet (e.g., MetaMask vs Rabby)
+export const selectProviderByAddress = async (address: string): Promise<{ found: boolean; selectedProvider: string }> => {
+  try {
+    console.log("🔍 [WalletProvider] Selecting provider for address:", address)
+    const result = await sendWalletRequest("wallet_selectProviderByAddress", [address])
+    console.log("✅ [WalletProvider] Provider selected:", result)
+    return result
+  } catch (error) {
+    console.error("Failed to select provider by address:", error)
+    return { found: false, selectedProvider: "" }
+  }
+}
+
+// Clear the provider selection (call on disconnect)
+// This ensures a fresh wallet selection on next connection
+export const clearProviderSelection = async (): Promise<void> => {
+  try {
+    console.log("🧹 [WalletProvider] Clearing provider selection")
+    await sendWalletRequest("wallet_clearProviderSelection", [])
+  } catch (error) {
+    // May fail on restricted pages, that's OK
+    console.warn("Could not clear provider selection:", error)
+  }
+}
