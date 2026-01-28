@@ -5,7 +5,7 @@ import { useWalletFromStorage, disconnectWallet } from '../../hooks/useWalletFro
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
-import { cleanupProvider } from '../../lib/services/metamask'
+import { cleanupProvider } from '../../lib/services/walletProvider'
 import { tripletsDataService } from '../../lib/database/indexedDB-methods'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
 import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'

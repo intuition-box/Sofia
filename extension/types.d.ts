@@ -46,9 +46,9 @@ declare module "~src/components/ui/button" {
   export const Button: React.ComponentType<any>
 }
 
-declare module "~src/lib/metamask" {
-  export const connectWallet: () => Promise<string>
-  export const disconnectWallet: () => Promise<void>
+declare module "~src/lib/walletProvider" {
+  export const getWalletProvider: () => Promise<any>
+  export const cleanupProvider: () => void
 }
 
 declare module 'express' {

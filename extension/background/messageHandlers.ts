@@ -1,4 +1,3 @@
-import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
@@ -275,24 +274,6 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      case "CONNECT_TO_METAMASK":
-        connectToMetamask()
-          .then(result => MessageBus.getInstance().sendMetamaskResult(result))
-          .catch(error => {
-            console.error("MetaMask error:", error)
-            MessageBus.getInstance().sendMetamaskResult({ success: false, error: error.message })
-          })
-        break
-
-      case "GET_METAMASK_ACCOUNT": {
-        const connection = getMetamaskConnection()
-        sendResponse(
-          connection?.account
-            ? { success: true, account: connection.account, chainId: connection.chainId }
-            : { success: false, error: "No MetaMask connection found" }
-        )
-        break
-      }
 
       case "GET_TRACKING_STATS":
         sendResponse({

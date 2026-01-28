@@ -1,9 +1,9 @@
 import { createWalletClient, custom, createPublicClient, http } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
-import { getMetaProvider } from '../services/metamask'
+import { getWalletProvider } from '../services/walletProvider'
 
 export const getClients = async () => {
-    const provider = await getMetaProvider()
+    const provider = await getWalletProvider()
 
     const accounts = await provider.request({
         method: 'eth_requestAccounts',
@@ -25,7 +25,7 @@ export const getClients = async () => {
         })
     }
 
-    // Use HTTP transport for public client to avoid MetaMask RPC issues
+    // Use HTTP transport for public client to avoid wallet RPC issues
     // Automatically uses the correct RPC based on SELECTED_CHAIN (testnet or mainnet)
     const publicClient = createPublicClient({
         chain: SELECTED_CHAIN,

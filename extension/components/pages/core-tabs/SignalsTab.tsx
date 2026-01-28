@@ -242,7 +242,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         <div className="empty-state">
           <p>🔌 Connect your wallet</p>
           <p className="empty-subtext">
-            Connect your MetaMask wallet to view your on-chain triplets
+            Connect your wallet to view your on-chain triplets
           </p>
         </div>
       </div>

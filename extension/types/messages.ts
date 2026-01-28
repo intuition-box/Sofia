@@ -17,8 +17,6 @@ export type MessageType =
   | 'PAGE_DURATION'
   | 'SCROLL_DATA'
   | 'SEND_CHATBOT_MESSAGE'
-  | 'CONNECT_TO_METAMASK'
-  | 'GET_METAMASK_ACCOUNT'
   | 'GET_TRACKING_STATS'
   | 'CLEAR_TRACKING_DATA'
   | 'GET_BOOKMARKS'
@@ -31,7 +29,6 @@ export type MessageType =
   | 'TRIPLETS_DELETED'
   | 'INITIALIZE_BADGE'
   | 'AGENT_RESPONSE'
-  | 'METAMASK_RESULT'
   | 'OLLAMA_REQUEST'
   | 'GET_PAGE_BLOCKCHAIN_DATA'
   | 'PAGE_ANALYSIS'
@@ -81,14 +78,6 @@ export interface TripletMessage extends BaseMessage {
 export interface BadgeMessage extends BaseMessage {
   type: 'UPDATE_ECHO_BADGE' | 'INITIALIZE_BADGE'
   count?: number
-}
-
-export interface MetamaskMessage extends BaseMessage {
-  type: 'METAMASK_RESULT'
-  success: boolean
-  account?: string
-  chainId?: string
-  error?: string
 }
 
 // Sofia message types (from existing messages.ts)
