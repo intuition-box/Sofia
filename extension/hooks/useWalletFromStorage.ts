@@ -111,17 +111,19 @@ export const openAuthTab = () => {
  * Disconnects the wallet from extension AND from Privy on the landing page
  */
 export const disconnectWallet = async () => {
+  // Always trigger external logout first (redirect to Privy logout)
   try {
-    // Clear provider selection in the bridge (so next connection triggers fresh selection)
-    await clearProviderSelection()
-
-    // Clear wallet from extension storage
-    await chrome.runtime.sendMessage({ type: 'WALLET_DISCONNECTED' })
-
-    // Trigger logout on the landing page (Privy session)
     await triggerExternalLogout()
   } catch (error) {
-    console.error('Error disconnecting wallet:', error)
+    console.error('Error triggering external logout:', error)
+  }
+
+  // Then clear local state
+  try {
+    await clearProviderSelection()
+    await chrome.runtime.sendMessage({ type: 'WALLET_DISCONNECTED' })
+  } catch (error) {
+    console.error('Error clearing wallet state:', error)
     // Fallback: clear directly
     await chrome.storage.session.remove(['walletAddress', 'walletType'])
   }

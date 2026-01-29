@@ -179,15 +179,25 @@ export function setupMessageHandlers(): void {
       const walletAddress = message.data?.walletAddress || message.walletAddress
       const walletType = message.data?.walletType || message.walletType || null
       if (walletAddress) {
-        chrome.storage.session.set({ walletAddress, walletType }).then(async () => {
-          console.log('✅ Wallet connected from external page:', walletAddress, 'type:', walletType)
-          // Initialize sockets now that wallet is connected
-          await initializeSocketsOnWalletConnect()
-          sendResponse({ success: true })
-        }).catch((error) => {
-          console.error('❌ Failed to save wallet:', error)
-          sendResponse({ success: false, error: error.message })
-        })
+        (async () => {
+          try {
+            // Check if wallet changed using persistent lastActiveWallet
+            const { lastActiveWallet } = await chrome.storage.local.get('lastActiveWallet')
+            if (lastActiveWallet && lastActiveWallet.toLowerCase() !== walletAddress.toLowerCase()) {
+              console.log('🔄 [messageHandlers] Wallet changed from', lastActiveWallet, 'to', walletAddress)
+              await IntentionGroupsService.clearAll()
+            }
+            // Update lastActiveWallet
+            await chrome.storage.local.set({ lastActiveWallet: walletAddress })
+            await chrome.storage.session.set({ walletAddress, walletType })
+            console.log('✅ Wallet connected from external page:', walletAddress, 'type:', walletType)
+            await initializeSocketsOnWalletConnect()
+            sendResponse({ success: true })
+          } catch (error) {
+            console.error('❌ Failed to save wallet:', error)
+            sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+          }
+        })()
       } else {
         sendResponse({ success: false, error: 'No wallet address provided' })
       }
@@ -396,8 +406,17 @@ export function setupMessageHandlers(): void {
           const walletAddress = message.data?.walletAddress || message.walletAddress
           const walletType = message.data?.walletType || message.walletType || null
           if (walletAddress) {
+            // Check if wallet changed using persistent lastActiveWallet
+            const { lastActiveWallet } = await chrome.storage.local.get('lastActiveWallet')
+            if (lastActiveWallet && lastActiveWallet.toLowerCase() !== walletAddress.toLowerCase()) {
+              console.log('🔄 [messageHandlers] Wallet changed from', lastActiveWallet, 'to', walletAddress)
+              await IntentionGroupsService.clearAll()
+            }
+            // Update lastActiveWallet
+            await chrome.storage.local.set({ lastActiveWallet: walletAddress })
             await chrome.storage.session.set({ walletAddress, walletType })
             console.log("✅ Wallet connected:", walletAddress, "type:", walletType)
+            await initializeSocketsOnWalletConnect()
             sendResponse({ success: true })
           } else {
             sendResponse({ success: false, error: "No wallet address provided" })

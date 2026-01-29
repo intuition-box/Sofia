@@ -14,6 +14,7 @@
 | WalletBridge provider selection | `contents/walletBridge.ts` | ✅ Done |
 | useIntentionGroups fix useMemo | `hooks/useIntentionGroups.ts` | ✅ Done |
 | **OAuth predicates → level** | `hooks/useOnChainIntentionGroups.ts` | ✅ Done |
+| **Clear IntentionGroups on wallet change** | `background/index.ts` | ✅ Done |
 
 ---
 
