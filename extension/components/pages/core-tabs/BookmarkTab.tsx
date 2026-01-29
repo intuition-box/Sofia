@@ -41,8 +41,8 @@ const BookmarkTab = () => {
     if (!newListName.trim()) return
 
     try {
-      const listId = await createList(newListName.trim(), newListDescription.trim() || undefined)
-      setSelectedListId(listId)
+      await createList(newListName.trim(), newListDescription.trim() || undefined)
+      setSelectedListId(null)
       setIsCreatingList(false)
       setNewListName('')
       setNewListDescription('')
