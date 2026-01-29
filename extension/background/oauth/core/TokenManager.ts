@@ -1,20 +1,50 @@
 // Token management (storage, refresh, validation)
+// Tokens are stored per-wallet to isolate user identities
 import { UserToken } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
+import { getAddress } from 'viem'
 
 const TOKEN_REFRESH_MARGIN = 5 * 60 * 1000 // 5 minutes
 
 export class TokenManager {
   constructor(private platformRegistry: PlatformRegistry) {}
 
+  /**
+   * Get current wallet address from session storage (checksummed)
+   */
+  private async getWalletAddress(): Promise<string | null> {
+    const result = await chrome.storage.session.get('walletAddress')
+    if (!result.walletAddress) return null
+    // Always return checksummed address for consistent storage keys
+    return getAddress(result.walletAddress)
+  }
+
+  /**
+   * Generate storage key for a platform token (per-wallet)
+   */
+  private getStorageKey(platform: string, walletAddress: string): string {
+    return `oauth_token_${platform}_${walletAddress}`
+  }
+
   async storeToken(platform: string, token: UserToken): Promise<void> {
-    await chrome.storage.local.set({ [`oauth_token_${platform}`]: token })
-    console.log(`💾 [OAuth] Token stored for ${platform}`)
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) {
+      throw new Error('No wallet connected. Cannot store OAuth token.')
+    }
+    const key = this.getStorageKey(platform, walletAddress)
+    await chrome.storage.local.set({ [key]: token })
+    console.log(`💾 [OAuth] Token stored for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`)
   }
 
   async getToken(platform: string): Promise<UserToken | null> {
-    const result = await chrome.storage.local.get(`oauth_token_${platform}`)
-    return result[`oauth_token_${platform}`] || null
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) {
+      console.log(`⚠️ [OAuth] No wallet connected, cannot get token for ${platform}`)
+      return null
+    }
+    const key = this.getStorageKey(platform, walletAddress)
+    const result = await chrome.storage.local.get(key)
+    return result[key] || null
   }
 
   async getValidToken(platform: string): Promise<string> {
@@ -109,7 +139,13 @@ export class TokenManager {
   }
 
   async removeToken(platform: string): Promise<void> {
-    await chrome.storage.local.remove(`oauth_token_${platform}`)
-    console.log(`🗑️ [OAuth] Token removed for ${platform}`)
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) {
+      console.log(`⚠️ [OAuth] No wallet connected, cannot remove token for ${platform}`)
+      return
+    }
+    const key = this.getStorageKey(platform, walletAddress)
+    await chrome.storage.local.remove(key)
+    console.log(`🗑️ [OAuth] Token removed for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`)
   }
 }

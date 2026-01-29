@@ -136,8 +136,8 @@ export class PlatformRegistry {
         extractObjectUrl: (item) => `https://www.youtube.com/channel/${item.snippet.resourceId.channelId}`
       },
       {
-        pattern: 'playlists', 
-        predicate: 'created_playlist',
+        pattern: 'playlists',
+        predicate: PREDICATE_NAMES.CREATED_PLAYLIST,
         extractObject: (item) => item.snippet.title,
         extractObjectUrl: (item) => `https://www.youtube.com/playlist?list=${item.id}`
       }
@@ -154,13 +154,13 @@ export class PlatformRegistry {
       },
       {
         pattern: 'top/tracks',
-        predicate: 'top_track',
+        predicate: PREDICATE_NAMES.TOP_TRACK,
         extractObject: (item) => `${item.name} by ${item.artists[0].name}`,
         extractObjectUrl: (item) => item.external_urls?.spotify
       },
       {
         pattern: 'top/artists',
-        predicate: 'top_artist', 
+        predicate: PREDICATE_NAMES.TOP_ARTIST,
         extractObject: (artist) => artist.name,
         extractObjectUrl: (artist) => artist.external_urls?.spotify
       }
@@ -181,13 +181,13 @@ export class PlatformRegistry {
     this.tripletRules.set('discord', [
       {
         pattern: 'guilds',
-        predicate: 'member_of',
+        predicate: PREDICATE_NAMES.MEMBER_OF,
         extractObject: (guild) => guild.name,
         extractObjectUrl: (guild) => `https://discord.com/channels/${guild.id}`
       },
       {
         pattern: 'guilds',
-        predicate: 'owner_of',
+        predicate: PREDICATE_NAMES.OWNER_OF,
         extractObject: (guild) => guild.owner ? guild.name : null,
         extractObjectUrl: (guild) => `https://discord.com/channels/${guild.id}`
       }

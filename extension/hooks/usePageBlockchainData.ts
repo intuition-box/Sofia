@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { messageBus } from '../lib/services/MessageBus'
+import { isRestrictedUrl } from '../lib/utils/pageRestriction'
 import type { PageBlockchainTriplet, UsePageBlockchainDataResult } from '../types/page'
 
 export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
@@ -15,6 +16,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [error, setError] = useState<string | null>(null)
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
   const [pageTitle, setPageTitle] = useState<string | null>(null)
+  const [isRestricted, setIsRestricted] = useState(false)
+  const [restrictionMessage, setRestrictionMessage] = useState<string | null>(null)
   const { walletAddress: account } = useWalletFromStorage()
 
   // Pause flag to prevent refreshes during transactions
@@ -386,6 +389,18 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       setCurrentUrl(url)
       setPageTitle(title)
 
+      // Check if page is restricted (wallet/certification unavailable)
+      const restriction = isRestrictedUrl(url)
+      setIsRestricted(restriction.restricted)
+      setRestrictionMessage(restriction.message || null)
+
+      if (restriction.restricted) {
+        console.log('🚫 [usePageBlockchainData] Page is restricted:', restriction.message)
+        setTriplets([])
+        setLoading(false)
+        return
+      }
+
       // Fetch blockchain data for this URL
       const blockchainTriplets = await fetchPageBlockchainData(url)
       setTriplets(blockchainTriplets)
@@ -478,6 +493,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     error,
     currentUrl,
     pageTitle,
+    isRestricted,
+    restrictionMessage,
     fetchDataForCurrentPage,
     pauseRefresh,
     resumeRefresh

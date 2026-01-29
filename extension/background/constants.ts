@@ -69,3 +69,37 @@ export const EXCLUDED_URL_PATTERNS = [
 export const SENSITIVE_URL_PARAMS = [
   'token', 'session', 'auth', 'key', 'password', 'secret', 'api_key'
 ];
+
+// Protocols where content scripts cannot run (wallet unavailable)
+export const RESTRICTED_PROTOCOLS = [
+  'chrome:', 'chrome-extension:', 'chrome-search:', 'chrome-devtools:',
+  'devtools:', 'edge:', 'about:', 'brave:', 'opera:', 'vivaldi:', 'file:',
+]
+
+// Restricted domains (extension stores + ads/tracking)
+export const RESTRICTED_DOMAINS = [
+  // Browser extension stores
+  'chrome.google.com', 'chromewebstore.google.com',
+  'microsoftedge.microsoft.com', 'addons.mozilla.org',
+  // Ad/tracking domains (not certifiable)
+  's0.2mdn.net', 'ssp.disqus.com', 'ad5.ad-srv.net',
+  'ads.servenobid.com', 'cs.ns1p.net', '2mdn.net',
+  'doubleclick.net', 'googlesyndication.com', 'googleadservices.com',
+  'adsrvr.org', 'adnxs.com', 'criteo.com', 'taboola.com',
+  'outbrain.com', 'pubmatic.com', 'rubiconproject.com',
+  // Ad networks from tracking script
+  'amazon-adsystem.com', 'adtrafficquality.google', 'contextual.media.net',
+  'jscache.com', 'indexww.com', 'a-mo.net', 'casalemedia.com',
+  // Google/YouTube (not certifiable content)
+  'www.google.com', 'youtube.com',
+]
+
+// User-friendly messages for the UI
+export const RESTRICTION_MESSAGES: Record<string, string> = {
+  'chrome:': 'Chrome internal page',
+  'chrome-extension:': 'Extension page',
+  'about:': 'System page',
+  'file:': 'Local file',
+  'ad': 'Advertising page',
+  'default': 'Browser system page',
+}

@@ -18,7 +18,7 @@ import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
   const { navigateTo } = useRouter()
-  const { triplets, loading, error, currentUrl, pageTitle, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
+  const { triplets, loading, error, currentUrl, pageTitle, isRestricted, restrictionMessage, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
   const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType, transactionHash: trustTxHash } = useTrustPage()
   const {
     certifyWithIntention,
@@ -500,8 +500,25 @@ const PageBlockchainCard = () => {
             </div>
           </StarBorder>
 
+          {/* Restricted Page Warning */}
+          {isRestricted && (
+            <div className="restricted-page-warning">
+              <span className="warning-icon">⚠️</span>
+              <div className="warning-content">
+                <strong>Page not certifiable</strong>
+                <p>{restrictionMessage || 'This page cannot be certified'}</p>
+                <p className="restricted-page-hint">
+                  Navigate to an HTTPS page to sign transactions — e.g.{' '}
+                  <a href="https://sofia.intuition.box/values/" target="_blank" rel="noopener noreferrer">
+                    sofia.intuition.box/values
+                  </a>
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Trust & Distrust Buttons Row */}
-          <div className="trust-buttons-row">
+          {!isRestricted && <div className="trust-buttons-row">
             {/* Trust Button */}
             <button
               className={`trust-page-button trust-btn ${localTrustSuccess ? 'success' : ''} ${localTrustLoading ? 'loading' : ''}`}
@@ -537,17 +554,17 @@ const PageBlockchainCard = () => {
                 <>DISTRUST</>
               )}
             </button>
-          </div>
+          </div>}
 
           {/* Error Display */}
-          {(localTrustError || localDistrustError) && (
+          {!isRestricted && (localTrustError || localDistrustError) && (
             <div className="trust-error">
               <small>{localTrustError || localDistrustError}</small>
             </div>
           )}
 
           {/* Discovery Section - Intention Certification */}
-          <div className="discovery-section">
+          {!isRestricted && <div className="discovery-section">
             <IntentionBubbleSelector
               onBubbleClick={(intention) => {
                 if (!currentUrl) return
@@ -580,7 +597,7 @@ const PageBlockchainCard = () => {
               isEligible={true} // TODO: réactiver isAttentionEligible après debug
               selectedIntention={currentIntention}
             />
-          </div>
+          </div>}
         </div>
       )}
 

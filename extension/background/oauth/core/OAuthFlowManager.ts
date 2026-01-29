@@ -223,7 +223,9 @@ export class OAuthFlowManager {
   }
 
   private generateState(): string {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36)
+    const array = new Uint8Array(24)
+    crypto.getRandomValues(array)
+    return Array.from(array, b => b.toString(16).padStart(2, '0')).join('')
   }
 
   // External OAuth for platforms that require landing page (YouTube, Spotify, Discord, Twitter)

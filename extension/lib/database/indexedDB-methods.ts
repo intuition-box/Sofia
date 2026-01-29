@@ -615,34 +615,39 @@ export class SearchHistoryService {
 
 /**
  * Bookmark Service Methods
+ * All bookmarks are stored per-wallet to isolate user identities
  */
 export class BookmarkService {
   /**
-   * Create a new bookmark list
+   * Create a new bookmark list (per-wallet)
    */
-  static async createList(name: string, description?: string): Promise<string> {
+  static async createList(walletAddress: string, name: string, description?: string): Promise<string> {
     const listId = `list_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
+
     const list: BookmarkList = {
       id: listId,
+      walletAddress,
       name,
       description,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       tripletIds: []
     }
-    
+
     await sofiaDB.put(STORES.BOOKMARK_LISTS, list)
-    console.log('📋 Bookmark list created:', name)
+    console.log('📋 Bookmark list created:', name, 'for wallet:', walletAddress.slice(0, 8))
     return listId
   }
 
   /**
-   * Get all bookmark lists
+   * Get all bookmark lists for a specific wallet
    */
-  static async getAllLists(): Promise<BookmarkList[]> {
+  static async getAllLists(walletAddress: string): Promise<BookmarkList[]> {
     const lists = await sofiaDB.getAll<BookmarkList>(STORES.BOOKMARK_LISTS)
-    return lists.sort((a, b) => b.updatedAt - a.updatedAt)
+    // Filter by wallet address
+    return lists
+      .filter(list => list.walletAddress === walletAddress)
+      .sort((a, b) => b.updatedAt - a.updatedAt)
   }
 
   /**
@@ -764,23 +769,31 @@ export class BookmarkService {
   }
 
   /**
-   * Get all bookmarked triplets
+   * Get all bookmarked triplets for a specific wallet
+   * (Only returns triplets that belong to lists owned by this wallet)
    */
-  static async getAllTriplets(): Promise<BookmarkedTriplet[]> {
-    const triplets = await sofiaDB.getAll<BookmarkedTriplet>(STORES.BOOKMARKED_TRIPLETS)
-    return triplets.sort((a, b) => b.addedAt - a.addedAt)
+  static async getAllTriplets(walletAddress: string): Promise<BookmarkedTriplet[]> {
+    // Get all lists for this wallet
+    const lists = await this.getAllLists(walletAddress)
+    const tripletIds = new Set(lists.flatMap(list => list.tripletIds))
+
+    // Get all triplets and filter by those belonging to this wallet's lists
+    const allTriplets = await sofiaDB.getAll<BookmarkedTriplet>(STORES.BOOKMARKED_TRIPLETS)
+    return allTriplets
+      .filter(triplet => tripletIds.has(triplet.id))
+      .sort((a, b) => b.addedAt - a.addedAt)
   }
 
   /**
-   * Search triplets across all lists
+   * Search triplets across all lists for a specific wallet
    */
-  static async searchTriplets(query: string): Promise<BookmarkedTriplet[]> {
+  static async searchTriplets(walletAddress: string, query: string): Promise<BookmarkedTriplet[]> {
     if (!query.trim()) return []
 
-    const allTriplets = await this.getAllTriplets()
+    const allTriplets = await this.getAllTriplets(walletAddress)
     const lowercaseQuery = query.toLowerCase()
 
-    return allTriplets.filter(triplet => 
+    return allTriplets.filter(triplet =>
       triplet.triplet.subject.toLowerCase().includes(lowercaseQuery) ||
       triplet.triplet.predicate.toLowerCase().includes(lowercaseQuery) ||
       triplet.triplet.object.toLowerCase().includes(lowercaseQuery) ||

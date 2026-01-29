@@ -169,7 +169,7 @@ export class TripletExtractor {
         if (object) {
           const objectUrl = rule.extractObjectUrl ? rule.extractObjectUrl(item) : undefined
           triplets.push({
-            subject: 'i',
+            subject: 'I',
             predicate: rule.predicate,
             object,
             objectUrl

@@ -17,8 +17,6 @@ export type MessageType =
   | 'PAGE_DURATION'
   | 'SCROLL_DATA'
   | 'SEND_CHATBOT_MESSAGE'
-  | 'CONNECT_TO_METAMASK'
-  | 'GET_METAMASK_ACCOUNT'
   | 'GET_TRACKING_STATS'
   | 'CLEAR_TRACKING_DATA'
   | 'GET_BOOKMARKS'
@@ -31,7 +29,6 @@ export type MessageType =
   | 'TRIPLETS_DELETED'
   | 'INITIALIZE_BADGE'
   | 'AGENT_RESPONSE'
-  | 'METAMASK_RESULT'
   | 'OLLAMA_REQUEST'
   | 'GET_PAGE_BLOCKCHAIN_DATA'
   | 'PAGE_ANALYSIS'
@@ -48,12 +45,16 @@ export type MessageType =
   | 'CERTIFY_URL'
   | 'REMOVE_URL_FROM_GROUP'
   | 'DELETE_GROUP'
+  | 'UPDATE_GROUP_LEVEL'
   | 'GET_LEVEL_UP_COST'
   | 'LEVEL_UP_GROUP'
   | 'PREVIEW_LEVEL_UP'
   | 'AMPLIFY_GROUP'
   | 'TRACK_URL'
   | 'FORCE_FLUSH_TRACKER'
+  // Wallet bridge messages
+  | 'WALLET_REQUEST'
+  | 'WALLET_EVENT'
 
 // Specific message interfaces
 export interface ChromeMessage extends BaseMessage {
@@ -81,14 +82,6 @@ export interface TripletMessage extends BaseMessage {
 export interface BadgeMessage extends BaseMessage {
   type: 'UPDATE_ECHO_BADGE' | 'INITIALIZE_BADGE'
   count?: number
-}
-
-export interface MetamaskMessage extends BaseMessage {
-  type: 'METAMASK_RESULT'
-  success: boolean
-  account?: string
-  chainId?: string
-  error?: string
 }
 
 // Sofia message types (from existing messages.ts)
@@ -189,4 +182,27 @@ export interface MessageResponse {
   url?: string
   tabId?: number
   recommendations?: any[]
+}
+
+// Wallet bridge message types
+export interface WalletRequestMessage extends BaseMessage {
+  type: 'WALLET_REQUEST'
+  requestId: string
+  method: string
+  params?: any[]
+}
+
+export interface WalletResponseMessage {
+  requestId: string
+  result?: any
+  error?: {
+    code: number
+    message: string
+  }
+}
+
+export interface WalletEventMessage extends BaseMessage {
+  type: 'WALLET_EVENT'
+  event: 'accountsChanged' | 'chainChanged' | 'connect' | 'disconnect'
+  data?: any
 }

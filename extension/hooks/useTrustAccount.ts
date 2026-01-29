@@ -240,7 +240,7 @@ export const useTrustAccount = (): TrustAccountResult => {
         account: address as Address
       }
 
-      logger.debug('Sending transaction to MetaMask')
+      logger.debug('Sending transaction to wallet')
       const hash = await walletClient.writeContract(txParams)
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash: hash as Address })

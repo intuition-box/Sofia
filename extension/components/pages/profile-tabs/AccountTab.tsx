@@ -253,26 +253,43 @@ const AccountTab = () => {
   // Check OAuth token status and load Discord profile on component mount
   useEffect(() => {
     const checkOAuthTokens = async () => {
+      if (!walletAddress) {
+        setOauthTokens({
+          youtube: false,
+          spotify: false,
+          twitch: false,
+          discord: false,
+          twitter: false,
+        })
+        setDiscordProfile(null)
+        return
+      }
+
+      const checksumAddr = getAddress(walletAddress)
+      const youtubeKey = `oauth_token_youtube_${checksumAddr}`
+      const spotifyKey = `oauth_token_spotify_${checksumAddr}`
+      const twitchKey = `oauth_token_twitch_${checksumAddr}`
+      const discordKey = `oauth_token_discord_${checksumAddr}`
+      const twitterKey = `oauth_token_twitter_${checksumAddr}`
+      const discordProfileKey = `discord_profile_${checksumAddr}`
+
       const result = await chrome.storage.local.get([
-        'oauth_token_youtube',
-        'oauth_token_spotify',
-        'oauth_token_twitch',
-        'oauth_token_discord',
-        'oauth_token_twitter',
-        'discord_profile',
+        youtubeKey, spotifyKey, twitchKey, discordKey, twitterKey, discordProfileKey
       ])
 
       setOauthTokens({
-        youtube: !!result.oauth_token_youtube,
-        spotify: !!result.oauth_token_spotify,
-        twitch: !!result.oauth_token_twitch,
-        discord: !!result.oauth_token_discord,
-        twitter: !!result.oauth_token_twitter,
+        youtube: !!result[youtubeKey],
+        spotify: !!result[spotifyKey],
+        twitch: !!result[twitchKey],
+        discord: !!result[discordKey],
+        twitter: !!result[twitterKey],
       })
 
       // Load Discord profile if available
-      if (result.discord_profile) {
-        setDiscordProfile(result.discord_profile)
+      if (result[discordProfileKey]) {
+        setDiscordProfile(result[discordProfileKey])
+      } else {
+        setDiscordProfile(null)
       }
     }
 
@@ -280,33 +297,50 @@ const AccountTab = () => {
 
     // Listen for storage changes to update connection states
     const handleStorageChange = (changes: any) => {
-      if (changes.oauth_token_youtube || changes.oauth_token_spotify || changes.oauth_token_twitch || changes.oauth_token_discord || changes.oauth_token_twitter) {
+      // Re-check when any OAuth token changes for current wallet
+      const changedKeys = Object.keys(changes)
+      const hasOAuthChange = changedKeys.some(key => key.startsWith('oauth_token_'))
+      const hasDiscordProfileChange = changedKeys.some(key => key.startsWith('discord_profile_'))
+
+      if (hasOAuthChange) {
         checkOAuthTokens()
       }
-      // Update Discord profile when it changes
-      if (changes.discord_profile) {
-        setDiscordProfile(changes.discord_profile.newValue || null)
+      if (hasDiscordProfileChange && walletAddress) {
+        const checksumAddr = getAddress(walletAddress)
+        const discordProfileKey = `discord_profile_${checksumAddr}`
+        if (changes[discordProfileKey]) {
+          setDiscordProfile(changes[discordProfileKey].newValue || null)
+        }
       }
     }
 
     chrome.storage.onChanged.addListener(handleStorageChange)
     return () => chrome.storage.onChanged.removeListener(handleStorageChange)
-  }, [])
+  }, [walletAddress])
 
   // OAuth connect function
   const connectOAuth = (platform: 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter') => {
     chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
   }
 
-  // OAuth disconnect function (soft - keeps sync info)
+  // OAuth disconnect function (hard - clears token AND sync info for fresh re-connection)
   const disconnectOAuth = async (platform: 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter') => {
-    await chrome.storage.local.remove(`oauth_token_${platform}`)
+    if (!walletAddress) return
+    const checksumAddr = getAddress(walletAddress)
+
+    // Remove OAuth token
+    await chrome.storage.local.remove(`oauth_token_${platform}_${checksumAddr}`)
+
+    // Remove sync info to allow fresh data fetch on re-connection
+    await chrome.storage.local.remove(`sync_info_${platform}_${checksumAddr}`)
+
     // Clear Discord profile on disconnect
     if (platform === 'discord') {
-      await chrome.storage.local.remove('discord_profile')
+      await chrome.storage.local.remove(`discord_profile_${checksumAddr}`)
       setDiscordProfile(null)
     }
-    // Note: Keep sync_info to avoid re-downloading data
+
+    console.log(`🗑️ [OAuth] Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
   }
 
   // Calculate circular progress for quests

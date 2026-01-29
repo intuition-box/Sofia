@@ -1,23 +1,33 @@
 import { useState, useEffect } from 'react'
 import { BookmarkService } from '../lib/database/indexedDB-methods'
+import { useWalletFromStorage } from './useWalletFromStorage'
+import { getAddress } from 'viem'
 import type { BookmarkList, BookmarkedTriplet, UseBookmarksResult } from '../types/bookmarks'
 import type { Triplet } from '../../extension/types/messages'
 
 export const useBookmarks = (): UseBookmarksResult => {
+  const { walletAddress } = useWalletFromStorage()
   const [lists, setLists] = useState<BookmarkList[]>([])
   const [triplets, setTriplets] = useState<BookmarkedTriplet[]>([])
   // State management removed - let components handle loading/error states
 
   const refreshFromLocal = async (): Promise<{ lists: BookmarkList[], triplets: BookmarkedTriplet[] }> => {
+    if (!walletAddress) {
+      setLists([])
+      setTriplets([])
+      return { lists: [], triplets: [] }
+    }
+
     try {
+      const checksumAddr = getAddress(walletAddress)
       const [storedLists, storedTriplets] = await Promise.all([
-        BookmarkService.getAllLists(),
-        BookmarkService.getAllTriplets()
+        BookmarkService.getAllLists(checksumAddr),
+        BookmarkService.getAllTriplets(checksumAddr)
       ])
-      
+
       setLists(storedLists)
       setTriplets(storedTriplets)
-      
+
       return { lists: storedLists, triplets: storedTriplets }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
@@ -28,16 +38,28 @@ export const useBookmarks = (): UseBookmarksResult => {
     }
   }
 
-  // Auto-load on mount
+  // Auto-load on mount and when wallet changes
   useEffect(() => {
     refreshFromLocal()
-  }, [])
+  }, [walletAddress])
 
   const createList = async (name: string, description?: string): Promise<string> => {
+    if (!walletAddress) {
+      throw new Error('No wallet connected')
+    }
     try {
-      const listId = await BookmarkService.createList(name, description)
+      const checksumAddr = getAddress(walletAddress)
+      const listId = await BookmarkService.createList(checksumAddr, name, description)
       // Update local state directly
-      const newList = { id: listId, name, description: description || '', tripletIds: [], createdAt: Date.now(), updatedAt: Date.now() }
+      const newList: BookmarkList = {
+        id: listId,
+        walletAddress: checksumAddr,
+        name,
+        description: description || '',
+        tripletIds: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      }
       setLists(prev => [...prev, newList])
       return listId
     } catch (err) {

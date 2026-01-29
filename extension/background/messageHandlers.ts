@@ -1,4 +1,3 @@
-import { connectToMetamask, getMetamaskConnection } from "./metamask"
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
@@ -10,6 +9,7 @@ import { tripletStorageService } from "../lib/services/TripletStorageService"
 import { initializeSocketsOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
 import { groupManager } from "../lib/services/GroupManager"
+import { IntentionGroupsService } from "../lib/database/indexedDB-methods"
 import { xpService, getLevelUpCost } from "../lib/services/XPService"
 import { sessionTracker } from "../lib/services/SessionTracker"
 import { levelUpService } from "../lib/services/LevelUpService"
@@ -177,16 +177,27 @@ export function setupMessageHandlers(): void {
 
     if (message.type === 'WALLET_CONNECTED') {
       const walletAddress = message.data?.walletAddress || message.walletAddress
+      const walletType = message.data?.walletType || message.walletType || null
       if (walletAddress) {
-        chrome.storage.session.set({ walletAddress }).then(async () => {
-          console.log('✅ Wallet connected from external page:', walletAddress)
-          // Initialize sockets now that wallet is connected
-          await initializeSocketsOnWalletConnect()
-          sendResponse({ success: true })
-        }).catch((error) => {
-          console.error('❌ Failed to save wallet:', error)
-          sendResponse({ success: false, error: error.message })
-        })
+        (async () => {
+          try {
+            // Check if wallet changed using persistent lastActiveWallet
+            const { lastActiveWallet } = await chrome.storage.local.get('lastActiveWallet')
+            if (lastActiveWallet && lastActiveWallet.toLowerCase() !== walletAddress.toLowerCase()) {
+              console.log('🔄 [messageHandlers] Wallet changed from', lastActiveWallet, 'to', walletAddress)
+              await IntentionGroupsService.clearAll()
+            }
+            // Update lastActiveWallet
+            await chrome.storage.local.set({ lastActiveWallet: walletAddress })
+            await chrome.storage.session.set({ walletAddress, walletType })
+            console.log('✅ Wallet connected from external page:', walletAddress, 'type:', walletType)
+            await initializeSocketsOnWalletConnect()
+            sendResponse({ success: true })
+          } catch (error) {
+            console.error('❌ Failed to save wallet:', error)
+            sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+          }
+        })()
       } else {
         sendResponse({ success: false, error: 'No wallet address provided' })
       }
@@ -194,7 +205,7 @@ export function setupMessageHandlers(): void {
     }
 
     if (message.type === 'WALLET_DISCONNECTED') {
-      chrome.storage.session.remove('walletAddress').then(() => {
+      chrome.storage.session.remove(['walletAddress', 'walletType']).then(() => {
         console.log('✅ Wallet disconnected from external page')
         sendResponse({ success: true })
       }).catch((error) => {
@@ -275,24 +286,6 @@ export function setupMessageHandlers(): void {
         }
         return true
 
-      case "CONNECT_TO_METAMASK":
-        connectToMetamask()
-          .then(result => MessageBus.getInstance().sendMetamaskResult(result))
-          .catch(error => {
-            console.error("MetaMask error:", error)
-            MessageBus.getInstance().sendMetamaskResult({ success: false, error: error.message })
-          })
-        break
-
-      case "GET_METAMASK_ACCOUNT": {
-        const connection = getMetamaskConnection()
-        sendResponse(
-          connection?.account
-            ? { success: true, account: connection.account, chainId: connection.chainId }
-            : { success: false, error: "No MetaMask connection found" }
-        )
-        break
-      }
 
       case "GET_TRACKING_STATS":
         sendResponse({
@@ -408,25 +401,9 @@ export function setupMessageHandlers(): void {
         }
         break
 
-      case "WALLET_CONNECTED":
-        try {
-          const walletAddress = message.data?.walletAddress || message.walletAddress
-          if (walletAddress) {
-            await chrome.storage.session.set({ walletAddress })
-            console.log("✅ Wallet connected:", walletAddress)
-            sendResponse({ success: true })
-          } else {
-            sendResponse({ success: false, error: "No wallet address provided" })
-          }
-        } catch (error) {
-          console.error("❌ WALLET_CONNECTED error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
       case "WALLET_DISCONNECTED":
         try {
-          await chrome.storage.session.remove('walletAddress')
+          await chrome.storage.session.remove(['walletAddress', 'walletType'])
           console.log("✅ Wallet disconnected")
           sendResponse({ success: true })
         } catch (error) {
@@ -524,6 +501,36 @@ export function setupMessageHandlers(): void {
         }
         return true
 
+      case "UPDATE_GROUP_LEVEL":
+        // Restore level from on-chain data (used when local cache is stale)
+        try {
+          const { groupId: updateLvlGroupId, level: newLevel, certifiedCount } = message.data || message
+          if (!updateLvlGroupId || !newLevel) {
+            sendResponse({ success: false, error: "groupId and level required" })
+            return true
+          }
+          const groupToUpdate = await groupManager.getGroup(updateLvlGroupId)
+          if (!groupToUpdate) {
+            sendResponse({ success: false, error: "Group not found" })
+            return true
+          }
+          // Only update if on-chain level is higher (don't downgrade)
+          if (newLevel > groupToUpdate.level) {
+            groupToUpdate.level = newLevel
+            if (certifiedCount) {
+              groupToUpdate.totalCertifications = certifiedCount
+            }
+            groupToUpdate.updatedAt = Date.now()
+            await IntentionGroupsService.saveGroup(groupToUpdate)
+            console.log(`📊 [messageHandlers] Restored level for ${updateLvlGroupId}: ${newLevel}`)
+          }
+          sendResponse({ success: true })
+        } catch (error) {
+          console.error("❌ UPDATE_GROUP_LEVEL error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
       case "GET_LEVEL_UP_COST":
         try {
           const { groupId: lvlGroupId } = message.data || message
@@ -616,7 +623,7 @@ export function setupMessageHandlers(): void {
 
     }
 
-    sendResponse({ success: true })
+    sendResponse({ success: false, error: 'Unknown message type: ' + message.type })
     })().catch(error => {
       console.error("❌ Message handler error:", error)
       sendResponse({ success: false, error: error.message })

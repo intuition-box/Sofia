@@ -57,29 +57,9 @@ async function init(): Promise<void> {
   }
 }
 
-// Listen for wallet connection messages from sidepanel or external auth page
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'WALLET_CONNECTED') {
-    // Support both formats: message.address (old) and message.walletAddress (new external auth)
-    const walletAddress = message.walletAddress || message.data?.walletAddress || message.address
-    if (walletAddress) {
-      // Store in chrome.storage.session (survives reload, cleared on browser close)
-      chrome.storage.session.set({ walletAddress })
-      console.log('✅ [index.ts] Wallet connected:', walletAddress)
-      // Reinitialize extension with new wallet
-      init()
-      sendResponse({ success: true })
-    } else {
-      console.error('❌ [index.ts] WALLET_CONNECTED received but no address provided')
-      sendResponse({ success: false, error: 'No wallet address provided' })
-    }
-    return true
-  } else if (message.type === 'WALLET_DISCONNECTED') {
-    chrome.storage.session.remove('walletAddress')
-    console.log('🔌 [index.ts] Wallet disconnected')
-    sendResponse({ success: true })
-    return true
-  } else if (message.type === "open_sidepanel") {
+// Listen for open_sidepanel messages
+chrome.runtime.onMessage.addListener((message, sender) => {
+  if (message.type === "open_sidepanel") {
     const tabId = sender.tab?.id
     const windowId = sender.tab?.windowId
 

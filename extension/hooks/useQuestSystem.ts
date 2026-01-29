@@ -217,53 +217,77 @@ export const useQuestSystem = (): QuestSystemResult => {
   const [groupCertificationXP, setGroupCertificationXP] = useState(0)
   const [spentXP, setSpentXP] = useState(0)
 
-  // Load XP from storage and listen for changes
+  // Helper to generate wallet-scoped storage keys
+  const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet}`
+
+  // Load XP from storage and listen for changes (per-wallet)
   useEffect(() => {
+    if (!walletAddress) {
+      setClaimedDiscoveryXP(0)
+      setGroupCertificationXP(0)
+      setSpentXP(0)
+      return
+    }
+
     const loadXPData = async () => {
       try {
-        const result = await chrome.storage.local.get([
-          'claimed_discovery_xp',
-          'group_certification_xp',
-          'spent_xp'
-        ])
-        setClaimedDiscoveryXP(result.claimed_discovery_xp || 0)
-        setGroupCertificationXP(result.group_certification_xp || 0)
-        setSpentXP(result.spent_xp || 0)
+        const claimedKey = getWalletKey('claimed_discovery_xp', walletAddress)
+        const groupKey = getWalletKey('group_certification_xp', walletAddress)
+        const spentKey = getWalletKey('spent_xp', walletAddress)
+
+        const result = await chrome.storage.local.get([claimedKey, groupKey, spentKey])
+        setClaimedDiscoveryXP(result[claimedKey] || 0)
+        setGroupCertificationXP(result[groupKey] || 0)
+        setSpentXP(result[spentKey] || 0)
       } catch (err) {
         console.error('❌ [QuestSystem] Failed to load XP data:', err)
       }
     }
     loadXPData()
 
-    // Listen for changes to XP values
+    // Listen for changes to XP values (check if key matches current wallet)
+    const claimedKey = getWalletKey('claimed_discovery_xp', walletAddress)
+    const groupKey = getWalletKey('group_certification_xp', walletAddress)
+    const spentKey = getWalletKey('spent_xp', walletAddress)
+
     const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      if (changes.claimed_discovery_xp) {
-        setClaimedDiscoveryXP(changes.claimed_discovery_xp.newValue || 0)
+      if (changes[claimedKey]) {
+        setClaimedDiscoveryXP(changes[claimedKey].newValue || 0)
       }
-      if (changes.group_certification_xp) {
-        setGroupCertificationXP(changes.group_certification_xp.newValue || 0)
+      if (changes[groupKey]) {
+        setGroupCertificationXP(changes[groupKey].newValue || 0)
       }
-      if (changes.spent_xp) {
-        setSpentXP(changes.spent_xp.newValue || 0)
+      if (changes[spentKey]) {
+        setSpentXP(changes[spentKey].newValue || 0)
       }
     }
     chrome.storage.onChanged.addListener(listener)
     return () => chrome.storage.onChanged.removeListener(listener)
-  }, [])
+  }, [walletAddress])
 
-  // Load cached user progress on mount
+  // Reset on-chain sync state when wallet changes to force re-sync
+  useEffect(() => {
+    setOnChainSyncDone(false)
+  }, [walletAddress])
+
+  // Load cached user progress on mount (per-wallet)
   useEffect(() => {
     const loadCache = async () => {
+      if (!walletAddress) return
+
       try {
-        const result = await chrome.storage.local.get(['quest_progress_cache', 'quest_progress_timestamp', 'quest_progress_wallet'])
+        const cacheKey = getWalletKey('quest_progress_cache', walletAddress)
+        const timestampKey = getWalletKey('quest_progress_timestamp', walletAddress)
 
-        if (result.quest_progress_cache && result.quest_progress_wallet === walletAddress) {
-          const cacheAge = Date.now() - (result.quest_progress_timestamp || 0)
+        const result = await chrome.storage.local.get([cacheKey, timestampKey])
 
-          // Use cache if it's fresh (< 30 seconds) and same wallet
+        if (result[cacheKey]) {
+          const cacheAge = Date.now() - (result[timestampKey] || 0)
+
+          // Use cache if it's fresh (< 2 minutes)
           if (cacheAge < QUEST_CACHE_DURATION) {
             console.log('📦 [QuestSystem] Using cached progress (age:', Math.round(cacheAge / 1000), 's)')
-            setUserProgress(result.quest_progress_cache)
+            setUserProgress(result[cacheKey])
             setCacheLoaded(true)
             setLastCacheWallet(walletAddress)
             setLoading(false)
@@ -423,22 +447,30 @@ export const useQuestSystem = (): QuestSystemResult => {
     }
   }
 
-  // Load completed and claimed quests from storage, then sync with on-chain
+  // Load completed and claimed quests from storage, then sync with on-chain (per-wallet)
   useEffect(() => {
     const loadQuestStates = async () => {
+      if (!walletAddress) {
+        setCompletedQuestIds(new Set())
+        setClaimedQuestIds(new Set())
+        return
+      }
+
       try {
-        const result = await chrome.storage.local.get(['completed_quests', 'claimed_quests'])
+        const completedKey = getWalletKey('completed_quests', walletAddress)
+        const claimedKey = getWalletKey('claimed_quests', walletAddress)
+        const result = await chrome.storage.local.get([completedKey, claimedKey])
 
         let localClaimed = new Set<string>()
-        if (result.completed_quests) {
-          setCompletedQuestIds(new Set(result.completed_quests))
+        if (result[completedKey]) {
+          setCompletedQuestIds(new Set(result[completedKey]))
         }
-        if (result.claimed_quests) {
-          localClaimed = new Set(result.claimed_quests)
+        if (result[claimedKey]) {
+          localClaimed = new Set(result[claimedKey])
         }
 
         // Sync with on-chain badges
-        if (walletAddress && !onChainSyncDone) {
+        if (!onChainSyncDone) {
           const onChainClaimed = await checkOnChainQuestBadges()
 
           // Merge local and on-chain claimed quests
@@ -448,8 +480,8 @@ export const useQuestSystem = (): QuestSystemResult => {
           if (mergedClaimed.size > localClaimed.size) {
             console.log('📝 [QuestSystem] Syncing on-chain badges to local storage')
             await chrome.storage.local.set({
-              claimed_quests: Array.from(mergedClaimed),
-              completed_quests: Array.from(new Set([...completedQuestIds, ...onChainClaimed]))
+              [claimedKey]: Array.from(mergedClaimed),
+              [completedKey]: Array.from(new Set([...completedQuestIds, ...onChainClaimed]))
             })
           }
 
@@ -466,15 +498,18 @@ export const useQuestSystem = (): QuestSystemResult => {
     loadQuestStates()
   }, [walletAddress, onChainSyncDone])
 
-  // Save completed quests to storage
+  // Save completed quests to storage (per-wallet)
   const saveCompletedQuest = async (questId: string) => {
+    if (!walletAddress) return
+
     const newCompleted = new Set(completedQuestIds)
     newCompleted.add(questId)
     setCompletedQuestIds(newCompleted)
 
     try {
+      const completedKey = getWalletKey('completed_quests', walletAddress)
       await chrome.storage.local.set({
-        completed_quests: Array.from(newCompleted)
+        [completedKey]: Array.from(newCompleted)
       })
       console.log('✅ [QuestSystem] Saved completed quest:', questId)
     } catch (error) {
@@ -593,8 +628,8 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       // Special handling for social-link quests
       if (quest.type === 'social-link' && quest.platform) {
-        // Get the OAuth token for this platform
-        const tokenKey = `oauth_token_${quest.platform}`
+        // Get the OAuth token for this platform (per-wallet)
+        const tokenKey = getWalletKey(`oauth_token_${quest.platform}`, walletAddress)
         const oauthResult = await chrome.storage.local.get([tokenKey])
         const tokenData = oauthResult[tokenKey]
 
@@ -624,8 +659,9 @@ export const useQuestSystem = (): QuestSystemResult => {
         newClaimed.add(claimId)
         setClaimedQuestIds(newClaimed)
 
+        const claimedKey = getWalletKey('claimed_quests', walletAddress)
         await chrome.storage.local.set({
-          claimed_quests: Array.from(newClaimed)
+          [claimedKey]: Array.from(newClaimed)
         })
 
         console.log(`✅ [QuestSystem] Claimed XP for social-link quest: ${claimId}`)
@@ -738,8 +774,9 @@ export const useQuestSystem = (): QuestSystemResult => {
       newClaimed.add(claimId)
       setClaimedQuestIds(newClaimed)
 
+      const claimedKey = getWalletKey('claimed_quests', walletAddress)
       await chrome.storage.local.set({
-        claimed_quests: Array.from(newClaimed)
+        [claimedKey]: Array.from(newClaimed)
       })
 
       console.log('✅ [QuestSystem] Claimed XP for quest:', claimId)
@@ -763,8 +800,9 @@ export const useQuestSystem = (): QuestSystemResult => {
         newClaimed.add(claimId)
         setClaimedQuestIds(newClaimed)
 
+        const claimedKey = getWalletKey('claimed_quests', walletAddress)
         await chrome.storage.local.set({
-          claimed_quests: Array.from(newClaimed)
+          [claimedKey]: Array.from(newClaimed)
         })
 
         return { success: true, error: 'Badge already claimed on-chain' }
@@ -855,20 +893,22 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       const trustedUsers = trustResponse?.triples?.length || 0
 
-      // Query 4: Check OAuth connections (all 5 platforms)
+      // Query 4: Check OAuth connections (all 5 platforms) - per-wallet
+      const youtubeKey = getWalletKey('oauth_token_youtube', checksumAddress)
+      const spotifyKey = getWalletKey('oauth_token_spotify', checksumAddress)
+      const twitchKey = getWalletKey('oauth_token_twitch', checksumAddress)
+      const discordKey = getWalletKey('oauth_token_discord', checksumAddress)
+      const twitterKey = getWalletKey('oauth_token_twitter', checksumAddress)
+
       const oauthResult = await chrome.storage.local.get([
-        'oauth_token_youtube',
-        'oauth_token_spotify',
-        'oauth_token_twitch',
-        'oauth_token_discord',
-        'oauth_token_twitter',
+        youtubeKey, spotifyKey, twitchKey, discordKey, twitterKey
       ])
 
-      const discordConnected = !!oauthResult.oauth_token_discord?.accessToken
-      const youtubeConnected = !!oauthResult.oauth_token_youtube?.accessToken
-      const spotifyConnected = !!oauthResult.oauth_token_spotify?.accessToken
-      const twitchConnected = !!oauthResult.oauth_token_twitch?.accessToken
-      const twitterConnected = !!oauthResult.oauth_token_twitter?.accessToken
+      const discordConnected = !!oauthResult[discordKey]?.accessToken
+      const youtubeConnected = !!oauthResult[youtubeKey]?.accessToken
+      const spotifyConnected = !!oauthResult[spotifyKey]?.accessToken
+      const twitchConnected = !!oauthResult[twitchKey]?.accessToken
+      const twitterConnected = !!oauthResult[twitterKey]?.accessToken
 
       const oauthConnections = [
         discordConnected,
@@ -919,11 +959,12 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       setUserProgress(newProgress)
 
-      // Save to cache
+      // Save to cache (per-wallet)
+      const cacheKey = getWalletKey('quest_progress_cache', walletAddress)
+      const timestampKey = getWalletKey('quest_progress_timestamp', walletAddress)
       await chrome.storage.local.set({
-        quest_progress_cache: newProgress,
-        quest_progress_timestamp: Date.now(),
-        quest_progress_wallet: walletAddress
+        [cacheKey]: newProgress,
+        [timestampKey]: Date.now()
       })
       console.log('💾 [QuestSystem] Progress cached')
 
@@ -939,15 +980,15 @@ export const useQuestSystem = (): QuestSystemResult => {
   useEffect(() => {
     const checkAndRefresh = async () => {
       // Wait for cache check to complete
-      if (!cacheLoaded) return
+      if (!cacheLoaded || !walletAddress) return
 
-      // Check if cache is still valid
-      const result = await chrome.storage.local.get(['quest_progress_timestamp', 'quest_progress_wallet'])
-      const cacheAge = Date.now() - (result.quest_progress_timestamp || 0)
-      const sameWallet = result.quest_progress_wallet === walletAddress
+      // Check if cache is still valid (per-wallet)
+      const timestampKey = getWalletKey('quest_progress_timestamp', walletAddress)
+      const result = await chrome.storage.local.get(timestampKey)
+      const cacheAge = Date.now() - (result[timestampKey] || 0)
 
       // Only refresh if cache is stale or wallet changed
-      if (cacheAge >= QUEST_CACHE_DURATION || !sameWallet || lastCacheWallet !== walletAddress) {
+      if (cacheAge >= QUEST_CACHE_DURATION || lastCacheWallet !== walletAddress) {
         console.log('🔄 [QuestSystem] Cache stale or wallet changed, refreshing...')
         refreshQuests()
         setLastCacheWallet(walletAddress)

@@ -1,7 +1,10 @@
 /**
  * QuestTrackingService
  * Centralized service for tracking quest-related events (streaks, Pulse usage)
+ * Data is stored per-wallet to isolate user identities
  */
+
+import { getAddress } from 'viem'
 
 export class QuestTrackingService {
   private static instance: QuestTrackingService
@@ -11,6 +14,23 @@ export class QuestTrackingService {
       QuestTrackingService.instance = new QuestTrackingService()
     }
     return QuestTrackingService.instance
+  }
+
+  /**
+   * Get current wallet address from session storage (checksummed)
+   */
+  private async getWalletAddress(): Promise<string | null> {
+    const result = await chrome.storage.session.get('walletAddress')
+    if (!result.walletAddress) return null
+    // Always return checksummed address for consistent storage keys
+    return getAddress(result.walletAddress)
+  }
+
+  /**
+   * Generate storage key with wallet address suffix
+   */
+  private getStorageKey(baseKey: string, walletAddress: string): string {
+    return `${baseKey}_${walletAddress}`
   }
 
   // Returns YYYY-MM-DD in UTC
@@ -29,44 +49,78 @@ export class QuestTrackingService {
 
   // Called after each successful publish
   async recordSignalActivity(): Promise<void> {
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) {
+      console.log('⚠️ [QuestTracking] No wallet connected, cannot record signal activity')
+      return
+    }
+
+    const key = this.getStorageKey('signal_activity_dates', walletAddress)
     const today = this.getToday()
-    const { signal_activity_dates = [] } = await chrome.storage.local.get('signal_activity_dates')
+    const result = await chrome.storage.local.get(key)
+    const signal_activity_dates = result[key] || []
+
     if (!signal_activity_dates.includes(today)) {
       signal_activity_dates.push(today)
       // Keep only last 120 days
       const cutoff = new Date(Date.now() - 120 * 86400000).toISOString().split('T')[0]
       await chrome.storage.local.set({
-        signal_activity_dates: signal_activity_dates.filter((d: string) => d >= cutoff)
+        [key]: signal_activity_dates.filter((d: string) => d >= cutoff)
       })
     }
   }
 
   async hasSignalToday(): Promise<boolean> {
-    const { signal_activity_dates = [] } = await chrome.storage.local.get('signal_activity_dates')
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) return false
+
+    const key = this.getStorageKey('signal_activity_dates', walletAddress)
+    const result = await chrome.storage.local.get(key)
+    const signal_activity_dates = result[key] || []
     return signal_activity_dates.includes(this.getToday())
   }
 
   // Called after each successful certification
   async recordCertificationActivity(): Promise<void> {
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) {
+      console.log('⚠️ [QuestTracking] No wallet connected, cannot record certification activity')
+      return
+    }
+
+    const key = this.getStorageKey('certification_activity_dates', walletAddress)
     const today = this.getToday()
-    const { certification_activity_dates = [] } = await chrome.storage.local.get('certification_activity_dates')
+    const result = await chrome.storage.local.get(key)
+    const certification_activity_dates = result[key] || []
+
     if (!certification_activity_dates.includes(today)) {
       certification_activity_dates.push(today)
       // Keep only last 120 days
       const cutoff = new Date(Date.now() - 120 * 86400000).toISOString().split('T')[0]
       await chrome.storage.local.set({
-        certification_activity_dates: certification_activity_dates.filter((d: string) => d >= cutoff)
+        [key]: certification_activity_dates.filter((d: string) => d >= cutoff)
       })
     }
   }
 
   async hasCertificationToday(): Promise<boolean> {
-    const { certification_activity_dates = [] } = await chrome.storage.local.get('certification_activity_dates')
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) return false
+
+    const key = this.getStorageKey('certification_activity_dates', walletAddress)
+    const result = await chrome.storage.local.get(key)
+    const certification_activity_dates = result[key] || []
     return certification_activity_dates.includes(this.getToday())
   }
 
   async getCurrentStreak(): Promise<number> {
-    const { signal_activity_dates = [] } = await chrome.storage.local.get('signal_activity_dates')
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) return 0
+
+    const key = this.getStorageKey('signal_activity_dates', walletAddress)
+    const result = await chrome.storage.local.get(key)
+    const signal_activity_dates = result[key] || []
+
     if (signal_activity_dates.length === 0) return 0
 
     const sorted = [...signal_activity_dates].sort().reverse()
@@ -93,29 +147,53 @@ export class QuestTrackingService {
   }
 
   async recordPulseLaunch(): Promise<void> {
-    await this.resetWeeklyIfNeeded()
-    const { pulse_launches = 0, weekly_pulse_uses = 0 } =
-      await chrome.storage.local.get(['pulse_launches', 'weekly_pulse_uses'])
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) {
+      console.log('⚠️ [QuestTracking] No wallet connected, cannot record pulse launch')
+      return
+    }
+
+    await this.resetWeeklyIfNeeded(walletAddress)
+
+    const pulseLaunchesKey = this.getStorageKey('pulse_launches', walletAddress)
+    const weeklyPulseUsesKey = this.getStorageKey('weekly_pulse_uses', walletAddress)
+
+    const result = await chrome.storage.local.get([pulseLaunchesKey, weeklyPulseUsesKey])
+    const pulse_launches = result[pulseLaunchesKey] || 0
+    const weekly_pulse_uses = result[weeklyPulseUsesKey] || 0
+
     await chrome.storage.local.set({
-      pulse_launches: pulse_launches + 1,
-      weekly_pulse_uses: weekly_pulse_uses + 1
+      [pulseLaunchesKey]: pulse_launches + 1,
+      [weeklyPulseUsesKey]: weekly_pulse_uses + 1
     })
   }
 
   async getPulseStats(): Promise<{ total: number; weekly: number }> {
-    await this.resetWeeklyIfNeeded()
-    const { pulse_launches = 0, weekly_pulse_uses = 0 } =
-      await chrome.storage.local.get(['pulse_launches', 'weekly_pulse_uses'])
-    return { total: pulse_launches, weekly: weekly_pulse_uses }
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) return { total: 0, weekly: 0 }
+
+    await this.resetWeeklyIfNeeded(walletAddress)
+
+    const pulseLaunchesKey = this.getStorageKey('pulse_launches', walletAddress)
+    const weeklyPulseUsesKey = this.getStorageKey('weekly_pulse_uses', walletAddress)
+
+    const result = await chrome.storage.local.get([pulseLaunchesKey, weeklyPulseUsesKey])
+    return {
+      total: result[pulseLaunchesKey] || 0,
+      weekly: result[weeklyPulseUsesKey] || 0
+    }
   }
 
-  private async resetWeeklyIfNeeded(): Promise<void> {
+  private async resetWeeklyIfNeeded(walletAddress: string): Promise<void> {
     const monday = this.getMondayOfWeek()
-    const { weekly_pulse_start } = await chrome.storage.local.get('weekly_pulse_start')
-    if (weekly_pulse_start !== monday) {
+    const weeklyPulseStartKey = this.getStorageKey('weekly_pulse_start', walletAddress)
+    const weeklyPulseUsesKey = this.getStorageKey('weekly_pulse_uses', walletAddress)
+
+    const result = await chrome.storage.local.get(weeklyPulseStartKey)
+    if (result[weeklyPulseStartKey] !== monday) {
       await chrome.storage.local.set({
-        weekly_pulse_uses: 0,
-        weekly_pulse_start: monday
+        [weeklyPulseUsesKey]: 0,
+        [weeklyPulseStartKey]: monday
       })
     }
   }

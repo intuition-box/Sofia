@@ -161,6 +161,11 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
 
   // Parse error message to show only essential info
   const parseErrorMessage = (error: string): string => {
+    // Show HTTPS-related errors as-is (user-friendly already)
+    if (error.includes('Wallet unavailable:') || error.includes('navigate to an HTTPS page')) {
+      return error
+    }
+
     // Extract "Shares addition failed:" or "Weight addition failed:"
     const failedMatch = error.match(/(Shares addition failed|Weight addition failed):/i)
     const failedText = failedMatch ? failedMatch[0] : 'Transaction failed:'

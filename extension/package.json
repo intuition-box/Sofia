@@ -1,7 +1,7 @@
 {
   "name": "sofia",
   "displayName": "Sofia BETA",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Transform your browsing into structured knowledge on the blockchain. AI-powered insights and web3 integration.",
   "author": "me",
   "scripts": {
@@ -36,7 +36,7 @@
     "framer-motion": "^12.23.24",
     "graphql": "^16.11.0",
     "lucide-react": "^0.525.0",
-    "metamask-extension-provider": "^5.0.0",
+    "mipd": "^0.0.7",
     "node-fetch": "^3.3.2",
     "ogl": "^1.0.11",
     "plasmo": "0.90.5",

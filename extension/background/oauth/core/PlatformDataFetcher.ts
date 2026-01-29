@@ -3,6 +3,7 @@ import { UserData } from '../types/interfaces'
 import { TokenManager } from './TokenManager'
 import { SyncManager } from './SyncManager'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
+import { getAddress } from 'viem'
 
 export class PlatformDataFetcher {
   private tripletExtractor?: any
@@ -75,7 +76,7 @@ export class PlatformDataFetcher {
       userData.profile = await profileResponse.json()
       console.log(`✅ [OAuth] Profile fetched for ${platform}:`, JSON.stringify(userData.profile).substring(0, 200))
 
-      // Store Discord profile for avatar/username display in UI
+      // Store Discord profile for avatar/username display in UI (per-wallet)
       if (platform === 'discord' && userData.profile) {
         const discordProfile = {
           id: userData.profile.id,
@@ -84,8 +85,20 @@ export class PlatformDataFetcher {
           avatar: userData.profile.avatar,
           verified: userData.profile.verified
         }
-        await chrome.storage.local.set({ discord_profile: discordProfile })
-        console.log('💾 [OAuth] Stored Discord profile for UI:', discordProfile)
+        // Get wallet address from session storage for per-wallet storage
+        const sessionData = await chrome.storage.session.get('walletAddress')
+        const walletAddress = sessionData.walletAddress
+        if (walletAddress) {
+          // Use checksummed address for consistent storage keys
+          const checksumAddr = getAddress(walletAddress)
+          const storageKey = `discord_profile_${checksumAddr}`
+          await chrome.storage.local.set({ [storageKey]: discordProfile })
+          console.log(`💾 [OAuth] Stored Discord profile for wallet ${checksumAddr}:`, discordProfile)
+        } else {
+          // Fallback: store without wallet suffix (legacy)
+          await chrome.storage.local.set({ discord_profile: discordProfile })
+          console.log('💾 [OAuth] Stored Discord profile (no wallet connected):', discordProfile)
+        }
       }
 
       // Get user ID for platforms that need it

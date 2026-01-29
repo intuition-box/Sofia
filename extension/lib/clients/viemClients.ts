@@ -1,9 +1,16 @@
 import { createWalletClient, custom, createPublicClient, http } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
-import { getMetaProvider } from '../services/metamask'
+import { getWalletProvider, selectProviderByName } from '../services/walletProvider'
 
 export const getClients = async () => {
-    const provider = await getMetaProvider()
+    // Ensure the correct wallet provider is selected based on stored walletType
+    // This prevents transactions from going to the wrong wallet (e.g., Rabby instead of MetaMask)
+    const sessionData = await chrome.storage.session.get(['walletType'])
+    if (sessionData.walletType) {
+        await selectProviderByName(sessionData.walletType)
+    }
+
+    const provider = await getWalletProvider()
 
     const accounts = await provider.request({
         method: 'eth_requestAccounts',
@@ -25,7 +32,7 @@ export const getClients = async () => {
         })
     }
 
-    // Use HTTP transport for public client to avoid MetaMask RPC issues
+    // Use HTTP transport for public client to avoid wallet RPC issues
     // Automatically uses the correct RPC based on SELECTED_CHAIN (testnet or mainnet)
     const publicClient = createPublicClient({
         chain: SELECTED_CHAIN,

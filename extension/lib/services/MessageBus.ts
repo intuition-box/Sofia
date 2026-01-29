@@ -5,7 +5,6 @@
 import type {
   ChromeMessage,
   MessageResponse,
-  MetamaskMessage,
   MessageType
 } from '../../types/messages'
 
@@ -43,14 +42,6 @@ export class MessageBus {
     this.sendMessageFireAndForget({
       type: "AGENT_RESPONSE",
       data: data
-    });
-  }
-
-  // Specific messages for MetaMask
-  public sendMetamaskResult(result: MetamaskMessage['data']): void {
-    this.sendMessageFireAndForget({
-      type: 'METAMASK_RESULT',
-      data: result
     });
   }
 
@@ -127,15 +118,6 @@ export class MessageBus {
       type: 'SCROLL_DATA',
       data: { url, timestamp }
     });
-  }
-
-  // MetaMask operations
-  public async connectToMetamask(): Promise<MessageResponse | null> {
-    return this.sendMessage({ type: 'CONNECT_TO_METAMASK' });
-  }
-
-  public async getMetamaskAccount(): Promise<MessageResponse | null> {
-    return this.sendMessage({ type: 'GET_METAMASK_ACCOUNT' });
   }
 
   // Data operations
