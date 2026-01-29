@@ -44,7 +44,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
   const { domain, activeUrlCount, totalAttentionTime, currentPredicate, certificationBreakdown, urls } = group
 
   // Get active URLs for on-chain query
-  const activeUrls = urls.filter(u => !u.removed).map(u => u.url)
+  const activeUrls = urls.filter(u => !u.removed && !u.oauthPredicate).map(u => u.url)
 
   // Fetch on-chain certification status
   const { stats: onChainStats, loading: onChainLoading } = useGroupOnChainCertifications(domain, activeUrls)

@@ -3,6 +3,7 @@
  * Displays intention groups as a bento grid with detail view
  */
 
+import { useEffect, useRef } from 'react'
 import { useIntentionGroups, SortOption } from '../../../hooks/useIntentionGroups'
 import GroupBentoCard from '../../ui/GroupBentoCard'
 import GroupDetailView from '../../ui/GroupDetailView'
@@ -30,6 +31,17 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
     refreshGroup,
     deleteGroup
   } = useIntentionGroups()
+
+  // Auto-delete groups with 0 active URLs (use ref to avoid infinite loop)
+  const deletedGroupsRef = useRef(new Set<string>())
+  useEffect(() => {
+    const emptyGroups = groups.filter(g => g.activeUrlCount === 0 && !g.isVirtualGroup && !deletedGroupsRef.current.has(g.id))
+    if (emptyGroups.length === 0) return
+    for (const group of emptyGroups) {
+      deletedGroupsRef.current.add(group.id)
+      deleteGroup(group.id)
+    }
+  }, [groups, deleteGroup])
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'level', label: 'Level' },

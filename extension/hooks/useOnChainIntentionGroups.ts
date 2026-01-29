@@ -238,12 +238,17 @@ export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => 
       }
 
       // Convert to groups with level calculation
-      const groupsList: OnChainGroup[] = Array.from(domainMap.entries()).map(([domain, urls]) => ({
-        domain,
-        urls,
-        certifiedCount: urls.length,
-        level: calculateLevel(urls.length)
-      }))
+      // "follow" predicate URLs should not create group cards in EchoesTab
+      const FOLLOW_PREDICATE_ID = PREDICATE_IDS.FOLLOW
+      const groupsList: OnChainGroup[] = Array.from(domainMap.entries()).map(([domain, urls]) => {
+        const displayUrls = urls.filter(u => u.predicateId !== FOLLOW_PREDICATE_ID)
+        return {
+          domain,
+          urls: displayUrls,
+          certifiedCount: urls.length, // All certs (including follow) count toward level
+          level: calculateLevel(urls.length)
+        }
+      }).filter(g => g.urls.length > 0) // Remove groups with only follow URLs
 
       // Sort by level (highest first), then by certified count
       groupsList.sort((a, b) => {
