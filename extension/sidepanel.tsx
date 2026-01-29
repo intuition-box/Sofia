@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { configureClient } from '@0xsofia/graphql'
@@ -20,6 +20,10 @@ import ResonancePage from "./components/pages/ResonancePage"
 import ChatPage from "./components/pages/ChatPage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import DiscoveryProfilePage from "./components/pages/DiscoveryProfilePage"
+import OnboardingImportPage from "./components/pages/OnboardingImportPage"
+import OnboardingTutorialPage from "./components/pages/OnboardingTutorialPage"
+import OnboardingBookmarkSelectPage from "./components/pages/OnboardingBookmarkSelectPage"
+import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
 
 // Configure GraphQL client BEFORE creating QueryClient
 configureClient({
@@ -41,11 +45,23 @@ const SidePanelContent = () => {
 
   // Read wallet from chrome.storage.session (set by tabs/auth.tsx via Privy)
   const { walletAddress, authenticated } = useWalletFromStorage()
+  const [onboardingChecked, setOnboardingChecked] = useState(false)
 
   // Automatic page management based on connection state
   useEffect(() => {
     if (authenticated && walletAddress && currentPage === 'home') {
-      navigateTo('home-connected')
+      // Check if user has local groups — if not, show onboarding
+      IntentionGroupsService.getAllGroups().then(groups => {
+        if (groups.length === 0) {
+          navigateTo('onboarding-import')
+        } else {
+          navigateTo('home-connected')
+        }
+        setOnboardingChecked(true)
+      }).catch(() => {
+        navigateTo('home-connected')
+        setOnboardingChecked(true)
+      })
     } else if (!authenticated && currentPage !== 'home') {
       navigateTo('home')
     }
@@ -72,6 +88,12 @@ const SidePanelContent = () => {
         return <UserProfilePage />
       case 'discovery-profile':
         return <DiscoveryProfilePage />
+      case 'onboarding-import':
+        return <OnboardingImportPage />
+      case 'onboarding-select':
+        return <OnboardingBookmarkSelectPage />
+      case 'onboarding-tutorial':
+        return <OnboardingTutorialPage />
       default:
         return <HomeConnectedPage />
     }

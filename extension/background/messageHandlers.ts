@@ -11,7 +11,7 @@ import { oauthService } from "./oauth"
 import { groupManager } from "../lib/services/GroupManager"
 import { IntentionGroupsService } from "../lib/database/indexedDB-methods"
 import { xpService, getLevelUpCost } from "../lib/services/XPService"
-import { sessionTracker } from "../lib/services/SessionTracker"
+import { sessionTracker, type TrackedUrl, type DomainCluster } from "../lib/services/SessionTracker"
 import { levelUpService } from "../lib/services/LevelUpService"
 
 // 🔥 FIX: Flag to prevent duplicate message handlers registration
@@ -298,24 +298,75 @@ export function setupMessageHandlers(): void {
         sendResponse({ success: true, message: "No local data to clear" })
         break
 
+      case "FETCH_BOOKMARKS":
+        // Return bookmarks list without processing (for selection UI)
+        try {
+          const fetchResult = await getAllBookmarks()
+          sendResponse({ success: true, bookmarks: fetchResult.bookmarks || [] })
+        } catch (error) {
+          console.error("❌ FETCH_BOOKMARKS error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
       case "GET_BOOKMARKS":
-        handleDataExtraction('bookmarks', getAllBookmarks, async (urls: string[]) => {
-          const themes = await sendThemeExtractionRequest(urls)
+      case "IMPORT_SELECTED_BOOKMARKS": {
+        // GET_BOOKMARKS: fetch all + import (orb button)
+        // IMPORT_SELECTED_BOOKMARKS: import only selected bookmarks (onboarding)
+        try {
+          let bookmarksToImport: { url: string; title: string }[]
+
+          if (message.type === "IMPORT_SELECTED_BOOKMARKS" && message.data?.bookmarks) {
+            bookmarksToImport = message.data.bookmarks
+          } else {
+            const bookmarkResult = await getAllBookmarks()
+            if (!bookmarkResult.success || !bookmarkResult.bookmarks) {
+              sendResponse({ success: false, error: bookmarkResult.error })
+              return true
+            }
+            bookmarksToImport = bookmarkResult.bookmarks
+          }
+
+          // Group bookmarks by domain → DomainCluster[]
+          const domainMap = new Map<string, TrackedUrl[]>()
+          for (const bm of bookmarksToImport) {
+            try {
+              const domain = new URL(bm.url).hostname.replace('www.', '')
+              if (!domainMap.has(domain)) domainMap.set(domain, [])
+              domainMap.get(domain)!.push({
+                url: bm.url,
+                title: bm.title,
+                domain,
+                duration: 0,
+                visitedAt: Date.now()
+              })
+            } catch { /* skip invalid URLs */ }
+          }
+
+          const clusters: DomainCluster[] = Array.from(domainMap.entries()).map(([domain, urls]) => ({
+            domain,
+            urls,
+            totalDuration: 0
+          }))
+
+          await groupManager.processFlush(clusters)
 
           // Send completion notification to UI
           chrome.runtime.sendMessage({
             type: 'THEME_EXTRACTION_COMPLETE',
-            themesExtracted: themes?.length || 0
-          }).catch(() => {}) // Ignore if no listener
+            themesExtracted: clusters.length
+          }).catch(() => {})
 
-          return {
+          sendResponse({
             success: true,
-            message: 'Bookmark analysis completed',
-            themesExtracted: themes?.length || 0,
-            triplesProcessed: true
-          }
-        }, sendResponse)
+            message: `Imported ${bookmarksToImport.length} bookmarks into ${clusters.length} groups`
+          })
+        } catch (error) {
+          console.error("❌ IMPORT_BOOKMARKS error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
         return true
+      }
 
       case "GET_HISTORY":
         handleDataExtraction('history', getAllHistory, async (urls: string[]) => {
