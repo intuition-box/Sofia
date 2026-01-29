@@ -120,7 +120,7 @@ export const useCreateAtom = () => {
 
     // Add existing atoms to results immediately
     for (const existingAtom of existingAtoms) {
-      results[existingAtom.atomData.name] = {
+      results[existingAtom.atomData.url || existingAtom.atomData.name] = {
         success: true,
         vaultId: existingAtom.atomHash!,
         atomHash: existingAtom.atomHash!,
@@ -183,7 +183,7 @@ export const useCreateAtom = () => {
 
         // Map results back to atom names
         for (let i = 0; i < newAtoms.length; i++) {
-          results[newAtoms[i].atomData.name] = {
+          results[newAtoms[i].atomData.url || newAtoms[i].atomData.name] = {
             success: true,
             vaultId: vaultIds[i],
             atomHash: vaultIds[i],
@@ -228,7 +228,7 @@ export const useCreateAtom = () => {
 
               if (receipt.status === 'success') {
                 const vaultIds = singleSimulation.result as `0x${string}`[]
-                results[newAtom.atomData.name] = {
+                results[newAtom.atomData.url || newAtom.atomData.name] = {
                   success: true,
                   vaultId: vaultIds[0],
                   atomHash: vaultIds[0],
@@ -238,7 +238,7 @@ export const useCreateAtom = () => {
             } catch (singleError) {
               // Atom exists, get its ID
               const atomId = await BlockchainService.calculateAtomId(newAtom.ipfsUri)
-              results[newAtom.atomData.name] = {
+              results[newAtom.atomData.url || newAtom.atomData.name] = {
                 success: true,
                 vaultId: atomId,
                 atomHash: atomId,
@@ -493,7 +493,7 @@ export const useCreateAtom = () => {
       
       // Add existing atoms to results
       for (const existingAtom of existingAtoms) {
-        results[existingAtom.atomData.name] = {
+        results[existingAtom.atomData.url || existingAtom.atomData.name] = {
           success: true,
           vaultId: existingAtom.atomHash!,
           atomHash: existingAtom.atomHash!,
@@ -546,7 +546,7 @@ export const useCreateAtom = () => {
             // Get vault ID from simulation result
             const vaultIds = simulation.result as `0x${string}`[]
 
-            results[newAtom.atomData.name] = {
+            results[newAtom.atomData.url || newAtom.atomData.name] = {
               success: true,
               vaultId: vaultIds[0],
               atomHash: vaultIds[0],
@@ -562,7 +562,7 @@ export const useCreateAtom = () => {
               // Use the contract's calculateAtomId to get the correct atom ID
               const atomId = await BlockchainService.calculateAtomId(newAtom.ipfsUri)
 
-              results[newAtom.atomData.name] = {
+              results[newAtom.atomData.url || newAtom.atomData.name] = {
                 success: true,
                 vaultId: atomId,
                 atomHash: atomId,

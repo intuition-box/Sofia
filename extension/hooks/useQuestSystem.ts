@@ -733,41 +733,123 @@ export const useQuestSystem = (): QuestSystemResult => {
       const createdAtoms = await createAtomsFromPinned([pinnedAtom])
       const objectId = createdAtoms[quest.title].vaultId as Address
 
-      // 4. Create triple: [wallet_atom] [has_tag] [quest_title]
-      console.log('📝 [QuestSystem] Creating badge triple...')
+      // 4. Create or deposit into triple: [wallet_atom] [has_tag] [quest_title]
+      let txHash: `0x${string}`
 
-      const tripleCost = await BlockchainService.getTripleCost()
-      const multiVaultCost = tripleCost + MIN_DEPOSIT
-      const totalCost = await BlockchainService.getTotalCreationCost(1, MIN_DEPOSIT, multiVaultCost)
+      // For recurring quests, the badge triple may already exist from a previous claim
+      if (quest.recurringType) {
+        const tripleCheck = await BlockchainService.checkTripleExists(
+          userAtomId as string,
+          predicateId as string,
+          objectId as string
+        )
 
-      // Simulate first
-      await publicClient.simulateContract({
-        address: contractAddress as Address,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'createTriples',
-        args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
-        value: totalCost,
-        account: walletClient.account
-      })
+        if (tripleCheck.exists && tripleCheck.tripleVaultId) {
+          // Triple already exists — deposit a small amount into it
+          console.log('📝 [QuestSystem] Recurring quest badge triple already exists, depositing...', tripleCheck.tripleVaultId)
 
-      const txHash = await walletClient.writeContract({
-        address: contractAddress as Address,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'createTriples',
-        args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
-        value: totalCost,
-        chain: SELECTED_CHAIN,
-        maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-        maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-        account: walletAddress as Address,
-      })
+          const totalDepositCost = await BlockchainService.getTotalDepositCost(MIN_DEPOSIT)
+          const depositCurveId = 2n // Curve ID for triple deposits
 
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
-      if (receipt.status !== 'success') {
-        throw new Error('Triple creation failed on-chain')
+          await publicClient.simulateContract({
+            address: contractAddress as Address,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'deposit',
+            args: [walletAddress as Address, tripleCheck.tripleVaultId as Address, depositCurveId, 0n],
+            value: totalDepositCost,
+            account: walletClient.account
+          })
+
+          txHash = await walletClient.writeContract({
+            address: contractAddress as Address,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'deposit',
+            args: [walletAddress as Address, tripleCheck.tripleVaultId as Address, depositCurveId, 0n],
+            value: totalDepositCost,
+            chain: SELECTED_CHAIN,
+            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+            account: walletAddress as Address,
+          })
+
+          const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+          if (depositReceipt.status !== 'success') {
+            throw new Error('Deposit on existing badge triple failed')
+          }
+
+          console.log('✅ [QuestSystem] Deposited into existing badge triple:', txHash)
+        } else {
+          // Recurring quest but first time — create the triple
+          console.log('📝 [QuestSystem] Creating badge triple (first recurring claim)...')
+
+          const tripleCost = await BlockchainService.getTripleCost()
+          const multiVaultCost = tripleCost + MIN_DEPOSIT
+          const totalCost = await BlockchainService.getTotalCreationCost(1, MIN_DEPOSIT, multiVaultCost)
+
+          await publicClient.simulateContract({
+            address: contractAddress as Address,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'createTriples',
+            args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
+            value: totalCost,
+            account: walletClient.account
+          })
+
+          txHash = await walletClient.writeContract({
+            address: contractAddress as Address,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'createTriples',
+            args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
+            value: totalCost,
+            chain: SELECTED_CHAIN,
+            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+            account: walletAddress as Address,
+          })
+
+          const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+          if (receipt.status !== 'success') {
+            throw new Error('Triple creation failed on-chain')
+          }
+
+          console.log('✅ [QuestSystem] Badge created on-chain (first recurring):', txHash)
+        }
+      } else {
+        // One-time quest — always create the triple
+        console.log('📝 [QuestSystem] Creating badge triple...')
+
+        const tripleCost = await BlockchainService.getTripleCost()
+        const multiVaultCost = tripleCost + MIN_DEPOSIT
+        const totalCost = await BlockchainService.getTotalCreationCost(1, MIN_DEPOSIT, multiVaultCost)
+
+        await publicClient.simulateContract({
+          address: contractAddress as Address,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'createTriples',
+          args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
+          value: totalCost,
+          account: walletClient.account
+        })
+
+        txHash = await walletClient.writeContract({
+          address: contractAddress as Address,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'createTriples',
+          args: [walletAddress as Address, [userAtomId], [predicateId], [objectId], [MIN_DEPOSIT], CURVE_ID],
+          value: totalCost,
+          chain: SELECTED_CHAIN,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: walletAddress as Address,
+        })
+
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+        if (receipt.status !== 'success') {
+          throw new Error('Triple creation failed on-chain')
+        }
+
+        console.log('✅ [QuestSystem] Badge created on-chain:', txHash)
       }
-
-      console.log('✅ [QuestSystem] Badge created on-chain:', txHash)
 
       // Only mark as claimed after successful TX
       const newClaimed = new Set(claimedQuestIds)

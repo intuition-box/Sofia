@@ -9,6 +9,7 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
+import { normalizeUrl } from '../lib/utils/normalizeUrl'
 
 const logger = createHookLogger('useUserCertifications')
 
@@ -139,6 +140,11 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
           }
           object {
             label
+            value {
+              thing {
+                url
+              }
+            }
           }
         }
       }
@@ -146,7 +152,7 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
 
     interface CertTripleResult {
       predicate: { label: string }
-      object: { label: string }
+      object: { label: string; value?: { thing?: { url?: string } } }
     }
 
     const triples = await intuitionGraphqlClient.fetchAllPages<CertTripleResult>(
@@ -179,15 +185,31 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
 
       if (!objectLabel || (!intention && !isOAuthPredicate)) continue
 
-      // Normalize the label (remove protocol, www., trailing slash, lowercase)
-      const normalizedLabel = objectLabel
-        .replace(/^https?:\/\//, '')
-        .replace(/^www\./, '')
-        .replace(/\/$/, '')
-        .toLowerCase()
+      // Use URL field as primary key (new atoms have title as name, URL in value.thing.url)
+      // Fallback to label for old atoms where name = normalized URL
+      const objectUrl = triple.object?.value?.thing?.url
 
-      // Check if it's a root domain (no path)
-      const isRootDomain = !normalizedLabel.includes('/')
+      let normalizedLabel: string
+      let isRootDomain: boolean
+
+      if (objectUrl) {
+        try {
+          const result = normalizeUrl(objectUrl)
+          normalizedLabel = result.label
+          isRootDomain = result.isRootDomain
+        } catch {
+          normalizedLabel = objectLabel.toLowerCase()
+          isRootDomain = !normalizedLabel.includes('/')
+        }
+      } else {
+        // Old atoms: label IS the normalized URL
+        normalizedLabel = objectLabel
+          .replace(/^https?:\/\//, '')
+          .replace(/^www\./, '')
+          .replace(/\/$/, '')
+          .toLowerCase()
+        isRootDomain = !normalizedLabel.includes('/')
+      }
 
       const existing = newCertifications.get(normalizedLabel)
       if (existing) {
@@ -298,33 +320,8 @@ export function getCertificationForUrl(
   url: string
 ): CertificationEntry | null {
   try {
-    const urlObj = new URL(url)
-    let hostname = urlObj.hostname.toLowerCase()
-    const pathname = urlObj.pathname
-    const search = urlObj.search
-
-    // Remove www.
-    if (hostname.startsWith('www.')) {
-      hostname = hostname.slice(4)
-    }
-
-    // Build normalized label with path and query
-    const fullPath = pathname + search
-    const normalizedLabel = fullPath && fullPath !== '/'
-      ? `${hostname}${fullPath.replace(/\/$/, '')}`
-      : hostname
-
-    // First try exact match
-    const exactMatch = certifications.get(normalizedLabel)
-    if (exactMatch) {
-      return exactMatch
-    }
-
-    // If URL is a root domain, don't fall back to anything
-    // If URL has a path, DON'T match with root domain certification
-    // This prevents "youtube.com" certification from matching "youtube.com/watch?v=xxx"
-
-    return null
+    const { label } = normalizeUrl(url)
+    return certifications.get(label) || null
   } catch {
     return null
   }
