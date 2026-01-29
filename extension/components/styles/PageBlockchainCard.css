@@ -893,6 +893,11 @@
   line-height: 1.4;
 }
 
+.restricted-page-warning .warning-content a {
+  color: #ff9800;
+  text-decoration: underline;
+}
+
 /* Trust & Distrust Buttons Row */
 .trust-buttons-row {
   display: flex;

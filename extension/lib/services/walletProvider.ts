@@ -29,6 +29,17 @@ async function getActiveTabId(): Promise<number> {
   })
 }
 
+// Check if the active tab is on an HTTPS page (required for content script injection)
+async function isActiveTabHttps(): Promise<boolean> {
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+    const url = tabs[0]?.url
+    return !!url && url.startsWith('https://')
+  } catch {
+    return false
+  }
+}
+
 // Send a request to the wallet via the content script bridge
 async function sendWalletRequest(method: string, params?: any[]): Promise<any> {
   const tabId = await getActiveTabId()
@@ -47,10 +58,16 @@ async function sendWalletRequest(method: string, params?: any[]): Promise<any> {
         method,
         params
       },
-      (response) => {
+      async (response) => {
         clearTimeout(timeout)
 
         if (chrome.runtime.lastError) {
+          // Check if the error is because we're not on an HTTPS page
+          const isHttps = await isActiveTabHttps()
+          if (!isHttps) {
+            reject(new Error("Wallet unavailable: navigate to an HTTPS page (e.g. sofia.intuition.box/values) to sign transactions."))
+            return
+          }
           reject(new Error(chrome.runtime.lastError.message || "Failed to communicate with wallet bridge"))
           return
         }

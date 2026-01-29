@@ -507,6 +507,12 @@ const PageBlockchainCard = () => {
               <div className="warning-content">
                 <strong>Page not certifiable</strong>
                 <p>{restrictionMessage || 'This page cannot be certified'}</p>
+                <p className="restricted-page-hint">
+                  Navigate to an HTTPS page to sign transactions — e.g.{' '}
+                  <a href="https://sofia.intuition.box/values/" target="_blank" rel="noopener noreferrer">
+                    sofia.intuition.box/values
+                  </a>
+                </p>
               </div>
             </div>
           )}

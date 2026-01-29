@@ -24,6 +24,7 @@ const HomePage = () => {
         </p>
 
         <p className="description-paragraph terms-text">For more details, please read and accept the <a href="../../docs/terms-and-conditions.md" target="_blank" rel="noopener noreferrer"><strong>Terms and Conditions</strong></a>.</p>
+
       </div>
 
       <div className="connect-section">
