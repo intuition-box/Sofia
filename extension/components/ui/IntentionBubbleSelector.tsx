@@ -29,7 +29,6 @@ export const IntentionBubbleSelector = ({
 
   return (
     <div className={`intention-selector ${!isEligible ? 'not-eligible' : ''}`}>
-      <span className="intention-label">I visit this page for</span>
       <div className="intention-pills">
         {INTENTIONS.map(({ key, label }) => (
           <button

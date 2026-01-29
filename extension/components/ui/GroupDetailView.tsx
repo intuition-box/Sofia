@@ -17,7 +17,7 @@ import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
 import { useGroupAmplify } from '../../hooks/useGroupAmplify'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
-import { IntentionBubbleSelector } from './IntentionBubbleSelector'
+import '../styles/IntentionBubbleSelector.css'
 
 interface GroupDetailViewProps {
   group: IntentionGroupWithStats
@@ -34,6 +34,15 @@ const CERTIFICATIONS: { type: CertificationType; label: string; color: string }[
   { type: 'fun', label: 'Fun', color: '#F59E0B' },
   { type: 'inspiration', label: 'Inspiration', color: '#8B5CF6' },
   { type: 'buying', label: 'Buying', color: '#EF4444' }
+]
+
+// Intention options for inline rendering in UrlRow
+const INTENTIONS_LIST: { key: IntentionPurpose; label: string }[] = [
+  { key: 'for_work', label: 'work' },
+  { key: 'for_learning', label: 'learning' },
+  { key: 'for_fun', label: 'fun' },
+  { key: 'for_inspiration', label: 'inspiration' },
+  { key: 'for_buying', label: 'buying' }
 ]
 
 // Map IntentionPurpose to CertificationType
@@ -181,32 +190,36 @@ const UrlRow = ({
         </div>
       </div>
 
-      {/* Expanded section with intention bubbles OR OAuth predicate button */}
+      {/* Expanded section with OAuth predicate + intention bubbles on same line */}
       {isExpanded && (
         <div className="url-expanded-section">
-          {urlRecord.oauthPredicate ? (
-            // OAuth URL: show single predicate button
-            <button
-              className="oauth-predicate-btn"
-              onClick={() => {
-                onOAuthCertify(urlRecord)
-                setIsExpanded(false)
-              }}
-              disabled={isProcessing}
-            >
-              {urlRecord.oauthPredicate}
-            </button>
-          ) : (
-            // Navigation URL: show standard intention bubbles
-            <IntentionBubbleSelector
-              onBubbleClick={(intention) => {
-                onIntentionSelect(intention)
-                setIsExpanded(false)
-              }}
-              disabled={isProcessing}
-              isEligible={true}
-            />
-          )}
+          <div className="intention-pills">
+            {urlRecord.oauthPredicate && (
+              <button
+                className="oauth-predicate-btn"
+                onClick={() => {
+                  onOAuthCertify(urlRecord)
+                  setIsExpanded(false)
+                }}
+                disabled={isProcessing}
+              >
+                {urlRecord.oauthPredicate}
+              </button>
+            )}
+            {INTENTIONS_LIST.map(({ key, label }) => (
+              <button
+                key={key}
+                className="intention-pill"
+                onClick={() => {
+                  onIntentionSelect(key)
+                  setIsExpanded(false)
+                }}
+                disabled={isProcessing}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
