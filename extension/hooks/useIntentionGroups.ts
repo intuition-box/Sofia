@@ -87,7 +87,7 @@ function sortGroups(groups: IntentionGroupWithStats[], sortBy: SortOption): Inte
  * Calculate stats for a group
  */
 function calculateGroupStats(group: IntentionGroupRecord): IntentionGroupWithStats {
-  const activeUrls = group.urls.filter(u => !u.removed)
+  const activeUrls = group.urls.filter(u => !u.removed && !u.oauthPredicate)
   const certifiedUrls = activeUrls.filter(u => u.certification)
 
   const breakdown: Record<CertificationType, number> = {
