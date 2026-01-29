@@ -911,9 +911,9 @@
 
 /* Trust Button - orb gradient style */
 .trust-btn {
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   background: none;
-  box-shadow: 0 8px 32px rgba(86, 236, 72, 0.4);
+  box-shadow: none;
   color: #ffffff;
   font-weight: 700;
   position: relative;
@@ -940,9 +940,9 @@
 }
 
 .trust-btn:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(110, 236, 72, 0.6);
+  box-shadow: none;
   transform: translateY(-2px);
-  background-color: rgba(86, 236, 72, 0.4);
+  background-color: rgba(86, 236, 72, 0.15);
 }
 
 @keyframes orb-gradient {
@@ -953,8 +953,8 @@
 
 /* Distrust Button - Outline/Ghost style */
 .distrust-btn {
-  border: none;
-  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4) ;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: none;
   color: white;
   font-weight: 700;
   overflow: hidden;
@@ -975,9 +975,9 @@
 }
 
 .distrust-btn:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(255, 80, 80, 0.6);
+  box-shadow: none;
   transform: translateY(-2px);
-  background-color: rgba(253, 78, 78, 0.459);
+  background-color: rgba(253, 78, 78, 0.15);
   color: white;
 }
 
