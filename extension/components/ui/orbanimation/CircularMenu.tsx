@@ -9,7 +9,7 @@ interface CircularMenuProps {
 }
 
 const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis, onStartImport }: CircularMenuProps) => {
-  const { navigateTo } = useRouter()
+  const { navigateTo, setOnboardingBookmarks } = useRouter()
 
   const menuItems = [
     {
@@ -51,11 +51,14 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis, onStartImport }
         </svg>
       ),
       action: () => {
-        if (confirm('Import all your browser bookmarks?')) {
-          chrome.runtime.sendMessage({ type: 'GET_BOOKMARKS' })
-          onStartImport?.()
-          onItemClick?.('import-data')
-        }
+        onStartImport?.()
+        onItemClick?.('import-data')
+        chrome.runtime.sendMessage({ type: 'FETCH_BOOKMARKS' }, (response) => {
+          if (response?.success && response.bookmarks?.length > 0) {
+            setOnboardingBookmarks(response.bookmarks)
+            navigateTo('onboarding-select')
+          }
+        })
       }
     },
     {

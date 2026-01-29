@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import screenshotGroup from '../../assets/youtubegroup.png'
-import screenshotDetail from '../../assets/youtubeDetail.png'
+import screenshotDetail from '../../assets/details.png'
 import screenshotProfile from '../../assets/profil.png'
+import screenshotProof from '../../assets/proof.png'
+import screenshotTrust from '../../assets/trustpage.png'
 import screenshotSelect from '../../assets/selectbookmark.png'
 import '../styles/OnboardingStyles.css'
 
@@ -24,9 +26,19 @@ const STEPS: TutorialStep[] = [
     screenshot: screenshotDetail
   },
   {
+    title: 'Proof Analysis',
+    description: 'Your certifications build a verifiable on-chain profile. This data is analyzed to generate a proof of your interests and intentions, creating a unique digital identity.',
+    screenshot: screenshotProof
+  },
+  {
     title: 'Earn XP & Level Up',
     description: 'Each certification earns you XP. Level up your groups to unlock higher attestation weight and build your on-chain reputation.',
     screenshot: screenshotProfile
+  },
+  {
+    title: 'Connect with Friends',
+    description: 'Trust your friends to discover what they are up to and share with them directly in Sofia.',
+    screenshot: screenshotTrust
   },
   {
     title: 'Select & Import',
@@ -63,48 +75,50 @@ const OnboardingTutorialPage = () => {
 
   return (
     <div className="onboarding-page">
-      <div className="tutorial-progress">
-        {STEPS.map((_, i) => (
-          <div
-            key={i}
-            className={`tutorial-dot ${i === currentStep ? 'active' : ''} ${i < currentStep ? 'completed' : ''}`}
+      <div className="tutorial-card">
+        <div className="tutorial-progress">
+          {STEPS.map((_, i) => (
+            <div
+              key={i}
+              className={`tutorial-dot ${i === currentStep ? 'active' : ''} ${i < currentStep ? 'completed' : ''}`}
+            />
+          ))}
+        </div>
+
+        <div className="tutorial-content">
+          <img
+            src={step.screenshot}
+            alt={step.title}
+            className={`tutorial-screenshot ${currentStep === 0 || isLastStep ? 'tutorial-screenshot-small' : ''}`}
           />
-        ))}
-      </div>
+          <h2 className="onboarding-title">{step.title}</h2>
+          <p className="onboarding-description">{step.description}</p>
+        </div>
 
-      <div className="tutorial-content">
-        <img
-          src={step.screenshot}
-          alt={step.title}
-          className={`tutorial-screenshot ${currentStep === 0 || isLastStep ? 'tutorial-screenshot-small' : ''}`}
-        />
-        <h2 className="onboarding-title">{step.title}</h2>
-        <p className="onboarding-description">{step.description}</p>
-      </div>
-
-      <div className="onboarding-actions">
-        <button
-          className="onboarding-btn onboarding-btn-primary"
-          onClick={handleNext}
-        >
-          {isLastStep ? 'Import my bookmarks' : 'Next'}
-        </button>
-        {currentStep > 0 && (
+        <div className="onboarding-actions">
           <button
-            className="onboarding-btn onboarding-btn-secondary"
-            onClick={handleBack}
+            className="onboarding-btn onboarding-btn-primary"
+            onClick={handleNext}
           >
-            Back
+            {isLastStep ? 'Import my bookmarks' : 'Next'}
           </button>
-        )}
-        {(currentStep === 0 || isLastStep) && (
-          <button
-            className="onboarding-btn onboarding-btn-secondary"
-            onClick={handleSkip}
-          >
-            Skip
-          </button>
-        )}
+          {currentStep > 0 && (
+            <button
+              className="onboarding-btn onboarding-btn-secondary"
+              onClick={handleBack}
+            >
+              Back
+            </button>
+          )}
+          {(currentStep === 0 || isLastStep) && (
+            <button
+              className="onboarding-btn onboarding-btn-secondary"
+              onClick={handleSkip}
+            >
+              Skip
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

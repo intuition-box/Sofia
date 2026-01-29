@@ -146,6 +146,17 @@ const SettingsPage = () => {
           <WalletConnectionButton />
         </div>
 
+        {/* Replay Tutorial */}
+        <div className="settings-item">
+          <span>Tutorial</span>
+          <button
+            onClick={() => navigateTo('onboarding-tutorial')}
+            className="delete-button-3d noselect"
+          >
+            Tutorial
+          </button>
+        </div>
+
         {/* Clear All Data */}
         <div className="settings-item">
           <span>Clear All Data</span>
