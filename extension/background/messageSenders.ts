@@ -14,38 +14,50 @@ import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { isSensitiveUrl } from "./utils/url"
 
 // === Chrome API Utilities ===
-function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): string[] {
-  const urls: string[] = []
-  
-  function traverseBookmarks(nodes: chrome.bookmarks.BookmarkTreeNode[]) {
+
+export interface BookmarkData {
+  url: string
+  title: string
+}
+
+function extractBookmarkData(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): BookmarkData[] {
+  const bookmarks: BookmarkData[] = []
+
+  function traverse(nodes: chrome.bookmarks.BookmarkTreeNode[]) {
     for (const node of nodes) {
       if (node.url) {
-        urls.push(node.url)
+        bookmarks.push({ url: node.url, title: node.title || node.url })
       }
       if (node.children) {
-        traverseBookmarks(node.children)
+        traverse(node.children)
       }
     }
   }
-  
-  traverseBookmarks(bookmarkNodes)
-  return urls
+
+  traverse(bookmarkNodes)
+  return bookmarks
 }
 
-export async function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
+export async function getAllBookmarks(): Promise<{ success: boolean; bookmarks?: BookmarkData[]; error?: string }> {
   try {
     const bookmarkTree = await chrome.bookmarks.getTree()
-    const allUrls = extractBookmarkUrls(bookmarkTree)
-    
-    // Limit to 200 most recent bookmarks to avoid prompt being too long
-    const urls = allUrls.slice(0, 200)
-    
-    console.log(`📚 Extracted ${allUrls.length} bookmarks, using ${urls.length} (limited)`)
-    
-    return { success: true, urls }
+    const all = extractBookmarkData(bookmarkTree)
+
+    // Filter sensitive and excluded URLs
+    const filtered = all.filter(b =>
+      !isSensitiveUrl(b.url) &&
+      !EXCLUDED_URL_PATTERNS.some(pattern => b.url.includes(pattern))
+    )
+
+    // Limit to 500 bookmarks
+    const bookmarks = filtered.slice(0, 500)
+
+    console.log(`📚 Extracted ${all.length} bookmarks, filtered to ${filtered.length}, using ${bookmarks.length}`)
+
+    return { success: true, bookmarks }
   } catch (error) {
     console.error("❌ Failed to get bookmarks:", error)
-    return { success: false, error: error.message }
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 

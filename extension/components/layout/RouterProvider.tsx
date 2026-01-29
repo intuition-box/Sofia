@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 
-type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'Sofia' | 'recommendations' | 'resonance' | 'chat' | 'user-profile' | 'discovery-profile'
+type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'Sofia' | 'recommendations' | 'resonance' | 'chat' | 'user-profile' | 'discovery-profile' | 'onboarding-import' | 'onboarding-select' | 'onboarding-tutorial'
 
 export interface UserProfileData {
   termId: string
@@ -16,6 +16,11 @@ interface SearchContext {
   showResults: boolean
 }
 
+export interface BookmarkData {
+  url: string
+  title: string
+}
+
 interface RouterContextType {
   currentPage: Page
   navigateTo: (page: Page, data?: any) => void
@@ -27,6 +32,8 @@ interface RouterContextType {
   setSearchContext: (context: SearchContext | null) => void
   activeProfileTab: string | null
   setActiveProfileTab: (tab: string | null) => void
+  onboardingBookmarks: BookmarkData[]
+  setOnboardingBookmarks: (bookmarks: BookmarkData[]) => void
 }
 
 const RouterContext = createContext<RouterContextType | undefined>(undefined)
@@ -45,6 +52,7 @@ export const RouterProvider = ({
   const [userProfileData, setUserProfileData] = useState<UserProfileData | null>(null)
   const [searchContext, setSearchContext] = useState<SearchContext | null>(null)
   const [activeProfileTab, setActiveProfileTab] = useState<string | null>(null)
+  const [onboardingBookmarks, setOnboardingBookmarks] = useState<BookmarkData[]>([])
 
   const navigateTo = (page: Page, data?: any) => {
     setCurrentPage(page)
@@ -83,7 +91,9 @@ export const RouterProvider = ({
     searchContext,
     setSearchContext,
     activeProfileTab,
-    setActiveProfileTab
+    setActiveProfileTab,
+    onboardingBookmarks,
+    setOnboardingBookmarks
   }
 
   return (
