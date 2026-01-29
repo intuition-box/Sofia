@@ -87,6 +87,11 @@ export const RESTRICTED_DOMAINS = [
   'doubleclick.net', 'googlesyndication.com', 'googleadservices.com',
   'adsrvr.org', 'adnxs.com', 'criteo.com', 'taboola.com',
   'outbrain.com', 'pubmatic.com', 'rubiconproject.com',
+  // Ad networks from tracking script
+  'amazon-adsystem.com', 'adtrafficquality.google', 'contextual.media.net',
+  'jscache.com', 'indexww.com', 'a-mo.net', 'casalemedia.com',
+  // Google/YouTube (not certifiable content)
+  'www.google.com', 'youtube.com',
 ]
 
 // User-friendly messages for the UI

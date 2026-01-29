@@ -44,12 +44,24 @@ const SettingsPage = () => {
       // Clear custom IndexedDB data (triplets, etc.)
       await tripletsDataService.clearAll()
 
-      // Clear OAuth tokens, sync info, and platform profiles
-      await chrome.storage.local.remove([
-        'oauth_token_youtube', 'oauth_token_spotify', 'oauth_token_twitch', 'oauth_token_twitter', 'oauth_token_discord',
-        'sync_info_youtube', 'sync_info_spotify', 'sync_info_twitch', 'sync_info_twitter', 'sync_info_discord',
-        'discord_profile'
-      ])
+      // Clear OAuth tokens, sync info, and platform profiles (old + per-wallet keys)
+      const allLocalData: Record<string, any> = await chrome.storage.local.get()
+      const keysToRemove = Object.keys(allLocalData).filter(key =>
+        key.startsWith('oauth_token_') ||
+        key.startsWith('sync_info_') ||
+        key.startsWith('discord_profile') ||
+        key.startsWith('completed_quests') ||
+        key.startsWith('claimed_quests') ||
+        key.startsWith('claimed_discovery_xp') ||
+        key.startsWith('group_certification_xp') ||
+        key.startsWith('spent_xp') ||
+        key.startsWith('quest_progress_') ||
+        key.startsWith('social_attestation') ||
+        key === 'lastActiveWallet'
+      )
+      if (keysToRemove.length > 0) {
+        await chrome.storage.local.remove(keysToRemove)
+      }
 
       // Clear recommendations cache (if user has account)
       if (account) {

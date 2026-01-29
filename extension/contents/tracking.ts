@@ -1,6 +1,6 @@
 import type { PlasmoCSConfig } from "plasmo"
-import type { PlasmoMessage } from "~types/messaging"
 import { Storage } from "@plasmohq/storage"
+import { EXCLUDED_URL_PATTERNS, RESTRICTED_DOMAINS } from "../background/constants"
 
 const storage = new Storage()
 
@@ -29,26 +29,10 @@ function shouldIgnoreFrame(): boolean {
   const url = window.location.href
   const hostname = window.location.hostname
 
-  const ignoredDomains = [
-    "googletagmanager.com",
-    "doubleclick.net",
-    "amazon-adsystem.com",
-    "google.com/recaptcha",
-    "adtrafficquality.google",
-    "contextual.media.net",
-    "rubiconproject.com",
-    "pubmatic.com",
-    "jscache.com",
-    "indexww.com",
-    "a-mo.net",
-    "casalemedia.com",
-    "ogs.google.com",
-    "www.google.com",
-    "youtube.com",
-    "wallet",
-  ]
-
-  if (window !== window.top && ignoredDomains.some(domain => hostname.includes(domain))) {
+  if (window !== window.top && (
+    EXCLUDED_URL_PATTERNS.some(pattern => hostname.includes(pattern) || url.includes(pattern)) ||
+    RESTRICTED_DOMAINS.some(domain => hostname.includes(domain))
+  )) {
     return true
   }
 
@@ -108,7 +92,7 @@ async function extractRealData() {
       data: pageData,
       tabId: await getCurrentTabId(),
       pageLoadTime: Date.now()
-    } as PlasmoMessage)
+    })
     console.log("✅ [TRACKING DEBUG] PAGE_DATA sent successfully")
   } catch (error) {
     console.error("❌ [TRACKING DEBUG] Error sending PAGE_DATA:", error)
