@@ -70,6 +70,26 @@ export const SENSITIVE_URL_PARAMS = [
   'token', 'session', 'auth', 'key', 'password', 'secret', 'api_key'
 ];
 
+/** Tracking query params to strip when normalizing URLs for page identification */
+export const TRACKING_URL_PARAMS = new Set([
+  // Google Analytics / Ads
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+  'gclid', 'gclsrc', '_ga', '_gl',
+  // Facebook
+  'fbclid', 'fb_action_ids', 'fb_action_types',
+  // YouTube (tracking, NOT content)
+  'si', 'feature', 't',
+  // Other platforms
+  'mc_cid', 'mc_eid',         // Mailchimp
+  'msclkid',                  // Microsoft/Bing
+  'twclid',                   // Twitter
+  'igshid',                   // Instagram
+  'ref', 'source',            // generic referral
+  '_hsenc', '_hsmi',          // HubSpot
+  'oly_anon_id', 'oly_enc_id',
+  'vero_id', 'wickedid',
+])
+
 // Protocols where content scripts cannot run (wallet unavailable)
 export const RESTRICTED_PROTOCOLS = [
   'chrome:', 'chrome-extension:', 'chrome-search:', 'chrome-devtools:',

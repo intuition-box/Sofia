@@ -17,6 +17,8 @@ import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
 import { useGroupAmplify } from '../../hooks/useGroupAmplify'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
+import { normalizeUrl } from '../../lib/utils/normalizeUrl'
+import { cleanTitle } from '../../lib/utils/cleanTitle'
 import '../styles/IntentionBubbleSelector.css'
 
 interface GroupDetailViewProps {
@@ -92,7 +94,7 @@ const UrlRow = ({
 }: {
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
-  onIntentionSelect: (intention: IntentionPurpose) => void
+  onIntentionSelect: (intention: IntentionPurpose, title?: string) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
@@ -129,7 +131,7 @@ const UrlRow = ({
             className="url-title"
             onClick={(e) => e.stopPropagation()}
           >
-            {urlRecord.title || urlRecord.url}
+            {urlRecord.title ? cleanTitle(urlRecord.title) : urlRecord.url}
           </a>
           <div className="url-meta">
             <span className="url-date">{formatDate(urlRecord.addedAt)}</span>
@@ -211,7 +213,7 @@ const UrlRow = ({
                 key={key}
                 className="intention-pill"
                 onClick={() => {
-                  onIntentionSelect(key)
+                  onIntentionSelect(key, urlRecord.title)
                   setIsExpanded(false)
                 }}
                 disabled={isProcessing}
@@ -269,6 +271,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     url: string
     intention: IntentionPurpose
     oauthPredicate?: string  // For OAuth URLs, use this predicate directly instead of intention
+    title?: string           // Page title for atom name
   } | null>(null)
   const [intentionRewardClaimed, setIntentionRewardClaimed] = useState(false)
 
@@ -357,15 +360,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   }).length
 
   // Handle intention selection - opens the WeightModal
-  const handleIntentionSelect = (url: string, intention: IntentionPurpose) => {
-    // Extract page label for the triplet
+  const handleIntentionSelect = (url: string, intention: IntentionPurpose, title?: string) => {
     try {
-      const urlObj = new URL(url)
-      const domain = urlObj.hostname
-      const pathname = urlObj.pathname
-      const pageLabel = pathname && pathname !== '/'
-        ? `${domain}${pathname}`
-        : domain
+      const { label: pageLabel } = normalizeUrl(url)
+      const displayName = (title ? cleanTitle(title) : null) || pageLabel
 
       // Prepare triplet for intention modal
       const triplet = {
@@ -373,14 +371,14 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         triplet: {
           subject: 'I',
           predicate: INTENTION_PREDICATES[intention],
-          object: pageLabel
+          object: displayName
         },
-        description: `I ${INTENTION_PREDICATES[intention]} ${pageLabel}`,
+        description: `I ${INTENTION_PREDICATES[intention]} ${displayName}`,
         url: url,
         intention: intention
       }
 
-      setPendingCertification({ url, intention })
+      setPendingCertification({ url, intention, title })
       setModalTriplets([triplet])
       setShowWeightModal(true)
     } catch (error) {
@@ -398,19 +396,19 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       triplet: {
         subject: 'I',
         predicate: urlRecord.oauthPredicate,
-        object: urlRecord.title
+        object: cleanTitle(urlRecord.title)
       },
-      description: `I ${urlRecord.oauthPredicate} ${urlRecord.title}`,
+      description: `I ${urlRecord.oauthPredicate} ${cleanTitle(urlRecord.title)}`,
       url: urlRecord.url,
       intention: 'for_fun' as IntentionPurpose // For display only
     }
 
     // Store OAuth predicate to use the correct predicate on-chain
-    // Note: oauthObjectLabel not needed - certifyWithCustomPredicate normalizes the URL
     setPendingCertification({
       url: urlRecord.url,
       intention: 'for_fun', // Fallback only
-      oauthPredicate: urlRecord.oauthPredicate
+      oauthPredicate: urlRecord.oauthPredicate,
+      title: urlRecord.title
     })
     setModalTriplets([triplet])
     setShowWeightModal(true)
@@ -420,18 +418,17 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const handleModalSubmit = async (customWeights?: (bigint | null)[]) => {
     if (!pendingCertification || !customWeights || customWeights.length === 0) return
 
-    const { url, intention, oauthPredicate } = pendingCertification
+    const { url, intention, oauthPredicate, title } = pendingCertification
     setProcessingUrls(prev => new Set(prev).add(url))
 
     try {
       const weight = customWeights[0] || undefined
 
       // Use OAuth predicate if available, otherwise use intention predicate
-      // certifyWithCustomPredicate normalizes the URL internally for consistent matching
       if (oauthPredicate) {
-        await certifyWithCustomPredicate(url, oauthPredicate, undefined, weight as bigint | undefined)
+        await certifyWithCustomPredicate(url, oauthPredicate, undefined, title, weight as bigint | undefined)
       } else {
-        await certifyWithIntention(url, intention, weight as bigint | undefined)
+        await certifyWithIntention(url, intention, title, weight as bigint | undefined)
       }
 
       // Also update local database
@@ -665,7 +662,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               key={urlRecord.url}
               urlRecord={urlRecord}
               onChainStatus={getUrlCertification(urlRecord.url)}
-              onIntentionSelect={(intention) => handleIntentionSelect(urlRecord.url, intention)}
+              onIntentionSelect={(intention, title) => handleIntentionSelect(urlRecord.url, intention, title)}
               onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
               isProcessing={processingUrls.has(urlRecord.url) || intentionLoading}

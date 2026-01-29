@@ -7,6 +7,8 @@ import { INTENTION_MIN_STAKE, PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { INTENTION_PREDICATES } from '../types/discovery'
 import { questTrackingService } from '../lib/services/QuestTrackingService'
+import { normalizeUrl } from '../lib/utils/normalizeUrl'
+import { cleanTitle } from '../lib/utils/cleanTitle'
 
 const logger = createHookLogger('useIntentionCertify')
 
@@ -14,12 +16,14 @@ export interface IntentionCertifyResult {
   certifyWithIntention: (
     url: string,
     intention: IntentionPurpose,
+    title?: string,
     customWeight?: bigint
   ) => Promise<void>
   certifyWithCustomPredicate: (
     url: string,
     predicateName: string,
     objectLabel?: string,  // Deprecated - ignored, URL is normalized instead
+    title?: string,
     customWeight?: bigint
   ) => Promise<void>
   reset: () => void
@@ -54,6 +58,7 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
   const certifyWithIntention = useCallback(async (
     url: string,
     intention: IntentionPurpose,
+    title?: string,
     customWeight?: bigint
   ) => {
     try {
@@ -88,24 +93,10 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       setOperationType(null)
       setCurrentIntention(intention)
 
-      // Extract domain and path from URL for atom name
-      // IMPORTANT: Normalize consistently with useUserCertifications and useGroupOnChainCertifications
-      const urlObj = new URL(url)
-      let hostname = urlObj.hostname.toLowerCase()
-      const pathname = urlObj.pathname
-
-      // Remove www. for consistent matching
-      if (hostname.startsWith('www.')) {
-        hostname = hostname.slice(4)
-      }
-
-      // Create normalized label: domain + path (same format everywhere)
-      // IMPORTANT: Lowercase entire label for consistent matching with cache
-      const pageLabel = pathname && pathname !== '/'
-        ? `${hostname}${pathname.replace(/\/$/, '')}`.toLowerCase()
-        : hostname
-
-      // Get favicon URL from Google's service
+      // Normalize URL for consistent matching (strips tracking params, keeps content params)
+      const { label: pageLabel } = normalizeUrl(url)
+      const atomName = (title ? cleanTitle(title) : null) || pageLabel  // Use cleaned title if provided, fallback to cleaned URL
+      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '')
       const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`
 
       logger.debug(`Creating intention triple via useCreateTripleOnChain`, {
@@ -123,7 +114,7 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       const result = await createTripleOnChain(
         predicateName,  // e.g., 'visits for work'
         {
-          name: pageLabel,
+          name: atomName,
           description: `Page: ${pageLabel}`,
           url: url,
           image: faviconUrl
@@ -187,6 +178,7 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
     url: string,
     predicateName: string,
     _objectLabel?: string,  // Ignored - we use normalized URL for consistency
+    title?: string,
     customWeight?: bigint
   ) => {
     try {
@@ -199,21 +191,10 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
         ? customWeight
         : INTENTION_MIN_STAKE
 
-      // Normalize URL to create object label (unified with intention certifications)
-      const urlObj = new URL(url)
-      let hostname = urlObj.hostname.toLowerCase()
-      const pathname = urlObj.pathname
-
-      // Remove www.
-      if (hostname.startsWith('www.')) {
-        hostname = hostname.slice(4)
-      }
-
-      // Create normalized label: domain + path (same format as intention certifications)
-      // IMPORTANT: Lowercase entire label for consistent matching with cache
-      const normalizedLabel = pathname && pathname !== '/'
-        ? `${hostname}${pathname.replace(/\/$/, '')}`.toLowerCase()
-        : hostname
+      // Normalize URL for consistent matching (strips tracking params, keeps content params)
+      const { label: normalizedLabel } = normalizeUrl(url)
+      const atomName = (title ? cleanTitle(title) : null) || normalizedLabel  // Use cleaned title if provided, fallback to cleaned URL
+      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '')
 
       logger.info(`Creating custom predicate certification`, {
         url,
@@ -243,11 +224,10 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       })
 
       // Use useCreateTripleOnChain with the custom predicate
-      // Object label is the normalized URL (e.g., "youtube.com/channel/UCxxx")
       const result = await createTripleOnChain(
         predicateName,  // e.g., 'follow', 'member_of', etc.
         {
-          name: normalizedLabel,  // Normalized URL for consistent matching
+          name: atomName,  // Title if provided, fallback to cleaned URL
           description: `${predicateName}: ${normalizedLabel}`,
           url: url,
           image: faviconUrl

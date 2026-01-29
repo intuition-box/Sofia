@@ -147,10 +147,10 @@ export const useCreateTripleOnChain = () => {
 
       if (existingPredicateId) {
         predicateVaultId = existingPredicateId
-        objectVaultId = createdAtoms[objectData.name].vaultId
+        objectVaultId = createdAtoms[objectData.url || objectData.name].vaultId
       } else {
         predicateVaultId = createdAtoms[predicateName].vaultId
-        objectVaultId = createdAtoms[objectData.name].vaultId
+        objectVaultId = createdAtoms[objectData.url || objectData.name].vaultId
       }
 
       const predicateAtom = { vaultId: predicateVaultId, name: predicateName }
@@ -347,7 +347,8 @@ export const useCreateTripleOnChain = () => {
 
       for (const input of inputs) {
         uniquePredicates.add(input.predicateName)
-        uniqueObjects.set(input.objectData.name, {
+        const objectKey = input.objectData.url || input.objectData.name
+        uniqueObjects.set(objectKey, {
           name: input.objectData.name,
           description: input.objectData.description,
           url: input.objectData.url,
@@ -382,13 +383,13 @@ export const useCreateTripleOnChain = () => {
       }
 
       // Add all objects to create
-      for (const [objectName, objData] of uniqueObjects.entries()) {
+      for (const [objectKey, objData] of uniqueObjects.entries()) {
         atomsToPinAndCreate.push({
           name: objData.name,
           description: objData.description || "Contenu visité par l'utilisateur.",
           url: objData.url,
           image: objData.image,
-          key: `object:${objectName}`
+          key: `object:${objectKey}`
         })
       }
 
@@ -407,8 +408,9 @@ export const useCreateTripleOnChain = () => {
         // Map results back to atomResults using the original keys
         for (let i = 0; i < atomsToPinAndCreate.length; i++) {
           const key = atomsToPinAndCreate[i].key
+          const atomUrl = atomsToPinAndCreate[i].url
           const name = atomsToPinAndCreate[i].name
-          atomResults.set(key, createdAtoms[name].vaultId)
+          atomResults.set(key, createdAtoms[atomUrl || name].vaultId)
         }
 
         logger.debug('All atoms created in single tx', {
@@ -445,7 +447,8 @@ export const useCreateTripleOnChain = () => {
 
         const userVaultId = atomResults.get(`user:I`)!
         const predicateVaultId = atomResults.get(`predicate:${input.predicateName}`)!
-        const objectVaultId = atomResults.get(`object:${input.objectData.name}`)!
+        const objectKey = input.objectData.url || input.objectData.name
+        const objectVaultId = atomResults.get(`object:${objectKey}`)!
 
         // Check if triple already exists
         const tripleCheck = await BlockchainService.checkTripleExists(userVaultId, predicateVaultId, objectVaultId)

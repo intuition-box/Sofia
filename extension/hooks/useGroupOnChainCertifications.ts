@@ -4,11 +4,12 @@
  * NO GraphQL queries - just local matching from the cached data
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useUserCertifications } from './useUserCertifications'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
+import { normalizeUrl } from '../lib/utils/normalizeUrl'
 
 const logger = createHookLogger('useGroupOnChainCertifications')
 
@@ -68,30 +69,11 @@ function calculateLevelProgress(certifiedCount: number): { level: number; xpToNe
 
 /**
  * Normalize a URL to the label format for matching
- * IMPORTANT: Must match the normalization in useUserCertifications (all lowercase)
+ * Uses shared normalizeUrl utility (strips tracking params, keeps content params)
  */
 function normalizeUrlToLabel(url: string): { label: string; isRootDomain: boolean } | null {
   try {
-    const urlObj = new URL(url)
-    let hostname = urlObj.hostname.toLowerCase()
-    const pathname = urlObj.pathname
-    const search = urlObj.search
-
-    // Remove www.
-    if (hostname.startsWith('www.')) {
-      hostname = hostname.slice(4)
-    }
-
-    // Build full path with query params
-    const fullPath = pathname + search
-    const hasPath = fullPath && fullPath !== '/'
-
-    // IMPORTANT: Lowercase the entire label to match cache keys
-    const label = hasPath
-      ? `${hostname}${fullPath.replace(/\/$/, '')}`.toLowerCase()
-      : hostname
-
-    return { label, isRootDomain: !hasPath }
+    return normalizeUrl(url)
   } catch {
     return null
   }
@@ -116,24 +98,20 @@ export const useGroupOnChainCertifications = (
 ): UseGroupOnChainCertificationsResult => {
   const { walletAddress } = useWalletFromStorage()
   const { certifications, loading: globalLoading, error: globalError, refetch: globalRefetch } = useUserCertifications(walletAddress)
-  const [stats, setStats] = useState<GroupCertificationStats | null>(null)
 
   // Stabilize urls reference
   const urlsKey = urls.join('|')
 
-  // Compute stats from the global cache
-  useEffect(() => {
+  // Compute stats synchronously from the global cache (no useEffect/setState to avoid render cascades)
+  const stats = useMemo((): GroupCertificationStats | null => {
     if (!domain || urls.length === 0) {
-      setStats(null)
-      return
+      return null
     }
 
-    // Skip if global cache is still loading
+    // Return null while global cache is still loading
     if (globalLoading) {
-      return
+      return null
     }
-
-    logger.debug('Computing group certifications from cache', { domain, urlCount: urls.length, cacheSize: certifications.size })
 
     const certifiedUrls = new Map<string, UrlCertificationStatus>()
 
@@ -146,17 +124,6 @@ export const useGroupOnChainCertifications = (
       // Look up in the global cache
       const certification = certifications.get(normalizedLabel)
 
-      // Debug: Log URL matching attempts for domains like github
-      if (normalizedLabel.includes('github') || url.includes('github')) {
-        logger.debug('URL matching attempt:', {
-          originalUrl: url,
-          normalizedLabel,
-          urlIsRootDomain,
-          foundInCache: !!certification,
-          cacheKeys: Array.from(certifications.keys()).filter(k => k.includes('github'))
-        })
-      }
-
       if (certification) {
         // STRICT MATCHING RULE:
         // - Root domain certification (e.g., "youtube.com") only matches root domain URLs
@@ -164,11 +131,6 @@ export const useGroupOnChainCertifications = (
         // This prevents "youtube.com" from matching all YouTube URLs
 
         if (certification.isRootDomain && !urlIsRootDomain) {
-          // Root domain certification should NOT match URLs with paths
-          logger.debug('Skipping root domain match for URL with path', {
-            url,
-            certificationLabel: certification.label
-          })
           continue
         }
 
@@ -199,7 +161,7 @@ export const useGroupOnChainCertifications = (
     const certifiedCount = certifiedUrls.size
     const { level, xpToNext, progress } = calculateLevelProgress(certifiedCount)
 
-    const newStats: GroupCertificationStats = {
+    return {
       certifiedCount,
       totalUrls: urls.length,
       certifiedUrls,
@@ -208,15 +170,6 @@ export const useGroupOnChainCertifications = (
       currentLevel: level,
       progressPercent: progress
     }
-
-    setStats(newStats)
-    logger.info('Group certification stats calculated', {
-      domain,
-      certifiedCount,
-      totalUrls: urls.length,
-      level,
-      progress
-    })
   }, [domain, urlsKey, certifications, globalLoading])
 
   // Helper to check if a specific URL is certified

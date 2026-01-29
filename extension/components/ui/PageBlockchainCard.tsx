@@ -14,6 +14,7 @@ import { IntentionBubbleSelector } from './IntentionBubbleSelector'
 import type { PageBlockchainTriplet } from '../../types/page'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
+import { normalizeUrl } from '../../lib/utils/normalizeUrl'
 import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
@@ -137,15 +138,7 @@ const PageBlockchainCard = () => {
   const handleTrustPage = () => {
     if (!currentUrl) return
 
-    // Extract domain and path from URL for display
-    const urlObj = new URL(currentUrl)
-    const domain = urlObj.hostname
-    const pathname = urlObj.pathname
-
-    // Create a more descriptive label: domain + path (without query params)
-    const pageLabel = pathname && pathname !== '/'
-      ? `${domain}${pathname}`
-      : domain
+    const { label: pageLabel } = normalizeUrl(currentUrl)
 
     // Prepare triplet for modal
     const triplet = {
@@ -153,9 +146,9 @@ const PageBlockchainCard = () => {
       triplet: {
         subject: 'I',
         predicate: 'trust',
-        object: pageLabel
+        object: pageTitle || pageLabel
       },
-      description: `Trust ${pageLabel}`,
+      description: `Trust ${pageTitle || pageLabel}`,
       url: currentUrl
     }
 
@@ -167,15 +160,7 @@ const PageBlockchainCard = () => {
   const handleDistrustPage = () => {
     if (!currentUrl) return
 
-    // Extract domain and path from URL for display
-    const urlObj = new URL(currentUrl)
-    const domain = urlObj.hostname
-    const pathname = urlObj.pathname
-
-    // Create a more descriptive label: domain + path (without query params)
-    const pageLabel = pathname && pathname !== '/'
-      ? `${domain}${pathname}`
-      : domain
+    const { label: pageLabel } = normalizeUrl(currentUrl)
 
     // Prepare triplet for modal
     const triplet = {
@@ -183,9 +168,9 @@ const PageBlockchainCard = () => {
       triplet: {
         subject: 'I',
         predicate: 'distrust',
-        object: pageLabel
+        object: pageTitle || pageLabel
       },
-      description: `Distrust ${pageLabel}`,
+      description: `Distrust ${pageTitle || pageLabel}`,
       url: currentUrl
     }
 
@@ -212,7 +197,7 @@ const PageBlockchainCard = () => {
         const prevTotal = totalCertifications
 
         console.log('📊 PageBlockchainCard - Starting intention certification', { intention: intentionFromTriplet })
-        await certifyWithIntention(currentUrl, intentionFromTriplet, weight as bigint | undefined)
+        await certifyWithIntention(currentUrl, intentionFromTriplet, pageTitle || undefined, weight as bigint | undefined)
         console.log('✅ PageBlockchainCard - Intention certification completed')
 
         resumeRefresh()
@@ -569,12 +554,8 @@ const PageBlockchainCard = () => {
               onBubbleClick={(intention) => {
                 if (!currentUrl) return
                 // Extract page label for the triplet
-                const urlObj = new URL(currentUrl)
-                const domain = urlObj.hostname
-                const pathname = urlObj.pathname
-                const pageLabel = pathname && pathname !== '/'
-                  ? `${domain}${pathname}`
-                  : domain
+                const { label: pageLabel } = normalizeUrl(currentUrl)
+                const displayName = pageTitle || pageLabel
 
                 // Prepare triplet for intention modal
                 const triplet = {
@@ -582,9 +563,9 @@ const PageBlockchainCard = () => {
                   triplet: {
                     subject: 'I',
                     predicate: INTENTION_PREDICATES[intention],
-                    object: pageLabel
+                    object: displayName
                   },
-                  description: `I ${INTENTION_PREDICATES[intention]} ${pageLabel}`,
+                  description: `I ${INTENTION_PREDICATES[intention]} ${displayName}`,
                   url: currentUrl,
                   intention: intention
                 }

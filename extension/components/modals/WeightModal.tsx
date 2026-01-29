@@ -199,6 +199,14 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   <span className="action">{triplet.triplet.predicate}</span>{' '}
                   <span className="object">{triplet.triplet.object}</span>
                 </p>
+                {triplet.url && (() => {
+                  try {
+                    const urlObj = new URL(triplet.url)
+                    const host = urlObj.hostname.replace(/^www\./, '')
+                    const path = urlObj.pathname !== '/' ? urlObj.pathname : ''
+                    return <span className="triplet-url-hint">{host}{path}</span>
+                  } catch { return null }
+                })()}
               </div>
 
                 {/* Amount Section */}
