@@ -56,7 +56,6 @@ const ALLOWED_RPC_METHODS = [
   // Write operations (require user approval in wallet)
   "eth_sendTransaction",
   "eth_signTransaction",
-  "eth_sign",
   "personal_sign",
   "eth_signTypedData",
   "eth_signTypedData_v3",
@@ -228,7 +227,7 @@ async function handleWalletRequest(event: MessageEvent) {
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
       result: getAvailableProviders()
-    }, "*")
+    }, window.location.origin)
     return
   }
 
@@ -239,7 +238,7 @@ async function handleWalletRequest(event: MessageEvent) {
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
       result: { cleared: true }
-    }, "*")
+    }, window.location.origin)
     return
   }
 
@@ -251,7 +250,7 @@ async function handleWalletRequest(event: MessageEvent) {
         type: "SOFIA_WALLET_RESPONSE",
         requestId,
         error: { code: -32602, message: "Missing walletType parameter" }
-      }, "*")
+      }, window.location.origin)
       return
     }
     const found = selectProviderByName(walletType)
@@ -259,7 +258,7 @@ async function handleWalletRequest(event: MessageEvent) {
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
       result: { found, selectedProvider: selectedProviderName }
-    }, "*")
+    }, window.location.origin)
     return
   }
 
@@ -271,7 +270,7 @@ async function handleWalletRequest(event: MessageEvent) {
         type: "SOFIA_WALLET_RESPONSE",
         requestId,
         error: { code: -32602, message: "Missing address parameter" }
-      }, "*")
+      }, window.location.origin)
       return
     }
     const found = await selectProviderByAddress(address)
@@ -279,7 +278,7 @@ async function handleWalletRequest(event: MessageEvent) {
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
       result: { found, selectedProvider: selectedProviderName }
-    }, "*")
+    }, window.location.origin)
     return
   }
 
@@ -294,7 +293,7 @@ async function handleWalletRequest(event: MessageEvent) {
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
       error: { code: -32601, message: `Method not allowed: ${method}` }
-    }, "*")
+    }, window.location.origin)
     return
   }
 
@@ -307,7 +306,7 @@ async function handleWalletRequest(event: MessageEvent) {
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
       error: { code: -32002, message: "No wallet found. Please install MetaMask, Rabby, or another Web3 wallet." }
-    }, "*")
+    }, window.location.origin)
     return
   }
 
@@ -319,7 +318,7 @@ async function handleWalletRequest(event: MessageEvent) {
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
       result
-    }, "*")
+    }, window.location.origin)
   } catch (error: any) {
     console.error("❌ [WalletBridge] Request failed:", method, error)
 
@@ -330,7 +329,7 @@ async function handleWalletRequest(event: MessageEvent) {
         code: error.code || -32603,
         message: error.message || "Unknown error"
       }
-    }, "*")
+    }, window.location.origin)
   }
 }
 
@@ -345,7 +344,7 @@ function setupProviderListeners() {
       type: "SOFIA_WALLET_EVENT",
       event: eventName,
       data
-    }, "*")
+    }, window.location.origin)
   }
 
   try {

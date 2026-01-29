@@ -20,6 +20,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Store the callback for this request
   pendingRequests.set(requestId, sendResponse)
 
+  // Cleanup stale requests after 30s
+  setTimeout(() => {
+    if (pendingRequests.has(requestId)) {
+      const cb = pendingRequests.get(requestId)
+      pendingRequests.delete(requestId)
+      cb?.({ error: { code: -32603, message: 'Wallet request timeout' } })
+    }
+  }, 30000)
+
   // Forward to MAIN world (walletBridge.ts)
   window.postMessage({
     type: "SOFIA_WALLET_REQUEST",

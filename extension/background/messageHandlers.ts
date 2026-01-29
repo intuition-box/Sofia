@@ -401,32 +401,6 @@ export function setupMessageHandlers(): void {
         }
         break
 
-      case "WALLET_CONNECTED":
-        try {
-          const walletAddress = message.data?.walletAddress || message.walletAddress
-          const walletType = message.data?.walletType || message.walletType || null
-          if (walletAddress) {
-            // Check if wallet changed using persistent lastActiveWallet
-            const { lastActiveWallet } = await chrome.storage.local.get('lastActiveWallet')
-            if (lastActiveWallet && lastActiveWallet.toLowerCase() !== walletAddress.toLowerCase()) {
-              console.log('🔄 [messageHandlers] Wallet changed from', lastActiveWallet, 'to', walletAddress)
-              await IntentionGroupsService.clearAll()
-            }
-            // Update lastActiveWallet
-            await chrome.storage.local.set({ lastActiveWallet: walletAddress })
-            await chrome.storage.session.set({ walletAddress, walletType })
-            console.log("✅ Wallet connected:", walletAddress, "type:", walletType)
-            await initializeSocketsOnWalletConnect()
-            sendResponse({ success: true })
-          } else {
-            sendResponse({ success: false, error: "No wallet address provided" })
-          }
-        } catch (error) {
-          console.error("❌ WALLET_CONNECTED error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
       case "WALLET_DISCONNECTED":
         try {
           await chrome.storage.session.remove(['walletAddress', 'walletType'])
@@ -649,7 +623,7 @@ export function setupMessageHandlers(): void {
 
     }
 
-    sendResponse({ success: true })
+    sendResponse({ success: false, error: 'Unknown message type: ' + message.type })
     })().catch(error => {
       console.error("❌ Message handler error:", error)
       sendResponse({ success: false, error: error.message })

@@ -140,12 +140,12 @@ async function triggerExternalLogout(): Promise<void> {
   const tabs = await chrome.tabs.query({ url: 'https://sofia.intuition.box/*' })
 
   if (tabs.length > 0 && tabs[0].id) {
-    // Update existing tab to trigger logout
-    await chrome.tabs.update(tabs[0].id, { url: logoutUrl })
+    // Update existing tab and bring it to focus
+    await chrome.tabs.update(tabs[0].id, { url: logoutUrl, active: true })
     console.log('🔓 [disconnectWallet] Triggering logout on existing auth tab')
   } else {
-    // Open new tab in background to logout
-    await chrome.tabs.create({ url: logoutUrl, active: false })
+    // Open new visible tab to logout
+    await chrome.tabs.create({ url: logoutUrl, active: true })
     console.log('🔓 [disconnectWallet] Opening auth page to logout')
   }
 }

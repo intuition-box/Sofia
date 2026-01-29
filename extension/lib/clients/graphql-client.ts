@@ -11,7 +11,7 @@ const queryCache = new Map<string, { data: any; timestamp: number }>()
 
 // Request queue to prevent concurrent requests
 let requestQueue: Promise<any> = Promise.resolve()
-const MIN_REQUEST_INTERVAL_MS = 500 // Minimum 500ms between requests
+const MIN_REQUEST_INTERVAL_MS = 100 // Minimum 100ms between requests
 
 // Generate cache key from query and variables
 const getCacheKey = (query: string, variables?: any): string => {
