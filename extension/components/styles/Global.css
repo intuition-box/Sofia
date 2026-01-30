@@ -150,6 +150,47 @@ body {
   --z-tooltip: 9999;
 }
 
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] {
+  /* Couleurs de texte - inversées pour light mode */
+  --color-text-primary: #372118;
+  --color-text-secondary: #0E0E0E;
+  --color-text-dark: #050505;
+  --color-text-muted: rgba(0, 0, 0, 0.7);
+  --color-text-very-muted: rgba(0, 0, 0, 0.5);
+  --color-text-placeholder: rgba(0, 0, 0, 0.4);
+
+  /* Couleurs de fond - light variants */
+  --color-bg-glass: rgba(255, 255, 255, 0.9);
+  --color-bg-glass-light: rgba(0, 0, 0, 0.03);
+  --color-bg-glass-lighter: rgba(0, 0, 0, 0.06);
+  --color-bg-dark: rgba(250, 245, 242, 0.95);
+  --color-bg-darker: rgba(245, 240, 235, 0.95);
+  --color-bg-black: rgba(255, 255, 255, 0.95);
+  --color-bg-overlay: rgba(251, 247, 245, 0.98);
+
+  /* Bordures - plus sombres pour visibilité sur fond clair */
+  --color-border-glass: rgba(0, 0, 0, 0.08);
+  --color-border-light: rgba(0, 0, 0, 0.1);
+  --color-border-lighter: rgba(0, 0, 0, 0.12);
+  --color-border-very-light: rgba(0, 0, 0, 0.05);
+  --color-border-muted: rgba(55, 33, 24, 0.15);
+
+  /* Ombres - plus subtiles pour light mode */
+  --shadow-glass: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-light: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-primary: 0 4px 16px rgba(148, 89, 65, 0.2);
+  --shadow-button: 0 4px 12px rgba(148, 89, 65, 0.15);
+  --shadow-button-hover: 0 6px 16px rgba(148, 89, 65, 0.25);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --shadow-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="light"] .back-button .home-icon {
+  filter: brightness(0);
+}
+
 /* Container principal pour les pages */
 .page {
   padding: var(--spacing-xl);

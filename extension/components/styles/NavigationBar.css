@@ -93,3 +93,31 @@
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* Light Theme */
+[data-theme="light"] .dock-panel {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .dock-item {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .dock-icon {
+  color: #372118;
+}
+
+[data-theme="light"] .dock-icon img {
+  filter: brightness(0);
+}
+
+[data-theme="light"] .dock-icon svg {
+  color: #372118;
+}
+
+[data-theme="light"] .dock-label {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  color: #372118;
+}

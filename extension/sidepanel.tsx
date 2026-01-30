@@ -9,6 +9,7 @@ import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
 import AppLayout from "./components/layout/AppLayout"
 import BottomNavigation from "./components/layout/BottomNavigation"
 import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
+import { useTheme } from "./hooks/useTheme"
 
 // Pages
 import HomePage from "./components/pages/HomePage"
@@ -41,6 +42,9 @@ const SidePanelContent = () => {
 
   // Read wallet from chrome.storage.session (set by tabs/auth.tsx via Privy)
   const { walletAddress, authenticated } = useWalletFromStorage()
+
+  // Initialize theme on app load
+  useTheme()
 
   // Automatic page management based on connection state
   useEffect(() => {

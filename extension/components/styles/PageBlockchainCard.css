@@ -1,6 +1,6 @@
 /* Page Blockchain Card Styles */
 .blockchain-card {
-  background:  #02021483;
+  /* background:  #02021483; */
   border-radius: 24px;
   padding: 20px;
   margin: 12px 0;
@@ -1236,4 +1236,209 @@
   .metrics-section {
     grid-template-columns: 1fr;
   }
+}
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .blockchain-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .website-info-container {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .website-info-container.clickable:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .website-icon-container {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .website-icon {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .website-url-text {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .website-url-full {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .extended-metrics-toggle {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .extended-metrics-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .toggle-arrow {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .extended-metrics-panel {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .metric-item {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .metric-label {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .atoms-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .atom-item {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .atom-label {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .atom-stats {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .triplets-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .section-title {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .loading-state,
+[data-theme="light"] .error-state,
+[data-theme="light"] .empty-state {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .credibility-content {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .analysis-title {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .credibility-visual-metrics {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .score-number,
+[data-theme="light"] .score-number-compact {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .metric-title {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .triplet-count-number {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .toggle-button {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .toggle-button:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .triplet-item.clickable:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .subject {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .predicate {
+  color: #945941;
+}
+
+[data-theme="light"] .object {
+  color: #C7866C;
+}
+
+[data-theme="light"] .triplet-stats {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .intentions-total {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .intention-label {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .intention-count {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .collapsible-lists-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .collapsible-toggle {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .collapsible-toggle:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .trust-page-button {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .trust-btn {
+  color: var(--color-text-primary);
+  box-shadow: 0 8px 32px rgba(86, 236, 72, 0.25);
+}
+
+[data-theme="light"] .trust-btn:hover:not(:disabled) {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .distrust-btn {
+  color: var(--color-text-primary);
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.25);
+}
+
+[data-theme="light"] .distrust-btn:hover:not(:disabled) {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .trust-count {
+  color: #16a34a;
+}
+
+[data-theme="light"] .distrust-count {
+  color: #dc2626;
 }

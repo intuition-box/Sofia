@@ -33,3 +33,13 @@
   mix-blend-mode: overlay;
   filter: contrast(1.50) brightness(0.8);
 }
+
+/* Light theme background */
+[data-theme="light"] .animated-background {
+  background: #ffffff;
+}
+
+[data-theme="light"] .fond {
+  filter: contrast(1.2) brightness(1.1);
+  opacity: 0.05;
+}

@@ -1116,3 +1116,167 @@
   box-shadow: 0 0 8px rgba(175, 144, 76, 0.4);
   color: #ffffff;
 }
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .echo-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="light"] .echo-card:hover {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-color: var(--color-primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .triplet-text {
+  color: #372118;
+}
+
+[data-theme="light"] .triplet-text .subject,
+[data-theme="light"] .triplet-text .object {
+  color: #372118;
+  background: #f0f0f0;
+}
+
+[data-theme="light"] .triplet-text .action {
+  color: #372118;
+}
+
+[data-theme="light"] .triplet-detail-title {
+  color: #945941;
+}
+
+[data-theme="light"] .triplet-detail-name {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .triplet-detail-description {
+  color: #555;
+}
+
+[data-theme="light"] .triplet-detail-url {
+  color: #555;
+}
+
+[data-theme="light"] .triplet-detail-timestamp {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .select-all-label {
+  color: #372118;
+}
+
+[data-theme="light"] .sort-dropdown-trigger {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #372118;
+}
+
+[data-theme="light"] .sort-dropdown-trigger:hover {
+  background: #e8e8e8;
+  border-color: #ccc;
+}
+
+[data-theme="light"] .sort-dropdown-menu {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .sort-dropdown-option {
+  color: #372118;
+  border-bottom: 1px solid #eee;
+}
+
+[data-theme="light"] .sort-dropdown-option:hover {
+  background: #f5f5f5;
+}
+
+[data-theme="light"] .sort-dropdown-option.selected {
+  background: #e8e8e8;
+}
+
+[data-theme="light"] .empty-state {
+  color: #372118;
+  background-color: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="light"] .recommendations-title {
+  color: #372118;
+}
+
+[data-theme="light"] .recommendation-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="light"] .recommendation-card:hover {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .recommendation-reason {
+  color: #555;
+}
+
+[data-theme="light"] .suggestion-link {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #372118;
+}
+
+[data-theme="light"] .suggestion-link:hover {
+  background: rgba(199, 134, 108, 0.1);
+  border-color: rgba(199, 134, 108, 0.3);
+  color: #372118;
+}
+
+[data-theme="light"] .loading-indicator {
+  color: #372118;
+}
+
+[data-theme="light"] .triples-container .echo-card {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .analysis-header h4 {
+  color: #372118 !important;
+}
+
+[data-theme="light"] .analysis-time,
+[data-theme="light"] .themes-count {
+  color: #555 !important;
+}
+
+[data-theme="light"] .portal-button {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #372118;
+}
+
+[data-theme="light"] .portal-button:hover {
+  background: rgba(199, 134, 108, 0.1);
+  border: 1px solid rgba(199, 134, 108, 0.3);
+}
+
+[data-theme="light"] .delete-selected {
+  color: #555;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .curve-selector-btn {
+  background-color: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #555;
+}
+
+[data-theme="light"] .curve-selector-btn:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.2);
+}

@@ -91,3 +91,16 @@
   backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
   -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
 }
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .profile-page .tabs {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .profile-page .tab {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .profile-page .tab.active {
+  color: #372118;
+}

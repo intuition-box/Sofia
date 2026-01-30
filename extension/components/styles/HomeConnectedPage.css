@@ -331,3 +331,20 @@
   font-size: var(--font-size-xs);
   font-style: italic;
 }
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .home-analyzing::before {
+  background-color: #ffffff;
+}
+
+[data-theme="light"] .triplet-text .subject {
+  color: #372118;
+}
+
+[data-theme="light"] .triplet-text .predicate {
+  color: #555;
+}
+
+[data-theme="light"] .triplet-text .object {
+  color: #372118;
+}

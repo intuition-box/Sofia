@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks/useTracking'
+import { useTheme } from '../../hooks/useTheme'
 import { useWalletFromStorage, disconnectWallet } from '../../hooks/useWalletFromStorage'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
@@ -16,6 +17,7 @@ import '../styles/Modal.css'
 const SettingsPage = () => {
   const { navigateTo } = useRouter()
   const { isTrackingEnabled, toggleTracking } = useTracking()
+  const { isDarkMode, toggleTheme } = useTheme()
   const { walletAddress: account, authenticated } = useWalletFromStorage()
 
   // Local UI states
@@ -101,6 +103,15 @@ const SettingsPage = () => {
             </div>
           </div>
         )}
+
+        {/* Dark Mode */}
+        <div className="settings-item">
+          <div className="settings-item-content">
+            <span>Dark Mode</span>
+            <span className="settings-item-description">Switch between dark and light theme</span>
+          </div>
+          <SwitchButton isEnabled={isDarkMode} onToggle={toggleTheme} />
+        </div>
 
         {/* Data Tracking */}
         <div className="settings-item">

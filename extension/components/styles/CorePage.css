@@ -183,3 +183,30 @@
     font-size: 14px;
   }
 }
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .page.pulse-active::before {
+  background-color: #ffffff;
+}
+
+[data-theme="light"] .tabs {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .tab {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .tab:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .tab.active {
+  color: #372118;
+}
+
+[data-theme="light"] .loading-state {
+  color: #372118;
+  background-color: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}

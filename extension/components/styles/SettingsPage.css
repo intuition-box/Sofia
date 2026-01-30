@@ -1041,3 +1041,83 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .settings-page {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .section-title {
+  color: #372118;
+}
+
+[data-theme="light"] .settings-section {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .settings-section-title {
+  color: #372118;
+}
+
+[data-theme="light"] .settings-item {
+  color: #372118;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .settings-subtext,
+[data-theme="light"] .bio-text {
+  color: #372118;
+}
+
+[data-theme="light"] .settings-item-description {
+  color: rgba(55, 33, 24, 0.7);
+}
+
+[data-theme="light"] .wallet-address-display {
+  color: #372118;
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .wallet-address-display:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .button-3d,
+[data-theme="light"] .wallet-connect-button,
+[data-theme="light"] .disconnect-icon-button,
+[data-theme="light"] .delete-button-3d,
+[data-theme="light"] .disconnect-button-3d {
+  background-color: #e8e8e8;
+  color: #372118;
+  text-shadow: 0 0.0625em 0 #fff;
+  box-shadow:
+    inset 0 0.0625em 0 0 #ffffff,
+    0 0.0625em 0 0 #d0d0d0,
+    0 0.125em 0 0 #c8c8c8,
+    0 0.25em 0 0 #c0c0c0,
+    0 0.3125em 0 0 #b8b8b8,
+    0 0.375em 0 0 #b0b0b0,
+    0 0.425em 0 0 #a8a8a8,
+    0 0.425em 0.5em 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .button-3d:hover:not(:disabled),
+[data-theme="light"] .wallet-connect-button:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+[data-theme="light"] .button-3d:active:not(:disabled),
+[data-theme="light"] .wallet-connect-button:active:not(:disabled) {
+  box-shadow:
+    inset 0 0.03em 0 0 #ffffff,
+    0 0.03em 0 0 #d0d0d0,
+    0 0.0625em 0 0 #c8c8c8,
+    0 0.125em 0 0 #c0c0c0,
+    0 0.125em 0 0 #b8b8b8,
+    0 0.2em 0 0 #b0b0b0,
+    0 0.225em 0 0 #a8a8a8,
+    0 0.225em 0.375em 0 rgba(0, 0, 0, 0.08);
+}

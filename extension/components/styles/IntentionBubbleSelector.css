@@ -70,3 +70,30 @@
 .discovery-section {
   margin-top: 8px;
 }
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .intention-selector .intention-label {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .intention-pill {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .intention-pill:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.18);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .intention-pill.active {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #b45309;
+}
+
+[data-theme="light"] .intention-hint {
+  color: var(--color-text-muted);
+}

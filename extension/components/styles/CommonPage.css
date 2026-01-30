@@ -1431,3 +1431,262 @@
   font-style: italic;
   color: #1a1a1a;
 }
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .search-input-container {
+  background-color: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .search-input-container:focus-within {
+  border-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .search-input {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .trending-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .trending-section .section-title {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .bento-card {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .bento-card:hover {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(199, 134, 108, 0.3);
+}
+
+[data-theme="light"] .bento-title {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .bento-content {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .bento-category {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .group-bento-card {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .group-bento-title {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .group-bento-predicate {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .group-bento-stats .stat-value {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .group-bento-stats .stat-label {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .progress-label {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .group-detail-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .back-btn {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .back-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .group-detail-domain {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .stat-card {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .stat-number {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .stat-text {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .identity-hero-section {
+  background: linear-gradient(135deg, rgba(199, 134, 108, 0.1), rgba(212, 165, 116, 0.05));
+}
+
+[data-theme="light"] .identity-subject {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .identity-object {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .filter-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .filter-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .url-row {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .url-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .url-title {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .url-date,
+[data-theme="light"] .url-duration {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .empty-urls {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .groups-title {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .groups-count {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .sort-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .sort-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .groups-loading,
+[data-theme="light"] .groups-error,
+[data-theme="light"] .groups-empty {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .level-progress-section {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .level-xp {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .predicate-label {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .predicate-text {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .xp-needed {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .amplify-triple {
+  color: var(--color-text-primary);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .cert-option {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .cert-option:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .url-expanded-section .intention-label {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .dismiss-btn,
+[data-theme="light"] .dismiss-btn-small {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .dismiss-btn:hover,
+[data-theme="light"] .dismiss-btn-small:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .level-up-section {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .current-predicate {
+  background: rgba(199, 134, 108, 0.1);
+}
+
+[data-theme="light"] .level-up-btn.cannot-afford {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .level-up-success .success-predicate {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .level-up-error .error-detail {
+  color: var(--color-text-muted);
+}
+
+[data-theme="light"] .amplify-section {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(199, 134, 108, 0.08) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+[data-theme="light"] .amplify-success .success-text {
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .amplify-error .error-text {
+  color: #EF4444;
+}

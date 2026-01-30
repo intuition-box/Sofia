@@ -802,3 +802,98 @@
   border-color: rgba(160, 160, 160, 0.4);
   color: #a0a0a0;
 }
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .profile-avatar {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .profile-name {
+  color: #372118;
+}
+
+[data-theme="light"] .profile-email {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="light"] .profile-wallet {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .stat-value {
+  color: #372118;
+}
+
+[data-theme="light"] .stat-label {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .stat-sublabel {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .section-separator {
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+}
+
+[data-theme="light"] .connect-button {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .quests-loading,
+[data-theme="light"] .quests-empty {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="light"] .quest-item {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .quest-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .quest-badge-name {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .quest-title {
+  color: #372118;
+}
+
+[data-theme="light"] .quest-progress-text {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="light"] .account-tab .search-input-container {
+  background-color: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .account-tab .search-input-container:focus-within {
+  border-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .account-tab .search-input {
+  color: #372118;
+}
+
+[data-theme="light"] .account-tab .search-input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .account-label {
+  color: #372118;
+}
+
+[data-theme="light"] .profile-avatar.social-linked {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, #7C3AED 0%, #5B21B6 50%, #7C3AED 100%) border-box;
+}
+
+[data-theme="light"] .claim-xp-button {
+  color: #372118;
+}
