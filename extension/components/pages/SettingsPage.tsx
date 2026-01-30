@@ -168,7 +168,12 @@ const SettingsPage = () => {
             {isClearing ? 'Clearing...' : 'Delete'}
           </button>
         </div>
+
       </div>
+
+      <p className="description-paragraph terms-text" style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', opacity: 0.6 }}>
+        <a href="https://sofia.intuition.box/privacy" target="_blank" rel="noopener noreferrer"><strong>Privacy Policy</strong></a> · <a href="https://sofia.intuition.box/terms" target="_blank" rel="noopener noreferrer"><strong>Terms & Conditions</strong></a>
+      </p>
     </div>
   )
 }

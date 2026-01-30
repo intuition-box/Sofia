@@ -23,7 +23,7 @@ const HomePage = () => {
         This creates a living, semantic graph of your online activity, which you can enrich, share and get certified.
         </p>
 
-        <p className="description-paragraph terms-text">For more details, please read and accept the <a href="../../docs/terms-and-conditions.md" target="_blank" rel="noopener noreferrer"><strong>Terms and Conditions</strong></a>.</p>
+        <p className="description-paragraph terms-text">For more details, please read and accept the <a href="https://sofia.intuition.box/terms" target="_blank" rel="noopener noreferrer"><strong>Terms and Conditions</strong></a> and our <a href="https://sofia.intuition.box/privacy" target="_blank" rel="noopener noreferrer"><strong>Privacy Policy</strong></a>.</p>
 
       </div>
 
