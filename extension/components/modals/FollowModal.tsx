@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
-// Removed Iridescence import - using CSS salmon gradient now
 import SofiaLoader from '../ui/SofiaLoader'
 import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'

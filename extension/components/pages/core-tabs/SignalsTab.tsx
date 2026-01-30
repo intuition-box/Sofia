@@ -150,8 +150,6 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  // getTripletMetrics removed - was generating fake metrics that weren't used in UI
-
   // Function to get favicon URL from a website URL
   const getFaviconUrl = (url: string): string => {
     if (!url) return ''

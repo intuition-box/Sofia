@@ -2,12 +2,10 @@
  * MESSAGE SENDERS - Chrome API Utilities
  *
  * This file provides utility functions for accessing Chrome APIs.
- * For sending messages to agents, use sendMessage() directly from websocket.ts
  *
  * Functions here:
  * - getAllBookmarks() - Get bookmarks from Chrome API
  * - getAllHistory() - Get history from Chrome API
- * - sendOllamaRequest() - Proxy for Ollama requests
  */
 
 import { EXCLUDED_URL_PATTERNS } from "./constants"
@@ -82,33 +80,4 @@ export async function getAllHistory(): Promise<{success: boolean, urls?: string[
     console.error('❌ Failed to get browsing history:', error)
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
-}
-
-// === Ollama proxy (for background script context) ===
-export async function sendOllamaRequest(url: string, options: RequestInit): Promise<any> {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(
-      {
-        type: "OLLAMA_REQUEST",
-        data: { 
-          url: url,
-          method: options.method,
-          headers: options.headers,
-          body: options.body
-        }
-      },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-          return;
-        }
-        
-        if (response.success) {
-          resolve(response.data);
-        } else {
-          reject(new Error(response.error));
-        }
-      }
-    );
-  });
 }

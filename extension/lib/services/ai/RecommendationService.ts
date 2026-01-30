@@ -3,10 +3,9 @@
  * Centralizes all business logic
  */
 
-import { OllamaClient } from './OllamaClient'
 import { StorageRecommendation } from '../../database/StorageRecommendation'
 import { StorageOgImage } from '../../database/StorageOgImage'
-import type { Recommendation, BentoSuggestion, OllamaMessage, WalletData } from './types'
+import type { Recommendation, BentoSuggestion, WalletData } from './types'
 import { intuitionGraphqlClient } from '../../clients/graphql-client'
 import { SUBJECT_IDS } from '../../config/constants'
 import { getAddress } from 'viem'
@@ -242,135 +241,6 @@ export class RecommendationService {
         }
       })
       .filter((rec: Recommendation) => rec.suggestions.length > 0)
-  }
-
-  /**
-   * Generate recommendations with Ollama (FALLBACK - keep for compatibility)
-   */
-  private static async generateWithOllama(walletData: WalletData): Promise<Recommendation[]> {
-    try {
-      console.log('🤖 [RecommendationService] Calling Ollama for recommendations')
-
-      const messages: OllamaMessage[] = [
-        {
-          role: 'system',
-          content: `You are a Web3 recommendation expert. Analyze wallet data and respond ONLY with valid JSON in this exact format:
-
-{
-  "recommendations": [
-    {
-      "category": "Category name",
-      "title": "Similar new projects", 
-      "reason": "Reason based on data",
-      "suggestions": [
-        {"name": "Project name", "url": "https://..."},
-        {"name": "Project name", "url": "https://..."}
-      ]
-    }
-  ]
-}
-
-IMPORTANT: Respond ONLY with JSON, nothing else.`
-        },
-        {
-          role: 'user',
-          content: `Analyze wallet ${walletData.address} and generate comprehensive recommendations across multiple interest areas:
-
-Data: ${walletData.triples.length} blockchain activities
-Projects followed: ${JSON.stringify(walletData.triples.slice(0, 8), null, 2)}
-
-Instructions:
-1. Generate 5-7 diverse interest categories (Web3, DeFi, NFT, Art, Design, Culture, Gaming, Tech, etc.)
-2. Do NOT suggest same projects already followed
-3. Give 6-8 high-quality suggestions per category
-4. Include both Web3 and traditional web platforms
-5. Provide real, accessible URLs from well-known platforms
-6. Focus on popular, established sites with good SEO (likely to have og:image)
-7. Mix of: protocols, marketplaces, tools, communities, educational resources
-
-Generate 35-50 total suggestions across all categories.`
-        }
-      ]
-
-      const response = await OllamaClient.chat(messages)
-      return this.parseOllamaResponse(response) // Use old parsing for Ollama fallback
-
-    } catch (error) {
-      console.error('❌ [RecommendationService] Ollama generation failed:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Parse Ollama response (simplified logic)
-   */
-  private static parseOllamaResponse(response: string): Recommendation[] {
-    try {
-      console.log('🔧 [RecommendationService] Parsing Ollama response')
-      
-      // Clean response
-      let cleanResponse = response.trim()
-      
-      // Extract JSON
-      const jsonStart = cleanResponse.indexOf('{')
-      const jsonEnd = cleanResponse.lastIndexOf('}') + 1
-      
-      if (jsonStart === -1 || jsonEnd === 0) {
-        console.warn('❌ No JSON found in response')
-        return []
-      }
-      
-      const jsonString = cleanResponse.substring(jsonStart, jsonEnd)
-      console.log('🔍 [RecommendationService] Extracted JSON:', jsonString.substring(0, 200) + '...')
-      
-      const parsed = JSON.parse(jsonString)
-      console.log('📦 [RecommendationService] Parsed object:', parsed)
-      
-      // Check structure
-      const recommendations = parsed.recommendations || []
-      console.log('📋 [RecommendationService] Raw recommendations count:', recommendations.length)
-      
-      if (recommendations.length > 0) {
-        console.log('🔍 [RecommendationService] First recommendation sample:', recommendations[0])
-      }
-      
-      // Filter and validate
-      const validRecommendations = recommendations
-        .filter((rec: any) => {
-          const isValid = rec.category && rec.suggestions?.length > 0
-          if (!isValid) {
-            console.log('❌ [RecommendationService] Invalid recommendation:', rec)
-          }
-          return isValid
-        })
-        .map((rec: any) => {
-          const validSuggestions = rec.suggestions
-            .filter((s: any) => {
-              const isValid = s.name && s.url && s.url.startsWith('http')
-              if (!isValid) {
-                console.log('❌ [RecommendationService] Invalid suggestion:', s)
-              }
-              return isValid
-            })
-          
-          console.log(`✅ [RecommendationService] Category "${rec.category}": ${rec.suggestions.length} → ${validSuggestions.length} valid suggestions`)
-          
-          return {
-            category: rec.category,
-            title: rec.title || 'Similar new projects',
-            reason: rec.reason || 'Based on your activity',
-            suggestions: validSuggestions
-          }
-        })
-        .filter((rec: Recommendation) => rec.suggestions.length > 0)
-      
-      console.log('✅ [RecommendationService] Final result:', validRecommendations.length, 'valid recommendations')
-      return validRecommendations
-      
-    } catch (error) {
-      console.error('❌ [RecommendationService] Parse failed:', error)
-      return []
-    }
   }
 
   /**

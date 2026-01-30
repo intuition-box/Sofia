@@ -41,8 +41,6 @@ const ChatPage = () => {
     setMessages(prev => [...prev, newUserMessage])
     console.log("✉️ Message utilisateur :", message)
 
-    // ✅ Send message to service worker to handle Socket.IO
-    // ChatPage runs in sidepanel context, socket runs in service worker context
     chrome.runtime.sendMessage({
       type: "SEND_CHATBOT_MESSAGE",
       text: message
@@ -64,7 +62,7 @@ const ChatPage = () => {
     fetch()
   }, [])
 
-  // Send pending message immediately (socket is already initialized by background/index.ts)
+  // Send pending message immediately
   useEffect(() => {
     if (pendingMessage) {
       handleSendMessage(pendingMessage)

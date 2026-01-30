@@ -3,7 +3,6 @@ import { useBookmarks } from '../../../hooks/useBookmarks'
 import { useIntentionCategories } from '../../../hooks/useIntentionCategories'
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
-// Removed Iridescence import - using CSS salmon gradient now
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/Modal.css'

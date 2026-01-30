@@ -10,8 +10,8 @@ export async function getWalletAddress(): Promise<string | null> {
 }
 
 // Exported function to initialize when wallet connects (called from messageHandlers)
-export async function initializeSocketsOnWalletConnect(): Promise<void> {
-  console.log("🔌 [index.ts] initializeSocketsOnWalletConnect called")
+export async function initializeOnWalletConnect(): Promise<void> {
+  console.log("🔌 [index.ts] initializeOnWalletConnect called")
   await init()
 }
 
@@ -50,7 +50,6 @@ async function init(): Promise<void> {
     await initializeBadgeCount()
 
     console.log("✅ [index.ts] Extension initialization completed")
-    console.log("📡 [index.ts] All agents use Mastra HTTP - no sockets to initialize")
 
   } catch (error) {
     console.error("❌ [index.ts] Extension initialization failed:", error)

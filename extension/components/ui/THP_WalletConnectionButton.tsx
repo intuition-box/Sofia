@@ -1,5 +1,4 @@
 import { useWalletFromStorage, openAuthTab, disconnectWallet } from '../../hooks/useWalletFromStorage'
-// Removed Iridescence import - using CSS salmon gradient now
 
 interface WalletConnectionButtonProps {
   disabled?: boolean;

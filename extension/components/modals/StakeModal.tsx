@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
-// import { BondingCurveChart } from '../charts' // Removed - chart now in expanded view
 import { useDepositPreview } from '../../hooks/useDepositPreview'
 import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import type { CurveType } from '../../types/bonding-curve'

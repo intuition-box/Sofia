@@ -38,11 +38,6 @@ export interface Recommendation {
   }[]
 }
 
-export interface OllamaMessage {
-  role: 'system' | 'user' | 'assistant'
-  content: string
-}
-
 export interface WalletData {
   address: string
   triples: any[]

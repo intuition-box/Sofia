@@ -1115,5 +1115,3 @@ export const bookmarkService = BookmarkService
 export const recommendationsService = RecommendationsService
 export const intentionGroupsService = IntentionGroupsService  // 🆕 Export intention groups service
 export const userXPService = UserXPService  // 🆕 Export user XP service
-
-// Published triplet storage exports removed - using Intuition indexer as single source of truth
