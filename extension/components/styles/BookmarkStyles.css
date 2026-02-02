@@ -3,6 +3,63 @@
  * Styles pour les modals et composants de bookmarks
  */
 
+/* ========== BOOKMARK CSS VARIABLES ========== */
+:root {
+  /* Spacing */
+  --bookmark-list-gap: 8px;
+  --bookmark-item-gap: 12px;
+  --bookmark-card-margin: 12px;
+
+  /* Colors */
+  --bookmark-text-primary: #F2DED6;
+  --bookmark-text-secondary: rgba(255, 255, 255, 0.79);
+  --bookmark-text-muted: rgba(255, 255, 255, 0.6);
+  --bookmark-accent: rgba(199, 134, 108, 0.8);
+  --bookmark-accent-hover: rgba(199, 134, 108, 0.9);
+  --bookmark-border: rgba(199, 134, 108, 0.4);
+  --bookmark-border-hover: rgba(199, 134, 108, 0.6);
+  --bookmark-bg-card: #2d2b2c;
+  --bookmark-bg-glass: rgba(0, 0, 0, 0.3);
+
+  /* Typography */
+  --bookmark-font-size-sm: 12px;
+  --bookmark-font-size-base: 13px;
+  --bookmark-font-size-md: 14px;
+
+  /* Border radius */
+  --bookmark-radius-sm: 4px;
+  --bookmark-radius-md: 8px;
+  --bookmark-radius-lg: 12px;
+  --bookmark-radius-pill: 16px;
+}
+
+/* ========== BOOKMARK TRIPLETS LIST ========== */
+.bookmark-triplets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ========== BOOKMARK CARD ========== */
+.bookmark-card {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.14);
+  border-radius: var(--bookmark-radius-lg);
+  padding: var(--bookmark-card-margin);
+  backdrop-filter: blur(50px) saturate(100%);
+  -webkit-backdrop-filter: blur(50px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.bookmark-card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.486);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
 /* Bouton New List avec couleurs inversées */
 .bookmark-header .btn.primary:not(.iridescence-btn) {
   background: rgba(0, 0, 0, 0.3);
@@ -75,6 +132,38 @@
   margin-bottom: var(--spacing-xs);
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
+}
+
+.bookmark-url-preview {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xs);
+  margin-left:10px
+}
+
+/* Signal row dans le mode Add */
+.bookmark-signal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bookmark-signal-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.bookmark-signal-link:hover .category-url-label {
+  color: var(--bookmark-accent);
+}
+
+.bookmark-signal-row .btn {
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 /* Champs de saisie */
@@ -267,6 +356,16 @@
   font-size: var(--font-size-xl);
 }
 
+/* Selected list title - same style as inactive tabs */
+.bookmark-list-title {
+  margin: 16px 0 8px 0;
+  padding: 0;
+  font-family: 'Gotu', cursive;
+  font-size: 24px;
+  font-weight: 800;
+  color: rgb(255, 255, 255);
+}
+
 /* Navigation des listes */
 .bookmark-nav-button {
   padding: 6px 12px;
@@ -345,11 +444,11 @@
 }
 
 .bookmark-triplet-card {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: none;
 }
 
 .bookmark-card {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: none;
 }
 
 .bookmark-list-info h4 {
@@ -478,10 +577,11 @@
 
 .bookmark-header-content {
   display: flex;
+  position: relative;
+  flex-direction: column;
   align-items: flex-start;
   gap: 8px;
   margin-bottom: 3px;
-  position: relative;
 }
 
 /* ========== BOOKMARK TEXT ========== */

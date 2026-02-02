@@ -61,6 +61,11 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+.category-card.active {
+  border: 1px solid rgba(199, 134, 108, 0.6);
+  background: rgba(199, 134, 108, 0.1);
+}
+
 .category-card-header {
   display: flex;
   align-items: center;

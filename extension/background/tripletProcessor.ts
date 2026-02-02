@@ -69,7 +69,7 @@ export async function processUrlsWithThemeAnalysis(
     }
 
     // Step 2: Convert themes to triplets
-    console.log(`📚 Step 2: Converting ${type} themes to triplets...`, themeResult.themes.length, 'themes')
+    console.log(`📚 Step 2: Converting ${type} themes to Signals...`, themeResult.themes.length, 'themes')
     
     const tripletData = convertThemesToTriplets(themeResult.themes)
     console.log(`📚 Generated triplets from ${type}:`, tripletData.triplets.length)
