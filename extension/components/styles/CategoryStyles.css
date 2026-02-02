@@ -41,24 +41,31 @@
   display: none;
 }
 
-/* Category Card - Compact horizontal style */
+/* Category Card - Same style as bookmark-card with glassmorphism */
 .category-card {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.14);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(50px) saturate(100%);
+  -webkit-backdrop-filter: blur(50px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   flex-shrink: 0;
   min-width: fit-content;
 }
 
 .category-card:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.486);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .category-card.active {
@@ -241,7 +248,7 @@
 
 .lists-section .section-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 12px;
 }

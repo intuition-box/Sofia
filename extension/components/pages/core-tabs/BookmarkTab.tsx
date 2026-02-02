@@ -206,7 +206,7 @@ const BookmarkTab = () => {
             <button
               onClick={() => setIsAddingSignal(!isAddingSignal)}
               className="btn iridescence-btn"
-              style={{ padding: '6px 12px', fontSize: '12px' }}
+              style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '700' }}
             >
               {isAddingSignal ? 'Cancel' : '+ Add'}
             </button>
@@ -214,53 +214,105 @@ const BookmarkTab = () => {
             <button
               onClick={() => setIsCreatingList(true)}
               className="btn iridescence-btn"
-              style={{ padding: '6px 12px', fontSize: '12px' }}
+              style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '700' }}
             >
               + New List
             </button>
           )}
         </div>
 
-        {/* Categories and Lists navigation */}
-        <div className="bookmark-nav-wrapper">
-          {/* All bookmarks button - first position, similar style to category cards */}
-          <div
-            onClick={() => {
-              setSelectedListId(null)
-              setIsAddingSignal(false)
-            }}
-            className={`category-card ${selectedListId === null && !selectedCategory ? 'active' : ''}`}
-          >
-            <div className="category-card-header">
-              <span className="category-name">All Bookmarks</span>
-              <span className="category-count-value">{triplets.length}</span>
-            </div>
-          </div>
-
-          {/* Categories */}
-          {categoriesLoading ? (
-            <>
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="category-card loading" style={{ minWidth: '120px' }}>
-                  <div className="category-card-header">
-                    <div className="category-color-dot" style={{ backgroundColor: '#666' }} />
-                    <span className="category-name">...</span>
+        {/* Categories as bookmark cards - Only show when no list is selected */}
+        {!selectedListId && (
+          <div className="lists-grid">
+            {/* All bookmarks card */}
+            <div
+              onClick={() => {
+                setSelectedListId(null)
+                setIsAddingSignal(false)
+                selectCategory(null)
+              }}
+              className={`bookmark-card ${selectedListId === null && !selectedCategory ? 'active' : ''}`}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="bookmark-item">
+                <div className="bookmark-header-content">
+                  <div className="bookmark-list-info">
+                    <h4>All Bookmarks</h4>
+                    <div className="bookmark-list-meta">
+                      <span>{triplets.length} Signals</span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </>
-          ) : (
-            <>
-              {categories.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  onClick={() => selectCategory(category.id)}
-                />
-              ))}
-            </>
-          )}
-        </div>
+              </div>
+            </div>
+
+            {/* Categories */}
+            {categoriesLoading ? (
+              <>
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bookmark-card loading">
+                    <div className="bookmark-item">
+                      <div className="bookmark-header-content">
+                        <div className="bookmark-list-info">
+                          <h4>Loading...</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                {categories.map((category) => (
+                  <div
+                    key={category.id}
+                    onClick={() => selectCategory(category.id)}
+                    className="bookmark-card"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="bookmark-item">
+                      <div className="bookmark-header-content">
+                        <div className="bookmark-list-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div
+                            className="category-color-dot"
+                            style={{ backgroundColor: category.color }}
+                          />
+                          <h4 style={{ margin: 0 }}>{category.label}</h4>
+                        </div>
+                        <div className="bookmark-list-meta">
+                          <span>{category.urlCount} URLs</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* All Bookmarks button when list is selected */}
+        {selectedListId && (
+          <div className="bookmark-nav-wrapper">
+            <div
+              onClick={() => {
+                setSelectedListId(null)
+                setIsAddingSignal(false)
+                selectCategory(null)
+              }}
+              className="bookmark-card"
+              style={{ cursor: 'pointer', width: 'fit-content' }}
+            >
+              <div className="bookmark-item">
+                <div className="bookmark-header-content">
+                  <div className="bookmark-list-info">
+                    <h4 style={{ margin: 0 }}>All Bookmarks</h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Selected list title */}
         {selectedListId && (
@@ -405,7 +457,12 @@ const BookmarkTab = () => {
           ) : (
             <div className="lists-grid">
               {lists.map((list) => (
-                <div key={list.id} className="bookmark-card">
+                <div
+                  key={list.id}
+                  className="bookmark-card"
+                  onClick={() => setSelectedListId(list.id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="bookmark-item">
                     <div className="bookmark-header-content">
                       <div className="bookmark-list-info">
@@ -421,21 +478,11 @@ const BookmarkTab = () => {
                       </div>
                     </div>
                     <div className="signal-actions">
-                      <div
-                        onClick={() => setSelectedListId(list.id)}
-                        className="category-card"
-                        style={{ cursor: 'pointer', minWidth: 'auto', padding: '6px 12px' }}
-                      >
-                        <span className="category-name">View</span>
-                      </div>
                       <button
-                        onClick={() => startEditingList(list.id)}
-                        className="btn secondary small"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteList(list.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteList(list.id)
+                        }}
                         className="batch-btn delete-selected btn-small-custom"
                       >
                         Delete
