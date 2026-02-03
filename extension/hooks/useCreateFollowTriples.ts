@@ -6,7 +6,7 @@ import { BlockchainService } from '../lib/services/blockchainService'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../lib/config/constants'
 import type { TripleOnChainResult } from '../types/blockchain'
-import type { Address } from 'viem'
+import type { Address, Hex } from 'viem'
 import type { AccountAtom } from './useGetAtomAccount'
 
 const logger = createHookLogger('useCreateFollowTriples')
@@ -18,15 +18,25 @@ export const useCreateFollowTriples = () => {
   const createFollowTriple = async (
     targetUser: AccountAtom,
     customWeight: bigint,
-    userTermId: string = SUBJECT_IDS.I,
-    predicateTermId: string = PREDICATE_IDS.FOLLOW
+    userTermId: Hex = SUBJECT_IDS.I as Hex,
+    predicateTermId: Hex = PREDICATE_IDS.FOLLOW as Hex
   ): Promise<TripleOnChainResult> => {
     try {
       if (!address) {
         throw new Error('No wallet connected')
       }
 
-      const targetTermId = targetUser.termId
+      // Use termId (bytes32) - this is what the MultiVault contract expects
+      // termId = bytes32 hash of the content (66 chars)
+      // Note: Do NOT use data (wallet address) as it's bytes20, not bytes32
+      const targetTermId = targetUser.termId as Hex
+
+      console.log('[Follow] Using target termId:', {
+        label: targetUser.label,
+        termId: targetUser.termId,
+        termIdLength: targetUser.termId.length,
+        isBytes32: targetUser.termId.length === 66
+      })
 
       const { publicClient, walletClient } = await getClients()
       const contractAddress = BlockchainService.getContractAddress()
@@ -44,6 +54,7 @@ export const useCreateFollowTriples = () => {
       })
 
       // Check if the triple already exists
+      // checkTripleExists expects termIds (bytes32), not addresses
       const tripleCheck = await BlockchainService.checkTripleExists(
         userTermId,
         predicateTermId,
@@ -58,11 +69,19 @@ export const useCreateFollowTriples = () => {
       let hash: Address
       let tripleVaultId: Address
 
-      if (tripleCheck.exists && tripleCheck.tripleVaultId) {
+      if (tripleCheck.exists && tripleCheck.tripleHash) {
         // Triple exists - use deposit() which allows any amount >= 0.01
         console.log('[Follow] Triple exists, using deposit() with amount:', depositAmount.toString())
 
+        const tripleTermId = tripleCheck.tripleHash as Hex
         const curveId = 1n // Default curve ID for triples
+
+        // Log de vérification
+        console.log('[Follow] deposit args', {
+          receiver: address,
+          termIdPassed: tripleTermId,
+          looksLikeBytes32: tripleTermId.length === 66
+        })
 
         // Calculate total cost including Sofia fees
         const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
@@ -73,7 +92,7 @@ export const useCreateFollowTriples = () => {
           functionName: 'deposit',
           args: [
             address as Address, // receiver
-            tripleCheck.tripleVaultId as Address, // termId (triple vault ID)
+            tripleTermId, // termId (bytes32, NOT vaultId)
             curveId, // curveId
             0n // minShares (0 for no slippage protection)
           ],
@@ -84,7 +103,7 @@ export const useCreateFollowTriples = () => {
           account: address as Address
         })
 
-        tripleVaultId = tripleCheck.tripleVaultId as Address
+        tripleVaultId = tripleCheck.tripleHash as Address
       } else {
         // Triple doesn't exist - use createTriples() with shares amount + creation fees
         console.log('[Follow] Triple does not exist, using createTriples()')
@@ -107,8 +126,9 @@ export const useCreateFollowTriples = () => {
         // Calculate total creation cost including Sofia fees
         // depositCount = 1 (one triple with userShareAmount deposit)
         // totalDeposit = userShareAmount (the actual deposit, not including creation fees)
-        // multiVaultCost = createAmount (defaultCost + userShareAmount = what MultiVault needs)
-        const totalCreationCost = await BlockchainService.getTotalCreationCost(1, userShareAmount, createAmount)
+        // multiVaultCost = defaultCost + userShareAmount (what MultiVault needs)
+        const multiVaultCost = userShareAmount + defaultCost
+        const totalCreationCost = await BlockchainService.getTotalCreationCost(1, userShareAmount, multiVaultCost)
         const curveId = 1n // Default curve for triple creation
 
         // Simulate first
@@ -118,10 +138,10 @@ export const useCreateFollowTriples = () => {
           functionName: 'createTriples',
           args: [
             address as Address,           // receiver
-            [userTermId as Address],      // subjectIds
-            [predicateTermId as Address], // predicateIds
-            [targetTermId as Address],    // objectIds
-            [createAmount],               // assets
+            [userTermId],                 // subjectIds (Hex bytes32)
+            [predicateTermId],            // predicateIds (Hex bytes32)
+            [targetTermId],               // objectIds (Hex bytes32)
+            [userShareAmount],            // assets (user deposit only, NOT including creation fees)
             curveId                       // curveId
           ],
           value: totalCreationCost,
@@ -134,10 +154,10 @@ export const useCreateFollowTriples = () => {
           functionName: 'createTriples',
           args: [
             address as Address,           // receiver
-            [userTermId as Address],      // subjectIds
-            [predicateTermId as Address], // predicateIds
-            [targetTermId as Address],    // objectIds
-            [createAmount],               // assets
+            [userTermId],                 // subjectIds (Hex bytes32)
+            [predicateTermId],            // predicateIds (Hex bytes32)
+            [targetTermId],               // objectIds (Hex bytes32)
+            [userShareAmount],            // assets (user deposit only, NOT including creation fees)
             curveId                       // curveId
           ],
           value: totalCreationCost,

@@ -103,41 +103,50 @@ const UserProfilePage = () => {
         </div>
         {userProfileData.termId && userProfileData.walletAddress && (
           <>
-            {followStatus.loading ? (
-              <button className="follow-button salmon-gradient-button" disabled>
-                Loading...
-              </button>
-            ) : followStatus.isTrusting ? (
-              <button className="follow-button salmon-gradient-button" disabled>
-                Trusted ✓
-              </button>
-            ) : followStatus.isFollowing ? (
-              <TrustAccountButton
-                accountVaultId={userProfileData.termId}
-                accountLabel={userProfileData.label}
-                onSuccess={() => {
-                  console.log('✅ Trust created, refetching status')
-                  followStatus.refetch()
-                }}
-              />
+            {/* Only show follow/trust buttons if termId is valid (bytes32 - 66 chars) */}
+            {userProfileData.termId.length === 66 ? (
+              <>
+                {followStatus.loading ? (
+                  <button className="follow-button salmon-gradient-button" disabled>
+                    Loading...
+                  </button>
+                ) : followStatus.isTrusting ? (
+                  <button className="follow-button salmon-gradient-button" disabled>
+                    Trusted ✓
+                  </button>
+                ) : followStatus.isFollowing ? (
+                  <TrustAccountButton
+                    accountVaultId={userProfileData.termId}
+                    accountLabel={userProfileData.label}
+                    onSuccess={() => {
+                      console.log('✅ Trust created, refetching status')
+                      followStatus.refetch()
+                    }}
+                  />
+                ) : (
+                  <FollowButton
+                    account={{
+                      id: userProfileData.termId,
+                      label: userProfileData.label,
+                      termId: userProfileData.termId,
+                      type: 'Account',
+                      createdAt: new Date().toISOString(),
+                      creatorId: '',
+                      atomType: 'Account',
+                      image: avatarUrl,
+                      data: userProfileData.walletAddress
+                    }}
+                    onFollowSuccess={() => {
+                      console.log('✅ Follow created, refetching status')
+                      followStatus.refetch()
+                    }}
+                  />
+                )}
+              </>
             ) : (
-              <FollowButton
-                account={{
-                  id: userProfileData.termId,
-                  label: userProfileData.label,
-                  termId: userProfileData.termId,
-                  type: 'Account',
-                  createdAt: new Date().toISOString(),
-                  creatorId: '',
-                  atomType: 'Account',
-                  image: avatarUrl,
-                  data: userProfileData.walletAddress
-                }}
-                onFollowSuccess={() => {
-                  console.log('✅ Follow created, refetching status')
-                  followStatus.refetch()
-                }}
-              />
+              <div className="user-profile-status-note">
+                Follow/Trust unavailable (invalid ID format)
+              </div>
             )}
           </>
         )}

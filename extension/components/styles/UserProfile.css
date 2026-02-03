@@ -79,6 +79,15 @@
   margin-top: 16px;
 }
 
+.user-profile-status-note {
+  font-size: 12px;
+  color: rgba(251, 247, 245, 0.5);
+  font-family: 'Montserrat', sans-serif;
+  margin-top: 8px;
+  text-align: center;
+  font-style: italic;
+}
+
 /* ========== STATS SECTION ========== */
 .user-profile-stats-section {
   padding: 16px;
