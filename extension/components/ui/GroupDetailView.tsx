@@ -112,7 +112,7 @@ const UrlRow = ({
     .filter(Boolean) as typeof CERTIFICATIONS
 
   return (
-    <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''}`}>
+    <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''} ${isCertifiedOnChain ? 'on-chain' : ''}`}>
       <div className="url-row-main">
         <img
           src={getFaviconUrl(urlRecord.url)}
@@ -153,9 +153,7 @@ const UrlRow = ({
                   className="cert-badge on-chain"
                   style={{ backgroundColor: certInfo.color }}
                   title={`Certified as ${certInfo.label} (on-chain)`}
-                >
-                  {certInfo.label.charAt(0)}
-                </span>
+                />
               ))}
             </div>
           )}
@@ -208,19 +206,29 @@ const UrlRow = ({
                 {urlRecord.oauthPredicate}
               </button>
             )}
-            {INTENTIONS_LIST.map(({ key, label }) => (
-              <button
-                key={key}
-                className="intention-pill"
-                onClick={() => {
-                  onIntentionSelect(key, urlRecord.title)
-                  setIsExpanded(false)
-                }}
-                disabled={isProcessing}
-              >
-                {label}
-              </button>
-            ))}
+            {INTENTIONS_LIST.map(({ key, label }) => {
+              const certType = intentionToCertification[key]
+              const isAlreadyCertified = allCertLabels.includes(certType)
+              const certInfo = CERTIFICATIONS.find(c => c.type === certType)
+              return (
+                <button
+                  key={key}
+                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''}`}
+                  onClick={() => {
+                    onIntentionSelect(key, urlRecord.title)
+                    setIsExpanded(false)
+                  }}
+                  disabled={isProcessing}
+                  style={isAlreadyCertified ? {
+                    backgroundColor: certInfo?.color,
+                    borderColor: certInfo?.color,
+                    color: '#fff'
+                  } : undefined}
+                >
+                  {label}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
@@ -642,9 +650,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               key={cert.type}
               className={`filter-btn ${filter === cert.type ? 'active' : ''}`}
               onClick={() => setFilter(cert.type)}
-              style={{ borderColor: filter === cert.type ? cert.color : undefined }}
+              style={{
+                borderColor: cert.color,
+                color: filter === cert.type ? cert.color : undefined
+              }}
             >
-              {cert.label.charAt(0)} ({count})
+              {cert.label} ({count})
             </button>
           )
         })}

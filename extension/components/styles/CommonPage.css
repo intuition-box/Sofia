@@ -683,6 +683,10 @@
   opacity: 0.4;
 }
 
+.url-row.on-chain {
+  border: 1px solid #d8ffcb6b;
+}
+
 .url-row-main {
   display: flex;
   align-items: center;
@@ -781,9 +785,9 @@
 }
 
 .cert-badge {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 11px;
+  height: 11px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
