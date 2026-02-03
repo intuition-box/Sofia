@@ -135,7 +135,7 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
                 </div>
                 <div className="account-right" onClick={(e) => e.stopPropagation()}>
                   <TrustAccountButton
-                    accountVaultId={account.termId}
+                    accountTermId={account.termId}
                     accountLabel={account.label}
                     onSuccess={() => {
                       console.log('✅ Trust created for', account.label)

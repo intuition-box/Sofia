@@ -5,12 +5,12 @@ import WeightModal from '../modals/WeightModal'
 import type { EchoTriplet } from '../../types/blockchain'
 
 interface TrustAccountButtonProps {
-  accountVaultId: string
+  accountTermId: string
   accountLabel: string
   onSuccess?: () => void
 }
 
-const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAccountButtonProps) => {
+const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess }: TrustAccountButtonProps) => {
   const { trustAccount, loading, error, success, transactionHash } = useTrustAccount()
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [transactionSuccess, setTransactionSuccess] = useState(false)
@@ -19,7 +19,7 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
 
   // Create a fake triplet object for WeightModal display
   const mockTriplet: EchoTriplet = {
-    id: `trust-${accountVaultId}`,
+    id: `trust-${accountTermId}`,
     triplet: {
       subject: 'I',
       predicate: 'trust',
@@ -42,7 +42,7 @@ const TrustAccountButton = ({ accountVaultId, accountLabel, onSuccess }: TrustAc
   const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
     try {
       const customWeight = customWeights?.[0] || undefined
-      await trustAccount(accountVaultId, accountLabel, customWeight)
+      await trustAccount(accountTermId, accountLabel, customWeight)
 
       // Success will be detected by the useEffect watching the hook's success state
       // The hook will update transactionHash and success states

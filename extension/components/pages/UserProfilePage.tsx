@@ -116,7 +116,7 @@ const UserProfilePage = () => {
                   </button>
                 ) : followStatus.isFollowing ? (
                   <TrustAccountButton
-                    accountVaultId={userProfileData.termId}
+                    accountTermId={userProfileData.termId}
                     accountLabel={userProfileData.label}
                     onSuccess={() => {
                       console.log('✅ Trust created, refetching status')
