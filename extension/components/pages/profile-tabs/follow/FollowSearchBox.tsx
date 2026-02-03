@@ -4,10 +4,12 @@
 
 import { useState, useEffect } from 'react'
 import { useGetAtomAccount, AccountAtom } from '../../../../hooks/useGetAtomAccount'
+import { useCheckFollowStatus } from '../../../../hooks/useCheckFollowStatus'
 import { debounce } from '../../../../lib/utils/refetchUtils'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
 import FollowButton from '../../../ui/FollowButton'
+import TrustAccountButton from '../../../ui/TrustAccountButton'
 import '../../../styles/CoreComponents.css'
 import '../../../styles/FollowTab.css'
 
@@ -16,6 +18,63 @@ interface FollowSearchBoxProps {
   onFollowSuccess?: () => void
   onSearchChange?: (query: string) => void
   placeholder?: string
+}
+
+/**
+ * Component to display the correct action button based on follow/trust status
+ */
+function AccountActionButton({ 
+  account, 
+  onFollowSuccess 
+}: { 
+  account: AccountAtom
+  onFollowSuccess?: () => void 
+}) {
+  const followStatus = useCheckFollowStatus(account.termId)
+
+  // Only show buttons if termId is valid (bytes32 - 66 chars)
+  if (account.termId.length !== 66) {
+    return null
+  }
+
+  if (followStatus.loading) {
+    return (
+      <button className="follow-button salmon-gradient-button" disabled>
+        Loading...
+      </button>
+    )
+  }
+
+  if (followStatus.isTrusting) {
+    return (
+      <button className="follow-button salmon-gradient-button" disabled>
+        Trusted ✓
+      </button>
+    )
+  }
+
+  if (followStatus.isFollowing) {
+    return (
+      <TrustAccountButton
+        accountTermId={account.termId}
+        accountLabel={account.label}
+        onSuccess={() => {
+          followStatus.refetch()
+          onFollowSuccess?.()
+        }}
+      />
+    )
+  }
+
+  return (
+    <FollowButton
+      account={account}
+      onFollowSuccess={() => {
+        followStatus.refetch()
+        onFollowSuccess?.()
+      }}
+    />
+  )
 }
 
 export function FollowSearchBox({
@@ -88,7 +147,7 @@ export function FollowSearchBox({
                 </div>
               </div>
               <div className="account-right" onClick={(e) => e.stopPropagation()}>
-                <FollowButton
+                <AccountActionButton
                   account={account}
                   onFollowSuccess={onFollowSuccess}
                 />

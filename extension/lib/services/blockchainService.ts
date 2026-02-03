@@ -118,7 +118,9 @@ export class BlockchainService {
       contractAddress: this.MULTIVAULT_ADDRESS
     })
 
-    const { publicClient } = await getClients()
+    // Use getPublicClient for read-only operations (faster, no wallet needed)
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
 
     try {
       console.log('🔍 BlockchainService.checkTripleExists - Calculating triple ID')
@@ -225,7 +227,8 @@ export class BlockchainService {
    * Get atom cost from contract (reads from MultiVault)
    */
   static async getAtomCost(): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
 
     return await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
@@ -239,7 +242,8 @@ export class BlockchainService {
    * Get triple cost from contract (reads from MultiVault)
    */
   static async getTripleCost(): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
 
     const cost = await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,

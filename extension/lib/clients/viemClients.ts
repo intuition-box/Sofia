@@ -34,6 +34,17 @@ async function ensureHttpsTabForWallet(): Promise<void> {
     }
 }
 
+/**
+ * Get only the public client for read-only operations
+ * This is faster and doesn't require wallet access
+ */
+export const getPublicClient = () => {
+    return createPublicClient({
+        chain: SELECTED_CHAIN,
+        transport: http(SELECTED_CHAIN.rpcUrls.default.http[0]),
+    })
+}
+
 export const getClients = async () => {
     // Ensure we have an HTTPS tab for wallet operations
     await ensureHttpsTabForWallet()
