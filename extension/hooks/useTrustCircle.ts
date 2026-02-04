@@ -76,39 +76,9 @@ export function useTrustCircle(walletAddress: string | undefined): FollowQueryRe
         (triple) => triple.term?.vaults?.some((vault) => vault.positions.length > 0)
       )
 
-      // Extract unique labels for IPFS metadata
-      const accountLabels = [...new Set(triplesWithPositions.map((triple) => triple.object.label))]
-
-      // Fetch IPFS metadata
-      const atomDataResponse = await useGetAtomDataByLabelsQuery.fetcher({
-        labels: accountLabels
-      })()
-
-      // Fetch IPFS data for ipfs:// URIs
-      const ipfsUris = atomDataResponse.atoms
-        .map((atom) => atom.data)
-        .filter((data): data is string => !!data && data.startsWith('ipfs://'))
-
-      const ipfsMetadataMap = await batchFetchIPFS(ipfsUris)
-
-      // Map atom data
-      const atomDataMap = new Map<string, { url?: string; description?: string }>()
-      for (const atom of atomDataResponse.atoms) {
-        if (atom.data && atom.data.startsWith('ipfs://')) {
-          const metadata = ipfsMetadataMap.get(atom.data)
-          if (metadata) {
-            atomDataMap.set(atom.label, {
-              url: metadata.url,
-              description: metadata.description
-            })
-          }
-        }
-      }
-
-      // Convert to FollowAccountVM
+      // Convert to FollowAccountVM immediately (without waiting for IPFS/ENS)
       let trustAccounts: FollowAccountVM[] = triplesWithPositions.map((triple) => {
         const account = triple.object
-        const accountData = atomDataMap.get(account.label)
 
         // Calculate trust amount from ALL vaults (curves)
         const trustAmountWei = triple.term.vaults.reduce((vaultSum, vault) => {
@@ -138,24 +108,61 @@ export function useTrustCircle(walletAddress: string | undefined): FollowQueryRe
           tripleId: triple.term_id,
           createdAt: new Date(triple.created_at).getTime(),
           trustAmount,
-          image: account.image,
+          image: account.image || undefined,
           walletAddress: walletAddr,
-          meta: accountData
+          meta: undefined // Will be populated by background fetch
         }
       })
 
-      // Fetch ENS avatars
-      const ensAvatars = await batchGetEnsAvatars(
-        trustAccounts.map((acc) => ({ label: acc.label, image: acc.image }))
-      )
-
-      // Update with ENS avatars
-      trustAccounts = trustAccounts.map((acc) => ({
-        ...acc,
-        image: acc.image || ensAvatars.get(acc.label) || undefined
-      }))
-
+      // Display accounts immediately
       setAccounts(trustAccounts)
+      setLoading(false)
+
+      // Fetch IPFS metadata and ENS avatars in background (non-blocking)
+      const ipfsUris = triplesWithPositions
+        .map((triple) => triple.object?.data)
+        .filter((data): data is string => !!data && data.startsWith('ipfs://'))
+
+      Promise.all([
+        batchFetchIPFS(ipfsUris),
+        batchGetEnsAvatars(trustAccounts.map((acc) => ({ label: acc.label, image: acc.image })))
+      ]).then(async ([ipfsMetadataMap, ensAvatars]) => {
+        // Fetch atom data for IPFS metadata
+        const accountLabels = [...new Set(triplesWithPositions.map((triple) => triple.object.label))]
+        const atomDataResponse = await useGetAtomDataByLabelsQuery.fetcher({
+          labels: accountLabels
+        })()
+
+        // Map atom data with IPFS metadata
+        const atomDataMap = new Map<string, { url?: string; description?: string }>()
+        for (const atom of atomDataResponse.atoms) {
+          if (atom.data && atom.data.startsWith('ipfs://')) {
+            const metadata = ipfsMetadataMap.get(atom.data)
+            if (metadata) {
+              atomDataMap.set(atom.label, {
+                url: metadata.url,
+                description: metadata.description
+              })
+            }
+          }
+        }
+
+        // Update accounts with IPFS metadata and ENS avatars
+        const updatedAccounts = trustAccounts.map((acc) => {
+          const accountData = atomDataMap.get(acc.label)
+
+          return {
+            ...acc,
+            image: acc.image || ensAvatars.get(acc.label) || undefined,
+            meta: accountData
+          }
+        })
+
+        setAccounts(updatedAccounts)
+      }).catch((err) => {
+        console.warn('⚠️ Failed to load avatars/metadata:', err)
+        // Keep displaying basic data even if avatars fail
+      })
     } catch (err) {
       console.error('❌ Failed to load trust circle:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')

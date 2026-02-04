@@ -93,45 +93,15 @@ export function useFollowers(walletAddress: string | undefined): FollowQueryResu
       })()
 
       if (!response?.triples || response.triples.length === 0) {
-        setAccounts([])
+        setAccounts([]) 
         return
       }
 
       const triple = response.triples[0]
       const positions = triple.term?.vaults?.[0]?.positions || []
 
-      // Extract unique labels for IPFS metadata
-      const accountLabels = [...new Set(positions.map((pos) => pos.account.label))]
-
-      // Fetch IPFS metadata
-      const atomDataResponse = await useGetAtomDataByLabelsQuery.fetcher({
-        labels: accountLabels
-      })()
-
-      // Fetch IPFS data for ipfs:// URIs
-      const ipfsUris = atomDataResponse.atoms
-        .map((atom) => atom.data)
-        .filter((data): data is string => !!data && data.startsWith('ipfs://'))
-
-      const ipfsMetadataMap = await batchFetchIPFS(ipfsUris)
-
-      // Map atom data
-      const atomDataMap = new Map<string, { url?: string; description?: string }>()
-      for (const atom of atomDataResponse.atoms) {
-        if (atom.data && atom.data.startsWith('ipfs://')) {
-          const metadata = ipfsMetadataMap.get(atom.data)
-          if (metadata) {
-            atomDataMap.set(atom.label, {
-              url: metadata.url,
-              description: metadata.description
-            })
-          }
-        }
-      }
-
-      // Convert to FollowAccountVM
+      // Convert to FollowAccountVM immediately (without waiting for IPFS/ENS)
       let followAccounts: FollowAccountVM[] = positions.map((pos) => {
-        const accountData = atomDataMap.get(pos.account.label)
         const trustAmountWei = BigInt(pos.shares || '0')
         const trustAmount = Number(trustAmountWei) / 1e18
 
@@ -153,24 +123,61 @@ export function useFollowers(walletAddress: string | undefined): FollowQueryResu
           tripleId: triple.term_id,
           createdAt: new Date(pos.created_at).getTime(),
           trustAmount,
-          image: pos.account.image || pos.account.atom?.image,
+          image: pos.account.image || pos.account.atom?.image || undefined,
           walletAddress: walletAddr,
-          meta: accountData
+          meta: undefined // Will be populated by background fetch
         }
       })
 
-      // Fetch ENS avatars
-      const ensAvatars = await batchGetEnsAvatars(
-        followAccounts.map((acc) => ({ label: acc.label, image: acc.image }))
-      )
-
-      // Update with ENS avatars
-      followAccounts = followAccounts.map((acc) => ({
-        ...acc,
-        image: acc.image || ensAvatars.get(acc.label) || undefined
-      }))
-
+      // Display accounts immediately
       setAccounts(followAccounts)
+      setLoading(false)
+
+      // Fetch IPFS metadata and ENS avatars in background (non-blocking)
+      const ipfsUris = positions
+        .map((pos) => pos.account.atom?.data)
+        .filter((data): data is string => !!data && data.startsWith('ipfs://'))
+
+      Promise.all([
+        batchFetchIPFS(ipfsUris),
+        batchGetEnsAvatars(followAccounts.map((acc) => ({ label: acc.label, image: acc.image })))
+      ]).then(async ([ipfsMetadataMap, ensAvatars]) => {
+        // Fetch atom data for IPFS metadata
+        const accountLabels = [...new Set(positions.map((pos) => pos.account.label))]
+        const atomDataResponse = await useGetAtomDataByLabelsQuery.fetcher({
+          labels: accountLabels
+        })()
+
+        // Map atom data with IPFS metadata
+        const atomDataMap = new Map<string, { url?: string; description?: string }>()
+        for (const atom of atomDataResponse.atoms) {
+          if (atom.data && atom.data.startsWith('ipfs://')) {
+            const metadata = ipfsMetadataMap.get(atom.data)
+            if (metadata) {
+              atomDataMap.set(atom.label, {
+                url: metadata.url,
+                description: metadata.description
+              })
+            }
+          }
+        }
+
+        // Update accounts with IPFS metadata and ENS avatars
+        const updatedAccounts = followAccounts.map((acc) => {
+          const accountData = atomDataMap.get(acc.label)
+
+          return {
+            ...acc,
+            image: acc.image || ensAvatars.get(acc.label) || undefined,
+            meta: accountData
+          }
+        })
+
+        setAccounts(updatedAccounts)
+      }).catch((err) => {
+        console.warn('⚠️ Failed to load avatars/metadata:', err)
+        // Keep displaying basic data even if avatars fail
+      })
     } catch (err) {
       console.error('❌ Failed to load followers:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
