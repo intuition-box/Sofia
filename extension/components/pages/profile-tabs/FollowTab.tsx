@@ -13,7 +13,7 @@ import '../../styles/FollowTab.css'
  */
 const FollowTab = () => {
   const { walletAddress } = useWalletFromStorage()
-  const [filterType, setFilterType] = useState<FollowFilterType>('followers')
+  const [filterType, setFilterType] = useState<FollowFilterType>('trust-circle')
 
   if (!walletAddress) {
     return (
@@ -30,6 +30,12 @@ const FollowTab = () => {
       {/* Filter buttons / Tabs */}
       <div className="filter-buttons">
         <button
+          className={`filter-btn ${filterType === 'trust-circle' ? 'trustactive' : ''}`}
+          onClick={() => setFilterType('trust-circle')}
+        >
+          Trust Circle
+        </button>
+        <button
           className={`filter-btn ${filterType === 'followers' ? 'active' : ''}`}
           onClick={() => setFilterType('followers')}
         >
@@ -41,18 +47,13 @@ const FollowTab = () => {
         >
           Following
         </button>
-        <button
-          className={`filter-btn ${filterType === 'trust-circle' ? 'trustactive' : ''}`}
-          onClick={() => setFilterType('trust-circle')}
-        >
-          Trust Circle
-        </button>
+
       </div>
 
       {/* Render active panel */}
+      {filterType === 'trust-circle' && <TrustCirclePanel walletAddress={walletAddress} />}
       {filterType === 'followers' && <FollowersPanel walletAddress={walletAddress} />}
       {filterType === 'following' && <FollowingPanel walletAddress={walletAddress} />}
-      {filterType === 'trust-circle' && <TrustCirclePanel walletAddress={walletAddress} />}
     </div>
   )
 }
