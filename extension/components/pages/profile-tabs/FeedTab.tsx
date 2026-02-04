@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { 
-  useGetTrustCircleAccountsQuery,
+  useGetTrustCirclePositionsQuery,
   useGetSofiaTrustedActivityQuery
 } from '@0xsofia/graphql'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
@@ -47,12 +47,14 @@ const FeedTab = () => {
   console.log('🔍 FeedTab - Address:', address, 'Checksum:', checksumAddress)
   console.log('🔍 FeedTab - SOFIA_PROXY_ADDRESS:', SOFIA_PROXY_ADDRESS)
 
-  // Step 1: Get Trust Circle accounts
-  const { data: trustCircleData, isLoading: trustCircleLoading, error: trustCircleError } = useGetTrustCircleAccountsQuery(
+  // Step 1: Get Trust Circle accounts with positions
+  const { data: trustCircleData, isLoading: trustCircleLoading, error: trustCircleError } = useGetTrustCirclePositionsQuery(
     {
       subjectId: SUBJECT_IDS.I,
       predicateId: PREDICATE_IDS.TRUSTS,
-      walletAddress: checksumAddress
+      address: checksumAddress,
+      offset: 0,
+      positionsOrderBy: [{ shares: 'desc' }]
     },
     {
       enabled: !!checksumAddress,
@@ -63,24 +65,17 @@ const FeedTab = () => {
   console.log('📊 Trust Circle Query - Loading:', trustCircleLoading, 'Error:', trustCircleError)
   console.log('📊 Trust Circle Data:', trustCircleData)
 
-  // Extract trusted wallets from Trust Circle data
+  // Extract trusted wallets from Trust Circle data (already filtered by query)
   useEffect(() => {
     if (!trustCircleData?.triples) {
       console.log('⚠️ No trust circle data available')
       return
     }
 
-    console.log('📊 Processing Trust Circle - Total triples:', trustCircleData.triples.length)
+    console.log('📊 Processing Trust Circle - Total triples with positions:', trustCircleData.triples.length)
 
-    // Filter client-side: only keep triples where user has positions (curve_id=2)
-    const triplesWithPositions = trustCircleData.triples.filter(triple => {
-      const vault = triple.term?.vaults?.[0]
-      const hasPosition = vault && vault.positions && vault.positions.length > 0
-      console.log('  Triple:', triple.object?.label, 'Has position:', hasPosition)
-      return hasPosition
-    })
-
-    console.log('📊 Triples with positions:', triplesWithPositions.length)
+    // No need to filter - query already returns only triples where user has positions
+    const triplesWithPositions = trustCircleData.triples
 
     if (triplesWithPositions.length === 0) {
       console.log('⚠️ No triples with positions found')

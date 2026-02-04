@@ -1,3 +1,79 @@
+query GetTrustCirclePositions(
+  $subjectId: String!
+  $predicateId: String!
+  $address: String!
+  $offset: Int
+  $positionsOrderBy: [positions_order_by!]
+) {
+  triples_aggregate(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { positions: { account_id: { _ilike: $address } } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  triples(
+    offset: $offset
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+        { positions: { account_id: { _ilike: $address } } }
+      ]
+    }
+  ) {
+    term_id
+    subject {
+            label
+
+    }
+    predicate {
+      label
+    }
+    object {
+      term_id
+      label
+      type
+      accounts {
+        id
+        label
+      }
+    }
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        current_share_price
+        positions_aggregate {
+          aggregate {
+            count
+            sum {
+              shares
+            }
+          }
+        }
+        positions(
+          where: { account_id: { _ilike: $address } }
+          order_by: $positionsOrderBy
+        ) {
+          account_id
+          account {
+            id
+            label
+          }
+          shares
+        }
+      }
+    }
+  }
+}
+
 query GetTrustCircleAccounts(
   $subjectId: String!
   $predicateId: String!
