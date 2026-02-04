@@ -29,7 +29,7 @@ interface GraphQLFollowingResponse {
           }
         }
       }>
-     }
+    }
     term: {
       vaults: Array<{
         positions: Array<{

@@ -9,6 +9,7 @@ import type { FollowAccountVM } from '../../../../types/follows'
 import type { AccountAtom } from '../../../../hooks/useGetAtomAccount'
 import { FollowSearchBox } from './FollowSearchBox'
 import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
+import { useCheckFollowStatus } from '../../../../hooks/useCheckFollowStatus'
 import TrustAccountButton from '../../../ui/TrustAccountButton'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
@@ -17,6 +18,52 @@ import '../../../styles/FollowTab.css'
 
 interface FollowingPanelProps {
   walletAddress: string | undefined
+}
+
+/**
+ * Component to display the correct action button based on follow/trust status
+ */
+function AccountActionButton({ 
+  account,
+  onSuccess 
+}: { 
+  account: FollowAccountVM
+  onSuccess?: () => void 
+}) {
+  const followStatus = useCheckFollowStatus(account.termId)
+
+  // Only show buttons if termId is valid (bytes32 - 66 chars)
+  if (account.termId.length !== 66) {
+    return null
+  }
+
+  if (followStatus.loading) {
+    return (
+      <button className="follow-button salmon-gradient-button" disabled>
+        Loading...
+      </button>
+    )
+  }
+
+  if (followStatus.isTrusting) {
+    return (
+      <button className="follow-button salmon-gradient-button" disabled>
+        Trusted ✓
+      </button>
+    )
+  }
+
+  // Since this is in FollowingPanel, we're already following, so show Trust button
+  return (
+    <TrustAccountButton
+      accountTermId={account.termId}
+      accountLabel={account.label}
+      onSuccess={() => {
+        followStatus.refetch()
+        onSuccess?.()
+      }}
+    />
+  )
 }
 
 export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
@@ -134,9 +181,8 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
                   </div>
                 </div>
                 <div className="account-right" onClick={(e) => e.stopPropagation()}>
-                  <TrustAccountButton
-                    accountTermId={account.termId}
-                    accountLabel={account.label}
+                  <AccountActionButton
+                    account={account}
                     onSuccess={() => {
                       console.log('✅ Trust created for', account.label)
                       refetchWithBackoff(refetch, {
