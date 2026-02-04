@@ -5,20 +5,39 @@ interface UserAtomStatsProps {
   termId: string | undefined
   accountAddress?: string
   compact?: boolean
+  signalsCount?: number
+  totalMarketCap?: string
 }
 
 /**
- * Component to display user atom statistics using the correct GetAtomStats query
+ * Component to display user atom statistics
  * Shows: Signals Created (Position Count), Total Market Cap
+ * Can use pre-loaded data or fetch from GetAtomStats query
  */
-const UserAtomStats = ({ termId, accountAddress, compact = false }: UserAtomStatsProps) => {
+const UserAtomStats = ({ termId, accountAddress, compact = false, signalsCount: preloadedSignals, totalMarketCap: preloadedMarketCap }: UserAtomStatsProps) => {
   const atomStats = useUserAtomStats(termId, accountAddress)
+  
+  // Use pre-loaded data if available, otherwise use query data
+  const hasPreloadedData = preloadedSignals !== undefined && preloadedMarketCap !== undefined
+  const isLoading = hasPreloadedData ? false : atomStats.loading
+  const hasError = hasPreloadedData ? false : atomStats.error
+
+  // Debug log
+  console.log('🎯 UserAtomStats render:', {
+    termId,
+    hasPreloadedData,
+    preloadedSignals,
+    preloadedMarketCap,
+    isLoading,
+    atomStatsPositionCount: atomStats.positionCount,
+    atomStatsMarketCap: atomStats.totalMarketCap
+  })
 
   if (!termId) {
     return null
   }
 
-  if (atomStats.loading) {
+  if (isLoading) {
     return (
       <div className={`account-stats-container ${compact ? 'account-stats-compact' : ''}`}>
         <span className="account-stats-loading-text">Loading...</span>
@@ -26,7 +45,7 @@ const UserAtomStats = ({ termId, accountAddress, compact = false }: UserAtomStat
     )
   }
 
-  if (atomStats.error) {
+  if (hasError) {
     return null
   }
 
@@ -39,8 +58,8 @@ const UserAtomStats = ({ termId, accountAddress, compact = false }: UserAtomStat
     return num.toFixed(3)
   }
 
-  const signalsCreated = atomStats.positionCount
-  const totalMarketCap = formatMarketCap(atomStats.totalMarketCap)
+  const signalsCreated = hasPreloadedData ? preloadedSignals : atomStats.positionCount
+  const totalMarketCap = formatMarketCap(hasPreloadedData ? preloadedMarketCap : atomStats.totalMarketCap)
 
   return (
     <div className={`account-stats-container ${compact ? 'account-stats-compact' : ''}`}>

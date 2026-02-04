@@ -20,6 +20,10 @@ export interface FollowAccountVM {
   createdAt: number
   /** Trust amount in TRUST tokens (decimal) */
   trustAmount: number
+  /** Number of signals (positions) on this account */
+  signalsCount: number
+  /** Total market cap in Wei */
+  marketCapWei: string
   /** Avatar image URL */
   image?: string
   /** Wallet address (checksummed) */

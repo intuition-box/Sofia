@@ -18811,6 +18811,29 @@ export type GetFollowingPositionsQuery = {
       emoji?: string | null
       type: any
       wallet_id: string
+      accounts: Array<{
+        __typename?: "accounts"
+        atom?: {
+          __typename?: "atoms"
+          term?: {
+            __typename?: "terms"
+            total_market_cap?: any | null
+            positions_aggregate: {
+              __typename?: "positions_aggregate"
+              aggregate?: {
+                __typename?: "positions_aggregate_fields"
+                count: number
+              } | null
+            }
+            vaults: Array<{
+              __typename?: "vaults"
+              current_share_price: any
+              total_shares: any
+              position_count: number
+            }>
+          } | null
+        } | null
+      }>
       creator?: {
         __typename?: "accounts"
         id: string
@@ -18873,6 +18896,16 @@ export type GetFollowingPositionsQuery = {
             __typename?: "accounts"
             id: string
             label: string
+            image?: string | null
+            atom_id?: string | null
+            atom?: {
+              __typename?: "atoms"
+              term_id: string
+              label?: string | null
+              data?: string | null
+              type: any
+              image?: string | null
+            } | null
           } | null
         }>
       }>
@@ -29296,6 +29329,23 @@ export const GetFollowingPositionsDocument = `
     }
     object {
       ...AtomMetadata
+      accounts {
+        atom {
+          term {
+            total_market_cap
+            positions_aggregate {
+              aggregate {
+                count
+              }
+            }
+            vaults(order_by: {curve_id: asc}) {
+              current_share_price
+              total_shares
+              position_count
+            }
+          }
+        }
+      }
     }
     term {
       vaults(where: {curve_id: {_eq: "1"}}) {
@@ -29314,6 +29364,15 @@ export const GetFollowingPositionsDocument = `
           account {
             id
             label
+            image
+            atom_id
+            atom {
+              term_id
+              label
+              data
+              type
+              image
+            }
           }
           shares
         }
@@ -53810,6 +53869,129 @@ export const GetFollowingPositions = {
                       {
                         kind: "FragmentSpread",
                         name: { kind: "Name", value: "AtomMetadata" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "accounts" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "atom" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "term" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "total_market_cap"
+                                          }
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "positions_aggregate"
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "aggregate"
+                                                },
+                                                selectionSet: {
+                                                  kind: "SelectionSet",
+                                                  selections: [
+                                                    {
+                                                      kind: "Field",
+                                                      name: {
+                                                        kind: "Name",
+                                                        value: "count"
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "vaults"
+                                          },
+                                          arguments: [
+                                            {
+                                              kind: "Argument",
+                                              name: {
+                                                kind: "Name",
+                                                value: "order_by"
+                                              },
+                                              value: {
+                                                kind: "ObjectValue",
+                                                fields: [
+                                                  {
+                                                    kind: "ObjectField",
+                                                    name: {
+                                                      kind: "Name",
+                                                      value: "curve_id"
+                                                    },
+                                                    value: {
+                                                      kind: "EnumValue",
+                                                      value: "asc"
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          ],
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "current_share_price"
+                                                }
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "total_shares"
+                                                }
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "position_count"
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
                       }
                     ]
                   }
@@ -53978,6 +54160,61 @@ export const GetFollowingPositions = {
                                         {
                                           kind: "Field",
                                           name: { kind: "Name", value: "label" }
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "image" }
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "atom_id"
+                                          }
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "atom" },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "term_id"
+                                                }
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "label"
+                                                }
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "data"
+                                                }
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "type"
+                                                }
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "image"
+                                                }
+                                              }
+                                            ]
+                                          }
                                         }
                                       ]
                                     }

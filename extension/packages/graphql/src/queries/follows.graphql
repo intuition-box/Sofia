@@ -39,6 +39,23 @@ query GetFollowingPositions(
     }
     object {
       ...AtomMetadata
+      accounts {
+        atom {
+          term {
+            total_market_cap
+            positions_aggregate {
+              aggregate {
+                count
+              }
+            }
+            vaults(order_by: {curve_id: asc}) {
+              current_share_price
+              total_shares
+              position_count
+            }
+          }
+        }
+      }
     }
     term {
       vaults(where: { curve_id: { _eq: "1" } }) {
@@ -60,6 +77,15 @@ query GetFollowingPositions(
           account {
             id
             label
+            image
+            atom_id
+            atom {
+              term_id
+              label
+              data
+              type
+              image
+            }
           }
           shares
         }
