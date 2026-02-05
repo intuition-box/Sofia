@@ -17,11 +17,22 @@ import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useDiscoveryScore')
 
-// Predicate labels for intention types - used for GraphQL query by label
+// Predicate labels for all certification types (intentions + trust/distrust)
 // NOTE: 'visits for learning ' has a trailing space due to a bug in atom creation
-const INTENTION_PREDICATE_LABELS = [
+const CERTIFICATION_PREDICATE_LABELS = [
   'visits for work',
   'visits for learning ',  // trailing space (official atom)
+  'visits for fun',
+  'visits for inspiration',
+  'visits for buying',
+  'trusts',
+  'distrust'
+]
+
+// Only intention predicates (for intention breakdown stats)
+const INTENTION_PREDICATE_LABELS = [
+  'visits for work',
+  'visits for learning ',
   'visits for fun',
   'visits for inspiration',
   'visits for buying'
@@ -79,7 +90,7 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
   const fetchDiscoveryScore = useCallback(async () => {
     console.log('🔍 [useDiscoveryScore] Starting fetch with:', {
       walletAddress,
-      predicateLabels: INTENTION_PREDICATE_LABELS
+      predicateLabels: CERTIFICATION_PREDICATE_LABELS
     })
 
     if (!walletAddress) {
@@ -176,17 +187,18 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
       }
 
       // Fetch both in parallel with pagination
+      // Use CERTIFICATION_PREDICATE_LABELS to include trust/distrust in discovery stats
       const [userTriples, allTriples] = await Promise.all([
         intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
           userTriplesQuery,
-          { predicateLabels: INTENTION_PREDICATE_LABELS, userAddress },
+          { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddress },
           'triples',
           100,
           100
         ),
         intuitionGraphqlClient.fetchAllPages<AllTripleResult>(
           allTriplesQuery,
-          { predicateLabels: INTENTION_PREDICATE_LABELS },
+          { predicateLabels: CERTIFICATION_PREDICATE_LABELS },
           'triples',
           100,
           100

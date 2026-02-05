@@ -16,8 +16,40 @@ export interface PageBlockchainTriplet {
   }>
 }
 
+/**
+ * Metadata counts for page blockchain data
+ */
+export interface PageBlockchainCounts {
+  atomsCount: number
+  triplesCount: number
+  displayedAtomsCount: number
+  displayedTriplesCount: number
+  totalShares: number
+  totalPositions: number
+  attestationsCount: number
+  trustCount: number
+  distrustCount: number
+  totalSupport: number
+  trustRatio: number
+}
+
+/**
+ * Atom info for display in the UI
+ */
+export interface PageAtomInfo {
+  id: string
+  label: string
+  type: string
+  vaults: Array<{
+    total_shares?: string
+    position_count?: number
+  }>
+}
+
 export interface UsePageBlockchainDataResult {
   triplets: PageBlockchainTriplet[]
+  counts: PageBlockchainCounts
+  atomsList: PageAtomInfo[]
   loading: boolean
   error: string | null
   currentUrl: string | null

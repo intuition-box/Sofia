@@ -13,13 +13,26 @@ import StarBorder from './StarBorder'
 import { IntentionBubbleSelector } from './IntentionBubbleSelector'
 import type { PageBlockchainTriplet } from '../../types/page'
 import type { IntentionPurpose } from '../../types/discovery'
+
+// Type for triplets shown in the WeightModal
+interface ModalTriplet {
+  id: string
+  triplet: {
+    subject: string
+    predicate: string
+    object: string
+  }
+  description: string
+  url: string
+  intention?: IntentionPurpose
+}
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { normalizeUrl } from '../../lib/utils/normalizeUrl'
 import '../styles/PageBlockchainCard.css'
 
 const PageBlockchainCard = () => {
   const { navigateTo } = useRouter()
-  const { triplets, loading, error, currentUrl, pageTitle, isRestricted, restrictionMessage, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
+  const { triplets, counts, atomsList, loading, error, currentUrl, pageTitle, isRestricted, restrictionMessage, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
   const { trustPage, loading: trustLoading, success: trustSuccess, error: trustError, operationType, transactionHash: trustTxHash } = useTrustPage()
   const {
     certifyWithIntention,
@@ -33,10 +46,7 @@ const PageBlockchainCard = () => {
   } = useIntentionCertify()
   const { isEligible: isAttentionEligible } = useProofOfAttention(currentUrl)
   const {
-    discoveryStatus,
-    certificationRank,
     totalCertifications,
-    userHasCertified,
     refetch: refetchDiscovery
   } = usePageDiscovery(currentUrl)
   const {
@@ -63,7 +73,7 @@ const PageBlockchainCard = () => {
 
   // Modal state
   const [showWeightModal, setShowWeightModal] = useState(false)
-  const [modalTriplets, setModalTriplets] = useState<any[]>([])
+  const [modalTriplets, setModalTriplets] = useState<ModalTriplet[]>([])
   const [modalType, setModalType] = useState<'trust' | 'distrust'>('trust')
 
   // Extended panel state
@@ -192,8 +202,7 @@ const PageBlockchainCard = () => {
       // Handle intention certification
       try {
         const weight = customWeights[0] || undefined
-        // Remember previous state to detect if we became Pioneer
-        const wasCertified = userHasCertified
+        // Remember total certifications before transaction for XP calculation
         const prevTotal = totalCertifications
 
         console.log('📊 PageBlockchainCard - Starting intention certification', { intention: intentionFromTriplet })
@@ -205,33 +214,23 @@ const PageBlockchainCard = () => {
         // Refetch discovery status to update badge
         await refetchDiscovery()
 
-        // Determine discovery reward based on rank
-        // If prevTotal was 0 and we just certified, we're Pioneer!
-        if (!wasCertified && prevTotal === 0) {
+        // Determine discovery reward based on total certifications on this page
+        // Every transaction gives XP - amount depends on how many people certified before
+        if (prevTotal === 0) {
           setDiscoveryReward({ status: 'Pioneer', xp: 50 })
           setXpEarned(50)
-          setShowCelebration(true)
-          setTimeout(() => {
-            setShowCelebration(false)
-            setXpEarned(null)
-          }, 3000)
-        } else if (!wasCertified && prevTotal < 10) {
+        } else if (prevTotal < 10) {
           setDiscoveryReward({ status: 'Explorer', xp: 20 })
           setXpEarned(20)
-          setShowCelebration(true)
-          setTimeout(() => {
-            setShowCelebration(false)
-            setXpEarned(null)
-          }, 3000)
-        } else if (!wasCertified) {
+        } else {
           setDiscoveryReward({ status: 'Contributor', xp: 5 })
           setXpEarned(5)
-          setShowCelebration(true)
-          setTimeout(() => {
-            setShowCelebration(false)
-            setXpEarned(null)
-          }, 3000)
         }
+        setShowCelebration(true)
+        setTimeout(() => {
+          setShowCelebration(false)
+          setXpEarned(null)
+        }, 3000)
 
         setTimeout(() => fetchDataForCurrentPage(), 1000)
       } catch (error) {
@@ -248,8 +247,7 @@ const PageBlockchainCard = () => {
     const setSuccess = isTrust ? setLocalTrustSuccess : setLocalDistrustSuccess
     const setOpType = isTrust ? setLocalOperationType : setLocalDistrustOperationType
 
-    // Remember previous state to detect if we became Pioneer/Explorer/Contributor
-    const wasCertified = userHasCertified
+    // Remember total certifications before transaction for XP calculation
     const prevTotal = totalCertifications
 
     setLoading(true)
@@ -273,32 +271,23 @@ const PageBlockchainCard = () => {
       // Refetch discovery status to update badge
       await refetchDiscovery()
 
-      // Determine discovery reward based on rank (same logic as intention certifications)
-      if (!wasCertified && prevTotal === 0) {
+      // Determine discovery reward based on total certifications
+      // Every transaction gives XP - amount depends on how many people certified before
+      if (prevTotal === 0) {
         setDiscoveryReward({ status: 'Pioneer', xp: 50 })
         setXpEarned(50)
-        setShowCelebration(true)
-        setTimeout(() => {
-          setShowCelebration(false)
-          setXpEarned(null)
-        }, 3000)
-      } else if (!wasCertified && prevTotal < 10) {
+      } else if (prevTotal < 10) {
         setDiscoveryReward({ status: 'Explorer', xp: 20 })
         setXpEarned(20)
-        setShowCelebration(true)
-        setTimeout(() => {
-          setShowCelebration(false)
-          setXpEarned(null)
-        }, 3000)
-      } else if (!wasCertified) {
+      } else {
         setDiscoveryReward({ status: 'Contributor', xp: 5 })
         setXpEarned(5)
-        setShowCelebration(true)
-        setTimeout(() => {
-          setShowCelebration(false)
-          setXpEarned(null)
-        }, 3000)
       }
+      setShowCelebration(true)
+      setTimeout(() => {
+        setShowCelebration(false)
+        setXpEarned(null)
+      }, 3000)
 
       // Refresh blockchain data to show new triple
       setTimeout(() => fetchDataForCurrentPage(), 1000)
@@ -364,22 +353,9 @@ const PageBlockchainCard = () => {
   }
 
   const getCredibilityAnalysis = () => {
-    const counts = (triplets as any)._counts || {}
-    const atomsList = (triplets as any)._atomsList || []
-
-    // Trust/Distrust support data
-    const trustCount = counts.trustCount || 0
-    const distrustCount = counts.distrustCount || 0
-    const totalSupport = counts.totalSupport || 0
-    const trustRatio = counts.trustRatio ?? 50  // Default to 50% if no data
-
-    // Use metadata counts if available
-    const atomsCount = counts.atomsCount || 0
-    const triplesCount = counts.triplesCount || triplets.length
-
     // Determine bar color based on trust ratio
-    const getBarColor = (ratio: number) => {
-      if (totalSupport === 0) return '#6B7280'  // Gray if no support
+    const getBarColor = (ratio: number, support: number) => {
+      if (support === 0) return '#6B7280'  // Gray if no support
       if (ratio >= 80) return '#22c55e'  // Green - High trust
       if (ratio >= 60) return '#84cc16'  // Light green
       if (ratio >= 40) return '#eab308'  // Yellow - Mixed
@@ -388,27 +364,18 @@ const PageBlockchainCard = () => {
     }
 
     return {
-      trustCount,
-      distrustCount,
-      totalSupport,
-      trustRatio,
-      barColor: getBarColor(trustRatio),
-      atomsCount,
-      triplesCount,
+      trustCount: counts.trustCount,
+      distrustCount: counts.distrustCount,
+      totalSupport: counts.totalSupport,
+      trustRatio: counts.trustRatio,
+      barColor: getBarColor(counts.trustRatio, counts.totalSupport),
+      atomsCount: counts.atomsCount,
+      triplesCount: counts.triplesCount,
       atomsList
     }
   }
 
-  const analysis = getCredibilityAnalysis() || {
-    trustCount: 0,
-    distrustCount: 0,
-    totalSupport: 0,
-    trustRatio: 50,
-    barColor: '#6B7280',
-    atomsCount: 0,
-    triplesCount: 0,
-    atomsList: []
-  }
+  const analysis = getCredibilityAnalysis()
 
   return (
     <div className="blockchain-card">
@@ -731,14 +698,14 @@ const PageBlockchainCard = () => {
                     className="collapsible-toggle clickable"
                     onClick={() => setShowAtomsList(!showAtomsList)}
                   >
-                    <span>Atoms ({(triplets as any)._counts?.atomsCount || 0})</span>
+                    <span>Atoms ({counts.atomsCount})</span>
                     <span className={`toggle-arrow ${showAtomsList ? 'expanded' : ''}`}>▼</span>
                   </div>
                   <div
                     className="collapsible-toggle clickable"
                     onClick={() => setShowTripletsList(!showTripletsList)}
                   >
-                    <span>Triples ({(triplets as any)._counts?.triplesCount || triplets.length})</span>
+                    <span>Triples ({counts.triplesCount})</span>
                     <span className={`toggle-arrow ${showTripletsList ? 'expanded' : ''}`}>▼</span>
                   </div>
                 </div>
@@ -748,11 +715,11 @@ const PageBlockchainCard = () => {
                   <div className="atoms-section">
                     <div className="section-title">Atoms on this page</div>
                     <div className="atoms-list">
-                      {analysis.atomsList.map((atom: any) => {
-                        const totalShares = (atom.vaults || []).reduce((sum: number, vault: any) => {
+                      {analysis.atomsList.map((atom) => {
+                        const totalShares = atom.vaults.reduce((sum, vault) => {
                           return sum + (Number(vault.total_shares || 0) / 1e18)
                         }, 0)
-                        const positionCount = (atom.vaults || []).reduce((sum: number, vault: any) => {
+                        const positionCount = atom.vaults.reduce((sum, vault) => {
                           return sum + (Number(vault.position_count || 0))
                         }, 0)
 
