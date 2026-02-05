@@ -15,12 +15,17 @@ import { SUBJECT_IDS } from '../../../lib/config/constants'
 import Avatar from '../../ui/Avatar'
 import { useQuestSystem } from '../../../hooks/useQuestSystem'
 import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
+import QuestsTab from './QuestsTab'
+import StatsTab from './StatsTab'
 import '../../styles/AccountTab.css'
+
+type SubTab = 'quests' | 'stats'
 
 const AccountTab = () => {
   const { walletAddress } = useWalletFromStorage()
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   const [userLabel, setUserLabel] = useState<string | undefined>(undefined)
+  const [activeTab, setActiveTab] = useState<SubTab>('quests')
 
   // OAuth connection states
   const [oauthTokens, setOauthTokens] = useState({
@@ -343,11 +348,6 @@ const AccountTab = () => {
     console.log(`🗑️ [OAuth] Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
   }
 
-  // Calculate circular progress for quests
-  const calculateProgress = (current: number, total: number) => {
-    return (current / total) * 100
-  }
-
   // Get Discord avatar URL
   const getDiscordAvatarUrl = () => {
     if (!discordProfile?.id || !discordProfile?.avatar) return undefined
@@ -478,130 +478,38 @@ const AccountTab = () => {
       {/* Separator */}
       <div className="section-separator"></div>
 
-      {/* Quests/Goals Section */}
-      <div className="quests-section">
-        {questsLoading ? (
-          <div className="quests-loading">Loading quests...</div>
-        ) : (claimableQuests.length === 0 && activeQuests.length === 0) ? (
-          <div className="quests-empty">
-            <p>No active quests. Complete your first action to unlock quests!</p>
-          </div>
-        ) : (
-          [...claimableQuests, ...activeQuests].map((quest) => {
-            const progress = calculateProgress(quest.current, quest.total)
-            const radius = 28
-            const circumference = 2 * Math.PI * radius
-            const strokeDashoffset = circumference - (progress / 100) * circumference
-
-            return (
-              <div key={quest.id} className="quest-item">
-                <div className="quest-progress">
-                  <svg width="70" height="70" viewBox="0 0 70 70">
-                    {/* Background circle */}
-                    <circle
-                      cx="35"
-                      cy="35"
-                      r={radius}
-                      stroke="#2d2d2d"
-                      strokeWidth="6"
-                      fill="none"
-                    />
-                    {/* Progress circle */}
-                    <circle
-                      cx="35"
-                      cy="35"
-                      r={radius}
-                      stroke={quest.statusColor}
-                      strokeWidth="6"
-                      fill="none"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={strokeDashoffset}
-                      strokeLinecap="round"
-                      transform="rotate(-90 35 35)"
-                      style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                    />
-                    {/* Percentage text */}
-                    <text
-                      x="35"
-                      y="35"
-                      textAnchor="middle"
-                      dy="6"
-                      fontSize="14"
-                      fontWeight="600"
-                      fill="#fff"
-                    >
-                      {Math.round(progress)}%
-                    </text>
-                  </svg>
-                </div>
-                <div className="quest-details">
-                  <span className="quest-badge-name">{quest.title}</span>
-                  <h4 className="quest-title">{quest.description}</h4>
-                  <p className="quest-progress-text">{quest.current}/{quest.total}</p>
-                  <span className="quest-status" style={{ color: quest.statusColor }}>
-                    {quest.status === 'active' ? 'In Progress' :
-                     quest.status === 'claimable_xp' ? 'Ready to Claim!' :
-                     quest.status === 'completed' ? 'Claimed' : 'Locked'} • +{quest.xpReward} XP
-                  </span>
-                  {/* Claim XP button for completed quests */}
-                  {quest.status === 'claimable_xp' && quest.id !== 'social-linked' && (
-                    <button
-                      className={`claim-xp-button ${claimingQuestId === quest.id ? 'claiming' : ''}`}
-                      onClick={async () => {
-                        const result = await claimQuestXP(quest.id)
-                        if (!result.success) {
-                          console.error('Claim failed:', result.error)
-                          alert(`Claim failed: ${result.error}`)
-                        }
-                      }}
-                      disabled={claimingQuestId !== null}
-                    >
-                      {claimingQuestId === quest.id ? 'Claiming...' : `Claim ${quest.xpReward} XP`}
-                    </button>
-                  )}
-                  {/* Social Linked button for social-linked quest (first verify on-chain, then XP) */}
-                  {quest.id === 'social-linked' && quest.status === 'claimable_xp' && !isSocialVerified && canVerify && (
-                    <button
-                      className="social-link-button"
-                      onClick={async () => {
-                        const result = await verifySocials()
-                        if (result.success) {
-                          markQuestCompleted('social-linked')
-                        } else {
-                          console.error('Verification failed:', result.error)
-                          alert(`Verification failed: ${result.error}`)
-                        }
-                      }}
-                      disabled={isVerifying}
-                    >
-                      {isVerifying ? 'Verifying...' : 'Verify Socials'}
-                    </button>
-                  )}
-                  {/* Claim XP button for social-linked after on-chain verification */}
-                  {quest.id === 'social-linked' && quest.status === 'claimable_xp' && isSocialVerified && (
-                    <button
-                      className={`claim-xp-button ${claimingQuestId === quest.id ? 'claiming' : ''}`}
-                      onClick={async () => {
-                        const result = await claimQuestXP(quest.id)
-                        if (!result.success) {
-                          console.error('Claim failed:', result.error)
-                          alert(`Claim failed: ${result.error}`)
-                        }
-                      }}
-                      disabled={claimingQuestId !== null}
-                    >
-                      {claimingQuestId === quest.id ? 'Claiming...' : `Claim ${quest.xpReward} XP`}
-                    </button>
-                  )}
-                  {quest.id === 'social-linked' && quest.status === 'completed' && (
-                    <span className="social-linked-badge">Social Linked</span>
-                  )}
-                </div>
-              </div>
-            )
-          })
-        )}
+      {/* Sub-tabs Navigation */}
+      <div className="sub-tabs">
+        <button
+          className={`sub-tab ${activeTab === 'quests' ? 'active' : ''}`}
+          onClick={() => setActiveTab('quests')}
+        >
+          Quests
+        </button>
+        <button
+          className={`sub-tab ${activeTab === 'stats' ? 'active' : ''}`}
+          onClick={() => setActiveTab('stats')}
+        >
+          Stats
+        </button>
       </div>
+
+      {/* Tab Content - Lazy loaded */}
+      {activeTab === 'quests' && (
+        <QuestsTab
+          quests={[...claimableQuests, ...activeQuests]}
+          loading={questsLoading}
+          claimingQuestId={claimingQuestId}
+          isSocialVerified={isSocialVerified}
+          canVerify={canVerify}
+          isVerifying={isVerifying}
+          onClaimXP={claimQuestXP}
+          onVerifySocials={verifySocials}
+          onMarkCompleted={markQuestCompleted}
+        />
+      )}
+
+      {activeTab === 'stats' && <StatsTab />}
     </div>
   )
 }
