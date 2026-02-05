@@ -127,6 +127,18 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
   return (
     <div className="triples-container">
       <div className="groups-section">
+        <div className="reveal-skills-cta">
+          <button
+            className="btn iridescence-btn"
+            onClick={() => {
+              // Set flag to trigger analysis when Proofs tab loads
+              localStorage.setItem('triggerProofsAnalysis', 'true');
+              onNavigateToProofs?.();
+            }}
+          >
+            Unlock Proofs
+          </button>
+        </div>
         <div className="groups-header">
           <span className="groups-count">{groups.length} domains</span>
           <div className="sort-buttons">
@@ -141,20 +153,9 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
             ))}
           </div>
         </div>
-
         {/* Unlock Proofs CTA */}
-        <div className="reveal-skills-cta">
-          <button
-            className="reveal-skills-btn"
-            onClick={() => {
-              // Set flag to trigger analysis when Proofs tab loads
-              localStorage.setItem('triggerProofsAnalysis', 'true');
-              onNavigateToProofs?.();
-            }}
-          >
-            Unlock Proofs
-          </button>
-        </div>
+        
+
 
         <div className="bento-grid">
           {groups.map((group) => (

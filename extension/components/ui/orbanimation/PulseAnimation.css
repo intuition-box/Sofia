@@ -10,8 +10,7 @@
 
 .input-orb:checked ~ .container-chat-ia {
   width: 360px;
-  height: 360px;
-  filter: blur(0px);
+  height: 260px;
   opacity: 1;
   pointer-events: all;
 }
