@@ -1095,20 +1095,20 @@ export const useQuestSystem = (): QuestSystemResult => {
       const isCompleted = completedQuestIds.has(questDef.id)
       const isClaimed = claimedQuestIds.has(questDef.id)
 
-      if (current >= questDef.total) {
-        // Quest objective is met
-        // For daily quests, check if already claimed TODAY (not just ever)
-        const isClaimedToday = questDef.recurringType === 'daily'
-          ? claimedQuestIds.has(`${questDef.id}-${new Date().toISOString().split('T')[0]}`)
-          : isClaimed
+      // For daily quests, check if already claimed TODAY (not just ever)
+      const isClaimedToday = questDef.recurringType === 'daily'
+        ? claimedQuestIds.has(`${questDef.id}-${new Date().toISOString().split('T')[0]}`)
+        : isClaimed
 
-        if (isClaimedToday) {
-          status = 'completed'
-          statusColor = '#48bb78' // green - XP claimed
-        } else {
-          status = 'claimable_xp'
-          statusColor = '#FFD700' // gold - ready to claim XP
-        }
+      // If badge exists on-chain (isClaimed), mark as completed regardless of current progress
+      // This handles cases where local progress data is lost but badge exists on-chain
+      if (isClaimedToday) {
+        status = 'completed'
+        statusColor = '#48bb78' // green - XP claimed
+      } else if (current >= questDef.total) {
+        // Quest objective is met but not yet claimed
+        status = 'claimable_xp'
+        statusColor = '#FFD700' // gold - ready to claim XP
         // Save to completed if not already (skip for daily quests as they reset)
         if (!isCompleted && !questDef.recurringType) {
           saveCompletedQuest(questDef.id)
