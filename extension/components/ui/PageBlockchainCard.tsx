@@ -4,7 +4,6 @@ import { useRouter } from '../layout/RouterProvider'
 import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
 import { useTrustPage } from '../../hooks/useTrustPage'
 import { useIntentionCertify } from '../../hooks/useIntentionCertify'
-import { useProofOfAttention } from '../../hooks/useProofOfAttention'
 import { usePageDiscovery } from '../../hooks/usePageDiscovery'
 import { usePageIntentionStats } from '../../hooks/usePageIntentionStats'
 import { useDiscoveryScore } from '../../hooks/useDiscoveryScore'
@@ -30,6 +29,14 @@ import { INTENTION_PREDICATES } from '../../types/discovery'
 import { normalizeUrl } from '../../lib/utils/normalizeUrl'
 import '../styles/PageBlockchainCard.css'
 
+// Timing constants for UI delays
+const DELAYS = {
+  /** Delay before refreshing data after a transaction (wait for blockchain indexer) */
+  REFRESH_AFTER_TX: 1000,
+  /** Duration to show celebration animation */
+  CELEBRATION_DURATION: 3000
+} as const
+
 const PageBlockchainCard = () => {
   const { navigateTo } = useRouter()
   const { triplets, counts, atomsList, loading, error, currentUrl, pageTitle, isRestricted, restrictionMessage, fetchDataForCurrentPage, pauseRefresh, resumeRefresh } = usePageBlockchainData()
@@ -44,7 +51,8 @@ const PageBlockchainCard = () => {
     transactionHash: intentionTxHash,
     currentIntention
   } = useIntentionCertify()
-  const { isEligible: isAttentionEligible } = useProofOfAttention(currentUrl)
+  // Proof of attention disabled - no time restriction for certifications
+  // const { isEligible: isAttentionEligible } = useProofOfAttention(currentUrl)
   const {
     totalCertifications,
     refetch: refetchDiscovery
@@ -230,9 +238,9 @@ const PageBlockchainCard = () => {
         setTimeout(() => {
           setShowCelebration(false)
           setXpEarned(null)
-        }, 3000)
+        }, DELAYS.CELEBRATION_DURATION)
 
-        setTimeout(() => fetchDataForCurrentPage(), 1000)
+        setTimeout(() => fetchDataForCurrentPage(), DELAYS.REFRESH_AFTER_TX)
       } catch (error) {
         console.error('❌ PageBlockchainCard - Intention certification error:', error)
         resumeRefresh()
@@ -287,10 +295,10 @@ const PageBlockchainCard = () => {
       setTimeout(() => {
         setShowCelebration(false)
         setXpEarned(null)
-      }, 3000)
+      }, DELAYS.CELEBRATION_DURATION)
 
       // Refresh blockchain data to show new triple
-      setTimeout(() => fetchDataForCurrentPage(), 1000)
+      setTimeout(() => fetchDataForCurrentPage(), DELAYS.REFRESH_AFTER_TX)
     } catch (error) {
       console.error('❌ PageBlockchainCard - trustPage error:', error)
       const errorMessage = error instanceof Error ? error.message : `Failed to create ${modalType}`
@@ -542,7 +550,7 @@ const PageBlockchainCard = () => {
                 setShowWeightModal(true)
               }}
               disabled={intentionLoading}
-              isEligible={true} // TODO: réactiver isAttentionEligible après debug
+              isEligible={true}
               selectedIntention={currentIntention}
             />
           </div>}
