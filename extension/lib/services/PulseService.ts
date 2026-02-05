@@ -6,6 +6,7 @@
 import { sendMessage } from '../../background/agentRouter'
 import type { MessageResponse } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
+import { questTrackingService } from './QuestTrackingService'
 
 const logger = createServiceLogger('PulseService')
 
@@ -125,6 +126,9 @@ export class PulseService {
       // Send to PulseAgent via unified sendMessage
       const message = JSON.stringify(cleanData)
       await sendMessage('PULSEAGENT', message)
+
+      // Track pulse launch for quest progress
+      await questTrackingService.recordPulseLaunch()
 
       logger.info('Successfully sent to PulseAgent')
       return {
