@@ -318,6 +318,268 @@ export type UploadJsonToIpfsOutput = {
   size: Scalars["String"]["output"]
 }
 
+/** columns and relationships of "account_pnl_rank" */
+export type Account_Pnl_Rank = {
+  __typename?: "account_pnl_rank"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  percentile?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  total_accounts?: Maybe<Scalars["bigint"]["output"]>
+  total_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** aggregated selection of "account_pnl_rank" */
+export type Account_Pnl_Rank_Aggregate = {
+  __typename?: "account_pnl_rank_aggregate"
+  aggregate?: Maybe<Account_Pnl_Rank_Aggregate_Fields>
+  nodes: Array<Account_Pnl_Rank>
+}
+
+/** aggregate fields of "account_pnl_rank" */
+export type Account_Pnl_Rank_Aggregate_Fields = {
+  __typename?: "account_pnl_rank_aggregate_fields"
+  avg?: Maybe<Account_Pnl_Rank_Avg_Fields>
+  count: Scalars["Int"]["output"]
+  max?: Maybe<Account_Pnl_Rank_Max_Fields>
+  min?: Maybe<Account_Pnl_Rank_Min_Fields>
+  stddev?: Maybe<Account_Pnl_Rank_Stddev_Fields>
+  stddev_pop?: Maybe<Account_Pnl_Rank_Stddev_Pop_Fields>
+  stddev_samp?: Maybe<Account_Pnl_Rank_Stddev_Samp_Fields>
+  sum?: Maybe<Account_Pnl_Rank_Sum_Fields>
+  var_pop?: Maybe<Account_Pnl_Rank_Var_Pop_Fields>
+  var_samp?: Maybe<Account_Pnl_Rank_Var_Samp_Fields>
+  variance?: Maybe<Account_Pnl_Rank_Variance_Fields>
+}
+
+/** aggregate fields of "account_pnl_rank" */
+export type Account_Pnl_Rank_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  distinct?: InputMaybe<Scalars["Boolean"]["input"]>
+}
+
+/** aggregate avg on columns */
+export type Account_Pnl_Rank_Avg_Fields = {
+  __typename?: "account_pnl_rank_avg_fields"
+  percentile?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  total_accounts?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Boolean expression to filter rows from the table "account_pnl_rank". All fields are combined with a logical 'AND'. */
+export type Account_Pnl_Rank_Bool_Exp = {
+  _and?: InputMaybe<Array<Account_Pnl_Rank_Bool_Exp>>
+  _not?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
+  _or?: InputMaybe<Array<Account_Pnl_Rank_Bool_Exp>>
+  account_id?: InputMaybe<String_Comparison_Exp>
+  account_image?: InputMaybe<String_Comparison_Exp>
+  account_label?: InputMaybe<String_Comparison_Exp>
+  percentile?: InputMaybe<Numeric_Comparison_Exp>
+  pnl_pct?: InputMaybe<Numeric_Comparison_Exp>
+  rank?: InputMaybe<Bigint_Comparison_Exp>
+  total_accounts?: InputMaybe<Bigint_Comparison_Exp>
+  total_pnl?: InputMaybe<Numeric_Comparison_Exp>
+  total_position_count?: InputMaybe<Bigint_Comparison_Exp>
+  total_volume?: InputMaybe<Numeric_Comparison_Exp>
+  win_rate?: InputMaybe<Numeric_Comparison_Exp>
+}
+
+/** aggregate max on columns */
+export type Account_Pnl_Rank_Max_Fields = {
+  __typename?: "account_pnl_rank_max_fields"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  percentile?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  total_accounts?: Maybe<Scalars["bigint"]["output"]>
+  total_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** aggregate min on columns */
+export type Account_Pnl_Rank_Min_Fields = {
+  __typename?: "account_pnl_rank_min_fields"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  percentile?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  total_accounts?: Maybe<Scalars["bigint"]["output"]>
+  total_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** Ordering options when selecting data from "account_pnl_rank". */
+export type Account_Pnl_Rank_Order_By = {
+  account_id?: InputMaybe<Order_By>
+  account_image?: InputMaybe<Order_By>
+  account_label?: InputMaybe<Order_By>
+  percentile?: InputMaybe<Order_By>
+  pnl_pct?: InputMaybe<Order_By>
+  rank?: InputMaybe<Order_By>
+  total_accounts?: InputMaybe<Order_By>
+  total_pnl?: InputMaybe<Order_By>
+  total_position_count?: InputMaybe<Order_By>
+  total_volume?: InputMaybe<Order_By>
+  win_rate?: InputMaybe<Order_By>
+}
+
+/** select columns of table "account_pnl_rank" */
+export type Account_Pnl_Rank_Select_Column =
+  /** column name */
+  | "account_id"
+  /** column name */
+  | "account_image"
+  /** column name */
+  | "account_label"
+  /** column name */
+  | "percentile"
+  /** column name */
+  | "pnl_pct"
+  /** column name */
+  | "rank"
+  /** column name */
+  | "total_accounts"
+  /** column name */
+  | "total_pnl"
+  /** column name */
+  | "total_position_count"
+  /** column name */
+  | "total_volume"
+  /** column name */
+  | "win_rate"
+
+/** aggregate stddev on columns */
+export type Account_Pnl_Rank_Stddev_Fields = {
+  __typename?: "account_pnl_rank_stddev_fields"
+  percentile?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  total_accounts?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_pop on columns */
+export type Account_Pnl_Rank_Stddev_Pop_Fields = {
+  __typename?: "account_pnl_rank_stddev_pop_fields"
+  percentile?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  total_accounts?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_samp on columns */
+export type Account_Pnl_Rank_Stddev_Samp_Fields = {
+  __typename?: "account_pnl_rank_stddev_samp_fields"
+  percentile?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  total_accounts?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Streaming cursor of the table "account_pnl_rank" */
+export type Account_Pnl_Rank_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Account_Pnl_Rank_Stream_Cursor_Value_Input
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>
+}
+
+/** Initial value of the column from where the streaming should start */
+export type Account_Pnl_Rank_Stream_Cursor_Value_Input = {
+  account_id?: InputMaybe<Scalars["String"]["input"]>
+  account_image?: InputMaybe<Scalars["String"]["input"]>
+  account_label?: InputMaybe<Scalars["String"]["input"]>
+  percentile?: InputMaybe<Scalars["numeric"]["input"]>
+  pnl_pct?: InputMaybe<Scalars["numeric"]["input"]>
+  rank?: InputMaybe<Scalars["bigint"]["input"]>
+  total_accounts?: InputMaybe<Scalars["bigint"]["input"]>
+  total_pnl?: InputMaybe<Scalars["numeric"]["input"]>
+  total_position_count?: InputMaybe<Scalars["bigint"]["input"]>
+  total_volume?: InputMaybe<Scalars["numeric"]["input"]>
+  win_rate?: InputMaybe<Scalars["numeric"]["input"]>
+}
+
+/** aggregate sum on columns */
+export type Account_Pnl_Rank_Sum_Fields = {
+  __typename?: "account_pnl_rank_sum_fields"
+  percentile?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  total_accounts?: Maybe<Scalars["bigint"]["output"]>
+  total_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** aggregate var_pop on columns */
+export type Account_Pnl_Rank_Var_Pop_Fields = {
+  __typename?: "account_pnl_rank_var_pop_fields"
+  percentile?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  total_accounts?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate var_samp on columns */
+export type Account_Pnl_Rank_Var_Samp_Fields = {
+  __typename?: "account_pnl_rank_var_samp_fields"
+  percentile?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  total_accounts?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate variance on columns */
+export type Account_Pnl_Rank_Variance_Fields = {
+  __typename?: "account_pnl_rank_variance_fields"
+  percentile?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  total_accounts?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+}
+
 /** Boolean expression to compare columns of type "account_type". All fields are combined with logical 'AND'. */
 export type Account_Type_Comparison_Exp = {
   _eq?: InputMaybe<Scalars["account_type"]["input"]>
@@ -2932,6 +3194,41 @@ export type Following_Args = {
   address?: InputMaybe<Scalars["String"]["input"]>
 }
 
+export type Get_Account_Pnl_Rank_Args = {
+  p_account_id?: InputMaybe<Scalars["String"]["input"]>
+  p_sort_by?: InputMaybe<Scalars["String"]["input"]>
+  p_term_id?: InputMaybe<Scalars["String"]["input"]>
+  p_time_filter?: InputMaybe<Scalars["String"]["input"]>
+}
+
+export type Get_Pnl_Leaderboard_Args = {
+  p_end_time?: InputMaybe<Scalars["timestamptz"]["input"]>
+  p_exclude_protocol_accounts?: InputMaybe<Scalars["Boolean"]["input"]>
+  p_limit?: InputMaybe<Scalars["Int"]["input"]>
+  p_min_positions?: InputMaybe<Scalars["Int"]["input"]>
+  p_min_volume?: InputMaybe<Scalars["numeric"]["input"]>
+  p_offset?: InputMaybe<Scalars["Int"]["input"]>
+  p_sort_by?: InputMaybe<Scalars["String"]["input"]>
+  p_sort_order?: InputMaybe<Scalars["String"]["input"]>
+  p_start_time?: InputMaybe<Scalars["timestamptz"]["input"]>
+  p_term_id?: InputMaybe<Scalars["String"]["input"]>
+  p_time_filter?: InputMaybe<Scalars["String"]["input"]>
+}
+
+export type Get_Pnl_Leaderboard_Stats_Args = {
+  p_term_id?: InputMaybe<Scalars["String"]["input"]>
+  p_time_filter?: InputMaybe<Scalars["String"]["input"]>
+}
+
+export type Get_Vault_Leaderboard_Args = {
+  p_curve_id?: InputMaybe<Scalars["numeric"]["input"]>
+  p_limit?: InputMaybe<Scalars["Int"]["input"]>
+  p_offset?: InputMaybe<Scalars["Int"]["input"]>
+  p_sort_by?: InputMaybe<Scalars["String"]["input"]>
+  p_sort_order?: InputMaybe<Scalars["String"]["input"]>
+  p_term_id?: InputMaybe<Scalars["String"]["input"]>
+}
+
 /** columns and relationships of "json_object" */
 export type Json_Objects = {
   __typename?: "json_objects"
@@ -3355,6 +3652,680 @@ export type Persons_Stream_Cursor_Value_Input = {
   image?: InputMaybe<Scalars["String"]["input"]>
   name?: InputMaybe<Scalars["String"]["input"]>
   url?: InputMaybe<Scalars["String"]["input"]>
+}
+
+/** columns and relationships of "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry = {
+  __typename?: "pnl_leaderboard_entry"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  active_position_count?: Maybe<Scalars["bigint"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value?: Maybe<Scalars["numeric"]["output"]>
+  first_position_at?: Maybe<Scalars["timestamptz"]["output"]>
+  last_activity_at?: Maybe<Scalars["timestamptz"]["output"]>
+  losing_positions?: Maybe<Scalars["bigint"]["output"]>
+  pnl_change?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  realized_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_redemptions?: Maybe<Scalars["numeric"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+  winning_positions?: Maybe<Scalars["bigint"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["numeric"]["output"]>
+}
+
+export type Pnl_Leaderboard_Entry_Aggregate = {
+  __typename?: "pnl_leaderboard_entry_aggregate"
+  aggregate?: Maybe<Pnl_Leaderboard_Entry_Aggregate_Fields>
+  nodes: Array<Pnl_Leaderboard_Entry>
+}
+
+/** aggregate fields of "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry_Aggregate_Fields = {
+  __typename?: "pnl_leaderboard_entry_aggregate_fields"
+  avg?: Maybe<Pnl_Leaderboard_Entry_Avg_Fields>
+  count: Scalars["Int"]["output"]
+  max?: Maybe<Pnl_Leaderboard_Entry_Max_Fields>
+  min?: Maybe<Pnl_Leaderboard_Entry_Min_Fields>
+  stddev?: Maybe<Pnl_Leaderboard_Entry_Stddev_Fields>
+  stddev_pop?: Maybe<Pnl_Leaderboard_Entry_Stddev_Pop_Fields>
+  stddev_samp?: Maybe<Pnl_Leaderboard_Entry_Stddev_Samp_Fields>
+  sum?: Maybe<Pnl_Leaderboard_Entry_Sum_Fields>
+  var_pop?: Maybe<Pnl_Leaderboard_Entry_Var_Pop_Fields>
+  var_samp?: Maybe<Pnl_Leaderboard_Entry_Var_Samp_Fields>
+  variance?: Maybe<Pnl_Leaderboard_Entry_Variance_Fields>
+}
+
+/** aggregate fields of "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  distinct?: InputMaybe<Scalars["Boolean"]["input"]>
+}
+
+/** aggregate avg on columns */
+export type Pnl_Leaderboard_Entry_Avg_Fields = {
+  __typename?: "pnl_leaderboard_entry_avg_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_deposits?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Boolean expression to filter rows from the table "pnl_leaderboard_entry". All fields are combined with a logical 'AND'. */
+export type Pnl_Leaderboard_Entry_Bool_Exp = {
+  _and?: InputMaybe<Array<Pnl_Leaderboard_Entry_Bool_Exp>>
+  _not?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+  _or?: InputMaybe<Array<Pnl_Leaderboard_Entry_Bool_Exp>>
+  account_id?: InputMaybe<String_Comparison_Exp>
+  account_image?: InputMaybe<String_Comparison_Exp>
+  account_label?: InputMaybe<String_Comparison_Exp>
+  active_position_count?: InputMaybe<Bigint_Comparison_Exp>
+  best_trade_pnl?: InputMaybe<Numeric_Comparison_Exp>
+  current_equity_value?: InputMaybe<Numeric_Comparison_Exp>
+  first_position_at?: InputMaybe<Timestamptz_Comparison_Exp>
+  last_activity_at?: InputMaybe<Timestamptz_Comparison_Exp>
+  losing_positions?: InputMaybe<Bigint_Comparison_Exp>
+  pnl_change?: InputMaybe<Numeric_Comparison_Exp>
+  pnl_pct?: InputMaybe<Numeric_Comparison_Exp>
+  rank?: InputMaybe<Bigint_Comparison_Exp>
+  realized_pnl?: InputMaybe<Numeric_Comparison_Exp>
+  total_deposits?: InputMaybe<Numeric_Comparison_Exp>
+  total_pnl?: InputMaybe<Numeric_Comparison_Exp>
+  total_position_count?: InputMaybe<Bigint_Comparison_Exp>
+  total_redemptions?: InputMaybe<Numeric_Comparison_Exp>
+  total_volume?: InputMaybe<Numeric_Comparison_Exp>
+  unrealized_pnl?: InputMaybe<Numeric_Comparison_Exp>
+  win_rate?: InputMaybe<Numeric_Comparison_Exp>
+  winning_positions?: InputMaybe<Bigint_Comparison_Exp>
+  worst_trade_pnl?: InputMaybe<Numeric_Comparison_Exp>
+}
+
+/** aggregate max on columns */
+export type Pnl_Leaderboard_Entry_Max_Fields = {
+  __typename?: "pnl_leaderboard_entry_max_fields"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  active_position_count?: Maybe<Scalars["bigint"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value?: Maybe<Scalars["numeric"]["output"]>
+  first_position_at?: Maybe<Scalars["timestamptz"]["output"]>
+  last_activity_at?: Maybe<Scalars["timestamptz"]["output"]>
+  losing_positions?: Maybe<Scalars["bigint"]["output"]>
+  pnl_change?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  realized_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_redemptions?: Maybe<Scalars["numeric"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+  winning_positions?: Maybe<Scalars["bigint"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** aggregate min on columns */
+export type Pnl_Leaderboard_Entry_Min_Fields = {
+  __typename?: "pnl_leaderboard_entry_min_fields"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  active_position_count?: Maybe<Scalars["bigint"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value?: Maybe<Scalars["numeric"]["output"]>
+  first_position_at?: Maybe<Scalars["timestamptz"]["output"]>
+  last_activity_at?: Maybe<Scalars["timestamptz"]["output"]>
+  losing_positions?: Maybe<Scalars["bigint"]["output"]>
+  pnl_change?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  realized_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_redemptions?: Maybe<Scalars["numeric"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+  winning_positions?: Maybe<Scalars["bigint"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** Ordering options when selecting data from "pnl_leaderboard_entry". */
+export type Pnl_Leaderboard_Entry_Order_By = {
+  account_id?: InputMaybe<Order_By>
+  account_image?: InputMaybe<Order_By>
+  account_label?: InputMaybe<Order_By>
+  active_position_count?: InputMaybe<Order_By>
+  best_trade_pnl?: InputMaybe<Order_By>
+  current_equity_value?: InputMaybe<Order_By>
+  first_position_at?: InputMaybe<Order_By>
+  last_activity_at?: InputMaybe<Order_By>
+  losing_positions?: InputMaybe<Order_By>
+  pnl_change?: InputMaybe<Order_By>
+  pnl_pct?: InputMaybe<Order_By>
+  rank?: InputMaybe<Order_By>
+  realized_pnl?: InputMaybe<Order_By>
+  total_deposits?: InputMaybe<Order_By>
+  total_pnl?: InputMaybe<Order_By>
+  total_position_count?: InputMaybe<Order_By>
+  total_redemptions?: InputMaybe<Order_By>
+  total_volume?: InputMaybe<Order_By>
+  unrealized_pnl?: InputMaybe<Order_By>
+  win_rate?: InputMaybe<Order_By>
+  winning_positions?: InputMaybe<Order_By>
+  worst_trade_pnl?: InputMaybe<Order_By>
+}
+
+/** select columns of table "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry_Select_Column =
+  /** column name */
+  | "account_id"
+  /** column name */
+  | "account_image"
+  /** column name */
+  | "account_label"
+  /** column name */
+  | "active_position_count"
+  /** column name */
+  | "best_trade_pnl"
+  /** column name */
+  | "current_equity_value"
+  /** column name */
+  | "first_position_at"
+  /** column name */
+  | "last_activity_at"
+  /** column name */
+  | "losing_positions"
+  /** column name */
+  | "pnl_change"
+  /** column name */
+  | "pnl_pct"
+  /** column name */
+  | "rank"
+  /** column name */
+  | "realized_pnl"
+  /** column name */
+  | "total_deposits"
+  /** column name */
+  | "total_pnl"
+  /** column name */
+  | "total_position_count"
+  /** column name */
+  | "total_redemptions"
+  /** column name */
+  | "total_volume"
+  /** column name */
+  | "unrealized_pnl"
+  /** column name */
+  | "win_rate"
+  /** column name */
+  | "winning_positions"
+  /** column name */
+  | "worst_trade_pnl"
+
+/** aggregate stddev on columns */
+export type Pnl_Leaderboard_Entry_Stddev_Fields = {
+  __typename?: "pnl_leaderboard_entry_stddev_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_deposits?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_pop on columns */
+export type Pnl_Leaderboard_Entry_Stddev_Pop_Fields = {
+  __typename?: "pnl_leaderboard_entry_stddev_pop_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_deposits?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_samp on columns */
+export type Pnl_Leaderboard_Entry_Stddev_Samp_Fields = {
+  __typename?: "pnl_leaderboard_entry_stddev_samp_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_deposits?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Streaming cursor of the table "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Pnl_Leaderboard_Entry_Stream_Cursor_Value_Input
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>
+}
+
+/** Initial value of the column from where the streaming should start */
+export type Pnl_Leaderboard_Entry_Stream_Cursor_Value_Input = {
+  account_id?: InputMaybe<Scalars["String"]["input"]>
+  account_image?: InputMaybe<Scalars["String"]["input"]>
+  account_label?: InputMaybe<Scalars["String"]["input"]>
+  active_position_count?: InputMaybe<Scalars["bigint"]["input"]>
+  best_trade_pnl?: InputMaybe<Scalars["numeric"]["input"]>
+  current_equity_value?: InputMaybe<Scalars["numeric"]["input"]>
+  first_position_at?: InputMaybe<Scalars["timestamptz"]["input"]>
+  last_activity_at?: InputMaybe<Scalars["timestamptz"]["input"]>
+  losing_positions?: InputMaybe<Scalars["bigint"]["input"]>
+  pnl_change?: InputMaybe<Scalars["numeric"]["input"]>
+  pnl_pct?: InputMaybe<Scalars["numeric"]["input"]>
+  rank?: InputMaybe<Scalars["bigint"]["input"]>
+  realized_pnl?: InputMaybe<Scalars["numeric"]["input"]>
+  total_deposits?: InputMaybe<Scalars["numeric"]["input"]>
+  total_pnl?: InputMaybe<Scalars["numeric"]["input"]>
+  total_position_count?: InputMaybe<Scalars["bigint"]["input"]>
+  total_redemptions?: InputMaybe<Scalars["numeric"]["input"]>
+  total_volume?: InputMaybe<Scalars["numeric"]["input"]>
+  unrealized_pnl?: InputMaybe<Scalars["numeric"]["input"]>
+  win_rate?: InputMaybe<Scalars["numeric"]["input"]>
+  winning_positions?: InputMaybe<Scalars["bigint"]["input"]>
+  worst_trade_pnl?: InputMaybe<Scalars["numeric"]["input"]>
+}
+
+/** aggregate sum on columns */
+export type Pnl_Leaderboard_Entry_Sum_Fields = {
+  __typename?: "pnl_leaderboard_entry_sum_fields"
+  active_position_count?: Maybe<Scalars["bigint"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value?: Maybe<Scalars["numeric"]["output"]>
+  losing_positions?: Maybe<Scalars["bigint"]["output"]>
+  pnl_change?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  realized_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_redemptions?: Maybe<Scalars["numeric"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+  winning_positions?: Maybe<Scalars["bigint"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** aggregate var_pop on columns */
+export type Pnl_Leaderboard_Entry_Var_Pop_Fields = {
+  __typename?: "pnl_leaderboard_entry_var_pop_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_deposits?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate var_samp on columns */
+export type Pnl_Leaderboard_Entry_Var_Samp_Fields = {
+  __typename?: "pnl_leaderboard_entry_var_samp_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_deposits?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate variance on columns */
+export type Pnl_Leaderboard_Entry_Variance_Fields = {
+  __typename?: "pnl_leaderboard_entry_variance_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_deposits?: Maybe<Scalars["Float"]["output"]>
+  total_pnl?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** columns and relationships of "pnl_leaderboard_stats" */
+export type Pnl_Leaderboard_Stats = {
+  __typename?: "pnl_leaderboard_stats"
+  avg_pnl?: Maybe<Scalars["numeric"]["output"]>
+  avg_volume?: Maybe<Scalars["numeric"]["output"]>
+  median_pnl?: Maybe<Scalars["numeric"]["output"]>
+  profitable_pct?: Maybe<Scalars["numeric"]["output"]>
+  profitable_traders?: Maybe<Scalars["bigint"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["numeric"]["output"]>
+  total_traders?: Maybe<Scalars["bigint"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["bigint"]["output"]>
+}
+
+export type Pnl_Leaderboard_Stats_Aggregate = {
+  __typename?: "pnl_leaderboard_stats_aggregate"
+  aggregate?: Maybe<Pnl_Leaderboard_Stats_Aggregate_Fields>
+  nodes: Array<Pnl_Leaderboard_Stats>
+}
+
+/** aggregate fields of "pnl_leaderboard_stats" */
+export type Pnl_Leaderboard_Stats_Aggregate_Fields = {
+  __typename?: "pnl_leaderboard_stats_aggregate_fields"
+  avg?: Maybe<Pnl_Leaderboard_Stats_Avg_Fields>
+  count: Scalars["Int"]["output"]
+  max?: Maybe<Pnl_Leaderboard_Stats_Max_Fields>
+  min?: Maybe<Pnl_Leaderboard_Stats_Min_Fields>
+  stddev?: Maybe<Pnl_Leaderboard_Stats_Stddev_Fields>
+  stddev_pop?: Maybe<Pnl_Leaderboard_Stats_Stddev_Pop_Fields>
+  stddev_samp?: Maybe<Pnl_Leaderboard_Stats_Stddev_Samp_Fields>
+  sum?: Maybe<Pnl_Leaderboard_Stats_Sum_Fields>
+  var_pop?: Maybe<Pnl_Leaderboard_Stats_Var_Pop_Fields>
+  var_samp?: Maybe<Pnl_Leaderboard_Stats_Var_Samp_Fields>
+  variance?: Maybe<Pnl_Leaderboard_Stats_Variance_Fields>
+}
+
+/** aggregate fields of "pnl_leaderboard_stats" */
+export type Pnl_Leaderboard_Stats_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  distinct?: InputMaybe<Scalars["Boolean"]["input"]>
+}
+
+/** aggregate avg on columns */
+export type Pnl_Leaderboard_Stats_Avg_Fields = {
+  __typename?: "pnl_leaderboard_stats_avg_fields"
+  avg_pnl?: Maybe<Scalars["Float"]["output"]>
+  avg_volume?: Maybe<Scalars["Float"]["output"]>
+  median_pnl?: Maybe<Scalars["Float"]["output"]>
+  profitable_pct?: Maybe<Scalars["Float"]["output"]>
+  profitable_traders?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["Float"]["output"]>
+  total_traders?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Boolean expression to filter rows from the table "pnl_leaderboard_stats". All fields are combined with a logical 'AND'. */
+export type Pnl_Leaderboard_Stats_Bool_Exp = {
+  _and?: InputMaybe<Array<Pnl_Leaderboard_Stats_Bool_Exp>>
+  _not?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+  _or?: InputMaybe<Array<Pnl_Leaderboard_Stats_Bool_Exp>>
+  avg_pnl?: InputMaybe<Numeric_Comparison_Exp>
+  avg_volume?: InputMaybe<Numeric_Comparison_Exp>
+  median_pnl?: InputMaybe<Numeric_Comparison_Exp>
+  profitable_pct?: InputMaybe<Numeric_Comparison_Exp>
+  profitable_traders?: InputMaybe<Bigint_Comparison_Exp>
+  total_pnl_sum?: InputMaybe<Numeric_Comparison_Exp>
+  total_traders?: InputMaybe<Bigint_Comparison_Exp>
+  total_volume?: InputMaybe<Numeric_Comparison_Exp>
+  unprofitable_traders?: InputMaybe<Bigint_Comparison_Exp>
+}
+
+/** aggregate max on columns */
+export type Pnl_Leaderboard_Stats_Max_Fields = {
+  __typename?: "pnl_leaderboard_stats_max_fields"
+  avg_pnl?: Maybe<Scalars["numeric"]["output"]>
+  avg_volume?: Maybe<Scalars["numeric"]["output"]>
+  median_pnl?: Maybe<Scalars["numeric"]["output"]>
+  profitable_pct?: Maybe<Scalars["numeric"]["output"]>
+  profitable_traders?: Maybe<Scalars["bigint"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["numeric"]["output"]>
+  total_traders?: Maybe<Scalars["bigint"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["bigint"]["output"]>
+}
+
+/** aggregate min on columns */
+export type Pnl_Leaderboard_Stats_Min_Fields = {
+  __typename?: "pnl_leaderboard_stats_min_fields"
+  avg_pnl?: Maybe<Scalars["numeric"]["output"]>
+  avg_volume?: Maybe<Scalars["numeric"]["output"]>
+  median_pnl?: Maybe<Scalars["numeric"]["output"]>
+  profitable_pct?: Maybe<Scalars["numeric"]["output"]>
+  profitable_traders?: Maybe<Scalars["bigint"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["numeric"]["output"]>
+  total_traders?: Maybe<Scalars["bigint"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["bigint"]["output"]>
+}
+
+/** Ordering options when selecting data from "pnl_leaderboard_stats". */
+export type Pnl_Leaderboard_Stats_Order_By = {
+  avg_pnl?: InputMaybe<Order_By>
+  avg_volume?: InputMaybe<Order_By>
+  median_pnl?: InputMaybe<Order_By>
+  profitable_pct?: InputMaybe<Order_By>
+  profitable_traders?: InputMaybe<Order_By>
+  total_pnl_sum?: InputMaybe<Order_By>
+  total_traders?: InputMaybe<Order_By>
+  total_volume?: InputMaybe<Order_By>
+  unprofitable_traders?: InputMaybe<Order_By>
+}
+
+/** select columns of table "pnl_leaderboard_stats" */
+export type Pnl_Leaderboard_Stats_Select_Column =
+  /** column name */
+  | "avg_pnl"
+  /** column name */
+  | "avg_volume"
+  /** column name */
+  | "median_pnl"
+  /** column name */
+  | "profitable_pct"
+  /** column name */
+  | "profitable_traders"
+  /** column name */
+  | "total_pnl_sum"
+  /** column name */
+  | "total_traders"
+  /** column name */
+  | "total_volume"
+  /** column name */
+  | "unprofitable_traders"
+
+/** aggregate stddev on columns */
+export type Pnl_Leaderboard_Stats_Stddev_Fields = {
+  __typename?: "pnl_leaderboard_stats_stddev_fields"
+  avg_pnl?: Maybe<Scalars["Float"]["output"]>
+  avg_volume?: Maybe<Scalars["Float"]["output"]>
+  median_pnl?: Maybe<Scalars["Float"]["output"]>
+  profitable_pct?: Maybe<Scalars["Float"]["output"]>
+  profitable_traders?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["Float"]["output"]>
+  total_traders?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_pop on columns */
+export type Pnl_Leaderboard_Stats_Stddev_Pop_Fields = {
+  __typename?: "pnl_leaderboard_stats_stddev_pop_fields"
+  avg_pnl?: Maybe<Scalars["Float"]["output"]>
+  avg_volume?: Maybe<Scalars["Float"]["output"]>
+  median_pnl?: Maybe<Scalars["Float"]["output"]>
+  profitable_pct?: Maybe<Scalars["Float"]["output"]>
+  profitable_traders?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["Float"]["output"]>
+  total_traders?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_samp on columns */
+export type Pnl_Leaderboard_Stats_Stddev_Samp_Fields = {
+  __typename?: "pnl_leaderboard_stats_stddev_samp_fields"
+  avg_pnl?: Maybe<Scalars["Float"]["output"]>
+  avg_volume?: Maybe<Scalars["Float"]["output"]>
+  median_pnl?: Maybe<Scalars["Float"]["output"]>
+  profitable_pct?: Maybe<Scalars["Float"]["output"]>
+  profitable_traders?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["Float"]["output"]>
+  total_traders?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Streaming cursor of the table "pnl_leaderboard_stats" */
+export type Pnl_Leaderboard_Stats_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Pnl_Leaderboard_Stats_Stream_Cursor_Value_Input
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>
+}
+
+/** Initial value of the column from where the streaming should start */
+export type Pnl_Leaderboard_Stats_Stream_Cursor_Value_Input = {
+  avg_pnl?: InputMaybe<Scalars["numeric"]["input"]>
+  avg_volume?: InputMaybe<Scalars["numeric"]["input"]>
+  median_pnl?: InputMaybe<Scalars["numeric"]["input"]>
+  profitable_pct?: InputMaybe<Scalars["numeric"]["input"]>
+  profitable_traders?: InputMaybe<Scalars["bigint"]["input"]>
+  total_pnl_sum?: InputMaybe<Scalars["numeric"]["input"]>
+  total_traders?: InputMaybe<Scalars["bigint"]["input"]>
+  total_volume?: InputMaybe<Scalars["numeric"]["input"]>
+  unprofitable_traders?: InputMaybe<Scalars["bigint"]["input"]>
+}
+
+/** aggregate sum on columns */
+export type Pnl_Leaderboard_Stats_Sum_Fields = {
+  __typename?: "pnl_leaderboard_stats_sum_fields"
+  avg_pnl?: Maybe<Scalars["numeric"]["output"]>
+  avg_volume?: Maybe<Scalars["numeric"]["output"]>
+  median_pnl?: Maybe<Scalars["numeric"]["output"]>
+  profitable_pct?: Maybe<Scalars["numeric"]["output"]>
+  profitable_traders?: Maybe<Scalars["bigint"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["numeric"]["output"]>
+  total_traders?: Maybe<Scalars["bigint"]["output"]>
+  total_volume?: Maybe<Scalars["numeric"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["bigint"]["output"]>
+}
+
+/** aggregate var_pop on columns */
+export type Pnl_Leaderboard_Stats_Var_Pop_Fields = {
+  __typename?: "pnl_leaderboard_stats_var_pop_fields"
+  avg_pnl?: Maybe<Scalars["Float"]["output"]>
+  avg_volume?: Maybe<Scalars["Float"]["output"]>
+  median_pnl?: Maybe<Scalars["Float"]["output"]>
+  profitable_pct?: Maybe<Scalars["Float"]["output"]>
+  profitable_traders?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["Float"]["output"]>
+  total_traders?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate var_samp on columns */
+export type Pnl_Leaderboard_Stats_Var_Samp_Fields = {
+  __typename?: "pnl_leaderboard_stats_var_samp_fields"
+  avg_pnl?: Maybe<Scalars["Float"]["output"]>
+  avg_volume?: Maybe<Scalars["Float"]["output"]>
+  median_pnl?: Maybe<Scalars["Float"]["output"]>
+  profitable_pct?: Maybe<Scalars["Float"]["output"]>
+  profitable_traders?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["Float"]["output"]>
+  total_traders?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate variance on columns */
+export type Pnl_Leaderboard_Stats_Variance_Fields = {
+  __typename?: "pnl_leaderboard_stats_variance_fields"
+  avg_pnl?: Maybe<Scalars["Float"]["output"]>
+  avg_volume?: Maybe<Scalars["Float"]["output"]>
+  median_pnl?: Maybe<Scalars["Float"]["output"]>
+  profitable_pct?: Maybe<Scalars["Float"]["output"]>
+  profitable_traders?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_sum?: Maybe<Scalars["Float"]["output"]>
+  total_traders?: Maybe<Scalars["Float"]["output"]>
+  total_volume?: Maybe<Scalars["Float"]["output"]>
+  unprofitable_traders?: Maybe<Scalars["Float"]["output"]>
 }
 
 /** columns and relationships of "position_change_daily" */
@@ -4268,6 +5239,8 @@ export type Positions_With_Value = {
   curve_id?: Maybe<Scalars["numeric"]["output"]>
   id?: Maybe<Scalars["String"]["output"]>
   log_index?: Maybe<Scalars["bigint"]["output"]>
+  pnl?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
   shares?: Maybe<Scalars["numeric"]["output"]>
   /** An object relationship */
   term?: Maybe<Terms>
@@ -4317,6 +5290,8 @@ export type Positions_With_Value_Avg_Fields = {
   block_number?: Maybe<Scalars["Float"]["output"]>
   curve_id?: Maybe<Scalars["Float"]["output"]>
   log_index?: Maybe<Scalars["Float"]["output"]>
+  pnl?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -4336,6 +5311,8 @@ export type Positions_With_Value_Bool_Exp = {
   curve_id?: InputMaybe<Numeric_Comparison_Exp>
   id?: InputMaybe<String_Comparison_Exp>
   log_index?: InputMaybe<Bigint_Comparison_Exp>
+  pnl?: InputMaybe<Numeric_Comparison_Exp>
+  pnl_pct?: InputMaybe<Numeric_Comparison_Exp>
   shares?: InputMaybe<Numeric_Comparison_Exp>
   term?: InputMaybe<Terms_Bool_Exp>
   term_id?: InputMaybe<String_Comparison_Exp>
@@ -4357,6 +5334,8 @@ export type Positions_With_Value_Max_Fields = {
   curve_id?: Maybe<Scalars["numeric"]["output"]>
   id?: Maybe<Scalars["String"]["output"]>
   log_index?: Maybe<Scalars["bigint"]["output"]>
+  pnl?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
   shares?: Maybe<Scalars["numeric"]["output"]>
   term_id?: Maybe<Scalars["String"]["output"]>
   theoretical_value?: Maybe<Scalars["numeric"]["output"]>
@@ -4376,6 +5355,8 @@ export type Positions_With_Value_Min_Fields = {
   curve_id?: Maybe<Scalars["numeric"]["output"]>
   id?: Maybe<Scalars["String"]["output"]>
   log_index?: Maybe<Scalars["bigint"]["output"]>
+  pnl?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
   shares?: Maybe<Scalars["numeric"]["output"]>
   term_id?: Maybe<Scalars["String"]["output"]>
   theoretical_value?: Maybe<Scalars["numeric"]["output"]>
@@ -4395,6 +5376,8 @@ export type Positions_With_Value_Order_By = {
   curve_id?: InputMaybe<Order_By>
   id?: InputMaybe<Order_By>
   log_index?: InputMaybe<Order_By>
+  pnl?: InputMaybe<Order_By>
+  pnl_pct?: InputMaybe<Order_By>
   shares?: InputMaybe<Order_By>
   term?: InputMaybe<Terms_Order_By>
   term_id?: InputMaybe<Order_By>
@@ -4422,6 +5405,10 @@ export type Positions_With_Value_Select_Column =
   /** column name */
   | "log_index"
   /** column name */
+  | "pnl"
+  /** column name */
+  | "pnl_pct"
+  /** column name */
   | "shares"
   /** column name */
   | "term_id"
@@ -4444,6 +5431,8 @@ export type Positions_With_Value_Stddev_Fields = {
   block_number?: Maybe<Scalars["Float"]["output"]>
   curve_id?: Maybe<Scalars["Float"]["output"]>
   log_index?: Maybe<Scalars["Float"]["output"]>
+  pnl?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -4457,6 +5446,8 @@ export type Positions_With_Value_Stddev_Pop_Fields = {
   block_number?: Maybe<Scalars["Float"]["output"]>
   curve_id?: Maybe<Scalars["Float"]["output"]>
   log_index?: Maybe<Scalars["Float"]["output"]>
+  pnl?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -4470,6 +5461,8 @@ export type Positions_With_Value_Stddev_Samp_Fields = {
   block_number?: Maybe<Scalars["Float"]["output"]>
   curve_id?: Maybe<Scalars["Float"]["output"]>
   log_index?: Maybe<Scalars["Float"]["output"]>
+  pnl?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -4493,6 +5486,8 @@ export type Positions_With_Value_Stream_Cursor_Value_Input = {
   curve_id?: InputMaybe<Scalars["numeric"]["input"]>
   id?: InputMaybe<Scalars["String"]["input"]>
   log_index?: InputMaybe<Scalars["bigint"]["input"]>
+  pnl?: InputMaybe<Scalars["numeric"]["input"]>
+  pnl_pct?: InputMaybe<Scalars["numeric"]["input"]>
   shares?: InputMaybe<Scalars["numeric"]["input"]>
   term_id?: InputMaybe<Scalars["String"]["input"]>
   theoretical_value?: InputMaybe<Scalars["numeric"]["input"]>
@@ -4511,6 +5506,8 @@ export type Positions_With_Value_Sum_Fields = {
   block_number?: Maybe<Scalars["bigint"]["output"]>
   curve_id?: Maybe<Scalars["numeric"]["output"]>
   log_index?: Maybe<Scalars["bigint"]["output"]>
+  pnl?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
   shares?: Maybe<Scalars["numeric"]["output"]>
   theoretical_value?: Maybe<Scalars["numeric"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["numeric"]["output"]>
@@ -4524,6 +5521,8 @@ export type Positions_With_Value_Var_Pop_Fields = {
   block_number?: Maybe<Scalars["Float"]["output"]>
   curve_id?: Maybe<Scalars["Float"]["output"]>
   log_index?: Maybe<Scalars["Float"]["output"]>
+  pnl?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -4537,6 +5536,8 @@ export type Positions_With_Value_Var_Samp_Fields = {
   block_number?: Maybe<Scalars["Float"]["output"]>
   curve_id?: Maybe<Scalars["Float"]["output"]>
   log_index?: Maybe<Scalars["Float"]["output"]>
+  pnl?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -4550,6 +5551,8 @@ export type Positions_With_Value_Variance_Fields = {
   block_number?: Maybe<Scalars["Float"]["output"]>
   curve_id?: Maybe<Scalars["Float"]["output"]>
   log_index?: Maybe<Scalars["Float"]["output"]>
+  pnl?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -4868,6 +5871,10 @@ export type Query_Root = {
   __typename?: "query_root"
   /** fetch data from the table: "account" using primary key columns */
   account?: Maybe<Accounts>
+  /** fetch data from the table: "account_pnl_rank" */
+  account_pnl_rank: Array<Account_Pnl_Rank>
+  /** fetch aggregated fields from the table: "account_pnl_rank" */
+  account_pnl_rank_aggregate: Account_Pnl_Rank_Aggregate
   /** An array relationship */
   accounts: Array<Accounts>
   /** An aggregate relationship */
@@ -4948,6 +5955,22 @@ export type Query_Root = {
   getChartSvg?: Maybe<ChartSvgOutput>
   /** Fetches position PnL chart data */
   getPositionPnlChart?: Maybe<PositionPnlChartOutput>
+  /** execute function "get_account_pnl_rank" which returns "account_pnl_rank" */
+  get_account_pnl_rank: Array<Account_Pnl_Rank>
+  /** execute function "get_account_pnl_rank" and query aggregates on result of table type "account_pnl_rank" */
+  get_account_pnl_rank_aggregate: Account_Pnl_Rank_Aggregate
+  /** execute function "get_pnl_leaderboard" which returns "pnl_leaderboard_entry" */
+  get_pnl_leaderboard: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_pnl_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_pnl_leaderboard_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** execute function "get_pnl_leaderboard_stats" which returns "pnl_leaderboard_stats" */
+  get_pnl_leaderboard_stats: Array<Pnl_Leaderboard_Stats>
+  /** execute function "get_pnl_leaderboard_stats" and query aggregates on result of table type "pnl_leaderboard_stats" */
+  get_pnl_leaderboard_stats_aggregate: Pnl_Leaderboard_Stats_Aggregate
+  /** execute function "get_vault_leaderboard" which returns "pnl_leaderboard_entry" */
+  get_vault_leaderboard: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_vault_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_vault_leaderboard_aggregate: Pnl_Leaderboard_Entry_Aggregate
   /** fetch data from the table: "json_object" using primary key columns */
   json_object?: Maybe<Json_Objects>
   /** fetch data from the table: "json_object" */
@@ -4966,6 +5989,14 @@ export type Query_Root = {
   persons: Array<Persons>
   /** fetch aggregated fields from the table: "person" */
   persons_aggregate: Persons_Aggregate
+  /** fetch data from the table: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry: Array<Pnl_Leaderboard_Entry>
+  /** fetch aggregated fields from the table: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** fetch data from the table: "pnl_leaderboard_stats" */
+  pnl_leaderboard_stats: Array<Pnl_Leaderboard_Stats>
+  /** fetch aggregated fields from the table: "pnl_leaderboard_stats" */
+  pnl_leaderboard_stats_aggregate: Pnl_Leaderboard_Stats_Aggregate
   /** fetch data from the table: "position" using primary key columns */
   position?: Maybe<Positions>
   /** fetch data from the table: "position_change_daily" */
@@ -5112,6 +6143,22 @@ export type Query_Root = {
 
 export type Query_RootAccountArgs = {
   id: Scalars["String"]["input"]
+}
+
+export type Query_RootAccount_Pnl_RankArgs = {
+  distinct_on?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Account_Pnl_Rank_Order_By>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
+}
+
+export type Query_RootAccount_Pnl_Rank_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Account_Pnl_Rank_Order_By>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
 }
 
 export type Query_RootAccountsArgs = {
@@ -5364,6 +6411,78 @@ export type Query_RootGetPositionPnlChartArgs = {
   input: GetPositionPnlChartInput
 }
 
+export type Query_RootGet_Account_Pnl_RankArgs = {
+  args: Get_Account_Pnl_Rank_Args
+  distinct_on?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Account_Pnl_Rank_Order_By>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
+}
+
+export type Query_RootGet_Account_Pnl_Rank_AggregateArgs = {
+  args: Get_Account_Pnl_Rank_Args
+  distinct_on?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Account_Pnl_Rank_Order_By>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
+}
+
+export type Query_RootGet_Pnl_LeaderboardArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Pnl_Leaderboard_AggregateArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Pnl_Leaderboard_StatsArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Stats_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Query_RootGet_Pnl_Leaderboard_Stats_AggregateArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Stats_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Query_RootGet_Vault_LeaderboardArgs = {
+  args: Get_Vault_Leaderboard_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Vault_Leaderboard_AggregateArgs = {
+  args: Get_Vault_Leaderboard_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
 export type Query_RootJson_ObjectArgs = {
   id: Scalars["String"]["input"]
 }
@@ -5422,6 +6541,38 @@ export type Query_RootPersons_AggregateArgs = {
   offset?: InputMaybe<Scalars["Int"]["input"]>
   order_by?: InputMaybe<Array<Persons_Order_By>>
   where?: InputMaybe<Persons_Bool_Exp>
+}
+
+export type Query_RootPnl_Leaderboard_EntryArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootPnl_Leaderboard_Entry_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootPnl_Leaderboard_StatsArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Query_RootPnl_Leaderboard_Stats_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
 }
 
 export type Query_RootPositionArgs = {
@@ -8798,6 +9949,12 @@ export type Subscription_Root = {
   __typename?: "subscription_root"
   /** fetch data from the table: "account" using primary key columns */
   account?: Maybe<Accounts>
+  /** fetch data from the table: "account_pnl_rank" */
+  account_pnl_rank: Array<Account_Pnl_Rank>
+  /** fetch aggregated fields from the table: "account_pnl_rank" */
+  account_pnl_rank_aggregate: Account_Pnl_Rank_Aggregate
+  /** fetch data from the table in a streaming manner: "account_pnl_rank" */
+  account_pnl_rank_stream: Array<Account_Pnl_Rank>
   /** An array relationship */
   accounts: Array<Accounts>
   /** An aggregate relationship */
@@ -8884,6 +10041,22 @@ export type Subscription_Root = {
   following: Array<Accounts>
   /** execute function "following" and query aggregates on result of table type "account" */
   following_aggregate: Accounts_Aggregate
+  /** execute function "get_account_pnl_rank" which returns "account_pnl_rank" */
+  get_account_pnl_rank: Array<Account_Pnl_Rank>
+  /** execute function "get_account_pnl_rank" and query aggregates on result of table type "account_pnl_rank" */
+  get_account_pnl_rank_aggregate: Account_Pnl_Rank_Aggregate
+  /** execute function "get_pnl_leaderboard" which returns "pnl_leaderboard_entry" */
+  get_pnl_leaderboard: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_pnl_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_pnl_leaderboard_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** execute function "get_pnl_leaderboard_stats" which returns "pnl_leaderboard_stats" */
+  get_pnl_leaderboard_stats: Array<Pnl_Leaderboard_Stats>
+  /** execute function "get_pnl_leaderboard_stats" and query aggregates on result of table type "pnl_leaderboard_stats" */
+  get_pnl_leaderboard_stats_aggregate: Pnl_Leaderboard_Stats_Aggregate
+  /** execute function "get_vault_leaderboard" which returns "pnl_leaderboard_entry" */
+  get_vault_leaderboard: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_vault_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_vault_leaderboard_aggregate: Pnl_Leaderboard_Entry_Aggregate
   /** fetch data from the table: "json_object" using primary key columns */
   json_object?: Maybe<Json_Objects>
   /** fetch data from the table: "json_object" */
@@ -8908,6 +10081,18 @@ export type Subscription_Root = {
   persons_aggregate: Persons_Aggregate
   /** fetch data from the table in a streaming manner: "person" */
   persons_stream: Array<Persons>
+  /** fetch data from the table: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry: Array<Pnl_Leaderboard_Entry>
+  /** fetch aggregated fields from the table: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** fetch data from the table in a streaming manner: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry_stream: Array<Pnl_Leaderboard_Entry>
+  /** fetch data from the table: "pnl_leaderboard_stats" */
+  pnl_leaderboard_stats: Array<Pnl_Leaderboard_Stats>
+  /** fetch aggregated fields from the table: "pnl_leaderboard_stats" */
+  pnl_leaderboard_stats_aggregate: Pnl_Leaderboard_Stats_Aggregate
+  /** fetch data from the table in a streaming manner: "pnl_leaderboard_stats" */
+  pnl_leaderboard_stats_stream: Array<Pnl_Leaderboard_Stats>
   /** fetch data from the table: "position" using primary key columns */
   position?: Maybe<Positions>
   /** fetch data from the table: "position_change_daily" */
@@ -9118,6 +10303,28 @@ export type Subscription_Root = {
 
 export type Subscription_RootAccountArgs = {
   id: Scalars["String"]["input"]
+}
+
+export type Subscription_RootAccount_Pnl_RankArgs = {
+  distinct_on?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Account_Pnl_Rank_Order_By>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
+}
+
+export type Subscription_RootAccount_Pnl_Rank_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Account_Pnl_Rank_Order_By>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
+}
+
+export type Subscription_RootAccount_Pnl_Rank_StreamArgs = {
+  batch_size: Scalars["Int"]["input"]
+  cursor: Array<InputMaybe<Account_Pnl_Rank_Stream_Cursor_Input>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
 }
 
 export type Subscription_RootAccountsArgs = {
@@ -9404,6 +10611,78 @@ export type Subscription_RootFollowing_AggregateArgs = {
   where?: InputMaybe<Accounts_Bool_Exp>
 }
 
+export type Subscription_RootGet_Account_Pnl_RankArgs = {
+  args: Get_Account_Pnl_Rank_Args
+  distinct_on?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Account_Pnl_Rank_Order_By>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
+}
+
+export type Subscription_RootGet_Account_Pnl_Rank_AggregateArgs = {
+  args: Get_Account_Pnl_Rank_Args
+  distinct_on?: InputMaybe<Array<Account_Pnl_Rank_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Account_Pnl_Rank_Order_By>>
+  where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
+}
+
+export type Subscription_RootGet_Pnl_LeaderboardArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Pnl_Leaderboard_AggregateArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Pnl_Leaderboard_StatsArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Stats_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Subscription_RootGet_Pnl_Leaderboard_Stats_AggregateArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Stats_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Subscription_RootGet_Vault_LeaderboardArgs = {
+  args: Get_Vault_Leaderboard_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Vault_Leaderboard_AggregateArgs = {
+  args: Get_Vault_Leaderboard_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
 export type Subscription_RootJson_ObjectArgs = {
   id: Scalars["String"]["input"]
 }
@@ -9480,6 +10759,50 @@ export type Subscription_RootPersons_StreamArgs = {
   batch_size: Scalars["Int"]["input"]
   cursor: Array<InputMaybe<Persons_Stream_Cursor_Input>>
   where?: InputMaybe<Persons_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_EntryArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_Entry_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_Entry_StreamArgs = {
+  batch_size: Scalars["Int"]["input"]
+  cursor: Array<InputMaybe<Pnl_Leaderboard_Entry_Stream_Cursor_Input>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_StatsArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_Stats_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_Stats_StreamArgs = {
+  batch_size: Scalars["Int"]["input"]
+  cursor: Array<InputMaybe<Pnl_Leaderboard_Stats_Stream_Cursor_Input>>
+  where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
 }
 
 export type Subscription_RootPositionArgs = {
@@ -16314,6 +17637,34 @@ export type FindAtomIdsQuery = {
   atoms: Array<{ __typename?: "atoms"; term_id: string; data?: string | null }>
 }
 
+export type GetTripleBondingCurveDataQueryVariables = Exact<{
+  tripleId: Scalars["String"]["input"]
+  curveId: Scalars["numeric"]["input"]
+  walletAddress: Scalars["String"]["input"]
+}>
+
+export type GetTripleBondingCurveDataQuery = {
+  __typename?: "query_root"
+  share_price_changes: Array<{
+    __typename?: "share_price_changes"
+    block_timestamp: any
+    share_price: any
+    total_assets: any
+  }>
+  vaults: Array<{
+    __typename?: "vaults"
+    current_share_price: any
+    total_shares: any
+    term?: { __typename?: "terms"; total_market_cap?: any | null } | null
+    positions: Array<{
+      __typename?: "positions"
+      shares: any
+      total_deposit_assets_after_total_fees: any
+      total_redeem_assets_for_receiver: any
+    }>
+  }>
+}
+
 export type GetTrustCircleAccountsQueryVariables = Exact<{
   subjectId: Scalars["String"]["input"]
   predicateId: Scalars["String"]["input"]
@@ -16431,6 +17782,171 @@ export type GetSofiaTrustedActivityQuery = {
         } | null
       } | null
     } | null
+  }>
+}
+
+export type UserIntentionTriplesQueryVariables = Exact<{
+  predicateLabels:
+    | Array<Scalars["String"]["input"]>
+    | Scalars["String"]["input"]
+  userAddress: Scalars["String"]["input"]
+  limit: Scalars["Int"]["input"]
+  offset: Scalars["Int"]["input"]
+}>
+
+export type UserIntentionTriplesQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    predicate?: { __typename?: "atoms"; label?: string | null } | null
+    object?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      created_at: any
+      shares: any
+    }>
+  }>
+}
+
+export type AllIntentionTriplesQueryVariables = Exact<{
+  predicateLabels:
+    | Array<Scalars["String"]["input"]>
+    | Scalars["String"]["input"]
+  limit: Scalars["Int"]["input"]
+  offset: Scalars["Int"]["input"]
+}>
+
+export type AllIntentionTriplesQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    predicate?: { __typename?: "atoms"; label?: string | null } | null
+    object?: { __typename?: "atoms"; term_id: string } | null
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      created_at: any
+    }>
+  }>
+}
+
+export type CertificationTriplesQueryVariables = Exact<{
+  predicateIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
+  hostnameLike: Scalars["String"]["input"]
+}>
+
+export type CertificationTriplesQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    predicate?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    object?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+      created_at: any
+    }>
+  }>
+}
+
+export type IntentionStatsQueryVariables = Exact<{
+  predicateIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
+  hostnameLike: Scalars["String"]["input"]
+}>
+
+export type IntentionStatsQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    predicate_id: string
+    predicate?: { __typename?: "atoms"; label?: string | null } | null
+    positions: Array<{ __typename?: "positions"; account_id: string }>
+  }>
+}
+
+export type GetUserIntentionPositionsQueryVariables = Exact<{
+  predicateIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
+  userAddress: Scalars["String"]["input"]
+}>
+
+export type GetUserIntentionPositionsQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    predicate?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    object?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+      created_at: any
+    }>
+    term?: {
+      __typename?: "terms"
+      vaults: Array<{
+        __typename?: "vaults"
+        curve_id: any
+        total_shares: any
+        position_count: number
+      }>
+    } | null
+  }>
+}
+
+export type UserAllCertificationsQueryVariables = Exact<{
+  predicateLabels:
+    | Array<Scalars["String"]["input"]>
+    | Scalars["String"]["input"]
+  userAddress: Scalars["String"]["input"]
+  limit: Scalars["Int"]["input"]
+  offset: Scalars["Int"]["input"]
+}>
+
+export type UserAllCertificationsQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    created_at: any
+    predicate?: { __typename?: "atoms"; label?: string | null } | null
+    object?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+      created_at: any
+    }>
   }>
 }
 
@@ -18720,6 +20236,106 @@ export type GetListDetailsSimplifiedQuery = {
   }>
 }
 
+export type AtomIdsByUrlQueryVariables = Exact<{
+  likeStr: Scalars["String"]["input"]
+}>
+
+export type AtomIdsByUrlQuery = {
+  __typename?: "query_root"
+  atoms: Array<{ __typename?: "atoms"; term_id: string }>
+}
+
+export type AtomsByTermIdsQueryVariables = Exact<{
+  atomIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
+}>
+
+export type AtomsByTermIdsQuery = {
+  __typename?: "query_root"
+  atoms: Array<{
+    __typename?: "atoms"
+    term_id: string
+    label?: string | null
+    type: any
+  }>
+}
+
+export type TriplesCountByAtomIdsQueryVariables = Exact<{
+  atomIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
+}>
+
+export type TriplesCountByAtomIdsQuery = {
+  __typename?: "query_root"
+  triples_aggregate: {
+    __typename?: "triples_aggregate"
+    aggregate?: {
+      __typename?: "triples_aggregate_fields"
+      count: number
+    } | null
+  }
+}
+
+export type TriplesByAtomIdsQueryVariables = Exact<{
+  atomIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
+}>
+
+export type TriplesByAtomIdsQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    subject?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    predicate?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    object?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    term?: {
+      __typename?: "terms"
+      vaults: Array<{
+        __typename?: "vaults"
+        curve_id: any
+        position_count: number
+        total_shares: any
+      }>
+    } | null
+  }>
+}
+
+export type TrustDistrustByPageQueryVariables = Exact<{
+  likeStr: Scalars["String"]["input"]
+}>
+
+export type TrustDistrustByPageQuery = {
+  __typename?: "query_root"
+  trustTriples: Array<{
+    __typename?: "triples"
+    term_id: string
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+    }>
+  }>
+  distrustTriples: Array<{
+    __typename?: "triples"
+    term_id: string
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+    }>
+  }>
+}
+
 export type GetFeeTransfersQueryVariables = Exact<{
   address: Scalars["String"]["input"]
   cutoff_timestamp?: InputMaybe<Scalars["timestamptz"]["input"]>
@@ -19717,6 +21333,77 @@ export type SearchPositionsQuery = {
       } | null
     } | null
   }>
+}
+
+export type GetQuestBadgesAndSocialLinksQueryVariables = Exact<{
+  subjectId: Scalars["String"]["input"]
+  hasTagPredicateId: Scalars["String"]["input"]
+  botVerifierId: Scalars["String"]["input"]
+}>
+
+export type GetQuestBadgesAndSocialLinksQuery = {
+  __typename?: "query_root"
+  badges: Array<{
+    __typename?: "triples"
+    term_id: string
+    object?: { __typename?: "atoms"; label?: string | null } | null
+  }>
+  socialLinks: Array<{
+    __typename?: "triples"
+    term_id: string
+    creator_id: string
+    predicate?: { __typename?: "atoms"; label?: string | null } | null
+    object?: { __typename?: "atoms"; label?: string | null } | null
+  }>
+}
+
+export type CheckSocialLinkQueryVariables = Exact<{
+  subjectId: Scalars["String"]["input"]
+  botVerifierId: Scalars["String"]["input"]
+  predicateLabel: Scalars["String"]["input"]
+}>
+
+export type CheckSocialLinkQuery = {
+  __typename?: "query_root"
+  triples: Array<{ __typename?: "triples"; term_id: string }>
+}
+
+export type CheckSocialLinksQueryVariables = Exact<{
+  subjectId: Scalars["String"]["input"]
+  botVerifierId: Scalars["String"]["input"]
+}>
+
+export type CheckSocialLinksQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    predicate?: { __typename?: "atoms"; label?: string | null } | null
+    object?: { __typename?: "atoms"; label?: string | null } | null
+  }>
+}
+
+export type GetUserSignalsQueryVariables = Exact<{
+  accountId: Scalars["String"]["input"]
+  subjectId: Scalars["String"]["input"]
+  limit: Scalars["Int"]["input"]
+  offset: Scalars["Int"]["input"]
+}>
+
+export type GetUserSignalsQuery = {
+  __typename?: "query_root"
+  triples: Array<{ __typename?: "terms"; id: string }>
+}
+
+export type GetFollowCountQueryVariables = Exact<{
+  accountId: Scalars["String"]["input"]
+  subjectId: Scalars["String"]["input"]
+  predicateId: Scalars["String"]["input"]
+}>
+
+export type GetFollowCountQuery = {
+  __typename?: "query_root"
+  triples: Array<{ __typename?: "triples"; term_id: string }>
 }
 
 export type GlobalSearchQueryVariables = Exact<{
@@ -25298,6 +26985,114 @@ useFindAtomIdsQuery.fetcher = (
     options
   )
 
+export const GetTripleBondingCurveDataDocument = `
+    query GetTripleBondingCurveData($tripleId: String!, $curveId: numeric!, $walletAddress: String!) {
+  share_price_changes(
+    order_by: {block_timestamp: asc}
+    where: {term_id: {_eq: $tripleId}, curve_id: {_eq: $curveId}}
+  ) {
+    block_timestamp
+    share_price
+    total_assets
+  }
+  vaults(where: {term_id: {_eq: $tripleId}, curve_id: {_eq: $curveId}}) {
+    term {
+      total_market_cap
+    }
+    current_share_price
+    total_shares
+    positions(where: {account_id: {_eq: $walletAddress}}) {
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+}
+    `
+
+export const useGetTripleBondingCurveDataQuery = <
+  TData = GetTripleBondingCurveDataQuery,
+  TError = unknown
+>(
+  variables: GetTripleBondingCurveDataQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetTripleBondingCurveDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetTripleBondingCurveDataQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetTripleBondingCurveDataQuery, TError, TData>({
+    queryKey: ["GetTripleBondingCurveData", variables],
+    queryFn: fetcher<
+      GetTripleBondingCurveDataQuery,
+      GetTripleBondingCurveDataQueryVariables
+    >(GetTripleBondingCurveDataDocument, variables),
+    ...options
+  })
+}
+
+useGetTripleBondingCurveDataQuery.document = GetTripleBondingCurveDataDocument
+
+useGetTripleBondingCurveDataQuery.getKey = (
+  variables: GetTripleBondingCurveDataQueryVariables
+) => ["GetTripleBondingCurveData", variables]
+
+export const useInfiniteGetTripleBondingCurveDataQuery = <
+  TData = InfiniteData<GetTripleBondingCurveDataQuery>,
+  TError = unknown
+>(
+  variables: GetTripleBondingCurveDataQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetTripleBondingCurveDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetTripleBondingCurveDataQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetTripleBondingCurveDataQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetTripleBondingCurveData.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            GetTripleBondingCurveDataQuery,
+            GetTripleBondingCurveDataQueryVariables
+          >(GetTripleBondingCurveDataDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetTripleBondingCurveDataQuery.getKey = (
+  variables: GetTripleBondingCurveDataQueryVariables
+) => ["GetTripleBondingCurveData.infinite", variables]
+
+useGetTripleBondingCurveDataQuery.fetcher = (
+  variables: GetTripleBondingCurveDataQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<
+    GetTripleBondingCurveDataQuery,
+    GetTripleBondingCurveDataQueryVariables
+  >(GetTripleBondingCurveDataDocument, variables, options)
+
 export const GetTrustCircleAccountsDocument = `
     query GetTrustCircleAccounts($subjectId: String!, $predicateId: String!, $walletAddress: String!) {
   triples(
@@ -25564,6 +27359,642 @@ useGetSofiaTrustedActivityQuery.fetcher = (
 ) =>
   fetcher<GetSofiaTrustedActivityQuery, GetSofiaTrustedActivityQueryVariables>(
     GetSofiaTrustedActivityDocument,
+    variables,
+    options
+  )
+
+export const UserIntentionTriplesDocument = `
+    query UserIntentionTriples($predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
+  triples(
+    where: {predicate: {label: {_in: $predicateLabels}}, positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    predicate {
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}) {
+      account_id
+      created_at
+      shares
+    }
+  }
+}
+    `
+
+export const useUserIntentionTriplesQuery = <
+  TData = UserIntentionTriplesQuery,
+  TError = unknown
+>(
+  variables: UserIntentionTriplesQueryVariables,
+  options?: Omit<
+    UseQueryOptions<UserIntentionTriplesQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      UserIntentionTriplesQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<UserIntentionTriplesQuery, TError, TData>({
+    queryKey: ["UserIntentionTriples", variables],
+    queryFn: fetcher<
+      UserIntentionTriplesQuery,
+      UserIntentionTriplesQueryVariables
+    >(UserIntentionTriplesDocument, variables),
+    ...options
+  })
+}
+
+useUserIntentionTriplesQuery.document = UserIntentionTriplesDocument
+
+useUserIntentionTriplesQuery.getKey = (
+  variables: UserIntentionTriplesQueryVariables
+) => ["UserIntentionTriples", variables]
+
+export const useInfiniteUserIntentionTriplesQuery = <
+  TData = InfiniteData<UserIntentionTriplesQuery>,
+  TError = unknown
+>(
+  variables: UserIntentionTriplesQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<UserIntentionTriplesQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      UserIntentionTriplesQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<UserIntentionTriplesQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "UserIntentionTriples.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            UserIntentionTriplesQuery,
+            UserIntentionTriplesQueryVariables
+          >(UserIntentionTriplesDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteUserIntentionTriplesQuery.getKey = (
+  variables: UserIntentionTriplesQueryVariables
+) => ["UserIntentionTriples.infinite", variables]
+
+useUserIntentionTriplesQuery.fetcher = (
+  variables: UserIntentionTriplesQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<UserIntentionTriplesQuery, UserIntentionTriplesQueryVariables>(
+    UserIntentionTriplesDocument,
+    variables,
+    options
+  )
+
+export const AllIntentionTriplesDocument = `
+    query AllIntentionTriples($predicateLabels: [String!]!, $limit: Int!, $offset: Int!) {
+  triples(
+    where: {predicate: {label: {_in: $predicateLabels}}, positions: {shares: {_gt: "0"}}}
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    predicate {
+      label
+    }
+    object {
+      term_id
+    }
+    positions(where: {shares: {_gt: "0"}}, order_by: {created_at: asc}) {
+      account_id
+      created_at
+    }
+  }
+}
+    `
+
+export const useAllIntentionTriplesQuery = <
+  TData = AllIntentionTriplesQuery,
+  TError = unknown
+>(
+  variables: AllIntentionTriplesQueryVariables,
+  options?: Omit<
+    UseQueryOptions<AllIntentionTriplesQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      AllIntentionTriplesQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<AllIntentionTriplesQuery, TError, TData>({
+    queryKey: ["AllIntentionTriples", variables],
+    queryFn: fetcher<
+      AllIntentionTriplesQuery,
+      AllIntentionTriplesQueryVariables
+    >(AllIntentionTriplesDocument, variables),
+    ...options
+  })
+}
+
+useAllIntentionTriplesQuery.document = AllIntentionTriplesDocument
+
+useAllIntentionTriplesQuery.getKey = (
+  variables: AllIntentionTriplesQueryVariables
+) => ["AllIntentionTriples", variables]
+
+export const useInfiniteAllIntentionTriplesQuery = <
+  TData = InfiniteData<AllIntentionTriplesQuery>,
+  TError = unknown
+>(
+  variables: AllIntentionTriplesQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<AllIntentionTriplesQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      AllIntentionTriplesQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<AllIntentionTriplesQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "AllIntentionTriples.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<AllIntentionTriplesQuery, AllIntentionTriplesQueryVariables>(
+            AllIntentionTriplesDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteAllIntentionTriplesQuery.getKey = (
+  variables: AllIntentionTriplesQueryVariables
+) => ["AllIntentionTriples.infinite", variables]
+
+useAllIntentionTriplesQuery.fetcher = (
+  variables: AllIntentionTriplesQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<AllIntentionTriplesQuery, AllIntentionTriplesQueryVariables>(
+    AllIntentionTriplesDocument,
+    variables,
+    options
+  )
+
+export const CertificationTriplesDocument = `
+    query CertificationTriples($predicateIds: [String!]!, $hostnameLike: String!) {
+  triples(
+    where: {predicate_id: {_in: $predicateIds}, object: {label: {_ilike: $hostnameLike}}, positions: {shares: {_gt: "0"}}}
+    limit: 100
+  ) {
+    term_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: {shares: {_gt: "0"}}) {
+      account_id
+      shares
+      created_at
+    }
+  }
+}
+    `
+
+export const useCertificationTriplesQuery = <
+  TData = CertificationTriplesQuery,
+  TError = unknown
+>(
+  variables: CertificationTriplesQueryVariables,
+  options?: Omit<
+    UseQueryOptions<CertificationTriplesQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      CertificationTriplesQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<CertificationTriplesQuery, TError, TData>({
+    queryKey: ["CertificationTriples", variables],
+    queryFn: fetcher<
+      CertificationTriplesQuery,
+      CertificationTriplesQueryVariables
+    >(CertificationTriplesDocument, variables),
+    ...options
+  })
+}
+
+useCertificationTriplesQuery.document = CertificationTriplesDocument
+
+useCertificationTriplesQuery.getKey = (
+  variables: CertificationTriplesQueryVariables
+) => ["CertificationTriples", variables]
+
+export const useInfiniteCertificationTriplesQuery = <
+  TData = InfiniteData<CertificationTriplesQuery>,
+  TError = unknown
+>(
+  variables: CertificationTriplesQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<CertificationTriplesQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      CertificationTriplesQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<CertificationTriplesQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "CertificationTriples.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            CertificationTriplesQuery,
+            CertificationTriplesQueryVariables
+          >(CertificationTriplesDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteCertificationTriplesQuery.getKey = (
+  variables: CertificationTriplesQueryVariables
+) => ["CertificationTriples.infinite", variables]
+
+useCertificationTriplesQuery.fetcher = (
+  variables: CertificationTriplesQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<CertificationTriplesQuery, CertificationTriplesQueryVariables>(
+    CertificationTriplesDocument,
+    variables,
+    options
+  )
+
+export const IntentionStatsDocument = `
+    query IntentionStats($predicateIds: [String!]!, $hostnameLike: String!) {
+  triples(
+    where: {predicate_id: {_in: $predicateIds}, object: {label: {_ilike: $hostnameLike}}}
+    limit: 100
+  ) {
+    term_id
+    predicate_id
+    predicate {
+      label
+    }
+    positions(where: {shares: {_gt: "0"}}) {
+      account_id
+    }
+  }
+}
+    `
+
+export const useIntentionStatsQuery = <
+  TData = IntentionStatsQuery,
+  TError = unknown
+>(
+  variables: IntentionStatsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<IntentionStatsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<IntentionStatsQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<IntentionStatsQuery, TError, TData>({
+    queryKey: ["IntentionStats", variables],
+    queryFn: fetcher<IntentionStatsQuery, IntentionStatsQueryVariables>(
+      IntentionStatsDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useIntentionStatsQuery.document = IntentionStatsDocument
+
+useIntentionStatsQuery.getKey = (variables: IntentionStatsQueryVariables) => [
+  "IntentionStats",
+  variables
+]
+
+export const useInfiniteIntentionStatsQuery = <
+  TData = InfiniteData<IntentionStatsQuery>,
+  TError = unknown
+>(
+  variables: IntentionStatsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<IntentionStatsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      IntentionStatsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<IntentionStatsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["IntentionStats.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<IntentionStatsQuery, IntentionStatsQueryVariables>(
+            IntentionStatsDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteIntentionStatsQuery.getKey = (
+  variables: IntentionStatsQueryVariables
+) => ["IntentionStats.infinite", variables]
+
+useIntentionStatsQuery.fetcher = (
+  variables: IntentionStatsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<IntentionStatsQuery, IntentionStatsQueryVariables>(
+    IntentionStatsDocument,
+    variables,
+    options
+  )
+
+export const GetUserIntentionPositionsDocument = `
+    query GetUserIntentionPositions($predicateIds: [String!]!, $userAddress: String!) {
+  triples(
+    where: {predicate_id: {_in: $predicateIds}, positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}
+    limit: 1000
+  ) {
+    term_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}) {
+      account_id
+      shares
+      created_at
+    }
+    term {
+      vaults {
+        curve_id
+        total_shares
+        position_count
+      }
+    }
+  }
+}
+    `
+
+export const useGetUserIntentionPositionsQuery = <
+  TData = GetUserIntentionPositionsQuery,
+  TError = unknown
+>(
+  variables: GetUserIntentionPositionsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetUserIntentionPositionsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetUserIntentionPositionsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetUserIntentionPositionsQuery, TError, TData>({
+    queryKey: ["GetUserIntentionPositions", variables],
+    queryFn: fetcher<
+      GetUserIntentionPositionsQuery,
+      GetUserIntentionPositionsQueryVariables
+    >(GetUserIntentionPositionsDocument, variables),
+    ...options
+  })
+}
+
+useGetUserIntentionPositionsQuery.document = GetUserIntentionPositionsDocument
+
+useGetUserIntentionPositionsQuery.getKey = (
+  variables: GetUserIntentionPositionsQueryVariables
+) => ["GetUserIntentionPositions", variables]
+
+export const useInfiniteGetUserIntentionPositionsQuery = <
+  TData = InfiniteData<GetUserIntentionPositionsQuery>,
+  TError = unknown
+>(
+  variables: GetUserIntentionPositionsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetUserIntentionPositionsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetUserIntentionPositionsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetUserIntentionPositionsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetUserIntentionPositions.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            GetUserIntentionPositionsQuery,
+            GetUserIntentionPositionsQueryVariables
+          >(GetUserIntentionPositionsDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetUserIntentionPositionsQuery.getKey = (
+  variables: GetUserIntentionPositionsQueryVariables
+) => ["GetUserIntentionPositions.infinite", variables]
+
+useGetUserIntentionPositionsQuery.fetcher = (
+  variables: GetUserIntentionPositionsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<
+    GetUserIntentionPositionsQuery,
+    GetUserIntentionPositionsQueryVariables
+  >(GetUserIntentionPositionsDocument, variables, options)
+
+export const UserAllCertificationsDocument = `
+    query UserAllCertifications($predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
+  triples(
+    where: {predicate: {label: {_in: $predicateLabels}}, positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}
+    limit: $limit
+    offset: $offset
+    order_by: {created_at: desc}
+  ) {
+    term_id
+    created_at
+    predicate {
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}) {
+      account_id
+      shares
+      created_at
+    }
+  }
+}
+    `
+
+export const useUserAllCertificationsQuery = <
+  TData = UserAllCertificationsQuery,
+  TError = unknown
+>(
+  variables: UserAllCertificationsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<UserAllCertificationsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      UserAllCertificationsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<UserAllCertificationsQuery, TError, TData>({
+    queryKey: ["UserAllCertifications", variables],
+    queryFn: fetcher<
+      UserAllCertificationsQuery,
+      UserAllCertificationsQueryVariables
+    >(UserAllCertificationsDocument, variables),
+    ...options
+  })
+}
+
+useUserAllCertificationsQuery.document = UserAllCertificationsDocument
+
+useUserAllCertificationsQuery.getKey = (
+  variables: UserAllCertificationsQueryVariables
+) => ["UserAllCertifications", variables]
+
+export const useInfiniteUserAllCertificationsQuery = <
+  TData = InfiniteData<UserAllCertificationsQuery>,
+  TError = unknown
+>(
+  variables: UserAllCertificationsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<UserAllCertificationsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      UserAllCertificationsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<UserAllCertificationsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "UserAllCertifications.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            UserAllCertificationsQuery,
+            UserAllCertificationsQueryVariables
+          >(UserAllCertificationsDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteUserAllCertificationsQuery.getKey = (
+  variables: UserAllCertificationsQueryVariables
+) => ["UserAllCertifications.infinite", variables]
+
+useUserAllCertificationsQuery.fetcher = (
+  variables: UserAllCertificationsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<UserAllCertificationsQuery, UserAllCertificationsQueryVariables>(
+    UserAllCertificationsDocument,
     variables,
     options
   )
@@ -27750,6 +30181,478 @@ useGetListDetailsSimplifiedQuery.fetcher = (
     GetListDetailsSimplifiedQueryVariables
   >(GetListDetailsSimplifiedDocument, variables, options)
 
+export const AtomIdsByUrlDocument = `
+    query AtomIdsByURL($likeStr: String!) {
+  atoms(where: {label: {_ilike: $likeStr}}) {
+    term_id
+  }
+}
+    `
+
+export const useAtomIdsByUrlQuery = <
+  TData = AtomIdsByUrlQuery,
+  TError = unknown
+>(
+  variables: AtomIdsByUrlQueryVariables,
+  options?: Omit<
+    UseQueryOptions<AtomIdsByUrlQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<AtomIdsByUrlQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<AtomIdsByUrlQuery, TError, TData>({
+    queryKey: ["AtomIdsByURL", variables],
+    queryFn: fetcher<AtomIdsByUrlQuery, AtomIdsByUrlQueryVariables>(
+      AtomIdsByUrlDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useAtomIdsByUrlQuery.document = AtomIdsByUrlDocument
+
+useAtomIdsByUrlQuery.getKey = (variables: AtomIdsByUrlQueryVariables) => [
+  "AtomIdsByURL",
+  variables
+]
+
+export const useInfiniteAtomIdsByUrlQuery = <
+  TData = InfiniteData<AtomIdsByUrlQuery>,
+  TError = unknown
+>(
+  variables: AtomIdsByUrlQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<AtomIdsByUrlQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      AtomIdsByUrlQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<AtomIdsByUrlQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["AtomIdsByURL.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<AtomIdsByUrlQuery, AtomIdsByUrlQueryVariables>(
+            AtomIdsByUrlDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteAtomIdsByUrlQuery.getKey = (
+  variables: AtomIdsByUrlQueryVariables
+) => ["AtomIdsByURL.infinite", variables]
+
+useAtomIdsByUrlQuery.fetcher = (
+  variables: AtomIdsByUrlQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<AtomIdsByUrlQuery, AtomIdsByUrlQueryVariables>(
+    AtomIdsByUrlDocument,
+    variables,
+    options
+  )
+
+export const AtomsByTermIdsDocument = `
+    query AtomsByTermIds($atomIds: [String!]!) {
+  atoms(where: {term_id: {_in: $atomIds}}) {
+    term_id
+    label
+    type
+  }
+}
+    `
+
+export const useAtomsByTermIdsQuery = <
+  TData = AtomsByTermIdsQuery,
+  TError = unknown
+>(
+  variables: AtomsByTermIdsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<AtomsByTermIdsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<AtomsByTermIdsQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<AtomsByTermIdsQuery, TError, TData>({
+    queryKey: ["AtomsByTermIds", variables],
+    queryFn: fetcher<AtomsByTermIdsQuery, AtomsByTermIdsQueryVariables>(
+      AtomsByTermIdsDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useAtomsByTermIdsQuery.document = AtomsByTermIdsDocument
+
+useAtomsByTermIdsQuery.getKey = (variables: AtomsByTermIdsQueryVariables) => [
+  "AtomsByTermIds",
+  variables
+]
+
+export const useInfiniteAtomsByTermIdsQuery = <
+  TData = InfiniteData<AtomsByTermIdsQuery>,
+  TError = unknown
+>(
+  variables: AtomsByTermIdsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<AtomsByTermIdsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      AtomsByTermIdsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<AtomsByTermIdsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["AtomsByTermIds.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<AtomsByTermIdsQuery, AtomsByTermIdsQueryVariables>(
+            AtomsByTermIdsDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteAtomsByTermIdsQuery.getKey = (
+  variables: AtomsByTermIdsQueryVariables
+) => ["AtomsByTermIds.infinite", variables]
+
+useAtomsByTermIdsQuery.fetcher = (
+  variables: AtomsByTermIdsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<AtomsByTermIdsQuery, AtomsByTermIdsQueryVariables>(
+    AtomsByTermIdsDocument,
+    variables,
+    options
+  )
+
+export const TriplesCountByAtomIdsDocument = `
+    query TriplesCountByAtomIds($atomIds: [String!]!) {
+  triples_aggregate(
+    where: {_and: [{_or: [{subject: {term_id: {_in: $atomIds}}}, {predicate: {term_id: {_in: $atomIds}}}, {object: {term_id: {_in: $atomIds}}}]}]}
+  ) {
+    aggregate {
+      count
+    }
+  }
+}
+    `
+
+export const useTriplesCountByAtomIdsQuery = <
+  TData = TriplesCountByAtomIdsQuery,
+  TError = unknown
+>(
+  variables: TriplesCountByAtomIdsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<TriplesCountByAtomIdsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      TriplesCountByAtomIdsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<TriplesCountByAtomIdsQuery, TError, TData>({
+    queryKey: ["TriplesCountByAtomIds", variables],
+    queryFn: fetcher<
+      TriplesCountByAtomIdsQuery,
+      TriplesCountByAtomIdsQueryVariables
+    >(TriplesCountByAtomIdsDocument, variables),
+    ...options
+  })
+}
+
+useTriplesCountByAtomIdsQuery.document = TriplesCountByAtomIdsDocument
+
+useTriplesCountByAtomIdsQuery.getKey = (
+  variables: TriplesCountByAtomIdsQueryVariables
+) => ["TriplesCountByAtomIds", variables]
+
+export const useInfiniteTriplesCountByAtomIdsQuery = <
+  TData = InfiniteData<TriplesCountByAtomIdsQuery>,
+  TError = unknown
+>(
+  variables: TriplesCountByAtomIdsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<TriplesCountByAtomIdsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      TriplesCountByAtomIdsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<TriplesCountByAtomIdsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "TriplesCountByAtomIds.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            TriplesCountByAtomIdsQuery,
+            TriplesCountByAtomIdsQueryVariables
+          >(TriplesCountByAtomIdsDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteTriplesCountByAtomIdsQuery.getKey = (
+  variables: TriplesCountByAtomIdsQueryVariables
+) => ["TriplesCountByAtomIds.infinite", variables]
+
+useTriplesCountByAtomIdsQuery.fetcher = (
+  variables: TriplesCountByAtomIdsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<TriplesCountByAtomIdsQuery, TriplesCountByAtomIdsQueryVariables>(
+    TriplesCountByAtomIdsDocument,
+    variables,
+    options
+  )
+
+export const TriplesByAtomIdsDocument = `
+    query TriplesByAtomIds($atomIds: [String!]!) {
+  triples(
+    limit: 100
+    where: {_and: [{_or: [{subject: {term_id: {_in: $atomIds}}}, {predicate: {term_id: {_in: $atomIds}}}, {object: {term_id: {_in: $atomIds}}}]}]}
+  ) {
+    term_id
+    subject {
+      term_id
+      label
+    }
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    term {
+      vaults {
+        curve_id
+        position_count
+        total_shares
+      }
+    }
+  }
+}
+    `
+
+export const useTriplesByAtomIdsQuery = <
+  TData = TriplesByAtomIdsQuery,
+  TError = unknown
+>(
+  variables: TriplesByAtomIdsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<TriplesByAtomIdsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<TriplesByAtomIdsQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<TriplesByAtomIdsQuery, TError, TData>({
+    queryKey: ["TriplesByAtomIds", variables],
+    queryFn: fetcher<TriplesByAtomIdsQuery, TriplesByAtomIdsQueryVariables>(
+      TriplesByAtomIdsDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useTriplesByAtomIdsQuery.document = TriplesByAtomIdsDocument
+
+useTriplesByAtomIdsQuery.getKey = (
+  variables: TriplesByAtomIdsQueryVariables
+) => ["TriplesByAtomIds", variables]
+
+export const useInfiniteTriplesByAtomIdsQuery = <
+  TData = InfiniteData<TriplesByAtomIdsQuery>,
+  TError = unknown
+>(
+  variables: TriplesByAtomIdsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<TriplesByAtomIdsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      TriplesByAtomIdsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<TriplesByAtomIdsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["TriplesByAtomIds.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<TriplesByAtomIdsQuery, TriplesByAtomIdsQueryVariables>(
+            TriplesByAtomIdsDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteTriplesByAtomIdsQuery.getKey = (
+  variables: TriplesByAtomIdsQueryVariables
+) => ["TriplesByAtomIds.infinite", variables]
+
+useTriplesByAtomIdsQuery.fetcher = (
+  variables: TriplesByAtomIdsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<TriplesByAtomIdsQuery, TriplesByAtomIdsQueryVariables>(
+    TriplesByAtomIdsDocument,
+    variables,
+    options
+  )
+
+export const TrustDistrustByPageDocument = `
+    query TrustDistrustByPage($likeStr: String!) {
+  trustTriples: triples(
+    where: {predicate: {label: {_eq: "trusts"}}, object: {label: {_ilike: $likeStr}}, positions: {shares: {_gt: "0"}}}
+  ) {
+    term_id
+    positions(where: {shares: {_gt: "0"}}) {
+      account_id
+      shares
+    }
+  }
+  distrustTriples: triples(
+    where: {predicate: {label: {_ilike: "distrust"}}, object: {label: {_ilike: $likeStr}}, positions: {shares: {_gt: "0"}}}
+  ) {
+    term_id
+    positions(where: {shares: {_gt: "0"}}) {
+      account_id
+      shares
+    }
+  }
+}
+    `
+
+export const useTrustDistrustByPageQuery = <
+  TData = TrustDistrustByPageQuery,
+  TError = unknown
+>(
+  variables: TrustDistrustByPageQueryVariables,
+  options?: Omit<
+    UseQueryOptions<TrustDistrustByPageQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      TrustDistrustByPageQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<TrustDistrustByPageQuery, TError, TData>({
+    queryKey: ["TrustDistrustByPage", variables],
+    queryFn: fetcher<
+      TrustDistrustByPageQuery,
+      TrustDistrustByPageQueryVariables
+    >(TrustDistrustByPageDocument, variables),
+    ...options
+  })
+}
+
+useTrustDistrustByPageQuery.document = TrustDistrustByPageDocument
+
+useTrustDistrustByPageQuery.getKey = (
+  variables: TrustDistrustByPageQueryVariables
+) => ["TrustDistrustByPage", variables]
+
+export const useInfiniteTrustDistrustByPageQuery = <
+  TData = InfiniteData<TrustDistrustByPageQuery>,
+  TError = unknown
+>(
+  variables: TrustDistrustByPageQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<TrustDistrustByPageQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      TrustDistrustByPageQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<TrustDistrustByPageQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "TrustDistrustByPage.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<TrustDistrustByPageQuery, TrustDistrustByPageQueryVariables>(
+            TrustDistrustByPageDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteTrustDistrustByPageQuery.getKey = (
+  variables: TrustDistrustByPageQueryVariables
+) => ["TrustDistrustByPage.infinite", variables]
+
+useTrustDistrustByPageQuery.fetcher = (
+  variables: TrustDistrustByPageQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<TrustDistrustByPageQuery, TrustDistrustByPageQueryVariables>(
+    TrustDistrustByPageDocument,
+    variables,
+    options
+  )
+
 export const GetFeeTransfersDocument = `
     query GetFeeTransfers($address: String!, $cutoff_timestamp: timestamptz) {
   before_cutoff: fee_transfers_aggregate(
@@ -28584,6 +31487,467 @@ useSearchPositionsQuery.fetcher = (
 ) =>
   fetcher<SearchPositionsQuery, SearchPositionsQueryVariables>(
     SearchPositionsDocument,
+    variables,
+    options
+  )
+
+export const GetQuestBadgesAndSocialLinksDocument = `
+    query GetQuestBadgesAndSocialLinks($subjectId: String!, $hasTagPredicateId: String!, $botVerifierId: String!) {
+  badges: triples(
+    where: {subject_id: {_eq: $subjectId}, predicate_id: {_eq: $hasTagPredicateId}}
+    limit: 1000
+  ) {
+    term_id
+    object {
+      label
+    }
+  }
+  socialLinks: triples(
+    where: {subject_id: {_eq: $subjectId}, creator_id: {_eq: $botVerifierId}, predicate: {label: {_in: ["has verified discord id", "has verified youtube id", "has verified spotify id", "has verified twitch id", "has verified twitter id"]}}}
+    limit: 100
+  ) {
+    term_id
+    creator_id
+    predicate {
+      label
+    }
+    object {
+      label
+    }
+  }
+}
+    `
+
+export const useGetQuestBadgesAndSocialLinksQuery = <
+  TData = GetQuestBadgesAndSocialLinksQuery,
+  TError = unknown
+>(
+  variables: GetQuestBadgesAndSocialLinksQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetQuestBadgesAndSocialLinksQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetQuestBadgesAndSocialLinksQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetQuestBadgesAndSocialLinksQuery, TError, TData>({
+    queryKey: ["GetQuestBadgesAndSocialLinks", variables],
+    queryFn: fetcher<
+      GetQuestBadgesAndSocialLinksQuery,
+      GetQuestBadgesAndSocialLinksQueryVariables
+    >(GetQuestBadgesAndSocialLinksDocument, variables),
+    ...options
+  })
+}
+
+useGetQuestBadgesAndSocialLinksQuery.document =
+  GetQuestBadgesAndSocialLinksDocument
+
+useGetQuestBadgesAndSocialLinksQuery.getKey = (
+  variables: GetQuestBadgesAndSocialLinksQueryVariables
+) => ["GetQuestBadgesAndSocialLinks", variables]
+
+export const useInfiniteGetQuestBadgesAndSocialLinksQuery = <
+  TData = InfiniteData<GetQuestBadgesAndSocialLinksQuery>,
+  TError = unknown
+>(
+  variables: GetQuestBadgesAndSocialLinksQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetQuestBadgesAndSocialLinksQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetQuestBadgesAndSocialLinksQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetQuestBadgesAndSocialLinksQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetQuestBadgesAndSocialLinks.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            GetQuestBadgesAndSocialLinksQuery,
+            GetQuestBadgesAndSocialLinksQueryVariables
+          >(GetQuestBadgesAndSocialLinksDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetQuestBadgesAndSocialLinksQuery.getKey = (
+  variables: GetQuestBadgesAndSocialLinksQueryVariables
+) => ["GetQuestBadgesAndSocialLinks.infinite", variables]
+
+useGetQuestBadgesAndSocialLinksQuery.fetcher = (
+  variables: GetQuestBadgesAndSocialLinksQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<
+    GetQuestBadgesAndSocialLinksQuery,
+    GetQuestBadgesAndSocialLinksQueryVariables
+  >(GetQuestBadgesAndSocialLinksDocument, variables, options)
+
+export const CheckSocialLinkDocument = `
+    query CheckSocialLink($subjectId: String!, $botVerifierId: String!, $predicateLabel: String!) {
+  triples(
+    where: {subject_id: {_eq: $subjectId}, creator_id: {_eq: $botVerifierId}, predicate: {label: {_eq: $predicateLabel}}}
+    limit: 1
+  ) {
+    term_id
+  }
+}
+    `
+
+export const useCheckSocialLinkQuery = <
+  TData = CheckSocialLinkQuery,
+  TError = unknown
+>(
+  variables: CheckSocialLinkQueryVariables,
+  options?: Omit<
+    UseQueryOptions<CheckSocialLinkQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<CheckSocialLinkQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<CheckSocialLinkQuery, TError, TData>({
+    queryKey: ["CheckSocialLink", variables],
+    queryFn: fetcher<CheckSocialLinkQuery, CheckSocialLinkQueryVariables>(
+      CheckSocialLinkDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useCheckSocialLinkQuery.document = CheckSocialLinkDocument
+
+useCheckSocialLinkQuery.getKey = (variables: CheckSocialLinkQueryVariables) => [
+  "CheckSocialLink",
+  variables
+]
+
+export const useInfiniteCheckSocialLinkQuery = <
+  TData = InfiniteData<CheckSocialLinkQuery>,
+  TError = unknown
+>(
+  variables: CheckSocialLinkQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<CheckSocialLinkQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      CheckSocialLinkQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<CheckSocialLinkQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["CheckSocialLink.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<CheckSocialLinkQuery, CheckSocialLinkQueryVariables>(
+            CheckSocialLinkDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteCheckSocialLinkQuery.getKey = (
+  variables: CheckSocialLinkQueryVariables
+) => ["CheckSocialLink.infinite", variables]
+
+useCheckSocialLinkQuery.fetcher = (
+  variables: CheckSocialLinkQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<CheckSocialLinkQuery, CheckSocialLinkQueryVariables>(
+    CheckSocialLinkDocument,
+    variables,
+    options
+  )
+
+export const CheckSocialLinksDocument = `
+    query CheckSocialLinks($subjectId: String!, $botVerifierId: String!) {
+  triples(
+    where: {subject_id: {_eq: $subjectId}, creator_id: {_eq: $botVerifierId}, predicate: {label: {_in: ["has verified discord id", "has verified youtube id", "has verified spotify id", "has verified twitch id", "has verified twitter id"]}}}
+    limit: 100
+  ) {
+    term_id
+    predicate {
+      label
+    }
+    object {
+      label
+    }
+  }
+}
+    `
+
+export const useCheckSocialLinksQuery = <
+  TData = CheckSocialLinksQuery,
+  TError = unknown
+>(
+  variables: CheckSocialLinksQueryVariables,
+  options?: Omit<
+    UseQueryOptions<CheckSocialLinksQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<CheckSocialLinksQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<CheckSocialLinksQuery, TError, TData>({
+    queryKey: ["CheckSocialLinks", variables],
+    queryFn: fetcher<CheckSocialLinksQuery, CheckSocialLinksQueryVariables>(
+      CheckSocialLinksDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useCheckSocialLinksQuery.document = CheckSocialLinksDocument
+
+useCheckSocialLinksQuery.getKey = (
+  variables: CheckSocialLinksQueryVariables
+) => ["CheckSocialLinks", variables]
+
+export const useInfiniteCheckSocialLinksQuery = <
+  TData = InfiniteData<CheckSocialLinksQuery>,
+  TError = unknown
+>(
+  variables: CheckSocialLinksQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<CheckSocialLinksQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      CheckSocialLinksQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<CheckSocialLinksQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["CheckSocialLinks.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<CheckSocialLinksQuery, CheckSocialLinksQueryVariables>(
+            CheckSocialLinksDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteCheckSocialLinksQuery.getKey = (
+  variables: CheckSocialLinksQueryVariables
+) => ["CheckSocialLinks.infinite", variables]
+
+useCheckSocialLinksQuery.fetcher = (
+  variables: CheckSocialLinksQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<CheckSocialLinksQuery, CheckSocialLinksQueryVariables>(
+    CheckSocialLinksDocument,
+    variables,
+    options
+  )
+
+export const GetUserSignalsDocument = `
+    query GetUserSignals($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
+  triples: terms(
+    where: {_and: [{type: {_eq: Triple}}, {triple: {subject: {term_id: {_eq: $subjectId}}}}, {positions: {account: {id: {_eq: $accountId}}}}]}
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+  }
+}
+    `
+
+export const useGetUserSignalsQuery = <
+  TData = GetUserSignalsQuery,
+  TError = unknown
+>(
+  variables: GetUserSignalsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetUserSignalsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<GetUserSignalsQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<GetUserSignalsQuery, TError, TData>({
+    queryKey: ["GetUserSignals", variables],
+    queryFn: fetcher<GetUserSignalsQuery, GetUserSignalsQueryVariables>(
+      GetUserSignalsDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useGetUserSignalsQuery.document = GetUserSignalsDocument
+
+useGetUserSignalsQuery.getKey = (variables: GetUserSignalsQueryVariables) => [
+  "GetUserSignals",
+  variables
+]
+
+export const useInfiniteGetUserSignalsQuery = <
+  TData = InfiniteData<GetUserSignalsQuery>,
+  TError = unknown
+>(
+  variables: GetUserSignalsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetUserSignalsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetUserSignalsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetUserSignalsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["GetUserSignals.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<GetUserSignalsQuery, GetUserSignalsQueryVariables>(
+            GetUserSignalsDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetUserSignalsQuery.getKey = (
+  variables: GetUserSignalsQueryVariables
+) => ["GetUserSignals.infinite", variables]
+
+useGetUserSignalsQuery.fetcher = (
+  variables: GetUserSignalsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetUserSignalsQuery, GetUserSignalsQueryVariables>(
+    GetUserSignalsDocument,
+    variables,
+    options
+  )
+
+export const GetFollowCountDocument = `
+    query GetFollowCount($accountId: String!, $subjectId: String!, $predicateId: String!) {
+  triples(
+    where: {_and: [{positions: {account: {id: {_eq: $accountId}}}}, {subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {object: {type: {_eq: "Account"}}}]}
+    limit: 10000
+  ) {
+    term_id
+  }
+}
+    `
+
+export const useGetFollowCountQuery = <
+  TData = GetFollowCountQuery,
+  TError = unknown
+>(
+  variables: GetFollowCountQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetFollowCountQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<GetFollowCountQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<GetFollowCountQuery, TError, TData>({
+    queryKey: ["GetFollowCount", variables],
+    queryFn: fetcher<GetFollowCountQuery, GetFollowCountQueryVariables>(
+      GetFollowCountDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useGetFollowCountQuery.document = GetFollowCountDocument
+
+useGetFollowCountQuery.getKey = (variables: GetFollowCountQueryVariables) => [
+  "GetFollowCount",
+  variables
+]
+
+export const useInfiniteGetFollowCountQuery = <
+  TData = InfiniteData<GetFollowCountQuery>,
+  TError = unknown
+>(
+  variables: GetFollowCountQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetFollowCountQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetFollowCountQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetFollowCountQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["GetFollowCount.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<GetFollowCountQuery, GetFollowCountQueryVariables>(
+            GetFollowCountDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetFollowCountQuery.getKey = (
+  variables: GetFollowCountQueryVariables
+) => ["GetFollowCount.infinite", variables]
+
+useGetFollowCountQuery.fetcher = (
+  variables: GetFollowCountQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetFollowCountQuery, GetFollowCountQueryVariables>(
+    GetFollowCountDocument,
     variables,
     options
   )
@@ -43413,6 +46777,266 @@ export const FindAtomIds = {
     }
   ]
 } as unknown as DocumentNode
+export const GetTripleBondingCurveData = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetTripleBondingCurveData" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "tripleId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "curveId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "numeric" }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "walletAddress" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "share_price_changes" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "order_by" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "block_timestamp" },
+                      value: { kind: "EnumValue", value: "asc" }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "tripleId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "block_timestamp" }
+                },
+                { kind: "Field", name: { kind: "Name", value: "share_price" } },
+                { kind: "Field", name: { kind: "Name", value: "total_assets" } }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "vaults" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "tripleId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "term" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "total_market_cap" }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "current_share_price" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "total_shares" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_eq" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "walletAddress"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_deposit_assets_after_total_fees"
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_redeem_assets_for_receiver"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
 export const GetTrustCircleAccounts = {
   kind: "Document",
   definitions: [
@@ -44655,6 +48279,1456 @@ export const GetSofiaTrustedActivity = {
                             }
                           ]
                         }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const UserIntentionTriples = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "UserIntentionTriples" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateLabels" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "userAddress" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "limit" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "offset" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "predicateLabels"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "userAddress" }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "limit" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "offset" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "offset" }
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "userAddress" }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "created_at" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "shares" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const AllIntentionTriples = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "AllIntentionTriples" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateLabels" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "limit" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "offset" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "predicateLabels"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "limit" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "offset" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "offset" }
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "order_by" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "created_at" },
+                            value: { kind: "EnumValue", value: "asc" }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "created_at" }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const CertificationTriples = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "CertificationTriples" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "hostnameLike" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_in" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "predicateIds" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "object" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "hostnameLike"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "100" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "created_at" }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const IntentionStats = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "IntentionStats" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "hostnameLike" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_in" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "predicateIds" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "object" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "hostnameLike"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "100" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate_id" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetUserIntentionPositions = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetUserIntentionPositions" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "userAddress" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_in" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "predicateIds" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "userAddress" }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "1000" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "userAddress" }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "created_at" }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "term" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "vaults" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "curve_id" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "total_shares" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "position_count" }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const UserAllCertifications = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "UserAllCertifications" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateLabels" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "userAddress" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "limit" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "offset" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "predicateLabels"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "userAddress" }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "limit" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "offset" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "offset" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "order_by" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "created_at" },
+                      value: { kind: "EnumValue", value: "desc" }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                { kind: "Field", name: { kind: "Name", value: "created_at" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "userAddress" }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "created_at" }
                       }
                     ]
                   }
@@ -53384,6 +58458,973 @@ export const GetListDetailsSimplified = {
     }
   ]
 } as unknown as DocumentNode
+export const AtomIdsByUrl = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "AtomIdsByURL" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "likeStr" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "atoms" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "label" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_ilike" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "likeStr" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const AtomsByTermIds = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "AtomsByTermIds" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "atomIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "atoms" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_in" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "atomIds" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                { kind: "Field", name: { kind: "Name", value: "label" } },
+                { kind: "Field", name: { kind: "Name", value: "type" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const TriplesCountByAtomIds = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "TriplesCountByAtomIds" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "atomIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples_aggregate" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "_and" },
+                      value: {
+                        kind: "ListValue",
+                        values: [
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "_or" },
+                                value: {
+                                  kind: "ListValue",
+                                  values: [
+                                    {
+                                      kind: "ObjectValue",
+                                      fields: [
+                                        {
+                                          kind: "ObjectField",
+                                          name: {
+                                            kind: "Name",
+                                            value: "subject"
+                                          },
+                                          value: {
+                                            kind: "ObjectValue",
+                                            fields: [
+                                              {
+                                                kind: "ObjectField",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "term_id"
+                                                },
+                                                value: {
+                                                  kind: "ObjectValue",
+                                                  fields: [
+                                                    {
+                                                      kind: "ObjectField",
+                                                      name: {
+                                                        kind: "Name",
+                                                        value: "_in"
+                                                      },
+                                                      value: {
+                                                        kind: "Variable",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "atomIds"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      kind: "ObjectValue",
+                                      fields: [
+                                        {
+                                          kind: "ObjectField",
+                                          name: {
+                                            kind: "Name",
+                                            value: "predicate"
+                                          },
+                                          value: {
+                                            kind: "ObjectValue",
+                                            fields: [
+                                              {
+                                                kind: "ObjectField",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "term_id"
+                                                },
+                                                value: {
+                                                  kind: "ObjectValue",
+                                                  fields: [
+                                                    {
+                                                      kind: "ObjectField",
+                                                      name: {
+                                                        kind: "Name",
+                                                        value: "_in"
+                                                      },
+                                                      value: {
+                                                        kind: "Variable",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "atomIds"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      kind: "ObjectValue",
+                                      fields: [
+                                        {
+                                          kind: "ObjectField",
+                                          name: {
+                                            kind: "Name",
+                                            value: "object"
+                                          },
+                                          value: {
+                                            kind: "ObjectValue",
+                                            fields: [
+                                              {
+                                                kind: "ObjectField",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "term_id"
+                                                },
+                                                value: {
+                                                  kind: "ObjectValue",
+                                                  fields: [
+                                                    {
+                                                      kind: "ObjectField",
+                                                      name: {
+                                                        kind: "Name",
+                                                        value: "_in"
+                                                      },
+                                                      value: {
+                                                        kind: "Variable",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "atomIds"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "aggregate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "count" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const TriplesByAtomIds = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "TriplesByAtomIds" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "atomIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "100" }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "_and" },
+                      value: {
+                        kind: "ListValue",
+                        values: [
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "_or" },
+                                value: {
+                                  kind: "ListValue",
+                                  values: [
+                                    {
+                                      kind: "ObjectValue",
+                                      fields: [
+                                        {
+                                          kind: "ObjectField",
+                                          name: {
+                                            kind: "Name",
+                                            value: "subject"
+                                          },
+                                          value: {
+                                            kind: "ObjectValue",
+                                            fields: [
+                                              {
+                                                kind: "ObjectField",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "term_id"
+                                                },
+                                                value: {
+                                                  kind: "ObjectValue",
+                                                  fields: [
+                                                    {
+                                                      kind: "ObjectField",
+                                                      name: {
+                                                        kind: "Name",
+                                                        value: "_in"
+                                                      },
+                                                      value: {
+                                                        kind: "Variable",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "atomIds"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      kind: "ObjectValue",
+                                      fields: [
+                                        {
+                                          kind: "ObjectField",
+                                          name: {
+                                            kind: "Name",
+                                            value: "predicate"
+                                          },
+                                          value: {
+                                            kind: "ObjectValue",
+                                            fields: [
+                                              {
+                                                kind: "ObjectField",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "term_id"
+                                                },
+                                                value: {
+                                                  kind: "ObjectValue",
+                                                  fields: [
+                                                    {
+                                                      kind: "ObjectField",
+                                                      name: {
+                                                        kind: "Name",
+                                                        value: "_in"
+                                                      },
+                                                      value: {
+                                                        kind: "Variable",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "atomIds"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      kind: "ObjectValue",
+                                      fields: [
+                                        {
+                                          kind: "ObjectField",
+                                          name: {
+                                            kind: "Name",
+                                            value: "object"
+                                          },
+                                          value: {
+                                            kind: "ObjectValue",
+                                            fields: [
+                                              {
+                                                kind: "ObjectField",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "term_id"
+                                                },
+                                                value: {
+                                                  kind: "ObjectValue",
+                                                  fields: [
+                                                    {
+                                                      kind: "ObjectField",
+                                                      name: {
+                                                        kind: "Name",
+                                                        value: "_in"
+                                                      },
+                                                      value: {
+                                                        kind: "Variable",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "atomIds"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "subject" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "term" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "vaults" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "curve_id" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "position_count" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "total_shares" }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const TrustDistrustByPage = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "TrustDistrustByPage" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "likeStr" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            alias: { kind: "Name", value: "trustTriples" },
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_eq" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "trusts",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "object" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "likeStr" }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "shares" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            alias: { kind: "Name", value: "distrustTriples" },
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "distrust",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "object" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "likeStr" }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "shares" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
 export const GetFeeTransfers = {
   kind: "Document",
   definitions: [
@@ -56831,6 +62872,1012 @@ export const SearchPositions = {
                     ]
                   }
                 }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetQuestBadgesAndSocialLinks = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetQuestBadgesAndSocialLinks" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "subjectId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "hasTagPredicateId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "botVerifierId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            alias: { kind: "Name", value: "badges" },
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "subject_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "subjectId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "hasTagPredicateId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "1000" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            alias: { kind: "Name", value: "socialLinks" },
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "subject_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "subjectId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "creator_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "botVerifierId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "ListValue",
+                                    values: [
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified discord id",
+                                        block: false
+                                      },
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified youtube id",
+                                        block: false
+                                      },
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified spotify id",
+                                        block: false
+                                      },
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified twitch id",
+                                        block: false
+                                      },
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified twitter id",
+                                        block: false
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "100" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                { kind: "Field", name: { kind: "Name", value: "creator_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const CheckSocialLink = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "CheckSocialLink" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "subjectId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "botVerifierId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateLabel" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "subject_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "subjectId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "creator_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "botVerifierId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_eq" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "predicateLabel"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "1" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const CheckSocialLinks = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "CheckSocialLinks" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "subjectId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "botVerifierId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "subject_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "subjectId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "creator_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "botVerifierId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "ListValue",
+                                    values: [
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified discord id",
+                                        block: false
+                                      },
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified youtube id",
+                                        block: false
+                                      },
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified spotify id",
+                                        block: false
+                                      },
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified twitch id",
+                                        block: false
+                                      },
+                                      {
+                                        kind: "StringValue",
+                                        value: "has verified twitter id",
+                                        block: false
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "100" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetUserSignals = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetUserSignals" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "accountId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "subjectId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "limit" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "offset" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            alias: { kind: "Name", value: "triples" },
+            name: { kind: "Name", value: "terms" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "_and" },
+                      value: {
+                        kind: "ListValue",
+                        values: [
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "type" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "_eq" },
+                                      value: {
+                                        kind: "EnumValue",
+                                        value: "Triple"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "triple" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "subject" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "term_id"
+                                            },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "_eq"
+                                                  },
+                                                  value: {
+                                                    kind: "Variable",
+                                                    name: {
+                                                      kind: "Name",
+                                                      value: "subjectId"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "positions" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "account" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: { kind: "Name", value: "id" },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "_eq"
+                                                  },
+                                                  value: {
+                                                    kind: "Variable",
+                                                    name: {
+                                                      kind: "Name",
+                                                      value: "accountId"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "limit" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "offset" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "offset" }
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetFollowCount = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetFollowCount" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "accountId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "subjectId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "_and" },
+                      value: {
+                        kind: "ListValue",
+                        values: [
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "positions" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "account" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: { kind: "Name", value: "id" },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "_eq"
+                                                  },
+                                                  value: {
+                                                    kind: "Variable",
+                                                    name: {
+                                                      kind: "Name",
+                                                      value: "accountId"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "subject_id" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "_eq" },
+                                      value: {
+                                        kind: "Variable",
+                                        name: {
+                                          kind: "Name",
+                                          value: "subjectId"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "predicate_id" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "_eq" },
+                                      value: {
+                                        kind: "Variable",
+                                        name: {
+                                          kind: "Name",
+                                          value: "predicateId"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "type" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_eq"
+                                            },
+                                            value: {
+                                              kind: "StringValue",
+                                              value: "Account",
+                                              block: false
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "10000" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } }
               ]
             }
           }

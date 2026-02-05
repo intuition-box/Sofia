@@ -10,6 +10,7 @@ import { PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
 import { normalizeUrl } from '../lib/utils/normalizeUrl'
+import { UserAllCertificationsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('useUserCertifications')
 
@@ -122,41 +123,14 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
     logger.info('Fetching ALL user certifications with pagination', { predicateLabels: ALL_PREDICATE_LABELS })
 
     // Use predicate labels instead of IDs for testnet compatibility - PAGINATED
-    const query = `
-      query UserAllCertifications($predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
-        triples(
-          where: {
-            predicate: { label: { _in: $predicateLabels } }
-            positions: {
-              account_id: { _ilike: $userAddress }
-              shares: { _gt: "0" }
-            }
-          }
-          limit: $limit
-          offset: $offset
-        ) {
-          predicate {
-            label
-          }
-          object {
-            label
-            value {
-              thing {
-                url
-              }
-            }
-          }
-        }
-      }
-    `
-
+    // Using document from @0xsofia/graphql
     interface CertTripleResult {
       predicate: { label: string }
       object: { label: string; value?: { thing?: { url?: string } } }
     }
 
     const triples = await intuitionGraphqlClient.fetchAllPages<CertTripleResult>(
-      query,
+      UserAllCertificationsDocument,
       { predicateLabels: ALL_PREDICATE_LABELS, userAddress: walletAddress.toLowerCase() },
       'triples',
       100,

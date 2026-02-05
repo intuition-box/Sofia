@@ -10,6 +10,7 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_IDS, PREDICATE_NAMES } from '../lib/config/chainConfig'
 import { createHookLogger } from '../lib/utils/logger'
+import { GetUserIntentionPositionsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('useOnChainIntentionGroups')
 
@@ -163,37 +164,8 @@ export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => 
       // Query for all triples where:
       // - predicate is an intention predicate
       // - user has a position (shares > 0)
-      const query = `
-        query GetUserIntentionPositions($predicateIds: [String!]!, $userAddress: String!) {
-          triples(
-            where: {
-              predicate_id: { _in: $predicateIds }
-              positions: {
-                account_id: { _ilike: $userAddress }
-                shares: { _gt: "0" }
-              }
-            }
-            limit: 10000
-          ) {
-            term_id
-            predicate_id
-            object {
-              label
-            }
-            positions(
-              where: {
-                account_id: { _ilike: $userAddress }
-                shares: { _gt: "0" }
-              }
-            ) {
-              shares
-              created_at
-            }
-          }
-        }
-      `
-
-      const response = await intuitionGraphqlClient.request(query, {
+      // Using document from @0xsofia/graphql
+      const response = await intuitionGraphqlClient.request(GetUserIntentionPositionsDocument, {
         predicateIds: ALL_PREDICATE_IDS,
         userAddress: `%${walletAddress.toLowerCase()}%`
       })

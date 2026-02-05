@@ -17,6 +17,7 @@ import { getClients } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { MULTIVAULT_CONTRACT_ADDRESS, BOT_VERIFIER_ADDRESS } from '../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
+import { CheckSocialLinksDocument } from '@0xsofia/graphql'
 import { stringToHex, getAddress } from 'viem'
 import type { Address } from '../types/viem'
 
@@ -120,53 +121,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       const botVerifierLower = BOT_VERIFIER_ADDRESS.toLowerCase()
       console.log('🤖 [SocialVerifier] Checking social links verified by bot:', botVerifierLower)
 
-      const query = `
-        query CheckSocialLinks($subjectId: String!, $botVerifierId: String!) {
-          newSystemTriples: triples(
-            where: {
-              subject_id: { _eq: $subjectId },
-              creator_id: { _eq: $botVerifierId },
-              predicate: {
-                label: { _in: [
-                  "has verified discord id",
-                  "has verified youtube id",
-                  "has verified spotify id",
-                  "has verified twitch id",
-                  "has verified twitter id"
-                ]}
-              }
-            }
-          ) {
-            term_id
-            created_at
-            creator_id
-            predicate {
-              label
-            }
-            object {
-              label
-            }
-          }
-          legacyTriple: triples(
-            where: {
-              subject_id: { _eq: $subjectId },
-              creator_id: { _eq: $botVerifierId },
-              predicate: {
-                label: { _eq: "socials_platform" }
-              },
-              object: {
-                label: { _eq: "verified" }
-              }
-            }
-          ) {
-            term_id
-            created_at
-            creator_id
-          }
-        }
-      `
-
-      const data = await intuitionGraphqlClient.request(query, {
+      const data = await intuitionGraphqlClient.request(CheckSocialLinksDocument, {
         subjectId: userAtomId,
         botVerifierId: botVerifierLower
       }) as {

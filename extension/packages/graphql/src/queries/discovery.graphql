@@ -1,0 +1,204 @@
+# Discovery and Intention Certification Queries
+# Used by: useDiscoveryScore, usePageDiscovery, useOnChainIntentionGroups
+
+# Get user's intention/certification triples (with positions)
+query UserIntentionTriples(
+  $predicateLabels: [String!]!
+  $userAddress: String!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      predicate: { label: { _in: $predicateLabels } }
+      positions: {
+        account_id: { _ilike: $userAddress }
+        shares: { _gt: "0" }
+      }
+    }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    predicate {
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: {
+      account_id: { _ilike: $userAddress }
+      shares: { _gt: "0" }
+    }) {
+      account_id
+      created_at
+      shares
+    }
+  }
+}
+
+# Get ALL intention triples with positions for rank calculation
+query AllIntentionTriples(
+  $predicateLabels: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      predicate: { label: { _in: $predicateLabels } }
+      positions: { shares: { _gt: "0" } }
+    }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    predicate {
+      label
+    }
+    object {
+      term_id
+    }
+    positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+    ) {
+      account_id
+      created_at
+    }
+  }
+}
+
+# Get certification triples for a page (by hostname)
+query CertificationTriples(
+  $predicateIds: [String!]!
+  $hostnameLike: String!
+) {
+  triples(
+    where: {
+      predicate_id: { _in: $predicateIds }
+      object: { label: { _ilike: $hostnameLike } }
+      positions: { shares: { _gt: "0" } }
+    }
+    limit: 100
+  ) {
+    term_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
+      shares
+      created_at
+    }
+  }
+}
+
+# Get intention stats for a page
+query IntentionStats(
+  $predicateIds: [String!]!
+  $hostnameLike: String!
+) {
+  triples(
+    where: {
+      predicate_id: { _in: $predicateIds }
+      object: { label: { _ilike: $hostnameLike } }
+    }
+    limit: 100
+  ) {
+    term_id
+    predicate_id
+    predicate {
+      label
+    }
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
+    }
+  }
+}
+
+# Get user's intention positions on groups
+query GetUserIntentionPositions(
+  $predicateIds: [String!]!
+  $userAddress: String!
+) {
+  triples(
+    where: {
+      predicate_id: { _in: $predicateIds }
+      positions: {
+        account_id: { _ilike: $userAddress }
+        shares: { _gt: "0" }
+      }
+    }
+    limit: 1000
+  ) {
+    term_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: {
+      account_id: { _ilike: $userAddress }
+      shares: { _gt: "0" }
+    }) {
+      account_id
+      shares
+      created_at
+    }
+    term {
+      vaults {
+        curve_id
+        total_shares
+        position_count
+      }
+    }
+  }
+}
+
+# Get all user certifications (trust, distrust, intentions)
+query UserAllCertifications(
+  $predicateLabels: [String!]!
+  $userAddress: String!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      predicate: { label: { _in: $predicateLabels } }
+      positions: {
+        account_id: { _ilike: $userAddress }
+        shares: { _gt: "0" }
+      }
+    }
+    limit: $limit
+    offset: $offset
+    order_by: { created_at: desc }
+  ) {
+    term_id
+    created_at
+    predicate {
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: {
+      account_id: { _ilike: $userAddress }
+      shares: { _gt: "0" }
+    }) {
+      account_id
+      shares
+      created_at
+    }
+  }
+}

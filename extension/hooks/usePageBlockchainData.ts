@@ -9,6 +9,13 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { messageBus } from '../lib/services/MessageBus'
 import { isRestrictedUrl } from '../lib/utils/pageRestriction'
 import type { PageBlockchainTriplet, PageBlockchainCounts, PageAtomInfo, UsePageBlockchainDataResult } from '../types/page'
+import {
+  AtomIdsByUrlDocument,
+  AtomsByTermIdsDocument,
+  TriplesCountByAtomIdsDocument,
+  TriplesByAtomIdsDocument,
+  TrustDistrustByPageDocument
+} from '@0xsofia/graphql'
 
 // Default counts when no data is available
 const DEFAULT_COUNTS: PageBlockchainCounts = {
@@ -98,20 +105,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       // Extract hostname from URL for label search
       const hostname = new URL(url).hostname
 
-      // First, get atom term_ids from the atoms table
-      const atomIdsQuery = `
-        query AtomIdsByURL($likeStr: String!) {
-          atoms(
-            where: {
-              label: { _ilike: $likeStr }
-            }
-          ) {
-            term_id
-          }
-        }
-      `
-
-      const atomIdsResponse = await intuitionGraphqlClient.request(atomIdsQuery, {
+      // First, get atom term_ids from the atoms table (using document from @0xsofia/graphql)
+      const atomIdsResponse = await intuitionGraphqlClient.request(AtomIdsByUrlDocument, {
         likeStr: `%${hostname}%`
       })
 
@@ -122,25 +117,11 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       // Note: Atoms don't have vaults - only triples have vaults
       const totalAtomsCount = foundAtomIds.length
 
-      const atomsQuery = `
-        query AtomsByTermIds($atomIds: [String!]!) {
-          atoms(
-            where: {
-              term_id: { _in: $atomIds }
-            }
-          ) {
-            term_id
-            label
-            type
-          }
-        }
-      `
-
-      // Fetch atoms data (only if we found atoms)
+      // Fetch atoms data (only if we found atoms) - using document from @0xsofia/graphql
       let atomsResponse: any = { atoms: [] }
 
       if (foundAtomIds.length > 0) {
-        atomsResponse = await intuitionGraphqlClient.request(atomsQuery, { atomIds: foundAtomIds })
+        atomsResponse = await intuitionGraphqlClient.request(AtomsByTermIdsDocument, { atomIds: foundAtomIds })
       }
 
       console.log('📥 Total atoms count:', totalAtomsCount)
@@ -151,104 +132,23 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
       console.log('🔍 Found atom IDs:', atomIds.length, '(displaying first 100)')
 
-      // Query to get total count of triplets
-      const triplesCountQuery = `
-        query TriplesCountByAtomIds($atomIds: [String!]!) {
-          triples_aggregate(
-            where: {
-              _and: [
-                { _or: [
-                  { subject: { term_id: { _in: $atomIds } } },
-                  { predicate: { term_id: { _in: $atomIds } } },
-                  { object: { term_id: { _in: $atomIds } } }
-                ]}
-              ]
-            }
-          ) {
-            aggregate {
-              count
-            }
-          }
-        }
-      `
-
-      // Now query triplets that contain any of these atoms
-      const triplesQuery = `
-        query TriplesByAtomIds($atomIds: [String!]!) {
-          triples(
-            limit: 100
-            where: {
-              _and: [
-                { _or: [
-                  { subject: { term_id: { _in: $atomIds } } },
-                  { predicate: { term_id: { _in: $atomIds } } },
-                  { object: { term_id: { _in: $atomIds } } }
-                ]}
-              ]
-            }
-          ) {
-            term_id
-            subject { term_id label }
-            predicate { term_id label }
-            object { term_id label }
-            term {
-              vaults {
-                curve_id
-                position_count
-                total_shares
-              }
-            }
-          }
-        }
-      `
-
-      // Query to get trust/distrust positions for this page
-      // We look for triples where:
-      // - predicate is "trusts" or "distrust"
-      // - object contains this page URL (hostname)
-      const trustDistustQuery = `
-        query TrustDistrustByPage($likeStr: String!) {
-          trustTriples: triples(
-            where: {
-              predicate: { label: { _eq: "trusts" } }
-              object: { label: { _ilike: $likeStr } }
-              positions: { shares: { _gt: "0" } }
-            }
-          ) {
-            term_id
-            positions(where: { shares: { _gt: "0" } }) {
-              account_id
-              shares
-            }
-          }
-          distrustTriples: triples(
-            where: {
-              predicate: { label: { _ilike: "distrust" } }
-              object: { label: { _ilike: $likeStr } }
-              positions: { shares: { _gt: "0" } }
-            }
-          ) {
-            term_id
-            positions(where: { shares: { _gt: "0" } }) {
-              account_id
-              shares
-            }
-          }
-        }
-      `
+      // Queries now use documents from @0xsofia/graphql:
+      // - TriplesCountByAtomIdsDocument
+      // - TriplesByAtomIdsDocument
+      // - TrustDistrustByPageDocument
 
       let triplesResponse
       let totalTriplesCount = 0
       let trustDistrustData: { trustTriples: any[], distrustTriples: any[] } = { trustTriples: [], distrustTriples: [] }
 
       // Always fetch trust/distrust data (doesn't depend on atomIds)
-      const trustDistrustPromise = intuitionGraphqlClient.request(trustDistustQuery, { likeStr: `%${hostname}%` })
+      const trustDistrustPromise = intuitionGraphqlClient.request(TrustDistrustByPageDocument, { likeStr: `%${hostname}%` })
 
       if (atomIds.length > 0) {
         // Fetch count, data and trust/distrust in parallel
         const [triplesCountResponse, triplesDataResponse, trustDistrustResponse] = await Promise.all([
-          intuitionGraphqlClient.request(triplesCountQuery, { atomIds }),
-          intuitionGraphqlClient.request(triplesQuery, { atomIds }),
+          intuitionGraphqlClient.request(TriplesCountByAtomIdsDocument, { atomIds }),
+          intuitionGraphqlClient.request(TriplesByAtomIdsDocument, { atomIds }),
           trustDistrustPromise
         ])
 

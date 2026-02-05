@@ -51,8 +51,6 @@ const PageBlockchainCard = () => {
     transactionHash: intentionTxHash,
     currentIntention
   } = useIntentionCertify()
-  // Proof of attention disabled - no time restriction for certifications
-  // const { isEligible: isAttentionEligible } = useProofOfAttention(currentUrl)
   const {
     totalCertifications,
     refetch: refetchDiscovery

@@ -19,6 +19,12 @@ import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICA
 import { MASTRA_API_URL } from '../config'
 import type { Address } from '../types/viem'
 import { questTrackingService } from '../lib/services/QuestTrackingService'
+import {
+  GetQuestBadgesAndSocialLinksDocument,
+  CheckSocialLinkDocument,
+  GetUserSignalsDocument,
+  GetFollowCountDocument
+} from '@0xsofia/graphql'
 
 // Constants for on-chain operations
 const MIN_DEPOSIT = 10000000000000000n // 0.01 TRUST
@@ -336,49 +342,9 @@ export const useQuestSystem = (): QuestSystemResult => {
       // Check both has_tag badges AND social links by predicate label
       // For social links, filter by creator = bot verifier address
       const botVerifierLower = BOT_VERIFIER_ADDRESS.toLowerCase()
-      const query = `
-        query GetQuestBadgesAndSocialLinks($subjectId: String!, $hasTagPredicateId: String!, $botVerifierId: String!) {
-          badges: triples(
-            where: {
-              subject_id: { _eq: $subjectId },
-              predicate_id: { _eq: $hasTagPredicateId }
-            }
-            limit: 1000
-          ) {
-            term_id
-            object {
-              label
-            }
-          }
-          socialLinks: triples(
-            where: {
-              subject_id: { _eq: $subjectId },
-              creator_id: { _eq: $botVerifierId },
-              predicate: {
-                label: { _in: [
-                  "has verified discord id",
-                  "has verified youtube id",
-                  "has verified spotify id",
-                  "has verified twitch id",
-                  "has verified twitter id"
-                ]}
-              }
-            }
-            limit: 100
-          ) {
-            term_id
-            creator_id
-            predicate {
-              label
-            }
-            object {
-              label
-            }
-          }
-        }
-      `
 
-      const data = await intuitionGraphqlClient.request(query, {
+      // Using document from @0xsofia/graphql
+      const data = await intuitionGraphqlClient.request(GetQuestBadgesAndSocialLinksDocument, {
         subjectId: userAtomId,
         hasTagPredicateId: CHAIN_PREDICATE_IDS.HAS_TAG,
         botVerifierId: botVerifierLower
@@ -537,22 +503,8 @@ export const useQuestSystem = (): QuestSystemResult => {
       const botVerifierLower = BOT_VERIFIER_ADDRESS.toLowerCase()
       const predicateLabel = `has verified ${platform} id`
 
-      const query = `
-        query CheckSocialLink($subjectId: String!, $botVerifierId: String!, $predicateLabel: String!) {
-          triples(
-            where: {
-              subject_id: { _eq: $subjectId }
-              creator_id: { _eq: $botVerifierId }
-              predicate: { label: { _eq: $predicateLabel } }
-            }
-            limit: 1
-          ) {
-            term_id
-          }
-        }
-      `
-
-      const data = await intuitionGraphqlClient.request(query, {
+      // Using document from @0xsofia/graphql
+      const data = await intuitionGraphqlClient.request(CheckSocialLinkDocument, {
         subjectId: userAtomId,
         botVerifierId: botVerifierLower,
         predicateLabel
@@ -911,26 +863,9 @@ export const useQuestSystem = (): QuestSystemResult => {
       const checksumAddress = getAddress(walletAddress)
 
       // Query 1: Get signals created (triples with subject = "I") - PAGINATED
-      const signalsQuery = `
-        query GetUserSignals($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
-          triples: terms(
-            where: {
-              _and: [
-                { type: { _eq: Triple } },
-                { triple: { subject: { term_id: { _eq: $subjectId } } } },
-                { positions: { account: { id: { _eq: $accountId } } } }
-              ]
-            }
-            limit: $limit
-            offset: $offset
-          ) {
-            id
-          }
-        }
-      `
-
+      // Using document from @0xsofia/graphql
       const allSignals = await intuitionGraphqlClient.fetchAllPages<{ id: string }>(
-        signalsQuery,
+        GetUserSignalsDocument,
         { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
         'triples',
         100,  // page size
@@ -939,26 +874,8 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       const signalsCreated = allSignals.length
 
-      // Query 2: Get followed users count
-      const followQuery = `
-        query GetFollowCount($accountId: String!, $subjectId: String!, $predicateId: String!) {
-          triples(
-            where: {
-              _and: [
-                { positions: { account: { id: { _eq: $accountId } } } },
-                { subject_id: { _eq: $subjectId } },
-                { predicate_id: { _eq: $predicateId } },
-                { object: { type: { _eq: "Account" } } }
-              ]
-            }
-            limit: 10000
-          ) {
-            term_id
-          }
-        }
-      `
-
-      const followResponse = await intuitionGraphqlClient.request(followQuery, {
+      // Query 2: Get followed users count - using document from @0xsofia/graphql
+      const followResponse = await intuitionGraphqlClient.request(GetFollowCountDocument, {
         accountId: checksumAddress,
         subjectId: SUBJECT_IDS.I,
         predicateId: PREDICATE_IDS.FOLLOW
@@ -966,8 +883,8 @@ export const useQuestSystem = (): QuestSystemResult => {
 
       const followedUsers = followResponse?.triples?.length || 0
 
-      // Query 3: Get trusted users count
-      const trustResponse = await intuitionGraphqlClient.request(followQuery, {
+      // Query 3: Get trusted users count - using same document
+      const trustResponse = await intuitionGraphqlClient.request(GetFollowCountDocument, {
         accountId: checksumAddress,
         subjectId: SUBJECT_IDS.I,
         predicateId: PREDICATE_IDS.TRUSTS

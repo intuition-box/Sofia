@@ -14,8 +14,18 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import type { IntentionPurpose, UserDiscoveryStats } from '../types/discovery'
 import { DISCOVERY_XP_REWARDS } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
+import {
+  UserIntentionTriplesDocument,
+  AllIntentionTriplesDocument,
+  type UserIntentionTriplesQuery,
+  type AllIntentionTriplesQuery
+} from '@0xsofia/graphql'
 
 const logger = createHookLogger('useDiscoveryScore')
+
+// Types extracted from generated query results
+type UserTripleResult = UserIntentionTriplesQuery['triples'][number]
+type AllTripleResult = AllIntentionTriplesQuery['triples'][number]
 
 // Predicate labels for all certification types (intentions + trust/distrust)
 // NOTE: 'visits for learning ' has a trailing space due to a bug in atom creation
@@ -108,96 +118,17 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
       logger.debug('Fetching discovery score', { userAddress })
 
       // PAGINATED QUERIES - fetch all user triples and all triples for rank calculation
-      // Query 1: Get user's intention triples via positions
-      const userTriplesQuery = `
-        query UserIntentionTriples($predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
-          triples(
-            where: {
-              predicate: { label: { _in: $predicateLabels } }
-              positions: {
-                account_id: { _ilike: $userAddress }
-                shares: { _gt: "0" }
-              }
-            }
-            limit: $limit
-            offset: $offset
-          ) {
-            term_id
-            predicate {
-              label
-            }
-            object {
-              term_id
-              label
-            }
-            positions(where: {
-              account_id: { _ilike: $userAddress }
-              shares: { _gt: "0" }
-            }) {
-              account_id
-              created_at
-              shares
-            }
-          }
-        }
-      `
-
-      // Query 2: Get ALL intention triples with positions for rank calculation
-      const allTriplesQuery = `
-        query AllIntentionTriples($predicateLabels: [String!]!, $limit: Int!, $offset: Int!) {
-          triples(
-            where: {
-              predicate: { label: { _in: $predicateLabels } }
-              positions: { shares: { _gt: "0" } }
-            }
-            limit: $limit
-            offset: $offset
-          ) {
-            term_id
-            predicate {
-              label
-            }
-            object {
-              term_id
-            }
-            positions(
-              where: { shares: { _gt: "0" } }
-              order_by: { created_at: asc }
-            ) {
-              account_id
-              created_at
-            }
-          }
-        }
-      `
-
-      // Types for the query results
-      interface UserTripleResult {
-        term_id: string
-        predicate: { label: string }
-        object: { term_id: string; label: string }
-        positions: Array<{ account_id: string; created_at: string; shares: string }>
-      }
-
-      interface AllTripleResult {
-        term_id: string
-        predicate: { label: string }
-        object: { term_id: string }
-        positions: Array<{ account_id: string; created_at: string }>
-      }
-
-      // Fetch both in parallel with pagination
-      // Use CERTIFICATION_PREDICATE_LABELS to include trust/distrust in discovery stats
+      // Using documents from @0xsofia/graphql package
       const [userTriples, allTriples] = await Promise.all([
         intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
-          userTriplesQuery,
+          UserIntentionTriplesDocument,
           { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddress },
           'triples',
           100,
           100
         ),
         intuitionGraphqlClient.fetchAllPages<AllTripleResult>(
-          allTriplesQuery,
+          AllIntentionTriplesDocument,
           { predicateLabels: CERTIFICATION_PREDICATE_LABELS },
           'triples',
           100,

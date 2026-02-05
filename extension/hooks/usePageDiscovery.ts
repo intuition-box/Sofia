@@ -10,6 +10,7 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_IDS } from '../lib/config/chainConfig'
 import type { DiscoveryStatus } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
+import { CertificationTriplesDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('usePageDiscovery')
 
@@ -67,37 +68,8 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
       })
 
       // Query to find all certification triples for this page via POSITIONS
-      // The creator_id is the proxy, so we use positions to identify users
-      // We look for triples where:
-      // - predicate is one of the certification predicates (intentions + trust/distrust)
-      // - object atom label contains the hostname
-      // - positions have shares > 0 (active positions)
-      const query = `
-        query CertificationTriples($predicateIds: [String!]!, $hostnameLike: String!) {
-          triples(
-            where: {
-              predicate_id: { _in: $predicateIds }
-              object: { label: { _ilike: $hostnameLike } }
-              positions: { shares: { _gt: "0" } }
-            }
-          ) {
-            term_id
-            predicate {
-              label
-            }
-            positions(
-              where: { shares: { _gt: "0" } }
-              order_by: { created_at: asc }
-            ) {
-              account_id
-              created_at
-              shares
-            }
-          }
-        }
-      `
-
-      const response = await intuitionGraphqlClient.request(query, {
+      // Using document from @0xsofia/graphql
+      const response = await intuitionGraphqlClient.request(CertificationTriplesDocument, {
         predicateIds: CERTIFICATION_PREDICATE_IDS,
         hostnameLike: `%${hostname}%`
       })
