@@ -280,7 +280,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               </div>
 
               {/* Discovery Reward Section */}
-              {isIntentionCertification && discoveryReward && !rewardClaimed && (
+              {discoveryReward && !rewardClaimed && (
                 <div className="discovery-reward-section">
                   <div className="reward-badge">
                     <span className="reward-status">{discoveryReward.status}</span>
@@ -296,7 +296,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               )}
 
               {/* Reward Claimed Confirmation */}
-              {isIntentionCertification && rewardClaimed && (
+              {rewardClaimed && (
                 <div className="reward-claimed-section">
                   <span className="reward-claimed-icon">✓</span>
                   <span className="reward-claimed-text">+{discoveryReward?.xp} XP Claimed!</span>
