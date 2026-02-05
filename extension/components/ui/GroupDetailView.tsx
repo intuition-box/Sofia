@@ -492,6 +492,13 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   }
 
   const handleRemove = async (url: string) => {
+    // Prevent removal of on-chain certified URLs
+    const onChainStatus = getUrlCertification(url)
+    if (onChainStatus?.isCertifiedOnChain) {
+      alert('Cannot remove URL that is certified on-chain')
+      return
+    }
+
     setProcessingUrls(prev => new Set(prev).add(url))
     try {
       await onRemoveUrl(url)
