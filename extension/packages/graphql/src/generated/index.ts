@@ -17940,6 +17940,10 @@ export type UserAllCertificationsQuery = {
       __typename?: "atoms"
       term_id: string
       label?: string | null
+      value?: {
+        __typename?: "atom_values"
+        thing?: { __typename?: "things"; url?: string | null } | null
+      } | null
     } | null
     positions: Array<{
       __typename?: "positions"
@@ -27905,6 +27909,11 @@ export const UserAllCertificationsDocument = `
     object {
       term_id
       label
+      value {
+        thing {
+          url
+        }
+      }
     }
     positions(where: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}) {
       account_id
@@ -49662,7 +49671,29 @@ export const UserAllCertifications = {
                         kind: "Field",
                         name: { kind: "Name", value: "term_id" }
                       },
-                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                      { kind: "Field", name: { kind: "Name", value: "label" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "value" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "thing" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "url" }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
                     ]
                   }
                 },

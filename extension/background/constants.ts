@@ -58,6 +58,8 @@ export const EXCLUDED_URL_PATTERNS = [
   'cloudflare.com/cdn-cgi', 'jsdelivr.net', 'unpkg.com',
   'polyfill.io', 'sentry.io', 'hotjar.com', 'intercom.io',"tags.crwdcntrl.net",
   'cookielaw.org', 'onetrust.com', 'trustarc.com','adswizz.com', "s0.2mdn.net","apps.rokt.com","backgrounds.wetransfer.net",
+  // Hosting/infrastructure domains
+  'silo60.p7cloud.net', 'li.protechts.net',
   // Unknown and empty content
   'unknown', 'undefined', 'null', 'blank', 'empty',
   'about:blank', 'about:srcdoc', 'data:', 'javascript:',

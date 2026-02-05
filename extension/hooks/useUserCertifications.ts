@@ -26,7 +26,7 @@ const INTENTION_PREDICATE_LABELS = [
 ]
 
 // OAuth predicate labels (from PlatformRegistry.ts)
-const OAUTH_PREDICATE_LABELS = [
+const OAUTH_PREDICATE_LABELS: string[] = [
   PREDICATE_NAMES.FOLLOW,           // "follow" - YouTube subs, Spotify, Twitch
   PREDICATE_NAMES.MEMBER_OF,        // Discord guilds
   PREDICATE_NAMES.OWNER_OF,         // Discord guild owner

@@ -50,6 +50,11 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
     { value: 'recent', label: 'Recent' }
   ]
 
+  // Filter out ENS names (.eth) and wallet addresses (0x)
+  const filteredGroups = groups.filter(g =>
+    !g.domain.endsWith('.eth') && !g.domain.startsWith('0x')
+  )
+
   const handleDeleteGroup = async (groupId: string) => {
     const group = groups.find(g => g.id === groupId)
     if (!group) return
@@ -106,7 +111,7 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
   }
 
   // Empty state
-  if (groups.length === 0) {
+  if (filteredGroups.length === 0) {
     return (
       <div className="triples-container">
         <div className="groups-empty">
@@ -140,7 +145,7 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
           </button>
         </div>
         <div className="groups-header">
-          <span className="groups-count">{groups.length} domains</span>
+          <span className="groups-count">{filteredGroups.length} domains</span>
           <div className="sort-buttons">
             {sortOptions.map(option => (
               <button
@@ -158,7 +163,7 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
 
 
         <div className="bento-grid">
-          {groups.map((group) => (
+          {filteredGroups.map((group) => (
             <GroupBentoCard
               key={group.id}
               group={group}
