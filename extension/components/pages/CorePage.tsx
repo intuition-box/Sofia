@@ -5,7 +5,7 @@ import '../styles/CorePage.css'
 
 // Lazy load tab components
 const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
-const SignalsTab = lazy(() => import('./core-tabs/SignalsTab'))
+const HistoryTab = lazy(() => import('./core-tabs/HistoryTab'))
 const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
 const BookmarkTab = lazy(() => import('./core-tabs/BookmarkTab'))
 const SkillsTab = lazy(() => import('./core-tabs/SkillsTab'))
@@ -13,8 +13,8 @@ const SkillsTab = lazy(() => import('./core-tabs/SkillsTab'))
 
 const CorePage = () => {
   const { navigateTo } = useRouter()
-  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Signals' | 'Pulse' | 'Proofs' | 'Bookmarks'>('Echoes')
-  const [expandedSignalTriplet, setExpandedSignalTriplet] = useState<{ tripletId: string } | null>(null)
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'History' | 'Pulse' | 'Proofs' | 'Bookmarks'>('Echoes')
+  const [expandedHistoryTriplet, setExpandedHistoryTriplet] = useState<{ tripletId: string } | null>(null)
 
   useEffect(() => {
     const targetTab = localStorage.getItem('targetTab')
@@ -27,7 +27,7 @@ const CorePage = () => {
   return (
     <div className="page">
       <div className="tabs">
-        {['Echoes', 'Pulse', 'Proofs', 'Signals', 'Bookmarks'].map(tab => (
+        {['Echoes', 'Pulse', 'Proofs', 'History', 'Bookmarks'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveGraphTab(tab as any)}
@@ -41,10 +41,10 @@ const CorePage = () => {
       <div className="page-content">
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
           {activeGraphTab === 'Echoes' && <EchoesTab onNavigateToProofs={() => setActiveGraphTab('Proofs')} />}
-          {activeGraphTab === 'Signals' && (
-            <SignalsTab 
-              expandedTriplet={expandedSignalTriplet}
-              setExpandedTriplet={setExpandedSignalTriplet}
+          {activeGraphTab === 'History' && (
+            <HistoryTab
+              expandedTriplet={expandedHistoryTriplet}
+              setExpandedTriplet={setExpandedHistoryTriplet}
             />
           )}
           {activeGraphTab === 'Pulse' && <PulseTab />}

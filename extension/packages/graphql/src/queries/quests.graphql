@@ -1,0 +1,139 @@
+# Quest System Queries
+# Used by: useQuestSystem, useSocialVerifier
+
+# Get quest badges and social links for a user
+query GetQuestBadgesAndSocialLinks(
+  $subjectId: String!
+  $hasTagPredicateId: String!
+  $botVerifierId: String!
+) {
+  badges: triples(
+    where: {
+      subject_id: { _eq: $subjectId },
+      predicate_id: { _eq: $hasTagPredicateId }
+    }
+    limit: 1000
+  ) {
+    term_id
+    object {
+      label
+    }
+  }
+  socialLinks: triples(
+    where: {
+      subject_id: { _eq: $subjectId },
+      creator_id: { _eq: $botVerifierId },
+      predicate: {
+        label: { _in: [
+          "has verified discord id",
+          "has verified youtube id",
+          "has verified spotify id",
+          "has verified twitch id",
+          "has verified twitter id"
+        ]}
+      }
+    }
+    limit: 100
+  ) {
+    term_id
+    creator_id
+    predicate {
+      label
+    }
+    object {
+      label
+    }
+  }
+}
+
+# Check if a social link exists on-chain
+query CheckSocialLink(
+  $subjectId: String!
+  $botVerifierId: String!
+  $predicateLabel: String!
+) {
+  triples(
+    where: {
+      subject_id: { _eq: $subjectId }
+      creator_id: { _eq: $botVerifierId }
+      predicate: { label: { _eq: $predicateLabel } }
+    }
+    limit: 1
+  ) {
+    term_id
+  }
+}
+
+# Check all social links for a user (used by useSocialVerifier)
+query CheckSocialLinks(
+  $subjectId: String!
+  $botVerifierId: String!
+) {
+  triples(
+    where: {
+      subject_id: { _eq: $subjectId }
+      creator_id: { _eq: $botVerifierId }
+      predicate: {
+        label: { _in: [
+          "has verified discord id",
+          "has verified youtube id",
+          "has verified spotify id",
+          "has verified twitch id",
+          "has verified twitter id"
+        ]}
+      }
+    }
+    limit: 100
+  ) {
+    term_id
+    predicate {
+      label
+    }
+    object {
+      label
+    }
+  }
+}
+
+# Get user signals (triples with subject = "I")
+query GetUserSignals(
+  $accountId: String!
+  $subjectId: String!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples: terms(
+    where: {
+      _and: [
+        { type: { _eq: Triple } },
+        { triple: { subject: { term_id: { _eq: $subjectId } } } },
+        { positions: { account: { id: { _eq: $accountId } } } }
+      ]
+    }
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+  }
+}
+
+# Get follow count for a user
+query GetFollowCount(
+  $accountId: String!
+  $subjectId: String!
+  $predicateId: String!
+) {
+  triples(
+    where: {
+      _and: [
+        { positions: { account: { id: { _eq: $accountId } } } },
+        { subject_id: { _eq: $subjectId } },
+        { predicate_id: { _eq: $predicateId } },
+        { object: { type: { _eq: "Account" } } }
+      ]
+    }
+    limit: 10000
+  ) {
+    term_id
+  }
+}

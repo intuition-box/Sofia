@@ -9,6 +9,7 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_IDS } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
+import { IntentionStatsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('usePageIntentionStats')
 
@@ -70,21 +71,8 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
       logger.debug('Fetching intention stats', { pageUrl, hostname })
 
       // Query to find all intention triples for this page
-      const query = `
-        query IntentionStats($predicateIds: [String!]!, $hostnameLike: String!) {
-          triples(
-            where: {
-              predicate_id: { _in: $predicateIds }
-              object: { label: { _ilike: $hostnameLike } }
-            }
-          ) {
-            predicate_id
-            creator_id
-          }
-        }
-      `
-
-      const response = await intuitionGraphqlClient.request(query, {
+      // Using document from @0xsofia/graphql
+      const response = await intuitionGraphqlClient.request(IntentionStatsDocument, {
         predicateIds: INTENTION_PREDICATE_IDS,
         hostnameLike: `%${hostname}%`
       })
@@ -93,7 +81,7 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
 
       logger.debug('Found intention triples for stats', { count: triples.length })
 
-      // Count intentions by type (unique creators per intention)
+      // Count intentions by type (unique position holders per intention)
       const intentionCounts: Record<IntentionPurpose, Set<string>> = {
         for_work: new Set(),
         for_learning: new Set(),
@@ -104,11 +92,16 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
 
       for (const triple of triples) {
         const predicateId = triple.predicate_id
-        const creatorId = triple.creator_id?.toLowerCase()
         const intentionPurpose = PREDICATE_TO_INTENTION[predicateId]
 
-        if (intentionPurpose && creatorId) {
-          intentionCounts[intentionPurpose].add(creatorId)
+        if (intentionPurpose && triple.positions) {
+          // Count unique position holders
+          for (const position of triple.positions) {
+            const accountId = position.account_id?.toLowerCase()
+            if (accountId) {
+              intentionCounts[intentionPurpose].add(accountId)
+            }
+          }
         }
       }
 

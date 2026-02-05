@@ -15,16 +15,16 @@ import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
 
-interface SignalsTabProps {
+interface HistoryTabProps {
   expandedTriplet: { tripletId: string } | null
   setExpandedTriplet: (value: { tripletId: string } | null) => void
 }
 
 type SortOption = 'highest-shares' | 'lowest-shares' | 'highest-support' | 'lowest-support' | 'newest' | 'oldest' | 'a-z' | 'z-a' | 'platform'
 
-const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) => {
+const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) => {
   const { triplets, isLoading, refreshFromAPI } = useIntuitionTriplets()
-  const { addWeight, addShares, removeWeight } = useWeightOnChain()
+  const { addWeight, addShares} = useWeightOnChain()
   const { walletAddress: address } = useWalletFromStorage()
 
   // Stake modal state (unified)
@@ -43,9 +43,9 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
 
-  console.log('🎯 SignalsTab render - address:', address)
-  console.log('🎯 SignalsTab render - triplets:', triplets)
-  console.log('🎯 SignalsTab render - triplets.length:', triplets.length)
+  console.log('🎯 HistoryTab render - address:', address)
+  console.log('🎯 HistoryTab render - triplets:', triplets)
+  console.log('🎯 HistoryTab render - triplets.length:', triplets.length)
 
   // Display triplets from Intuition indexer (already sorted by timestamp)
   const publishedTriplets = triplets
@@ -64,7 +64,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   // Filter and sort triplets based on search query and sort option
   const filteredAndSortedTriplets = useMemo(() => {
     let filtered = [...publishedTriplets]
-    
+
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
@@ -74,7 +74,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
         (triplet.url && triplet.url.toLowerCase().includes(query))
       )
     }
-    
+
     // Apply sorting
     switch (sortBy) {
       case 'highest-shares':
@@ -153,7 +153,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   // Function to get favicon URL from a website URL
   const getFaviconUrl = (url: string): string => {
     if (!url) return ''
-    
+
     try {
       const urlObj = new URL(url)
       // Use Google's favicon service as fallback, it's very reliable
@@ -254,7 +254,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       <div className="signals-search-input-container">
         <input
           type="text"
-          placeholder="Search your Signals..."
+          placeholder="Search your History..."
           className="input"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -264,8 +264,8 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
       {publishedTriplets.length > 0 && (
         <div className="sort-controls">
           <div className={`sort-dropdown ${isDropdownOpen ? 'open' : ''}`}>
-            <div 
-              className="sort-dropdown-trigger" 
+            <div
+              className="sort-dropdown-trigger"
               onClick={handleDropdownClick}
             >
               <span>{sortOptions.find(opt => opt.value === sortBy)?.label}</span>
@@ -305,7 +305,7 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
                       <span className="object">{tripletItem.triplet.object}</span>
                     </p>
                   </div>
-                  
+
                   {/* Favicon et Badges alignés avec le texte */}
                   <div className="triplet-actions-container">
                     {tripletItem.url && (
@@ -445,4 +445,4 @@ const SignalsTab = ({ expandedTriplet, setExpandedTriplet }: SignalsTabProps) =>
   )
 }
 
-export default SignalsTab
+export default HistoryTab

@@ -103,6 +103,7 @@ const DiscoveryProfilePage = () => {
             {/* XP Breakdown Section */}
             <div className="section xp-section">
               <h2 className="section-title">Discovery XP</h2>
+              <p className="section-subtitle">XP earned from page discoveries only</p>
               <div className="xp-breakdown">
                 <div className="xp-item">
                   <span className="xp-source">From Pioneer discoveries</span>

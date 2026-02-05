@@ -1,0 +1,103 @@
+# Page Blockchain Data Queries
+# Used by: usePageBlockchainData
+
+# Get atom IDs by URL hostname
+query AtomIdsByURL($likeStr: String!) {
+  atoms(
+    where: {
+      label: { _ilike: $likeStr }
+    }
+  ) {
+    term_id
+  }
+}
+
+# Get atom details by term IDs
+query AtomsByTermIds($atomIds: [String!]!) {
+  atoms(
+    where: {
+      term_id: { _in: $atomIds }
+    }
+  ) {
+    term_id
+    label
+    type
+  }
+}
+
+# Get total count of triplets for given atom IDs
+query TriplesCountByAtomIds($atomIds: [String!]!) {
+  triples_aggregate(
+    where: {
+      _and: [
+        { _or: [
+          { subject: { term_id: { _in: $atomIds } } },
+          { predicate: { term_id: { _in: $atomIds } } },
+          { object: { term_id: { _in: $atomIds } } }
+        ]}
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}
+
+# Get triplets containing any of the given atoms
+query TriplesByAtomIds($atomIds: [String!]!) {
+  triples(
+    limit: 100
+    where: {
+      _and: [
+        { _or: [
+          { subject: { term_id: { _in: $atomIds } } },
+          { predicate: { term_id: { _in: $atomIds } } },
+          { object: { term_id: { _in: $atomIds } } }
+        ]}
+      ]
+    }
+  ) {
+    term_id
+    subject { term_id label }
+    predicate { term_id label }
+    object { term_id label }
+    term {
+      vaults {
+        curve_id
+        position_count
+        total_shares
+      }
+    }
+  }
+}
+
+# Get trust/distrust positions for a page
+query TrustDistrustByPage($likeStr: String!) {
+  trustTriples: triples(
+    where: {
+      predicate: { label: { _eq: "trusts" } }
+      object: { label: { _ilike: $likeStr } }
+      positions: { shares: { _gt: "0" } }
+    }
+  ) {
+    term_id
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
+      shares
+    }
+  }
+  distrustTriples: triples(
+    where: {
+      predicate: { label: { _ilike: "distrust" } }
+      object: { label: { _ilike: $likeStr } }
+      positions: { shares: { _gt: "0" } }
+    }
+  ) {
+    term_id
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
+      shares
+    }
+  }
+}

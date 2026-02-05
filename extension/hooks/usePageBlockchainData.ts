@@ -8,10 +8,34 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { messageBus } from '../lib/services/MessageBus'
 import { isRestrictedUrl } from '../lib/utils/pageRestriction'
-import type { PageBlockchainTriplet, UsePageBlockchainDataResult } from '../types/page'
+import type { PageBlockchainTriplet, PageBlockchainCounts, PageAtomInfo, UsePageBlockchainDataResult } from '../types/page'
+import {
+  AtomIdsByUrlDocument,
+  AtomsByTermIdsDocument,
+  TriplesCountByAtomIdsDocument,
+  TriplesByAtomIdsDocument,
+  TrustDistrustByPageDocument
+} from '@0xsofia/graphql'
+
+// Default counts when no data is available
+const DEFAULT_COUNTS: PageBlockchainCounts = {
+  atomsCount: 0,
+  triplesCount: 0,
+  displayedAtomsCount: 0,
+  displayedTriplesCount: 0,
+  totalShares: 0,
+  totalPositions: 0,
+  attestationsCount: 0,
+  trustCount: 0,
+  distrustCount: 0,
+  totalSupport: 0,
+  trustRatio: 50
+}
 
 export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [triplets, setTriplets] = useState<PageBlockchainTriplet[]>([])
+  const [counts, setCounts] = useState<PageBlockchainCounts>(DEFAULT_COUNTS)
+  const [atomsList, setAtomsList] = useState<PageAtomInfo[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
@@ -43,9 +67,15 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
           chrome.tabs.get(tabResponse.tabId, (tab) => {
             if (tab?.url) {
               console.log('🔍 [usePageBlockchainData] Got URL from tab:', tab.url, 'title:', tab.title)
-              // Simple URL cleaning
-              const cleanUrl = tab.url.split('?')[0].split('#')[0]
-              resolve({ url: cleanUrl, title: tab.title || null })
+              // Clean URL using proper URL parsing (remove query params and hash)
+              try {
+                const urlObj = new URL(tab.url)
+                const cleanUrl = `${urlObj.origin}${urlObj.pathname}`
+                resolve({ url: cleanUrl, title: tab.title || null })
+              } catch {
+                // Fallback if URL parsing fails (e.g., chrome:// URLs)
+                resolve({ url: tab.url, title: tab.title || null })
+              }
             } else {
               resolve({ url: null, title: null })
             }
@@ -61,27 +91,22 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     }
   }, [])
 
-  const fetchPageBlockchainData = useCallback(async (url: string): Promise<PageBlockchainTriplet[]> => {
+  // Return type for internal fetch function
+  interface FetchResult {
+    triplets: PageBlockchainTriplet[]
+    counts: PageBlockchainCounts
+    atomsList: PageAtomInfo[]
+  }
+
+  const fetchPageBlockchainData = useCallback(async (url: string): Promise<FetchResult> => {
     try {
       console.log('🔍 Fetching blockchain data for URL:', url)
 
       // Extract hostname from URL for label search
       const hostname = new URL(url).hostname
 
-      // First, get atom term_ids from the atoms table
-      const atomIdsQuery = `
-        query AtomIdsByURL($likeStr: String!) {
-          atoms(
-            where: {
-              label: { _ilike: $likeStr }
-            }
-          ) {
-            term_id
-          }
-        }
-      `
-
-      const atomIdsResponse = await intuitionGraphqlClient.request(atomIdsQuery, {
+      // First, get atom term_ids from the atoms table (using document from @0xsofia/graphql)
+      const atomIdsResponse = await intuitionGraphqlClient.request(AtomIdsByUrlDocument, {
         likeStr: `%${hostname}%`
       })
 
@@ -92,25 +117,11 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       // Note: Atoms don't have vaults - only triples have vaults
       const totalAtomsCount = foundAtomIds.length
 
-      const atomsQuery = `
-        query AtomsByTermIds($atomIds: [String!]!) {
-          atoms(
-            where: {
-              term_id: { _in: $atomIds }
-            }
-          ) {
-            term_id
-            label
-            type
-          }
-        }
-      `
-
-      // Fetch atoms data (only if we found atoms)
+      // Fetch atoms data (only if we found atoms) - using document from @0xsofia/graphql
       let atomsResponse: any = { atoms: [] }
 
       if (foundAtomIds.length > 0) {
-        atomsResponse = await intuitionGraphqlClient.request(atomsQuery, { atomIds: foundAtomIds })
+        atomsResponse = await intuitionGraphqlClient.request(AtomsByTermIdsDocument, { atomIds: foundAtomIds })
       }
 
       console.log('📥 Total atoms count:', totalAtomsCount)
@@ -121,104 +132,23 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
       console.log('🔍 Found atom IDs:', atomIds.length, '(displaying first 100)')
 
-      // Query to get total count of triplets
-      const triplesCountQuery = `
-        query TriplesCountByAtomIds($atomIds: [String!]!) {
-          triples_aggregate(
-            where: {
-              _and: [
-                { _or: [
-                  { subject: { term_id: { _in: $atomIds } } },
-                  { predicate: { term_id: { _in: $atomIds } } },
-                  { object: { term_id: { _in: $atomIds } } }
-                ]}
-              ]
-            }
-          ) {
-            aggregate {
-              count
-            }
-          }
-        }
-      `
-
-      // Now query triplets that contain any of these atoms
-      const triplesQuery = `
-        query TriplesByAtomIds($atomIds: [String!]!) {
-          triples(
-            limit: 100
-            where: {
-              _and: [
-                { _or: [
-                  { subject: { term_id: { _in: $atomIds } } },
-                  { predicate: { term_id: { _in: $atomIds } } },
-                  { object: { term_id: { _in: $atomIds } } }
-                ]}
-              ]
-            }
-          ) {
-            term_id
-            subject { term_id label }
-            predicate { term_id label }
-            object { term_id label }
-            term {
-              vaults {
-                curve_id
-                position_count
-                total_shares
-              }
-            }
-          }
-        }
-      `
-
-      // Query to get trust/distrust positions for this page
-      // We look for triples where:
-      // - predicate is "trusts" or "distrust"
-      // - object contains this page URL (hostname)
-      const trustDistustQuery = `
-        query TrustDistrustByPage($likeStr: String!) {
-          trustTriples: triples(
-            where: {
-              predicate: { label: { _eq: "trusts" } }
-              object: { label: { _ilike: $likeStr } }
-              positions: { shares: { _gt: "0" } }
-            }
-          ) {
-            term_id
-            positions(where: { shares: { _gt: "0" } }) {
-              account_id
-              shares
-            }
-          }
-          distrustTriples: triples(
-            where: {
-              predicate: { label: { _ilike: "distrust" } }
-              object: { label: { _ilike: $likeStr } }
-              positions: { shares: { _gt: "0" } }
-            }
-          ) {
-            term_id
-            positions(where: { shares: { _gt: "0" } }) {
-              account_id
-              shares
-            }
-          }
-        }
-      `
+      // Queries now use documents from @0xsofia/graphql:
+      // - TriplesCountByAtomIdsDocument
+      // - TriplesByAtomIdsDocument
+      // - TrustDistrustByPageDocument
 
       let triplesResponse
       let totalTriplesCount = 0
       let trustDistrustData: { trustTriples: any[], distrustTriples: any[] } = { trustTriples: [], distrustTriples: [] }
 
       // Always fetch trust/distrust data (doesn't depend on atomIds)
-      const trustDistrustPromise = intuitionGraphqlClient.request(trustDistustQuery, { likeStr: `%${hostname}%` })
+      const trustDistrustPromise = intuitionGraphqlClient.request(TrustDistrustByPageDocument, { likeStr: `%${hostname}%` })
 
       if (atomIds.length > 0) {
         // Fetch count, data and trust/distrust in parallel
         const [triplesCountResponse, triplesDataResponse, trustDistrustResponse] = await Promise.all([
-          intuitionGraphqlClient.request(triplesCountQuery, { atomIds }),
-          intuitionGraphqlClient.request(triplesQuery, { atomIds }),
+          intuitionGraphqlClient.request(TriplesCountByAtomIdsDocument, { atomIds }),
+          intuitionGraphqlClient.request(TriplesByAtomIdsDocument, { atomIds }),
           trustDistrustPromise
         ])
 
@@ -265,8 +195,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       console.log('📊 Trust triples found:', trustDistrustData.trustTriples?.length || 0)
       console.log('📊 Distrust triples found:', trustDistrustData.distrustTriples?.length || 0)
 
-      const allResults = []
-      const atomsList = []
+      const resultTriplets: PageBlockchainTriplet[] = []
+      const resultAtomsList: PageAtomInfo[] = []
       let totalShares = 0
       let totalPositions = 0
 
@@ -276,70 +206,64 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
       // Store atoms for display
       // Note: Atoms don't have vaults - market cap comes from triples only
-      atoms.forEach((atom: any) => {
-        atomsList.push({
+      for (const atom of atoms) {
+        resultAtomsList.push({
           id: atom.term_id,
           label: atom.label || 'Unknown',
           type: atom.type || 'unknown',
           vaults: [] // Atoms don't have vaults
         })
-      })
+      }
 
       // Display ONLY real triplets in the list (first 100)
       const triples = triplesResponse?.triples || []
       console.log('📥 Total triples (real count):', totalTriplesCount)
       console.log('📥 Triples displayed:', triples.length)
 
-      allResults.push(...triples.map((triple: any) => {
+      for (const triple of triples) {
         // Access vaults through triple.term.vaults
         const vaults = triple.term?.vaults || []
         console.log('📊 Triple vaults:', vaults)
 
         // Add triple shares to total
-        if (vaults) {
-          vaults.forEach((vault: any) => {
-            totalShares += Number(vault.total_shares || 0) / 1e18
-            totalPositions += Number(vault.position_count || 0)
-          })
+        for (const vault of vaults) {
+          totalShares += Number(vault.total_shares || 0) / 1e18
+          totalPositions += Number(vault.position_count || 0)
         }
 
-        return {
+        resultTriplets.push({
           term_id: triple.term_id,
-          subject: triple.subject || { label: 'Unknown', term_id: '' },
-          predicate: triple.predicate || { label: 'Unknown', term_id: '' },
-          object: triple.object || { label: 'Unknown', term_id: '' },
+          subject: triple.subject || { label: 'Unknown' },
+          predicate: triple.predicate || { label: 'Unknown' },
+          object: triple.object || { label: 'Unknown' },
           created_at: new Date().toISOString(),
-          positions: vaults.map((vault: any) => ({
+          positions: vaults.map((vault: { total_shares?: string; position_count?: number }) => ({
             shares: vault.total_shares || '0',
             position_count: vault.position_count || 0
-          })),
-          source: 'triple'
-        }
-      }));
+          }))
+        })
+      }
 
-
-
-      // Store counts and totals in results metadata
-      // Use REAL total counts for credibility calculation, not just displayed ones
-      (allResults as any)._counts = {
-        atomsCount: totalAtomsCount,           // Real total count from aggregate
-        triplesCount: totalTriplesCount,       // Real total count from aggregate
-        displayedAtomsCount: atoms.length,     // How many we're showing
-        displayedTriplesCount: triples.length, // How many we're showing
+      // Build properly typed counts object
+      const resultCounts: PageBlockchainCounts = {
+        atomsCount: totalAtomsCount,
+        triplesCount: totalTriplesCount,
+        displayedAtomsCount: atoms.length,
+        displayedTriplesCount: triples.length,
         totalShares,
         totalPositions,
         attestationsCount: totalAtomsCount + totalTriplesCount,
-        // Trust/Distrust support data
         trustCount,
         distrustCount,
         totalSupport,
         trustRatio
-      };
+      }
 
-      // Attach atomsList to results for external access
-      (allResults as any)._atomsList = atomsList;
-
-      return allResults
+      return {
+        triplets: resultTriplets,
+        counts: resultCounts,
+        atomsList: resultAtomsList
+      }
 
     } catch (error) {
       console.error('💥 Error fetching page blockchain data:', error)
@@ -402,13 +326,17 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       }
 
       // Fetch blockchain data for this URL
-      const blockchainTriplets = await fetchPageBlockchainData(url)
-      setTriplets(blockchainTriplets)
+      const result = await fetchPageBlockchainData(url)
+      setTriplets(result.triplets)
+      setCounts(result.counts)
+      setAtomsList(result.atomsList)
 
     } catch (error) {
       console.error('Error fetching page blockchain data:', error)
       setError(error instanceof Error ? error.message : 'Unknown error')
       setTriplets([])
+      setCounts(DEFAULT_COUNTS)
+      setAtomsList([])
     } finally {
       setLoading(false)
     }
@@ -489,6 +417,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
   return {
     triplets,
+    counts,
+    atomsList,
     loading,
     error,
     currentUrl,

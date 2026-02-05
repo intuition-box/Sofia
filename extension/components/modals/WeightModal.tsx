@@ -111,23 +111,32 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
 
   const handleSubmit = async () => {
     try {
+      // Get fallback values from weightOptions (no magic numbers)
+      const minimumValue = weightOptions.find(opt => opt.id === 'minimum')!.value!
+      const defaultValue = weightOptions.find(opt => opt.id === 'default')!.value!
+
       // Convert selected weights to bigint array
       const weightBigIntArray: (bigint | null)[] = selectedWeights.map((selectedWeight, index) => {
         let trustValue: number
-        
+
         if (selectedWeight === 'custom') {
           const customValue = customValues[index]
           if (customValue && customValue.trim() !== '') {
             trustValue = parseFloat(customValue)
           } else {
-            // Return default weight when custom field is empty
-            trustValue = 0.05
+            // Return minimum weight when custom field is empty
+            trustValue = minimumValue
           }
         } else {
           const option = weightOptions.find(opt => opt.id === selectedWeight)
-          trustValue = option?.value || 0.05 // fallback to default
+          if (!option || option.value === null) {
+            console.error('WeightModal: Invalid weight option', selectedWeight)
+            trustValue = defaultValue
+          } else {
+            trustValue = option.value
+          }
         }
-        
+
         // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
         return BigInt(Math.floor(trustValue * 1e18))
       })
@@ -280,7 +289,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               </div>
 
               {/* Discovery Reward Section */}
-              {isIntentionCertification && discoveryReward && !rewardClaimed && (
+              {discoveryReward && !rewardClaimed && (
                 <div className="discovery-reward-section">
                   <div className="reward-badge">
                     <span className="reward-status">{discoveryReward.status}</span>
@@ -296,7 +305,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               )}
 
               {/* Reward Claimed Confirmation */}
-              {isIntentionCertification && rewardClaimed && (
+              {rewardClaimed && (
                 <div className="reward-claimed-section">
                   <span className="reward-claimed-icon">✓</span>
                   <span className="reward-claimed-text">+{discoveryReward?.xp} XP Claimed!</span>
