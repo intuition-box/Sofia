@@ -20,6 +20,7 @@ import WeightModal from '../modals/WeightModal'
 import { normalizeUrl } from '../../lib/utils/normalizeUrl'
 import { cleanTitle } from '../../lib/utils/cleanTitle'
 import '../styles/IntentionBubbleSelector.css'
+import onChainBadgeIcon from './icons/onchainbadge.png'
 
 interface GroupDetailViewProps {
   group: IntentionGroupWithStats
@@ -137,7 +138,7 @@ const UrlRow = ({
             <span className="url-date">{formatDate(urlRecord.addedAt)}</span>
             <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
             {onChainStatus?.isCertifiedOnChain && (
-              <span className="on-chain-badge" title="Certified on-chain">⛓️</span>
+              <img src={onChainBadgeIcon} alt="" className="on-chain-badge" title="Certified on-chain" />
             )}
           </div>
         </div>

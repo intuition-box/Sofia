@@ -1049,7 +1049,8 @@
 /* ========== ON-CHAIN BADGE ========== */
 
 .on-chain-badge {
-  font-size: 10px;
+  width: 12px;
+  height: 12px;
   margin-left: 4px;
 }
 
