@@ -17,15 +17,16 @@ import { useQuestSystem } from '../../../hooks/useQuestSystem'
 import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
 import QuestsTab from './QuestsTab'
 import StatsTab from './StatsTab'
+import AchievementsTab from './AchievementsTab'
 import '../../styles/AccountTab.css'
 
-type SubTab = 'quests' | 'stats'
+type SubTab = 'quests' | 'stats' | 'achievements'
 
 const AccountTab = () => {
   const { walletAddress } = useWalletFromStorage()
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   const [userLabel, setUserLabel] = useState<string | undefined>(undefined)
-  const [activeTab, setActiveTab] = useState<SubTab>('quests')
+  const [activeTab, setActiveTab] = useState<SubTab>('stats')
 
   // OAuth connection states
   const [oauthTokens, setOauthTokens] = useState({
@@ -393,19 +394,6 @@ const AccountTab = () => {
         </div>
       </div>
 
-      {/* Badges Section - Show completed quest badges */}
-      {completedQuests.length > 0 && (
-        <div className="badges-section">
-          {completedQuests.slice(0, 6).map(quest => (
-            <div key={quest.id} className="badge-item" title={quest.description}>
-              {quest.title}
-            </div>
-          ))}
-          {completedQuests.length > 6 && (
-            <div className="badge-item badge-more">+{completedQuests.length - 6}</div>
-          )}
-        </div>
-      )}
 
       {/* Platform Icons */}
       <div className="platform-icons-container">
@@ -481,16 +469,22 @@ const AccountTab = () => {
       {/* Sub-tabs Navigation */}
       <div className="sub-tabs">
         <button
+          className={`sub-tab ${activeTab === 'stats' ? 'active' : ''}`}
+          onClick={() => setActiveTab('stats')}
+        >
+          Stats
+        </button>
+        <button
           className={`sub-tab ${activeTab === 'quests' ? 'active' : ''}`}
           onClick={() => setActiveTab('quests')}
         >
           Quests
         </button>
         <button
-          className={`sub-tab ${activeTab === 'stats' ? 'active' : ''}`}
-          onClick={() => setActiveTab('stats')}
+          className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''}`}
+          onClick={() => setActiveTab('achievements')}
         >
-          Stats
+          Succes
         </button>
       </div>
 
@@ -508,6 +502,8 @@ const AccountTab = () => {
           onMarkCompleted={markQuestCompleted}
         />
       )}
+
+      {activeTab === 'achievements' && <AchievementsTab />}
 
       {activeTab === 'stats' && <StatsTab />}
     </div>

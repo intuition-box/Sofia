@@ -1,7 +1,6 @@
 /**
  * StatsTab Component
- * Displays discovery statistics: Pioneer/Explorer/Contributor counts,
- * XP breakdown, and intention distribution
+ * Displays discovery statistics and intention distribution
  */
 
 import { useDiscoveryScore } from '../../../hooks/useDiscoveryScore'
