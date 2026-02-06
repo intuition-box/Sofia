@@ -35,7 +35,7 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
   // Auto-delete groups with 0 active URLs (use ref to avoid infinite loop)
   const deletedGroupsRef = useRef(new Set<string>())
   useEffect(() => {
-    const emptyGroups = groups.filter(g => g.activeUrlCount === 0 && !g.isVirtualGroup && !deletedGroupsRef.current.has(g.id))
+    const emptyGroups = groups.filter(g => g.activeUrlCount === 0 && !g.isVirtualGroup && !g.urls.some(u => u.oauthPredicate) && !deletedGroupsRef.current.has(g.id))
     if (emptyGroups.length === 0) return
     for (const group of emptyGroups) {
       deletedGroupsRef.current.add(group.id)

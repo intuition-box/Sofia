@@ -97,7 +97,9 @@ export const PREDICATE_NAMES = {
   OWNER_OF: "owner_of",
   TOP_ARTIST: "top_artist",
   TOP_TRACK: "top_track",
-  CREATED_PLAYLIST: "created_playlist"
+  CREATED_PLAYLIST: "created_playlist",
+  // Identity predicate (Discord "I am username", Twitter "I am username")
+  AM: "am"
 } as const
 
 // Minimum stake for intention certification (0.1 TRUST = 1e17 wei)
