@@ -13,7 +13,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { MASTRA_API_URL } from '../config'
-import { getClients } from '../lib/clients/viemClients'
+import { getPublicClient } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { MULTIVAULT_CONTRACT_ADDRESS, BOT_VERIFIER_ADDRESS } from '../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
@@ -104,7 +104,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       // Calculate the atom ID for this wallet address
       // Note: Do NOT lowercase - must match the exact format used when creating the triple
       const userAtomData = stringToHex(walletAddress)
-      const { publicClient } = await getClients()
+      const publicClient = getPublicClient()
       const userAtomId = await publicClient.readContract({
         address: MULTIVAULT_CONTRACT_ADDRESS as Address,
         abi: MultiVaultAbi,
