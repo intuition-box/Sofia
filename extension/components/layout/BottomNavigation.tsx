@@ -1,5 +1,6 @@
 import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import { useRouter } from './RouterProvider'
+import { useQuestSystem } from '../../hooks/useQuestSystem'
 import { Home } from 'lucide-react'
 import Dock, { DockItemData } from '../ui/NavigationBar'
 import sofiaIcon from '../ui/icons/Icon=Sofia.svg'
@@ -11,8 +12,11 @@ const BottomNavigation = () => {
   const { walletAddress, authenticated } = useWalletFromStorage()
   const account = authenticated ? walletAddress : null
   const { navigateTo } = useRouter()
+  const { claimableQuests } = useQuestSystem()
 
   if (!account) return null
+
+  const hasClaimable = claimableQuests.length > 0
 
   const dockItems: DockItemData[] = [
     {
@@ -33,7 +37,8 @@ const BottomNavigation = () => {
     {
       icon: <img src={personIcon} alt="Profile" style={{ width: '24px', height: '24px' }} />,
       label: 'Profile',
-      onClick: () => navigateTo('profile')
+      onClick: () => navigateTo('profile'),
+      className: hasClaimable ? 'has-claimable' : ''
     },
     {
       icon: <img src={settingsIcon} alt="Settings" style={{ width: '24px', height: '24px' }} />,

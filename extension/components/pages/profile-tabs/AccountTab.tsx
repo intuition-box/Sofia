@@ -304,7 +304,7 @@ const AccountTab = () => {
           Stats
         </button>
         <button
-          className={`sub-tab ${activeTab === 'quests' ? 'active' : ''}`}
+          className={`sub-tab ${activeTab === 'quests' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
           onClick={() => setActiveTab('quests')}
         >
           Quests
