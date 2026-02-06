@@ -1348,12 +1348,19 @@
 }
 
 /* In-progress achievements (active quests) */
-.achievement-card.in-progress {
+.achievement-card.in-progress .achievement-card-img {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+.achievement-card.in-progress .achievement-card-info {
   opacity: 0.6;
 }
 
-.achievement-card.in-progress .achievement-card-img {
-  filter: grayscale(100%);
+/* Keep progress overlay fully visible on grayed cards */
+.achievement-card.in-progress .achievement-progress-overlay {
+  opacity: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
 }
 
 /* Progress circle overlay on card image */
