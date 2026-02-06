@@ -43,8 +43,14 @@ const AccountTab = () => {
     verified?: boolean
   } | null>(null)
 
+  // User stats state
+  const [userStats, setUserStats] = useState({
+    signalsCreated: 0,
+    loading: true
+  })
+
   // Quest system hook - provides real quests based on user progress
-  const { activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
+  const { quests, activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
 
   // Social Verifier hook - handles Social Linked attestation
   const { isSocialVerified, canVerify, isVerifying, verifySocials } = useSocialVerifier()
@@ -56,26 +62,18 @@ const AccountTab = () => {
     enableCache: true
   })
 
-  // User stats state
-  const [userStats, setUserStats] = useState({
-    signalsCreated: 0,
-    totalMarketCap: 0,
-    loading: true
-  })
-
   // Load user stats from GraphQL
   useEffect(() => {
     const loadUserStats = async () => {
       if (!walletAddress) {
-        setUserStats(prev => ({ ...prev, signalsCreated: 0, totalMarketCap: 0, loading: false }))
+        setUserStats({ signalsCreated: 0, loading: false })
         return
       }
 
       try {
         const checksumAddress = getAddress(walletAddress)
 
-        // Load user stats: signals created and total market cap - PAGINATED
-        // Use terms table to get vaults data (like PageBlockchainCard)
+        // Count user signals (no need for vaults data since totalMarketCap is not displayed)
         const statsQuery = `
           query GetUserStats($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
             triples: terms(
@@ -90,53 +88,25 @@ const AccountTab = () => {
               offset: $offset
             ) {
               id
-              vaults {
-                total_shares
-              }
             }
           }
         `
 
-        interface StatsTripleResult {
-          id: string
-          vaults?: Array<{ total_shares: string }>
-        }
-
-        const allTriples = await intuitionGraphqlClient.fetchAllPages<StatsTripleResult>(
+        const allTriples = await intuitionGraphqlClient.fetchAllPages<{ id: string }>(
           statsQuery,
           { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
           'triples',
           100,
-          1000  // max 100k signals
+          1000
         )
 
-        console.log('📊 Triples count (paginated):', allTriples.length)
+        console.log('📊 Signals created:', allTriples.length)
 
-        // Calculate signals created and total market cap
-        const signalsCreated = allTriples.length
-
-        let totalMarketCap = 0
-        allTriples.forEach((triple) => {
-          if (triple.vaults) {
-            triple.vaults.forEach((vault) => {
-              totalMarketCap += Number(vault.total_shares || 0) / 1e18
-            })
-          }
-        })
-
-        console.log('📊 Signals created:', signalsCreated)
-        console.log('📊 Total market cap:', totalMarketCap)
-
-        setUserStats(prev => ({
-          ...prev,
-          signalsCreated,
-          totalMarketCap,
-          loading: false
-        }))
+        setUserStats({ signalsCreated: allTriples.length, loading: false })
 
       } catch (error) {
         console.error('Error loading user stats:', error)
-        setUserStats(prev => ({ ...prev, loading: false }))
+        setUserStats(prev => ({ ...prev, signalsCreated: 0, loading: false }))
       }
     }
 
@@ -235,9 +205,6 @@ const AccountTab = () => {
 
     console.log(`🗑️ [OAuth] Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
   }
-
-
-
 
   return (
     <div className="profile-section account-tab">
@@ -361,7 +328,9 @@ const AccountTab = () => {
         />
       )}
 
-      {activeTab === 'achievements' && <AchievementsTab />}
+      {activeTab === 'achievements' && (
+        <AchievementsTab completedQuests={completedQuests} quests={quests} loading={questsLoading} />
+      )}
 
       {activeTab === 'stats' && <StatsTab />}
     </div>

@@ -1,9 +1,10 @@
 /**
  * AchievementsTab Component
  * Displays completed quest achievements as styled cards
+ * Receives data via props (fixes double useQuestSystem instance bug)
  */
 
-import { useQuestSystem } from '../../../hooks/useQuestSystem'
+import type { Quest } from '../../../types/questTypes'
 
 import bookmarkImg from '../../ui/img/questssuccess/bookmark.png'
 import curatorImg from '../../ui/img/questssuccess/curator.png'
@@ -44,9 +45,13 @@ const typeLabels: Record<string, string> = {
   discovery: 'Discovery',
 }
 
-const AchievementsTab = () => {
-  const { completedQuests, quests, loading } = useQuestSystem()
+interface AchievementsTabProps {
+  completedQuests: Quest[]
+  quests: Quest[]
+  loading: boolean
+}
 
+const AchievementsTab = ({ completedQuests, quests, loading }: AchievementsTabProps) => {
   if (loading) {
     return (
       <div className="achievements-tab-content">
