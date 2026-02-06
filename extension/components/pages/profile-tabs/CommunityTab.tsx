@@ -12,8 +12,13 @@ import '../../styles/FollowTab.css'
  * CommunityTab - Container component for follow/trust functionality
  * Orchestrates the four panels: Trust Circle, Following, Followers, Explorer
  */
-const CommunityTab = () => {
-  const { walletAddress } = useWalletFromStorage()
+interface CommunityTabProps {
+  walletAddress?: string
+}
+
+const CommunityTab = (props: CommunityTabProps) => {
+  const { walletAddress: storageWallet } = useWalletFromStorage()
+  const walletAddress = props.walletAddress || storageWallet
   const [filterType, setFilterType] = useState<CommunityFilterType>('trust-circle')
 
   if (!walletAddress) {

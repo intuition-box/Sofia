@@ -1,8 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, Suspense, lazy } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { useUserSignals } from '../../hooks/useUserSignals'
-import { useUserLists } from '../../hooks/useUserLists'
-import { useUserAtomStats } from '../../hooks/useUserAtomStats'
 import { useCheckFollowStatus } from '../../hooks/useCheckFollowStatus'
 import { useUserQuests } from '../../hooks/useUserQuests'
 import { useIdentityResolution } from '../../hooks/useIdentityResolution'
@@ -11,19 +8,23 @@ import FollowButton from '../ui/FollowButton'
 import TrustAccountButton from '../ui/TrustAccountButton'
 import leftSideIcon from '../ui/icons/left side.svg'
 import rightSideIcon from '../ui/icons/right side.svg'
-import { getAddress } from 'viem'
-import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
-import { SUBJECT_IDS } from '../../lib/config/constants'
 import '../styles/UserProfile.css'
+
+// Lazy load tabs (same pattern as ProfilePage)
+const AchievementsTab = lazy(() => import('./profile-tabs/AchievementsTab'))
+const CommunityTab = lazy(() => import('./profile-tabs/CommunityTab'))
+
+type SubTab = 'achievements' | 'community'
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
+  const [activeTab, setActiveTab] = useState<SubTab>('achievements')
 
   // Check if we already follow/trust this account
   const followStatus = useCheckFollowStatus(userProfileData?.termId)
 
-  // User quests for the profile being viewed (simplified, read-only)
-  const { completedQuests, totalXP, level, loading: questsLoading } = useUserQuests(userProfileData?.walletAddress)
+  // User quests for the profile being viewed (on-chain completed only + signals count)
+  const { completedQuests, totalXP, level, signalsCreated, loading: questsLoading } = useUserQuests(userProfileData?.walletAddress)
 
   // Identity resolution for the profile being viewed
   const { displayLabel, displayAvatar } = useIdentityResolution({
@@ -33,110 +34,14 @@ const UserProfilePage = () => {
     enableCache: true
   })
 
-  // Get detailed stats using the correct query
-  const atomStats = useUserAtomStats(
-    userProfileData?.termId,
-    userProfileData?.walletAddress
-  )
-
-  const {
-    signals,
-    loading: signalsLoading,
-    error: signalsError,
-    hasMore: hasMoreSignals,
-    loadMore: loadMoreSignals
-  } = useUserSignals(userProfileData?.termId, userProfileData?.walletAddress)
-
-  const {
-    lists,
-    loading: listsLoading,
-    error: listsError,
-    hasMore: hasMoreLists,
-    loadMore: loadMoreLists
-  } = useUserLists(userProfileData?.termId)
-
-  // User stats state
-  const [userStats, setUserStats] = useState({
-    signalsCreated: 0,
-    loading: true
-  })
-
-  // Load user stats from GraphQL (same logic as AccountTab)
-  useEffect(() => {
-    const loadUserStats = async () => {
-      if (!userProfileData?.walletAddress) {
-        setUserStats({ signalsCreated: 0, loading: false })
-        return
-      }
-
-      try {
-        const checksumAddress = getAddress(userProfileData.walletAddress)
-
-        const statsQuery = `
-          query GetUserStats($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
-            triples: terms(
-              where: {
-                _and: [
-                  { type: { _eq: Triple } },
-                  { triple: { subject: { term_id: { _eq: $subjectId } } } },
-                  { positions: { account: { id: { _eq: $accountId } } } }
-                ]
-              }
-              limit: $limit
-              offset: $offset
-            ) {
-              id
-            }
-          }
-        `
-
-        interface StatsTripleResult {
-          id: string
-        }
-
-        const allTriples = await intuitionGraphqlClient.fetchAllPages<StatsTripleResult>(
-          statsQuery,
-          { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
-          'triples',
-          100,
-          1000  // max 1000 signals
-        )
-
-        const signalsCreated = allTriples.length
-
-        console.log('[UserProfilePage] Signals created:', signalsCreated)
-
-        setUserStats({
-          signalsCreated,
-          loading: false
-        })
-
-      } catch (error) {
-        console.error('[UserProfilePage] Error loading user stats:', error)
-        setUserStats({ signalsCreated: 0, loading: false })
-      }
-    }
-
-    loadUserStats()
-  }, [userProfileData?.walletAddress])
- 
   if (!userProfileData) {
     return (
-      <div className="user-profile-page">
+      <div className="profile-section account-tab">
         <div className="user-profile-error">
           No user data available
         </div>
       </div>
     )
-  }
-
-  // Format market cap from Wei to readable format
-  const formatMarketCap = (value: string): string => {
-    const num = parseFloat(value) / 1e18
-    if (num >= 1e9) return `${(num / 1e9).toFixed(2)}B`
-    if (num >= 1e6) return `${(num / 1e6).toFixed(2)}M`
-    if (num >= 1e3) return `${(num / 1e3).toFixed(2)}K`
-    return num.toFixed(2)
   }
 
   // Render follow/trust actions
@@ -163,7 +68,7 @@ const UserProfilePage = () => {
     if (followStatus.isTrusting) {
       return (
         <button className="follow-button salmon-gradient-button" disabled>
-          Trusted ✓
+          Trusted
         </button>
       )
     }
@@ -174,7 +79,6 @@ const UserProfilePage = () => {
           accountTermId={userProfileData.termId}
           accountLabel={userProfileData.label}
           onSuccess={() => {
-            console.log('✅ Trust created, refetching status')
             followStatus.refetch()
           }}
         />
@@ -195,7 +99,6 @@ const UserProfilePage = () => {
           data: userProfileData.walletAddress
         }}
         onFollowSuccess={() => {
-          console.log('✅ Follow created, refetching status')
           followStatus.refetch()
         }}
       />
@@ -203,7 +106,7 @@ const UserProfilePage = () => {
   }
 
   return (
-    <div className="user-profile-page">
+    <div className="profile-section account-tab">
       {/* Back Button */}
       <button className="user-profile-back-button" onClick={goBack}>
         ← Back
@@ -231,233 +134,55 @@ const UserProfilePage = () => {
         }
       />
 
-      {/* Stats Section */}
-      <div className="user-profile-stats-section">
-        {atomStats.loading ? (
-          <div className="user-profile-stats-loading">Loading stats...</div>
-        ) : atomStats.error ? (
-          <div className="user-profile-stats-error">{atomStats.error}</div>
-        ) : (
-          <div className="user-profile-stats-grid">
-            <div className="user-profile-stat-item">
-              <div className="stat-icons-with-value">
-                <img src={leftSideIcon} alt="Left" className="stat-icon" />
-                <div className="stat-value">{questsLoading ? '...' : level}</div>
-                <img src={rightSideIcon} alt="Right" className="stat-icon" />
-              </div>
-              <div className="user-profile-stat-label">Level</div>
-            </div>
-            <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{questsLoading ? '...' : totalXP}</div>
-              <div className="user-profile-stat-label">Total XP</div>
-            </div>
-            <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{userStats.loading ? '...' : userStats.signalsCreated}</div>
-              <div className="user-profile-stat-label">Signals</div>
-            </div>
+      {/* Stats Section - same design as AccountTab */}
+      <div className="stats-section">
+        <div className="stat-item">
+          <div className="stat-icons-with-value">
+            <img src={leftSideIcon} alt="Left" className="stat-icon" />
+            <div className="stat-value">{questsLoading ? '...' : level}</div>
+            <img src={rightSideIcon} alt="Right" className="stat-icon" />
           </div>
-        )}
+          <div className="stat-label">Level</div>
+        </div>
+        <div className="stat-item">
+          <div className="stat-value">{questsLoading ? '...' : totalXP}</div>
+          <div className="stat-label">Total XP</div>
+        </div>
+        <div className="stat-item">
+          <div className="stat-value">{questsLoading ? '...' : signalsCreated}</div>
+          <div className="stat-label">Signals</div>
+        </div>
       </div>
 
       {/* Separator */}
-      <div className="user-profile-separator"></div>
+      <div className="section-separator"></div>
 
-      {/* Signals Section */}
-      <div className="user-profile-section">
-        <h3 className="user-profile-section-title">Signals Created</h3>
-
-        {signalsLoading && signals.length === 0 && (
-          <div className="user-profile-loading">Loading signals...</div>
-        )}
-
-        {signalsError && (
-          <div className="user-profile-error">{signalsError}</div>
-        )}
-
-        {!signalsLoading && signals.length === 0 && !signalsError && (
-          <div className="user-profile-empty">No signals created yet</div>
-        )}
-
-        {signals.length > 0 && (
-          <div className="user-profile-signals-grid">
-            {signals.map((signal) => (
-              <a
-                key={signal.termId}
-                href={`https://portal.intuition.systems/explore/triple/${signal.triple.term_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="user-profile-signal-card"
-              >
-                {/* Triple representation */}
-                <div className="user-profile-signal-triple">
-                  <div className="user-profile-signal-atom">
-                    {signal.triple.subject.image && (
-                      <img
-                        src={signal.triple.subject.image}
-                        alt={signal.triple.subject.label}
-                        className="user-profile-signal-atom-image"
-                      />
-                    )}
-                    <span className="user-profile-signal-atom-label">
-                      {signal.triple.subject.label}
-                    </span>
-                  </div>
-
-                  <span className="user-profile-signal-predicate">
-                    {signal.triple.predicate.label}
-                  </span>
-
-                  <div className="user-profile-signal-atom">
-                    {signal.triple.object.image && (
-                      <img
-                        src={signal.triple.object.image}
-                        alt={signal.triple.object.label}
-                        className="user-profile-signal-atom-image"
-                      />
-                    )}
-                    <span className="user-profile-signal-atom-label">
-                      {signal.triple.object.label}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="user-profile-signal-stats">
-                  <div className="user-profile-signal-stat">
-                    <span className="user-profile-signal-stat-label">Market Cap</span>
-                    <span className="user-profile-signal-stat-value">
-                      {formatMarketCap(signal.totalMarketCap)}
-                    </span>
-                  </div>
-                  <div className="user-profile-signal-stat">
-                    <span className="user-profile-signal-stat-label">Positions</span>
-                    <span className="user-profile-signal-stat-value">
-                      {signal.positionCount}
-                    </span>
-                  </div>
-                  <div className="user-profile-signal-stat">
-                    <span className="user-profile-signal-stat-label">Created</span>
-                    <span className="user-profile-signal-stat-value">
-                      {new Date(signal.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-
-        {hasMoreSignals && (
-          <button
-            className="user-profile-load-more"
-            onClick={loadMoreSignals}
-            disabled={signalsLoading}
-          >
-            {signalsLoading ? 'Loading...' : 'Load More Signals'}
-          </button>
-        )}
+      {/* Sub-tabs Navigation */}
+      <div className="sub-tabs">
+        <button
+          className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''}`}
+          onClick={() => setActiveTab('achievements')}
+        >
+          Success
+        </button>
+        <button
+          className={`sub-tab ${activeTab === 'community' ? 'active' : ''}`}
+          onClick={() => setActiveTab('community')}
+        >
+          Community
+        </button>
       </div>
 
-      {/* Separator */}
-      <div className="user-profile-separator"></div>
-
-      {/* Lists Section */}
-      <div className="user-profile-section">
-        <h3 className="user-profile-section-title">Lists Created</h3>
-
-        {listsLoading && lists.length === 0 && (
-          <div className="user-profile-loading">Loading lists...</div>
+      {/* Tab Content */}
+      <Suspense fallback={<div className="loading-state">Loading...</div>}>
+        {activeTab === 'achievements' && (
+          <AchievementsTab completedQuests={completedQuests} quests={[]} loading={questsLoading} />
         )}
 
-        {listsError && (
-          <div className="user-profile-error">{listsError}</div>
+        {activeTab === 'community' && (
+          <CommunityTab walletAddress={userProfileData.walletAddress} />
         )}
-
-        {!listsLoading && lists.length === 0 && !listsError && (
-          <div className="user-profile-empty">No lists created yet</div>
-        )}
-
-        {lists.length > 0 && (
-          <div className="user-profile-lists-grid">
-            {lists.map((list) => (
-              <a
-                key={list.objectTermId}
-                href={`https://portal.intuition.systems/explore/atom/${list.objectTermId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="user-profile-list-card"
-              >
-                {/* List Header */}
-                <div className="user-profile-list-header">
-                  {list.objectImage && (
-                    <img
-                      src={list.objectImage}
-                      alt={list.objectLabel}
-                      className="user-profile-list-image"
-                    />
-                  )}
-                  <div className="user-profile-list-info">
-                    <h4 className="user-profile-list-label">{list.objectLabel}</h4>
-                    <p className="user-profile-list-predicate">{list.predicateLabel}</p>
-                  </div>
-                </div>
-
-                {/* Preview of triplets */}
-                {list.triplets.length > 0 && (
-                  <div className="user-profile-list-preview">
-                    {list.triplets.map((triplet) => (
-                      <div key={triplet.subjectTermId} className="user-profile-list-preview-item">
-                        {triplet.subjectImage && (
-                          <img
-                            src={triplet.subjectImage}
-                            alt={triplet.subjectLabel}
-                            className="user-profile-list-preview-image"
-                          />
-                        )}
-                        <span className="user-profile-list-preview-label">
-                          {triplet.subjectLabel}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Stats */}
-                <div className="user-profile-list-stats">
-                  <div className="user-profile-list-stat">
-                    <span className="user-profile-list-stat-label">Items</span>
-                    <span className="user-profile-list-stat-value">
-                      {list.tripleCount}
-                    </span>
-                  </div>
-                  <div className="user-profile-list-stat">
-                    <span className="user-profile-list-stat-label">Market Cap</span>
-                    <span className="user-profile-list-stat-value">
-                      {formatMarketCap(list.totalMarketCap)}
-                    </span>
-                  </div>
-                  <div className="user-profile-list-stat">
-                    <span className="user-profile-list-stat-label">Positions</span>
-                    <span className="user-profile-list-stat-value">
-                      {list.totalPositionCount}
-                    </span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-
-        {hasMoreLists && (
-          <button
-            className="user-profile-load-more"
-            onClick={loadMoreLists}
-            disabled={listsLoading}
-          >
-            {listsLoading ? 'Loading...' : 'Load More Lists'}
-          </button>
-        )}
-      </div>
+      </Suspense>
     </div>
   )
 }
