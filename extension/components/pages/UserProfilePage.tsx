@@ -118,20 +118,6 @@ const UserProfilePage = () => {
         displayName={displayLabel}
         walletAddress={userProfileData.walletAddress}
         actions={renderActions()}
-        badges={
-          completedQuests.length > 0 ? (
-            <>
-              {completedQuests.slice(0, 6).map(quest => (
-                <div key={quest.id} className="badge-item" title={quest.description}>
-                  {quest.title}
-                </div>
-              ))}
-              {completedQuests.length > 6 && (
-                <div className="badge-item badge-more">+{completedQuests.length - 6}</div>
-              )}
-            </>
-          ) : undefined
-        }
       />
 
       {/* Stats Section - same design as AccountTab */}
@@ -176,7 +162,17 @@ const UserProfilePage = () => {
       {/* Tab Content */}
       <Suspense fallback={<div className="loading-state">Loading...</div>}>
         {activeTab === 'achievements' && (
-          <AchievementsTab completedQuests={completedQuests} quests={[]} loading={questsLoading} />
+          <AchievementsTab
+            quests={completedQuests}
+            loading={questsLoading}
+            claimingQuestId={null}
+            isSocialVerified={false}
+            canVerify={false}
+            isVerifying={false}
+            onClaimXP={async () => ({ success: false })}
+            onVerifySocials={async () => ({ success: false })}
+            onMarkCompleted={() => {}}
+          />
         )}
 
         {activeTab === 'community' && (
