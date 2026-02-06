@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import youtubeIcon from '../../ui/social/youtube.svg'
 import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
@@ -63,55 +63,60 @@ const AccountTab = () => {
   })
 
   // Load user stats from GraphQL
-  useEffect(() => {
-    const loadUserStats = async () => {
-      if (!walletAddress) {
-        setUserStats({ signalsCreated: 0, loading: false })
-        return
-      }
-
-      try {
-        const checksumAddress = getAddress(walletAddress)
-
-        // Count user signals (no need for vaults data since totalMarketCap is not displayed)
-        const statsQuery = `
-          query GetUserStats($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
-            triples: terms(
-              where: {
-                _and: [
-                  { type: { _eq: Triple } },
-                  { triple: { subject: { term_id: { _eq: $subjectId } } } },
-                  { positions: { account: { id: { _eq: $accountId } } } }
-                ]
-              }
-              limit: $limit
-              offset: $offset
-            ) {
-              id
-            }
-          }
-        `
-
-        const allTriples = await intuitionGraphqlClient.fetchAllPages<{ id: string }>(
-          statsQuery,
-          { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
-          'triples',
-          100,
-          1000
-        )
-
-        console.log('📊 Signals created:', allTriples.length)
-
-        setUserStats({ signalsCreated: allTriples.length, loading: false })
-
-      } catch (error) {
-        console.error('Error loading user stats:', error)
-        setUserStats(prev => ({ ...prev, signalsCreated: 0, loading: false }))
-      }
+  const loadUserStats = useCallback(async () => {
+    if (!walletAddress) {
+      setUserStats({ signalsCreated: 0, loading: false })
+      return
     }
 
-    loadUserStats()
+    try {
+      const checksumAddress = getAddress(walletAddress)
+
+      // Count user signals (no need for vaults data since totalMarketCap is not displayed)
+      const statsQuery = `
+        query GetUserStats($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
+          triples: terms(
+            where: {
+              _and: [
+                { type: { _eq: Triple } },
+                { triple: { subject: { term_id: { _eq: $subjectId } } } },
+                { positions: { account: { id: { _eq: $accountId } } } }
+              ]
+            }
+            limit: $limit
+            offset: $offset
+          ) {
+            id
+          }
+        }
+      `
+
+      const allTriples = await intuitionGraphqlClient.fetchAllPages<{ id: string }>(
+        statsQuery,
+        { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
+        'triples',
+        100,
+        1000
+      )
+
+      console.log('📊 Signals created:', allTriples.length)
+
+      setUserStats({ signalsCreated: allTriples.length, loading: false })
+
+    } catch (error) {
+      console.error('Error loading user stats:', error)
+      setUserStats(prev => ({ ...prev, signalsCreated: 0, loading: false }))
+    }
   }, [walletAddress])
+
+  useEffect(() => {
+    loadUserStats()
+  }, [loadUserStats])
+
+  // Combined refresh: quests + stats
+  const handleFullRefresh = useCallback(async () => {
+    await Promise.all([refreshQuests(), loadUserStats()])
+  }, [refreshQuests, loadUserStats])
 
   // Check OAuth token status and load Discord profile on component mount
   useEffect(() => {
@@ -324,7 +329,7 @@ const AccountTab = () => {
           onClaimXP={claimQuestXP}
           onVerifySocials={verifySocials}
           onMarkCompleted={markQuestCompleted}
-          onRefresh={refreshQuests}
+          onRefresh={handleFullRefresh}
         />
       )}
 

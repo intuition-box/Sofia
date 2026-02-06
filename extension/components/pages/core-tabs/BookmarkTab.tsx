@@ -448,12 +448,14 @@ const BookmarkTab = () => {
         {selectedListId === null ? (
           /* Show all lists as cards */
           lists.length === 0 ? (
-            <div className="bookmark-empty-state">
-              <p>No bookmark lists yet!</p>
-              <p className="bookmark-empty-subtext">
-                Create your first bookmark list to start organizing your favorite Signals.
-              </p>
-            </div>
+            categories.some(c => c.urlCount > 0) ? null : (
+              <div className="bookmark-empty-state">
+                <p>No bookmark lists yet!</p>
+                <p className="bookmark-empty-subtext">
+                  Create your first bookmark list to start organizing your favorite Signals.
+                </p>
+              </div>
+            )
           ) : (
             <div className="lists-grid">
               {lists.map((list) => (

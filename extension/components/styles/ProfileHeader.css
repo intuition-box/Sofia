@@ -6,6 +6,7 @@
 
 .profile-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
   padding: 20px 16px;
   margin-bottom: -20px;
@@ -19,7 +20,7 @@
   overflow: hidden;
   flex-shrink: 0;
   border: 2px solid rgba(255, 255, 255, 0.1);
-  margin-right: 16px;
+  margin-bottom: 8px;
 }
 
 .profile-avatar.social-linked {
@@ -34,9 +35,9 @@
 }
 
 .profile-info {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 4px;
 }
 
