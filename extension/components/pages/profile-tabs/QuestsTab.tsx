@@ -3,6 +3,7 @@
  * Displays the list of quests with progress indicators and claim buttons
  */
 
+import { useState } from 'react'
 import type { Quest } from '../../../hooks/useQuestSystem'
 
 interface QuestsTabProps {
@@ -15,6 +16,7 @@ interface QuestsTabProps {
   onClaimXP: (questId: string) => Promise<{ success: boolean; error?: string }>
   onVerifySocials: () => Promise<{ success: boolean; error?: string }>
   onMarkCompleted: (questId: string) => void
+  onRefresh?: () => Promise<void>
 }
 
 const QuestsTab = ({
@@ -26,8 +28,20 @@ const QuestsTab = ({
   isVerifying,
   onClaimXP,
   onVerifySocials,
-  onMarkCompleted
+  onMarkCompleted,
+  onRefresh
 }: QuestsTabProps) => {
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefresh = async () => {
+    if (!onRefresh || refreshing) return
+    setRefreshing(true)
+    try {
+      await onRefresh()
+    } finally {
+      setRefreshing(false)
+    }
+  }
   const calculateProgress = (current: number, total: number) => {
     return (current / total) * 100
   }
@@ -45,6 +59,15 @@ const QuestsTab = ({
       <div className="quests-section">
         <div className="quests-empty">
           <p>No active quests. Complete your first action to unlock quests!</p>
+          {onRefresh && (
+            <button
+              className="quest-refresh-btn"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              {refreshing ? 'Refreshing...' : 'Reload quests'}
+            </button>
+          )}
         </div>
       </div>
     )
@@ -52,6 +75,16 @@ const QuestsTab = ({
 
   return (
     <div className="quests-section">
+      {onRefresh && (
+        <button
+          className="quest-refresh-btn-inline"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          title="Refresh quests"
+        >
+          {refreshing ? '...' : '\u21BB'}
+        </button>
+      )}
       {quests.map((quest) => {
         const progress = calculateProgress(quest.current, quest.total)
         const radius = 28
