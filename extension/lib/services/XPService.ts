@@ -5,6 +5,8 @@
  * All keys are wallet-prefixed for multi-wallet support
  */
 
+import { QUEST_XP_REWARDS } from '../../types/questTypes'
+
 // XP Configuration
 const XP_PER_CERTIFICATION = 10
 
@@ -16,22 +18,6 @@ const LEVEL_UP_COSTS: Record<number, number> = {
   4: 100,  // Level 4 → 5: 100 XP
 }
 const MAX_LEVEL_UP_COST = 100  // Capped at 100 XP for level 5+
-
-// Quest definitions with XP rewards (mirrored from useQuestSystem)
-const QUEST_XP_REWARDS: Record<string, number> = {
-  'signal-1': 50, 'bookmark-list-1': 30, 'bookmark-signal-1': 20,
-  'link-discord': 100, 'link-youtube': 100, 'link-spotify': 100, 'link-twitch': 100, 'link-twitter': 100,
-  'social-linked': 500,
-  'signal-10': 100, 'signal-50': 200, 'signal-100': 400, 'signal-500': 1000,
-  'signal-1000': 2000, 'signal-5000': 5000, 'signal-10000': 10000, 'signal-50000': 25000, 'signal-100000': 50000,
-  'bookmark-signal-50': 250, 'follow-50': 300, 'trust-10': 200,
-  'streak-7': 200, 'streak-30': 1000, 'streak-100': 5000,
-  'pulse-first': 30, 'pulse-weekly-5': 150,
-  'curator-10': 150, 'curator-50': 400,
-  'social-butterfly': 200, 'networker-25': 350,
-  'discovery-first': 50, 'discovery-pioneer': 200, 'discovery-10': 100, 'discovery-50': 300, 'discovery-100': 500,
-  'intention-variety': 150,
-}
 
 export interface XPState {
   groupCertificationXP: number  // XP earned from group certifications

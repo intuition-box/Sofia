@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useSyncExternalStore } from 'react'
 import { getAuthUrl } from '../lib/config/externalAuth'
 import { selectProviderByName, selectProviderByAddress, clearProviderSelection } from '../lib/services/walletProvider'
 
@@ -10,93 +10,120 @@ interface WalletState {
   ready: boolean
 }
 
+// ─── Singleton external store (shared across all hook instances) ───
+
+let sharedState: WalletState = {
+  walletAddress: null,
+  walletType: null,
+  authenticated: false,
+  isLoading: true,
+  ready: false,
+}
+
+let initialized = false
+let lastSyncedKey: string | null = null
+const listeners = new Set<() => void>()
+
+function notifyListeners() {
+  for (const listener of listeners) listener()
+}
+
+function getSnapshot(): WalletState {
+  return sharedState
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  if (!initialized) initializeStore()
+  return () => listeners.delete(listener)
+}
+
+async function syncProvider(address: string | null, type: string | null) {
+  if (!address) {
+    lastSyncedKey = null
+    return
+  }
+
+  const syncKey = `${address}-${type}`
+  if (syncKey === lastSyncedKey) return
+  lastSyncedKey = syncKey
+
+  try {
+    if (type) {
+      const result = await selectProviderByName(type)
+      if (result.found) {
+        console.log('✅ [useWalletFromStorage] Synced to provider by type:', result.selectedProvider)
+        return
+      }
+      console.warn('⚠️ [useWalletFromStorage] Wallet type not found, trying by address...')
+    }
+
+    const result = await selectProviderByAddress(address)
+    if (result.found) {
+      console.log('✅ [useWalletFromStorage] Synced to provider by address:', result.selectedProvider)
+    } else {
+      console.warn('⚠️ [useWalletFromStorage] No provider found for wallet')
+    }
+  } catch (err) {
+    console.warn('⚠️ [useWalletFromStorage] Could not sync provider:', err instanceof Error ? err.message : err)
+  }
+}
+
+function initializeStore() {
+  if (initialized) return
+  initialized = true
+
+  // Initial read from storage
+  chrome.storage.session.get(['walletAddress', 'walletType']).then(result => {
+    const address = result.walletAddress || null
+    const type = result.walletType || null
+
+    sharedState = {
+      walletAddress: address,
+      walletType: type,
+      authenticated: !!address,
+      isLoading: false,
+      ready: true,
+    }
+    notifyListeners()
+    syncProvider(address, type)
+  }).catch(error => {
+    console.error('Error reading wallet from storage:', error)
+    sharedState = { ...sharedState, isLoading: false, ready: true }
+    notifyListeners()
+  })
+
+  // Single listener for all hook instances
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'session') return
+    if (!changes.walletAddress && !changes.walletType) return
+
+    const address = changes.walletAddress
+      ? (changes.walletAddress.newValue || null)
+      : sharedState.walletAddress
+    const type = changes.walletType
+      ? (changes.walletType.newValue || null)
+      : sharedState.walletType
+
+    sharedState = {
+      walletAddress: address,
+      walletType: type,
+      authenticated: !!address,
+      isLoading: false,
+      ready: true,
+    }
+    notifyListeners()
+    syncProvider(address, type)
+  })
+}
+
 /**
  * Hook to read wallet address and type from chrome.storage.session
- * This replaces usePrivy() in the sidepanel context
+ * Uses a singleton store — all 36+ consumers share one storage listener
+ * and one provider sync call instead of duplicating per-instance
  */
 export const useWalletFromStorage = (): WalletState => {
-  const [walletAddress, setWalletAddress] = useState<string | null>(null)
-  const [walletType, setWalletType] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const lastSyncedKey = useRef<string | null>(null)
-
-  // Sync wallet provider when address or type changes
-  useEffect(() => {
-    const syncKey = `${walletAddress}-${walletType}`
-    if (walletAddress && syncKey !== lastSyncedKey.current) {
-      lastSyncedKey.current = syncKey
-
-      // Prefer selecting by wallet type (reliable), fallback to address (less reliable)
-      const selectProvider = async () => {
-        if (walletType) {
-          // The proper way: select by wallet name/type
-          const result = await selectProviderByName(walletType)
-          if (result.found) {
-            console.log('✅ [useWalletFromStorage] Synced to provider by type:', result.selectedProvider)
-            return
-          }
-          console.warn('⚠️ [useWalletFromStorage] Wallet type not found, trying by address...')
-        }
-
-        // Fallback: try to find by address (less reliable)
-        const result = await selectProviderByAddress(walletAddress)
-        if (result.found) {
-          console.log('✅ [useWalletFromStorage] Synced to provider by address:', result.selectedProvider)
-        } else {
-          console.warn('⚠️ [useWalletFromStorage] No provider found for wallet')
-        }
-      }
-
-      selectProvider().catch(err => {
-        // This may fail on restricted pages where content scripts can't run
-        console.warn('⚠️ [useWalletFromStorage] Could not sync provider:', err.message)
-      })
-    }
-  }, [walletAddress, walletType])
-
-  useEffect(() => {
-    // Initial check
-    const checkWallet = async () => {
-      try {
-        const result = await chrome.storage.session.get(['walletAddress', 'walletType'])
-        setWalletAddress(result.walletAddress || null)
-        setWalletType(result.walletType || null)
-      } catch (error) {
-        console.error('Error reading wallet from storage:', error)
-        setWalletAddress(null)
-        setWalletType(null)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    checkWallet()
-
-    // Listen for changes
-    const listener = (
-      changes: { [key: string]: chrome.storage.StorageChange },
-      area: string
-    ) => {
-      if (area === 'session') {
-        if (changes.walletAddress) {
-          setWalletAddress(changes.walletAddress.newValue || null)
-        }
-        if (changes.walletType) {
-          setWalletType(changes.walletType.newValue || null)
-        }
-      }
-    }
-
-    chrome.storage.onChanged.addListener(listener)
-    return () => chrome.storage.onChanged.removeListener(listener)
-  }, [])
-
-  return {
-    walletAddress,
-    walletType,
-    authenticated: !!walletAddress,
-    isLoading,
-    ready: !isLoading,
-  }
+  return useSyncExternalStore(subscribe, getSnapshot)
 }
 
 /**

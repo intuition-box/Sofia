@@ -1,0 +1,151 @@
+/**
+ * Quest System Types & Definitions
+ * Shared across useQuestSystem hook, services, and UI components
+ */
+
+// Social platform type
+export type SocialPlatform = 'discord' | 'youtube' | 'spotify' | 'twitch' | 'twitter'
+
+// Quest definition interface
+export interface Quest {
+  id: string
+  title: string
+  description: string
+  current: number
+  total: number
+  status: 'locked' | 'active' | 'completed' | 'claimable_xp'
+  statusColor: string
+  xpReward: number
+  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social' | 'social-link' | 'discovery'
+  milestone?: number
+  claimable?: boolean
+  recurringType?: 'daily' | 'weekly'
+  platform?: SocialPlatform
+}
+
+// Quest definition without runtime state (current, status, statusColor)
+export type QuestDefinition = Omit<Quest, 'current' | 'status' | 'statusColor'>
+
+// User progress data
+export interface UserProgress {
+  signalsCreated: number
+  bookmarkListsCreated: number
+  bookmarkedSignals: number
+  oauthConnections: number
+  followedUsers: number
+  trustedUsers: number
+  currentStreak: number
+  hasSignalToday: boolean
+  hasCertificationToday: boolean
+  pulseLaunches: number
+  weeklyPulseUses: number
+  discordConnected: boolean
+  youtubeConnected: boolean
+  spotifyConnected: boolean
+  twitchConnected: boolean
+  twitterConnected: boolean
+  pioneerCount: number
+  explorerCount: number
+  contributorCount: number
+  totalDiscoveries: number
+  uniqueIntentionTypes: number
+}
+
+// Quest system result (hook return type)
+export interface QuestSystemResult {
+  quests: Quest[]
+  activeQuests: Quest[]
+  completedQuests: Quest[]
+  claimableQuests: Quest[]
+  userProgress: UserProgress
+  level: number
+  totalXP: number
+  xpForNextLevel: number
+  loading: boolean
+  error: string | null
+  claimingQuestId: string | null
+  refreshQuests: () => Promise<void>
+  markQuestCompleted: (questId: string) => Promise<void>
+  claimQuestXP: (questId: string) => Promise<{ success: boolean; txHash?: string; error?: string }>
+}
+
+// Atom operations passed from React hooks to services
+// Uses `any` for pinned atom data since it's an opaque passthrough between pin → create
+export interface AtomOperations {
+  ensureProxyApproval: () => Promise<void>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pinAtomToIPFS: (data: { name: string; description: string; url: string }) => Promise<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createAtomsFromPinned: (pinnedAtoms: any[]) => Promise<Record<string, { vaultId: string }>>
+}
+
+// Define all available quests with their milestones and XP rewards
+export const QUEST_DEFINITIONS: QuestDefinition[] = [
+  // Daily quests (reset every day)
+  { id: 'daily-certification', title: 'Daily Certification', description: 'Certify a page today', total: 1, xpReward: 25, type: 'discovery', recurringType: 'daily' },
+
+  // First-time quests (easy, low XP)
+  { id: 'signal-1', title: 'First Signal', description: 'Create your very first signal', total: 1, xpReward: 50, type: 'signal', milestone: 1 },
+  { id: 'bookmark-list-1', title: 'Organizer', description: 'Create your first bookmark list', total: 1, xpReward: 30, type: 'bookmark', milestone: 1 },
+  { id: 'bookmark-signal-1', title: 'Bookworm', description: 'Bookmark your first signal', total: 1, xpReward: 20, type: 'bookmark', milestone: 1 },
+
+  // Social Link quests - one per platform
+  { id: 'link-discord', title: 'Discord Linked', description: 'Link your Discord account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'discord' },
+  { id: 'link-youtube', title: 'YouTube Linked', description: 'Link your YouTube account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'youtube' },
+  { id: 'link-spotify', title: 'Spotify Linked', description: 'Link your Spotify account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'spotify' },
+  { id: 'link-twitch', title: 'Twitch Linked', description: 'Link your Twitch account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'twitch' },
+  { id: 'link-twitter', title: 'Twitter Linked', description: 'Link your Twitter account on-chain', total: 1, xpReward: 100, type: 'social-link', milestone: 1, claimable: true, platform: 'twitter' },
+
+  // Social Linked - bonus quest when all 5 platforms are linked
+  { id: 'social-linked', title: 'Social Linked', description: 'Link all 5 social platforms on-chain', total: 5, xpReward: 500, type: 'oauth', milestone: 5, claimable: true },
+
+  // Progressive signal milestones
+  { id: 'signal-10', title: 'Signal Rookie', description: 'Create 10 signals', total: 10, xpReward: 100, type: 'signal', milestone: 10 },
+  { id: 'signal-50', title: 'Signal Maker', description: 'Create 50 signals', total: 50, xpReward: 200, type: 'signal', milestone: 50 },
+  { id: 'signal-100', title: 'Centurion', description: 'Create 100 signals', total: 100, xpReward: 400, type: 'signal', milestone: 100 },
+  { id: 'signal-500', title: 'Signal Pro', description: 'Create 500 signals', total: 500, xpReward: 1000, type: 'signal', milestone: 500 },
+  { id: 'signal-1000', title: 'Signal Master', description: 'Create 1,000 signals', total: 1000, xpReward: 2000, type: 'signal', milestone: 1000 },
+  { id: 'signal-5000', title: 'Signal Legend', description: 'Create 5,000 signals', total: 5000, xpReward: 5000, type: 'signal', milestone: 5000 },
+  { id: 'signal-10000', title: 'Signal Titan', description: 'Create 10,000 signals', total: 10000, xpReward: 10000, type: 'signal', milestone: 10000 },
+  { id: 'signal-50000', title: 'Signal God', description: 'Create 50,000 signals', total: 50000, xpReward: 25000, type: 'signal', milestone: 50000 },
+  { id: 'signal-100000', title: 'Signal Immortal', description: 'Create 100,000 signals', total: 100000, xpReward: 50000, type: 'signal', milestone: 100000 },
+
+  // Bookmark milestones
+  { id: 'bookmark-signal-50', title: 'Archivist', description: 'Bookmark 50 signals', total: 50, xpReward: 250, type: 'bookmark', milestone: 50 },
+
+  // Follow milestones
+  { id: 'follow-50', title: 'Influencer', description: 'Follow 50 users', total: 50, xpReward: 300, type: 'follow', milestone: 50 },
+
+  // Trust milestones
+  { id: 'trust-10', title: 'Trustworthy', description: 'Trust 10 users', total: 10, xpReward: 200, type: 'trust', milestone: 10 },
+
+  // Streak quests
+  { id: 'streak-7', title: 'Committed', description: 'Maintain a 7-day signal streak', total: 7, xpReward: 200, type: 'streak', milestone: 7 },
+  { id: 'streak-30', title: 'Dedicated', description: 'Maintain a 30-day signal streak', total: 30, xpReward: 1000, type: 'streak', milestone: 30 },
+  { id: 'streak-100', title: 'Relentless', description: 'Maintain a 100-day signal streak', total: 100, xpReward: 5000, type: 'streak', milestone: 100 },
+
+  // Pulse quests
+  { id: 'pulse-first', title: 'Explorer', description: 'Launch your first Pulse analysis', total: 1, xpReward: 30, type: 'pulse', milestone: 1 },
+  { id: 'pulse-weekly-5', title: 'Pulse Master', description: 'Use Pulse 5 times this week', total: 5, xpReward: 150, type: 'pulse', recurringType: 'weekly' },
+
+  // Curator quests
+  { id: 'curator-10', title: 'Collector', description: 'Bookmark 10 signals', total: 10, xpReward: 150, type: 'curator', milestone: 10 },
+  { id: 'curator-50', title: 'Curator', description: 'Bookmark 50 signals', total: 50, xpReward: 400, type: 'curator', milestone: 50 },
+
+  // Social quests
+  { id: 'social-butterfly', title: 'Social Butterfly', description: 'Follow 10 users this week', total: 10, xpReward: 200, type: 'social', recurringType: 'weekly' },
+  { id: 'networker-25', title: 'Networker', description: 'Follow 25 users', total: 25, xpReward: 350, type: 'social', milestone: 25 },
+
+  // Discovery quests
+  { id: 'discovery-first', title: 'First Step', description: 'Certify your first page', total: 1, xpReward: 50, type: 'discovery', milestone: 1 },
+  { id: 'discovery-pioneer', title: 'Trailblazer', description: 'Be the first to certify a page (Pioneer)', total: 1, xpReward: 200, type: 'discovery', milestone: 1 },
+  { id: 'discovery-10', title: 'Pathfinder', description: 'Certify 10 pages', total: 10, xpReward: 100, type: 'discovery', milestone: 10 },
+  { id: 'discovery-50', title: 'Cartographer', description: 'Certify 50 pages', total: 50, xpReward: 300, type: 'discovery', milestone: 50 },
+  { id: 'discovery-100', title: 'World Explorer', description: 'Certify 100 pages', total: 100, xpReward: 500, type: 'discovery', milestone: 100 },
+  { id: 'intention-variety', title: 'Multi-Purpose', description: 'Use all 5 intention types', total: 5, xpReward: 150, type: 'discovery', milestone: 5 },
+]
+
+// Build QUEST_XP_REWARDS map from definitions (single source of truth)
+export const QUEST_XP_REWARDS: Record<string, number> = Object.fromEntries(
+  QUEST_DEFINITIONS.map(q => [q.id, q.xpReward])
+)

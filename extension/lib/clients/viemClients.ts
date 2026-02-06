@@ -1,9 +1,6 @@
 import { createWalletClient, custom, createPublicClient, http } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
-import { getWalletProvider, selectProviderByName } from '../services/walletProvider'
-
-// Cache the last selected wallet type to avoid redundant selectProviderByName calls
-let lastSelectedWalletType: string | null = null
+import { getWalletProvider } from '../services/walletProvider'
 
 /**
  * Ensure there's an HTTPS tab available for wallet transactions
@@ -13,7 +10,7 @@ async function ensureHttpsTabForWallet(): Promise<void> {
     try {
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
         const activeTab = tabs[0]
-        
+
         // Check if current tab is HTTPS
         if (activeTab?.url && activeTab.url.startsWith('https://')) {
             return // Already on HTTPS, we're good
@@ -21,9 +18,9 @@ async function ensureHttpsTabForWallet(): Promise<void> {
 
         // No HTTPS tab available - open one
         console.log('⚠️ No HTTPS tab available, opening sofia.intuition.box/values')
-        await chrome.tabs.create({ 
+        await chrome.tabs.create({
             url: 'https://sofia.intuition.box/values',
-            active: true 
+            active: true
         })
 
         // Wait a bit for the tab to load and content script to inject
@@ -49,15 +46,8 @@ export const getClients = async () => {
     // Ensure we have an HTTPS tab for wallet operations
     await ensureHttpsTabForWallet()
 
-    // Ensure the correct wallet provider is selected based on stored walletType
-    // This prevents transactions from going to the wrong wallet (e.g., Rabby instead of MetaMask)
-    // Only re-select provider if wallet type changed since last call
-    const sessionData = await chrome.storage.session.get(['walletType'])
-    if (sessionData.walletType && sessionData.walletType !== lastSelectedWalletType) {
-        await selectProviderByName(sessionData.walletType)
-        lastSelectedWalletType = sessionData.walletType
-    }
-
+    // Provider selection is handled by the useWalletFromStorage singleton
+    // No need to call selectProviderByName here — it's already synced
     const provider = await getWalletProvider()
 
     const accounts = await provider.request({
