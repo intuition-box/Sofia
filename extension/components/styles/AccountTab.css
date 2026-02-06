@@ -879,6 +879,21 @@
   color: #FBF7F5;
 }
 
+.sub-tab.has-claimable {
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.25), 0 0 16px rgba(255, 215, 0, 0.1);
+  animation: sub-tab-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes sub-tab-glow {
+  from {
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.2), 0 0 12px rgba(255, 215, 0, 0.08);
+  }
+  to {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.35), 0 0 20px rgba(255, 215, 0, 0.15);
+  }
+}
+
 /* ========== STATS TAB CONTENT ========== */
 .stats-tab-content {
   padding: 0 16px 80px;
@@ -1332,6 +1347,95 @@
   color: rgba(15, 20, 32, 0.5);
 }
 
+/* In-progress achievements (active quests) */
+.achievement-card.in-progress .achievement-card-img {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+.achievement-card.in-progress .achievement-card-info {
+  opacity: 0.6;
+}
+
+/* Keep progress overlay fully visible on grayed cards */
+.achievement-card.in-progress .achievement-progress-overlay {
+  opacity: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
+}
+
+/* Progress circle overlay on card image */
+.achievement-progress-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Progress text (e.g. "3/5") */
+.achievement-progress-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Claimable achievements (golden glow) */
+.achievement-card.claimable {
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.15);
+  animation: achievement-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes achievement-glow {
+  from {
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2), 0 0 16px rgba(255, 215, 0, 0.1);
+  }
+  to {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4), 0 0 24px rgba(255, 215, 0, 0.2);
+  }
+}
+
+/* Claim button inside achievement card */
+.achievement-claim-btn {
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #0f1420;
+}
+
+.achievement-claim-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.achievement-claim-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.achievement-claim-btn.claiming {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.achievement-claim-btn.verify {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: white;
+}
+
+.achievement-claim-btn.verify:hover {
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+}
 
 /* ========== ACHIEVEMENTS TAB CONTENT ========== */
 .achievements-tab-content {

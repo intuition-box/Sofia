@@ -12,14 +12,13 @@ import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../../../lib/config/constants'
 import { useQuestSystem } from '../../../hooks/useQuestSystem'
 import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
-import QuestsTab from './QuestsTab'
 import StatsTab from './StatsTab'
 import AchievementsTab from './AchievementsTab'
 import { useIdentityResolution } from '../../../hooks/useIdentityResolution'
 import ProfileHeader from '../../ui/ProfileHeader'
 import '../../styles/AccountTab.css'
 
-type SubTab = 'quests' | 'stats' | 'achievements'
+type SubTab = 'stats' | 'achievements'
 
 const AccountTab = () => {
   const { walletAddress } = useWalletFromStorage()
@@ -50,7 +49,7 @@ const AccountTab = () => {
   })
 
   // Quest system hook - provides real quests based on user progress
-  const { quests, activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
+  const { quests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
 
   // Social Verifier hook - handles Social Linked attestation
   const { isSocialVerified, canVerify, isVerifying, verifySocials } = useSocialVerifier()
@@ -304,23 +303,17 @@ const AccountTab = () => {
           Stats
         </button>
         <button
-          className={`sub-tab ${activeTab === 'quests' ? 'active' : ''}`}
-          onClick={() => setActiveTab('quests')}
-        >
-          Quests
-        </button>
-        <button
-          className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''}`}
+          className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
           onClick={() => setActiveTab('achievements')}
         >
           Success
         </button>
       </div>
 
-      {/* Tab Content - Lazy loaded */}
-      {activeTab === 'quests' && (
-        <QuestsTab
-          quests={[...claimableQuests, ...activeQuests]}
+      {/* Tab Content */}
+      {activeTab === 'achievements' && (
+        <AchievementsTab
+          quests={quests}
           loading={questsLoading}
           claimingQuestId={claimingQuestId}
           isSocialVerified={isSocialVerified}
@@ -331,10 +324,6 @@ const AccountTab = () => {
           onMarkCompleted={markQuestCompleted}
           onRefresh={handleFullRefresh}
         />
-      )}
-
-      {activeTab === 'achievements' && (
-        <AchievementsTab completedQuests={completedQuests} quests={quests} loading={questsLoading} />
       )}
 
       {activeTab === 'stats' && <StatsTab />}
