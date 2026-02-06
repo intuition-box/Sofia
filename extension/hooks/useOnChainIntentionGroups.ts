@@ -185,14 +185,15 @@ export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => 
           continue
         }
 
-        const certification = PREDICATE_TO_CERTIFICATION[triple.predicate_id] || 'unknown'
+        const predicateId = triple.predicate?.term_id || ''
+        const certification = PREDICATE_TO_CERTIFICATION[predicateId] || 'unknown'
         const position = triple.positions?.[0]
 
         const urlRecord: OnChainUrl = {
           url: label.startsWith('http') ? label : `https://${label}`,
           label,
           certification,
-          predicateId: triple.predicate_id,
+          predicateId,
           shares: position?.shares || '0',
           certifiedAt: position?.created_at || ''
         }

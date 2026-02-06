@@ -273,6 +273,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     result: amplifyResult,
     reset: resetAmplify
   } = useGroupAmplify()
+  const [amplified, setAmplified] = useState(false)
+
+  // Reset amplified state when level changes (new predicate available)
+  useEffect(() => {
+    setAmplified(false)
+  }, [group.level])
 
   // Modal state for on-chain certification
   const [showWeightModal, setShowWeightModal] = useState(false)
@@ -326,7 +332,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   // Handle amplify (publish identity on-chain)
   const handleAmplify = async () => {
-    await amplify(group.id)
+    const result = await amplify(group.id)
+    if (result.success) setAmplified(true)
   }
 
   // Use on-chain stats for certification count
@@ -576,7 +583,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               </div>
             )}
           </div>
-          {!amplifyResult?.success && (
+          {!amplified && !amplifyResult?.success && (
             <button
               className="amplify-btn-inline"
               onClick={handleAmplify}
