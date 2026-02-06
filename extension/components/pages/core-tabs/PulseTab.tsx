@@ -36,7 +36,8 @@ const PulseTab = () => {
   const [expandedTriplets, setExpandedTriplets] = useState<Set<string>>(new Set())
   const [selectedSessions, setSelectedSessions] = useState<Set<number>>(new Set())
   const [selectedTriplets, setSelectedTriplets] = useState<Set<string>>(new Set()) // Format: "sessionIndex-tripletIndex"
-  
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+
   // Modal state for custom weighting
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [selectedTripletsForWeighting, setSelectedTripletsForWeighting] = useState<EchoTriplet[]>([])
@@ -216,54 +217,63 @@ const PulseTab = () => {
   }
 
   // Fetch pulse analyses from IndexedDB
-  useEffect(() => {
-    const fetchPulseAnalyses = async () => {
-      try {
-        console.log("🫀 [PulseTab] Fetching pulse analyses from IndexedDB...")
-        const messages = await tripletsDataService.getAllMessages()
-        
-        console.log("🫀 [PulseTab] Total messages in IndexedDB:", messages.length)
-        console.log("🫀 [PulseTab] Message types distribution:", messages.reduce((acc, m) => {
-          acc[m.type] = (acc[m.type] || 0) + 1
-          return acc
-        }, {} as Record<string, number>))
-        
-        // Filter messages that are pulse analyses
-        const pulseMessages = messages.filter(msg => msg.type === 'pulse_analysis')
-        
-        console.log("🫀 [PulseTab] Found pulse messages:", pulseMessages.length)
-        console.log("🫀 [PulseTab] Pulse messages details:", pulseMessages)
-        
-        // Parse and group themes by message (analysis session)
-        const analysisGroups: PulseAnalysis[] = []
-        pulseMessages.forEach((msg, msgIndex) => {
-          console.log("🫀 [PulseTab] Parsing message:", msg.id, "content:", msg.content)
-          const themes = parseThemesFromMessage(msg)
-          console.log("🫀 [PulseTab] Parsed themes:", themes.length, themes)
-          if (themes.length > 0) {
-            analysisGroups.push({
-              msgIndex,
-              messageId: msg.id,
-              timestamp: msg.timestamp,
-              themes
-            })
-          }
-        })
-        
-        // Sort by timestamp (most recent first)
-        analysisGroups.sort((a, b) => b.timestamp - a.timestamp)
-        
-        console.log("🫀 [PulseTab] Created analysis groups:", analysisGroups.length)
-        setPulseAnalyses(analysisGroups)
-      } catch (error) {
-        console.error("🫀 [PulseTab] Error fetching pulse analyses:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const fetchPulseAnalyses = async () => {
+    try {
+      console.log("🫀 [PulseTab] Fetching pulse analyses from IndexedDB...")
+      const messages = await tripletsDataService.getAllMessages()
 
+      console.log("🫀 [PulseTab] Total messages in IndexedDB:", messages.length)
+      console.log("🫀 [PulseTab] Message types distribution:", messages.reduce((acc, m) => {
+        acc[m.type] = (acc[m.type] || 0) + 1
+        return acc
+      }, {} as Record<string, number>))
+
+      // Filter messages that are pulse analyses
+      const pulseMessages = messages.filter(msg => msg.type === 'pulse_analysis')
+
+      console.log("🫀 [PulseTab] Found pulse messages:", pulseMessages.length)
+      console.log("🫀 [PulseTab] Pulse messages details:", pulseMessages)
+
+      // Parse and group themes by message (analysis session)
+      const analysisGroups: PulseAnalysis[] = []
+      pulseMessages.forEach((msg, msgIndex) => {
+        console.log("🫀 [PulseTab] Parsing message:", msg.id, "content:", msg.content)
+        const themes = parseThemesFromMessage(msg)
+        console.log("🫀 [PulseTab] Parsed themes:", themes.length, themes)
+        if (themes.length > 0) {
+          analysisGroups.push({
+            msgIndex,
+            messageId: msg.id,
+            timestamp: msg.timestamp,
+            themes
+          })
+        }
+      })
+
+      // Sort by timestamp (most recent first)
+      analysisGroups.sort((a, b) => b.timestamp - a.timestamp)
+
+      console.log("🫀 [PulseTab] Created analysis groups:", analysisGroups.length)
+      setPulseAnalyses(analysisGroups)
+    } catch (error) {
+      console.error("🫀 [PulseTab] Error fetching pulse analyses:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchPulseAnalyses()
   }, [])
+
+  // Start pulse analysis with loading state
+  const startPulseAnalysis = () => {
+    setIsAnalyzing(true)
+    chrome.runtime.sendMessage({ type: 'START_PULSE_ANALYSIS' }, () => {
+      // Re-fetch analyses after completion
+      fetchPulseAnalyses().finally(() => setIsAnalyzing(false))
+    })
+  }
 
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleString()
@@ -507,7 +517,7 @@ const PulseTab = () => {
     )
   }
 
-  if (pulseAnalyses.length === 0) {
+  if (isAnalyzing) {
     return (
       <div className="pulse-container">
         <div className="pulse-loading-indicator">
@@ -517,9 +527,37 @@ const PulseTab = () => {
     )
   }
 
+  if (pulseAnalyses.length === 0) {
+    return (
+      <div className="pulse-container">
+        <div className="reveal-skills-cta" style={{ flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '40px 20px' }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', textAlign: 'center', maxWidth: '280px', lineHeight: '1.5' }}>
+            Analyze your open tabs to discover browsing patterns and extract semantic signals from your current session.
+          </p>
+          <button
+            className="btn iridescence-btn"
+            onClick={startPulseAnalysis}
+          >
+            Pulse Analysis
+          </button>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="pulse-container">
+      {/* Pulse Analysis CTA */}
+      <div className="reveal-skills-cta">
+        <button
+          className="btn iridescence-btn"
+          onClick={startPulseAnalysis}
+        >
+          Pulse Analysis
+        </button>
+      </div>
+
       {/* Button to select all triplets when none selected */}
       {selectedTriplets.size === 0 && pulseAnalyses.length > 0 && (
         <div className="pulse-selection-panel">
