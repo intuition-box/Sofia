@@ -10,7 +10,7 @@ import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
 import { groupManager } from "../lib/services/GroupManager"
 import { IntentionGroupsService } from "../lib/database/indexedDB-methods"
-import { xpService, getLevelUpCost } from "../lib/services/XPService"
+import { xpService, XPServiceClass, getLevelUpCost } from "../lib/services/XPService"
 import { sessionTracker, type TrackedUrl, type DomainCluster } from "../lib/services/SessionTracker"
 import { levelUpService } from "../lib/services/LevelUpService"
 
@@ -127,6 +127,8 @@ export function setupMessageHandlers(): void {
             // Update lastActiveWallet
             await chrome.storage.local.set({ lastActiveWallet: walletAddress })
             await chrome.storage.session.set({ walletAddress, walletType })
+            // Migrate XP from non-prefixed keys to wallet-prefixed keys (one-time)
+            await XPServiceClass.migrateToWalletKeys(walletAddress)
             console.log('✅ Wallet connected from external page:', walletAddress, 'type:', walletType)
             await initializeOnWalletConnect()
             sendResponse({ success: true })
@@ -432,7 +434,8 @@ export function setupMessageHandlers(): void {
 
       case "GET_USER_XP":
         try {
-          const xpStats = await xpService.getStats()
+          const { lastActiveWallet: xpWallet } = await chrome.storage.local.get('lastActiveWallet')
+          const xpStats = await xpService.getStats(xpWallet || '')
           sendResponse({ success: true, ...xpStats })
         } catch (error) {
           console.error("❌ GET_USER_XP error:", error)
@@ -528,7 +531,8 @@ export function setupMessageHandlers(): void {
             return true
           }
           const cost = getLevelUpCost(lvlGroup.level)
-          const xpStats = await xpService.getStats()
+          const { lastActiveWallet: lvlWallet } = await chrome.storage.local.get('lastActiveWallet')
+          const xpStats = await xpService.getStats(lvlWallet || '')
           sendResponse({
             success: true,
             cost,
