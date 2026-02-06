@@ -1,10 +1,50 @@
 /**
  * QuestsTab Component
- * Displays the list of quests with progress indicators and claim buttons
+ * Unified quest view: grid layout with images, progress bars, and claim buttons
+ * Merges previous QuestsTab (actions) + AchievementsTab (visual style)
  */
 
 import { useState } from 'react'
 import type { Quest } from '../../../hooks/useQuestSystem'
+
+import bookmarkImg from '../../ui/img/questssuccess/bookmark.png'
+import curatorImg from '../../ui/img/questssuccess/curator.png'
+import discoveryImg from '../../ui/img/questssuccess/discovery.png'
+import followImg from '../../ui/img/questssuccess/follow.png'
+import oauthImg from '../../ui/img/questssuccess/Oauth.png'
+import pulseImg from '../../ui/img/questssuccess/pulse.png'
+import signalImg from '../../ui/img/questssuccess/Signal.png'
+import socialImg from '../../ui/img/questssuccess/social.png'
+import streakImg from '../../ui/img/questssuccess/streak.png'
+import trustImg from '../../ui/img/questssuccess/trust.png'
+
+const typeImages: Record<string, string> = {
+  signal: signalImg,
+  bookmark: bookmarkImg,
+  oauth: oauthImg,
+  'social-link': oauthImg,
+  follow: followImg,
+  trust: trustImg,
+  streak: streakImg,
+  pulse: pulseImg,
+  curator: curatorImg,
+  social: socialImg,
+  discovery: discoveryImg,
+}
+
+const typeLabels: Record<string, string> = {
+  signal: 'Signal',
+  bookmark: 'Bookmark',
+  oauth: 'OAuth',
+  'social-link': 'Social',
+  follow: 'Follow',
+  trust: 'Trust',
+  streak: 'Streak',
+  pulse: 'Pulse',
+  curator: 'Curator',
+  social: 'Social',
+  discovery: 'Discovery',
+}
 
 interface QuestsTabProps {
   quests: Quest[]
@@ -42,29 +82,23 @@ const QuestsTab = ({
       setRefreshing(false)
     }
   }
-  const calculateProgress = (current: number, total: number) => {
-    return (current / total) * 100
-  }
 
   if (loading) {
     return (
-      <div className="quests-section">
-        <div className="quests-loading">Loading quests...</div>
+      <div className="achievements-tab-content">
+        <div className="achievements-loading">Loading quests...</div>
       </div>
     )
   }
 
   if (quests.length === 0) {
     return (
-      <div className="quests-section">
-        <div className="quests-empty">
-          <p>No active quests. Complete your first action to unlock quests!</p>
+      <div className="achievements-tab-content">
+        <div className="achievements-empty">
+          <h3>No quests yet</h3>
+          <p>Complete your first action to unlock quests!</p>
           {onRefresh && (
-            <button
-              className="quest-refresh-btn"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
+            <button className="quest-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
               {refreshing ? 'Refreshing...' : 'Reload quests'}
             </button>
           )}
@@ -73,8 +107,21 @@ const QuestsTab = ({
     )
   }
 
+  // Sort: claimable > active > completed > locked
+  const sorted = [...quests].sort((a, b) => {
+    const order: Record<string, number> = { claimable_xp: 0, active: 1, completed: 2, locked: 3 }
+    return (order[a.status] ?? 4) - (order[b.status] ?? 4)
+  })
+
+  const getCardClass = (quest: Quest) => {
+    if (quest.status === 'completed') return `achievement-card ${quest.type}`
+    if (quest.status === 'claimable_xp') return `achievement-card claimable ${quest.type}`
+    if (quest.status === 'active') return 'achievement-card in-progress'
+    return 'achievement-card locked'
+  }
+
   return (
-    <div className="quests-section">
+    <div className="achievements-tab-content">
       {onRefresh && (
         <button
           className="quest-refresh-btn-inline"
@@ -85,123 +132,110 @@ const QuestsTab = ({
           {refreshing ? '...' : '\u21BB'}
         </button>
       )}
-      {quests.map((quest) => {
-        const progress = calculateProgress(quest.current, quest.total)
-        const radius = 28
-        const circumference = 2 * Math.PI * radius
-        const strokeDashoffset = circumference - (progress / 100) * circumference
+      <div className="achievements-grid">
+        {sorted.map((quest) => {
+          const progress = quest.total > 0 ? (quest.current / quest.total) * 100 : 0
+          const showProgress = quest.status === 'active' || quest.status === 'claimable_xp'
 
-        return (
-          <div key={quest.id} className="quest-item">
-            <div className="quest-progress">
-              <svg width="70" height="70" viewBox="0 0 70 70">
-                {/* Background circle */}
-                <circle
-                  cx="35"
-                  cy="35"
-                  r={radius}
-                  stroke="#2d2d2d"
-                  strokeWidth="6"
-                  fill="none"
+          return (
+            <div key={quest.id} className={getCardClass(quest)}>
+              <div className="achievement-card-visual">
+                <img
+                  src={typeImages[quest.type] || signalImg}
+                  alt={quest.title}
+                  className="achievement-card-img"
                 />
-                {/* Progress circle */}
-                <circle
-                  cx="35"
-                  cy="35"
-                  r={radius}
-                  stroke={quest.statusColor}
-                  strokeWidth="6"
-                  fill="none"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  transform="rotate(-90 35 35)"
-                  style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                />
-                {/* Percentage text */}
-                <text
-                  x="35"
-                  y="35"
-                  textAnchor="middle"
-                  dy="6"
-                  fontSize="14"
-                  fontWeight="600"
-                  fill="#fff"
-                >
-                  {Math.round(progress)}%
-                </text>
-              </svg>
+              </div>
+
+              {/* Progress bar for active/claimable quests */}
+              {showProgress && (
+                <div className="achievement-progress-bar">
+                  <div
+                    className="achievement-progress-fill"
+                    style={{
+                      width: `${Math.min(progress, 100)}%`,
+                      backgroundColor: quest.statusColor
+                    }}
+                  />
+                </div>
+              )}
+
+              <div className="achievement-card-info">
+                <div className="achievement-info-row">
+                  <div className="achievement-title">{quest.title}</div>
+                  <span className={`achievement-type-badge ${quest.status === 'locked' || quest.status === 'active' ? 'locked' : quest.type}`}>
+                    {typeLabels[quest.type] || quest.type}
+                  </span>
+                </div>
+
+                {/* Progress text for active quests */}
+                {quest.status === 'active' && (
+                  <div className="achievement-progress-text">
+                    {quest.current}/{quest.total}
+                  </div>
+                )}
+
+                <div className="achievement-info-row">
+                  <span className={`achievement-xp ${quest.status === 'locked' || quest.status === 'active' ? 'locked' : quest.type}`}>
+                    {quest.xpReward} XP
+                  </span>
+                </div>
+
+                {/* Claim XP button */}
+                {quest.status === 'claimable_xp' && quest.id !== 'social-linked' && (
+                  <button
+                    className={`achievement-claim-btn ${claimingQuestId === quest.id ? 'claiming' : ''}`}
+                    onClick={async () => {
+                      const result = await onClaimXP(quest.id)
+                      if (!result.success) {
+                        console.error('Claim failed:', result.error)
+                        alert(`Claim failed: ${result.error}`)
+                      }
+                    }}
+                    disabled={claimingQuestId !== null}
+                  >
+                    {claimingQuestId === quest.id ? '...' : `Claim ${quest.xpReward} XP`}
+                  </button>
+                )}
+
+                {/* Social Linked: verify first */}
+                {quest.id === 'social-linked' && quest.status === 'claimable_xp' && !isSocialVerified && canVerify && (
+                  <button
+                    className="achievement-claim-btn verify"
+                    onClick={async () => {
+                      const result = await onVerifySocials()
+                      if (result.success) {
+                        onMarkCompleted('social-linked')
+                      } else {
+                        alert(`Verification failed: ${result.error}`)
+                      }
+                    }}
+                    disabled={isVerifying}
+                  >
+                    {isVerifying ? '...' : 'Verify'}
+                  </button>
+                )}
+
+                {/* Social Linked: claim after verify */}
+                {quest.id === 'social-linked' && quest.status === 'claimable_xp' && isSocialVerified && (
+                  <button
+                    className={`achievement-claim-btn ${claimingQuestId === quest.id ? 'claiming' : ''}`}
+                    onClick={async () => {
+                      const result = await onClaimXP(quest.id)
+                      if (!result.success) {
+                        alert(`Claim failed: ${result.error}`)
+                      }
+                    }}
+                    disabled={claimingQuestId !== null}
+                  >
+                    {claimingQuestId === quest.id ? '...' : `Claim ${quest.xpReward} XP`}
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="quest-details">
-              <span className="quest-badge-name">{quest.title}</span>
-              <h4 className="quest-title">{quest.description}</h4>
-              <p className="quest-progress-text">{quest.current}/{quest.total}</p>
-              <span className="quest-status" style={{ color: quest.statusColor }}>
-                {quest.status === 'active' ? 'In Progress' :
-                 quest.status === 'claimable_xp' ? 'Ready to Claim!' :
-                 quest.status === 'completed' ? 'Claimed' : 'Locked'} • +{quest.xpReward} XP
-              </span>
-
-              {/* Claim XP button for completed quests */}
-              {quest.status === 'claimable_xp' && quest.id !== 'social-linked' && (
-                <button
-                  className={`claim-xp-button ${claimingQuestId === quest.id ? 'claiming' : ''}`}
-                  onClick={async () => {
-                    const result = await onClaimXP(quest.id)
-                    if (!result.success) {
-                      console.error('Claim failed:', result.error)
-                      alert(`Claim failed: ${result.error}`)
-                    }
-                  }}
-                  disabled={claimingQuestId !== null}
-                >
-                  {claimingQuestId === quest.id ? 'Claiming...' : `Claim ${quest.xpReward} XP`}
-                </button>
-              )}
-
-              {/* Social Linked button for social-linked quest (first verify on-chain, then XP) */}
-              {quest.id === 'social-linked' && quest.status === 'claimable_xp' && !isSocialVerified && canVerify && (
-                <button
-                  className="social-link-button"
-                  onClick={async () => {
-                    const result = await onVerifySocials()
-                    if (result.success) {
-                      onMarkCompleted('social-linked')
-                    } else {
-                      console.error('Verification failed:', result.error)
-                      alert(`Verification failed: ${result.error}`)
-                    }
-                  }}
-                  disabled={isVerifying}
-                >
-                  {isVerifying ? 'Verifying...' : 'Verify Socials'}
-                </button>
-              )}
-
-              {/* Claim XP button for social-linked after on-chain verification */}
-              {quest.id === 'social-linked' && quest.status === 'claimable_xp' && isSocialVerified && (
-                <button
-                  className={`claim-xp-button ${claimingQuestId === quest.id ? 'claiming' : ''}`}
-                  onClick={async () => {
-                    const result = await onClaimXP(quest.id)
-                    if (!result.success) {
-                      console.error('Claim failed:', result.error)
-                      alert(`Claim failed: ${result.error}`)
-                    }
-                  }}
-                  disabled={claimingQuestId !== null}
-                >
-                  {claimingQuestId === quest.id ? 'Claiming...' : `Claim ${quest.xpReward} XP`}
-                </button>
-              )}
-
-              {quest.id === 'social-linked' && quest.status === 'completed' && (
-                <span className="social-linked-badge">Social Linked</span>
-              )}
-            </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }
