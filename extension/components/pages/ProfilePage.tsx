@@ -6,17 +6,17 @@ import '../styles/ProfilePage.css'
 
 // Lazy load tabs pour optimiser le chargement
 const AccountTab = lazy(() => import('./profile-tabs/AccountTab'))
-const FollowTab = lazy(() => import('./profile-tabs/FollowTab'))
+const CommunityTab = lazy(() => import('./profile-tabs/CommunityTab'))
 const TrustCircleTab = lazy(() => import('./profile-tabs/FeedTab'))
 
 const ProfilePage = () => {
   const { goBack, activeProfileTab, setActiveProfileTab } = useRouter()
-  const [activeTab, setActiveTab] = useState<'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals'>(
-    (activeProfileTab as 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals') || 'account'
+  const [activeTab, setActiveTab] = useState<'account' | 'community' | 'trust-circle' | 'bookmarks' | 'signals'>(
+    (activeProfileTab as 'account' | 'community' | 'trust-circle' | 'bookmarks' | 'signals') || 'account'
   )
 
   // Sync local tab state with router context
-  const handleTabChange = (tab: 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals') => {
+  const handleTabChange = (tab: 'account' | 'community' | 'trust-circle' | 'bookmarks' | 'signals') => {
     setActiveTab(tab)
     setActiveProfileTab(tab)
   }
@@ -24,7 +24,7 @@ const ProfilePage = () => {
   // Restore active tab when coming back from user profile
   useEffect(() => {
     if (activeProfileTab) {
-      setActiveTab(activeProfileTab as 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals')
+      setActiveTab(activeProfileTab as 'account' | 'community' | 'trust-circle' | 'bookmarks' | 'signals')
     }
   }, [activeProfileTab])
 
@@ -36,10 +36,10 @@ const ProfilePage = () => {
             <AccountTab />
           </Suspense>
         )
-      case 'follow':
+      case 'community':
         return (
           <Suspense fallback={<div className="loading-state">Loading...</div>}>
-            <FollowTab />
+            <CommunityTab />
           </Suspense>
         )
       case 'trust-circle':
@@ -63,10 +63,10 @@ const ProfilePage = () => {
           Account
         </button>
         <button
-          className={`tab ${activeTab === 'follow' ? 'active' : ''}`}
-          onClick={() => handleTabChange('follow')}
+          className={`tab ${activeTab === 'community' ? 'active' : ''}`}
+          onClick={() => handleTabChange('community')}
         >
-          Follow
+          Community
         </button>
         <button
           className={`tab ${activeTab === 'trust-circle' ? 'active' : ''}`}

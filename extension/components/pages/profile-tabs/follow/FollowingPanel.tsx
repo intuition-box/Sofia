@@ -2,12 +2,10 @@
  * FollowingPanel - Display accounts I follow
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect } from 'react'
 import { useFollowing } from '../../../../hooks/useFollowing'
 import { useRouter } from '../../../layout/RouterProvider'
 import type { FollowAccountVM } from '../../../../types/follows'
-import type { AccountAtom } from '../../../../hooks/useGetAtomAccount'
-import { FollowSearchBox } from './FollowSearchBox'
 import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
 import { useCheckFollowStatus } from '../../../../hooks/useCheckFollowStatus'
 import TrustAccountButton from '../../../ui/TrustAccountButton'
@@ -70,23 +68,10 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
   const { accounts, loading, error, refetch } = useFollowing(walletAddress)
   const { navigateTo } = useRouter()
 
-  const [localFilter, setLocalFilter] = useState('')
-
   // Load data on mount
   useEffect(() => {
     refetch()
   }, [refetch])
-
-  // Filter accounts
-  const filteredAccounts = useMemo(() => {
-    if (!localFilter) {
-      return accounts
-    }
-
-    return accounts.filter((acc) =>
-      acc.label.toLowerCase().includes(localFilter.toLowerCase())
-    )
-  }, [accounts, localFilter])
 
   const handleNavigateToProfile = (account: typeof accounts[0]) => {
     navigateTo('user-profile', {
@@ -96,17 +81,6 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
       walletAddress: account.walletAddress,
       url: account.meta?.url,
       description: account.meta?.description
-    })
-  }
-
-  const handleSearchResultClick = (account: AccountAtom) => {
-    navigateTo('user-profile', {
-      termId: account.id,
-      label: account.label,
-      image: account.image,
-      walletAddress: account.data,
-      url: undefined,
-      description: undefined
     })
   }
 
@@ -122,20 +96,6 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
 
   return (
     <div className="follow-panel">
-      <FollowSearchBox 
-        onSelectAccount={handleSearchResultClick}
-        onFollowSuccess={() => {
-          console.log('✅ Follow successful from search')
-          refetchWithBackoff(refetch, {
-            initialDelay: 1000,
-            maxDelay: 4000,
-            maxAttempts: 3,
-            onAttempt: (attempt) => console.log(`🔄 Refetch attempt ${attempt}`)
-          })
-        }}
-        onSearchChange={setLocalFilter}
-      />
-
       {loading && (
         <div className="loading-state">
           <p>Loading following...</p>
@@ -154,12 +114,12 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
 
       {!loading && !error && (
         <div className="followed-accounts">
-          {filteredAccounts.length === 0 ? (
+          {accounts.length === 0 ? (
             <div className="empty-state">
               <p>Not following anyone yet</p>
             </div>
           ) : (
-            filteredAccounts.map((account, index) => (
+            accounts.map((account, index) => (
               <div
                 key={account.id}
                 className="followed-account-card"

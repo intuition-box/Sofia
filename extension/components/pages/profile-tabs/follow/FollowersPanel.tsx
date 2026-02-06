@@ -2,12 +2,9 @@
  * FollowersPanel - Display accounts that follow me
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect } from 'react'
 import { useFollowers } from '../../../../hooks/useFollowers'
 import { useRouter } from '../../../layout/RouterProvider'
-import type { FollowAccountVM } from '../../../../types/follows'
-import type { AccountAtom } from '../../../../hooks/useGetAtomAccount'
-import { FollowSearchBox } from './FollowSearchBox'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
 import '../../../styles/CoreComponents.css'
@@ -21,23 +18,10 @@ export function FollowersPanel({ walletAddress }: FollowersPanelProps) {
   const { accounts, loading, error, refetch } = useFollowers(walletAddress)
   const { navigateTo } = useRouter()
 
-  const [localFilter, setLocalFilter] = useState('')
-
   // Load data on mount
   useEffect(() => {
     refetch()
   }, [refetch])
-
-  // Filter accounts
-  const filteredAccounts = useMemo(() => {
-    if (!localFilter) {
-      return accounts
-    }
-
-    return accounts.filter((acc) =>
-      acc.label.toLowerCase().includes(localFilter.toLowerCase())
-    )
-  }, [accounts, localFilter])
 
   const handleNavigateToProfile = (account: typeof accounts[0]) => {
     navigateTo('user-profile', {
@@ -47,17 +31,6 @@ export function FollowersPanel({ walletAddress }: FollowersPanelProps) {
       walletAddress: account.walletAddress,
       url: account.meta?.url,
       description: account.meta?.description
-    })
-  }
-
-  const handleSearchResultClick = (account: AccountAtom) => {
-    navigateTo('user-profile', {
-      termId: account.id,
-      label: account.label,
-      image: account.image,
-      walletAddress: account.data,
-      url: undefined,
-      description: undefined
     })
   }
 
@@ -73,12 +46,6 @@ export function FollowersPanel({ walletAddress }: FollowersPanelProps) {
 
   return (
     <div className="follow-panel">
-      <FollowSearchBox 
-        onSelectAccount={handleSearchResultClick}
-        onFollowSuccess={refetch}
-        onSearchChange={setLocalFilter}
-      />
-
       {loading && (
         <div className="loading-state">
           <p>Loading followers...</p>
@@ -97,12 +64,12 @@ export function FollowersPanel({ walletAddress }: FollowersPanelProps) {
 
       {!loading && !error && (
         <div className="followed-accounts">
-          {filteredAccounts.length === 0 ? (
+          {accounts.length === 0 ? (
             <div className="empty-state">
               <p>No followers yet</p>
             </div>
           ) : (
-            filteredAccounts.map((account, index) => (
+            accounts.map((account, index) => (
               <div
                 key={account.id}
                 className="followed-account-card"

@@ -7,7 +7,7 @@
  * View Model for displaying follow/trust accounts
  * Normalized across all three tabs (followers, following, trust-circle)
  */
-export interface FollowAccountVM {
+export interface CommunityAccountVM {
   /** Unique identifier (triple ID or position ID) */
   id: string
   /** Display label (ENS name or wallet) */
@@ -38,7 +38,7 @@ export interface FollowAccountVM {
 /**
  * Filter type for tabs
  */
-export type FollowFilterType = 'followers' | 'following' | 'trust-circle'
+export type CommunityFilterType = 'explorer' | 'followers' | 'following' | 'trust-circle'
 
 /**
  * IPFS metadata structure
@@ -53,8 +53,8 @@ export interface IPFSMetadata {
 /**
  * Result from follow/trust hook
  */
-export interface FollowQueryResult {
-  accounts: FollowAccountVM[]
+export interface CommunityQueryResult {
+  accounts: CommunityAccountVM[]
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
@@ -63,7 +63,7 @@ export interface FollowQueryResult {
 /**
  * Search context for navigation
  */
-export interface FollowSearchContext {
+export interface CommunitySearchContext {
   query: string
   showResults: boolean
 }

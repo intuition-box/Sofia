@@ -2,13 +2,11 @@
  * TrustCirclePanel - Display accounts in my trust circle (with trust amounts)
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTrustCircle } from '../../../../hooks/useTrustCircle'
 import { useWeightOnChain } from '../../../../hooks/useWeightOnChain'
 import { useRouter } from '../../../layout/RouterProvider'
 import type { FollowAccountVM } from '../../../../types/follows'
-import type { AccountAtom } from '../../../../hooks/useGetAtomAccount'
-import { FollowSearchBox } from './FollowSearchBox'
 import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
 import StakeModal from '../../../modals/StakeModal'
 import  Avatar  from '../../../ui/Avatar'
@@ -25,8 +23,6 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
   const { addWeight, removeWeight } = useWeightOnChain()
   const { navigateTo } = useRouter()
 
-  const [localFilter, setLocalFilter] = useState('')
-
   // Stake modal state
   const [selectedAccount, setSelectedAccount] = useState<FollowAccountVM | null>(null)
   const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
@@ -37,17 +33,6 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
     refetch()
   }, [refetch])
 
-  // Filter accounts
-  const filteredAccounts = useMemo(() => {
-    if (!localFilter) {
-      return accounts
-    }
-
-    return accounts.filter((acc) =>
-      acc.label.toLowerCase().includes(localFilter.toLowerCase())
-    )
-  }, [accounts, localFilter])
-
   const handleNavigateToProfile = (account: typeof accounts[0]) => {
     navigateTo('user-profile', {
       termId: account.termId,
@@ -56,17 +41,6 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
       walletAddress: account.walletAddress,
       url: account.meta?.url,
       description: account.meta?.description
-    })
-  }
-
-  const handleSearchResultClick = (account: AccountAtom) => {
-    navigateTo('user-profile', {
-      termId: account.id,
-      label: account.label,
-      image: account.image,
-      walletAddress: account.data,
-      url: undefined,
-      description: undefined
     })
   }
 
@@ -147,20 +121,6 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
 
   return (
     <div className="follow-panel">
-      <FollowSearchBox 
-        onSelectAccount={handleSearchResultClick}
-        onFollowSuccess={() => {
-          console.log('✅ Follow successful from search')
-          refetchWithBackoff(refetch, {
-            initialDelay: 1000,
-            maxDelay: 4000,
-            maxAttempts: 3,
-            onAttempt: (attempt) => console.log(`🔄 Refetch attempt ${attempt}`)
-          })
-        }}
-        onSearchChange={setLocalFilter}
-      />
-
       {loading && (
         <div className="loading-state">
           <p>Loading trust circle...</p>
@@ -179,12 +139,12 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
 
       {!loading && !error && (
         <div className="followed-accounts">
-          {filteredAccounts.length === 0 ? (
+          {accounts.length === 0 ? (
             <div className="empty-state">
               <p>No accounts in trust circle yet</p>
             </div>
           ) : (
-            filteredAccounts.map((account, index) => (
+            accounts.map((account, index) => (
               <div
                 key={account.id}
                 className="followed-account-card"

@@ -1,23 +1,24 @@
 import { useState } from 'react'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
-import type { FollowFilterType } from '../../../types/follows'
+import type { CommunityFilterType } from '../../../types/follows'
 import { FollowersPanel } from './follow/FollowersPanel'
 import { FollowingPanel } from './follow/FollowingPanel'
 import { TrustCirclePanel } from './follow/TrustCirclePanel'
+import { ExplorerPanel } from './follow/ExplorerPanel'
 import '../../styles/CoreComponents.css'
 import '../../styles/FollowTab.css'
 
 /**
- * FollowTab - Container component for follow/trust functionality
- * Orchestrates the three panels: Followers, Following, Trust Circle
+ * CommunityTab - Container component for follow/trust functionality
+ * Orchestrates the four panels: Trust Circle, Following, Followers, Explorer
  */
-const FollowTab = () => {
+const CommunityTab = () => {
   const { walletAddress } = useWalletFromStorage()
-  const [filterType, setFilterType] = useState<FollowFilterType>('trust-circle')
+  const [filterType, setFilterType] = useState<CommunityFilterType>('trust-circle')
 
   if (!walletAddress) {
     return (
-      <div className="follow-tab">
+      <div className="community-tab">
         <div className="empty-state">
           <p>Connect your wallet to view your follows</p>
         </div>
@@ -26,7 +27,7 @@ const FollowTab = () => {
   }
 
   return (
-    <div className="follow-tab">
+    <div className="community-tab">
       {/* Filter buttons / Tabs */}
       <div className="filter-buttons">
         <button
@@ -47,15 +48,21 @@ const FollowTab = () => {
         >
           Followers
         </button>
-
+        <button
+          className={`filter-btn ${filterType === 'explorer' ? 'active' : ''}`}
+          onClick={() => setFilterType('explorer')}
+        >
+          Explore
+        </button>
       </div>
 
       {/* Render active panel */}
       {filterType === 'trust-circle' && <TrustCirclePanel walletAddress={walletAddress} />}
       {filterType === 'following' && <FollowingPanel walletAddress={walletAddress} />}
       {filterType === 'followers' && <FollowersPanel walletAddress={walletAddress} />}
+      {filterType === 'explorer' && <ExplorerPanel walletAddress={walletAddress} />}
     </div>
   )
 }
 
-export default FollowTab
+export default CommunityTab
