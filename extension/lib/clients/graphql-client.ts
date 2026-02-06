@@ -11,7 +11,11 @@ const queryCache = new Map<string, { data: any; timestamp: number }>()
 
 // Request queue to prevent concurrent requests
 let requestQueue: Promise<any> = Promise.resolve()
-const MIN_REQUEST_INTERVAL_MS = 100 // Minimum 100ms between requests
+const MIN_REQUEST_INTERVAL_MS = 150 // Minimum 150ms between requests
+
+// Retry configuration
+const MAX_RETRIES = 3
+const INITIAL_RETRY_DELAY_MS = 1000 // 1s, then 2s, then 4s (exponential backoff)
 
 // Generate cache key from query and variables
 const getCacheKey = (query: string, variables?: any): string => {
@@ -28,7 +32,7 @@ const cleanCache = () => {
   }
 }
 
-// Simple GraphQL client for queries with rate limiting and caching
+// Simple GraphQL client for queries with rate limiting, retry, and caching
 export const intuitionGraphqlClient = {
   request: async (query: string, variables?: any) => {
     // Check cache first
@@ -46,43 +50,65 @@ export const intuitionGraphqlClient = {
         return cached2.data
       }
 
-      // Add delay to respect rate limits
-      await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL_MS))
-
-      const response = await fetch(API_CONFIG.GRAPHQL_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          variables,
-        }),
-      })
-
-      if (!response.ok) {
-        // On 429, wait longer before next request
-        if (response.status === 429) {
-          await new Promise(resolve => setTimeout(resolve, 5000))
+      // Retry loop with exponential backoff
+      let lastError: Error | null = null
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        // Add delay to respect rate limits
+        if (attempt === 0) {
+          await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL_MS))
+        } else {
+          // Exponential backoff: 1s, 2s, 4s
+          const backoffDelay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt - 1)
+          console.warn(`⏳ [GraphQL] Retry ${attempt}/${MAX_RETRIES} after ${backoffDelay}ms...`)
+          await new Promise(resolve => setTimeout(resolve, backoffDelay))
         }
-        throw new Error(`HTTP error! status: ${response.status}`)
+
+        try {
+          const response = await fetch(API_CONFIG.GRAPHQL_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              query,
+              variables,
+            }),
+          })
+
+          if (!response.ok) {
+            if (response.status === 429) {
+              lastError = new Error(`HTTP error! status: 429 (rate limited)`)
+              continue // Retry with backoff
+            }
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+
+          const json = await response.json()
+
+          if (json.errors) {
+            throw new Error(`GraphQL error: ${json.errors[0].message}`)
+          }
+
+          // Cache the result
+          queryCache.set(cacheKey, { data: json.data, timestamp: Date.now() })
+
+          // Clean old cache entries periodically
+          if (queryCache.size > 50) {
+            cleanCache()
+          }
+
+          return json.data
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err))
+          // Only retry on rate limiting (429), not other errors
+          if (!lastError.message.includes('429')) {
+            throw lastError
+          }
+        }
       }
 
-      const json = await response.json()
-
-      if (json.errors) {
-        throw new Error(`GraphQL error: ${json.errors[0].message}`)
-      }
-
-      // Cache the result
-      queryCache.set(cacheKey, { data: json.data, timestamp: Date.now() })
-
-      // Clean old cache entries periodically
-      if (queryCache.size > 50) {
-        cleanCache()
-      }
-
-      return json.data
+      // All retries exhausted
+      throw lastError || new Error('GraphQL request failed after retries')
     }))
 
     return result

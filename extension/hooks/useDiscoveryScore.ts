@@ -73,29 +73,36 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
   const [error, setError] = useState<string | null>(null)
   const [claimedDiscoveryXP, setClaimedDiscoveryXP] = useState<number>(0)
 
-  // Load claimed discovery XP from storage on mount
+  // Load claimed discovery XP from storage (per-wallet)
   useEffect(() => {
     const loadClaimedXP = async () => {
+      if (!walletAddress) {
+        setClaimedDiscoveryXP(0)
+        return
+      }
       try {
-        const result = await chrome.storage.local.get(['claimed_discovery_xp'])
-        const xp = result.claimed_discovery_xp || 0
+        const key = `claimed_discovery_xp_${walletAddress}`
+        const result = await chrome.storage.local.get([key])
+        const xp = result[key] || 0
         setClaimedDiscoveryXP(xp)
-        logger.debug('Loaded claimed discovery XP from storage', { xp })
+        logger.debug('Loaded claimed discovery XP from storage', { xp, walletAddress })
       } catch (err) {
         logger.error('Failed to load claimed discovery XP', err)
       }
     }
     loadClaimedXP()
-  }, [])
+  }, [walletAddress])
 
-  // Function to claim XP for a specific discovery
+  // Function to claim XP for a specific discovery (per-wallet)
   const claimDiscoveryXP = useCallback(async (xpAmount: number): Promise<number> => {
+    if (!walletAddress) return claimedDiscoveryXP
+    const key = `claimed_discovery_xp_${walletAddress}`
     const newTotal = claimedDiscoveryXP + xpAmount
-    await chrome.storage.local.set({ claimed_discovery_xp: newTotal })
+    await chrome.storage.local.set({ [key]: newTotal })
     setClaimedDiscoveryXP(newTotal)
-    logger.info('Claimed discovery XP', { xpAmount, newTotal })
+    logger.info('Claimed discovery XP', { xpAmount, newTotal, walletAddress })
     return newTotal
-  }, [claimedDiscoveryXP])
+  }, [claimedDiscoveryXP, walletAddress])
 
   const fetchDiscoveryScore = useCallback(async () => {
     console.log('🔍 [useDiscoveryScore] Starting fetch with:', {

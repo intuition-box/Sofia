@@ -32,6 +32,14 @@ class GroupManagerService {
   private initialized = false
 
   /**
+   * Get the active wallet address from storage
+   */
+  private async getActiveWallet(): Promise<string> {
+    const result = await chrome.storage.local.get(['lastActiveWallet'])
+    return result.lastActiveWallet || ''
+  }
+
+  /**
    * Initialize the service (load groups from IndexedDB)
    */
   async init(): Promise<void> {
@@ -178,7 +186,8 @@ class GroupManagerService {
     await IntentionGroupsService.saveGroup(group)
 
     // Add XP
-    const xpGained = await xpService.addCertificationXP()
+    const wallet = await this.getActiveWallet()
+    const xpGained = await xpService.addCertificationXP(wallet)
 
     console.log(`✅ [GroupManager] Certified URL as ${certification} in ${groupId} (+${xpGained} XP)`)
 

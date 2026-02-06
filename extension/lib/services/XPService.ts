@@ -2,6 +2,7 @@
  * XPService
  * Manages user XP gain and spending via chrome.storage.local
  * Aggregates ALL XP sources: quests, discovery, and group certifications
+ * All keys are wallet-prefixed for multi-wallet support
  */
 
 // XP Configuration
@@ -56,8 +57,16 @@ export function getLevelUpCost(currentLevel: number): number {
 /**
  * XPService - Singleton service for managing XP
  * Aggregates ALL XP sources: quests, discovery, and group certifications
+ * All storage keys are wallet-prefixed (e.g. group_certification_xp_{wallet})
  */
 class XPServiceClass {
+  /**
+   * Build a wallet-prefixed storage key
+   */
+  private getKey(baseKey: string, wallet: string): string {
+    return `${baseKey}_${wallet}`
+  }
+
   /**
    * Calculate quest XP from claimed quests in storage
    */
@@ -71,18 +80,18 @@ class XPServiceClass {
    * Get current XP state from chrome.storage.local
    * Aggregates ALL XP sources: quests + discovery + group certifications - spent
    */
-  async getXPState(): Promise<XPState> {
-    const result = await chrome.storage.local.get([
-      'group_certification_xp',
-      'spent_xp',
-      'claimed_quests',
-      'claimed_discovery_xp'
-    ])
+  async getXPState(walletAddress: string): Promise<XPState> {
+    const groupKey = this.getKey('group_certification_xp', walletAddress)
+    const spentKey = this.getKey('spent_xp', walletAddress)
+    const claimedKey = this.getKey('claimed_quests', walletAddress)
+    const discoveryKey = this.getKey('claimed_discovery_xp', walletAddress)
 
-    const groupCertificationXP = result.group_certification_xp || 0
-    const spentXP = result.spent_xp || 0
-    const claimedQuests: string[] = result.claimed_quests || []
-    const discoveryXP = result.claimed_discovery_xp || 0
+    const result = await chrome.storage.local.get([groupKey, spentKey, claimedKey, discoveryKey])
+
+    const groupCertificationXP = result[groupKey] || 0
+    const spentXP = result[spentKey] || 0
+    const claimedQuests: string[] = result[claimedKey] || []
+    const discoveryXP = result[discoveryKey] || 0
 
     // Calculate quest XP from claimed quests
     const questXP = this.calculateQuestXP(claimedQuests)
@@ -104,12 +113,13 @@ class XPServiceClass {
   /**
    * Add XP from group certification
    */
-  async addCertificationXP(amount: number = XP_PER_CERTIFICATION): Promise<number> {
-    const result = await chrome.storage.local.get(['group_certification_xp'])
-    const currentXP = result.group_certification_xp || 0
+  async addCertificationXP(walletAddress: string, amount: number = XP_PER_CERTIFICATION): Promise<number> {
+    const key = this.getKey('group_certification_xp', walletAddress)
+    const result = await chrome.storage.local.get([key])
+    const currentXP = result[key] || 0
     const newTotal = currentXP + amount
 
-    await chrome.storage.local.set({ group_certification_xp: newTotal })
+    await chrome.storage.local.set({ [key]: newTotal })
     console.log(`✨ [XPService] Added ${amount} certification XP (new total: ${newTotal})`)
 
     return newTotal
@@ -119,8 +129,8 @@ class XPServiceClass {
    * Spend XP for level up
    * Checks total available XP from ALL sources before spending
    */
-  async spendXP(amount: number): Promise<XPResult> {
-    const state = await this.getXPState()
+  async spendXP(walletAddress: string, amount: number): Promise<XPResult> {
+    const state = await this.getXPState(walletAddress)
 
     // Check if user has enough total XP
     if (state.totalXP < amount) {
@@ -132,8 +142,9 @@ class XPServiceClass {
       }
     }
 
+    const spentKey = this.getKey('spent_xp', walletAddress)
     const newSpentTotal = state.spentXP + amount
-    await chrome.storage.local.set({ spent_xp: newSpentTotal })
+    await chrome.storage.local.set({ [spentKey]: newSpentTotal })
 
     const newBalance = state.totalXP - amount
     console.log(`💸 [XPService] Spent ${amount} XP (new balance: ${newBalance})`)
@@ -147,9 +158,9 @@ class XPServiceClass {
   /**
    * Check if user can afford a level up (uses total XP from ALL sources)
    */
-  async canAffordLevelUp(currentLevel: number): Promise<{ canAfford: boolean; cost: number; available: number }> {
+  async canAffordLevelUp(walletAddress: string, currentLevel: number): Promise<{ canAfford: boolean; cost: number; available: number }> {
     const cost = getLevelUpCost(currentLevel)
-    const state = await this.getXPState()
+    const state = await this.getXPState(walletAddress)
 
     return {
       canAfford: state.totalXP >= cost,
@@ -161,10 +172,12 @@ class XPServiceClass {
   /**
    * Reset XP (for testing/debugging)
    */
-  async resetXP(): Promise<void> {
+  async resetXP(walletAddress: string): Promise<void> {
+    const groupKey = this.getKey('group_certification_xp', walletAddress)
+    const spentKey = this.getKey('spent_xp', walletAddress)
     await chrome.storage.local.set({
-      group_certification_xp: 0,
-      spent_xp: 0
+      [groupKey]: 0,
+      [spentKey]: 0
     })
     console.log('🧹 [XPService] XP reset (note: quest/discovery XP not reset)')
   }
@@ -172,14 +185,14 @@ class XPServiceClass {
   /**
    * Get XP stats for debugging
    */
-  async getStats(): Promise<{
+  async getStats(walletAddress: string): Promise<{
     questXP: number
     discoveryXP: number
     certificationXP: number
     spentXP: number
     totalXP: number
   }> {
-    const state = await this.getXPState()
+    const state = await this.getXPState(walletAddress)
     return {
       questXP: state.questXP,
       discoveryXP: state.discoveryXP,
@@ -188,12 +201,40 @@ class XPServiceClass {
       totalXP: state.totalXP
     }
   }
+
+  /**
+   * One-time migration: copy XP data from non-prefixed keys to wallet-prefixed keys
+   */
+  static async migrateToWalletKeys(walletAddress: string): Promise<void> {
+    if (!walletAddress) return
+    const oldKeys = ['group_certification_xp', 'spent_xp', 'claimed_discovery_xp']
+    const result = await chrome.storage.local.get(oldKeys)
+
+    const updates: Record<string, number> = {}
+    let hasMigration = false
+    for (const key of oldKeys) {
+      if (result[key] && result[key] > 0) {
+        const newKey = `${key}_${walletAddress}`
+        const existing = await chrome.storage.local.get([newKey])
+        if (!existing[newKey]) {
+          updates[newKey] = result[key]
+          hasMigration = true
+        }
+      }
+    }
+
+    if (hasMigration) {
+      await chrome.storage.local.set(updates)
+      await chrome.storage.local.remove(oldKeys)
+      console.log('🔄 [XPService] Migrated XP data to wallet-prefixed keys:', updates)
+    }
+  }
 }
 
 // Singleton instance
 export const xpService = new XPServiceClass()
 
-// Export class for testing
+// Export class for testing and migration
 export { XPServiceClass }
 
 // Export constants

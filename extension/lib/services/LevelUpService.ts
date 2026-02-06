@@ -35,18 +35,27 @@ export interface LevelUpPreview {
  */
 class LevelUpServiceClass {
   /**
+   * Get the active wallet address from storage
+   */
+  private async getActiveWallet(): Promise<string> {
+    const result = await chrome.storage.local.get(['lastActiveWallet'])
+    return result.lastActiveWallet || ''
+  }
+
+  /**
    * Preview a level up (check if user can afford it)
    * Uses total XP from ALL sources (quests + discovery + certifications)
    * Supports both local groups and virtual (on-chain only) groups
    */
   async previewLevelUp(groupId: string): Promise<LevelUpPreview | null> {
+    const wallet = await this.getActiveWallet()
     let group = await groupManager.getGroup(groupId)
 
     // Handle virtual groups (on-chain only)
     if (!group && groupId.startsWith('onchain-')) {
       // For virtual groups, use default level 1 for preview
       const cost = getLevelUpCost(1)
-      const xpState = await xpService.getXPState()
+      const xpState = await xpService.getXPState(wallet)
 
       return {
         canLevelUp: xpState.totalXP >= cost,
@@ -60,7 +69,7 @@ class LevelUpServiceClass {
     if (!group) return null
 
     const cost = getLevelUpCost(group.level)
-    const xpState = await xpService.getXPState()
+    const xpState = await xpService.getXPState(wallet)
 
     return {
       canLevelUp: xpState.totalXP >= cost,
@@ -124,7 +133,8 @@ class LevelUpServiceClass {
     console.log(`💰 [LevelUpService] Level ${group.level} → ${group.level + 1} costs ${cost} XP`)
 
     // Check XP availability
-    const affordCheck = await xpService.canAffordLevelUp(group.level)
+    const wallet = await this.getActiveWallet()
+    const affordCheck = await xpService.canAffordLevelUp(wallet, group.level)
     if (!affordCheck.canAfford) {
       console.log(`❌ [LevelUpService] Not enough XP: ${affordCheck.available} < ${affordCheck.cost}`)
       return {
@@ -167,7 +177,7 @@ class LevelUpServiceClass {
     console.log(`✨ [LevelUpService] AI generated: "${predicateResult.predicate}"`)
 
     // Spend XP
-    const spendResult = await xpService.spendXP(cost)
+    const spendResult = await xpService.spendXP(wallet, cost)
     if (!spendResult.success) {
       console.error(`❌ [LevelUpService] Failed to spend XP`)
       return {
@@ -255,7 +265,8 @@ class LevelUpServiceClass {
     if (!group) return null
 
     const cost = getLevelUpCost(group.level)
-    const xpState = await xpService.getXPState()
+    const wallet = await this.getActiveWallet()
+    const xpState = await xpService.getXPState(wallet)
     const certificationCount = Object.values(groupManager.getCertificationBreakdown(group))
       .reduce((sum, count) => sum + count, 0)
 
