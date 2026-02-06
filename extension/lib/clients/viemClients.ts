@@ -2,12 +2,15 @@ import { createWalletClient, custom, createPublicClient, http } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
 import { getWalletProvider, selectProviderByName } from '../services/walletProvider'
 
+// Cache the last selected wallet type to avoid redundant selectProviderByName calls
+let lastSelectedWalletType: string | null = null
+
 export const getClients = async () => {
-    // Ensure the correct wallet provider is selected based on stored walletType
-    // This prevents transactions from going to the wrong wallet (e.g., Rabby instead of MetaMask)
+    // Only re-select provider if wallet type changed since last call
     const sessionData = await chrome.storage.session.get(['walletType'])
-    if (sessionData.walletType) {
+    if (sessionData.walletType && sessionData.walletType !== lastSelectedWalletType) {
         await selectProviderByName(sessionData.walletType)
+        lastSelectedWalletType = sessionData.walletType
     }
 
     const provider = await getWalletProvider()

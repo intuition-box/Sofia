@@ -70,8 +70,10 @@ export const PREDICATE_IDS = {
   MEMBER_OF: "0x928694ed3c5b9f2e119618524ab777177a74e657f09fc488fca98d2790242fd0",
   OWNER_OF: "0x1c83db8148bee049fb7ba383924762f4d0cc2d686e8bdd57dd9fabde05b8bb4a",
   TOP_ARTIST: "0x97c6389ca484e835e8c1d9221ad5ae2a6fdd927c5cfa255bae6a2467b8753ece",
-  TOP_TRACK: "0x504301d33841aaebbdc1300d1e4ca8db3eb8763078a4d38addb7176e653aac5e"
+  TOP_TRACK: "0x504301d33841aaebbdc1300d1e4ca8db3eb8763078a4d38addb7176e653aac5e",
   // Note: CREATED_PLAYLIST doesn't exist on-chain yet (created dynamically)
+  // Identity predicate (Discord "I am username", Twitter "I am username")
+  AM: "0x31881ce93b0051a6a02c7e4e344caa1ea518a37b92288f3f3f06c12cf7b9a4e4"
 } as const
 
 // Subject IDs (Mainnet) - Verified via GraphQL queries
@@ -99,7 +101,9 @@ export const PREDICATE_NAMES = {
   OWNER_OF: "owner_of",
   TOP_ARTIST: "top_artist",
   TOP_TRACK: "top_track",
-  CREATED_PLAYLIST: "created_playlist"  // No ID yet, created dynamically
+  CREATED_PLAYLIST: "created_playlist",  // No ID yet, created dynamically
+  // Identity predicate (Discord "I am username", Twitter "I am username")
+  AM: "am"
 } as const
 
 // Minimum stake for intention certification (0.1 TRUST = 1e17 wei)

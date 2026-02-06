@@ -54,7 +54,7 @@ const AccountTab = () => {
   })
 
   // Quest system hook - provides real quests based on user progress
-  const { activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP } = useQuestSystem()
+  const { activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
 
   // Social Verifier hook - handles Social Linked attestation
   const { isSocialVerified, canVerify, isVerifying, verifySocials } = useSocialVerifier()
@@ -500,6 +500,7 @@ const AccountTab = () => {
           onClaimXP={claimQuestXP}
           onVerifySocials={verifySocials}
           onMarkCompleted={markQuestCompleted}
+          onRefresh={refreshQuests}
         />
       )}
 

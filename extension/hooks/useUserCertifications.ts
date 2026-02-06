@@ -4,7 +4,7 @@
  * No Provider needed - uses module-level cache with React subscription
  */
 
-import { useEffect, useCallback, useSyncExternalStore } from 'react'
+import { useEffect, useCallback, useRef, useSyncExternalStore } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
@@ -33,6 +33,7 @@ const OAUTH_PREDICATE_LABELS: string[] = [
   PREDICATE_NAMES.CREATED_PLAYLIST, // YouTube playlists
   PREDICATE_NAMES.TOP_TRACK,        // Spotify
   PREDICATE_NAMES.TOP_ARTIST,       // Spotify
+  PREDICATE_NAMES.AM,               // Identity: "I am username" (Discord, Twitter)
 ].filter(Boolean)
 
 // All predicate labels to query
@@ -261,14 +262,17 @@ function clearCache(): void {
 export function useUserCertifications(walletAddress: string | null): UserCertificationsState {
   const state = useSyncExternalStore(subscribe, getSnapshot)
 
-  // Fetch when wallet changes
+  // Fetch when wallet prop changes (don't depend on store state to avoid feedback loop)
+  const storeWalletRef = useRef(state.walletAddress)
+  storeWalletRef.current = state.walletAddress
+
   useEffect(() => {
-    if (walletAddress && walletAddress !== state.walletAddress) {
+    if (walletAddress && walletAddress !== storeWalletRef.current) {
       fetchCertifications(walletAddress)
-    } else if (!walletAddress && state.walletAddress) {
+    } else if (!walletAddress && storeWalletRef.current) {
       clearCache()
     }
-  }, [walletAddress, state.walletAddress])
+  }, [walletAddress])
 
   const refetch = useCallback(async () => {
     if (walletAddress) {

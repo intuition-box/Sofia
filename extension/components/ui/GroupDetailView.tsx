@@ -16,6 +16,7 @@ import { useGroupOnChainCertifications, type UrlCertificationStatus } from '../.
 import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
 import { useGroupAmplify } from '../../hooks/useGroupAmplify'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
+import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import WeightModal from '../modals/WeightModal'
 import { normalizeUrl } from '../../lib/utils/normalizeUrl'
 import { cleanTitle } from '../../lib/utils/cleanTitle'
@@ -556,7 +557,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
                 <span>✓ On-chain</span>
                 {amplifyResult.txHash && (
                   <a
-                    href={`https://basescan.org/tx/${amplifyResult.txHash}`}
+                    href={`${EXPLORER_URLS.TRANSACTION}${amplifyResult.txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="tx-link-inline"

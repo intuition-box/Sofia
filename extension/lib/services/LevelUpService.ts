@@ -153,13 +153,24 @@ class LevelUpServiceClass {
       : groupManager.getCertificationBreakdown(group)
     console.log(`📊 [LevelUpService] Certifications:`, certifications, isVirtualGroup ? '(from UI)' : '(from local)')
 
-    // Check if there are any certifications
-    // For virtual groups (materialized), skip this check - they have on-chain certs
+    // Check if there are any certifications (standard, OAuth, or on-chain)
     const totalCertifications = Object.values(certifications).reduce((sum, count) => sum + count, 0)
-    if (totalCertifications === 0 && !isVirtualGroup) {
+    const hasOAuthUrls = group.urls.some(u => u.oauthPredicate && !u.removed)
+    const hasOnChainCerts = group.urls.some(u => u.isOnChain && !u.removed)
+    if (totalCertifications === 0 && !isVirtualGroup && !hasOAuthUrls && !hasOnChainCerts) {
       return {
         success: false,
         error: 'No certifications yet. Certify some URLs first!'
+      }
+    }
+
+    // Enrich certifications with OAuth predicates for AI context
+    const enrichedCertifications: Record<string, number> = { ...certifications }
+    if (hasOAuthUrls) {
+      for (const url of group.urls) {
+        if (url.oauthPredicate && !url.removed) {
+          enrichedCertifications[url.oauthPredicate] = (enrichedCertifications[url.oauthPredicate] || 0) + 1
+        }
       }
     }
 
@@ -168,7 +179,7 @@ class LevelUpServiceClass {
       domain: group.domain,
       title: group.title,
       level: group.level + 1,  // The level we're going TO
-      certifications: certifications as Record<string, number>,
+      certifications: enrichedCertifications,
       previousPredicate: group.currentPredicate
     }
 
@@ -187,7 +198,7 @@ class LevelUpServiceClass {
     }
 
     // Update group (use actualGroupId for virtual groups that were materialized)
-    const reason = this.buildReason(certifications, group.level + 1)
+    const reason = this.buildReason(enrichedCertifications, group.level + 1)
     const updated = await groupManager.updateAfterLevelUp(
       actualGroupId,
       group.level + 1,
@@ -222,7 +233,7 @@ class LevelUpServiceClass {
   /**
    * Build a human-readable reason for the level up
    */
-  private buildReason(certifications: Record<CertificationType, number>, newLevel: number): string {
+  private buildReason(certifications: Record<string, number>, newLevel: number): string {
     const total = Object.values(certifications).reduce((sum, count) => sum + count, 0)
 
     // Find dominant certification
