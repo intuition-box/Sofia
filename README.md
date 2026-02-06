@@ -1,8 +1,8 @@
 ![Sofia Banner](extension/assets/banner.png)
 
-**Transform your browsing into structured knowledge on the blockchain.**
+**Transform your browsing into certified knowledge on the blockchain.**
 
-Sofia is a Chrome extension that combines AI intelligence with Web3 integration to help users extract, organize, and manage knowledge from their browsing behavior. It connects to the Intuition knowledge graph for blockchain-based knowledge storage with credibility scoring.
+Sofia is a Chrome extension that tracks your browsing, lets you certify URLs with intentions, and stores them as verifiable claims on the Intuition knowledge graph. Earn XP, complete quests, and build your on-chain browsing profile.
 
 ---
 
@@ -14,27 +14,98 @@ Sofia is a Chrome extension that combines AI intelligence with Web3 integration 
 └─────────────────────────────────────────────────────────────────────────────┘
 
     ┌──────────┐         ┌──────────┐         ┌──────────┐         ┌──────────┐
-    │  Browse  │────────▶│  Analyze │────────▶│  Display │────────▶│  Store   │
-    │   Web    │         │   (AI)   │         │  (Sofia) │         │  (Chain) │
+    │  Browse  │────────▶│  Echoes  │────────▶│  Certify │────────▶│  On-Chain│
+    │   Web    │         │  (Group) │         │(Intention)│         │ (Store)  │
     └──────────┘         └──────────┘         └──────────┘         └──────────┘
          │                    │                    │                    │
-         │                    │                    │                    │
          ▼                    ▼                    ▼                    ▼
-    User navigates      Agents extract       Extension shows      User inscribes
-    websites            themes & triplets    insights to user     on blockchain
+    User navigates      URLs grouped by      User certifies       Triple stored:
+    websites            domain in Echoes     with intention       [URL] [visits_for] [intention]
                                                                        │
     ┌──────────────────────────────────────────────────────────────────┘
     │
     ▼
     ┌──────────┐         ┌──────────┐         ┌──────────┐
-    │   Use    │────────▶│  Analyze │────────▶│  Display │
-    │  Sofia   │         │  Account │         │  Reco    │
+    │ Level Up │────────▶│   XP &   │────────▶│  Proofs  │
+    │ (Domain) │         │  Quests  │         │ (Skills) │
     └──────────┘         └──────────┘         └──────────┘
          │                    │                    │
          ▼                    ▼                    ▼
-    User continues       Agents analyze      Sofia displays
-    using extension      blockchain data     recommendations
+    Domain levels up     Complete quests     AI analyzes your
+    based on certified   to earn XP and      on-chain intentions
+    URL count            unlock badges       to extract proof of action
 ```
+
+### Core Features
+
+#### 1. Echoes - Browsing Tracking
+- Visited URLs are automatically grouped by domain
+- Each domain card shows URL count and level progress
+- Filter options: Level, URLs, A-Z, Recent
+
+#### 2. Certifications - Declare Intent
+Certify any URL with one of 5 intentions:
+- **Work** - Professional/productivity content
+- **Learning** - Educational resources
+- **Fun** - Entertainment content
+- **Inspiration** - Creative inspiration
+- **Buying** - Shopping/purchases
+
+#### 3. On-Chain Storage
+Certifications create blockchain triples on Intuition:
+```
+[URL atom] ─── visits_for_work ───▶ [Intention atom]
+             visits_for_learning
+             visits_for_fun
+             visits_for_inspiration
+             visits_for_buying
+```
+
+#### 4. Level System
+Domains level up based on certified URLs:
+
+| Level | Required Certifications |
+|-------|------------------------|
+| 1     | 0                      |
+| 2     | 3                      |
+| 3     | 7                      |
+| 4     | 12                     |
+| 5     | 18                     |
+| 6     | 25                     |
+| 7     | 33                     |
+| 8     | 42                     |
+| 9     | 52                     |
+| 10    | 63+                    |
+
+#### 5. Quests & XP
+Complete actions to earn XP and unlock achievements:
+
+| Quest Type | Action |
+|------------|--------|
+| Signal | Certify URLs |
+| Bookmark | Import bookmarks |
+| OAuth | Connect social accounts |
+| Follow | Follow users on Intuition |
+| Trust | Stake on atoms |
+| Streak | Daily activity |
+| Pulse | Analyze open tabs |
+| Curator | Create lists |
+| Discovery | Be early certifier |
+
+#### 6. Proofs - Proof of Action
+Triggered from Echoes, Proofs analyzes your on-chain certifications to extract a verified skills profile:
+- Click "Unlock Proofs" from the Echoes tab
+- AI fetches your on-chain intentions via MCP (visits for work, learning, fun, etc.)
+- Groups activity by domain and categorizes into skills (e.g., Blockchain Development, UI/UX Design)
+- Each proof of action gets a confidence score, level (1-10), and XP based on certification count
+
+### Discovery Stats
+Track your certification discovery status:
+- **Pioneer** - First to certify a URL
+- **Explorer** - 2nd or 3rd certifier
+- **Contributor** - 4th+ certifier
+
+---
 
 ### Blockchain Transaction Flow
 
@@ -55,9 +126,9 @@ User Transaction
 ┌──────────────────────────────────────┐
 │       Intuition MultiVault           │
 │                                      │
-│  • Create Atoms (entities)           │
-│  • Create Triples (relations)        │
-│  • Deposit on existing atoms         │
+│  • Create Atoms (URLs, intentions)   │
+│  • Create Triples (certifications)   │
+│  • Deposit                           │
 └──────────────────────────────────────┘
 ```
 
@@ -84,11 +155,13 @@ Chrome extension built with Plasmo framework.
 **Tech Stack:** React 18, TypeScript, Tailwind CSS, Wagmi, Viem, Framer Motion, Three.js
 
 **Features:**
-- Side panel UI with wallet connection (MetaMask/Privy)
-- AI chatbot with knowledge graph access
-- Automatic theme extraction from bookmarks
-- Real-time tab analysis (Pulse)
-- Blockchain transaction tracking
+- Side panel UI with wallet connection (Privy)
+- Echoes: domain-grouped browsing history
+- URL certification with 5 intentions
+- Proofs: AI skill extraction from on-chain certifications
+- Level system and XP progression
+- Quest system with achievements
+- OAuth connections (Discord, YouTube, Spotify, Twitch, Twitter)
 
 ### Sofia-Mastra (`/sofia-mastra`)
 AI agent orchestration backend.
@@ -96,11 +169,12 @@ AI agent orchestration backend.
 **Tech Stack:** Mastra 0.24, GaiaNet LLM, LibSQL, TypeScript
 
 **Agents:**
-- `chatbotAgent` - Conversational AI with MCP tools
-- `themeExtractorAgent` - Extract themes/triplets from bookmark
-- `pulseAgent` - RealTime Tab analysis
-- `recommendationAgent` - Personalized suggestions
-- `sofiaAgent` - Extract triples from navigation 
+- `chatbotAgent` - Conversational AI with MCP tools for Intuition knowledge graph
+- `predicateAgent` - Generates semantic predicates for intention triples based on browsing activity
+- `pulseAgent` - Analyzes browser tabs and groups URLs into semantic themes
+- `recommendationAgent` - Generates personalized discovery recommendations from wallet activity
+- `skillsAnalysisAgent` - Extracts skills from domain activity and certification data (Proofs)
+- `themeExtractorAgent` - Converts URLs into semantic triplets (subject-predicate-object)
 
 ### Intuition MCP Server (`/intuition-mcp-server`)
 Model Context Protocol server for Intuition knowledge graph.
@@ -129,8 +203,8 @@ Model Context Protocol server for Intuition knowledge graph.
 # Clone and install
 cd core/extension
 pnpm install
-pnpm run build ( prod .env )
-ppm run dev ( dev .env ) 
+pnpm run build  # Production (.env)
+pnpm run dev    # Development (.env.development)
 ```
 
 ### Development
@@ -146,7 +220,7 @@ pnpm run start:http
 **Terminal 2 - Mastra Backend:**
 ```bash
 cd sofia-mastra
-pnpm install 
+pnpm install
 pnpm dev
 # → http://localhost:4111
 ```
@@ -154,8 +228,8 @@ pnpm dev
 **Terminal 3 - Extension:**
 ```bash
 cd extension
-pnpm dev
-# → Loads in Chrome 
+pnpm run dev
+# → Loads in Chrome
 ```
 
 ---
@@ -200,19 +274,6 @@ cd extension
 pnpm build
 # Output: build/chrome-mv3-prod/
 ```
-
-### Docker Deployment (Phala Cloud TEE)
-
-```bash
-# Build combined image (Mastra + MCP)
-docker build -f sofia-mastra/phala-deploy/Dockerfile -t sofia-mastra:latest .
-
-# Run
-docker-compose -f sofia-mastra/phala-deploy/docker-compose.yaml up -d
-```
-
-See [sofia-mastra/phala-deploy/DEPLOY.md](sofia-mastra/phala-deploy/DEPLOY.md) for detailed deployment instructions.
-
 ---
 
 ## API Endpoints
@@ -239,7 +300,7 @@ GET  /health       # Health check
 | Extension | Plasmo | TypeScript | React, Wagmi, Viem, Tailwind |
 | Backend | Mastra | TypeScript | GaiaNet, LibSQL, Zod |
 | MCP Server | Express | TypeScript | MCP SDK, GraphQL |
-| Blockchain | - | Solidity | Base L2 |
+
 
 ---
 
@@ -259,4 +320,4 @@ MIT
 
 ---
 
-**Sofia v0.1.2 BETA** - Built with Mastra, GaiaNet & Intuition
+**Sofia v0.2.21 BETA** - Built with Mastra, GaiaNet & Intuition
