@@ -44,7 +44,9 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
   const discoveryData = useDiscoveryScore()
 
   const { lists, triplets } = isReadOnlyMode ? { lists: [], triplets: [] } : bookmarksData
-  const { stats: discoveryStats } = isReadOnlyMode ? { stats: undefined } : discoveryData
+  const { stats: discoveryStats, claimDiscoveryXP } = isReadOnlyMode
+    ? { stats: undefined, claimDiscoveryXP: async () => 0 }
+    : discoveryData
 
   // React state
   const [userProgress, setUserProgress] = useState<UserProgress>({
@@ -90,10 +92,11 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
       setSpentXP(data.spentXP)
     })
 
-    // Listen for storage changes to XP values
-    const claimedKey = getWalletKey('claimed_discovery_xp', walletAddress)
-    const groupKey = getWalletKey('group_certification_xp', walletAddress)
-    const spentKey = getWalletKey('spent_xp', walletAddress)
+    // Listen for storage changes to XP values (lowercase for consistency)
+    const normalized = walletAddress.toLowerCase()
+    const claimedKey = getWalletKey('claimed_discovery_xp', normalized)
+    const groupKey = getWalletKey('group_certification_xp', normalized)
+    const spentKey = getWalletKey('spent_xp', normalized)
 
     const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
       if (changes[claimedKey]) setClaimedDiscoveryXP(changes[claimedKey].newValue || 0)
@@ -162,7 +165,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     loadAndSync()
   }, [walletAddress, onChainSyncDone, isReadOnlyMode])
 
-  // ─── Refresh progress data ───
+  // ─── Refresh progress data + on-chain sync + XP data ───
   const refreshQuests = async () => {
     if (!walletAddress) {
       setLoading(false)
@@ -173,13 +176,31 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
       setLoading(true)
       setError(null)
 
-      const newProgress = await QuestProgressService.fetchProgress(walletAddress, {
-        bookmarkListsCount: lists.length,
-        bookmarkedSignalsCount: triplets.length,
-        discoveryStats,
-      })
+      // Fetch progress and XP data in parallel
+      const [newProgress, xpData] = await Promise.all([
+        QuestProgressService.fetchProgress(walletAddress, {
+          bookmarkListsCount: lists.length,
+          bookmarkedSignalsCount: triplets.length,
+          discoveryStats,
+        }),
+        QuestProgressService.loadXPData(walletAddress),
+      ])
 
       setUserProgress(newProgress)
+      setGroupCertificationXP(xpData.groupCertificationXP)
+      setSpentXP(xpData.spentXP)
+
+      // Auto-recovery: if storage has 0 discovery XP but we have discoveries, recalculate
+      if (xpData.claimedDiscoveryXP === 0 && discoveryStats?.discoveryXP?.total && discoveryStats.discoveryXP.total > 0) {
+        console.log(`🔄 [QuestSystem] Auto-recovering discovery XP: ${discoveryStats.discoveryXP.total}`)
+        const recovered = await claimDiscoveryXP(discoveryStats.discoveryXP.total)
+        setClaimedDiscoveryXP(recovered)
+      } else {
+        setClaimedDiscoveryXP(xpData.claimedDiscoveryXP)
+      }
+
+      // Re-sync on-chain badges (triggers useEffect via onChainSyncDone)
+      setOnChainSyncDone(false)
     } catch (err) {
       console.error('Error fetching quest data:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch quest data')
@@ -229,7 +250,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     const merged = new Set(completedQuestIds)
     for (const id of newlyCompleted) merged.add(id)
 
-    const storageKey = getWalletKey('completed_quests', walletAddress)
+    const storageKey = getWalletKey('completed_quests', walletAddress.toLowerCase())
     chrome.storage.local.set({ [storageKey]: Array.from(merged) }).then(() => {
       setCompletedQuestIds(merged)
       console.log('✅ [QuestSystem] Batch-saved newly completed quests:', newlyCompleted)

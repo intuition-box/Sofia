@@ -4,8 +4,8 @@
  * Extracted from useQuestSystem to separate blockchain concerns from React state
  */
 
-import { stringToHex } from 'viem'
-import { getClients } from '../clients/viemClients'
+import { stringToHex, getAddress } from 'viem'
+import { getClients, getPublicClient } from '../clients/viemClients'
 import { intuitionGraphqlClient } from '../clients/graphql-client'
 import { BlockchainService } from './blockchainService'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
@@ -32,7 +32,7 @@ const PREDICATE_TO_QUEST_ID: Record<string, string> = {
 }
 
 // Helper to generate wallet-scoped storage keys
-const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet}`
+const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet.toLowerCase()}`
 
 export class QuestBadgeService {
   /**
@@ -48,7 +48,7 @@ export class QuestBadgeService {
     try {
       console.log('🔍 [QuestBadgeService] Checking on-chain quest badges for:', walletAddress)
 
-      const { publicClient } = await getClients()
+      const publicClient = getPublicClient()
 
       // Calculate user's atom ID
       const userAtomData = stringToHex(walletAddress)
@@ -160,7 +160,7 @@ export class QuestBadgeService {
     if (!walletAddress) return false
 
     try {
-      const { publicClient } = await getClients()
+      const publicClient = getPublicClient()
 
       const userAtomData = stringToHex(walletAddress)
       const userAtomId = await publicClient.readContract({
@@ -229,8 +229,9 @@ export class QuestBadgeService {
     walletAddress: string,
     platform: SocialPlatform
   ): Promise<{ success: boolean; txHash?: string; error?: string }> {
-    // Get the OAuth token for this platform
-    const tokenKey = getWalletKey(`oauth_token_${platform}`, walletAddress)
+    // Get the OAuth token for this platform (stored with checksum address)
+    const checksumAddr = getAddress(walletAddress)
+    const tokenKey = `oauth_token_${platform}_${checksumAddr}`
     const oauthResult = await chrome.storage.local.get([tokenKey])
     const tokenData = oauthResult[tokenKey]
 
@@ -453,15 +454,60 @@ export class QuestBadgeService {
 
   /**
    * Load completed and claimed quest IDs from storage
+   * Includes migration from checksum-keyed data to lowercase keys
    */
   static async loadQuestStates(walletAddress: string): Promise<{ completedIds: Set<string>; claimedIds: Set<string> }> {
     const completedKey = getWalletKey('completed_quests', walletAddress)
     const claimedKey = getWalletKey('claimed_quests', walletAddress)
-    const result = await chrome.storage.local.get([completedKey, claimedKey])
+
+    // Also check checksum-format keys for migration
+    const checksumAddr = getAddress(walletAddress)
+    const needsMigration = checksumAddr.toLowerCase() !== checksumAddr
+
+    let keysToFetch = [completedKey, claimedKey]
+    let oldCompletedKey: string | null = null
+    let oldClaimedKey: string | null = null
+
+    if (needsMigration) {
+      oldCompletedKey = `completed_quests_${checksumAddr}`
+      oldClaimedKey = `claimed_quests_${checksumAddr}`
+      if (oldCompletedKey !== completedKey) keysToFetch.push(oldCompletedKey)
+      if (oldClaimedKey !== claimedKey) keysToFetch.push(oldClaimedKey)
+    }
+
+    const result = await chrome.storage.local.get(keysToFetch)
+
+    // Merge lowercase + checksum data (checksum is legacy fallback)
+    const completedArr: string[] = result[completedKey] || []
+    const claimedArr: string[] = result[claimedKey] || []
+
+    if (needsMigration && oldCompletedKey && oldClaimedKey) {
+      const oldCompleted: string[] = result[oldCompletedKey] || []
+      const oldClaimed: string[] = result[oldClaimedKey] || []
+
+      if (oldCompleted.length > 0 || oldClaimed.length > 0) {
+        // Merge old data into new
+        const mergedCompleted = [...new Set([...completedArr, ...oldCompleted])]
+        const mergedClaimed = [...new Set([...claimedArr, ...oldClaimed])]
+
+        // Save merged to lowercase keys and remove old checksum keys
+        await chrome.storage.local.set({
+          [completedKey]: mergedCompleted,
+          [claimedKey]: mergedClaimed,
+        })
+        await chrome.storage.local.remove([oldCompletedKey, oldClaimedKey].filter(k => k !== completedKey && k !== claimedKey))
+        console.log('🔄 [QuestBadgeService] Migrated quest states from checksum to lowercase keys')
+
+        return {
+          completedIds: new Set(mergedCompleted),
+          claimedIds: new Set(mergedClaimed),
+        }
+      }
+    }
 
     return {
-      completedIds: new Set(result[completedKey] || []),
-      claimedIds: new Set(result[claimedKey] || [])
+      completedIds: new Set(completedArr),
+      claimedIds: new Set(claimedArr),
     }
   }
 }

@@ -6,6 +6,7 @@
  */
 
 import { QUEST_XP_REWARDS } from '../../types/questTypes'
+import { getAddress } from 'viem'
 
 // XP Configuration
 const XP_PER_CERTIFICATION = 10
@@ -50,7 +51,7 @@ class XPServiceClass {
    * Build a wallet-prefixed storage key
    */
   private getKey(baseKey: string, wallet: string): string {
-    return `${baseKey}_${wallet}`
+    return `${baseKey}_${wallet.toLowerCase()}`
   }
 
   /**
@@ -193,17 +194,19 @@ class XPServiceClass {
    */
   static async migrateToWalletKeys(walletAddress: string): Promise<void> {
     if (!walletAddress) return
-    const oldKeys = ['group_certification_xp', 'spent_xp', 'claimed_discovery_xp']
-    const result = await chrome.storage.local.get(oldKeys)
+    const normalizedWallet = walletAddress.toLowerCase()
+    const xpKeys = ['group_certification_xp', 'spent_xp', 'claimed_discovery_xp']
 
+    // Phase 1: Migrate from non-prefixed keys (legacy)
+    const oldResult = await chrome.storage.local.get(xpKeys)
     const updates: Record<string, number> = {}
     let hasMigration = false
-    for (const key of oldKeys) {
-      if (result[key] && result[key] > 0) {
-        const newKey = `${key}_${walletAddress}`
+    for (const key of xpKeys) {
+      if (oldResult[key] && oldResult[key] > 0) {
+        const newKey = `${key}_${normalizedWallet}`
         const existing = await chrome.storage.local.get([newKey])
         if (!existing[newKey]) {
-          updates[newKey] = result[key]
+          updates[newKey] = oldResult[key]
           hasMigration = true
         }
       }
@@ -211,8 +214,29 @@ class XPServiceClass {
 
     if (hasMigration) {
       await chrome.storage.local.set(updates)
-      await chrome.storage.local.remove(oldKeys)
-      console.log('🔄 [XPService] Migrated XP data to wallet-prefixed keys:', updates)
+      await chrome.storage.local.remove(xpKeys)
+      console.log('🔄 [XPService] Migrated XP data from non-prefixed keys:', updates)
+    }
+
+    // Phase 2: Migrate from checksum-format keys to lowercase keys
+    const checksumWallet = getAddress(walletAddress)
+    if (checksumWallet !== normalizedWallet) {
+      const checksumUpdates: Record<string, number> = {}
+      const keysToRemove: string[] = []
+      for (const baseKey of xpKeys) {
+        const oldKey = `${baseKey}_${checksumWallet}`
+        const newKey = `${baseKey}_${normalizedWallet}`
+        const result = await chrome.storage.local.get([oldKey, newKey])
+        if (result[oldKey] !== undefined && !result[newKey]) {
+          checksumUpdates[newKey] = result[oldKey]
+          keysToRemove.push(oldKey)
+        }
+      }
+      if (Object.keys(checksumUpdates).length > 0) {
+        await chrome.storage.local.set(checksumUpdates)
+        await chrome.storage.local.remove(keysToRemove)
+        console.log('🔄 [XPService] Migrated XP data from checksum to lowercase keys:', checksumUpdates)
+      }
     }
   }
 }

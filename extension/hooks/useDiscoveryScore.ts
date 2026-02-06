@@ -327,8 +327,9 @@ function initializeStore() {
 }
 
 function handleWalletChange(wallet: string | null) {
-  if (wallet === currentWallet) return
-  currentWallet = wallet
+  const normalized = wallet ? wallet.toLowerCase() : null
+  if (normalized === currentWallet) return
+  currentWallet = normalized
 
   if (!wallet) {
     updateState({ stats: null, loading: false, error: null, claimedDiscoveryXP: 0 })

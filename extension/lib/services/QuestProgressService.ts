@@ -43,9 +43,10 @@ export class QuestProgressService {
     spentXP: number
   }> {
     try {
-      const claimedKey = getWalletKey('claimed_discovery_xp', walletAddress)
-      const groupKey = getWalletKey('group_certification_xp', walletAddress)
-      const spentKey = getWalletKey('spent_xp', walletAddress)
+      const normalized = walletAddress.toLowerCase()
+      const claimedKey = getWalletKey('claimed_discovery_xp', normalized)
+      const groupKey = getWalletKey('group_certification_xp', normalized)
+      const spentKey = getWalletKey('spent_xp', normalized)
 
       const result = await chrome.storage.local.get([claimedKey, groupKey, spentKey])
       return {
