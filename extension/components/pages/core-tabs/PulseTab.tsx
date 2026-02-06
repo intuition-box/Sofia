@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { tripletsDataService } from '../../../lib/database/indexedDB-methods'
-import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
+import sofiaDB, { STORES, type TripletsRecord } from '../../../lib/database/indexedDB'
 import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
 import WeightModal from '../../modals/WeightModal'
 import SofiaLoader from '../../ui/SofiaLoader'
@@ -26,6 +26,10 @@ interface PulseAnalysis {
   messageId: number // ID réel du message (number)
   timestamp: number
   themes: PulseTheme[]
+}
+
+const getHostname = (url: string): string => {
+  try { return new URL(url).hostname } catch { return url }
 }
 
 const PulseTab = () => {
@@ -102,7 +106,7 @@ const PulseTab = () => {
   })
 
   // Helper function to parse themes from message content
-  const parseThemesFromMessage = (msg: any): PulseTheme[] => {
+  const parseThemesFromMessage = (msg: TripletsRecord): PulseTheme[] => {
     try {
       const text = (typeof msg.content === 'object' && msg.content && 'text' in msg.content && typeof msg.content.text === 'string')
         ? msg.content.text
@@ -172,7 +176,8 @@ const PulseTab = () => {
       try {
         const parsed = JSON.parse(jsonStr)
         return parsed.themes || []
-      } catch {
+      } catch (fallbackError) {
+        console.warn("🫀 [PulseTab] Direct JSON parse failed:", fallbackError)
         return []
       }
     } catch (error) {
@@ -199,19 +204,23 @@ const PulseTab = () => {
         if (jsonStr.startsWith('{{') && jsonStr.endsWith('}}')) {
           jsonStr = jsonStr.slice(1, -1)
         }
-        const parsed = JSON.parse(jsonStr)
-        parsed.themes = newThemes
-        const updatedText = text.replace(jsonMatch[0], JSON.stringify(parsed))
-        
-        const updatedMessage = {
-          ...originalMessage,
-          content: {
-            ...originalMessage.content,
-            text: updatedText
+        try {
+          const parsed = JSON.parse(jsonStr)
+          parsed.themes = newThemes
+          const updatedText = text.replace(jsonMatch[0], JSON.stringify(parsed))
+
+          const updatedMessage = {
+            ...originalMessage,
+            content: {
+              ...originalMessage.content,
+              text: updatedText
+            }
           }
+
+          await sofiaDB.put(STORES.TRIPLETS_DATA, updatedMessage)
+        } catch (parseError) {
+          console.warn("🫀 [PulseTab] Failed to parse/update message themes:", parseError)
         }
-        
-        await sofiaDB.put(STORES.TRIPLETS_DATA, updatedMessage)
       }
     }
   }
@@ -237,6 +246,7 @@ const PulseTab = () => {
       // Parse and group themes by message (analysis session)
       const analysisGroups: PulseAnalysis[] = []
       pulseMessages.forEach((msg, msgIndex) => {
+        if (msg.id === undefined) return
         console.log("🫀 [PulseTab] Parsing message:", msg.id, "content:", msg.content)
         const themes = parseThemesFromMessage(msg)
         console.log("🫀 [PulseTab] Parsed themes:", themes.length, themes)
@@ -452,7 +462,7 @@ const PulseTab = () => {
     
     try {
       // Group triplets by session to update messages efficiently
-      const sessionUpdates = new Map()
+      const sessionUpdates = new Map<number, Set<number>>()
       
       selectedTriplets.forEach(tripletId => {
         const [sessionIndex, themeIndex] = tripletId.split('-').map(Number)
@@ -507,17 +517,7 @@ const PulseTab = () => {
   }, [pulseAnalyses])
 
 
-  if (loading) {
-    return (
-      <div className="pulse-container">
-        <div className="pulse-loading-indicator">
-          <SofiaLoader size={150} />
-        </div>
-      </div>
-    )
-  }
-
-  if (isAnalyzing) {
+  if (loading || isAnalyzing) {
     return (
       <div className="pulse-container">
         <div className="pulse-loading-indicator">
@@ -725,7 +725,7 @@ const PulseTab = () => {
                                   rel="noopener noreferrer"
                                   className="pulse-detail-url"
                                 >
-                                  {new URL(url).hostname}
+                                  {getHostname(url)}
                                 </a>
                               ))}
                             </div>
