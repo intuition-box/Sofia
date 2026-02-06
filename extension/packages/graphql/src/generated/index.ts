@@ -29518,7 +29518,7 @@ export const GetFollowingPositionsDocument = `
   triples(
     limit: $limit
     offset: $offset
-    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {positions: {account_id: {_ilike: $address}}}]}
+    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {object: {type: {_eq: "Account"}}}, {positions: {account_id: {_ilike: $address}}}]}
   ) {
     term_id
     subject {
@@ -54576,6 +54576,41 @@ export const GetFollowingPositions = {
                                           kind: "Name",
                                           value: "predicateId"
                                         }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "type" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_eq"
+                                            },
+                                            value: {
+                                              kind: "StringValue",
+                                              value: "Account",
+                                              block: false
+                                            }
+                                          }
+                                        ]
                                       }
                                     }
                                   ]

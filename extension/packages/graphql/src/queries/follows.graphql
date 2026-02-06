@@ -26,6 +26,7 @@ query GetFollowingPositions(
       _and: [
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
         { positions: { account_id: { _ilike: $address } } }
       ]
     }
