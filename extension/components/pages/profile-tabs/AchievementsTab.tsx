@@ -9,7 +9,11 @@ import bookmarkImg from '../../ui/img/questssuccess/bookmark.png'
 import curatorImg from '../../ui/img/questssuccess/curator.png'
 import discoveryImg from '../../ui/img/questssuccess/discovery.png'
 import followImg from '../../ui/img/questssuccess/follow.png'
-import oauthImg from '../../ui/img/questssuccess/Oauth.png'
+import oauthDiscordImg from '../../ui/img/questssuccess/OAuth/discord.png'
+import oauthSpotifyImg from '../../ui/img/questssuccess/OAuth/Spotify.png'
+import oauthTwitchImg from '../../ui/img/questssuccess/OAuth/twitch.jpeg'
+import oauthTwitterImg from '../../ui/img/questssuccess/OAuth/x.png'
+import oauthYoutubeImg from '../../ui/img/questssuccess/OAuth/Youtube.png'
 import pulseImg from '../../ui/img/questssuccess/pulse.png'
 import signalImg from '../../ui/img/questssuccess/Signal.png'
 import socialImg from '../../ui/img/questssuccess/social.png'
@@ -19,8 +23,8 @@ import trustImg from '../../ui/img/questssuccess/trust.png'
 const typeImages: Record<string, string> = {
   signal: signalImg,
   bookmark: bookmarkImg,
-  oauth: oauthImg,
-  'social-link': oauthImg,
+  oauth: oauthDiscordImg,
+  'social-link': oauthDiscordImg,
   follow: followImg,
   trust: trustImg,
   streak: streakImg,
@@ -28,6 +32,14 @@ const typeImages: Record<string, string> = {
   curator: curatorImg,
   social: socialImg,
   discovery: discoveryImg,
+}
+
+const platformImages: Record<string, string> = {
+  discord: oauthDiscordImg,
+  youtube: oauthYoutubeImg,
+  spotify: oauthSpotifyImg,
+  twitch: oauthTwitchImg,
+  twitter: oauthTwitterImg,
 }
 
 const typeLabels: Record<string, string> = {
@@ -42,6 +54,13 @@ const typeLabels: Record<string, string> = {
   curator: 'Curator',
   social: 'Social',
   discovery: 'Discovery',
+}
+
+const getQuestImage = (quest: { type: string; platform?: string }) => {
+  if (quest.platform && platformImages[quest.platform]) {
+    return platformImages[quest.platform]
+  }
+  return typeImages[quest.type] || signalImg
 }
 
 const AchievementsTab = () => {
@@ -77,7 +96,7 @@ const AchievementsTab = () => {
           <div key={quest.id} className={`achievement-card ${quest.type}`}>
             <div className="achievement-card-visual">
               <img
-                src={typeImages[quest.type] || signalImg}
+                src={getQuestImage(quest)}
                 alt={quest.title}
                 className="achievement-card-img"
               />
@@ -97,7 +116,7 @@ const AchievementsTab = () => {
           <div key={quest.id} className="achievement-card locked">
             <div className="achievement-card-visual">
               <img
-                src={typeImages[quest.type] || signalImg}
+                src={getQuestImage(quest)}
                 alt={quest.title}
                 className="achievement-card-img"
               />
