@@ -23,8 +23,6 @@ type SubTab = 'quests' | 'stats' | 'achievements'
 
 const AccountTab = () => {
   const { walletAddress } = useWalletFromStorage()
-  const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
-  const [userLabel, setUserLabel] = useState<string | undefined>(undefined)
   const [activeTab, setActiveTab] = useState<SubTab>('stats')
 
   // OAuth connection states
@@ -238,26 +236,7 @@ const AccountTab = () => {
     console.log(`🗑️ [OAuth] Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
   }
 
-  // Calculate circular progress for quests
-  const calculateProgress = (current: number, total: number) => {
-    return (current / total) * 100
-  }
 
-  // Get Discord avatar URL
-  const getDiscordAvatarUrl = () => {
-    if (!discordProfile?.id || !discordProfile?.avatar) return undefined
-    return `https://cdn.discordapp.com/avatars/${discordProfile.id}/${discordProfile.avatar}.png?size=128`
-  }
-
-  // Get Discord avatar URL
-  const displayAvatar = userAvatar || getDiscordAvatarUrl()
-
-  // Check if label is a real name (ENS) or just a truncated wallet address
-  const isRealLabel = userLabel && !userLabel.startsWith('0x') && !userLabel.includes('...')
-
-  // Get display label: prioritize ENS name, fallback to Discord username
-  // Ignore userLabel if it's just a truncated wallet address
-  const displayLabel = isRealLabel ? userLabel : (discordProfile?.global_name || discordProfile?.username)
 
 
   return (
@@ -270,44 +249,7 @@ const AccountTab = () => {
         walletAddress={walletAddress}
         verified={isSocialVerified}
         verifiedLabel="Social Linked"
-        badges={
-          completedQuests.length > 0 ? (
-            <>
-              {completedQuests.slice(0, 6).map(quest => (
-                <div key={quest.id} className="badge-item" title={quest.description}>
-                  {quest.title}
-                </div>
-              ))}
-              {completedQuests.length > 6 && (
-                <div className="badge-item badge-more">+{completedQuests.length - 6}</div>
-              )}
-            </>
-          ) : undefined
-        }
       />
-      <div className="profile-header">
-        <Avatar
-          imgSrc={displayAvatar}
-          name={displayLabel || walletAddress}
-          avatarClassName={`profile-avatar ${isSocialVerified ? 'social-linked' : ''}`}
-          size="large"
-        />
-        <div className="profile-info">
-          <h2 className="profile-name">
-            {displayLabel || (walletAddress ? `${walletAddress.toLowerCase().slice(0, 6)}...${walletAddress.toLowerCase().slice(-4)}` : 'Connect Wallet')}
-          </h2>
-          {/* Only show wallet below if we have a display name (Discord/ENS) */}
-          {displayLabel && walletAddress && (
-            <p className="profile-wallet">
-              {walletAddress.toLowerCase().slice(0, 6)}...{walletAddress.toLowerCase().slice(-4)}
-            </p>
-          )}
-          {/* Social Linked badge */}
-          {isSocialVerified && (
-            <span className="social-linked-badge">Social Linked</span>
-          )}
-        </div>
-      </div>
 
 
       {/* Platform Icons */}
@@ -399,7 +341,7 @@ const AccountTab = () => {
           className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''}`}
           onClick={() => setActiveTab('achievements')}
         >
-          Succes
+          Success
         </button>
       </div>
 

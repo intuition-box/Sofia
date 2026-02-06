@@ -95,7 +95,36 @@ export const useIdentityResolution = ({
       }
 
       try {
-        const checksumAddress = getAddress(walletAddress)
+        // Resolve ENS to address if needed
+        let resolvedAddress = walletAddress
+        
+        // Check if walletAddress looks like an ENS name (contains . and doesn't start with 0x)
+        if (walletAddress.includes('.') && !walletAddress.startsWith('0x')) {
+          console.log('[useIdentityResolution] Detected ENS name, resolving:', walletAddress)
+          try {
+            const publicClient = createPublicClient({
+              chain: mainnet,
+              transport: http()
+            })
+            
+            const address = await publicClient.getEnsAddress({
+              name: normalize(walletAddress)
+            })
+            
+            if (address) {
+              resolvedAddress = address
+              console.log('[useIdentityResolution] ✅ ENS resolved to:', resolvedAddress)
+            } else {
+              console.warn('[useIdentityResolution] ⚠️ ENS resolution returned null for:', walletAddress)
+              // Fallback to original walletAddress (might still work if it's actually an address)
+            }
+          } catch (ensError) {
+            console.error('[useIdentityResolution] ❌ ENS resolution failed:', ensError)
+            // Fallback to original walletAddress (might still work if it's actually an address)
+          }
+        }
+        
+        const checksumAddress = getAddress(resolvedAddress)
         const storageKey = cacheKey || `user_profile_${checksumAddress}`
 
         // Try cache first if enabled

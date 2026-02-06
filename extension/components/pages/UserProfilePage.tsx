@@ -11,6 +11,9 @@ import FollowButton from '../ui/FollowButton'
 import TrustAccountButton from '../ui/TrustAccountButton'
 import leftSideIcon from '../ui/icons/left side.svg'
 import rightSideIcon from '../ui/icons/right side.svg'
+import { getAddress } from 'viem'
+import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
+import { SUBJECT_IDS } from '../../lib/config/constants'
 import '../styles/UserProfile.css'
 
 const UserProfilePage = () => {
@@ -51,6 +54,71 @@ const UserProfilePage = () => {
     hasMore: hasMoreLists,
     loadMore: loadMoreLists
   } = useUserLists(userProfileData?.termId)
+
+  // User stats state
+  const [userStats, setUserStats] = useState({
+    signalsCreated: 0,
+    loading: true
+  })
+
+  // Load user stats from GraphQL (same logic as AccountTab)
+  useEffect(() => {
+    const loadUserStats = async () => {
+      if (!userProfileData?.walletAddress) {
+        setUserStats({ signalsCreated: 0, loading: false })
+        return
+      }
+
+      try {
+        const checksumAddress = getAddress(userProfileData.walletAddress)
+
+        const statsQuery = `
+          query GetUserStats($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
+            triples: terms(
+              where: {
+                _and: [
+                  { type: { _eq: Triple } },
+                  { triple: { subject: { term_id: { _eq: $subjectId } } } },
+                  { positions: { account: { id: { _eq: $accountId } } } }
+                ]
+              }
+              limit: $limit
+              offset: $offset
+            ) {
+              id
+            }
+          }
+        `
+
+        interface StatsTripleResult {
+          id: string
+        }
+
+        const allTriples = await intuitionGraphqlClient.fetchAllPages<StatsTripleResult>(
+          statsQuery,
+          { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
+          'triples',
+          100,
+          1000  // max 1000 signals
+        )
+
+        const signalsCreated = allTriples.length
+
+        console.log('[UserProfilePage] Signals created:', signalsCreated)
+
+        setUserStats({
+          signalsCreated,
+          loading: false
+        })
+
+      } catch (error) {
+        console.error('[UserProfilePage] Error loading user stats:', error)
+        setUserStats({ signalsCreated: 0, loading: false })
+      }
+    }
+
+    loadUserStats()
+  }, [userProfileData?.walletAddress])
  
   if (!userProfileData) {
     return (
@@ -70,9 +138,6 @@ const UserProfilePage = () => {
     if (num >= 1e3) return `${(num / 1e3).toFixed(2)}K`
     return num.toFixed(2)
   }
-
-  // Calculate signals created from atomStats position count
-  const signalsCreated = atomStats.positionCount || 0
 
   // Render follow/trust actions
   const renderActions = () => {
@@ -187,8 +252,8 @@ const UserProfilePage = () => {
               <div className="user-profile-stat-label">Total XP</div>
             </div>
             <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{atomStats.followersCount}</div>
-              <div className="user-profile-stat-label">Followers</div>
+              <div className="user-profile-stat-value">{userStats.loading ? '...' : userStats.signalsCreated}</div>
+              <div className="user-profile-stat-label">Signals</div>
             </div>
           </div>
         )}

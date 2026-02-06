@@ -17637,6 +17637,34 @@ export type FindAtomIdsQuery = {
   atoms: Array<{ __typename?: "atoms"; term_id: string; data?: string | null }>
 }
 
+export type GetTripleBondingCurveDataQueryVariables = Exact<{
+  tripleId: Scalars["String"]["input"]
+  curveId: Scalars["numeric"]["input"]
+  walletAddress: Scalars["String"]["input"]
+}>
+
+export type GetTripleBondingCurveDataQuery = {
+  __typename?: "query_root"
+  share_price_changes: Array<{
+    __typename?: "share_price_changes"
+    block_timestamp: any
+    share_price: any
+    total_assets: any
+  }>
+  vaults: Array<{
+    __typename?: "vaults"
+    current_share_price: any
+    total_shares: any
+    term?: { __typename?: "terms"; total_market_cap?: any | null } | null
+    positions: Array<{
+      __typename?: "positions"
+      shares: any
+      total_deposit_assets_after_total_fees: any
+      total_redeem_assets_for_receiver: any
+    }>
+  }>
+}
+
 export type GetTrustCirclePositionsQueryVariables = Exact<{
   subjectId: Scalars["String"]["input"]
   predicateId: Scalars["String"]["input"]
@@ -27595,6 +27623,114 @@ useFindAtomIdsQuery.fetcher = (
     variables,
     options
   )
+
+export const GetTripleBondingCurveDataDocument = `
+    query GetTripleBondingCurveData($tripleId: String!, $curveId: numeric!, $walletAddress: String!) {
+  share_price_changes(
+    order_by: {block_timestamp: asc}
+    where: {term_id: {_eq: $tripleId}, curve_id: {_eq: $curveId}}
+  ) {
+    block_timestamp
+    share_price
+    total_assets
+  }
+  vaults(where: {term_id: {_eq: $tripleId}, curve_id: {_eq: $curveId}}) {
+    term {
+      total_market_cap
+    }
+    current_share_price
+    total_shares
+    positions(where: {account_id: {_eq: $walletAddress}}) {
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+}
+    `
+
+export const useGetTripleBondingCurveDataQuery = <
+  TData = GetTripleBondingCurveDataQuery,
+  TError = unknown
+>(
+  variables: GetTripleBondingCurveDataQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetTripleBondingCurveDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetTripleBondingCurveDataQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetTripleBondingCurveDataQuery, TError, TData>({
+    queryKey: ["GetTripleBondingCurveData", variables],
+    queryFn: fetcher<
+      GetTripleBondingCurveDataQuery,
+      GetTripleBondingCurveDataQueryVariables
+    >(GetTripleBondingCurveDataDocument, variables),
+    ...options
+  })
+}
+
+useGetTripleBondingCurveDataQuery.document = GetTripleBondingCurveDataDocument
+
+useGetTripleBondingCurveDataQuery.getKey = (
+  variables: GetTripleBondingCurveDataQueryVariables
+) => ["GetTripleBondingCurveData", variables]
+
+export const useInfiniteGetTripleBondingCurveDataQuery = <
+  TData = InfiniteData<GetTripleBondingCurveDataQuery>,
+  TError = unknown
+>(
+  variables: GetTripleBondingCurveDataQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetTripleBondingCurveDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetTripleBondingCurveDataQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetTripleBondingCurveDataQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetTripleBondingCurveData.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            GetTripleBondingCurveDataQuery,
+            GetTripleBondingCurveDataQueryVariables
+          >(GetTripleBondingCurveDataDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetTripleBondingCurveDataQuery.getKey = (
+  variables: GetTripleBondingCurveDataQueryVariables
+) => ["GetTripleBondingCurveData.infinite", variables]
+
+useGetTripleBondingCurveDataQuery.fetcher = (
+  variables: GetTripleBondingCurveDataQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<
+    GetTripleBondingCurveDataQuery,
+    GetTripleBondingCurveDataQueryVariables
+  >(GetTripleBondingCurveDataDocument, variables, options)
 
 export const GetTrustCirclePositionsDocument = `
     query GetTrustCirclePositions($subjectId: String!, $predicateId: String!, $address: String!, $offset: Int, $positionsOrderBy: [positions_order_by!]) {
@@ -47960,6 +48096,266 @@ export const FindAtomIds = {
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "term_id" } },
                 { kind: "Field", name: { kind: "Name", value: "data" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetTripleBondingCurveData = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetTripleBondingCurveData" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "tripleId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "curveId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "numeric" }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "walletAddress" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "share_price_changes" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "order_by" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "block_timestamp" },
+                      value: { kind: "EnumValue", value: "asc" }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "tripleId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "block_timestamp" }
+                },
+                { kind: "Field", name: { kind: "Name", value: "share_price" } },
+                { kind: "Field", name: { kind: "Name", value: "total_assets" } }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "vaults" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "tripleId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "term" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "total_market_cap" }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "current_share_price" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "total_shares" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_eq" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "walletAddress"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_deposit_assets_after_total_fees"
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_redeem_assets_for_receiver"
+                        }
+                      }
+                    ]
+                  }
+                }
               ]
             }
           }

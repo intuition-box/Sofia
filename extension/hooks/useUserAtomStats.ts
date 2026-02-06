@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
-import { getAddress } from 'viem'
+import { getAddress, createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+import { normalize } from 'viem/ens'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 
@@ -64,8 +66,27 @@ export const useUserAtomStats = (
       try {
         setStats(prev => ({ ...prev, loading: true, error: null }))
 
+        // Resolve ENS to address if needed
+        let resolvedAddress = accountAddress
+        if (accountAddress && accountAddress.includes('.') && !accountAddress.startsWith('0x')) {
+          try {
+            const publicClient = createPublicClient({
+              chain: mainnet,
+              transport: http()
+            })
+            const address = await publicClient.getEnsAddress({
+              name: normalize(accountAddress)
+            })
+            if (address) {
+              resolvedAddress = address
+            }
+          } catch (ensError) {
+            console.error('[useUserAtomStats] ENS resolution failed:', ensError)
+          }
+        }
+        
         // Use checksum address if provided
-        const checksumAddress = accountAddress ? getAddress(accountAddress) : ''
+        const checksumAddress = resolvedAddress ? getAddress(resolvedAddress) : ''
 
         const query = `
           query GetAtomStats($termId: String!, $accountAddress: String!, $followSubjectId: String!, $followPredicateId: String!, $followObjectId: String!) {
@@ -150,7 +171,7 @@ export const useUserAtomStats = (
 
         // Extract data from response
         const atom = response.atom
-        const vault = atom.term.vaults[0] // First vault (curve_id: 0)
+        const vault = atom.term.vaults?.[0] // First vault (curve_id: 0)
 
         // Calculate followers market cap and count
         let followersMarketCap = '0'
@@ -173,11 +194,11 @@ export const useUserAtomStats = (
         setStats({
           termId: atom.term_id,
           label: atom.label,
-          totalMarketCap: atom.term.total_market_cap,
-          positionCount: atom.term.positions_aggregate.aggregate.count,
+          totalMarketCap: atom.term?.total_market_cap || '0',
+          positionCount: atom.term?.positions_aggregate?.aggregate?.count || 0,
           currentSharePrice: vault?.current_share_price || '0',
           totalShares: vault?.total_shares || '0',
-          followingCount: response.following_count.aggregate.count,
+          followingCount: response.following_count?.aggregate?.count || 0,
           followersCount: followersCount,
           followersMarketCap: followersMarketCap,
           loading: false,
