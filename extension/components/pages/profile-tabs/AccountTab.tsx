@@ -7,17 +7,16 @@ import xIcon from '../../ui/social/x.svg'
 import leftSideIcon from '../../ui/icons/left side.svg'
 import rightSideIcon from '../../ui/icons/right side.svg'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
-import { getAddress, createPublicClient, http } from 'viem'
-import { mainnet } from 'viem/chains'
-import { normalize } from 'viem/ens'
+import { getAddress } from 'viem'
 import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../../../lib/config/constants'
-import Avatar from '../../ui/Avatar'
 import { useQuestSystem } from '../../../hooks/useQuestSystem'
 import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
 import QuestsTab from './QuestsTab'
 import StatsTab from './StatsTab'
 import AchievementsTab from './AchievementsTab'
+import { useIdentityResolution } from '../../../hooks/useIdentityResolution'
+import ProfileHeader from '../../ui/ProfileHeader'
 import '../../styles/AccountTab.css'
 
 type SubTab = 'quests' | 'stats' | 'achievements'
@@ -41,17 +40,10 @@ const AccountTab = () => {
   const [discordProfile, setDiscordProfile] = useState<{
     id: string
     username: string
-    global_name: string
-    avatar: string
-    verified: boolean
+    global_name?: string
+    avatar?: string
+    verified?: boolean
   } | null>(null)
-
-  // User stats state
-  const [userStats, setUserStats] = useState({
-    signalsCreated: 0,
-    totalMarketCap: 0,
-    loading: true
-  })
 
   // Quest system hook - provides real quests based on user progress
   const { activeQuests, completedQuests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
@@ -59,122 +51,19 @@ const AccountTab = () => {
   // Social Verifier hook - handles Social Linked attestation
   const { isSocialVerified, canVerify, isVerifying, verifySocials } = useSocialVerifier()
 
-  // Load user avatar and label from GraphQL
-  useEffect(() => {
-    const loadUserAvatar = async () => {
-      if (!walletAddress) return
+  // Identity resolution hook - handles avatar/label with GraphQL, ENS, Discord fallback
+  const { displayLabel, displayAvatar } = useIdentityResolution({
+    walletAddress,
+    discordProfile,
+    enableCache: true
+  })
 
-      try {
-        const checksumAddress = getAddress(walletAddress)
-
-        // Try to load from cache first
-        const cacheKey = `user_profile_${checksumAddress}`
-        const cached = await chrome.storage.local.get(cacheKey)
-
-        if (cached[cacheKey]) {
-          const { avatar, label, timestamp } = cached[cacheKey]
-          // Cache valid for 1 hour
-          if (Date.now() - timestamp < 3600000) {
-            console.log('📦 Loading from cache:', { avatar, label })
-            setUserAvatar(avatar)
-            setUserLabel(label)
-            return
-          }
-        }
-
-        // Try to load avatar and label using accounts query
-        const avatarQuery = `
-          query GetAccountProfile($id: String!) {
-            accounts(where: { id: { _eq: $id } }) {
-              label
-              image
-              atom {
-                label
-                image
-              }
-            }
-          }
-        `
-
-        const avatarResponse = await intuitionGraphqlClient.request(avatarQuery, {
-          id: checksumAddress
-        }) as { accounts: Array<{ label?: string; image?: string; atom?: { label?: string; image?: string } }> }
-
-        // Try to get image and label from account or atom
-        if (avatarResponse?.accounts && avatarResponse.accounts.length > 0) {
-          const account = avatarResponse.accounts[0]
-          let avatarUrl = account.image || account.atom?.image
-          let label = account.label || account.atom?.label
-
-          console.log('📸 Avatar data from GraphQL:', { avatarUrl, label, account })
-
-          // Create public client for ENS operations
-          const publicClient = createPublicClient({
-            chain: mainnet,
-            transport: http()
-          })
-
-          // If label is truncated or missing, try reverse ENS lookup
-          if (!label || !label.endsWith('.eth') && !label.endsWith('.box')) {
-            console.log('🔍 Label is not an ENS name, attempting reverse lookup for:', checksumAddress)
-            try {
-              const ensName = await publicClient.getEnsName({
-                address: checksumAddress as `0x${string}`
-              })
-
-              if (ensName) {
-                console.log('✅ Found ENS name via reverse lookup:', ensName)
-                label = ensName
-              }
-            } catch (ensError) {
-              console.log('⚠️ No ENS name found for address:', ensError)
-            }
-          }
-
-          // If we have an ENS name and no avatar from GraphQL, try to resolve ENS avatar
-          if (!avatarUrl && label && (label.endsWith('.eth') || label.endsWith('.box'))) {
-            console.log('🔍 Attempting to resolve ENS avatar for:', label)
-            try {
-              const ensAvatar = await publicClient.getEnsAvatar({
-                name: normalize(label)
-              })
-
-              if (ensAvatar) {
-                avatarUrl = ensAvatar
-                console.log('✅ Resolved ENS avatar for', label, ':', ensAvatar)
-              } else {
-                console.log('⚠️ No ENS avatar found for', label)
-              }
-            } catch (ensError) {
-              console.error('❌ Failed to resolve ENS avatar for', label, ':', ensError)
-            }
-          }
-
-          console.log('📸 Final avatar URL:', avatarUrl)
-          console.log('📸 Final label:', label)
-          setUserAvatar(avatarUrl)
-          setUserLabel(label)
-
-          // Save to cache
-          const cacheKey = `user_profile_${checksumAddress}`
-          await chrome.storage.local.set({
-            [cacheKey]: {
-              avatar: avatarUrl,
-              label: label,
-              timestamp: Date.now()
-            }
-          })
-          console.log('💾 Saved to cache')
-        } else {
-          console.log('⚠️ No account data found in GraphQL response')
-        }
-      } catch (error) {
-        console.error('Error loading user avatar:', error)
-      }
-    }
-
-    loadUserAvatar()
-  }, [walletAddress])
+  // User stats state
+  const [userStats, setUserStats] = useState({
+    signalsCreated: 0,
+    totalMarketCap: 0,
+    loading: true
+  })
 
   // Load user stats from GraphQL
   useEffect(() => {
@@ -349,6 +238,11 @@ const AccountTab = () => {
     console.log(`🗑️ [OAuth] Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
   }
 
+  // Calculate circular progress for quests
+  const calculateProgress = (current: number, total: number) => {
+    return (current / total) * 100
+  }
+
   // Get Discord avatar URL
   const getDiscordAvatarUrl = () => {
     if (!discordProfile?.id || !discordProfile?.avatar) return undefined
@@ -370,6 +264,27 @@ const AccountTab = () => {
     <div className="profile-section account-tab">
 
       {/* Profile Header */}
+      <ProfileHeader
+        avatarUrl={displayAvatar}
+        displayName={displayLabel}
+        walletAddress={walletAddress}
+        verified={isSocialVerified}
+        verifiedLabel="Social Linked"
+        badges={
+          completedQuests.length > 0 ? (
+            <>
+              {completedQuests.slice(0, 6).map(quest => (
+                <div key={quest.id} className="badge-item" title={quest.description}>
+                  {quest.title}
+                </div>
+              ))}
+              {completedQuests.length > 6 && (
+                <div className="badge-item badge-more">+{completedQuests.length - 6}</div>
+              )}
+            </>
+          ) : undefined
+        }
+      />
       <div className="profile-header">
         <Avatar
           imgSrc={displayAvatar}

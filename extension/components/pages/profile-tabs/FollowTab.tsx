@@ -36,24 +36,24 @@ const FollowTab = () => {
           Trust Circle
         </button>
         <button
-          className={`filter-btn ${filterType === 'followers' ? 'active' : ''}`}
-          onClick={() => setFilterType('followers')}
-        >
-          Followers
-        </button>
-        <button
           className={`filter-btn ${filterType === 'following' ? 'active' : ''}`}
           onClick={() => setFilterType('following')}
         >
           Following
+        </button>
+        <button
+          className={`filter-btn ${filterType === 'followers' ? 'active' : ''}`}
+          onClick={() => setFilterType('followers')}
+        >
+          Followers
         </button>
 
       </div>
 
       {/* Render active panel */}
       {filterType === 'trust-circle' && <TrustCirclePanel walletAddress={walletAddress} />}
-      {filterType === 'followers' && <FollowersPanel walletAddress={walletAddress} />}
       {filterType === 'following' && <FollowingPanel walletAddress={walletAddress} />}
+      {filterType === 'followers' && <FollowersPanel walletAddress={walletAddress} />}
     </div>
   )
 }

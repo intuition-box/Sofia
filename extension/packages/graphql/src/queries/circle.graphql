@@ -31,8 +31,7 @@ query GetTrustCirclePositions(
   ) {
     term_id
     subject {
-            label
-
+      label
     }
     predicate {
       label
