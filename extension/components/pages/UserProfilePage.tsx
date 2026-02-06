@@ -1,21 +1,37 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import Avatar from '../ui/Avatar'
 import { useUserSignals } from '../../hooks/useUserSignals'
 import { useUserLists } from '../../hooks/useUserLists'
 import { useUserAtomStats } from '../../hooks/useUserAtomStats'
 import { useCheckFollowStatus } from '../../hooks/useCheckFollowStatus'
+import { useUserQuests } from '../../hooks/useUserQuests'
+import { useIdentityResolution } from '../../hooks/useIdentityResolution'
+import ProfileHeader from '../ui/ProfileHeader'
 import FollowButton from '../ui/FollowButton'
 import TrustAccountButton from '../ui/TrustAccountButton'
-import { getEnsAvatar } from '../../lib/utils/ensUtils'
+import leftSideIcon from '../ui/icons/left side.svg'
+import rightSideIcon from '../ui/icons/right side.svg'
+import { getAddress } from 'viem'
+import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
+import { SUBJECT_IDS } from '../../lib/config/constants'
 import '../styles/UserProfile.css'
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
-  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(userProfileData?.image)
 
   // Check if we already follow/trust this account
   const followStatus = useCheckFollowStatus(userProfileData?.termId)
+
+  // User quests for the profile being viewed (simplified, read-only)
+  const { completedQuests, totalXP, level, loading: questsLoading } = useUserQuests(userProfileData?.walletAddress)
+
+  // Identity resolution for the profile being viewed
+  const { displayLabel, displayAvatar } = useIdentityResolution({
+    walletAddress: userProfileData?.walletAddress,
+    label: userProfileData?.label,
+    image: userProfileData?.image,
+    enableCache: true
+  })
 
   // Get detailed stats using the correct query
   const atomStats = useUserAtomStats(
@@ -39,22 +55,71 @@ const UserProfilePage = () => {
     loadMore: loadMoreLists
   } = useUserLists(userProfileData?.termId)
 
-  // Fetch ENS avatar if not available from Intuition
+  // User stats state
+  const [userStats, setUserStats] = useState({
+    signalsCreated: 0,
+    loading: true
+  })
+
+  // Load user stats from GraphQL (same logic as AccountTab)
   useEffect(() => {
-    const fetchAvatar = async () => {
-      if (!userProfileData?.image && userProfileData?.label) {
-        console.log('🔍 Fetching ENS avatar for:', userProfileData.label)
-        const avatar = await getEnsAvatar(userProfileData.label, userProfileData.image)
-        if (avatar) {
-          console.log('✅ ENS avatar found:', avatar)
-          setAvatarUrl(avatar)
+    const loadUserStats = async () => {
+      if (!userProfileData?.walletAddress) {
+        setUserStats({ signalsCreated: 0, loading: false })
+        return
+      }
+
+      try {
+        const checksumAddress = getAddress(userProfileData.walletAddress)
+
+        const statsQuery = `
+          query GetUserStats($accountId: String!, $subjectId: String!, $limit: Int!, $offset: Int!) {
+            triples: terms(
+              where: {
+                _and: [
+                  { type: { _eq: Triple } },
+                  { triple: { subject: { term_id: { _eq: $subjectId } } } },
+                  { positions: { account: { id: { _eq: $accountId } } } }
+                ]
+              }
+              limit: $limit
+              offset: $offset
+            ) {
+              id
+            }
+          }
+        `
+
+        interface StatsTripleResult {
+          id: string
         }
+
+        const allTriples = await intuitionGraphqlClient.fetchAllPages<StatsTripleResult>(
+          statsQuery,
+          { accountId: checksumAddress, subjectId: SUBJECT_IDS.I },
+          'triples',
+          100,
+          1000  // max 1000 signals
+        )
+
+        const signalsCreated = allTriples.length
+
+        console.log('[UserProfilePage] Signals created:', signalsCreated)
+
+        setUserStats({
+          signalsCreated,
+          loading: false
+        })
+
+      } catch (error) {
+        console.error('[UserProfilePage] Error loading user stats:', error)
+        setUserStats({ signalsCreated: 0, loading: false })
       }
     }
 
-    fetchAvatar()
-  }, [userProfileData?.label, userProfileData?.image])
-
+    loadUserStats()
+  }, [userProfileData?.walletAddress])
+ 
   if (!userProfileData) {
     return (
       <div className="user-profile-page">
@@ -74,9 +139,68 @@ const UserProfilePage = () => {
     return num.toFixed(2)
   }
 
-  // Calculate signals created from atomStats position count
-  const signalsCreated = atomStats.positionCount || 0
-  const totalMarketCap = formatMarketCap(atomStats.totalMarketCap)
+  // Render follow/trust actions
+  const renderActions = () => {
+    if (!userProfileData.termId || !userProfileData.walletAddress) return null
+
+    // Only show follow/trust buttons if termId is valid (bytes32 - 66 chars)
+    if (userProfileData.termId.length !== 66) {
+      return (
+        <div className="user-profile-status-note">
+          Follow/Trust unavailable (invalid ID format)
+        </div>
+      )
+    }
+
+    if (followStatus.loading) {
+      return (
+        <button className="follow-button salmon-gradient-button" disabled>
+          Loading...
+        </button>
+      )
+    }
+
+    if (followStatus.isTrusting) {
+      return (
+        <button className="follow-button salmon-gradient-button" disabled>
+          Trusted ✓
+        </button>
+      )
+    }
+
+    if (followStatus.isFollowing) {
+      return (
+        <TrustAccountButton
+          accountTermId={userProfileData.termId}
+          accountLabel={userProfileData.label}
+          onSuccess={() => {
+            console.log('✅ Trust created, refetching status')
+            followStatus.refetch()
+          }}
+        />
+      )
+    }
+
+    return (
+      <FollowButton
+        account={{
+          id: userProfileData.termId,
+          label: userProfileData.label,
+          termId: userProfileData.termId,
+          type: 'Account',
+          createdAt: new Date().toISOString(),
+          creatorId: '',
+          atomType: 'Account',
+          image: displayAvatar,
+          data: userProfileData.walletAddress
+        }}
+        onFollowSuccess={() => {
+          console.log('✅ Follow created, refetching status')
+          followStatus.refetch()
+        }}
+      />
+    )
+  }
 
   return (
     <div className="user-profile-page">
@@ -86,62 +210,26 @@ const UserProfilePage = () => {
       </button>
 
       {/* Profile Header */}
-      <div className="user-profile-header">
-        <Avatar
-          imgSrc={avatarUrl}
-          name={userProfileData.label}
-          avatarClassName="user-profile-avatar"
-          size="large"
-        />
-        <div className="user-profile-info">
-          <h2 className="user-profile-name">{userProfileData.label}</h2>
-          {userProfileData.walletAddress && (
-            <p className="user-profile-wallet">
-              {userProfileData.walletAddress.slice(0, 6)}...{userProfileData.walletAddress.slice(-4)}
-            </p>
-          )}
-        </div>
-        {userProfileData.termId && userProfileData.walletAddress && (
-          <>
-            {followStatus.loading ? (
-              <button className="follow-button salmon-gradient-button" disabled>
-                Loading...
-              </button>
-            ) : followStatus.isTrusting ? (
-              <button className="follow-button salmon-gradient-button" disabled>
-                Trusted ✓
-              </button>
-            ) : followStatus.isFollowing ? (
-              <TrustAccountButton
-                accountVaultId={userProfileData.termId}
-                accountLabel={userProfileData.label}
-                onSuccess={() => {
-                  console.log('✅ Trust created, refetching status')
-                  followStatus.refetch()
-                }}
-              />
-            ) : (
-              <FollowButton
-                account={{
-                  id: userProfileData.termId,
-                  label: userProfileData.label,
-                  termId: userProfileData.termId,
-                  type: 'Account',
-                  createdAt: new Date().toISOString(),
-                  creatorId: '',
-                  atomType: 'Account',
-                  image: avatarUrl,
-                  data: userProfileData.walletAddress
-                }}
-                onFollowSuccess={() => {
-                  console.log('✅ Follow created, refetching status')
-                  followStatus.refetch()
-                }}
-              />
-            )}
-          </>
-        )}
-      </div>
+      <ProfileHeader
+        avatarUrl={displayAvatar}
+        displayName={displayLabel}
+        walletAddress={userProfileData.walletAddress}
+        actions={renderActions()}
+        badges={
+          completedQuests.length > 0 ? (
+            <>
+              {completedQuests.slice(0, 6).map(quest => (
+                <div key={quest.id} className="badge-item" title={quest.description}>
+                  {quest.title}
+                </div>
+              ))}
+              {completedQuests.length > 6 && (
+                <div className="badge-item badge-more">+{completedQuests.length - 6}</div>
+              )}
+            </>
+          ) : undefined
+        }
+      />
 
       {/* Stats Section */}
       <div className="user-profile-stats-section">
@@ -152,16 +240,20 @@ const UserProfilePage = () => {
         ) : (
           <div className="user-profile-stats-grid">
             <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{signalsCreated}</div>
-              <div className="user-profile-stat-label">Signals Created</div>
+              <div className="stat-icons-with-value">
+                <img src={leftSideIcon} alt="Left" className="stat-icon" />
+                <div className="stat-value">{questsLoading ? '...' : level}</div>
+                <img src={rightSideIcon} alt="Right" className="stat-icon" />
+              </div>
+              <div className="user-profile-stat-label">Level</div>
             </div>
             <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{totalMarketCap}</div>
-              <div className="user-profile-stat-label">Total Market Cap</div>
+              <div className="user-profile-stat-value">{questsLoading ? '...' : totalXP}</div>
+              <div className="user-profile-stat-label">Total XP</div>
             </div>
             <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{atomStats.followersCount}</div>
-              <div className="user-profile-stat-label">Followers</div>
+              <div className="user-profile-stat-value">{userStats.loading ? '...' : userStats.signalsCreated}</div>
+              <div className="user-profile-stat-label">Signals</div>
             </div>
           </div>
         )}

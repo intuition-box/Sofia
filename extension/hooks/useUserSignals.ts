@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
+import { getAddress, createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+import { normalize } from 'viem/ens'
 
 interface AtomValue {
   person?: {
@@ -195,6 +198,28 @@ export const useUserSignals = (
       setLoading(true)
       setError(null)
 
+      // Resolve ENS to address if needed for userWalletAddress
+      let resolvedAddress = userWalletAddress
+      if (userWalletAddress && userWalletAddress.includes('.') && !userWalletAddress.startsWith('0x')) {
+        try {
+          const publicClient = createPublicClient({
+            chain: mainnet,
+            transport: http()
+          })
+          const address = await publicClient.getEnsAddress({
+            name: normalize(userWalletAddress)
+          })
+          if (address) {
+            resolvedAddress = address
+          }
+        } catch (ensError) {
+          console.error('[useUserSignals] ENS resolution failed:', ensError)
+        }
+      }
+      
+      // Convert to checksum if we have an address
+      const checksumAddress = resolvedAddress ? getAddress(resolvedAddress) : ''
+
       const query = `
         query GetAtomClaimsView($where: triple_term_bool_exp, $orderBy: [triple_term_order_by!], $address: String, $limit: Int, $offset: Int) {
           triple_terms(where: $where, order_by: $orderBy, limit: $limit, offset: $offset) {
@@ -298,7 +323,7 @@ export const useUserSignals = (
       `
 
       const variables = {
-        address: userWalletAddress || '',
+        address: checksumAddress,
         where: {
           _and: [
             {
@@ -339,15 +364,17 @@ export const useUserSignals = (
         triple_terms: TripleTerm[]
       }
 
-      const fetchedSignals: UserSignal[] = response.triple_terms.map((term) => ({
-        termId: term.term_id,
-        counterTermId: term.counter_term_id,
-        totalMarketCap: term.total_market_cap,
-        totalAssets: term.total_assets,
-        positionCount: term.total_position_count,
-        triple: term.term.triple,
-        createdAt: term.term.triple.created_at
-      }))
+      const fetchedSignals: UserSignal[] = response.triple_terms
+        .filter(term => term.term?.triple) // Filter out terms without triple data
+        .map((term) => ({
+          termId: term.term_id,
+          counterTermId: term.counter_term_id,
+          totalMarketCap: term.total_market_cap,
+          totalAssets: term.total_assets,
+          positionCount: term.total_position_count,
+          triple: term.term.triple,
+          createdAt: term.term.triple.created_at
+        }))
 
       if (currentOffset === 0) {
         setSignals(fetchedSignals)

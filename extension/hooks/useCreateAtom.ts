@@ -37,24 +37,16 @@ export const useCreateAtom = () => {
       throw new Error('No wallet connected')
     }
 
-    const isApproved = await BlockchainService.checkProxyApproval(address)
+    // NOTE: We can't check if approval exists because MultiVault doesn't expose
+    // an 'approvals' getter. So we skip the check and let the actual transaction fail
+    // if approval is missing. The calling code should catch this error and guide the user.
+    // For now, we just do nothing here to avoid unnecessary approval requests.
+    
+    // If you want to force approval every time (not recommended):
+    // const isApproved = await BlockchainService.checkProxyApproval(address)
+    // will always return false, triggering approval request
 
-    if (!isApproved) {
-      logger.info('Proxy not approved, requesting approval from user')
-
-      // Request approval transaction
-      const txHash = await BlockchainService.requestProxyApproval()
-      logger.debug('Approval transaction sent', { txHash })
-
-      // Wait for confirmation
-      const success = await BlockchainService.waitForApprovalConfirmation(txHash)
-
-      if (!success) {
-        throw new Error('Proxy approval transaction failed')
-      }
-
-      logger.info('Proxy approval confirmed')
-    }
+    logger.debug('Skipping proxy approval check (contract has no getter)')
   }
 
   /**

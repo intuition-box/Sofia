@@ -374,3 +374,27 @@
 .follow-tab .trust-page-button.salmon-gradient-button {
   padding: 8px 23px;
 }
+
+/* Explorer panel info section */
+.explorer-info {
+  margin-top: 32px;
+  padding: 24px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.explorer-info h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.explorer-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+  line-height: 1.6;
+}

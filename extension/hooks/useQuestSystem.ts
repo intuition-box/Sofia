@@ -183,10 +183,25 @@ const QUEST_DEFINITIONS: Omit<Quest, 'current' | 'status' | 'statusColor'>[] = [
 // Cache duration in milliseconds (2 minutes)
 const QUEST_CACHE_DURATION = 120000
 
-export const useQuestSystem = (): QuestSystemResult => {
-  const { walletAddress } = useWalletFromStorage()
-  const { lists, triplets } = useBookmarks()
-  const { stats: discoveryStats } = useDiscoveryScore()
+/**
+ * useQuestSystem Hook
+ * @param targetWalletAddress - Optional wallet address to fetch quests for (read-only mode)
+ *                              If not provided, uses the connected wallet (full interactive mode)
+ */
+export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult => {
+  const { walletAddress: viewerWalletAddress } = useWalletFromStorage()
+  
+  // If targetWalletAddress is provided, use it for queries (read-only mode)
+  // Otherwise use the viewer's wallet (full interactive mode with claims/saves)
+  const walletAddress = targetWalletAddress || viewerWalletAddress
+  const isReadOnlyMode = !!targetWalletAddress
+  
+  // Only use these hooks in interactive mode (they're viewer-specific)
+  const bookmarksData = useBookmarks()
+  const discoveryData = useDiscoveryScore()
+  
+  const { lists, triplets } = isReadOnlyMode ? { lists: [], triplets: [] } : bookmarksData
+  const { stats: discoveryStats } = isReadOnlyMode ? { stats: undefined } : discoveryData
 
   const [userProgress, setUserProgress] = useState<UserProgress>({
     signalsCreated: 0,
@@ -227,7 +242,10 @@ export const useQuestSystem = (): QuestSystemResult => {
   const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet}`
 
   // Load XP from storage and listen for changes (per-wallet)
+  // Only in interactive mode (not read-only)
   useEffect(() => {
+    if (isReadOnlyMode) return
+    
     if (!walletAddress) {
       setClaimedDiscoveryXP(0)
       setGroupCertificationXP(0)
@@ -269,15 +287,23 @@ export const useQuestSystem = (): QuestSystemResult => {
     }
     chrome.storage.onChanged.addListener(listener)
     return () => chrome.storage.onChanged.removeListener(listener)
-  }, [walletAddress])
+  }, [walletAddress, isReadOnlyMode])
 
   // Reset on-chain sync state when wallet changes to force re-sync
+  // Only in interactive mode
   useEffect(() => {
+    if (isReadOnlyMode) return
     setOnChainSyncDone(false)
-  }, [walletAddress])
+  }, [walletAddress, isReadOnlyMode])
 
   // Load cached user progress on mount (per-wallet)
+  // Only in interactive mode
   useEffect(() => {
+    if (isReadOnlyMode) {
+      setCacheLoaded(true)
+      return
+    }
+    
     const loadCache = async () => {
       if (!walletAddress) return
 
@@ -311,7 +337,7 @@ export const useQuestSystem = (): QuestSystemResult => {
     if (walletAddress) {
       loadCache()
     }
-  }, [walletAddress])
+  }, [walletAddress, isReadOnlyMode])
 
   // Get atom creation functions
   const { pinAtomToIPFS, createAtomsFromPinned, ensureProxyApproval } = useCreateAtom()
@@ -414,7 +440,10 @@ export const useQuestSystem = (): QuestSystemResult => {
   }
 
   // Load completed and claimed quests from storage, then sync with on-chain (per-wallet)
+  // Only in interactive mode
   useEffect(() => {
+    if (isReadOnlyMode) return
+    
     const loadQuestStates = async () => {
       if (!walletAddress) {
         setCompletedQuestIds(new Set())
@@ -462,11 +491,12 @@ export const useQuestSystem = (): QuestSystemResult => {
       }
     }
     loadQuestStates()
-  }, [walletAddress, onChainSyncDone])
+  }, [walletAddress, onChainSyncDone, isReadOnlyMode])
 
   // Save completed quests to storage (per-wallet)
+  // Disabled in read-only mode
   const saveCompletedQuest = async (questId: string) => {
-    if (!walletAddress) return
+    if (isReadOnlyMode || !walletAddress) return
 
     const newCompleted = new Set(completedQuestIds)
     newCompleted.add(questId)
@@ -560,6 +590,11 @@ export const useQuestSystem = (): QuestSystemResult => {
   }
 
   const claimQuestXP = async (questId: string): Promise<{ success: boolean; txHash?: string; error?: string }> => {
+    // Disabled in read-only mode
+    if (isReadOnlyMode) {
+      return { success: false, error: 'Claims not available in read-only mode' }
+    }
+    
     if (!walletAddress) {
       return { success: false, error: 'No wallet connected' }
     }
@@ -893,29 +928,39 @@ export const useQuestSystem = (): QuestSystemResult => {
       const trustedUsers = trustResponse?.triples?.length || 0
 
       // Query 4: Check OAuth connections (all 5 platforms) - per-wallet
-      const youtubeKey = getWalletKey('oauth_token_youtube', checksumAddress)
-      const spotifyKey = getWalletKey('oauth_token_spotify', checksumAddress)
-      const twitchKey = getWalletKey('oauth_token_twitch', checksumAddress)
-      const discordKey = getWalletKey('oauth_token_discord', checksumAddress)
-      const twitterKey = getWalletKey('oauth_token_twitter', checksumAddress)
+      // In read-only mode, OAuth checks are skipped (they're viewer-specific)
+      let discordConnected = false
+      let youtubeConnected = false
+      let spotifyConnected = false
+      let twitchConnected = false
+      let twitterConnected = false
+      let oauthConnections = 0
+      
+      if (!isReadOnlyMode) {
+        const youtubeKey = getWalletKey('oauth_token_youtube', checksumAddress)
+        const spotifyKey = getWalletKey('oauth_token_spotify', checksumAddress)
+        const twitchKey = getWalletKey('oauth_token_twitch', checksumAddress)
+        const discordKey = getWalletKey('oauth_token_discord', checksumAddress)
+        const twitterKey = getWalletKey('oauth_token_twitter', checksumAddress)
 
-      const oauthResult = await chrome.storage.local.get([
-        youtubeKey, spotifyKey, twitchKey, discordKey, twitterKey
-      ])
+        const oauthResult = await chrome.storage.local.get([
+          youtubeKey, spotifyKey, twitchKey, discordKey, twitterKey
+        ])
 
-      const discordConnected = !!oauthResult[discordKey]?.accessToken
-      const youtubeConnected = !!oauthResult[youtubeKey]?.accessToken
-      const spotifyConnected = !!oauthResult[spotifyKey]?.accessToken
-      const twitchConnected = !!oauthResult[twitchKey]?.accessToken
-      const twitterConnected = !!oauthResult[twitterKey]?.accessToken
+        discordConnected = !!oauthResult[discordKey]?.accessToken
+        youtubeConnected = !!oauthResult[youtubeKey]?.accessToken
+        spotifyConnected = !!oauthResult[spotifyKey]?.accessToken
+        twitchConnected = !!oauthResult[twitchKey]?.accessToken
+        twitterConnected = !!oauthResult[twitterKey]?.accessToken
 
-      const oauthConnections = [
-        discordConnected,
-        youtubeConnected,
-        spotifyConnected,
-        twitchConnected,
-        twitterConnected,
-      ].filter(Boolean).length
+        oauthConnections = [
+          discordConnected,
+          youtubeConnected,
+          spotifyConnected,
+          twitchConnected,
+          twitterConnected,
+        ].filter(Boolean).length
+      }
 
       // Local bookmark data
       const bookmarkListsCreated = lists.length
@@ -959,13 +1004,16 @@ export const useQuestSystem = (): QuestSystemResult => {
       setUserProgress(newProgress)
 
       // Save to cache (per-wallet)
-      const cacheKey = getWalletKey('quest_progress_cache', walletAddress)
-      const timestampKey = getWalletKey('quest_progress_timestamp', walletAddress)
-      await chrome.storage.local.set({
-        [cacheKey]: newProgress,
-        [timestampKey]: Date.now()
-      })
-      console.log('💾 [QuestSystem] Progress cached')
+      // Only in interactive mode (not read-only)
+      if (!isReadOnlyMode) {
+        const cacheKey = getWalletKey('quest_progress_cache', walletAddress)
+        const timestampKey = getWalletKey('quest_progress_timestamp', walletAddress)
+        await chrome.storage.local.set({
+          [cacheKey]: newProgress,
+          [timestampKey]: Date.now()
+        })
+        console.log('💾 [QuestSystem] Progress cached')
+      }
 
     } catch (error) {
       console.error('Error fetching quest data:', error)
@@ -981,6 +1029,13 @@ export const useQuestSystem = (): QuestSystemResult => {
       // Wait for cache check to complete
       if (!cacheLoaded || !walletAddress) return
 
+      // In read-only mode, always refresh (no cache)
+      if (isReadOnlyMode) {
+        console.log('🔄 [QuestSystem] Read-only mode, fetching fresh data...')
+        refreshQuests()
+        return
+      }
+
       // Check if cache is still valid (per-wallet)
       const timestampKey = getWalletKey('quest_progress_timestamp', walletAddress)
       const result = await chrome.storage.local.get(timestampKey)
@@ -995,7 +1050,7 @@ export const useQuestSystem = (): QuestSystemResult => {
     }
 
     checkAndRefresh()
-  }, [walletAddress, cacheLoaded, lists.length, triplets.length, discoveryStats])
+  }, [walletAddress, cacheLoaded, lists.length, triplets.length, discoveryStats, isReadOnlyMode])
 
   // Generate quests based on user progress
   const quests = useMemo<Quest[]>(() => {

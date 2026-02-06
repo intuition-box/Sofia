@@ -1,12 +1,18 @@
 /**
  * useIntuitionTriplets Hook
  * Integration with Intuition blockchain API via GraphQL testnet endpoint
+ *
+ * - Fetches user positions on triples where subject is "I"
+ * - Fetches IPFS metadata for triple objects (object.data = ipfs://...)
+ * - Uses batch IPFS fetching with caching + gateway fallbacks
  */
 
 import { useState, useEffect, useCallback } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../lib/config/constants'
+import { batchFetchIPFS } from '../lib/utils/ipfsCache'
+
 import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../types/intuition'
 import { getAddress } from 'viem'
 
@@ -95,178 +101,155 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
       console.log('🔄 Original account:', account)
       console.log('🔄 Checksum address:', checksumAddress)
 
-    const triplesQuery = `
-      query Query_root($where: triples_bool_exp, $walletAddress: String!) {
-        triples(where: $where) {
-          subject { label }
-          predicate { label }
-          object { label, term_id }
-          term_id
-          created_at
-          term {
-            vaults(order_by: {curve_id: asc}) {
-              curve_id
-              total_shares
-              positions(where: {account_id: {_eq: $walletAddress}}) {
-                shares
-                created_at
+      const triplesQuery = `
+        query Query_root($where: triples_bool_exp, $walletAddress: String!) {
+          triples(where: $where) {
+            subject { label, term_id }
+            predicate { label, term_id }
+            object { label, term_id, data }
+            term_id
+            created_at
+            term {
+              vaults(order_by: { curve_id: asc }) {
+                curve_id
+                total_shares
+                positions(where: { account_id: { _eq: $walletAddress } }) {
+                  shares
+                  created_at
+                }
               }
             }
           }
         }
-      }
-    `
-    
-    const where = {
-      "_and": [
-        {
-          "positions": {
-            "account": {
-              "id": {
-                "_eq": checksumAddress
-              }
-            }
-          }
-        },
-        {
-          "subject": {
-            "term_id": {
-              "_eq": SUBJECT_IDS.I
-            }
-          }
-        }
-      ]
-    }
-    
-    
-    console.log('🚀 Making GraphQL request with where:', where)
-    console.log('🚀 Query:', triplesQuery)
-    console.log('🚀 Variables:', { where, walletAddress: checksumAddress })
-    console.log('🚀 SUBJECT_IDS.I value:', SUBJECT_IDS.I)
+      `
 
-    const response = await intuitionGraphqlClient.request(triplesQuery, {
-      where,
-      walletAddress: checksumAddress
-    }) as GraphQLTriplesResponse
-    
-    console.log('📥 GraphQL response:', response)
-    console.log('📥 Response.triples:', response?.triples)
-    console.log('📥 Response.triples type:', typeof response?.triples)
-    
-    if (!response?.triples) {
-      console.log('❌ No triples in response')
+      const where = {
+        _and: [
+          {
+            positions: {
+              account: {
+                id: {
+                  _eq: checksumAddress
+                }
+              }
+            }
+          },
+          {
+            subject: {
+              term_id: {
+                _eq: SUBJECT_IDS.I
+              }
+            }
+          }
+        ]
+      }
+      console.log('🚀 Making GraphQL request with where:', where)
+      console.log('🚀 Variables:', { where, walletAddress: checksumAddress })
+      console.log('🚀 SUBJECT_IDS.I value:', SUBJECT_IDS.I)
+
+      const response = (await intuitionGraphqlClient.request(triplesQuery, {
+        where,
+        walletAddress: checksumAddress
+      })) as GraphQLTriplesResponse
+
+      console.log('📥 GraphQL response:', response)
+
+      if (!response?.triples) {
+        console.log('❌ No triples in response')
+        setTriplets([])
+        setIsLoading(false)
+        return []
+      }
+
+      console.log('✅ Found triples:', response.triples.length)
+
+      // Extract ipfs:// URIs from object.data
+      const ipfsUris = response.triples
+        .map((triple: any) => triple.object?.data)
+        .filter((data): data is string => !!data && data.startsWith('ipfs://'))
+
+      // Batch fetch IPFS metadata with caching and fallbacks
+      const ipfsDataMap = await batchFetchIPFS(ipfsUris, 5)
+
+      const mappedTriplets: IntuitionTriplet[] = response.triples.map(
+        (triple: IntuitionTripleResponse) => {
+          const subjectLabel = triple.subject?.label || 'Unknown'
+          const predicateLabel = triple.predicate?.label || 'Unknown'
+          const objectLabel = triple.object?.label || 'Unknown'
+          const objectTermId = triple.object?.term_id || undefined
+
+          // Pull metadata directly from ipfsDataMap (keyed by ipfsUri)
+          const ipfsUri = (triple as any)?.object?.data as string | undefined
+          const metadata = ipfsUri ? ipfsDataMap.get(ipfsUri) : undefined
+
+          // Get vault data for both curves
+          const vaults = (triple as any).term?.vaults || []
+          const curve1Vault = vaults.find((v: any) => Number(v.curve_id) === 1)
+          const curve2Vault = vaults.find((v: any) => Number(v.curve_id) === 2)
+
+          // Get position data from both curves
+          const curve1Shares = curve1Vault?.positions?.[0]?.shares
+          const curve2Shares = curve2Vault?.positions?.[0]?.shares
+          const created_at =
+            curve1Vault?.positions?.[0]?.created_at ||
+            curve2Vault?.positions?.[0]?.created_at ||
+            ''
+
+          const position =
+            curve1Shares || curve2Shares
+              ? {
+                  linear: curve1Shares ? formatSharesAsLinear(curve1Shares) : 0,
+                  offsetProgressive: curve2Shares
+                    ? formatSharesAsOffsetProgressive(curve2Shares)
+                    : 0,
+                  created_at
+                }
+              : undefined
+
+          // Curve 2 total market cap (total_shares)
+          const totalMarketCap = curve2Vault?.total_shares || '0'
+
+          return {
+            id: triple.term_id,
+            triplet: {
+              subject: subjectLabel,
+              predicate: predicateLabel,
+              object: objectLabel
+            },
+            objectTermId,
+            ipfsUri,
+            url: metadata?.url,
+            description: metadata?.description,
+            timestamp: new Date(triple.created_at).getTime(),
+            blockNumber: 0,
+            source: 'intuition_api' as const,
+            position,
+            totalMarketCap
+          }
+        }
+      )
+
+      console.log('📋 Final mapped triplets:', mappedTriplets)
+      console.log('📋 Setting triplets in state, count:', mappedTriplets.length)
+
+      setTriplets(mappedTriplets)
+      setIsLoading(false)
+      return mappedTriplets
+    } catch (error) {
+      console.error('💥 Error in refreshFromAPI:', error)
       setTriplets([])
+      setIsLoading(false)
       return []
     }
-    
-    console.log('✅ Found triples:', response.triples.length)
-
-    // Extract unique object labels to fetch their IPFS data (filter out nulls for the query)
-    const objectLabels = [...new Set(
-      response.triples
-        .map(triple => triple.object?.label)
-        .filter((label): label is string => label != null)
-    )]
-    
-    // Fetch IPFS hashes for objects
-    const atomsQuery = `
-      query GetAtomsByLabels($labels: [String!]!) {
-        atoms(where: {
-          label: { _in: $labels }
-        }) {
-          label
-          data
-        }
-      }
-    `
-    
-    const atomsResponse = await intuitionGraphqlClient.request(atomsQuery, {
-      labels: objectLabels
-    }) as { atoms: Array<{ label: string; data?: string }> }
-    
-    // Create a map for quick lookup and fetch IPFS data
-    const atomDataMap = new Map<string, { url?: string; description?: string }>()
-    
-    for (const atom of atomsResponse.atoms) {
-      if (atom.data && atom.data.startsWith('ipfs://')) {
-        try {
-          // Convert IPFS hash to HTTP gateway URL
-          const ipfsHash = atom.data.replace('ipfs://', '')
-          const ipfsGatewayUrl = `https://ipfs.io/ipfs/${ipfsHash}`
-          
-          // Fetch data from IPFS
-          const ipfsResponse = await fetch(ipfsGatewayUrl)
-          if (ipfsResponse.ok) {
-            const ipfsData = await ipfsResponse.json()
-            atomDataMap.set(atom.label, {
-              url: ipfsData.url,
-              description: ipfsData.description
-            })
-          }
-        } catch (e) {
-          console.warn('Failed to fetch IPFS data for:', atom.data)
-        }
-      }
-    }
-
-    const mappedTriplets: IntuitionTriplet[] = response.triples.map((triple: IntuitionTripleResponse) => {
-      const objectLabel = triple.object?.label || 'Unknown'
-      const objectData = atomDataMap.get(objectLabel)
-
-      // Get vault data for both curves
-      const vaults = (triple as any).term?.vaults || []
-      const curve1Vault = vaults.find((v: any) => v.curve_id === '1')
-      const curve2Vault = vaults.find((v: any) => v.curve_id === '2')
-
-      // Get position data from both curves
-      const curve1Shares = curve1Vault?.positions?.[0]?.shares
-      const curve2Shares = curve2Vault?.positions?.[0]?.shares
-      const created_at = curve1Vault?.positions?.[0]?.created_at || curve2Vault?.positions?.[0]?.created_at || ''
-
-      const position = (curve1Shares || curve2Shares) ? {
-        linear: curve1Shares ? formatSharesAsLinear(curve1Shares) : 0,
-        offsetProgressive: curve2Shares ? formatSharesAsOffsetProgressive(curve2Shares) : 0,
-        created_at
-      } : undefined
-
-      // Get total market cap from Curve 2 vault
-      const totalMarketCap = curve2Vault?.total_shares || '0'
-
-      return {
-        id: triple.term_id,
-        triplet: {
-          subject: triple.subject?.label || 'Unknown',
-          predicate: triple.predicate?.label || 'Unknown',
-          object: objectLabel
-        },
-        objectTermId: triple.object?.term_id || undefined,
-        url: objectData?.url,
-        description: objectData?.description,
-        timestamp: new Date(triple.created_at).getTime(),
-        blockNumber: 0,
-        source: 'intuition_api' as const,
-        position,
-        totalMarketCap
-      }
-    })
-
-    console.log('📋 Final mapped triplets:', mappedTriplets)
-    console.log('📋 Setting triplets in state, count:', mappedTriplets.length)
-
-    setTriplets(mappedTriplets)
-    setIsLoading(false)
-    return mappedTriplets
-  } catch (error) {
-    console.error('💥 Error in refreshFromAPI:', error)
-    setTriplets([])
-    setIsLoading(false)
-    return []
-  }
   }, [account])
 
   useEffect(() => {
     if (account) {
       refreshFromAPI()
+    } else {
+      // Ensure consistent state when disconnected
+      setTriplets([])
+      setIsLoading(false)
     }
   }, [refreshFromAPI, account])
 

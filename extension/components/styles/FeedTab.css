@@ -174,21 +174,18 @@
   flex: 1;
   padding: 8px 16px;
   border-radius: 6px;
-  border: none;
   cursor: pointer;
   font-size: 12px;
   font-weight: 900;
   transition: 0.2s;
-  color: rgb(0, 0, 14);
   min-width: 0;
   white-space: nowrap;
 }
 
 /* Join Button - orb gradient style (like trust-btn) */
 .trust-page-button.join-button-css {
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   background: none;
-  box-shadow: 0 8px 32px rgba(86, 236, 72, 0.4);
   color: #ffffff;
   font-weight: 700;
   position: relative;
@@ -216,9 +213,9 @@
 }
 
 .trust-page-button.join-button-css:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(110, 236, 72, 0.6);
   transform: translateY(-2px);
-  background-color: rgba(86, 236, 72, 0.4);
+  background-color: rgba(86, 236, 72, 0.15);
+  color: white;
 }
 
 @keyframes orb-gradient {
@@ -229,15 +226,14 @@
 
 /* Decline Button - Outline/Ghost style (like distrust-btn) */
 .feed-decline-button {
-  border: none;
-  background: transparent;
-  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
-  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: none;
+  color: #ffffff;
   font-weight: 700;
+  position: relative;
   overflow: hidden;
   transition: all 0.5s ease;
   font-family: 'Gotu', cursive;
-  position: relative;
 }
 
 .feed-decline-button::before {
@@ -254,9 +250,8 @@
 }
 
 .feed-decline-button:hover:not(:disabled) {
-  box-shadow: 0 12px 48px rgba(255, 80, 80, 0.6);
   transform: translateY(-2px);
-  background-color: rgba(253, 78, 78, 0.459);
+  background-color: rgba(253, 78, 78, 0.15);
   color: white;
 }
 

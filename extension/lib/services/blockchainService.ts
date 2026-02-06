@@ -118,7 +118,9 @@ export class BlockchainService {
       contractAddress: this.MULTIVAULT_ADDRESS
     })
 
-    const { publicClient } = await getClients()
+    // Use getPublicClient for read-only operations (faster, no wallet needed)
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
 
     try {
       console.log('🔍 BlockchainService.checkTripleExists - Calculating triple ID')
@@ -225,7 +227,8 @@ export class BlockchainService {
    * Get atom cost from contract (reads from MultiVault)
    */
   static async getAtomCost(): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
 
     return await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
@@ -239,7 +242,8 @@ export class BlockchainService {
    * Get triple cost from contract (reads from MultiVault)
    */
   static async getTripleCost(): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
 
     const cost = await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
@@ -301,25 +305,12 @@ export class BlockchainService {
       return false
     }
 
-    const { publicClient } = await getClients()
+    // NOTE: MultiVault contract doesn't expose an 'approvals' getter function
+    // So we can't check approval status directly. The contract will revert
+    // if approval is missing, so we just return false to always trigger approval request.
+    // This is safe because if the user already approved, the transaction will succeed anyway.
 
-    try {
-      // Check approval status on MultiVault: approvals(owner, sender) returns ApprovalTypes
-      const approvalType = await publicClient.readContract({
-        address: this.MULTIVAULT_ADDRESS as `0x${string}`,
-        abi: MultiVaultAbi,
-        functionName: 'approvals',
-        args: [userAddress as `0x${string}`, this.PROXY_ADDRESS as `0x${string}`],
-        authorizationList: undefined
-      }) as number
-
-      // ApprovalTypes: 0=NONE, 1=DEPOSIT, 2=REDEMPTION, 3=BOTH
-      // We need at least DEPOSIT (1) or BOTH (3)
-      return approvalType === this.ApprovalTypes.DEPOSIT || approvalType === this.ApprovalTypes.BOTH
-    } catch (error) {
-      console.error('Error checking proxy approval:', error)
-      return false
-    }
+    return false // Always request approval (wallet will handle if already approved)
   }
 
   /**
