@@ -2,12 +2,13 @@
  * FollowingPanel - Display accounts I follow
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useFollowing } from '../../../../hooks/useFollowing'
 import { useRouter } from '../../../layout/RouterProvider'
 import type { FollowAccountVM } from '../../../../types/follows'
 import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
 import { useCheckFollowStatus } from '../../../../hooks/useCheckFollowStatus'
+import { useRedeemTriple } from '../../../../hooks/useRedeemTriple'
 import TrustAccountButton from '../../../ui/TrustAccountButton'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
@@ -67,11 +68,42 @@ function AccountActionButton({
 export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
   const { accounts, loading, error, refetch } = useFollowing(walletAddress)
   const { navigateTo } = useRouter()
+  const { redeemPosition } = useRedeemTriple()
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
 
   // Load data on mount
   useEffect(() => {
     refetch()
   }, [refetch])
+
+  const handleUnfollow = async (account: FollowAccountVM) => {
+    const confirmed = confirm(`Unfollow ${account.label}? This will redeem your position.`)
+    if (!confirmed) return
+
+    setProcessingIds(prev => new Set(prev).add(account.tripleId))
+    try {
+      const result = await redeemPosition(account.tripleId)
+      if (!result.success) {
+        alert(`Unfollow failed: ${result.error}`)
+        return
+      }
+      // Optimistic: hide account immediately
+      setRemovedIds(prev => new Set(prev).add(account.tripleId))
+      // Background refetch for eventual consistency
+      refetchWithBackoff(refetch, {
+        initialDelay: 5000,
+        maxDelay: 10000,
+        maxAttempts: 3
+      })
+    } finally {
+      setProcessingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(account.tripleId)
+        return newSet
+      })
+    }
+  }
 
   const handleNavigateToProfile = (account: typeof accounts[0]) => {
     navigateTo('user-profile', {
@@ -114,12 +146,12 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
 
       {!loading && !error && (
         <div className="followed-accounts">
-          {accounts.length === 0 ? (
+          {accounts.filter(a => !removedIds.has(a.tripleId)).length === 0 ? (
             <div className="empty-state">
               <p>Not following anyone yet</p>
             </div>
           ) : (
-            accounts.map((account, index) => (
+            accounts.filter(a => !removedIds.has(a.tripleId)).map((account, index) => (
               <div
                 key={account.id}
                 className="followed-account-card"
@@ -153,6 +185,14 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
                       })
                     }}
                   />
+                  <button
+                    className="remove-btn"
+                    onClick={() => handleUnfollow(account)}
+                    disabled={processingIds.has(account.tripleId)}
+                    title="Unfollow"
+                  >
+                    {processingIds.has(account.tripleId) ? '...' : '×'}
+                  </button>
                 </div>
               </div>
             ))
