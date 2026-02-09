@@ -21,8 +21,8 @@ export interface UseIntentionCategoriesResult {
 /**
  * Hook to get intention categories with on-chain URLs grouped by intention type
  */
-export function useIntentionCategories(): UseIntentionCategoriesResult {
-  const { groups, loading, error, refetch } = useOnChainIntentionGroups()
+export function useIntentionCategories(walletAddress?: string): UseIntentionCategoriesResult {
+  const { groups, loading, error, refetch } = useOnChainIntentionGroups(walletAddress)
   const [selectedCategoryId, setSelectedCategoryId] = useState<IntentionType | null>(null)
 
   // Transform domain-grouped data into intention-grouped categories

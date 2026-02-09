@@ -13,10 +13,10 @@ import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
 
 interface EchoesTabProps {
-  onNavigateToProofs?: () => void
+  onNavigateToInterest?: () => void
 }
 
-const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
+const EchoesTab = ({ onNavigateToInterest }: EchoesTabProps) => {
   const {
     groups,
     selectedGroup,
@@ -132,16 +132,15 @@ const EchoesTab = ({ onNavigateToProofs }: EchoesTabProps) => {
   return (
     <div className="triples-container">
       <div className="groups-section">
-        <div className="reveal-skills-cta">
+        <div className="reveal-interest-cta">
           <button
             className="btn iridescence-btn"
             onClick={() => {
-              // Set flag to trigger analysis when Proofs tab loads
-              localStorage.setItem('triggerProofsAnalysis', 'true');
-              onNavigateToProofs?.();
+              localStorage.setItem('triggerInterestAnalysis', 'true');
+              onNavigateToInterest?.();
             }}
           >
-            Unlock Proofs
+            Sort Interest
           </button>
         </div>
         <div className="groups-header">

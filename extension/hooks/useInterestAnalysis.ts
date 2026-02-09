@@ -1,33 +1,33 @@
 /**
- * useSkillsAnalysis Hook
- * Fetches domain activity from MCP and uses AI to categorize into skills
+ * useInterestAnalysis Hook
+ * Fetches domain activity from MCP and uses AI to categorize into interests
  * XP and levels are calculated locally based on on-chain certifications
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { callMastraAgent } from '../background/mastraClient';
 import {
-  Skill,
-  SkillFromAgent,
+  Interest,
+  InterestFromAgent,
   AccountActivityResponse,
-  enrichSkill,
+  enrichInterest,
   CertificationBreakdown,
   XP_PER_CERTIFICATION,
   calculateLevel,
   getXpToNextLevel,
-} from '../types/skills';
+} from '../types/interests';
 import { createHookLogger } from '../lib/utils/logger';
 
-const logger = createHookLogger('useSkillsAnalysis');
+const logger = createHookLogger('useInterestAnalysis');
 
 // MCP Server URL - uses the same server as other MCP operations
 const MCP_SERVER_URL = process.env.PLASMO_PUBLIC_MCP_URL || 'http://localhost:3001';
 
 // Cache configuration
-const CACHE_KEY_PREFIX = 'sofia_proofs_';
+const CACHE_KEY_PREFIX = 'sofia_interest_';
 
-interface CachedProofsData {
-  skills: Skill[];
+interface CachedInterestData {
+  interests: Interest[];
   summary: string;
   totalPositions: number;
   analyzedAt: string;
@@ -41,38 +41,38 @@ function getCacheKey(accountId: string): string {
 }
 
 /**
- * Load cached proofs from localStorage
+ * Load cached interest from localStorage
  */
-function loadCachedProofs(accountId: string): CachedProofsData | null {
+function loadCachedInterest(accountId: string): CachedInterestData | null {
   try {
     const cached = localStorage.getItem(getCacheKey(accountId));
     if (!cached) return null;
     const data = JSON.parse(cached);
-    logger.info('Loaded cached proofs', { accountId, skillCount: data.skills?.length });
+    logger.info('Loaded cached interest', { accountId, count: data.interests?.length });
     return data;
   } catch (e) {
-    logger.warn('Failed to load cached proofs', e);
+    logger.warn('Failed to load cached interest', e);
     return null;
   }
 }
 
 /**
- * Save proofs to localStorage cache
+ * Save interest to localStorage cache
  */
-function saveCachedProofs(accountId: string, data: CachedProofsData): void {
+function saveCachedInterest(accountId: string, data: CachedInterestData): void {
   try {
     localStorage.setItem(getCacheKey(accountId), JSON.stringify(data));
-    logger.info('Saved proofs to cache', { accountId, skillCount: data.skills.length });
+    logger.info('Saved interest to cache', { accountId, count: data.interests.length });
   } catch (e) {
-    logger.warn('Failed to cache proofs', e);
+    logger.warn('Failed to cache interest', e);
   }
 }
 
 /**
- * Check if two skill names are similar enough to be merged
+ * Check if two interest names are similar enough to be merged
  * Handles cases like "Blockchain" vs "Blockchain Technology"
  */
-function areSkillNamesSimilar(name1: string, name2: string): boolean {
+function areInterestNamesSimilar(name1: string, name2: string): boolean {
   const n1 = name1.toLowerCase().trim();
   const n2 = name2.toLowerCase().trim();
 
@@ -93,12 +93,12 @@ function areSkillNamesSimilar(name1: string, name2: string): boolean {
 }
 
 /**
- * Find the best matching skill index for a new skill
+ * Find the best matching interest index for a new interest
  * Uses fuzzy matching to avoid duplicates like "Blockchain" and "Blockchain Technology"
  */
-function findSimilarSkillIndex(skills: Skill[], newSkillName: string): number {
-  for (let i = 0; i < skills.length; i++) {
-    if (areSkillNamesSimilar(skills[i].name, newSkillName)) {
+function findSimilarInterestIndex(interests: Interest[], newName: string): number {
+  for (let i = 0; i < interests.length; i++) {
+    if (areInterestNamesSimilar(interests[i].name, newName)) {
       return i;
     }
   }
@@ -106,27 +106,27 @@ function findSimilarSkillIndex(skills: Skill[], newSkillName: string): number {
 }
 
 /**
- * Merge cached skills with new skills
- * - Updates existing skills (by name) with new domains/certifications
- * - Adds completely new skills
+ * Merge cached interests with new interests
+ * - Updates existing interests (by name) with new domains/certifications
+ * - Adds completely new interests
  * - Uses fuzzy matching to avoid duplicates
  */
-function mergeSkills(cached: Skill[], newSkills: Skill[]): Skill[] {
+function mergeInterests(cached: Interest[], newInterests: Interest[]): Interest[] {
   const merged = [...cached];
 
-  for (const newSkill of newSkills) {
-    const existingIndex = findSimilarSkillIndex(merged, newSkill.name);
+  for (const newItem of newInterests) {
+    const existingIndex = findSimilarInterestIndex(merged, newItem.name);
 
     if (existingIndex >= 0) {
-      // Update existing skill: merge domains, take max certifications
+      // Update existing interest: merge domains, take max certifications
       const existing = merged[existingIndex];
-      const mergedDomains = [...new Set([...existing.domains, ...newSkill.domains])];
+      const mergedDomains = [...new Set([...existing.domains, ...newItem.domains])];
       const mergedCerts: CertificationBreakdown = {
-        work: Math.max(existing.certifications.work, newSkill.certifications.work),
-        learning: Math.max(existing.certifications.learning, newSkill.certifications.learning),
-        fun: Math.max(existing.certifications.fun, newSkill.certifications.fun),
-        inspiration: Math.max(existing.certifications.inspiration, newSkill.certifications.inspiration),
-        buying: Math.max(existing.certifications.buying, newSkill.certifications.buying),
+        work: Math.max(existing.certifications.work, newItem.certifications.work),
+        learning: Math.max(existing.certifications.learning, newItem.certifications.learning),
+        fun: Math.max(existing.certifications.fun, newItem.certifications.fun),
+        inspiration: Math.max(existing.certifications.inspiration, newItem.certifications.inspiration),
+        buying: Math.max(existing.certifications.buying, newItem.certifications.buying),
       };
 
       // Recalculate XP/level with merged certifications
@@ -135,7 +135,7 @@ function mergeSkills(cached: Skill[], newSkills: Skill[]): Skill[] {
       const level = calculateLevel(xp);
 
       // Prefer the shorter name (usually more generic and better)
-      const bestName = existing.name.length <= newSkill.name.length ? existing.name : newSkill.name;
+      const bestName = existing.name.length <= newItem.name.length ? existing.name : newItem.name;
 
       merged[existingIndex] = {
         ...existing,
@@ -146,15 +146,15 @@ function mergeSkills(cached: Skill[], newSkills: Skill[]): Skill[] {
         xp,
         level,
         xpToNextLevel: getXpToNextLevel(xp, level),
-        confidence: Math.max(existing.confidence, newSkill.confidence),
-        reasoning: newSkill.reasoning || existing.reasoning,
+        confidence: Math.max(existing.confidence, newItem.confidence),
+        reasoning: newItem.reasoning || existing.reasoning,
       };
 
-      logger.info('Merged similar skills', { existing: existing.name, new: newSkill.name, merged: bestName, newXp: xp });
+      logger.info('Merged similar interests', { existing: existing.name, new: newItem.name, merged: bestName, newXp: xp });
     } else {
-      // Add new skill
-      merged.push(newSkill);
-      logger.info('Added new skill', { name: newSkill.name });
+      // Add new interest
+      merged.push(newItem);
+      logger.info('Added new interest', { name: newItem.name });
     }
   }
 
@@ -171,8 +171,8 @@ const WEB_ACTIVITY_PREDICATES = [
   'visits for buying',
 ];
 
-export interface SkillsAnalysisState {
-  skills: Skill[];
+export interface InterestAnalysisState {
+  interests: Interest[];
   summary: string;
   totalPositions: number;
   isLoading: boolean;
@@ -357,12 +357,12 @@ function mapPredicatesToCertifications(
 }
 
 /**
- * Call skills analysis agent
+ * Call interest analysis agent
  */
-async function analyzeSkillsWithAgent(
+async function analyzeInterestsWithAgent(
   activityData: AccountActivityResponse
-): Promise<{ skills: SkillFromAgent[]; summary: string }> {
-  logger.info('Calling skills analysis agent', { groupCount: activityData.groups.length });
+): Promise<{ interests: InterestFromAgent[]; summary: string }> {
+  logger.info('Calling interest analysis agent', { groupCount: activityData.groups.length });
 
   // Prepare input for the agent
   const agentInput = {
@@ -375,10 +375,10 @@ async function analyzeSkillsWithAgent(
 
   const result = await callMastraAgent('skillsAnalysisAgent', JSON.stringify(agentInput));
 
-  logger.info('Skills analysis complete', { skillCount: result.skills?.length });
+  logger.info('Interest analysis complete', { count: result.skills?.length });
 
   // Map certifications from agent response
-  const skillsWithCerts = (result.skills || []).map((skill: SkillFromAgent) => {
+  const interestsWithCerts = (result.skills || []).map((item: InterestFromAgent) => {
     // Find domains in activity data and aggregate certifications
     const certifications: CertificationBreakdown = {
       work: 0,
@@ -388,7 +388,7 @@ async function analyzeSkillsWithAgent(
       buying: 0,
     };
 
-    for (const domain of skill.domains) {
+    for (const domain of item.domains) {
       const group = activityData.groups.find((g) => g.key === domain);
       if (group) {
         const domainCerts = mapPredicatesToCertifications(group.predicates);
@@ -401,23 +401,23 @@ async function analyzeSkillsWithAgent(
     }
 
     return {
-      ...skill,
+      ...item,
       certifications,
     };
   });
 
   return {
-    skills: skillsWithCerts,
+    interests: interestsWithCerts,
     summary: result.summary || '',
   };
 }
 
 /**
- * Hook for skills analysis with localStorage caching
+ * Hook for interest analysis with localStorage caching
  */
-export function useSkillsAnalysis() {
-  const [state, setState] = useState<SkillsAnalysisState>({
-    skills: [],
+export function useInterestAnalysis() {
+  const [state, setState] = useState<InterestAnalysisState>({
+    interests: [],
     summary: '',
     totalPositions: 0,
     isLoading: false,
@@ -428,10 +428,10 @@ export function useSkillsAnalysis() {
 
   // Load cached data when account changes
   const loadFromCache = useCallback((accountId: string) => {
-    const cached = loadCachedProofs(accountId);
+    const cached = loadCachedInterest(accountId);
     if (cached) {
       setState({
-        skills: cached.skills,
+        interests: cached.interests,
         summary: cached.summary,
         totalPositions: cached.totalPositions,
         isLoading: false,
@@ -443,7 +443,7 @@ export function useSkillsAnalysis() {
     return false;
   }, []);
 
-  const analyzeSkills = useCallback(async (accountId: string) => {
+  const analyzeInterests = useCallback(async (accountId: string) => {
     if (!accountId) {
       setState((prev) => ({ ...prev, error: 'No account ID provided' }));
       return;
@@ -453,11 +453,11 @@ export function useSkillsAnalysis() {
     setCurrentAccountId(accountId);
 
     // Load cache first if we don't have data for this account
-    const cached = loadCachedProofs(accountId);
-    if (cached && state.skills.length === 0) {
+    const cached = loadCachedInterest(accountId);
+    if (cached && state.interests.length === 0) {
       setState((prev) => ({
         ...prev,
-        skills: cached.skills,
+        interests: cached.interests,
         summary: cached.summary,
         totalPositions: cached.totalPositions,
         analyzedAt: cached.analyzedAt,
@@ -470,15 +470,15 @@ export function useSkillsAnalysis() {
       // Step 1: Fetch domain activity from MCP
       const activityData = await fetchAccountActivity(accountId);
 
-      console.log('🔍 [Proofs] Activity data received:', JSON.stringify(activityData).slice(0, 500));
-      console.log('🔍 [Proofs] Groups:', activityData?.groups?.length || 'undefined');
+      console.log('🔍 [Interest] Activity data received:', JSON.stringify(activityData).slice(0, 500));
+      console.log('🔍 [Interest] Groups:', activityData?.groups?.length || 'undefined');
 
       if (!activityData.groups || activityData.groups.length === 0) {
-        console.log('⚠️ [Proofs] No groups found, keeping cached data if any');
-        // Keep cached skills if we have them
+        console.log('⚠️ [Interest] No groups found, keeping cached data if any');
+        // Keep cached interests if we have them
         if (cached) {
           setState({
-            skills: cached.skills,
+            interests: cached.interests,
             summary: cached.summary,
             totalPositions: cached.totalPositions,
             isLoading: false,
@@ -487,7 +487,7 @@ export function useSkillsAnalysis() {
           });
         } else {
           setState({
-            skills: [],
+            interests: [],
             summary: 'No activity data found for this account.',
             totalPositions: 0,
             isLoading: false,
@@ -499,33 +499,33 @@ export function useSkillsAnalysis() {
       }
 
       // Step 2: Send to AI agent for categorization
-      console.log('🤖 [Proofs] Calling Mastra agent with', activityData.groups.length, 'groups');
-      const { skills: agentSkills, summary } = await analyzeSkillsWithAgent(activityData);
-      console.log('✅ [Proofs] Agent returned', agentSkills.length, 'skills');
+      console.log('🤖 [Interest] Calling Mastra agent with', activityData.groups.length, 'groups');
+      const { interests: agentInterests, summary } = await analyzeInterestsWithAgent(activityData);
+      console.log('✅ [Interest] Agent returned', agentInterests.length, 'interests');
 
-      // Step 3: Enrich skills with XP/level calculations
-      const enrichedSkills = agentSkills.map(enrichSkill);
+      // Step 3: Enrich interests with XP/level calculations
+      const enrichedInterests = agentInterests.map(enrichInterest);
 
-      // Step 4: Merge with cached skills
-      const cachedSkills = cached?.skills || [];
-      const mergedSkills = mergeSkills(cachedSkills, enrichedSkills);
-      console.log('🔀 [Proofs] Merged skills:', cachedSkills.length, '+', enrichedSkills.length, '→', mergedSkills.length);
+      // Step 4: Merge with cached interests
+      const cachedInterests = cached?.interests || [];
+      const mergedInterests = mergeInterests(cachedInterests, enrichedInterests);
+      console.log('🔀 [Interest] Merged interests:', cachedInterests.length, '+', enrichedInterests.length, '→', mergedInterests.length);
 
       // Sort by XP descending
-      mergedSkills.sort((a, b) => b.xp - a.xp);
+      mergedInterests.sort((a, b) => b.xp - a.xp);
 
       const analyzedAt = new Date().toISOString();
 
       // Step 5: Save to cache
-      saveCachedProofs(accountId, {
-        skills: mergedSkills,
+      saveCachedInterest(accountId, {
+        interests: mergedInterests,
         summary,
         totalPositions: activityData.total_positions,
         analyzedAt,
       });
 
       setState({
-        skills: mergedSkills,
+        interests: mergedInterests,
         summary,
         totalPositions: activityData.total_positions,
         isLoading: false,
@@ -533,26 +533,26 @@ export function useSkillsAnalysis() {
         analyzedAt,
       });
 
-      logger.info('Proofs analysis complete', {
-        skillCount: mergedSkills.length,
+      logger.info('Interest analysis complete', {
+        count: mergedInterests.length,
         totalPositions: activityData.total_positions,
-        cached: cachedSkills.length,
-        new: enrichedSkills.length,
+        cached: cachedInterests.length,
+        new: enrichedInterests.length,
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to analyze proofs';
-      logger.error('Proofs analysis failed', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to analyze interests';
+      logger.error('Interest analysis failed', err);
       setState((prev) => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
       }));
     }
-  }, [state.skills.length]);
+  }, [state.interests.length]);
 
   const reset = useCallback(() => {
     setState({
-      skills: [],
+      interests: [],
       summary: '',
       totalPositions: 0,
       isLoading: false,
@@ -570,10 +570,10 @@ export function useSkillsAnalysis() {
 
   return {
     ...state,
-    analyzeSkills,
+    analyzeInterests,
     reset,
     loadFromCache,
   };
 }
 
-export default useSkillsAnalysis;
+export default useInterestAnalysis;

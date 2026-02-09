@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createHookLogger } from '../lib/utils/logger'
-import type { ProofOfAttention } from '../types/discovery'
+import type { InterestAttention } from '../types/discovery'
 import { ATTENTION_REQUIREMENTS } from '../types/discovery'
 
-const logger = createHookLogger('useProofOfAttention')
+const logger = createHookLogger('useInterestAttention')
 
-export interface UseProofOfAttentionResult {
-  proofOfAttention: ProofOfAttention
+export interface UseInterestAttentionResult {
+  interestAttention: InterestAttention
   isEligible: boolean
   refresh: () => void
 }
@@ -19,8 +19,8 @@ export interface UseProofOfAttentionResult {
  * - Minimum 30 seconds on page
  * - Some scroll interaction detected
  */
-export const useProofOfAttention = (pageUrl: string | null): UseProofOfAttentionResult => {
-  const [proofOfAttention, setProofOfAttention] = useState<ProofOfAttention>({
+export const useInterestAttention = (pageUrl: string | null): UseInterestAttentionResult => {
+  const [interestAttention, setInterestAttention] = useState<InterestAttention>({
     isEligible: false,
     timeSpent: 0,
     hasScrolled: false,
@@ -30,7 +30,7 @@ export const useProofOfAttention = (pageUrl: string | null): UseProofOfAttention
 
   const checkAttention = useCallback(async () => {
     if (!pageUrl) {
-      setProofOfAttention({
+      setInterestAttention({
         isEligible: false,
         timeSpent: 0,
         hasScrolled: false,
@@ -69,7 +69,7 @@ export const useProofOfAttention = (pageUrl: string | null): UseProofOfAttention
           isEligible
         })
 
-        setProofOfAttention({
+        setInterestAttention({
           isEligible,
           timeSpent,
           hasScrolled,
@@ -92,7 +92,7 @@ export const useProofOfAttention = (pageUrl: string | null): UseProofOfAttention
 
         const timeSpent = Math.floor((Date.now() - startTime) / 1000)
 
-        setProofOfAttention({
+        setInterestAttention({
           isEligible: timeSpent >= ATTENTION_REQUIREMENTS.MINIMUM_TIME_SECONDS,
           timeSpent,
           hasScrolled: false,
@@ -113,7 +113,7 @@ export const useProofOfAttention = (pageUrl: string | null): UseProofOfAttention
 
       const timeSpent = Math.floor((Date.now() - startTime) / 1000)
 
-      setProofOfAttention({
+      setInterestAttention({
         isEligible: timeSpent >= ATTENTION_REQUIREMENTS.MINIMUM_TIME_SECONDS,
         timeSpent,
         hasScrolled: false,
@@ -129,17 +129,17 @@ export const useProofOfAttention = (pageUrl: string | null): UseProofOfAttention
 
     // Re-check every 5 seconds while not eligible
     const interval = setInterval(() => {
-      if (!proofOfAttention.isEligible) {
+      if (!interestAttention.isEligible) {
         checkAttention()
       }
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [checkAttention, proofOfAttention.isEligible])
+  }, [checkAttention, interestAttention.isEligible])
 
   return {
-    proofOfAttention,
-    isEligible: proofOfAttention.isEligible,
+    interestAttention,
+    isEligible: interestAttention.isEligible,
     refresh: checkAttention
   }
 }

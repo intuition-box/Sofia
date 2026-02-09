@@ -26,8 +26,8 @@ const STEPS: TutorialStep[] = [
     screenshot: screenshotDetail
   },
   {
-    title: 'Proof Analysis',
-    description: 'Your certifications build a verifiable on-chain profile. This data is analyzed to generate a proof of your interests and intentions, creating a unique digital identity.',
+    title: 'Interest Analysis',
+    description: 'Your certifications build a verifiable on-chain profile. This data is analyzed to generate a map of your interests and intentions, creating a unique digital identity.',
     screenshot: screenshotProof
   },
   {

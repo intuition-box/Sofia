@@ -8,18 +8,18 @@ const EchoesTab = lazy(() => import('./core-tabs/EchoesTab'))
 const HistoryTab = lazy(() => import('./core-tabs/HistoryTab'))
 const PulseTab = lazy(() => import('./core-tabs/PulseTab'))
 const BookmarkTab = lazy(() => import('./core-tabs/BookmarkTab'))
-const SkillsTab = lazy(() => import('./core-tabs/SkillsTab'))
+const InterestTab = lazy(() => import('./core-tabs/InterestTab'))
 
 
 const CorePage = () => {
   const { navigateTo } = useRouter()
-  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'History' | 'Pulse' | 'Proofs' | 'Bookmarks'>('Echoes')
+  const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'History' | 'Pulse' | 'Interest' | 'Bookmarks'>('Echoes')
   const [expandedHistoryTriplet, setExpandedHistoryTriplet] = useState<{ tripletId: string } | null>(null)
 
   useEffect(() => {
     const targetTab = localStorage.getItem('targetTab')
-    if (targetTab === 'Pulse' || targetTab === 'Proofs') {
-      setActiveGraphTab(targetTab as 'Pulse' | 'Proofs')
+    if (targetTab === 'Pulse' || targetTab === 'Interest') {
+      setActiveGraphTab(targetTab as 'Pulse' | 'Interest')
       localStorage.removeItem('targetTab') // Clean up after use
     }
   }, [])
@@ -27,7 +27,7 @@ const CorePage = () => {
   return (
     <div className="page">
       <div className="tabs">
-        {['Echoes', 'Pulse', 'Proofs', 'History', 'Bookmarks'].map(tab => (
+        {['Echoes', 'Pulse', 'Interest', 'History', 'Bookmarks'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveGraphTab(tab as any)}
@@ -40,7 +40,7 @@ const CorePage = () => {
 
       <div className="page-content">
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
-          {activeGraphTab === 'Echoes' && <EchoesTab onNavigateToProofs={() => setActiveGraphTab('Proofs')} />}
+          {activeGraphTab === 'Echoes' && <EchoesTab onNavigateToInterest={() => setActiveGraphTab('Interest')} />}
           {activeGraphTab === 'History' && (
             <HistoryTab
               expandedTriplet={expandedHistoryTriplet}
@@ -48,7 +48,7 @@ const CorePage = () => {
             />
           )}
           {activeGraphTab === 'Pulse' && <PulseTab />}
-          {activeGraphTab === 'Proofs' && <SkillsTab />}
+          {activeGraphTab === 'Interest' && <InterestTab />}
           {activeGraphTab === 'Bookmarks' && <BookmarkTab />}
         </Suspense>
       </div>
