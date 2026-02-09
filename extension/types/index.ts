@@ -32,8 +32,8 @@ export * from './bento';
 // Published triplets types
 export * from './published-triplets';
 
-// Skills analysis types
-export * from './skills';
+// Interest analysis types
+export * from './interests';
 
 // Utility types
 export type Timestamp = number;

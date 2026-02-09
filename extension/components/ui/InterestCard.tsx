@@ -1,14 +1,14 @@
 /**
- * SkillCard Component
- * Displays a skill with level, XP progress, and domain tags
+ * InterestCard Component
+ * Displays an interest with level, XP progress, and domain tags
  * Based on AI categorization of on-chain activity
  */
 
-import type { Skill } from '../../types/skills';
-import { getXpProgressPercent, getLevelColor } from '../../types/skills';
+import type { Interest } from '../../types/interests';
+import { getXpProgressPercent, getLevelColor } from '../../types/interests';
 
-interface SkillCardProps {
-  skill: Skill;
+interface InterestCardProps {
+  interest: Interest;
   onClick?: () => void;
 }
 
@@ -26,7 +26,7 @@ const CERT_COLORS = {
   buying: '#EF4444'     // red
 };
 
-const SkillCard = ({ skill, onClick }: SkillCardProps) => {
+const InterestCard = ({ interest, onClick }: InterestCardProps) => {
   const {
     name,
     domains,
@@ -37,7 +37,7 @@ const SkillCard = ({ skill, onClick }: SkillCardProps) => {
     certifications,
     confidence,
     reasoning,
-  } = skill;
+  } = interest;
 
   const progressPercent = getXpProgressPercent(xp, level);
   const levelColor = getLevelColor(level);
@@ -51,18 +51,18 @@ const SkillCard = ({ skill, onClick }: SkillCardProps) => {
 
   return (
     <div
-      className="skill-card"
+      className="interest-card"
       onClick={onClick}
       style={{
         borderColor: `${dominantColor}40`,
       }}
     >
       {/* Header */}
-      <div className="skill-card-header">
-        <div className="skill-card-title-section">
-          <h3 className="skill-card-title">{name}</h3>
+      <div className="interest-card-header">
+        <div className="interest-card-title-section">
+          <h3 className="interest-card-title">{name}</h3>
           {confidence < 80 && (
-            <span className="skill-confidence-badge" title={reasoning}>
+            <span className="interest-confidence-badge" title={reasoning}>
               {confidence}%
             </span>
           )}
@@ -76,83 +76,83 @@ const SkillCard = ({ skill, onClick }: SkillCardProps) => {
       </div>
 
       {/* XP Progress */}
-      <div className="skill-card-progress">
-        <div className="skill-progress-bar-container">
+      <div className="interest-card-progress">
+        <div className="interest-progress-bar-container">
           <div
-            className="skill-progress-bar-fill"
+            className="interest-progress-bar-fill"
             style={{
               width: `${progressPercent}%`,
               background: `linear-gradient(90deg, ${dominantColor}, ${levelColor})`,
             }}
           />
         </div>
-        <div className="skill-progress-labels">
-          <span className="skill-xp-current">{xp} XP</span>
-          <span className="skill-xp-next">
+        <div className="interest-progress-labels">
+          <span className="interest-xp-current">{xp} XP</span>
+          <span className="interest-xp-next">
             {xpToNextLevel > 0 ? `${xpToNextLevel} to LVL ${level + 1}` : 'Max!'}
           </span>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="skill-card-stats">
-        <div className="skill-stat">
-          <span className="skill-stat-value">{totalCertifications}</span>
-          <span className="skill-stat-label">Certs</span>
+      <div className="interest-card-stats">
+        <div className="interest-stat">
+          <span className="interest-stat-value">{totalCertifications}</span>
+          <span className="interest-stat-label">Certs</span>
         </div>
-        <div className="skill-stat">
-          <span className="skill-stat-value">{domains.length}</span>
-          <span className="skill-stat-label">Domains</span>
+        <div className="interest-stat">
+          <span className="interest-stat-value">{domains.length}</span>
+          <span className="interest-stat-label">Domains</span>
         </div>
       </div>
 
       {/* Certification breakdown */}
-      <div className="skill-cert-breakdown">
+      <div className="interest-cert-breakdown">
         {Object.entries(certifications)
           .filter(([_, count]) => count > 0)
           .map(([type, count]) => (
             <div
               key={type}
-              className="skill-cert-item"
+              className="interest-cert-item"
               style={{ color: CERT_COLORS[type as keyof typeof CERT_COLORS] }}
             >
-              <span className="skill-cert-dot" style={{ backgroundColor: CERT_COLORS[type as keyof typeof CERT_COLORS] }} />
-              <span className="skill-cert-type">{type}</span>
-              <span className="skill-cert-count">{count}</span>
+              <span className="interest-cert-dot" style={{ backgroundColor: CERT_COLORS[type as keyof typeof CERT_COLORS] }} />
+              <span className="interest-cert-type">{type}</span>
+              <span className="interest-cert-count">{count}</span>
             </div>
           ))}
       </div>
 
       {/* Domain tags */}
-      <div className="skill-domains">
+      <div className="interest-domains">
         {domains.slice(0, 4).map((domain) => (
-          <div key={domain} className="skill-domain-tag">
+          <div key={domain} className="interest-domain-tag">
             <img
               src={getFaviconUrl(domain)}
               alt={domain}
-              className="skill-domain-favicon"
+              className="interest-domain-favicon"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
               }}
             />
-            <span className="skill-domain-name">{domain}</span>
+            <span className="interest-domain-name">{domain}</span>
           </div>
         ))}
         {domains.length > 4 && (
-          <span className="skill-domains-more">+{domains.length - 4}</span>
+          <span className="interest-domains-more">+{domains.length - 4}</span>
         )}
       </div>
 
       {/* Reasoning tooltip */}
       {reasoning && (
-        <div className="skill-reasoning" title={reasoning}>
-          <span className="skill-reasoning-icon">i</span>
-          <span className="skill-reasoning-text">{reasoning}</span>
+        <div className="interest-reasoning" title={reasoning}>
+          <span className="interest-reasoning-icon">i</span>
+          <span className="interest-reasoning-text">{reasoning}</span>
         </div>
       )}
     </div>
   );
 };
 
-export default SkillCard;
+export default InterestCard;

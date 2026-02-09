@@ -129,15 +129,15 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Reveal Skills CTA */
-.reveal-skills-cta {
+/* Reveal Interest CTA */
+.reveal-interest-cta {
   display: flex;
   justify-content: center;
   margin-top: 8px;
   margin-bottom: 16px;
 }
 
-.reveal-skills-btn {
+.reveal-interest-btn {
   background: linear-gradient(135deg, #8276ED 0%, #F6427B 50%, #FFBF33 100%);
   border: none;
   border-radius: 12px;
@@ -151,13 +151,13 @@
   box-shadow: 0 4px 16px rgba(130, 118, 237, 0.3);
 }
 
-.reveal-skills-btn:hover {
+.reveal-interest-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 28px rgba(130, 118, 237, 0.6);
   filter: brightness(1.1);
 }
 
-.reveal-skills-btn:active {
+.reveal-interest-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 12px rgba(130, 118, 237, 0.4);
 }
@@ -178,7 +178,7 @@
     padding: 0;
   }
 
-  .reveal-skills-btn {
+  .reveal-interest-btn {
     padding: 12px 24px;
     font-size: 14px;
   }

@@ -1,6 +1,6 @@
 /**
- * Skills analysis types for SOFIA extension
- * Types for skill categorization and XP/level calculation
+ * Interest analysis types for SOFIA extension
+ * Types for interest categorization and XP/level calculation
  */
 
 // Certification breakdown by predicate type
@@ -12,8 +12,8 @@ export interface CertificationBreakdown {
   buying: number;
 }
 
-// Skill as returned by the AI agent
-export interface SkillFromAgent {
+// Interest as returned by the AI agent
+export interface InterestFromAgent {
   name: string;
   domains: string[];
   confidence: number;
@@ -21,8 +21,8 @@ export interface SkillFromAgent {
   certifications: CertificationBreakdown;
 }
 
-// Full skill with computed XP and level
-export interface Skill {
+// Full interest with computed XP and level
+export interface Interest {
   id: string;
   name: string;
   domains: string[];
@@ -35,15 +35,15 @@ export interface Skill {
   reasoning?: string;
 }
 
-// Response from skills analysis agent
-export interface SkillsAnalysisAgentResponse {
-  skills: SkillFromAgent[];
+// Response from interest analysis agent
+export interface InterestAnalysisAgentResponse {
+  interests: InterestFromAgent[];
   summary: string;
 }
 
 // Full analysis result with computed values
-export interface SkillsAnalysisResult {
-  skills: Skill[];
+export interface InterestAnalysisResult {
+  interests: Interest[];
   summary: string;
   totalPositions: number;
   analyzedAt: string;
@@ -71,27 +71,27 @@ export interface AccountActivityResponse {
 export const XP_PER_CERTIFICATION = 5;
 
 // Level thresholds (XP required for each level)
-export const SKILL_LEVEL_THRESHOLDS = [0, 20, 50, 100, 180, 300, 500, 800, 1200, 2000];
+export const INTEREST_LEVEL_THRESHOLDS = [0, 20, 50, 100, 180, 300, 500, 800, 1200, 2000];
 
 // Calculate level from XP
 export function calculateLevel(xp: number): number {
-  for (let i = SKILL_LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-    if (xp >= SKILL_LEVEL_THRESHOLDS[i]) return i + 1;
+  for (let i = INTEREST_LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (xp >= INTEREST_LEVEL_THRESHOLDS[i]) return i + 1;
   }
   return 1;
 }
 
 // Calculate XP needed to reach next level
 export function getXpToNextLevel(xp: number, level: number): number {
-  if (level >= SKILL_LEVEL_THRESHOLDS.length) return 0;
-  return SKILL_LEVEL_THRESHOLDS[level] - xp;
+  if (level >= INTEREST_LEVEL_THRESHOLDS.length) return 0;
+  return INTEREST_LEVEL_THRESHOLDS[level] - xp;
 }
 
 // Calculate XP progress percentage within current level
 export function getXpProgressPercent(xp: number, level: number): number {
-  if (level >= SKILL_LEVEL_THRESHOLDS.length) return 100;
-  const currentLevelXp = SKILL_LEVEL_THRESHOLDS[level - 1];
-  const nextLevelXp = SKILL_LEVEL_THRESHOLDS[level];
+  if (level >= INTEREST_LEVEL_THRESHOLDS.length) return 100;
+  const currentLevelXp = INTEREST_LEVEL_THRESHOLDS[level - 1];
+  const nextLevelXp = INTEREST_LEVEL_THRESHOLDS[level];
   const xpInLevel = xp - currentLevelXp;
   const xpNeeded = nextLevelXp - currentLevelXp;
   return Math.round((xpInLevel / xpNeeded) * 100);
@@ -108,23 +108,23 @@ export function getTotalCertifications(certifications: CertificationBreakdown): 
   );
 }
 
-// Convert agent skill to full skill with computed values
-export function enrichSkill(agentSkill: SkillFromAgent): Skill {
-  const totalCertifications = getTotalCertifications(agentSkill.certifications);
+// Convert agent interest to full interest with computed values
+export function enrichInterest(agentInterest: InterestFromAgent): Interest {
+  const totalCertifications = getTotalCertifications(agentInterest.certifications);
   const xp = totalCertifications * XP_PER_CERTIFICATION;
   const level = calculateLevel(xp);
 
   return {
     id: crypto.randomUUID(),
-    name: agentSkill.name,
-    domains: agentSkill.domains,
+    name: agentInterest.name,
+    domains: agentInterest.domains,
     level,
     xp,
     xpToNextLevel: getXpToNextLevel(xp, level),
     totalCertifications,
-    certifications: agentSkill.certifications,
-    confidence: agentSkill.confidence,
-    reasoning: agentSkill.reasoning,
+    certifications: agentInterest.certifications,
+    confidence: agentInterest.confidence,
+    reasoning: agentInterest.reasoning,
   };
 }
 
