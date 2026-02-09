@@ -130,8 +130,9 @@ function calculateLevel(certCount: number): number {
 /**
  * Hook to fetch all on-chain intention certifications for the current user
  */
-export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => {
-  const { walletAddress } = useWalletFromStorage()
+export const useOnChainIntentionGroups = (externalWalletAddress?: string): UseOnChainIntentionGroupsResult => {
+  const { walletAddress: storedWallet } = useWalletFromStorage()
+  const walletAddress = externalWalletAddress || storedWallet
   const [groups, setGroups] = useState<OnChainGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

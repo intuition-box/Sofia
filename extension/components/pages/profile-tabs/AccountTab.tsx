@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense, lazy } from 'react'
 import youtubeIcon from '../../ui/social/youtube.svg'
 import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
@@ -18,7 +18,9 @@ import { useIdentityResolution } from '../../../hooks/useIdentityResolution'
 import ProfileHeader from '../../ui/ProfileHeader'
 import '../../styles/AccountTab.css'
 
-type SubTab = 'stats' | 'achievements'
+const InterestTab = lazy(() => import('../core-tabs/InterestTab'))
+
+type SubTab = 'interest' | 'stats' | 'achievements'
 
 const AccountTab = () => {
   const { walletAddress } = useWalletFromStorage()
@@ -297,6 +299,12 @@ const AccountTab = () => {
       {/* Sub-tabs Navigation */}
       <div className="sub-tabs">
         <button
+          className={`sub-tab ${activeTab === 'interest' ? 'active' : ''}`}
+          onClick={() => setActiveTab('interest')}
+        >
+          Interest
+        </button>
+        <button
           className={`sub-tab ${activeTab === 'stats' ? 'active' : ''}`}
           onClick={() => setActiveTab('stats')}
         >
@@ -311,6 +319,12 @@ const AccountTab = () => {
       </div>
 
       {/* Tab Content */}
+      {activeTab === 'interest' && (
+        <Suspense fallback={<div className="loading-state">Loading...</div>}>
+          <InterestTab />
+        </Suspense>
+      )}
+
       {activeTab === 'achievements' && (
         <AchievementsTab
           quests={quests}

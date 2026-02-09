@@ -11,14 +11,15 @@ import rightSideIcon from '../ui/icons/right side.svg'
 import '../styles/UserProfile.css'
 
 // Lazy load tabs (same pattern as ProfilePage)
+const UserInterestTab = lazy(() => import('./profile-tabs/UserInterestTab'))
 const AchievementsTab = lazy(() => import('./profile-tabs/AchievementsTab'))
 const CommunityTab = lazy(() => import('./profile-tabs/CommunityTab'))
 
-type SubTab = 'achievements' | 'community'
+type SubTab = 'interest' | 'achievements' | 'community'
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
-  const [activeTab, setActiveTab] = useState<SubTab>('achievements')
+  const [activeTab, setActiveTab] = useState<SubTab>('interest')
 
   // Check if we already follow/trust this account
   const followStatus = useCheckFollowStatus(userProfileData?.termId)
@@ -146,6 +147,12 @@ const UserProfilePage = () => {
       {/* Sub-tabs Navigation */}
       <div className="sub-tabs">
         <button
+          className={`sub-tab ${activeTab === 'interest' ? 'active' : ''}`}
+          onClick={() => setActiveTab('interest')}
+        >
+          Interest
+        </button>
+        <button
           className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''}`}
           onClick={() => setActiveTab('achievements')}
         >
@@ -161,6 +168,10 @@ const UserProfilePage = () => {
 
       {/* Tab Content */}
       <Suspense fallback={<div className="loading-state">Loading...</div>}>
+        {activeTab === 'interest' && (
+          <UserInterestTab walletAddress={userProfileData.walletAddress} />
+        )}
+
         {activeTab === 'achievements' && (
           <AchievementsTab
             quests={completedQuests}

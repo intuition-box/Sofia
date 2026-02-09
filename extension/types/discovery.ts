@@ -58,8 +58,8 @@ export interface UserDiscoveryStats {
   }
 }
 
-// Proof of Attention state
-export interface ProofOfAttention {
+// Interest Attention state
+export interface InterestAttention {
   isEligible: boolean
   timeSpent: number        // seconds spent on page
   hasScrolled: boolean
@@ -67,7 +67,7 @@ export interface ProofOfAttention {
   scrollPercentage: number // 0-1
 }
 
-// Constants for Proof of Attention
+// Constants for Interest Attention
 export const ATTENTION_REQUIREMENTS = {
   MINIMUM_TIME_SECONDS: 30,
   MINIMUM_SCROLL_PERCENTAGE: 0.3

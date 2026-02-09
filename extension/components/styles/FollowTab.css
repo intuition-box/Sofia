@@ -10,6 +10,7 @@
 /* Filter buttons */
 .filter-buttons {
   display: flex;
+  justify-content: center;
   gap: 12px;
   margin-bottom: 24px;
 }

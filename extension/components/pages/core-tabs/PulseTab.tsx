@@ -530,7 +530,7 @@ const PulseTab = () => {
   if (pulseAnalyses.length === 0) {
     return (
       <div className="pulse-container">
-        <div className="reveal-skills-cta" style={{ flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '40px 20px' }}>
+        <div className="reveal-interest-cta" style={{ flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '40px 20px' }}>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', textAlign: 'center', maxWidth: '280px', lineHeight: '1.5' }}>
             Analyze your open tabs to discover browsing patterns and extract semantic signals from your current session.
           </p>
@@ -549,7 +549,7 @@ const PulseTab = () => {
   return (
     <div className="pulse-container">
       {/* Pulse Analysis CTA */}
-      <div className="reveal-skills-cta">
+      <div className="reveal-interest-cta">
         <button
           className="btn iridescence-btn"
           onClick={startPulseAnalysis}

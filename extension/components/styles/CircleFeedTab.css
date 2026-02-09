@@ -1,0 +1,277 @@
+/* CircleFeedTab - Trust Circle Intention Feed */
+
+.circle-feed-tab {
+  padding: 0;
+  max-width: 100%;
+  background: transparent;
+}
+
+/* Top Bar: chips + go button */
+.circle-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+/* Go to Circle button */
+.circle-go-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(199, 134, 108, 0.1);
+  color: #C7866C;
+  white-space: nowrap;
+}
+
+.circle-go-btn:hover:not(:disabled) {
+  background: rgba(199, 134, 108, 0.2);
+  border-color: rgba(199, 134, 108, 0.6);
+  color: #F2DED6;
+}
+
+.circle-go-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Category Filter Chips */
+.circle-category-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 0;
+  scrollbar-width: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.circle-category-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.circle-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.circle-chip:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.circle-chip.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+/* Colored chips when they have --chip-color */
+.circle-chip[style*="--chip-color"]:hover {
+  border-color: var(--chip-color);
+  color: var(--chip-color);
+}
+
+.circle-chip[style*="--chip-color"].active {
+  background: color-mix(in srgb, var(--chip-color) 15%, transparent);
+  border-color: var(--chip-color);
+  color: var(--chip-color);
+}
+
+/* Grid Layout */
+.circle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* Card */
+.circle-card {
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 130px;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+}
+
+.circle-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Card Header: favicon + member + badge */
+.circle-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.circle-card-favicon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.circle-card-member-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.circle-card-member-name:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Intention Badge */
+.circle-intention-badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Card Title */
+.circle-card-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  max-height: 2.8em;
+}
+
+/* Card Footer */
+.circle-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.circle-card-time {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Member Profile View */
+.circle-member-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 20px;
+}
+
+.circle-back-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.circle-back-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.circle-member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.circle-member-name {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.circle-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* Empty / Loading States */
+.circle-empty {
+  text-align: center;
+  padding: 48px 20px;
+}
+
+.circle-empty h3 {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.circle-empty p {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.circle-loading {
+  text-align: center;
+  padding: 48px 20px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 360px) {
+  .circle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .circle-categories-grid {
+    grid-template-columns: 1fr;
+  }
+}
