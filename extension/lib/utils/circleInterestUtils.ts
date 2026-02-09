@@ -165,8 +165,8 @@ export async function fetchMemberDomainActivity(walletAddress: string): Promise<
   const domainMap = new Map<string, Record<string, number>>()
 
   for (const triple of triples) {
-    const label = triple.object?.label || ''
-    const domain = extractDomain(label)
+    const url = triple.object?.value?.thing?.url || triple.object?.label || ''
+    const domain = extractDomain(url)
     if (!domain) continue
 
     const predicateId = triple.predicate?.term_id || ''

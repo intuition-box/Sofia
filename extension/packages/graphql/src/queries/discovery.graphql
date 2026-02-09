@@ -145,6 +145,11 @@ query GetUserIntentionPositions(
     object {
       term_id
       label
+      value {
+        thing {
+          url
+        }
+      }
     }
     positions(where: {
       account_id: { _ilike: $userAddress }
