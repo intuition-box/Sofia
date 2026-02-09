@@ -6,13 +6,44 @@
   background: transparent;
 }
 
+/* Top Bar: chips + go button */
+.circle-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+/* Go to Circle button */
+.circle-go-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(199, 134, 108, 0.4);
+  background: rgba(199, 134, 108, 0.1);
+  color: #C7866C;
+  white-space: nowrap;
+}
+
+.circle-go-btn:hover {
+  background: rgba(199, 134, 108, 0.2);
+  border-color: rgba(199, 134, 108, 0.6);
+  color: #F2DED6;
+}
+
 /* Category Filter Chips */
 .circle-category-chips {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 8px 0 16px;
+  padding: 8px 0;
   scrollbar-width: none;
+  flex: 1;
+  min-width: 0;
 }
 
 .circle-category-chips::-webkit-scrollbar {
@@ -58,7 +89,7 @@
 /* Grid Layout */
 .circle-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -74,6 +105,8 @@
   flex-direction: column;
   gap: 10px;
   min-height: 130px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .circle-card:hover {

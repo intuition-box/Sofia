@@ -15,7 +15,7 @@ const CircleFeedTab = lazy(() => import('./resonance-tabs/CircleFeedTab'))
 type ResonanceTab = 'For You' | 'Circle'
 
 const ResonancePage = () => {
-  const [activeTab, setActiveTab] = useState<ResonanceTab>('For You')
+  const [activeTab, setActiveTab] = useState<ResonanceTab>('Circle')
   const { recommendations, isLoading, generateRecommendations } = useRecommendations()
   const [searchQuery, setSearchQuery] = useState('')
   const { walletAddress: account } = useWalletFromStorage()
@@ -58,7 +58,7 @@ const ResonancePage = () => {
   return (
     <div className="page">
       <div className="tabs">
-        {(['For You', 'Circle'] as ResonanceTab[]).map(tab => (
+        {(['Circle', 'For You'] as ResonanceTab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -73,7 +73,7 @@ const ResonancePage = () => {
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
           {/* For You tab */}
           {activeTab === 'For You' && (
-            <div className="search-content">
+            <div className="triples-container">
               <div className="search-input-container">
                 <img src={logoIcon} alt="Sofia" className="search-logo" />
                 <input

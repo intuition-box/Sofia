@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from '../../layout/RouterProvider'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { useIntentionCategories } from '../../../hooks/useIntentionCategories'
 import {
@@ -85,6 +86,7 @@ type ViewState =
   | { type: 'member-category'; address: string; label: string; image?: string }
 
 const CircleFeedTab = () => {
+  const { navigateTo, setActiveProfileTab } = useRouter()
   const { walletAddress: address } = useWalletFromStorage()
   const [activeFilter, setActiveFilter] = useState<'all' | IntentionType>('all')
   const [viewState, setViewState] = useState<ViewState>({ type: 'feed' })
@@ -324,28 +326,39 @@ const CircleFeedTab = () => {
   // Main feed view
   return (
     <div className="circle-feed-tab">
-      {/* Category filter chips */}
-      <div className="circle-category-chips">
+      {/* Category filter chips + Go to Circle link */}
+      <div className="circle-top-bar">
+        <div className="circle-category-chips">
+          <button
+            className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('all')}
+          >
+            All
+          </button>
+          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
+            ([type, config]) => (
+              <button
+                key={type}
+                className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
+                style={{
+                  '--chip-color': config.color
+                } as React.CSSProperties}
+                onClick={() => setActiveFilter(type)}
+              >
+                {config.label}
+              </button>
+            )
+          )}
+        </div>
         <button
-          className={`circle-chip ${activeFilter === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('all')}
+          className="circle-go-btn"
+          onClick={() => {
+            setActiveProfileTab('community')
+            navigateTo('profile')
+          }}
         >
-          All
+          Go to your Circle
         </button>
-        {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
-          ([type, config]) => (
-            <button
-              key={type}
-              className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
-              style={{
-                '--chip-color': config.color
-              } as React.CSSProperties}
-              onClick={() => setActiveFilter(type)}
-            >
-              {config.label}
-            </button>
-          )
-        )}
       </div>
 
       {/* Loading */}
