@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
+import { useRouter } from '../../layout/RouterProvider'
 import { useCircleInterestRecommendations } from '../../../hooks/useCircleInterestRecommendations'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import SofiaLoader from '../../ui/SofiaLoader'
 import '../../styles/CircleFeedTab.css'
 
 const ForYouTab = () => {
+  const { navigateTo } = useRouter()
   const { walletAddress } = useWalletFromStorage()
   const {
     phase,
@@ -188,7 +190,19 @@ const ForYouTab = () => {
 
               {/* Footer: who certified it */}
               <div className="circle-card-footer">
-                <span className="circle-card-member-name">
+                <span
+                  className="circle-card-member-name"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    const member = item.certifiedBy[0]
+                    navigateTo('user-profile', {
+                      termId: '',
+                      label: member.label,
+                      walletAddress: member.address,
+                      image: member.image
+                    })
+                  }}
+                >
                   {item.certifiedBy.length === 1
                     ? item.certifiedBy[0].label
                     : `${item.certifiedBy[0].label} +${item.certifiedBy.length - 1}`

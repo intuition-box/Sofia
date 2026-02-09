@@ -174,7 +174,10 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
   flex: 1;
+  min-height: 0;
 }
 
 /* Card Footer */
