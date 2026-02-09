@@ -176,8 +176,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
-  flex: 1;
-  min-height: 0;
+  max-height: 2.8em;
 }
 
 /* Card Footer */

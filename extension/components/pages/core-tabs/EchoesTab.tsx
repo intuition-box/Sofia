@@ -12,11 +12,7 @@ import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
 
-interface EchoesTabProps {
-  onNavigateToInterest?: () => void
-}
-
-const EchoesTab = ({ onNavigateToInterest }: EchoesTabProps) => {
+const EchoesTab = () => {
   const {
     groups,
     selectedGroup,
@@ -132,17 +128,6 @@ const EchoesTab = ({ onNavigateToInterest }: EchoesTabProps) => {
   return (
     <div className="triples-container">
       <div className="groups-section">
-        <div className="reveal-interest-cta">
-          <button
-            className="btn iridescence-btn"
-            onClick={() => {
-              localStorage.setItem('triggerInterestAnalysis', 'true');
-              onNavigateToInterest?.();
-            }}
-          >
-            Sort Interest
-          </button>
-        </div>
         <div className="groups-header">
           <span className="groups-count">{filteredGroups.length} domains</span>
           <div className="sort-buttons">

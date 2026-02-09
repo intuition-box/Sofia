@@ -120,6 +120,7 @@
 }
 
 .category-detail-header {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -150,7 +151,11 @@
 }
 
 .category-detail-info {
-  flex: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
 }
 
 .category-detail-name {
