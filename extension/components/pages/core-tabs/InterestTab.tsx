@@ -106,6 +106,13 @@ const InterestTab = () => {
           <p className="interest-empty-text">
             Create intention certifications in Echoes to unlock your interests
           </p>
+          <button
+            className="interest-analyze-btn"
+            onClick={handleAnalyze}
+            disabled={!walletAddress}
+          >
+            Analyze
+          </button>
         </div>
       </div>
     );
