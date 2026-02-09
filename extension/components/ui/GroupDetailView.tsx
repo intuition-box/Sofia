@@ -12,6 +12,7 @@ import type { CertificationType } from '../../lib/services/GroupManager'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { useIntentionCertify } from '../../hooks/useIntentionCertify'
+import { useWeightOnChain } from '../../hooks/useWeightOnChain'
 import { useGroupOnChainCertifications, type UrlCertificationStatus } from '../../hooks/useGroupOnChainCertifications'
 import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
 import { useGroupAmplify } from '../../hooks/useGroupAmplify'
@@ -266,6 +267,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     reset: resetLevelUp
   } = useLevelUp()
 
+  // Weight hook (for redeem operations)
+  const { redeemAllPositions } = useWeightOnChain()
+
   // Amplify hook (publish group identity on-chain)
   const {
     amplify,
@@ -500,13 +504,42 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   }
 
   const handleRemove = async (url: string) => {
-    // Prevent removal of on-chain certified URLs
     const onChainStatus = getUrlCertification(url)
-    if (onChainStatus?.isCertifiedOnChain) {
-      alert('Cannot remove URL that is certified on-chain')
+
+    // If URL is certified on-chain, redeem positions first
+    if (onChainStatus?.isCertifiedOnChain && onChainStatus.tripleDetails?.length) {
+      const confirmed = confirm('This will redeem your position and withdraw your stake. Continue?')
+      if (!confirmed) return
+
+      setProcessingUrls(prev => new Set(prev).add(url))
+      try {
+        const tripleVaultIds = onChainStatus.tripleDetails.map(t => t.tripleTermId)
+        const result = await redeemAllPositions(tripleVaultIds)
+
+        if (!result.success) {
+          alert(`Redeem failed: ${result.error}`)
+          return
+        }
+
+        // Remove locally after successful redeem
+        await onRemoveUrl(url)
+
+        // Wait for indexer then refresh on-chain data
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        intuitionGraphqlClient.clearCache()
+        await refetchOnChain()
+        if (onRefresh) await onRefresh()
+      } finally {
+        setProcessingUrls(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(url)
+          return newSet
+        })
+      }
       return
     }
 
+    // Not certified on-chain: just remove locally
     setProcessingUrls(prev => new Set(prev).add(url))
     try {
       await onRemoveUrl(url)

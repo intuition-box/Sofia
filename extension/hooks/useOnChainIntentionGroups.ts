@@ -178,10 +178,14 @@ export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => 
 
       for (const triple of triples) {
         const label = triple.object?.label || ''
-        const domain = extractDomain(label)
+        // New atoms store the page title as label and the actual URL in value.thing.url
+        // Old atoms store the URL directly as label
+        const objectUrl = (triple.object as any)?.value?.thing?.url as string | undefined
+        const urlSource = objectUrl || label
+        const domain = extractDomain(objectUrl || label)
 
         if (!domain) {
-          logger.debug('Skipping triple - could not extract domain', { label })
+          logger.debug('Skipping triple - could not extract domain', { label, objectUrl })
           continue
         }
 
@@ -190,7 +194,7 @@ export const useOnChainIntentionGroups = (): UseOnChainIntentionGroupsResult => 
         const position = triple.positions?.[0]
 
         const urlRecord: OnChainUrl = {
-          url: label.startsWith('http') ? label : `https://${label}`,
+          url: urlSource.startsWith('http') ? urlSource : `https://${urlSource}`,
           label,
           certification,
           predicateId,

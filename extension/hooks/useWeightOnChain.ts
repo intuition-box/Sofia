@@ -243,9 +243,122 @@ export const useWeightOnChain = () => {
     }
   }
 
+  /**
+   * Redeem ALL user positions from the given triples.
+   * Calls MultiVault directly (not via proxy) and sends funds to user wallet.
+   */
+  const redeemAllPositions = async (
+    tripleVaultIds: string[]
+  ): Promise<WeightResult> => {
+    try {
+      if (!address) {
+        throw new Error('No wallet connected')
+      }
+
+      if (tripleVaultIds.length === 0) {
+        return { success: true }
+      }
+
+      logger.debug('Redeeming all positions', { tripleVaultIds })
+
+      const { walletClient, publicClient } = await getClients()
+      const contractAddress = BlockchainService.getMultiVaultAddress()
+      const curveId = 1 // triples use curveId 1
+
+      // Get all user shares for each triple
+      const sharesPerTriple: bigint[] = []
+      const validTermIds: string[] = []
+
+      for (const termId of tripleVaultIds) {
+        const userShares = await publicClient.readContract({
+          address: contractAddress,
+          abi: MultiVaultAbi,
+          functionName: 'getShares',
+          args: [address as Address, termId as `0x${string}`, curveId],
+          authorizationList: undefined
+        }) as bigint
+
+        if (userShares > 0n) {
+          validTermIds.push(termId)
+          sharesPerTriple.push(userShares)
+        }
+      }
+
+      if (validTermIds.length === 0) {
+        logger.debug('No shares to redeem')
+        return { success: true }
+      }
+
+      let hash: Hash
+
+      if (validTermIds.length === 1) {
+        // Single redeem
+        hash = await walletClient.writeContract({
+          address: contractAddress,
+          abi: MultiVaultAbi,
+          functionName: 'redeem',
+          args: [
+            address as Address,
+            validTermIds[0] as `0x${string}`,
+            curveId,
+            sharesPerTriple[0],
+            0n
+          ],
+          chain: SELECTED_CHAIN,
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address as Address
+        })
+      } else {
+        // Batch redeem
+        hash = await walletClient.writeContract({
+          address: contractAddress,
+          abi: MultiVaultAbi,
+          functionName: 'redeemBatch',
+          args: [
+            address as Address,
+            validTermIds.map(id => id as `0x${string}`),
+            validTermIds.map(() => BigInt(curveId)),
+            sharesPerTriple,
+            validTermIds.map(() => 0n)
+          ],
+          chain: SELECTED_CHAIN,
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS * BigInt(validTermIds.length),
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address as Address
+        })
+      }
+
+      logger.debug('Redeem transaction sent', { hash })
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+      if (receipt.status !== 'success') {
+        throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+      }
+
+      logger.debug('Redeem all positions successful', { hash, count: validTermIds.length })
+
+      return {
+        success: true,
+        txHash: hash
+      }
+    } catch (error) {
+      logger.error('Redeem all positions failed', error)
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      return {
+        success: false,
+        error: `Redeem failed: ${errorMessage}`
+      }
+    }
+  }
+
   return {
     addWeight,
     addShares,
-    removeWeight
+    removeWeight,
+    redeemAllPositions
   }
 }

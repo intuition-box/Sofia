@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useCallback } from 'react'
-import { useUserCertifications } from './useUserCertifications'
+import { useUserCertifications, type TripleDetail } from './useUserCertifications'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
@@ -31,6 +31,7 @@ export interface UrlCertificationStatus {
   allIntentions?: IntentionPurpose[]
   allCertificationLabels?: string[]  // Includes both intention labels and OAuth predicates
   oauthPredicates?: string[]         // OAuth predicates like 'follow', 'member_of'
+  tripleDetails?: TripleDetail[]     // Triple details for redeem operations
 }
 
 export interface GroupCertificationStats {
@@ -152,7 +153,8 @@ export const useGroupOnChainCertifications = (
           certificationLabel: primaryLabel,
           allIntentions: certification.intentions,
           allCertificationLabels: allLabels,
-          oauthPredicates: oauthLabels
+          oauthPredicates: oauthLabels,
+          tripleDetails: certification.triples
         })
       }
     }
