@@ -200,6 +200,8 @@ const AchievementsTab = ({
                   </span>
                 </div>
 
+                <div className="achievement-description">{quest.description}</div>
+
                 {/* Progress text for active quests */}
                 {quest.status === 'active' && (
                   <div className="achievement-progress-text">
