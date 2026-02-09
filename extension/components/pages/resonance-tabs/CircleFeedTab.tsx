@@ -97,7 +97,7 @@ const CircleFeedTab = () => {
 
   const checksumAddress = address ? getAddress(address) : ''
 
-  // Step 1: Get Trust Circle members
+  // Step 1: Get followed accounts
   const { data: trustCircleData, isLoading: trustCircleLoading, refetch: refetchTrustCircle } = useGetTrustCirclePositionsQuery(
     {
       subjectId: SUBJECT_IDS.I,
