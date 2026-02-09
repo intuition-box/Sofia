@@ -98,7 +98,7 @@ const CircleFeedTab = () => {
   const checksumAddress = address ? getAddress(address) : ''
 
   // Step 1: Get Trust Circle members
-  const { data: trustCircleData, isLoading: trustCircleLoading } = useGetTrustCirclePositionsQuery(
+  const { data: trustCircleData, isLoading: trustCircleLoading, refetch: refetchTrustCircle } = useGetTrustCirclePositionsQuery(
     {
       subjectId: SUBJECT_IDS.I,
       predicateId: PREDICATE_IDS.TRUSTS,
@@ -147,7 +147,7 @@ const CircleFeedTab = () => {
   }, [trustCircleData])
 
   // Step 2: Get events from trusted wallets
-  const { data: eventsData, isLoading: eventsLoading } = useGetSofiaTrustedActivityQuery(
+  const { data: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useGetSofiaTrustedActivityQuery(
     {
       trustedWallets: trustedWallets,
       proxy: SOFIA_PROXY_ADDRESS,
@@ -237,6 +237,12 @@ const CircleFeedTab = () => {
   } = useIntentionCategories(memberWallet)
 
   const loading = trustCircleLoading || eventsLoading
+
+  // Refresh feed data
+  const handleRefresh = () => {
+    refetchTrustCircle()
+    refetchEvents()
+  }
 
   // Handle member click
   const handleMemberClick = (memberAddress: string, memberLabel: string, memberImage?: string) => {
@@ -352,12 +358,19 @@ const CircleFeedTab = () => {
         </div>
         <button
           className="circle-go-btn"
+          onClick={handleRefresh}
+          disabled={loading}
+        >
+          {loading ? '...' : '↻'}
+        </button>
+        <button
+          className="circle-go-btn"
           onClick={() => {
             setActiveProfileTab('community')
             navigateTo('profile')
           }}
         >
-          Go to your Circle
+          My Circle
         </button>
       </div>
 
@@ -398,8 +411,8 @@ const CircleFeedTab = () => {
               className="circle-card"
               onClick={() => window.open(item.pageUrl, '_blank', 'noopener,noreferrer')}
             >
-              {/* Domain header */}
-              <div className="circle-card-domain">
+              {/* Header: favicon + badge */}
+              <div className="circle-card-header">
                 <img
                   src={getFaviconUrl(item.domain)}
                   alt=""
@@ -408,14 +421,6 @@ const CircleFeedTab = () => {
                     (e.target as HTMLImageElement).style.display = 'none'
                   }}
                 />
-                <span className="circle-card-domain-text">{item.domain}</span>
-              </div>
-
-              {/* Page title */}
-              <div className="circle-card-title">{item.pageLabel}</div>
-
-              {/* Footer: intention badge + member + time */}
-              <div className="circle-card-footer">
                 <span
                   className="circle-intention-badge"
                   style={{
@@ -425,18 +430,23 @@ const CircleFeedTab = () => {
                 >
                   {INTENTION_CONFIG[item.intentionType].label}
                 </span>
-                <div className="circle-card-member">
-                  <span
-                    className="circle-card-member-name"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleMemberClick(item.memberAddress, item.memberLabel, item.memberImage)
-                    }}
-                  >
-                    {item.memberLabel}
-                  </span>
-                  <span className="circle-card-time">{formatTimestamp(item.createdAt)}</span>
-                </div>
+              </div>
+
+              {/* Page title */}
+              <div className="circle-card-title">{item.pageLabel}</div>
+
+              {/* Footer: member + time */}
+              <div className="circle-card-footer">
+                <span
+                  className="circle-card-member-name"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleMemberClick(item.memberAddress, item.memberLabel, item.memberImage)
+                  }}
+                >
+                  {item.memberLabel}
+                </span>
+                <span className="circle-card-time">{formatTimestamp(item.createdAt)}</span>
               </div>
             </div>
           ))}
