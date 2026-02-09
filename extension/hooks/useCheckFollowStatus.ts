@@ -111,16 +111,30 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
           accountTermId
         )
 
+        // Triple existence is global - we need to check if THIS user has shares
+        let userIsFollowing = false
+        let userIsTrusting = false
+
+        if (followCheck.exists && followCheck.tripleVaultId) {
+          const shares = await BlockchainService.getUserSharesInTriple(address, followCheck.tripleVaultId)
+          userIsFollowing = shares > 0n
+        }
+
+        if (trustCheck.exists && trustCheck.tripleVaultId) {
+          const shares = await BlockchainService.getUserSharesInTriple(address, trustCheck.tripleVaultId)
+          userIsTrusting = shares > 0n
+        }
+
         logger.debug('Status check complete', {
-          isFollowing: followCheck.exists,
-          isTrusting: trustCheck.exists,
+          isFollowing: userIsFollowing,
+          isTrusting: userIsTrusting,
           followTripleId: followCheck.tripleVaultId,
           trustTripleId: trustCheck.tripleVaultId
         })
 
         setStatus({
-          isFollowing: followCheck.exists,
-          isTrusting: trustCheck.exists,
+          isFollowing: userIsFollowing,
+          isTrusting: userIsTrusting,
           followTripleId: followCheck.tripleVaultId || undefined,
           trustTripleId: trustCheck.tripleVaultId || undefined,
           loading: false,
@@ -182,9 +196,22 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
         accountTermId
       )
 
+      let userIsFollowing = false
+      let userIsTrusting = false
+
+      if (followCheck.exists && followCheck.tripleVaultId) {
+        const shares = await BlockchainService.getUserSharesInTriple(address, followCheck.tripleVaultId)
+        userIsFollowing = shares > 0n
+      }
+
+      if (trustCheck.exists && trustCheck.tripleVaultId) {
+        const shares = await BlockchainService.getUserSharesInTriple(address, trustCheck.tripleVaultId)
+        userIsTrusting = shares > 0n
+      }
+
       setStatus({
-        isFollowing: followCheck.exists,
-        isTrusting: trustCheck.exists,
+        isFollowing: userIsFollowing,
+        isTrusting: userIsTrusting,
         followTripleId: followCheck.tripleVaultId || undefined,
         trustTripleId: trustCheck.tripleVaultId || undefined,
         loading: false,
