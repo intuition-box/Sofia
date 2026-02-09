@@ -12,10 +12,10 @@ import '../styles/CoreComponents.css'
 // Lazy load CircleFeedTab (required by Parcel bundler)
 const CircleFeedTab = lazy(() => import('./resonance-tabs/CircleFeedTab'))
 
-type ResonanceTab = 'for-you' | 'circle'
+type ResonanceTab = 'For You' | 'Circle'
 
 const ResonancePage = () => {
-  const [activeTab, setActiveTab] = useState<ResonanceTab>('for-you')
+  const [activeTab, setActiveTab] = useState<ResonanceTab>('For You')
   const { recommendations, isLoading, generateRecommendations } = useRecommendations()
   const [searchQuery, setSearchQuery] = useState('')
   const { walletAddress: account } = useWalletFromStorage()
@@ -56,111 +56,107 @@ const ResonancePage = () => {
   }
 
   return (
-    <div className="triples-container">
-      {/* Tab bar */}
-      <div className="tabs" style={{ marginBottom: '12px' }}>
-        <button
-          className={`tab ${activeTab === 'for-you' ? 'active' : ''}`}
-          onClick={() => setActiveTab('for-you')}
-        >
-          For You
-        </button>
-        <button
-          className={`tab ${activeTab === 'circle' ? 'active' : ''}`}
-          onClick={() => setActiveTab('circle')}
-        >
-          Circle
-        </button>
+    <div className="page">
+      <div className="tabs">
+        {(['For You', 'Circle'] as ResonanceTab[]).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`tab ${activeTab === tab ? 'active' : ''}`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
-      {/* For You tab */}
-      {activeTab === 'for-you' && (
-        <div className="search-content">
-          <div className="search-input-container">
-            <img src={logoIcon} alt="Sofia" className="search-logo" />
-            <input
-              type="text"
-              placeholder="Search ..."
-              className="search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          {isLoading && validItems.length === 0 && (
-            <div className="recommendations-section">
-              <div className="loading-indicator">
-                <SofiaLoader size={150} />
-              </div>
-            </div>
-          )}
-
-          {(recommendations.length > 0 || validItems.length > 0) && (
-            <div className="recommendations-section">
-              <button
-                onClick={() => {
-                  setIsAdditive(true)
-                  generateRecommendations(true, true)
-                }}
-                disabled={isLoading || isLoadingPreviews}
-                className="btn"
-                style={{ marginBottom: '16px' }}
-              >
-                {isLoading ? 'Generating...' : isLoadingPreviews ? 'Loading ...' : 'Get More'}
-              </button>
-
-              {isLoading && validItems.length > 0 && (
-                <div className="loading-indicator">
-                  <SofiaLoader size={60} />
-                </div>
-              )}
-              {previewError && (
-                <div className="error-state">{previewError}</div>
-              )}
-
-              {filteredValidItems.length > 0 && (
-                <div className="bento-grid">
-                  {filteredValidItems.map((item, index) => (
-                    <div
-                      key={index}
-                      className={`bento-card bento-${item.size}`}
-                      onClick={() => handleBentoClick(item.url)}
-                    >
-                      <div className="bento-image-container">
-                        <img
-                          src={item.ogImage}
-                          alt={item.name}
-                          className="bento-image"
-                          loading="lazy"
-                        />
-                      </div>
-                      <div className="bento-content">
-                        <h3 className="bento-title">{item.name}</h3>
-                        <p className="bento-category">{item.category}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!isLoadingPreviews && filteredValidItems.length === 0 && validItems.length > 0 && (
-                <div className="error-state">No recommendations match your search</div>
-              )}
-
-              {!isLoadingPreviews && validItems.length === 0 && recommendations.length > 0 && (
-                <div className="error-state">No valid sites found with preview images</div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Circle tab */}
-      {activeTab === 'circle' && (
+      <div className="page-content">
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
-          <CircleFeedTab />
+          {/* For You tab */}
+          {activeTab === 'For You' && (
+            <div className="search-content">
+              <div className="search-input-container">
+                <img src={logoIcon} alt="Sofia" className="search-logo" />
+                <input
+                  type="text"
+                  placeholder="Search ..."
+                  className="search-input"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              {isLoading && validItems.length === 0 && (
+                <div className="recommendations-section">
+                  <div className="loading-indicator">
+                    <SofiaLoader size={150} />
+                  </div>
+                </div>
+              )}
+
+              {(recommendations.length > 0 || validItems.length > 0) && (
+                <div className="recommendations-section">
+                  <button
+                    onClick={() => {
+                      setIsAdditive(true)
+                      generateRecommendations(true, true)
+                    }}
+                    disabled={isLoading || isLoadingPreviews}
+                    className="btn"
+                    style={{ marginBottom: '16px' }}
+                  >
+                    {isLoading ? 'Generating...' : isLoadingPreviews ? 'Loading ...' : 'Get More'}
+                  </button>
+
+                  {isLoading && validItems.length > 0 && (
+                    <div className="loading-indicator">
+                      <SofiaLoader size={60} />
+                    </div>
+                  )}
+                  {previewError && (
+                    <div className="error-state">{previewError}</div>
+                  )}
+
+                  {filteredValidItems.length > 0 && (
+                    <div className="bento-grid">
+                      {filteredValidItems.map((item, index) => (
+                        <div
+                          key={index}
+                          className={`bento-card bento-${item.size}`}
+                          onClick={() => handleBentoClick(item.url)}
+                        >
+                          <div className="bento-image-container">
+                            <img
+                              src={item.ogImage}
+                              alt={item.name}
+                              className="bento-image"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="bento-content">
+                            <h3 className="bento-title">{item.name}</h3>
+                            <p className="bento-category">{item.category}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!isLoadingPreviews && filteredValidItems.length === 0 && validItems.length > 0 && (
+                    <div className="error-state">No recommendations match your search</div>
+                  )}
+
+                  {!isLoadingPreviews && validItems.length === 0 && recommendations.length > 0 && (
+                    <div className="error-state">No valid sites found with preview images</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Circle tab */}
+          {activeTab === 'Circle' && <CircleFeedTab />}
         </Suspense>
-      )}
+      </div>
     </div>
   )
 }
