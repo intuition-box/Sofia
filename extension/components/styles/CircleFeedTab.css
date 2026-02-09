@@ -234,8 +234,8 @@
 }
 
 .circle-categories-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
@@ -268,10 +268,6 @@
 /* Responsive */
 @media (max-width: 360px) {
   .circle-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .circle-categories-grid {
     grid-template-columns: 1fr;
   }
 }

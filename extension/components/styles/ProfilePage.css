@@ -9,8 +9,6 @@
   border: 1px solid var(--color-border-glass);
   box-shadow: var(--shadow-glass);
   margin: var(--spacing-sm);
-  backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
-  -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
 }
 
 .page-header {
@@ -68,14 +66,13 @@
   background-color: #897359;
 }
 
-.page-content {
+.profile-page .page-content {
   border-radius: var(--radius-lg);
-  backdrop-filter: var(--backdrop-blur-heavy) var(--backdrop-saturate);
-  -webkit-backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
+  backdrop-filter: blur(29px);
   transition: var(--transition-normal);
   padding: var(--spacing-xl);
-  background: var(--color-bg-glass-light);
   border: 1px solid var(--color-border-glass);
+  background-color: rgba(1, 0, 14, 0.788);
 }
 
 .loading-state {

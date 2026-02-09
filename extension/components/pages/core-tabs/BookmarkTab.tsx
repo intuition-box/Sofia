@@ -9,6 +9,7 @@ import '../../styles/CorePage.css'
 import '../../styles/Modal.css'
 import '../../styles/BookmarkStyles.css'
 import '../../styles/CategoryStyles.css'
+import '../../styles/InterestTab.css'
 
 // Helper to extract domain from URL
 const getDomain = (url: string): string => {
@@ -239,10 +240,36 @@ const BookmarkTab = () => {
                   <div className="bookmark-list-info">
                     <h4>All Bookmarks</h4>
                     <div className="bookmark-list-meta">
-                      <span>{triplets.length} Signals</span>
+                      <span>{triplets.filter(t => t.url).length + categories.reduce((sum, c) => sum + c.urlCount, 0)} URLs</span>
                     </div>
                   </div>
                 </div>
+                {(() => {
+                  const allDomains = [...new Set(
+                    triplets.filter(t => t.url).map(t => getDomain(t.url!))
+                  )]
+                  return allDomains.length > 0 ? (
+                    <div className="interest-domains">
+                      {allDomains.slice(0, 5).map((domain) => (
+                        <div key={domain} className="interest-domain-tag">
+                          <img
+                            src={`https://${domain}/favicon.ico`}
+                            alt={domain}
+                            className="interest-domain-favicon"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.display = 'none'
+                            }}
+                          />
+                          <span className="interest-domain-name">{domain}</span>
+                        </div>
+                      ))}
+                      {allDomains.length > 5 && (
+                        <span className="interest-domains-more">+{allDomains.length - 5}</span>
+                      )}
+                    </div>
+                  ) : null
+                })()}
               </div>
             </div>
 
@@ -263,29 +290,55 @@ const BookmarkTab = () => {
               </>
             ) : (
               <>
-                {categories.map((category) => (
-                  <div
-                    key={category.id}
-                    onClick={() => selectCategory(category.id)}
-                    className="bookmark-card"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className="bookmark-item">
-                      <div className="bookmark-header-content">
-                        <div className="bookmark-list-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div
-                            className="category-color-dot"
-                            style={{ backgroundColor: category.color }}
-                          />
-                          <h4 style={{ margin: 0 }}>{category.label}</h4>
+                {categories.map((category) => {
+                  const categoryDomains = [...new Set(
+                    category.urls.map(u => u.domain)
+                  )]
+                  return (
+                    <div
+                      key={category.id}
+                      onClick={() => selectCategory(category.id)}
+                      className="bookmark-card"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="bookmark-item">
+                        <div className="bookmark-header-content">
+                          <div className="bookmark-list-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div
+                              className="category-color-dot"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <h4 style={{ margin: 0 }}>{category.label}</h4>
+                          </div>
+                          <div className="bookmark-list-meta">
+                            <span>{category.urlCount} URLs</span>
+                          </div>
                         </div>
-                        <div className="bookmark-list-meta">
-                          <span>{category.urlCount} URLs</span>
-                        </div>
+                        {categoryDomains.length > 0 && (
+                          <div className="interest-domains">
+                            {categoryDomains.slice(0, 5).map((domain) => (
+                              <div key={domain} className="interest-domain-tag">
+                                <img
+                                  src={`https://${domain}/favicon.ico`}
+                                  alt={domain}
+                                  className="interest-domain-favicon"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement
+                                    target.style.display = 'none'
+                                  }}
+                                />
+                                <span className="interest-domain-name">{domain}</span>
+                              </div>
+                            ))}
+                            {categoryDomains.length > 5 && (
+                              <span className="interest-domains-more">+{categoryDomains.length - 5}</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </>
             )}
           </div>
@@ -458,41 +511,72 @@ const BookmarkTab = () => {
             )
           ) : (
             <div className="lists-grid">
-              {lists.map((list) => (
-                <div
-                  key={list.id}
-                  className="bookmark-card"
-                  onClick={() => setSelectedListId(list.id)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="bookmark-item">
-                    <div className="bookmark-header-content">
-                      <div className="bookmark-list-info">
-                        <h4>{list.name}</h4>
-                        {list.description && <p>{list.description}</p>}
-                        <div className="bookmark-list-meta">
-                          <span>{list.tripletIds.length} Signals</span>
-                          <span>Created: {formatDate(list.createdAt)}</span>
-                          {list.updatedAt !== list.createdAt && (
-                            <span>Updated: {formatDate(list.updatedAt)}</span>
-                          )}
+              {lists.map((list) => {
+                const listTriplets = getTripletsByList(list.id)
+                const uniqueDomains = [...new Set(
+                  listTriplets
+                    .filter(t => t.url)
+                    .map(t => getDomain(t.url!))
+                )]
+
+                return (
+                  <div
+                    key={list.id}
+                    className="bookmark-card"
+                    onClick={() => setSelectedListId(list.id)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="bookmark-item">
+                      <div className="bookmark-header-content">
+                        <div className="bookmark-list-info">
+                          <h4>{list.name}</h4>
+                          {list.description && <p>{list.description}</p>}
+                          <div className="bookmark-list-meta">
+                            <span>Private</span>
+                            <span>{list.tripletIds.length} Signals</span>
+                            <span>Created: {formatDate(list.createdAt)}</span>
+                            {list.updatedAt !== list.createdAt && (
+                              <span>Updated: {formatDate(list.updatedAt)}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="signal-actions">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteList(list.id)
-                        }}
-                        className="batch-btn delete-selected btn-small-custom"
-                      >
-                        Delete
-                      </button>
+                      {uniqueDomains.length > 0 && (
+                        <div className="interest-domains">
+                          {uniqueDomains.slice(0, 5).map((domain) => (
+                            <div key={domain} className="interest-domain-tag">
+                              <img
+                                src={`https://${domain}/favicon.ico`}
+                                alt={domain}
+                                className="interest-domain-favicon"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement
+                                  target.style.display = 'none'
+                                }}
+                              />
+                              <span className="interest-domain-name">{domain}</span>
+                            </div>
+                          ))}
+                          {uniqueDomains.length > 5 && (
+                            <span className="interest-domains-more">+{uniqueDomains.length - 5}</span>
+                          )}
+                        </div>
+                      )}
+                      <div className="signal-actions">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteList(list.id)
+                          }}
+                          className="batch-btn delete-selected btn-small-custom"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )
         ) : !isAddingSignal && (
@@ -514,6 +598,26 @@ const BookmarkTab = () => {
                         <span className="object">{bookmarkedTriplet.triplet.object}</span>
                       </p>
                     </div>
+                    {bookmarkedTriplet.url && (
+                      <div className="interest-domains">
+                        <div
+                          className="interest-domain-tag"
+                          onClick={() => window.open(bookmarkedTriplet.url, '_blank', 'noopener,noreferrer')}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <img
+                            src={getFavicon(bookmarkedTriplet.url)}
+                            alt={getDomain(bookmarkedTriplet.url)}
+                            className="interest-domain-favicon"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.display = 'none'
+                            }}
+                          />
+                          <span className="interest-domain-name">{getDomain(bookmarkedTriplet.url)}</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="signal-actions">
                       <button
                         onClick={() => handleRemoveTripletFromList(selectedListId, bookmarkedTriplet.id)}
@@ -521,18 +625,6 @@ const BookmarkTab = () => {
                       >
                         Remove
                       </button>
-                    </div>
-                    <div className="bookmark-triplet-details">
-                      <div>Source: {bookmarkedTriplet.sourceType}</div>
-                      <div>Added: {formatDate(bookmarkedTriplet.addedAt)}</div>
-                      {bookmarkedTriplet.description && (
-                        <div>Description: {bookmarkedTriplet.description}</div>
-                      )}
-                      {bookmarkedTriplet.url && (
-                        <div>URL: <a href={bookmarkedTriplet.url} target="_blank" rel="noopener noreferrer">
-                          {bookmarkedTriplet.url.length > 50 ? bookmarkedTriplet.url.slice(0, 50) + '...' : bookmarkedTriplet.url}
-                        </a></div>
-                      )}
                     </div>
                   </div>
                 </div>

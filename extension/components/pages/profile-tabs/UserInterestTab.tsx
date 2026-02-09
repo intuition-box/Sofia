@@ -176,7 +176,6 @@ const UserInterestTab = ({ walletAddress }: UserInterestTabProps) => {
   return (
     <div className="interest-tab">
       <div className="interest-header">
-        <h2 className="interest-title">Interests</h2>
         <button className="interest-analyze-btn" onClick={analyze}>
           Refresh
         </button>
