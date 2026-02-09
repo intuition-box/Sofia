@@ -52,12 +52,20 @@ const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
   'visits for buying': 'for_buying'
 }
 
+// Triple detail for redeem operations
+export interface TripleDetail {
+  tripleTermId: string   // bytes32 - the triple vault ID needed for redeem
+  shares: string         // User's shares in this triple
+  predicateLabel: string // e.g., "visits for work", "follow"
+}
+
 // Certification entry stored in the cache
 export interface CertificationEntry {
   label: string                     // The object label (e.g., "youtube.com/watch?v=xxx")
   intentions: IntentionPurpose[]    // Intention predicates (for_work, for_learning, etc.)
   oauthPredicates: string[]         // OAuth predicates (follow, member_of, etc.)
   isRootDomain: boolean             // True if label has no path (e.g., "youtube.com")
+  triples: TripleDetail[]           // All triples for this URL (for redeem operations)
 }
 
 export interface UserCertificationsState {
@@ -186,6 +194,13 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
         isRootDomain = !normalizedLabel.includes('/')
       }
 
+      // Build triple detail for redeem operations
+      const tripleDetail: TripleDetail = {
+        tripleTermId: (triple as any).term_id || '',
+        shares: (triple as any).positions?.[0]?.shares || '0',
+        predicateLabel
+      }
+
       const existing = newCertifications.get(normalizedLabel)
       if (existing) {
         if (intention && !existing.intentions.includes(intention)) {
@@ -194,12 +209,17 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
         if (isOAuthPredicate && !existing.oauthPredicates.includes(predicateLabel)) {
           existing.oauthPredicates.push(predicateLabel)
         }
+        // Add triple detail if not already present
+        if (tripleDetail.tripleTermId && !existing.triples.some(t => t.tripleTermId === tripleDetail.tripleTermId)) {
+          existing.triples.push(tripleDetail)
+        }
       } else {
         newCertifications.set(normalizedLabel, {
           label: normalizedLabel,
           intentions: intention ? [intention] : [],
           oauthPredicates: isOAuthPredicate ? [predicateLabel] : [],
-          isRootDomain
+          isRootDomain,
+          triples: tripleDetail.tripleTermId ? [tripleDetail] : []
         })
       }
     }
