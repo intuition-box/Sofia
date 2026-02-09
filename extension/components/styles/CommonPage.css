@@ -261,6 +261,7 @@
 /* ========== GROUP BENTO CARD STYLES ========== */
 
 .group-bento-card {
+  backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   padding: 12px;
