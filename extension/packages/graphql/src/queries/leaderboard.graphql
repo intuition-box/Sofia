@@ -1,0 +1,20 @@
+query GetTopSofiaAccounts($proxy: String!, $since: timestamptz!) {
+  deposits(
+    where: {
+      sender_id: { _eq: $proxy }
+      assets_after_fees: { _neq: "0" }
+      created_at: { _gte: $since }
+    }
+    order_by: { created_at: desc }
+  ) {
+    receiver_id
+    receiver {
+      id
+      label
+      image
+      atom {
+        term_id
+      }
+    }
+  }
+}

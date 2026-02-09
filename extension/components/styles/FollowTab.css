@@ -375,6 +375,20 @@
   padding: 8px 23px;
 }
 
+/* Explorer top accounts section */
+.explorer-top-accounts {
+  margin-top: 16px;
+}
+
+.explorer-section-title {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 12px 0;
+}
+
 /* Explorer panel info section */
 .explorer-info {
   margin-top: 32px;

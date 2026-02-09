@@ -20,7 +20,7 @@ const CommunityTab = (props: CommunityTabProps) => {
   const { walletAddress: storageWallet } = useWalletFromStorage()
   const walletAddress = props.walletAddress || storageWallet
   const isExternalProfile = !!props.walletAddress
-  const [filterType, setFilterType] = useState<CommunityFilterType>('trust-circle')
+  const [filterType, setFilterType] = useState<CommunityFilterType>(isExternalProfile ? 'trust-circle' : 'explorer')
 
   if (!walletAddress) {
     return (

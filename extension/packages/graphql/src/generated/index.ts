@@ -19865,6 +19865,26 @@ export type GetAtomDataByLabelsQuery = {
   }>
 }
 
+export type GetTopSofiaAccountsQueryVariables = Exact<{
+  proxy: Scalars["String"]["input"]
+  since: Scalars["timestamptz"]["input"]
+}>
+
+export type GetTopSofiaAccountsQuery = {
+  __typename?: "query_root"
+  deposits: Array<{
+    __typename?: "deposits"
+    receiver_id: string
+    receiver?: {
+      __typename?: "accounts"
+      id: string
+      label: string
+      image?: string | null
+      atom?: { __typename?: "atoms"; term_id: string } | null
+    } | null
+  }>
+}
+
 export type GetListsQueryVariables = Exact<{
   where?: InputMaybe<Predicate_Objects_Bool_Exp>
 }>
@@ -30525,6 +30545,106 @@ useGetAtomDataByLabelsQuery.fetcher = (
 ) =>
   fetcher<GetAtomDataByLabelsQuery, GetAtomDataByLabelsQueryVariables>(
     GetAtomDataByLabelsDocument,
+    variables,
+    options
+  )
+
+export const GetTopSofiaAccountsDocument = `
+    query GetTopSofiaAccounts($proxy: String!, $since: timestamptz!) {
+  deposits(
+    where: {sender_id: {_eq: $proxy}, assets_after_fees: {_neq: "0"}, created_at: {_gte: $since}}
+    order_by: {created_at: desc}
+  ) {
+    receiver_id
+    receiver {
+      id
+      label
+      image
+      atom {
+        term_id
+      }
+    }
+  }
+}
+    `
+
+export const useGetTopSofiaAccountsQuery = <
+  TData = GetTopSofiaAccountsQuery,
+  TError = unknown
+>(
+  variables: GetTopSofiaAccountsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetTopSofiaAccountsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetTopSofiaAccountsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetTopSofiaAccountsQuery, TError, TData>({
+    queryKey: ["GetTopSofiaAccounts", variables],
+    queryFn: fetcher<
+      GetTopSofiaAccountsQuery,
+      GetTopSofiaAccountsQueryVariables
+    >(GetTopSofiaAccountsDocument, variables),
+    ...options
+  })
+}
+
+useGetTopSofiaAccountsQuery.document = GetTopSofiaAccountsDocument
+
+useGetTopSofiaAccountsQuery.getKey = (
+  variables: GetTopSofiaAccountsQueryVariables
+) => ["GetTopSofiaAccounts", variables]
+
+export const useInfiniteGetTopSofiaAccountsQuery = <
+  TData = InfiniteData<GetTopSofiaAccountsQuery>,
+  TError = unknown
+>(
+  variables: GetTopSofiaAccountsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetTopSofiaAccountsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetTopSofiaAccountsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetTopSofiaAccountsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetTopSofiaAccounts.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<GetTopSofiaAccountsQuery, GetTopSofiaAccountsQueryVariables>(
+            GetTopSofiaAccountsDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetTopSofiaAccountsQuery.getKey = (
+  variables: GetTopSofiaAccountsQueryVariables
+) => ["GetTopSofiaAccounts.infinite", variables]
+
+useGetTopSofiaAccountsQuery.fetcher = (
+  variables: GetTopSofiaAccountsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetTopSofiaAccountsQuery, GetTopSofiaAccountsQueryVariables>(
+    GetTopSofiaAccountsDocument,
     variables,
     options
   )
@@ -58399,6 +58519,160 @@ export const GetAtomDataByLabels = {
                 { kind: "Field", name: { kind: "Name", value: "label" } },
                 { kind: "Field", name: { kind: "Name", value: "data" } },
                 { kind: "Field", name: { kind: "Name", value: "image" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetTopSofiaAccounts = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetTopSofiaAccounts" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "proxy" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "since" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "timestamptz" }
+            }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "deposits" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "sender_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "proxy" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "assets_after_fees" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_neq" },
+                            value: {
+                              kind: "StringValue",
+                              value: "0",
+                              block: false
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "created_at" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_gte" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "since" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "order_by" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "created_at" },
+                      value: { kind: "EnumValue", value: "desc" }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "receiver_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "receiver" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "label" } },
+                      { kind: "Field", name: { kind: "Name", value: "image" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "atom" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "term_id" }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
               ]
             }
           }
