@@ -321,7 +321,7 @@ const AccountTab = () => {
       {/* Tab Content */}
       {activeTab === 'interest' && (
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
-          <InterestTab />
+          <InterestTab level={level} signalsCreated={userStats.signalsCreated} />
         </Suspense>
       )}
 

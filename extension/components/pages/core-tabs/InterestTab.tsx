@@ -9,9 +9,17 @@ import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage';
 import { useInterestAnalysis } from '../../../hooks/useInterestAnalysis';
 import InterestCard from '../../ui/InterestCard';
 import SofiaLoader from '../../ui/SofiaLoader';
+import xIcon from '../../ui/social/x.svg';
 import '../../styles/InterestTab.css';
 
-const InterestTab = () => {
+const OG_BASE_URL = 'https://sofia-og.vercel.app';
+
+interface InterestTabProps {
+  level?: number;
+  signalsCreated?: number;
+}
+
+const InterestTab = ({ level: userLevel, signalsCreated }: InterestTabProps) => {
   const { walletAddress } = useWalletFromStorage();
   const {
     interests,
@@ -52,6 +60,28 @@ const InterestTab = () => {
     if (walletAddress) {
       analyzeInterests(walletAddress);
     }
+  };
+
+  const handleShareOnX = () => {
+    if (!walletAddress || interests.length === 0) return;
+
+    const interestsParam = interests
+      .slice(0, 5)
+      .map((i) => `${i.name}:${i.level}`)
+      .join(',');
+
+    const ogParams = new URLSearchParams({
+      wallet: walletAddress,
+      level: String(userLevel || 1),
+      signals: String(signalsCreated || 0),
+      interests: interestsParam,
+    });
+
+    const shareUrl = `${OG_BASE_URL}/profile?${ogParams.toString()}`;
+    const tweetText = `Check out my Sofia profile!`;
+    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
+
+    window.open(intentUrl, '_blank');
   };
 
   // Loading state
@@ -123,7 +153,6 @@ const InterestTab = () => {
     return (
       <div className="interest-tab">
         <div className="interest-header">
-          <h2 className="interest-title">Interests</h2>
           <button
             className="interest-analyze-btn"
             onClick={handleAnalyze}
@@ -147,7 +176,13 @@ const InterestTab = () => {
   return (
     <div className="interest-tab">
       <div className="interest-header">
-        <h2 className="interest-title">Interests</h2>
+        <button
+          className="interest-share-btn"
+          onClick={handleShareOnX}
+        >
+          <img src={xIcon} alt="X" className="interest-share-icon" />
+          Share on X
+        </button>
         <button
           className="interest-analyze-btn"
           onClick={handleAnalyze}
