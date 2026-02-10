@@ -132,8 +132,11 @@ export const useIdentityResolution = ({
           const cached = await chrome.storage.local.get(storageKey)
           if (cached[storageKey]) {
             const { avatar, label, timestamp, source: cachedSource } = cached[storageKey]
-            // Cache valid for 1 hour
-            if (Date.now() - timestamp < CACHE_TTL_MS) {
+            // Invalidate cache if Discord profile now has an avatar but cache doesn't
+            const discordAvatarUrl = getDiscordAvatarUrl(discordProfile)
+            const discordHasNewAvatar = discordAvatarUrl && !avatar
+            // Cache valid for 1 hour, unless Discord profile changed
+            if (Date.now() - timestamp < CACHE_TTL_MS && !discordHasNewAvatar) {
               console.log('[useIdentityResolution] 📦 Loading from cache:', { avatar, label, source: cachedSource })
               setDisplayAvatar(avatar)
               setDisplayLabel(label)
@@ -142,6 +145,9 @@ export const useIdentityResolution = ({
               setSource(cachedSource || 'graphql')
               setLoading(false)
               return
+            }
+            if (discordHasNewAvatar) {
+              console.log('[useIdentityResolution] 🔄 Cache invalidated: Discord avatar now available')
             }
           }
         }
