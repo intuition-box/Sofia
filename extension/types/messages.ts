@@ -53,6 +53,8 @@ export type MessageType =
   | 'AMPLIFY_GROUP'
   | 'TRACK_URL'
   | 'FORCE_FLUSH_TRACKER'
+  // Deep link from share page
+  | 'DEEP_LINK_PROFILE'
   // Wallet bridge messages
   | 'WALLET_REQUEST'
   | 'WALLET_EVENT'

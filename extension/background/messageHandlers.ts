@@ -1,6 +1,8 @@
 import { MessageBus } from "../lib/services/MessageBus"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
+import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
+import { getAddress } from "viem"
 import { getAllBookmarks, getAllHistory } from "./messageSenders"
 import { badgeService } from "../lib/services/BadgeService"
 import { pageDataService } from "../lib/services/PageDataService"
@@ -605,6 +607,53 @@ export function setupMessageHandlers(): void {
           }
         } catch (error) {
           console.error("❌ PREVIEW_LEVEL_UP error:", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      // =====================================================
+      // DEEP LINK: Share page → UserProfilePage
+      // =====================================================
+
+      case "DEEP_LINK_PROFILE":
+        try {
+          const { wallet, name } = message.data || {}
+          if (!wallet) {
+            sendResponse({ success: false, error: "wallet required" })
+            return true
+          }
+
+          // Resolve Account atom termId from wallet address
+          const checksumAddress = getAddress(wallet)
+          const lowercaseAddress = checksumAddress.toLowerCase()
+
+          const FIND_ACCOUNT_ATOM = `
+            query FindAccountAtom($address: String!) {
+              atoms(where: { _and: [{ data: { _ilike: $address } }, { type: { _eq: "Account" } }] }, limit: 1) {
+                term_id
+              }
+            }
+          `
+
+          const atomResponse = await intuitionGraphqlClient.request(FIND_ACCOUNT_ATOM, {
+            address: `%${lowercaseAddress}%`
+          })
+
+          const termId = atomResponse?.atoms?.[0]?.term_id || ""
+
+          // Store navigation intent in session storage
+          await chrome.storage.session.set({
+            pending_profile_view: {
+              termId,
+              label: name || `${wallet.slice(0, 6)}...${wallet.slice(-4)}`,
+              walletAddress: checksumAddress,
+            }
+          })
+
+          console.log("🔗 [Deep Link] Profile intent stored for", checksumAddress.slice(0, 8) + "...")
+          sendResponse({ success: true })
+        } catch (error) {
+          console.error("❌ DEEP_LINK_PROFILE error:", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
