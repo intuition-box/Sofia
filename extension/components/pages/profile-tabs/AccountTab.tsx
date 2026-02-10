@@ -14,6 +14,7 @@ import { useQuestSystem } from '../../../hooks/useQuestSystem'
 import { useTrustCircle } from '../../../hooks/useTrustCircle'
 import { useDiscoveryScore } from '../../../hooks/useDiscoveryScore'
 import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
+import { useTrustedByCount } from '../../../hooks/useTrustedByCount'
 import StatsTab from './StatsTab'
 import AchievementsTab from './AchievementsTab'
 import { useIdentityResolution } from '../../../hooks/useIdentityResolution'
@@ -55,8 +56,11 @@ const AccountTab = () => {
   // Quest system hook - provides real quests based on user progress
   const { quests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
 
-  // Trust circle hook
-  const { accounts: trustCircleAccounts, refetch: fetchTrustCircle } = useTrustCircle(walletAddress)
+  // Trust circle hook (people I trust - outgoing)
+  const { refetch: fetchTrustCircle } = useTrustCircle(walletAddress)
+
+  // Trusted-by count hook (people who trust ME - incoming)
+  const { count: trustedByCount, loading: trustedByLoading, refetch: fetchTrustedByCount } = useTrustedByCount(walletAddress)
 
   // Discovery stats hook (pioneer, explorer, certified counts)
   const { stats: discoveryStats } = useDiscoveryScore()
@@ -122,12 +126,13 @@ const AccountTab = () => {
     loadUserStats()
   }, [loadUserStats])
 
-  // Fetch trust circle on mount
+  // Fetch trust circle and trusted-by count on mount
   useEffect(() => {
     if (walletAddress) {
       fetchTrustCircle()
+      fetchTrustedByCount()
     }
-  }, [walletAddress, fetchTrustCircle])
+  }, [walletAddress, fetchTrustCircle, fetchTrustedByCount])
 
   // Combined refresh: quests + stats
   const handleFullRefresh = useCallback(async () => {
@@ -306,6 +311,10 @@ const AccountTab = () => {
           <div className="stat-value">{userStats.loading ? '...' : userStats.signalsCreated}</div>
           <div className="stat-label">Signals</div>
         </div>
+        <div className="stat-item">
+          <div className="stat-value">{trustedByLoading ? '...' : trustedByCount}</div>
+          <div className="stat-label">Trusted By</div>
+        </div>
       </div>
 
       {/* Separator */}
@@ -338,9 +347,10 @@ const AccountTab = () => {
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
           <InterestTab
             level={level}
-            trustCircleCount={trustCircleAccounts.length}
+            trustCircleCount={trustedByCount}
             pioneerCount={discoveryStats?.pioneerCount || 0}
             explorerCount={discoveryStats?.explorerCount || 0}
+            signalsCreated={userStats.signalsCreated}
           />
         </Suspense>
       )}

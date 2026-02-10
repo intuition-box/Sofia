@@ -1,8 +1,9 @@
-import { useState, Suspense, lazy } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useCheckFollowStatus } from '../../hooks/useCheckFollowStatus'
 import { useUserQuests } from '../../hooks/useUserQuests'
 import { useIdentityResolution } from '../../hooks/useIdentityResolution'
+import { useTrustedByCount } from '../../hooks/useTrustedByCount'
 import ProfileHeader from '../ui/ProfileHeader'
 import FollowButton from '../ui/FollowButton'
 import TrustAccountButton from '../ui/TrustAccountButton'
@@ -27,6 +28,9 @@ const UserProfilePage = () => {
   // User quests for the profile being viewed (on-chain completed only + signals count)
   const { completedQuests, totalXP, level, signalsCreated, loading: questsLoading } = useUserQuests(userProfileData?.walletAddress)
 
+  // Trusted-by count (people who trust this account)
+  const { count: trustedByCount, loading: trustedByLoading, refetch: fetchTrustedByCount } = useTrustedByCount(userProfileData?.walletAddress)
+
   // Identity resolution for the profile being viewed
   const { displayLabel, displayAvatar } = useIdentityResolution({
     walletAddress: userProfileData?.walletAddress,
@@ -34,6 +38,13 @@ const UserProfilePage = () => {
     image: userProfileData?.image,
     enableCache: true
   })
+
+  // Fetch trusted-by count on mount
+  useEffect(() => {
+    if (userProfileData?.walletAddress) {
+      fetchTrustedByCount()
+    }
+  }, [userProfileData?.walletAddress, fetchTrustedByCount])
 
   if (!userProfileData) {
     return (
@@ -138,6 +149,10 @@ const UserProfilePage = () => {
         <div className="stat-item">
           <div className="stat-value">{questsLoading ? '...' : signalsCreated}</div>
           <div className="stat-label">Signals</div>
+        </div>
+        <div className="stat-item">
+          <div className="stat-value">{trustedByLoading ? '...' : trustedByCount}</div>
+          <div className="stat-label">Trusted By</div>
         </div>
       </div>
 

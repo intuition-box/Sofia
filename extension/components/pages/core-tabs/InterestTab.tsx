@@ -12,16 +12,17 @@ import SofiaLoader from '../../ui/SofiaLoader';
 import xIcon from '../../ui/social/x.svg';
 import '../../styles/InterestTab.css';
 
-const OG_BASE_URL = 'https://sofia-card.vercel.app';
+const OG_BASE_URL = 'https://sofia-og.vercel.app';
 
 interface InterestTabProps {
   level?: number;
   trustCircleCount?: number;
   pioneerCount?: number;
   explorerCount?: number;
+  signalsCreated?: number;
 }
 
-const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explorerCount }: InterestTabProps) => {
+const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explorerCount, signalsCreated }: InterestTabProps) => {
   const { walletAddress } = useWalletFromStorage();
   const [isSharing, setIsSharing] = useState(false);
   const {
@@ -68,6 +69,9 @@ const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explore
   const handleShareOnX = async () => {
     if (!walletAddress || interests.length === 0 || isSharing) return;
 
+    // Open window immediately to avoid popup blocker (must be in user gesture)
+    const win = window.open('about:blank', '_blank');
+
     setIsSharing(true);
     try {
       const interestsParam = interests
@@ -84,6 +88,7 @@ const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explore
           trustCircle: String(trustCircleCount || 0),
           pioneer: String(pioneerCount || 0),
           explorer: String(explorerCount || 0),
+          signals: String(signalsCreated || 0),
           interests: interestsParam,
         }),
       });
@@ -92,9 +97,14 @@ const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explore
       const tweetText = `Check out my Sofia profile!`;
       const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
 
-      window.open(intentUrl, '_blank');
+      if (win) {
+        win.location.href = intentUrl;
+      } else {
+        window.open(intentUrl, '_blank');
+      }
     } catch (err) {
       console.error('Failed to create share link:', err);
+      if (win) win.close();
     } finally {
       setIsSharing(false);
     }
