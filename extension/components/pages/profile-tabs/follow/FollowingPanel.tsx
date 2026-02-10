@@ -7,6 +7,7 @@ import { useFollowing } from '../../../../hooks/useFollowing'
 import { useRouter } from '../../../layout/RouterProvider'
 import type { FollowAccountVM } from '../../../../types/follows'
 import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
+import { intuitionGraphqlClient } from '../../../../lib/clients/graphql-client'
 import { useCheckFollowStatus } from '../../../../hooks/useCheckFollowStatus'
 import { useRedeemTriple } from '../../../../hooks/useRedeemTriple'
 import TrustAccountButton from '../../../ui/TrustAccountButton'
@@ -90,6 +91,8 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
       }
       // Optimistic: hide account immediately
       setRemovedIds(prev => new Set(prev).add(account.tripleId))
+      // Clear GraphQL cache so refetch gets fresh data from indexer
+      intuitionGraphqlClient.clearCache()
       // Background refetch for eventual consistency
       refetchWithBackoff(refetch, {
         initialDelay: 5000,

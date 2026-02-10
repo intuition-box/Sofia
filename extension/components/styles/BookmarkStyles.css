@@ -638,9 +638,9 @@
 
 /* ========== BOOKMARK FAVICON GRID (iOS-style) ========== */
 .bookmark-favicon-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-  gap: 12px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 4px 0;
 }
 

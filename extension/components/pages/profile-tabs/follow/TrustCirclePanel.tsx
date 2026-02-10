@@ -9,6 +9,7 @@ import { useRedeemTriple } from '../../../../hooks/useRedeemTriple'
 import { useRouter } from '../../../layout/RouterProvider'
 import type { FollowAccountVM } from '../../../../types/follows'
 import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
+import { intuitionGraphqlClient } from '../../../../lib/clients/graphql-client'
 import StakeModal from '../../../modals/StakeModal'
 import  Avatar  from '../../../ui/Avatar'
 import  UserAtomStats  from '../../../ui/UserAtomStats'
@@ -67,6 +68,8 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
       }
       // Optimistic: hide account immediately
       setRemovedIds(prev => new Set(prev).add(account.tripleId))
+      // Clear GraphQL cache so refetch gets fresh data from indexer
+      intuitionGraphqlClient.clearCache()
       // Background refetch for eventual consistency
       refetchWithBackoff(refetch, {
         initialDelay: 5000,

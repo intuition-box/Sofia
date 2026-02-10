@@ -11,7 +11,7 @@ query GetFollowingPositions(
       _and: [
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
-        { positions: { account_id: { _ilike: $address } } }
+        { positions: { account_id: { _ilike: $address }, shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -27,7 +27,7 @@ query GetFollowingPositions(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
-        { positions: { account_id: { _ilike: $address } } }
+        { positions: { account_id: { _ilike: $address }, shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -71,7 +71,7 @@ query GetFollowingPositions(
           }
         }
         positions(
-          where: { account_id: { _ilike: $address } }
+          where: { account_id: { _ilike: $address }, shares: { _gt: "0" } }
           order_by: $positionsOrderBy
         ) {
           account_id
@@ -276,6 +276,7 @@ query GetMyFollowing(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
+        { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -292,7 +293,7 @@ query GetMyFollowing(
     }
     term {
       vaults(where: { curve_id: { _eq: "1" } }, order_by: { curve_id: asc }) {
-        positions(where: { account_id: { _eq: $walletAddress } }) {
+        positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
           account_id
           shares
           created_at
@@ -315,6 +316,7 @@ query GetMyTrustCircle(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
+        { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -332,7 +334,7 @@ query GetMyTrustCircle(
     term {
       vaults(order_by: { curve_id: asc }) {
         curve_id
-        positions(where: { account_id: { _eq: $walletAddress } }) {
+        positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
           account_id
           shares
           created_at

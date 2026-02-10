@@ -6,6 +6,7 @@
 
 import type { IntentionCategory } from '../../types/intentionCategories'
 import '../styles/InterestTab.css'
+import '../styles/BookmarkStyles.css'
 
 interface CategoryCardProps {
   category: IntentionCategory
@@ -30,23 +31,21 @@ const CategoryCard = ({ category, onClick }: CategoryCardProps) => {
       </div>
       <span className="category-count-value">{urlCount}</span>
       {categoryDomains.length > 0 && (
-        <div className="interest-domains">
-          {categoryDomains.slice(0, 5).map((domain) => (
-            <div key={domain} className="interest-domain-tag">
-              <img
-                src={`https://${domain}/favicon.ico`}
-                alt={domain}
-                className="interest-domain-favicon"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  target.style.display = 'none'
-                }}
-              />
-              <span className="interest-domain-name">{domain}</span>
-            </div>
+        <div className="bookmark-favicon-grid">
+          {categoryDomains.slice(0, 8).map((domain) => (
+            <img
+              key={domain}
+              src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+              alt={domain}
+              className="bookmark-favicon-icon"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+              }}
+            />
           ))}
-          {categoryDomains.length > 5 && (
-            <span className="interest-domains-more">+{categoryDomains.length - 5}</span>
+          {categoryDomains.length > 8 && (
+            <div className="bookmark-favicon-more">+{categoryDomains.length - 8}</div>
           )}
         </div>
       )}

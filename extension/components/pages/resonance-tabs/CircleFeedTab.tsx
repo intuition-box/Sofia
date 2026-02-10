@@ -38,9 +38,9 @@ const predicateLabelToType = (label: string): IntentionType | null => {
   return null
 }
 
-// Get favicon URL from domain
+// Get favicon URL from domain (high-res for large display)
 const getFaviconUrl = (domain: string): string => {
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
 }
 
 // Extract domain from URL

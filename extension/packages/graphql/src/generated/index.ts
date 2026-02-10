@@ -29538,7 +29538,7 @@ useGetTransactionEventsQuery.fetcher = (
 export const GetFollowingPositionsDocument = `
     query GetFollowingPositions($subjectId: String!, $predicateId: String!, $address: String!, $limit: Int, $offset: Int, $positionsOrderBy: [positions_order_by!]) {
   triples_aggregate(
-    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {positions: {account_id: {_ilike: $address}}}]}
+    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {positions: {account_id: {_ilike: $address}, shares: {_gt: "0"}}}]}
   ) {
     aggregate {
       count
@@ -29547,7 +29547,7 @@ export const GetFollowingPositionsDocument = `
   triples(
     limit: $limit
     offset: $offset
-    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {object: {type: {_eq: "Account"}}}, {positions: {account_id: {_ilike: $address}}}]}
+    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {object: {type: {_eq: "Account"}}}, {positions: {account_id: {_ilike: $address}, shares: {_gt: "0"}}}]}
   ) {
     term_id
     subject {
@@ -29588,7 +29588,10 @@ export const GetFollowingPositionsDocument = `
             }
           }
         }
-        positions(where: {account_id: {_ilike: $address}}, order_by: $positionsOrderBy) {
+        positions(
+          where: {account_id: {_ilike: $address}, shares: {_gt: "0"}}
+          order_by: $positionsOrderBy
+        ) {
           account_id
           account {
             id
@@ -30043,7 +30046,7 @@ useGetConnectionsCountQuery.fetcher = (
 export const GetMyFollowingDocument = `
     query GetMyFollowing($subjectId: String!, $predicateId: String!, $walletAddress: String!) {
   triples(
-    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {object: {type: {_eq: "Account"}}}]}
+    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {object: {type: {_eq: "Account"}}}, {positions: {account_id: {_eq: $walletAddress}, shares: {_gt: "0"}}}]}
   ) {
     term_id
     created_at
@@ -30058,7 +30061,7 @@ export const GetMyFollowingDocument = `
     }
     term {
       vaults(where: {curve_id: {_eq: "1"}}, order_by: {curve_id: asc}) {
-        positions(where: {account_id: {_eq: $walletAddress}}) {
+        positions(where: {account_id: {_eq: $walletAddress}, shares: {_gt: "0"}}) {
           account_id
           shares
           created_at
@@ -30148,7 +30151,7 @@ useGetMyFollowingQuery.fetcher = (
 export const GetMyTrustCircleDocument = `
     query GetMyTrustCircle($subjectId: String!, $predicateId: String!, $walletAddress: String!) {
   triples(
-    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {object: {type: {_eq: "Account"}}}]}
+    where: {_and: [{subject_id: {_eq: $subjectId}}, {predicate_id: {_eq: $predicateId}}, {object: {type: {_eq: "Account"}}}, {positions: {account_id: {_eq: $walletAddress}, shares: {_gt: "0"}}}]}
   ) {
     term_id
     created_at
@@ -30164,7 +30167,7 @@ export const GetMyTrustCircleDocument = `
     term {
       vaults(order_by: {curve_id: asc}) {
         curve_id
-        positions(where: {account_id: {_eq: $walletAddress}}) {
+        positions(where: {account_id: {_eq: $walletAddress}, shares: {_gt: "0"}}) {
           account_id
           shares
           created_at
@@ -54623,6 +54626,27 @@ export const GetFollowingPositions = {
                                           }
                                         ]
                                       }
+                                    },
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "shares" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_gt"
+                                            },
+                                            value: {
+                                              kind: "StringValue",
+                                              value: "0",
+                                              block: false
+                                            }
+                                          }
+                                        ]
+                                      }
                                     }
                                   ]
                                 }
@@ -54799,6 +54823,27 @@ export const GetFollowingPositions = {
                                                 kind: "Name",
                                                 value: "address"
                                               }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "shares" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_gt"
+                                            },
+                                            value: {
+                                              kind: "StringValue",
+                                              value: "0",
+                                              block: false
                                             }
                                           }
                                         ]
@@ -55106,6 +55151,27 @@ export const GetFollowingPositions = {
                                                   kind: "Name",
                                                   value: "address"
                                                 }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        kind: "ObjectField",
+                                        name: { kind: "Name", value: "shares" },
+                                        value: {
+                                          kind: "ObjectValue",
+                                          fields: [
+                                            {
+                                              kind: "ObjectField",
+                                              name: {
+                                                kind: "Name",
+                                                value: "_gt"
+                                              },
+                                              value: {
+                                                kind: "StringValue",
+                                                value: "0",
+                                                block: false
                                               }
                                             }
                                           ]
@@ -57209,6 +57275,67 @@ export const GetMyFollowing = {
                                 }
                               }
                             ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "positions" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: {
+                                        kind: "Name",
+                                        value: "account_id"
+                                      },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_eq"
+                                            },
+                                            value: {
+                                              kind: "Variable",
+                                              name: {
+                                                kind: "Name",
+                                                value: "walletAddress"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "shares" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_gt"
+                                            },
+                                            value: {
+                                              kind: "StringValue",
+                                              value: "0",
+                                              block: false
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -57347,6 +57474,27 @@ export const GetMyFollowing = {
                                                   kind: "Name",
                                                   value: "walletAddress"
                                                 }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        kind: "ObjectField",
+                                        name: { kind: "Name", value: "shares" },
+                                        value: {
+                                          kind: "ObjectValue",
+                                          fields: [
+                                            {
+                                              kind: "ObjectField",
+                                              name: {
+                                                kind: "Name",
+                                                value: "_gt"
+                                              },
+                                              value: {
+                                                kind: "StringValue",
+                                                value: "0",
+                                                block: false
                                               }
                                             }
                                           ]
@@ -57648,6 +57796,67 @@ export const GetMyTrustCircle = {
                                 }
                               }
                             ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "positions" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: {
+                                        kind: "Name",
+                                        value: "account_id"
+                                      },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_eq"
+                                            },
+                                            value: {
+                                              kind: "Variable",
+                                              name: {
+                                                kind: "Name",
+                                                value: "walletAddress"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "shares" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_gt"
+                                            },
+                                            value: {
+                                              kind: "StringValue",
+                                              value: "0",
+                                              block: false
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -57763,6 +57972,27 @@ export const GetMyTrustCircle = {
                                                   kind: "Name",
                                                   value: "walletAddress"
                                                 }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        kind: "ObjectField",
+                                        name: { kind: "Name", value: "shares" },
+                                        value: {
+                                          kind: "ObjectValue",
+                                          fields: [
+                                            {
+                                              kind: "ObjectField",
+                                              name: {
+                                                kind: "Name",
+                                                value: "_gt"
+                                              },
+                                              value: {
+                                                kind: "StringValue",
+                                                value: "0",
+                                                block: false
                                               }
                                             }
                                           ]

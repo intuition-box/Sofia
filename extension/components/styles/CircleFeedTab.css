@@ -130,10 +130,13 @@
 }
 
 .circle-card-favicon {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.08);
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .circle-card-member-name {
@@ -234,9 +237,9 @@
 }
 
 .circle-categories-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 /* Empty / Loading States */

@@ -86,9 +86,9 @@ export function useFollowing(walletAddress: string | undefined): FollowQueryResu
         return
       }
 
-      // Filter: only triples where user has positions
+      // Filter: only triples where user has positions with shares > 0
       const triplesWithPositions = response.triples.filter(
-        (triple) => triple.term?.vaults && triple.term.vaults.length > 0 && triple.term.vaults[0]?.positions && triple.term.vaults[0].positions.length > 0
+        (triple) => triple.term?.vaults && triple.term.vaults.length > 0 && triple.term.vaults[0]?.positions && triple.term.vaults[0].positions.some(pos => BigInt(pos.shares || '0') > BigInt(0))
       )
 
       // Convert to FollowAccountVM immediately (without waiting for IPFS/ENS)
