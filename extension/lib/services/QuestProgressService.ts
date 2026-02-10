@@ -164,6 +164,10 @@ export class QuestProgressService {
     const hasCertificationToday = await questTrackingService.hasCertificationToday()
     const pulseStats = await questTrackingService.getPulseStats()
 
+    // Load Gold accumulation data for Gold quests (lifetime earned, not current balance)
+    const goldData = await this.loadGoldData(walletAddress)
+    const goldAccumulated = goldData.discoveryGold + goldData.certificationGold
+
     const progress: UserProgress = {
       signalsCreated,
       bookmarkListsCreated: localData.bookmarkListsCount,
@@ -186,6 +190,7 @@ export class QuestProgressService {
       contributorCount: localData.discoveryStats?.contributorCount || 0,
       totalDiscoveries: localData.discoveryStats?.totalCertifications || 0,
       uniqueIntentionTypes,
+      goldAccumulated,
     }
 
     // Save to cache

@@ -98,6 +98,8 @@ function computeQuestProgress(
       }
       if (questDef.id === 'intention-variety') return userProgress.uniqueIntentionTypes
       return 0
+    case 'gold':
+      return userProgress.goldAccumulated
     default:
       return 0
   }

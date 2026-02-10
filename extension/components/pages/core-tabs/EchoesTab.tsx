@@ -8,11 +8,13 @@ import { useIntentionGroups, SortOption } from '../../../hooks/useIntentionGroup
 import GroupBentoCard from '../../ui/GroupBentoCard'
 import GroupDetailView from '../../ui/GroupDetailView'
 import SofiaLoader from '../../ui/SofiaLoader'
+import { useGoldSystem } from '../../../hooks/useGoldSystem'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
 
 const EchoesTab = () => {
+  const { totalGold } = useGoldSystem()
   const {
     groups,
     selectedGroup,
@@ -130,6 +132,7 @@ const EchoesTab = () => {
       <div className="groups-section">
         <div className="groups-header">
           <span className="groups-count">{filteredGroups.length} domains</span>
+          <span className="groups-gold-badge">{totalGold} Gold</span>
           <div className="sort-buttons">
             {sortOptions.map(option => (
               <button

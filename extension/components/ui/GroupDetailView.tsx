@@ -15,6 +15,7 @@ import { useIntentionCertify } from '../../hooks/useIntentionCertify'
 import { useWeightOnChain } from '../../hooks/useWeightOnChain'
 import { useGroupOnChainCertifications, type UrlCertificationStatus } from '../../hooks/useGroupOnChainCertifications'
 import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
+import { useGoldSystem } from '../../hooks/useGoldSystem'
 import { useGroupAmplify } from '../../hooks/useGroupAmplify'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
@@ -257,6 +258,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     getUrlCertification,
     refetch: refetchOnChain
   } = useGroupOnChainCertifications(group.domain, activeUrls)
+
+  // Gold system hook (for displaying available Gold)
+  const { totalGold } = useGoldSystem()
 
   // Level up hook
   const {
@@ -785,6 +789,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             Need {xpToNextLevel} more certification{xpToNextLevel > 1 ? 's' : ''} to unlock
           </div>
         )}
+
+        <div className="group-gold-balance">{totalGold} Gold available</div>
       </div>
 
       {/* Weight Modal for on-chain certification */}
