@@ -2,16 +2,6 @@
 /* Uses AccountTab.css for shared styles (stats, sub-tabs, achievements, etc.) */
 /* Only page-specific overrides below */
 
-/* ========== PROFILE HEADER GLASS ========== */
-.profile-page .profile-header-container {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  margin: 0 8px;
-}
-
 /* ========== BACK BUTTON ========== */
 .user-profile-back-button {
   position: absolute;
