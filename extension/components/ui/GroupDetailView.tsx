@@ -12,7 +12,7 @@ import type { CertificationType } from '../../lib/services/GroupManager'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { useIntentionCertify } from '../../hooks/useIntentionCertify'
-import { useWeightOnChain } from '../../hooks/useWeightOnChain'
+import { useRedeemTriple } from '../../hooks/useRedeemTriple'
 import { useGroupOnChainCertifications, type UrlCertificationStatus } from '../../hooks/useGroupOnChainCertifications'
 import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
 import { useGroupAmplify } from '../../hooks/useGroupAmplify'
@@ -267,8 +267,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     reset: resetLevelUp
   } = useLevelUp()
 
-  // Weight hook (for redeem operations)
-  const { redeemAllPositions } = useWeightOnChain()
+  // Redeem hook (for removing on-chain positions)
+  const { redeemAllPositions } = useRedeemTriple()
 
   // Amplify hook (publish group identity on-chain)
   const {

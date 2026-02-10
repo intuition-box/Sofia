@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { useTrustCircle } from '../../../../hooks/useTrustCircle'
 import { useWeightOnChain } from '../../../../hooks/useWeightOnChain'
+import { useRedeemTriple } from '../../../../hooks/useRedeemTriple'
 import { useRouter } from '../../../layout/RouterProvider'
 import type { FollowAccountVM } from '../../../../types/follows'
 import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
@@ -21,12 +22,15 @@ interface TrustCirclePanelProps {
 export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
   const { accounts, loading, error, refetch } = useTrustCircle(walletAddress)
   const { addWeight, removeWeight } = useWeightOnChain()
+  const { redeemPosition } = useRedeemTriple()
   const { navigateTo } = useRouter()
 
   // Stake modal state
   const [selectedAccount, setSelectedAccount] = useState<FollowAccountVM | null>(null)
   const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
   const [isProcessingStake, setIsProcessingStake] = useState(false)
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
 
   // Load data on mount
   useEffect(() => {
@@ -48,6 +52,34 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
     setIsStakeModalOpen(false)
     setSelectedAccount(null)
     setIsProcessingStake(false)
+  }
+
+  const handleRemoveTrust = async (account: FollowAccountVM) => {
+    const confirmed = confirm(`Remove ${account.label} from trust circle? This will redeem your position.`)
+    if (!confirmed) return
+
+    setProcessingIds(prev => new Set(prev).add(account.tripleId))
+    try {
+      const result = await redeemPosition(account.tripleId)
+      if (!result.success) {
+        alert(`Remove failed: ${result.error}`)
+        return
+      }
+      // Optimistic: hide account immediately
+      setRemovedIds(prev => new Set(prev).add(account.tripleId))
+      // Background refetch for eventual consistency
+      refetchWithBackoff(refetch, {
+        initialDelay: 5000,
+        maxDelay: 10000,
+        maxAttempts: 3
+      })
+    } finally {
+      setProcessingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(account.tripleId)
+        return newSet
+      })
+    }
   }
 
   const handleStakeSubmit = async (amount: bigint, curveId: 1 | 2) => {
@@ -139,12 +171,12 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
 
       {!loading && !error && (
         <div className="followed-accounts">
-          {accounts.length === 0 ? (
+          {accounts.filter(a => !removedIds.has(a.tripleId)).length === 0 ? (
             <div className="empty-state">
               <p>No accounts in trust circle yet</p>
             </div>
           ) : (
-            accounts.map((account, index) => (
+            accounts.filter(a => !removedIds.has(a.tripleId)).map((account, index) => (
               <div
                 key={account.id}
                 className="followed-account-card"
@@ -164,6 +196,16 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
                     <UserAtomStats termId={account.termId} accountAddress={account.walletAddress} compact={true} />
                     <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
                   </div>
+                </div>
+                <div className="account-right" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    className="remove-btn"
+                    onClick={() => handleRemoveTrust(account)}
+                    disabled={processingIds.has(account.tripleId)}
+                    title="Remove from trust circle"
+                  >
+                    {processingIds.has(account.tripleId) ? '...' : '×'}
+                  </button>
                 </div>
               </div>
             ))
