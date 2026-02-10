@@ -10,6 +10,7 @@ import TrustAccountButton from '../ui/TrustAccountButton'
 import leftSideIcon from '../ui/icons/left side.svg'
 import rightSideIcon from '../ui/icons/right side.svg'
 import '../styles/UserProfile.css'
+import '../styles/ProfilePage.css'
 
 // Lazy load tabs (same pattern as ProfilePage)
 const UserInterestTab = lazy(() => import('./profile-tabs/UserInterestTab'))
@@ -48,9 +49,11 @@ const UserProfilePage = () => {
 
   if (!userProfileData) {
     return (
-      <div className="profile-section account-tab">
-        <div className="user-profile-error">
-          No user data available
+      <div className="page profile-page">
+        <div className="profile-section account-tab">
+          <div className="user-profile-error">
+            No user data available
+          </div>
         </div>
       </div>
     )
@@ -118,6 +121,7 @@ const UserProfilePage = () => {
   }
 
   return (
+    <div className="page profile-page">
     <div className="profile-section account-tab">
       {/* Back Button */}
       <button className="user-profile-back-button" onClick={goBack}>
@@ -182,29 +186,32 @@ const UserProfilePage = () => {
       </div>
 
       {/* Tab Content */}
-      <Suspense fallback={<div className="loading-state">Loading...</div>}>
-        {activeTab === 'interest' && (
-          <UserInterestTab walletAddress={userProfileData.walletAddress} />
-        )}
+      <div className="page-content">
+        <Suspense fallback={<div className="loading-state">Loading...</div>}>
+          {activeTab === 'interest' && (
+            <UserInterestTab walletAddress={userProfileData.walletAddress} />
+          )}
 
-        {activeTab === 'achievements' && (
-          <AchievementsTab
-            quests={completedQuests}
-            loading={questsLoading}
-            claimingQuestId={null}
-            isSocialVerified={false}
-            canVerify={false}
-            isVerifying={false}
-            onClaimXP={async () => ({ success: false })}
-            onVerifySocials={async () => ({ success: false })}
-            onMarkCompleted={() => {}}
-          />
-        )}
+          {activeTab === 'achievements' && (
+            <AchievementsTab
+              quests={completedQuests}
+              loading={questsLoading}
+              claimingQuestId={null}
+              isSocialVerified={false}
+              canVerify={false}
+              isVerifying={false}
+              onClaimXP={async () => ({ success: false })}
+              onVerifySocials={async () => ({ success: false })}
+              onMarkCompleted={() => {}}
+            />
+          )}
 
-        {activeTab === 'community' && (
-          <CommunityTab walletAddress={userProfileData.walletAddress} />
-        )}
-      </Suspense>
+          {activeTab === 'community' && (
+            <CommunityTab walletAddress={userProfileData.walletAddress} />
+          )}
+        </Suspense>
+      </div>
+    </div>
     </div>
   )
 }
