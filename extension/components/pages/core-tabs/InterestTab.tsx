@@ -4,7 +4,7 @@
  * XP and levels are calculated locally from verifiable on-chain data
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage';
 import { useInterestAnalysis } from '../../../hooks/useInterestAnalysis';
 import InterestCard from '../../ui/InterestCard';
@@ -12,7 +12,7 @@ import SofiaLoader from '../../ui/SofiaLoader';
 import xIcon from '../../ui/social/x.svg';
 import '../../styles/InterestTab.css';
 
-const OG_BASE_URL = 'https://sofia-og.vercel.app';
+const OG_BASE_URL = 'https://sofia-card.vercel.app';
 
 interface InterestTabProps {
   level?: number;
@@ -23,6 +23,7 @@ interface InterestTabProps {
 
 const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explorerCount }: InterestTabProps) => {
   const { walletAddress } = useWalletFromStorage();
+  const [isSharing, setIsSharing] = useState(false);
   const {
     interests,
     summary,
@@ -64,28 +65,39 @@ const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explore
     }
   };
 
-  const handleShareOnX = () => {
-    if (!walletAddress || interests.length === 0) return;
+  const handleShareOnX = async () => {
+    if (!walletAddress || interests.length === 0 || isSharing) return;
 
-    const interestsParam = interests
-      .slice(0, 8)
-      .map((i) => `${i.name}:${i.level}`)
-      .join(',');
+    setIsSharing(true);
+    try {
+      const interestsParam = interests
+        .slice(0, 8)
+        .map((i) => `${i.name}:${i.level}`)
+        .join(',');
 
-    const ogParams = new URLSearchParams({
-      wallet: walletAddress,
-      level: String(userLevel || 1),
-      trustCircle: String(trustCircleCount || 0),
-      pioneer: String(pioneerCount || 0),
-      explorer: String(explorerCount || 0),
-      interests: interestsParam,
-    });
+      const res = await fetch(`${OG_BASE_URL}/api/share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          wallet: walletAddress,
+          level: String(userLevel || 1),
+          trustCircle: String(trustCircleCount || 0),
+          pioneer: String(pioneerCount || 0),
+          explorer: String(explorerCount || 0),
+          interests: interestsParam,
+        }),
+      });
 
-    const shareUrl = `${OG_BASE_URL}/profile?${ogParams.toString()}`;
-    const tweetText = `Check out my Sofia profile!`;
-    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
+      const { url: shareUrl } = await res.json();
+      const tweetText = `Check out my Sofia profile!`;
+      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
 
-    window.open(intentUrl, '_blank');
+      window.open(intentUrl, '_blank');
+    } catch (err) {
+      console.error('Failed to create share link:', err);
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   // Loading state
@@ -183,9 +195,10 @@ const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explore
         <button
           className="interest-share-btn"
           onClick={handleShareOnX}
+          disabled={isSharing}
         >
           <img src={xIcon} alt="X" className="interest-share-icon" />
-          Share on X
+          {isSharing ? 'Sharing...' : 'Share on X'}
         </button>
         <button
           className="interest-analyze-btn"

@@ -56,7 +56,7 @@ const AccountTab = () => {
   const { quests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
 
   // Trust circle hook
-  const { accounts: trustCircleAccounts } = useTrustCircle(walletAddress)
+  const { accounts: trustCircleAccounts, refetch: fetchTrustCircle } = useTrustCircle(walletAddress)
 
   // Discovery stats hook (pioneer, explorer, certified counts)
   const { stats: discoveryStats } = useDiscoveryScore()
@@ -121,6 +121,13 @@ const AccountTab = () => {
   useEffect(() => {
     loadUserStats()
   }, [loadUserStats])
+
+  // Fetch trust circle on mount
+  useEffect(() => {
+    if (walletAddress) {
+      fetchTrustCircle()
+    }
+  }, [walletAddress, fetchTrustCircle])
 
   // Combined refresh: quests + stats
   const handleFullRefresh = useCallback(async () => {
