@@ -15,6 +15,7 @@ import { useSyncExternalStore } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import type { IntentionPurpose, UserDiscoveryStats } from '../types/discovery'
 import { DISCOVERY_GOLD_REWARDS } from '../types/discovery'
+import { goldService } from '../lib/services/GoldService'
 import { createHookLogger } from '../lib/utils/logger'
 import {
   UserIntentionTriplesDocument,
@@ -261,7 +262,17 @@ async function fetchDiscoveryScore(walletAddress: string) {
       }
     }
 
-    updateState({ stats: discoveryStats, loading: false })
+    // Sync computed discovery Gold total to storage so useGoldSystem reflects reality.
+    // Only update if on-chain total >= stored value to preserve optimistic claims
+    // (the indexer may not have processed the latest certification yet).
+    const computedTotal = discoveryStats.discoveryGold.total
+    const storedGold = sharedState.claimedDiscoveryGold
+    if (computedTotal >= storedGold) {
+      await goldService.setDiscoveryGold(walletAddress, computedTotal)
+      updateState({ stats: discoveryStats, loading: false, claimedDiscoveryGold: computedTotal })
+    } else {
+      updateState({ stats: discoveryStats, loading: false })
+    }
 
     logger.info('Discovery score calculated', {
       pioneerCount,

@@ -131,7 +131,6 @@ const EchoesTab = () => {
     <div className="triples-container">
       <div className="groups-section">
         <div className="groups-header">
-          <span className="groups-count">{filteredGroups.length} domains</span>
           <span className="groups-gold-badge">{totalGold} Gold</span>
           <div className="sort-buttons">
             {sortOptions.map(option => (
