@@ -55,6 +55,10 @@ const SettingsPage = () => {
         key.startsWith('claimed_discovery_xp') ||
         key.startsWith('group_certification_xp') ||
         key.startsWith('spent_xp') ||
+        key.startsWith('discovery_gold') ||
+        key.startsWith('certification_gold') ||
+        key.startsWith('spent_gold') ||
+        key.startsWith('currency_migration_v1') ||
         key.startsWith('quest_progress_') ||
         key.startsWith('social_attestation') ||
         key === 'lastActiveWallet'

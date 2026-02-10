@@ -1,6 +1,12 @@
 /**
  * useLevelUp Hook
- * Handles group level-up with AI predicate generation
+ *
+ * Handles group level-up with AI predicate generation.
+ * Level-ups cost Gold (not XP).
+ *
+ * Related files:
+ * - LevelUpService.ts: backend logic for level-ups
+ * - GoldService.ts: Gold balance and spending
  */
 
 import { useState, useCallback } from 'react'
@@ -11,7 +17,7 @@ const logger = createHookLogger('useLevelUp')
 export interface LevelUpPreview {
   canLevelUp: boolean
   cost: number
-  availableXP: number
+  availableGold: number
   currentLevel: number
   nextLevel: number
 }
@@ -26,7 +32,7 @@ export interface LevelUpResult {
   previousPredicate?: string | null
   newPredicate?: string
   predicateReason?: string
-  xpSpent?: number
+  goldSpent?: number
 }
 
 export interface UseLevelUpResult {
@@ -39,7 +45,7 @@ export interface UseLevelUpResult {
 }
 
 /**
- * Hook for handling group level-ups
+ * Hook for handling group level-ups (costs Gold).
  */
 export const useLevelUp = (): UseLevelUpResult => {
   const [loading, setLoading] = useState(false)
@@ -47,7 +53,7 @@ export const useLevelUp = (): UseLevelUpResult => {
   const [result, setResult] = useState<LevelUpResult | null>(null)
 
   /**
-   * Preview a level up (check cost and availability)
+   * Preview a level up (check cost and Gold availability).
    */
   const preview = useCallback(async (groupId: string): Promise<LevelUpPreview | null> => {
     try {
@@ -62,7 +68,7 @@ export const useLevelUp = (): UseLevelUpResult => {
         return {
           canLevelUp: response.canLevelUp,
           cost: response.cost,
-          availableXP: response.availableXP,
+          availableGold: response.availableGold,
           currentLevel: response.currentLevel,
           nextLevel: response.nextLevel
         }
@@ -77,9 +83,7 @@ export const useLevelUp = (): UseLevelUpResult => {
   }, [])
 
   /**
-   * Execute a level up
-   * @param groupId - The group ID
-   * @param certificationBreakdown - Optional certification breakdown for virtual groups
+   * Execute a level up (spends Gold).
    */
   const levelUp = useCallback(async (groupId: string, certificationBreakdown?: Record<string, number>): Promise<LevelUpResult> => {
     setLoading(true)
@@ -102,7 +106,7 @@ export const useLevelUp = (): UseLevelUpResult => {
           previousPredicate: response.previousPredicate,
           newPredicate: response.newPredicate,
           predicateReason: response.predicateReason,
-          xpSpent: response.xpSpent
+          goldSpent: response.goldSpent
         }
 
         setResult(levelUpResult)
@@ -138,7 +142,7 @@ export const useLevelUp = (): UseLevelUpResult => {
   }, [])
 
   /**
-   * Reset the hook state
+   * Reset the hook state.
    */
   const reset = useCallback(() => {
     setLoading(false)

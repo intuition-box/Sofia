@@ -4,7 +4,7 @@
  */
 
 import { useDiscoveryScore } from '../../../hooks/useDiscoveryScore'
-import { DISCOVERY_XP_REWARDS, INTENTION_LABELS, type IntentionPurpose } from '../../../types/discovery'
+import { DISCOVERY_GOLD_REWARDS, INTENTION_LABELS, type IntentionPurpose } from '../../../types/discovery'
 import pioneerBadge from '../../ui/img/badges/pioneer.png'
 import explorerBadge from '../../ui/img/badges/explorer.png'
 import contributorBadge from '../../ui/img/badges/contributor.png'
@@ -52,7 +52,7 @@ const StatsTab = () => {
         <div className="stats-empty">
           <div className="empty-icon">🔍</div>
           <h3>No discoveries yet</h3>
-          <p>Start exploring and certifying pages to earn discovery XP!</p>
+          <p>Start exploring and certifying pages to earn discovery Gold!</p>
         </div>
       </div>
     )
@@ -121,9 +121,9 @@ const StatsTab = () => {
       <div className="discovery-mechanism-panel">
         <h3 className="mechanism-title">Discovery Mechanism</h3>
         <div className="mechanism-content">
-          <p>Be the <span className="highlight-pioneer">1st</span> to certify a page = <strong>Pioneer</strong> (+{DISCOVERY_XP_REWARDS.PIONEER} XP)</p>
-          <p>Be among <span className="highlight-explorer">2-10th</span> = <strong>Explorer</strong> (+{DISCOVERY_XP_REWARDS.EXPLORER} XP)</p>
-          <p>Be <span className="highlight-contributor">11th+</span> = <strong>Contributor</strong> (+{DISCOVERY_XP_REWARDS.CONTRIBUTOR} XP)</p>
+          <p>Be the <span className="highlight-pioneer">1st</span> to certify a page = <strong>Pioneer</strong> (+{DISCOVERY_GOLD_REWARDS.PIONEER} Gold)</p>
+          <p>Be among <span className="highlight-explorer">2-10th</span> = <strong>Explorer</strong> (+{DISCOVERY_GOLD_REWARDS.EXPLORER} Gold)</p>
+          <p>Be <span className="highlight-contributor">11th+</span> = <strong>Contributor</strong> (+{DISCOVERY_GOLD_REWARDS.CONTRIBUTOR} Gold)</p>
         </div>
       </div>
     </div>

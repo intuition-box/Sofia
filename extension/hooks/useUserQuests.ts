@@ -12,6 +12,7 @@ import { mainnet } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { QuestBadgeService } from '../lib/services/QuestBadgeService'
 import { QUEST_DEFINITIONS, type Quest } from '../types/questTypes'
+import { calculateLevelFromXP } from '../lib/utils/questStatusHelpers'
 
 interface UserQuestsResult {
   completedQuests: Quest[]
@@ -20,21 +21,6 @@ interface UserQuestsResult {
   signalsCreated: number
   loading: boolean
   error?: string
-}
-
-// XP calculation: Level N requires 100 * N XP
-const calculateLevelFromXP = (xp: number): number => {
-  let level = 1
-  let xpRequired = 100
-  let totalXpUsed = 0
-
-  while (totalXpUsed + xpRequired <= xp) {
-    totalXpUsed += xpRequired
-    level++
-    xpRequired = 100 * level
-  }
-
-  return level
 }
 
 export const useUserQuests = (walletAddress?: string): UserQuestsResult => {

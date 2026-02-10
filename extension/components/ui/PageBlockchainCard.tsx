@@ -61,7 +61,7 @@ const PageBlockchainCard = () => {
     maxIntentionCount,
     loading: intentionStatsLoading
   } = usePageIntentionStats(currentUrl)
-  const { claimDiscoveryXP } = useDiscoveryScore()
+  const { claimDiscoveryGold } = useDiscoveryScore()
   const [showDetails, setShowDetails] = useState(false)
 
   // Local state for Trust button UI
@@ -93,10 +93,10 @@ const PageBlockchainCard = () => {
 
   // Celebration animation state
   const [showCelebration, setShowCelebration] = useState(false)
-  const [xpEarned, setXpEarned] = useState<number | null>(null)
+  const [goldEarned, setGoldEarned] = useState<number | null>(null)
 
   // Discovery reward state for modal
-  const [discoveryReward, setDiscoveryReward] = useState<{ status: 'Pioneer' | 'Explorer' | 'Contributor', xp: number } | null>(null)
+  const [discoveryReward, setDiscoveryReward] = useState<{ status: 'Pioneer' | 'Explorer' | 'Contributor', gold: number } | null>(null)
   const [rewardClaimed, setRewardClaimed] = useState(false)
 
   // Sync hook states to local states - wait for loading to finish before updating
@@ -221,21 +221,21 @@ const PageBlockchainCard = () => {
         await refetchDiscovery()
 
         // Determine discovery reward based on total certifications on this page
-        // Every transaction gives XP - amount depends on how many people certified before
+        // Every transaction gives Gold - amount depends on how many people certified before
         if (prevTotal === 0) {
-          setDiscoveryReward({ status: 'Pioneer', xp: 50 })
-          setXpEarned(50)
+          setDiscoveryReward({ status: 'Pioneer', gold: 50 })
+          setGoldEarned(50)
         } else if (prevTotal < 10) {
-          setDiscoveryReward({ status: 'Explorer', xp: 20 })
-          setXpEarned(20)
+          setDiscoveryReward({ status: 'Explorer', gold: 20 })
+          setGoldEarned(20)
         } else {
-          setDiscoveryReward({ status: 'Contributor', xp: 5 })
-          setXpEarned(5)
+          setDiscoveryReward({ status: 'Contributor', gold: 5 })
+          setGoldEarned(5)
         }
         setShowCelebration(true)
         setTimeout(() => {
           setShowCelebration(false)
-          setXpEarned(null)
+          setGoldEarned(null)
         }, DELAYS.CELEBRATION_DURATION)
 
         setTimeout(() => fetchDataForCurrentPage(), DELAYS.REFRESH_AFTER_TX)
@@ -278,21 +278,21 @@ const PageBlockchainCard = () => {
       await refetchDiscovery()
 
       // Determine discovery reward based on total certifications
-      // Every transaction gives XP - amount depends on how many people certified before
+      // Every transaction gives Gold - amount depends on how many people certified before
       if (prevTotal === 0) {
-        setDiscoveryReward({ status: 'Pioneer', xp: 50 })
-        setXpEarned(50)
+        setDiscoveryReward({ status: 'Pioneer', gold: 50 })
+        setGoldEarned(50)
       } else if (prevTotal < 10) {
-        setDiscoveryReward({ status: 'Explorer', xp: 20 })
-        setXpEarned(20)
+        setDiscoveryReward({ status: 'Explorer', gold: 20 })
+        setGoldEarned(20)
       } else {
-        setDiscoveryReward({ status: 'Contributor', xp: 5 })
-        setXpEarned(5)
+        setDiscoveryReward({ status: 'Contributor', gold: 5 })
+        setGoldEarned(5)
       }
       setShowCelebration(true)
       setTimeout(() => {
         setShowCelebration(false)
-        setXpEarned(null)
+        setGoldEarned(null)
       }, DELAYS.CELEBRATION_DURATION)
 
       // Refresh blockchain data to show new triple
@@ -329,13 +329,13 @@ const PageBlockchainCard = () => {
     setRewardClaimed(false)
   }
 
-  // Handle claiming discovery XP reward
+  // Handle claiming discovery Gold reward
   const handleClaimReward = async () => {
     if (!discoveryReward) return
     try {
-      await claimDiscoveryXP(discoveryReward.xp)
+      await claimDiscoveryGold(discoveryReward.gold)
       setRewardClaimed(true)
-      console.log('✅ PageBlockchainCard - Discovery XP claimed:', discoveryReward.xp)
+      console.log('✅ PageBlockchainCard - Discovery Gold claimed:', discoveryReward.gold)
     } catch (error) {
       console.error('❌ PageBlockchainCard - Failed to claim reward:', error)
     }
