@@ -30,6 +30,7 @@
   color: #e5e7eb;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
+  font-family: Gotu, cursive;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -73,14 +74,14 @@
 }
 
 .interest-summary {
-  background: rgba(199, 134, 108, 0.1);
+  background: #fbf9eb;
   border: 1px solid rgba(199, 134, 108, 0.2);
   border-radius: 12px;
   padding: 12px 16px;
 }
 
 .interest-summary-text {
-  color: var(--text-secondary, #aaa);
+  color: #000418;
   font-size: 14px;
   line-height: 1.5;
   margin: 0;
@@ -146,20 +147,37 @@
 }
 
 .interest-gauge-svg {
-  width: 100px;
-  height: 52px;
+  width: 130px;
+  height: 70px;
 }
 
-/* Level badge (pill shape below gauge) */
+/* Level badge (hexagonal SVG shape overlapping gauge) */
 .interest-level-badge {
-  display: inline-block;
-  padding: 4px 14px;
-  border-radius: 6px;
-  font-size: 11px;
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.interest-level-badge-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.interest-level-badge-text {
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
   font-weight: 700;
   color: #fff;
-  margin-top: -6px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 /* XP progress row */
@@ -201,79 +219,20 @@
   white-space: nowrap;
 }
 
-/* Stats headers row */
-.interest-stats-header {
+/* Domain favicons row */
+.interest-domains-row {
   display: flex;
-  justify-content: space-between;
-  padding-bottom: 6px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.interest-stats-header span {
-  font-size: 10px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.02em;
-}
-
-/* Two-column details: certs left, domains right */
-.interest-details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   margin-bottom: 10px;
   flex: 1;
 }
 
-.interest-details-left,
-.interest-details-right {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-/* Cert type rows */
-.interest-cert-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.interest-cert-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.interest-cert-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.65);
-  text-transform: capitalize;
-}
-
-/* Domain rows */
-.interest-domain-row {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
 .interest-domain-icon {
-  width: 13px;
-  height: 13px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-.interest-domain-text {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.55);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 90px;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
 }
 
 .interest-domain-more {

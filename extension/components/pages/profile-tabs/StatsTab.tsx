@@ -8,6 +8,7 @@ import { DISCOVERY_XP_REWARDS, INTENTION_LABELS, type IntentionPurpose } from '.
 import pioneerBadge from '../../ui/img/badges/pioneer.png'
 import explorerBadge from '../../ui/img/badges/explorer.png'
 import contributorBadge from '../../ui/img/badges/contributor.png'
+import trustBadge from '../../ui/img/badges/trust.png'
 
 const INTENTION_GRADIENTS: Record<IntentionPurpose, string> = {
   for_work: 'linear-gradient(90deg, #1E40AF, #60A5FA)',
@@ -17,7 +18,20 @@ const INTENTION_GRADIENTS: Record<IntentionPurpose, string> = {
   for_buying: 'linear-gradient(90deg,rgb(153, 84, 27), #F87171)'
 }
 
-const StatsTab = () => {
+interface StatsTabProps {
+  trustedByCount?: number;
+  level?: number;
+  totalXP?: number;
+  signalsCreated?: number;
+}
+
+const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }: StatsTabProps) => {
+  // XP progress calculation
+  // Cumulative XP to reach current level = 100 * level*(level-1)/2
+  const xpAtCurrentLevel = 100 * level * (level - 1) / 2
+  const xpNeededForNext = 100 * level
+  const currentProgress = totalXP - xpAtCurrentLevel
+  const progressPercent = Math.min((currentProgress / xpNeededForNext) * 100, 100)
   const { stats, loading, error, refetch } = useDiscoveryScore()
 
   const maxIntention = stats
@@ -29,7 +43,7 @@ const StatsTab = () => {
       <div className="stats-tab-content">
         <div className="stats-loading">
           <div className="loading-spinner"></div>
-          <span>Loading discovery stats...</span>
+          <span>Loading stats...</span>
         </div>
       </div>
     )
@@ -90,6 +104,33 @@ const StatsTab = () => {
             <span className="badge-label">Contributor</span>
             <span className="badge-count">{stats.contributorCount}</span>
           </div>
+
+          <div className="discovery-badge-item">
+            <div className="badge-icon-wrapper">
+              <img src={trustBadge} alt="Trusted" className="badge-img" />
+            </div>
+            <span className="badge-label">Trusted</span>
+            <span className="badge-count">{trustedByCount ?? 0}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* XP Progress Bar */}
+      <div className="xp-progress-section">
+        <div className="xp-progress-labels">
+          <span className="xp-level-pill">Level {level}</span>
+          <span className="xp-progress-text">{currentProgress} / {xpNeededForNext} XP</span>
+          <span className="xp-level-pill">Level {level + 1}</span>
+        </div>
+        <div className="xp-progress-track">
+          <div
+            className="xp-progress-fill"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <div className="xp-signals-count">
+          <span className="xp-signals-value">{signalsCreated}</span>
+          <span className="xp-signals-label">Signals</span>
         </div>
       </div>
 

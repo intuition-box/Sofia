@@ -88,10 +88,7 @@
 
 /* Profile Section Styles */
 .profile-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  gap: none;
 }
 
 .profile-photo-container {
