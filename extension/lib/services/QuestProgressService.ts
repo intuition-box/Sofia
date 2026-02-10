@@ -35,28 +35,29 @@ export interface LocalProgressData {
 
 export class QuestProgressService {
   /**
-   * Load XP data from storage
+   * Load Gold data from storage.
+   * Gold = discovery + certification - spent (private, used for level-ups).
    */
-  static async loadXPData(walletAddress: string): Promise<{
-    claimedDiscoveryXP: number
-    groupCertificationXP: number
-    spentXP: number
+  static async loadGoldData(walletAddress: string): Promise<{
+    discoveryGold: number
+    certificationGold: number
+    spentGold: number
   }> {
     try {
       const normalized = walletAddress.toLowerCase()
-      const claimedKey = getWalletKey('claimed_discovery_xp', normalized)
-      const groupKey = getWalletKey('group_certification_xp', normalized)
-      const spentKey = getWalletKey('spent_xp', normalized)
+      const discoveryKey = getWalletKey('discovery_gold', normalized)
+      const certKey = getWalletKey('certification_gold', normalized)
+      const spentKey = getWalletKey('spent_gold', normalized)
 
-      const result = await chrome.storage.local.get([claimedKey, groupKey, spentKey])
+      const result = await chrome.storage.local.get([discoveryKey, certKey, spentKey])
       return {
-        claimedDiscoveryXP: result[claimedKey] || 0,
-        groupCertificationXP: result[groupKey] || 0,
-        spentXP: result[spentKey] || 0
+        discoveryGold: result[discoveryKey] || 0,
+        certificationGold: result[certKey] || 0,
+        spentGold: result[spentKey] || 0
       }
     } catch (err) {
-      console.error('❌ [QuestProgressService] Failed to load XP data:', err)
-      return { claimedDiscoveryXP: 0, groupCertificationXP: 0, spentXP: 0 }
+      console.error('❌ [QuestProgressService] Failed to load Gold data:', err)
+      return { discoveryGold: 0, certificationGold: 0, spentGold: 0 }
     }
   }
 
@@ -163,6 +164,10 @@ export class QuestProgressService {
     const hasCertificationToday = await questTrackingService.hasCertificationToday()
     const pulseStats = await questTrackingService.getPulseStats()
 
+    // Load Gold accumulation data for Gold quests (lifetime earned, not current balance)
+    const goldData = await this.loadGoldData(walletAddress)
+    const goldAccumulated = goldData.discoveryGold + goldData.certificationGold
+
     const progress: UserProgress = {
       signalsCreated,
       bookmarkListsCreated: localData.bookmarkListsCount,
@@ -185,6 +190,7 @@ export class QuestProgressService {
       contributorCount: localData.discoveryStats?.contributorCount || 0,
       totalDiscoveries: localData.discoveryStats?.totalCertifications || 0,
       uniqueIntentionTypes,
+      goldAccumulated,
     }
 
     // Save to cache

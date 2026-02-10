@@ -16,7 +16,7 @@ export interface Quest {
   status: 'locked' | 'active' | 'completed' | 'claimable_xp'
   statusColor: string
   xpReward: number
-  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social' | 'social-link' | 'discovery'
+  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social' | 'social-link' | 'discovery' | 'gold'
   milestone?: number
   claimable?: boolean
   recurringType?: 'daily' | 'weekly'
@@ -49,6 +49,7 @@ export interface UserProgress {
   contributorCount: number
   totalDiscoveries: number
   uniqueIntentionTypes: number
+  goldAccumulated: number
 }
 
 // Quest system result (hook return type)
@@ -143,6 +144,13 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   { id: 'discovery-50', title: 'Cartographer', description: 'Certify 50 pages', total: 50, xpReward: 300, type: 'discovery', milestone: 50 },
   { id: 'discovery-100', title: 'World Explorer', description: 'Certify 100 pages', total: 100, xpReward: 500, type: 'discovery', milestone: 100 },
   { id: 'intention-variety', title: 'Multi-Purpose', description: 'Use all 5 intention types', total: 5, xpReward: 150, type: 'discovery', milestone: 5 },
+
+  // Gold accumulation quests
+  { id: 'gold-100', title: 'Gold Digger', description: 'Accumulate 100 Gold', total: 100, xpReward: 100, type: 'gold', milestone: 100 },
+  { id: 'gold-500', title: 'Treasurer', description: 'Accumulate 500 Gold', total: 500, xpReward: 300, type: 'gold', milestone: 500 },
+  { id: 'gold-1000', title: 'Midas Touch', description: 'Accumulate 1,000 Gold', total: 1000, xpReward: 500, type: 'gold', milestone: 1000 },
+  { id: 'gold-5000', title: 'Gold Reserve', description: 'Accumulate 5,000 Gold', total: 5000, xpReward: 1000, type: 'gold', milestone: 5000 },
+  { id: 'gold-10000', title: 'Fort Knox', description: 'Accumulate 10,000 Gold', total: 10000, xpReward: 2500, type: 'gold', milestone: 10000 },
 ]
 
 // Build QUEST_XP_REWARDS map from definitions (single source of truth)

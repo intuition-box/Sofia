@@ -22,7 +22,7 @@ interface EchoTriplet {
 
 interface DiscoveryReward {
   status: 'Pioneer' | 'Explorer' | 'Contributor'
-  xp: number
+  gold: number
 }
 
 interface WeightModalProps {
@@ -293,7 +293,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 <div className="discovery-reward-section">
                   <div className="reward-badge">
                     <span className="reward-status">{discoveryReward.status}</span>
-                    <span className="reward-xp">+{discoveryReward.xp} XP</span>
+                    <span className="reward-xp">+{discoveryReward.gold} Gold</span>
                   </div>
                   <button
                     className="claim-reward-btn"
@@ -308,7 +308,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               {rewardClaimed && (
                 <div className="reward-claimed-section">
                   <span className="reward-claimed-icon">✓</span>
-                  <span className="reward-claimed-text">+{discoveryReward?.xp} XP Claimed!</span>
+                  <span className="reward-claimed-text">+{discoveryReward?.gold} Gold Claimed!</span>
                 </div>
               )}
             </div>

@@ -6,7 +6,7 @@
 
 import { IntentionGroupsService } from '../database/indexedDB-methods'
 import type { IntentionGroupRecord, GroupUrlRecord, PredicateChangeRecord } from '../database/indexedDB'
-import { xpService } from './XPService'
+import { goldService } from './GoldService'
 import type { DomainCluster, TrackedUrl } from './SessionTracker'
 
 // Certification types
@@ -14,7 +14,7 @@ export type CertificationType = 'work' | 'learning' | 'fun' | 'inspiration' | 'b
 
 export interface CertifyResult {
   success: boolean
-  xpGained: number
+  goldGained: number
   error?: string
 }
 
@@ -141,26 +141,26 @@ class GroupManagerService {
   }
 
   /**
-   * Certify a URL in a group
-   * User gains +10 XP per certification
+   * Certify a URL in a group.
+   * User gains +10 Gold per certification.
    */
   async certifyUrl(groupId: string, url: string, certification: CertificationType): Promise<CertifyResult> {
     const group = await IntentionGroupsService.getGroup(groupId)
     if (!group) {
-      return { success: false, xpGained: 0, error: 'Group not found' }
+      return { success: false, goldGained: 0, error: 'Group not found' }
     }
 
     const urlRecord = group.urls.find(u => u.url === url)
     if (!urlRecord) {
-      return { success: false, xpGained: 0, error: 'URL not found in group' }
+      return { success: false, goldGained: 0, error: 'URL not found in group' }
     }
 
     if (urlRecord.certification) {
-      return { success: false, xpGained: 0, error: 'URL already certified' }
+      return { success: false, goldGained: 0, error: 'URL already certified' }
     }
 
     if (urlRecord.removed) {
-      return { success: false, xpGained: 0, error: 'URL has been removed' }
+      return { success: false, goldGained: 0, error: 'URL has been removed' }
     }
 
     // Apply certification
@@ -185,13 +185,13 @@ class GroupManagerService {
 
     await IntentionGroupsService.saveGroup(group)
 
-    // Add XP
+    // Add Gold
     const wallet = await this.getActiveWallet()
-    const xpGained = await xpService.addCertificationXP(wallet)
+    const goldGained = await goldService.addCertificationGold(wallet)
 
-    console.log(`✅ [GroupManager] Certified URL as ${certification} in ${groupId} (+${xpGained} XP)`)
+    console.log(`✅ [GroupManager] Certified URL as ${certification} in ${groupId} (+${goldGained} Gold)`)
 
-    return { success: true, xpGained }
+    return { success: true, goldGained }
   }
 
   /**

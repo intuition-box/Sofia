@@ -43,6 +43,7 @@ query GetTrustCirclePositions(
       accounts {
         id
         label
+        image
       }
     }
     term {
@@ -94,6 +95,7 @@ query GetTrustCircleAccounts(
       accounts {
         id
         label
+        image
       }
     }
     term {

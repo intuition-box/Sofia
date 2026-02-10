@@ -1,6 +1,9 @@
 /**
  * useQuestSystem Hook
- * Manages user quests, progression, XP, and levels based on real user data
+ *
+ * Manages user quests, progression, XP (quest-only), and levels.
+ * XP is derived exclusively from claimed quest badges (on-chain).
+ * Gold (discovery + certification) is managed separately by useGoldSystem.
  *
  * Orchestrates:
  * - QuestBadgeService: on-chain badge checking, claiming, social link verification
@@ -44,8 +47,8 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
   const discoveryData = useDiscoveryScore()
 
   const { lists, triplets } = isReadOnlyMode ? { lists: [], triplets: [] } : bookmarksData
-  const { stats: discoveryStats, claimDiscoveryXP } = isReadOnlyMode
-    ? { stats: undefined, claimDiscoveryXP: async () => 0 }
+  const { stats: discoveryStats } = isReadOnlyMode
+    ? { stats: undefined }
     : discoveryData
 
   // React state
@@ -68,44 +71,9 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
   const [claimedQuestIds, setClaimedQuestIds] = useState<Set<string>>(new Set())
   const [claimingQuestId, setClaimingQuestId] = useState<string | null>(null)
   const [onChainSyncDone, setOnChainSyncDone] = useState(false)
-  const [claimedDiscoveryXP, setClaimedDiscoveryXP] = useState(0)
-  const [groupCertificationXP, setGroupCertificationXP] = useState(0)
-  const [spentXP, setSpentXP] = useState(0)
 
   // Get atom creation functions
   const { pinAtomToIPFS, createAtomsFromPinned, ensureProxyApproval } = useCreateAtom()
-
-  // ─── XP loading + storage listener ───
-  useEffect(() => {
-    if (isReadOnlyMode) return
-
-    if (!walletAddress) {
-      setClaimedDiscoveryXP(0)
-      setGroupCertificationXP(0)
-      setSpentXP(0)
-      return
-    }
-
-    QuestProgressService.loadXPData(walletAddress).then(data => {
-      setClaimedDiscoveryXP(data.claimedDiscoveryXP)
-      setGroupCertificationXP(data.groupCertificationXP)
-      setSpentXP(data.spentXP)
-    })
-
-    // Listen for storage changes to XP values (lowercase for consistency)
-    const normalized = walletAddress.toLowerCase()
-    const claimedKey = getWalletKey('claimed_discovery_xp', normalized)
-    const groupKey = getWalletKey('group_certification_xp', normalized)
-    const spentKey = getWalletKey('spent_xp', normalized)
-
-    const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      if (changes[claimedKey]) setClaimedDiscoveryXP(changes[claimedKey].newValue || 0)
-      if (changes[groupKey]) setGroupCertificationXP(changes[groupKey].newValue || 0)
-      if (changes[spentKey]) setSpentXP(changes[spentKey].newValue || 0)
-    }
-    chrome.storage.onChanged.addListener(listener)
-    return () => chrome.storage.onChanged.removeListener(listener)
-  }, [walletAddress, isReadOnlyMode])
 
   // ─── Reset on-chain sync on wallet change ───
   useEffect(() => {
@@ -165,7 +133,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     loadAndSync()
   }, [walletAddress, onChainSyncDone, isReadOnlyMode])
 
-  // ─── Refresh progress data + on-chain sync + XP data ───
+  // ─── Refresh progress data + on-chain sync ───
   const refreshQuests = async () => {
     if (!walletAddress) {
       setLoading(false)
@@ -176,28 +144,13 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
       setLoading(true)
       setError(null)
 
-      // Fetch progress and XP data in parallel
-      const [newProgress, xpData] = await Promise.all([
-        QuestProgressService.fetchProgress(walletAddress, {
-          bookmarkListsCount: lists.length,
-          bookmarkedSignalsCount: triplets.length,
-          discoveryStats,
-        }),
-        QuestProgressService.loadXPData(walletAddress),
-      ])
+      const newProgress = await QuestProgressService.fetchProgress(walletAddress, {
+        bookmarkListsCount: lists.length,
+        bookmarkedSignalsCount: triplets.length,
+        discoveryStats,
+      })
 
       setUserProgress(newProgress)
-      setGroupCertificationXP(xpData.groupCertificationXP)
-      setSpentXP(xpData.spentXP)
-
-      // Auto-recovery: if storage has 0 discovery XP but we have discoveries, recalculate
-      if (xpData.claimedDiscoveryXP === 0 && discoveryStats?.discoveryXP?.total && discoveryStats.discoveryXP.total > 0) {
-        console.log(`🔄 [QuestSystem] Auto-recovering discovery XP: ${discoveryStats.discoveryXP.total}`)
-        const recovered = await claimDiscoveryXP(discoveryStats.discoveryXP.total)
-        setClaimedDiscoveryXP(recovered)
-      } else {
-        setClaimedDiscoveryXP(xpData.claimedDiscoveryXP)
-      }
 
       // Re-sync on-chain badges (triggers useEffect via onChainSyncDone)
       setOnChainSyncDone(false)
@@ -263,13 +216,12 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
   const claimableQuests = useMemo(() => quests.filter(q => q.status === 'claimable_xp'), [quests])
   const completedQuests = useMemo(() => quests.filter(q => q.status === 'completed'), [quests])
 
-  // ─── XP and level calculation ───
+  // ─── XP and level calculation (quest-only, no Gold) ───
   const totalXP = useMemo(() => {
-    const questXP = quests
+    return quests
       .filter(quest => claimedQuestIds.has(quest.id))
       .reduce((sum, quest) => sum + quest.xpReward, 0)
-    return questXP + claimedDiscoveryXP + groupCertificationXP - spentXP
-  }, [quests, claimedQuestIds, claimedDiscoveryXP, groupCertificationXP, spentXP])
+  }, [quests, claimedQuestIds])
 
   const level = useMemo(() => calculateLevelFromXP(totalXP), [totalXP])
   const xpForNextLevel = useMemo(() => calculateXPForNextLevel(level), [level])

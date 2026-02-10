@@ -870,6 +870,16 @@
   font-size: 12px;
 }
 
+.groups-gold-badge {
+  font-size: 12px;
+  color: #FBBF24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-weight: 600;
+}
+
 .sort-buttons {
   display: flex;
   gap: 4px;
@@ -1155,6 +1165,14 @@
   color: rgba(255, 255, 255, 0.5);
   font-size: 12px;
   margin-top: 8px;
+}
+
+.group-gold-balance {
+  text-align: center;
+  color: #FBBF24;
+  font-size: 12px;
+  margin-top: 8px;
+  opacity: 0.8;
 }
 
 .level-up-success {
