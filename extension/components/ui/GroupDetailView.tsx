@@ -20,7 +20,7 @@ import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import WeightModal from '../modals/WeightModal'
 import { normalizeUrl } from '../../lib/utils/normalizeUrl'
-import { cleanTitle } from '../../lib/utils/cleanTitle'
+import { cleanTitle, getDisplayTitle } from '../../lib/utils/cleanTitle'
 import '../styles/IntentionBubbleSelector.css'
 import onChainBadgeIcon from './icons/onchainbadge.png'
 
@@ -134,7 +134,7 @@ const UrlRow = ({
             className="url-title"
             onClick={(e) => e.stopPropagation()}
           >
-            {urlRecord.title ? cleanTitle(urlRecord.title) : urlRecord.url}
+            {urlRecord.title ? getDisplayTitle(urlRecord.title, urlRecord.url) : urlRecord.url}
           </a>
           <div className="url-meta">
             <span className="url-date">{formatDate(urlRecord.addedAt)}</span>

@@ -22,7 +22,10 @@ export function normalizeUrl(url: string): { label: string; isRootDomain: boolea
   })
   const search = cleanParams.toString() ? `?${cleanParams.toString()}` : ''
 
-  const fullPath = pathname + search
+  // Include hash fragment for SPA routing (e.g., #/markets/0x...)
+  const hash = urlObj.hash || ''
+
+  const fullPath = pathname + search + hash
   const hasPath = fullPath && fullPath !== '/'
   const label = hasPath
     ? `${hostname}${fullPath.replace(/\/$/, '')}`.toLowerCase()
