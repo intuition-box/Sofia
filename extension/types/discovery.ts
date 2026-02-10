@@ -26,11 +26,11 @@ export const INTENTION_PREDICATES: Record<IntentionPurpose, string> = {
 
 // Display labels for UI
 export const INTENTION_LABELS: Record<IntentionPurpose, string> = {
-  for_work: 'for work',
-  for_learning: 'for learning',
-  for_fun: 'for fun',
-  for_inspiration: 'for inspiration',
-  for_buying: 'for buying'
+  for_work: 'work',
+  for_learning: 'learning',
+  for_fun: 'fun',
+  for_inspiration: 'inspiration',
+  for_buying: 'buying'
 } as const
 
 // Discovery record for a specific page

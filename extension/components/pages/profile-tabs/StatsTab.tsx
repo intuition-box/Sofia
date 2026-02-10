@@ -5,20 +5,20 @@
 
 import { useDiscoveryScore } from '../../../hooks/useDiscoveryScore'
 import { DISCOVERY_XP_REWARDS, INTENTION_LABELS, type IntentionPurpose } from '../../../types/discovery'
+import pioneerBadge from '../../ui/img/badges/pioneer.png'
+import explorerBadge from '../../ui/img/badges/explorer.png'
+import contributorBadge from '../../ui/img/badges/contributor.png'
+
+const INTENTION_GRADIENTS: Record<IntentionPurpose, string> = {
+  for_work: 'linear-gradient(90deg, #1E40AF, #60A5FA)',
+  for_learning: 'linear-gradient(90deg, #065F46, #34D399)',
+  for_fun: 'linear-gradient(90deg,rgb(146, 122, 14), #FBBF24)',
+  for_inspiration: 'linear-gradient(90deg, #5B21B6, #C4B5FD)',
+  for_buying: 'linear-gradient(90deg,rgb(153, 84, 27), #F87171)'
+}
 
 const StatsTab = () => {
   const { stats, loading, error, refetch } = useDiscoveryScore()
-
-  const getIntentionColor = (intention: IntentionPurpose): string => {
-    const colors: Record<IntentionPurpose, string> = {
-      for_work: '#3B82F6',
-      for_learning: '#10B981',
-      for_fun: '#F59E0B',
-      for_inspiration: '#8B5CF6',
-      for_buying: '#EF4444'
-    }
-    return colors[intention]
-  }
 
   const maxIntention = stats
     ? Math.max(...Object.values(stats.intentionBreakdown), 1)
@@ -60,74 +60,70 @@ const StatsTab = () => {
 
   return (
     <div className="stats-tab-content">
-      {/* Discovery Status Cards */}
-      <div className="discovery-status-cards">
-        <div className="status-card pioneer">
-          <div className="status-icon">🏆</div>
-          <div className="status-info">
-            <span className="status-count">{stats.pioneerCount}</span>
-            <span className="status-label">Pioneer</span>
-          </div>
-          <div className="status-xp">+{DISCOVERY_XP_REWARDS.PIONEER} XP/page</div>
+
+      {/* Discovery Badges Section */}
+      <div className="discovery-section">
+        <div className="discovery-section-header">
         </div>
 
-        <div className="status-card explorer">
-          <div className="status-icon">🧭</div>
-          <div className="status-info">
-            <span className="status-count">{stats.explorerCount}</span>
-            <span className="status-label">Explorer</span>
+        <div className="discovery-badges-row">
+          <div className="discovery-badge-item">
+            <div className="badge-icon-wrapper">
+              <img src={pioneerBadge} alt="Pioneer" className="badge-img" />
+            </div>
+            <span className="badge-label">Pioneer</span>
+            <span className="badge-count">{stats.pioneerCount}</span>
           </div>
-          <div className="status-xp">+{DISCOVERY_XP_REWARDS.EXPLORER} XP/page</div>
-        </div>
 
-        <div className="status-card contributor">
-          <div className="status-icon">🌟</div>
-          <div className="status-info">
-            <span className="status-count">{stats.contributorCount}</span>
-            <span className="status-label">Contributor</span>
+          <div className="discovery-badge-item">
+            <div className="badge-icon-wrapper">
+              <img src={explorerBadge} alt="Explorer" className="badge-img" />
+            </div>
+            <span className="badge-label">Explorer</span>
+            <span className="badge-count">{stats.explorerCount}</span>
           </div>
-          <div className="status-xp">+{DISCOVERY_XP_REWARDS.CONTRIBUTOR} XP/page</div>
-        </div>
-      </div>
 
-      {/* Total Certifications */}
-      <div className="total-certifications">
-        <span className="total-label">Total pages certified</span>
-        <span className="total-value">{stats.totalCertifications}</span>
+          <div className="discovery-badge-item">
+            <div className="badge-icon-wrapper">
+              <img src={contributorBadge} alt="Contributor" className="badge-img" />
+            </div>
+            <span className="badge-label">Contributor</span>
+            <span className="badge-count">{stats.contributorCount}</span>
+          </div>
+        </div>
       </div>
 
       {/* Intentions Breakdown Section */}
-      <div className="section intentions-section">
-        <h2 className="section-title">Intentions Breakdown</h2>
-        <div className="intentions-list">
+      <div className="intentions-breakdown-section">
+        <h2 className="intentions-breakdown-title">Intentions Breakdown</h2>
+        <div className="intentions-breakdown-list">
           {(Object.entries(stats.intentionBreakdown) as [IntentionPurpose, number][]).map(
             ([intention, count]) => (
-              <div key={intention} className="intention-item">
-                <span className="intention-name">{INTENTION_LABELS[intention]}</span>
-                <div className="intention-bar-track">
+              <div key={intention} className="intention-row">
+                <span className="intention-label">{INTENTION_LABELS[intention]}</span>
+                <div className="intention-bar-container">
                   <div
-                    className="intention-bar-fill"
+                    className="intention-bar"
                     style={{
-                      width: `${(count / maxIntention) * 100}%`,
-                      background: getIntentionColor(intention)
+                      width: `${Math.max((count / maxIntention) * 100, 3)}%`,
+                      background: INTENTION_GRADIENTS[intention]
                     }}
                   />
                 </div>
-                <span className="intention-count">{count}</span>
+                <span className="intention-value">{count}</span>
               </div>
             )
           )}
         </div>
       </div>
 
-      {/* Info Card */}
-      <div className="info-card">
-        <div className="info-icon">💡</div>
-        <div className="info-text">
-          <strong>How discovery works:</strong>
-          <p>Be the <span className="highlight-pioneer">1st</span> to certify a page = Pioneer (+50 XP)</p>
-          <p>Be among <span className="highlight-explorer">2-10th</span> = Explorer (+20 XP)</p>
-          <p>Be <span className="highlight-contributor">11th+</span> = Contributor (+5 XP)</p>
+      {/* Discovery Mechanism Panel */}
+      <div className="discovery-mechanism-panel">
+        <h3 className="mechanism-title">Discovery Mechanism</h3>
+        <div className="mechanism-content">
+          <p>Be the <span className="highlight-pioneer">1st</span> to certify a page = <strong>Pioneer</strong> (+{DISCOVERY_XP_REWARDS.PIONEER} XP)</p>
+          <p>Be among <span className="highlight-explorer">2-10th</span> = <strong>Explorer</strong> (+{DISCOVERY_XP_REWARDS.EXPLORER} XP)</p>
+          <p>Be <span className="highlight-contributor">11th+</span> = <strong>Contributor</strong> (+{DISCOVERY_XP_REWARDS.CONTRIBUTOR} XP)</p>
         </div>
       </div>
     </div>
