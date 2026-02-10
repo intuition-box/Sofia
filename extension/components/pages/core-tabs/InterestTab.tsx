@@ -16,10 +16,12 @@ const OG_BASE_URL = 'https://sofia-og.vercel.app';
 
 interface InterestTabProps {
   level?: number;
-  signalsCreated?: number;
+  trustCircleCount?: number;
+  pioneerCount?: number;
+  explorerCount?: number;
 }
 
-const InterestTab = ({ level: userLevel, signalsCreated }: InterestTabProps) => {
+const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explorerCount }: InterestTabProps) => {
   const { walletAddress } = useWalletFromStorage();
   const {
     interests,
@@ -66,14 +68,16 @@ const InterestTab = ({ level: userLevel, signalsCreated }: InterestTabProps) => 
     if (!walletAddress || interests.length === 0) return;
 
     const interestsParam = interests
-      .slice(0, 5)
+      .slice(0, 8)
       .map((i) => `${i.name}:${i.level}`)
       .join(',');
 
     const ogParams = new URLSearchParams({
       wallet: walletAddress,
       level: String(userLevel || 1),
-      signals: String(signalsCreated || 0),
+      trustCircle: String(trustCircleCount || 0),
+      pioneer: String(pioneerCount || 0),
+      explorer: String(explorerCount || 0),
       interests: interestsParam,
     });
 

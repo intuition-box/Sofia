@@ -11,6 +11,8 @@ import { getAddress } from 'viem'
 import { intuitionGraphqlClient } from '../../../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../../../lib/config/constants'
 import { useQuestSystem } from '../../../hooks/useQuestSystem'
+import { useTrustCircle } from '../../../hooks/useTrustCircle'
+import { useDiscoveryScore } from '../../../hooks/useDiscoveryScore'
 import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
 import StatsTab from './StatsTab'
 import AchievementsTab from './AchievementsTab'
@@ -52,6 +54,12 @@ const AccountTab = () => {
 
   // Quest system hook - provides real quests based on user progress
   const { quests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
+
+  // Trust circle hook
+  const { accounts: trustCircleAccounts } = useTrustCircle(walletAddress)
+
+  // Discovery stats hook (pioneer, explorer, certified counts)
+  const { stats: discoveryStats } = useDiscoveryScore()
 
   // Social Verifier hook - handles Social Linked attestation
   const { isSocialVerified, canVerify, isVerifying, verifySocials } = useSocialVerifier()
@@ -321,7 +329,12 @@ const AccountTab = () => {
       {/* Tab Content */}
       {activeTab === 'interest' && (
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
-          <InterestTab level={level} signalsCreated={userStats.signalsCreated} />
+          <InterestTab
+            level={level}
+            trustCircleCount={trustCircleAccounts.length}
+            pioneerCount={discoveryStats?.pioneerCount || 0}
+            explorerCount={discoveryStats?.explorerCount || 0}
+          />
         </Suspense>
       )}
 
