@@ -43,7 +43,7 @@
 /* ========== BOOKMARK CARD ========== */
 .bookmark-card {
   position: relative;
-  background-color: rgba(0, 0, 0, 0.14);
+  background-color: rgba(0, 0, 0, 0.377);
   border-radius: var(--bookmark-radius-lg);
   padding: var(--bookmark-card-margin);
   backdrop-filter: blur(50px) saturate(100%);
@@ -627,4 +627,64 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ========== BOOKMARK LISTS GRID (2 columns) ========== */
+.lists-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ========== BOOKMARK FAVICON GRID (iOS-style) ========== */
+.bookmark-favicon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 12px 8px;
+  padding: 4px 0;
+}
+
+.bookmark-favicon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bookmark-favicon-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease;
+}
+
+.bookmark-favicon-icon:hover {
+  transform: scale(1.08);
+}
+
+.bookmark-favicon-label {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.bookmark-favicon-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
 }

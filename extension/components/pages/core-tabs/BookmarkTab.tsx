@@ -20,11 +20,11 @@ const getDomain = (url: string): string => {
   }
 }
 
-// Helper to get favicon URL
-const getFavicon = (url: string): string => {
+// Helper to get favicon URL (Google service for high-res icons)
+const getFavicon = (url: string, size: number = 64): string => {
   try {
-    const domain = new URL(url).origin
-    return `${domain}/favicon.ico`
+    const domain = new URL(url).hostname
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`
   } catch {
     return ''
   }
@@ -249,23 +249,21 @@ const BookmarkTab = () => {
                     triplets.filter(t => t.url).map(t => getDomain(t.url!))
                   )]
                   return allDomains.length > 0 ? (
-                    <div className="interest-domains">
-                      {allDomains.slice(0, 5).map((domain) => (
-                        <div key={domain} className="interest-domain-tag">
-                          <img
-                            src={`https://${domain}/favicon.ico`}
-                            alt={domain}
-                            className="interest-domain-favicon"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = 'none'
-                            }}
-                          />
-                          <span className="interest-domain-name">{domain}</span>
-                        </div>
+                    <div className="bookmark-favicon-grid">
+                      {allDomains.slice(0, 8).map((domain) => (
+                        <img
+                          key={domain}
+                          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+                          alt={domain}
+                          className="bookmark-favicon-icon"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                          }}
+                        />
                       ))}
-                      {allDomains.length > 5 && (
-                        <span className="interest-domains-more">+{allDomains.length - 5}</span>
+                      {allDomains.length > 8 && (
+                        <div className="bookmark-favicon-more">+{allDomains.length - 8}</div>
                       )}
                     </div>
                   ) : null
@@ -315,23 +313,21 @@ const BookmarkTab = () => {
                           </div>
                         </div>
                         {categoryDomains.length > 0 && (
-                          <div className="interest-domains">
-                            {categoryDomains.slice(0, 5).map((domain) => (
-                              <div key={domain} className="interest-domain-tag">
-                                <img
-                                  src={`https://${domain}/favicon.ico`}
-                                  alt={domain}
-                                  className="interest-domain-favicon"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement
-                                    target.style.display = 'none'
-                                  }}
-                                />
-                                <span className="interest-domain-name">{domain}</span>
-                              </div>
+                          <div className="bookmark-favicon-grid">
+                            {categoryDomains.slice(0, 4).map((domain) => (
+                              <img
+                                key={domain}
+                                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+                                alt={domain}
+                                className="bookmark-favicon-icon"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement
+                                  target.style.display = 'none'
+                                }}
+                              />
                             ))}
-                            {categoryDomains.length > 5 && (
-                              <span className="interest-domains-more">+{categoryDomains.length - 5}</span>
+                            {categoryDomains.length > 4 && (
+                              <div className="bookmark-favicon-more">+{categoryDomains.length - 4}</div>
                             )}
                           </div>
                         )}
@@ -542,23 +538,21 @@ const BookmarkTab = () => {
                         </div>
                       </div>
                       {uniqueDomains.length > 0 && (
-                        <div className="interest-domains">
-                          {uniqueDomains.slice(0, 5).map((domain) => (
-                            <div key={domain} className="interest-domain-tag">
-                              <img
-                                src={`https://${domain}/favicon.ico`}
-                                alt={domain}
-                                className="interest-domain-favicon"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement
-                                  target.style.display = 'none'
-                                }}
-                              />
-                              <span className="interest-domain-name">{domain}</span>
-                            </div>
+                        <div className="bookmark-favicon-grid">
+                          {uniqueDomains.slice(0, 4).map((domain) => (
+                            <img
+                              key={domain}
+                              src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+                              alt={domain}
+                              className="bookmark-favicon-icon"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                              }}
+                            />
                           ))}
-                          {uniqueDomains.length > 5 && (
-                            <span className="interest-domains-more">+{uniqueDomains.length - 5}</span>
+                          {uniqueDomains.length > 4 && (
+                            <div className="bookmark-favicon-more">+{uniqueDomains.length - 4}</div>
                           )}
                         </div>
                       )}
@@ -599,23 +593,18 @@ const BookmarkTab = () => {
                       </p>
                     </div>
                     {bookmarkedTriplet.url && (
-                      <div className="interest-domains">
-                        <div
-                          className="interest-domain-tag"
+                      <div className="bookmark-favicon-grid">
+                        <img
+                          src={getFavicon(bookmarkedTriplet.url)}
+                          alt={getDomain(bookmarkedTriplet.url)}
+                          className="bookmark-favicon-icon"
                           onClick={() => window.open(bookmarkedTriplet.url, '_blank', 'noopener,noreferrer')}
                           style={{ cursor: 'pointer' }}
-                        >
-                          <img
-                            src={getFavicon(bookmarkedTriplet.url)}
-                            alt={getDomain(bookmarkedTriplet.url)}
-                            className="interest-domain-favicon"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = 'none'
-                            }}
-                          />
-                          <span className="interest-domain-name">{getDomain(bookmarkedTriplet.url)}</span>
-                        </div>
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                          }}
+                        />
                       </div>
                     )}
                     <div className="signal-actions">
