@@ -1,7 +1,7 @@
 /**
  * InterestCard Component
- * Displays an interest with level, XP progress, and domain tags
- * Based on AI categorization of on-chain activity
+ * Displays an interest with a semi-circular gauge, XP progress, cert/domain breakdown
+ * Redesigned to match dark card UI with level gauge
  */
 
 import type { Interest } from '../../types/interests';
@@ -18,12 +18,70 @@ const getFaviconUrl = (domain: string): string => {
 };
 
 // Certification type colors
-const CERT_COLORS = {
-  work: '#3B82F6',      // blue
-  learning: '#10B981',  // green
-  fun: '#F59E0B',       // yellow/orange
-  inspiration: '#8B5CF6', // purple
-  buying: '#EF4444'     // red
+const CERT_COLORS: Record<string, string> = {
+  work: '#3B82F6',
+  learning: '#10B981',
+  fun: '#F59E0B',
+  inspiration: '#8B5CF6',
+  buying: '#EF4444',
+};
+
+// Semi-circular gauge SVG component
+const LevelGauge = ({ progressPercent, levelColor }: { progressPercent: number; levelColor: string }) => {
+  const gradId = `gauge-${levelColor.replace('#', '')}`;
+  const radius = 40;
+  const cx = 60;
+  const cy = 52;
+  const halfCircumference = Math.PI * radius;
+  const filledLength = (progressPercent / 100) * halfCircumference;
+  const dashOffset = halfCircumference - filledLength;
+
+  return (
+    <svg viewBox="0 0 120 62" className="interest-gauge-svg">
+      <defs>
+        <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={levelColor} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={levelColor} stopOpacity="1" />
+        </linearGradient>
+      </defs>
+      {/* Background arc */}
+      <path
+        d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
+        fill="none"
+        stroke="rgba(255,255,255,0.08)"
+        strokeWidth="7"
+        strokeLinecap="round"
+      />
+      {/* Progress arc */}
+      <path
+        d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
+        fill="none"
+        stroke={`url(#${gradId})`}
+        strokeWidth="7"
+        strokeLinecap="round"
+        strokeDasharray={halfCircumference}
+        strokeDashoffset={dashOffset}
+      />
+      {/* Tick marks */}
+      {[0, 0.25, 0.5, 0.75, 1].map((tick) => {
+        const angle = Math.PI - tick * Math.PI;
+        const innerR = radius - 10;
+        const outerR = radius - 6;
+        const x1 = cx + innerR * Math.cos(angle);
+        const y1 = cy - innerR * Math.sin(angle);
+        const x2 = cx + outerR * Math.cos(angle);
+        const y2 = cy - outerR * Math.sin(angle);
+        return (
+          <line
+            key={tick}
+            x1={x1} y1={y1} x2={x2} y2={y2}
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1"
+          />
+        );
+      })}
+    </svg>
+  );
 };
 
 const InterestCard = ({ interest, onClick }: InterestCardProps) => {
@@ -33,124 +91,100 @@ const InterestCard = ({ interest, onClick }: InterestCardProps) => {
     level,
     xp,
     xpToNextLevel,
-    totalCertifications,
     certifications,
-    confidence,
     reasoning,
   } = interest;
 
   const progressPercent = getXpProgressPercent(xp, level);
   const levelColor = getLevelColor(level);
 
-  // Get dominant certification type for styling
+  // Get dominant certification type for accent
   const dominantCert = Object.entries(certifications)
     .filter(([_, count]) => count > 0)
     .sort(([, a], [, b]) => b - a)[0];
+  const accentColor = dominantCert ? CERT_COLORS[dominantCert[0]] : levelColor;
 
-  const dominantColor = dominantCert ? CERT_COLORS[dominantCert[0] as keyof typeof CERT_COLORS] : levelColor;
+  // Active cert types (with count > 0)
+  const activeCerts = Object.entries(certifications)
+    .filter(([_, count]) => count > 0);
 
   return (
     <div
       className="interest-card"
       onClick={onClick}
-      style={{
-        borderColor: `${dominantColor}40`,
-      }}
+      style={{ '--accent-color': accentColor, '--level-color': levelColor } as React.CSSProperties}
     >
-      {/* Header */}
-      <div className="interest-card-header">
-        <div className="interest-card-title-section">
-          <h3 className="interest-card-title">{name}</h3>
-          {confidence < 80 && (
-            <span className="interest-confidence-badge" title={reasoning}>
-              {confidence}%
-            </span>
-          )}
-        </div>
-        <span
-          className={`level-badge level-${Math.min(level, 10)}`}
-          style={{ backgroundColor: levelColor }}
-        >
+      {/* Card title */}
+      <h3 className="interest-card-title">{name}</h3>
+
+      {/* Level gauge + badge */}
+      <div className="interest-gauge-container">
+        <LevelGauge progressPercent={progressPercent} levelColor={levelColor} />
+        <span className="interest-level-badge" style={{ backgroundColor: levelColor }}>
           LVL {level}
         </span>
       </div>
 
-      {/* XP Progress */}
-      <div className="interest-card-progress">
-        <div className="interest-progress-bar-container">
-          <div
-            className="interest-progress-bar-fill"
-            style={{
-              width: `${progressPercent}%`,
-              background: `linear-gradient(90deg, ${dominantColor}, ${levelColor})`,
-            }}
-          />
-        </div>
-        <div className="interest-progress-labels">
-          <span className="interest-xp-current">{xp} XP</span>
-          <span className="interest-xp-next">
-            {xpToNextLevel > 0 ? `${xpToNextLevel} to LVL ${level + 1}` : 'Max!'}
-          </span>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="interest-card-stats">
-        <div className="interest-stat">
-          <span className="interest-stat-value">{totalCertifications}</span>
-          <span className="interest-stat-label">Certs</span>
-        </div>
-        <div className="interest-stat">
-          <span className="interest-stat-value">{domains.length}</span>
-          <span className="interest-stat-label">Domains</span>
-        </div>
-      </div>
-
-      {/* Certification breakdown */}
-      <div className="interest-cert-breakdown">
-        {Object.entries(certifications)
-          .filter(([_, count]) => count > 0)
-          .map(([type, count]) => (
+      {/* XP progress bar */}
+      <div className="interest-xp-row">
+        <span className="interest-xp-label">XP</span>
+        <div className="interest-xp-bar-wrap">
+          <div className="interest-xp-bar-bg">
             <div
-              key={type}
-              className="interest-cert-item"
-              style={{ color: CERT_COLORS[type as keyof typeof CERT_COLORS] }}
-            >
-              <span className="interest-cert-dot" style={{ backgroundColor: CERT_COLORS[type as keyof typeof CERT_COLORS] }} />
-              <span className="interest-cert-type">{type}</span>
-              <span className="interest-cert-count">{count}</span>
-            </div>
-          ))}
-      </div>
-
-      {/* Domain tags */}
-      <div className="interest-domains">
-        {domains.slice(0, 4).map((domain) => (
-          <div key={domain} className="interest-domain-tag">
-            <img
-              src={getFaviconUrl(domain)}
-              alt={domain}
-              className="interest-domain-favicon"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
+              className="interest-xp-bar-fill"
+              style={{
+                width: `${progressPercent}%`,
+                background: `linear-gradient(90deg, ${accentColor}, ${levelColor})`,
               }}
             />
-            <span className="interest-domain-name">{domain}</span>
           </div>
-        ))}
-        {domains.length > 4 && (
-          <span className="interest-domains-more">+{domains.length - 4}</span>
-        )}
+        </div>
+        <span className="interest-xp-next-label">
+          {xpToNextLevel > 0 ? 'Next Level' : 'Max!'}
+        </span>
       </div>
 
-      {/* Reasoning tooltip */}
-      {reasoning && (
-        <div className="interest-reasoning" title={reasoning}>
-          <span className="interest-reasoning-icon">i</span>
-          <span className="interest-reasoning-text">{reasoning}</span>
+      {/* Stats headers */}
+      <div className="interest-stats-header">
+        <span>Certs</span>
+        <span>Domains visited</span>
+      </div>
+
+      {/* Two-column: cert types (left) + domain favicons (right) */}
+      <div className="interest-details-grid">
+        <div className="interest-details-left">
+          {activeCerts.map(([type]) => (
+            <div key={type} className="interest-cert-row">
+              <span className="interest-cert-dot" style={{ backgroundColor: CERT_COLORS[type] }} />
+              <span className="interest-cert-label">{type}</span>
+            </div>
+          ))}
         </div>
-      )}
+        <div className="interest-details-right">
+          {domains.slice(0, 3).map((domain) => (
+            <div key={domain} className="interest-domain-row">
+              <img
+                src={getFaviconUrl(domain)}
+                alt=""
+                className="interest-domain-icon"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+              <span className="interest-domain-text">{domain}</span>
+            </div>
+          ))}
+          {domains.length > 3 && (
+            <span className="interest-domain-more">+{domains.length - 3} more</span>
+          )}
+        </div>
+      </div>
+
+      {/* Activity Summary — always pushed to bottom */}
+      <div className="interest-activity-summary">
+        <span className="interest-activity-title">Activity Summary</span>
+        <p className="interest-activity-text">
+          {reasoning || 'No activity summary available.'}
+        </p>
+      </div>
     </div>
   );
 };

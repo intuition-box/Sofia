@@ -94,11 +94,220 @@
   color: var(--text-tertiary, #666);
 }
 
+/* ===== 2-Column Interest Grid ===== */
+
 .interest-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+
+@media (max-width: 420px) {
+  .interest-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Interest Card ===== */
+
+.interest-card {
+  background: #1a1a1e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.interest-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Card title */
+.interest-card .interest-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px 0;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* Gauge container with badge overlay */
+.interest-gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.interest-gauge-svg {
+  width: 100px;
+  height: 52px;
+}
+
+/* Level badge (pill shape below gauge) */
+.interest-level-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  margin-top: -6px;
+  letter-spacing: 0.04em;
+}
+
+/* XP progress row */
+.interest-xp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.interest-xp-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.interest-xp-bar-wrap {
+  flex: 1;
+}
+
+.interest-xp-bar-bg {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.interest-xp-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.interest-xp-next-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Stats headers row */
+.interest-stats-header {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.interest-stats-header span {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
+}
+
+/* Two-column details: certs left, domains right */
+.interest-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+  flex: 1;
+}
+
+.interest-details-left,
+.interest-details-right {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Cert type rows */
+.interest-cert-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.interest-cert-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.interest-cert-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: capitalize;
+}
+
+/* Domain rows */
+.interest-domain-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.interest-domain-icon {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.interest-domain-text {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 90px;
+}
+
+.interest-domain-more {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Activity Summary — pushed to bottom of card */
+.interest-activity-summary {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 8px;
+  margin-top: auto;
+}
+
+.interest-activity-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.interest-activity-text {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== Loading / Error / Empty states ===== */
 
 .interest-loading {
   display: flex;
@@ -191,215 +400,4 @@
   font-size: 14px;
   margin: 0 0 20px 0;
   max-width: 280px;
-}
-
-/* Interest Card Styles */
-
-.interest-card {
-  background: var(--card-bg, rgba(30, 30, 35, 0.8));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-/* No hover transform effect */
-
-.interest-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.interest-card-title-section {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-.interest-card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary, #fff);
-  margin: 0;
-}
-
-.interest-confidence-badge {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-tertiary, #888);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  cursor: help;
-}
-
-/* Interest card level badge - higher specificity to override CommonPage.css */
-.interest-card .level-badge {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: white !important;
-}
-
-/* Level colors for interest cards */
-.interest-card .level-badge.level-1 { background: #9CA3AF !important; }
-.interest-card .level-badge.level-2 { background: #22C55E !important; }
-.interest-card .level-badge.level-3 { background: #3B82F6 !important; }
-.interest-card .level-badge.level-4 { background: #8B5CF6 !important; }
-.interest-card .level-badge.level-5 { background: #F59E0B !important; }
-.interest-card .level-badge.level-6 { background: #EF4444 !important; }
-.interest-card .level-badge.level-7 { background: #EC4899 !important; }
-.interest-card .level-badge.level-8 { background: #06B6D4 !important; }
-.interest-card .level-badge.level-9 { background: #F97316 !important; }
-.interest-card .level-badge.level-10 { background: linear-gradient(135deg, #FFD700, #FFA500) !important; }
-
-.interest-card-progress {
-  margin-bottom: 12px;
-}
-
-.interest-progress-bar-container {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
-
-.interest-progress-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.interest-progress-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-}
-
-.interest-xp-current {
-  color: var(--text-secondary, #aaa);
-}
-
-.interest-xp-next {
-  color: var(--text-tertiary, #666);
-}
-
-.interest-card-stats {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.interest-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.interest-stat-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary, #fff);
-}
-
-.interest-stat-label {
-  font-size: 11px;
-  color: var(--text-tertiary, #666);
-}
-
-.interest-cert-breakdown {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.interest-cert-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-}
-
-.interest-cert-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.interest-cert-type {
-  text-transform: capitalize;
-}
-
-.interest-cert-count {
-  opacity: 0.7;
-}
-
-.interest-domains {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.interest-domain-tag {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 4px 8px;
-}
-
-.interest-domain-favicon {
-  width: 12px;
-  height: 12px;
-}
-
-.interest-domain-name {
-  font-size: 11px;
-  color: var(--text-secondary, #aaa);
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.interest-domains-more {
-  font-size: 11px;
-  color: var(--text-tertiary, #666);
-  padding: 4px 8px;
-}
-
-.interest-reasoning {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.interest-reasoning-icon {
-  width: 14px;
-  height: 14px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: var(--text-tertiary, #666);
-  flex-shrink: 0;
-}
-
-.interest-reasoning-text {
-  font-size: 11px;
-  color: var(--text-tertiary, #666);
-  line-height: 1.4;
 }
