@@ -3,7 +3,7 @@
  * Pattern: find positions on the triple I → TRUSTS → MY_ACCOUNT_ATOM
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
@@ -128,6 +128,10 @@ export function useTrustedByCount(walletAddress: string | undefined): UseTrusted
       setLoading(false)
     }
   }, [walletAddress])
+
+  useEffect(() => {
+    fetchTrustedByCount()
+  }, [fetchTrustedByCount])
 
   return {
     count,
