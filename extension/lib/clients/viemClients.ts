@@ -1,6 +1,6 @@
 import { createWalletClient, custom, createPublicClient, http } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
-import { getWalletProvider } from '../services/walletProvider'
+import { getWalletProvider, selectProviderByName } from '../services/walletProvider'
 import { createServiceLogger } from '../utils/logger'
 
 const logger = createServiceLogger('ViemClients')
@@ -49,8 +49,14 @@ export const getClients = async () => {
     // Ensure we have an HTTPS tab for wallet operations
     await ensureHttpsTabForWallet()
 
-    // Provider selection is handled by the useWalletFromStorage singleton
-    // No need to call selectProviderByName here — it's already synced
+    // Always re-select the provider on the current tab's content script.
+    // Content scripts lose their selectedProvider state on page navigation
+    // or service worker restart, causing "No wallet found" errors.
+    const storage = await chrome.storage.session.get(['walletType'])
+    if (storage.walletType) {
+        await selectProviderByName(storage.walletType)
+    }
+
     const provider = await getWalletProvider()
 
     const accounts = await provider.request({
