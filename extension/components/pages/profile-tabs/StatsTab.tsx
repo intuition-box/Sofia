@@ -119,7 +119,7 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }
       <div className="xp-progress-section">
         <div className="xp-progress-labels">
           <span className="xp-level-pill">Level {level}</span>
-          <span className="xp-progress-text">{currentProgress} / {xpNeededForNext} XP</span>
+          <span className="xp-progress-text">{totalXP} / {xpAtCurrentLevel + xpNeededForNext} XP</span>
           <span className="xp-level-pill">Level {level + 1}</span>
         </div>
         <div className="xp-progress-track">
