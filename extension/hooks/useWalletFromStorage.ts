@@ -56,8 +56,11 @@ async function syncProvider(address: string | null, type: string | null) {
         return
       }
       console.warn('⚠️ [useWalletFromStorage] Wallet type not found, trying by address...')
+    } else {
+      console.warn('⚠️ [useWalletFromStorage] No walletType stored — falling back to address lookup (deprecated)')
     }
 
+    // Deprecated fallback: query all wallets by address (may trigger popups)
     const result = await selectProviderByAddress(address)
     if (result.found) {
       console.log('✅ [useWalletFromStorage] Synced to provider by address:', result.selectedProvider)

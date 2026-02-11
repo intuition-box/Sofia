@@ -212,8 +212,10 @@ export const selectProviderByName = async (walletType: string): Promise<{ found:
   }
 }
 
-// Select the wallet provider that owns the given address (fallback, less reliable)
-// This ensures transactions go through the correct wallet (e.g., MetaMask vs Rabby)
+/**
+ * @deprecated Use selectProviderByName() instead. This queries all wallets
+ * and may trigger unwanted connection popups. walletType should be provided at connection time.
+ */
 export const selectProviderByAddress = async (address: string): Promise<{ found: boolean; selectedProvider: string }> => {
   try {
     console.log("🔍 [WalletProvider] Selecting provider for address:", address)

@@ -1,5 +1,5 @@
 import type { PlasmoCSConfig } from "plasmo"
-import { createStore } from "mipd"
+import { createStore, type EIP1193Provider } from "mipd"
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -68,7 +68,7 @@ const ALLOWED_RPC_METHODS = [
 
 // Store for discovered providers
 let providerStore: ReturnType<typeof createStore> | null = null
-let selectedProvider: any = null
+let selectedProvider: EIP1193Provider | null = null
 let selectedProviderName: string = ""
 
 // Initialize mipd store for EIP-6963 provider discovery
@@ -78,22 +78,9 @@ function initializeProviderStore() {
   try {
     providerStore = createStore()
 
-    // Listen for new providers
+    // Listen for new providers (discovery only, no auto-selection)
     providerStore.subscribe((providers) => {
       console.log("🔌 [WalletBridge] Providers discovered:", providers.map(p => p.info.name))
-
-      // Don't auto-select if we already have a manually selected provider
-      if (selectedProvider && selectedProviderName) {
-        console.log("🔌 [WalletBridge] Keeping manually selected provider:", selectedProviderName)
-        return
-      }
-
-      // Default: select first available (will be overridden by selectProviderByAddress)
-      if (providers.length > 0 && !selectedProvider) {
-        selectedProvider = providers[0].provider
-        selectedProviderName = providers[0].info.name
-        console.log("✅ [WalletBridge] Default provider:", selectedProviderName)
-      }
     })
 
     console.log("🔌 [WalletBridge] mipd store initialized")
@@ -148,8 +135,10 @@ function selectProviderByName(walletType: string): boolean {
   return false
 }
 
-// Select provider by matching the connected address (fallback, less reliable)
+// @deprecated - Use selectProviderByName() instead. This queries all wallets and may trigger unwanted popups.
 async function selectProviderByAddress(targetAddress: string): Promise<boolean> {
+  console.warn("⚠️ [WalletBridge] selectProviderByAddress is deprecated — walletType should be provided at connection time")
+
   if (!providerStore) return false
 
   const providers = providerStore.getProviders()
@@ -180,19 +169,9 @@ async function selectProviderByAddress(targetAddress: string): Promise<boolean> 
   return false
 }
 
-// Fallback to window.ethereum if no EIP-6963 providers found
-function getProvider(): any {
-  if (selectedProvider) {
-    return selectedProvider
-  }
-
-  // Fallback to legacy window.ethereum
-  if (typeof window !== "undefined" && (window as any).ethereum) {
-    console.log("⚠️ [WalletBridge] Using fallback window.ethereum")
-    return (window as any).ethereum
-  }
-
-  return null
+// Get the explicitly selected provider (no fallback - provider must be selected first)
+function getProvider(): EIP1193Provider | null {
+  return selectedProvider
 }
 
 // List available wallet providers
@@ -319,15 +298,18 @@ async function handleWalletRequest(event: MessageEvent) {
       requestId,
       result
     }, window.location.origin)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [WalletBridge] Request failed:", method, error)
+
+    const errCode = error instanceof Object && 'code' in error ? (error as { code: number }).code : -32603
+    const errMessage = error instanceof Error ? error.message : "Unknown error"
 
     window.postMessage({
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
       error: {
-        code: error.code || -32603,
-        message: error.message || "Unknown error"
+        code: errCode,
+        message: errMessage
       }
     }, window.location.origin)
   }
