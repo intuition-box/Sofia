@@ -7,7 +7,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { IntentionGroupWithStats } from '../../hooks/useIntentionGroups'
-import type { GroupUrlRecord } from '../../lib/database/indexedDB'
+import type { GroupUrlRecord } from '~types/database'
 import type { CertificationType } from '../../lib/services/GroupManager'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'

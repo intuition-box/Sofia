@@ -15,7 +15,7 @@ import { groupManager, type CertificationType } from './GroupManager'
 import { goldService, getLevelUpCost } from './GoldService'
 import { generatePredicate, type PredicateInput } from '../../background/mastraClient'
 import { IntentionGroupsService } from '../database/indexedDB-methods'
-import type { IntentionGroupRecord } from '../database/indexedDB'
+import type { IntentionGroupRecord } from '~types/database'
 import type { LevelUpResult, LevelUpPreview } from '~types/levelUp'
 
 export type { LevelUpResult, LevelUpPreview }

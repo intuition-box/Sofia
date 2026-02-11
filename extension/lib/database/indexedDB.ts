@@ -3,11 +3,23 @@
  * Manages local storage of triplets, navigation data, user profile, and settings
  */
 
-import type { ParsedSofiaMessage} from '../../types/messages'
-import type { VisitData, DOMData } from '~types/history'
-import type { ExtensionSettings } from '~types/storage'
-import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 import { createServiceLogger } from '../utils/logger'
+
+// Re-export all record types from centralized types
+export type {
+  TripletsRecord,
+  NavigationRecord,
+  ProfileRecord,
+  SettingsRecord,
+  SearchRecord,
+  BookmarkListRecord,
+  BookmarkedTripletRecord,
+  RecommendationRecord,
+  IntentionGroupRecord,
+  GroupUrlRecord,
+  PredicateChangeRecord,
+  UserXPRecord
+} from '../../types/database'
 
 const logger = createServiceLogger('IndexedDB')
 
@@ -28,113 +40,6 @@ export const STORES = {
   INTENTION_GROUPS: 'intention_groups',
   USER_XP: 'user_xp'
 } as const
-
-// Record types for IndexedDB
-export interface TripletsRecord {
-  id?: number
-  messageId: string
-  content: ParsedSofiaMessage | any[] | string[]
-  timestamp: number
-  type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details' | 'pulse_analysis'
-}
-
-export interface NavigationRecord {
-  id?: number
-  url: string
-  visitData: VisitData
-  domData?: DOMData
-  lastUpdated: number
-}
-
-export interface ProfileRecord {
-  id: 'profile'
-  profilePhoto?: string
-  bio: string
-  profileUrl: string
-  lastUpdated: number
-}
-
-export interface SettingsRecord {
-  id: 'settings'
-  settings: ExtensionSettings
-  lastUpdated: number
-}
-
-export interface SearchRecord {
-  id?: number
-  query: string
-  timestamp: number
-  results?: any[]
-}
-
-export interface BookmarkListRecord extends Omit<BookmarkList, 'id'> {
-  id?: string
-}
-
-export interface BookmarkedTripletRecord extends Omit<BookmarkedTriplet, 'id'> {
-  id?: string
-}
-
-export interface RecommendationRecord {
-  walletAddress: string
-  rawResponse: string
-  parsedRecommendations: any[]
-  timestamp: number
-  lastUpdated: number
-}
-
-// 🆕 Intention Group record for persistent domain groups
-export interface IntentionGroupRecord {
-  id: string                          // = domain (ex: "twitch.tv")
-  domain: string
-  title: string                       // = domain par défaut
-  createdAt: number
-  updatedAt: number
-  urls: GroupUrlRecord[]
-  level: number                       // Commence à 1
-  currentPredicate: string | null     // null jusqu'au premier LVL UP
-  predicateHistory: PredicateChangeRecord[]
-  totalAttentionTime: number
-  totalCertifications: number
-  dominantCertification: string | null
-}
-
-export interface GroupUrlRecord {
-  url: string
-  title: string
-  domain: string
-  favicon?: string
-  addedAt: number
-  attentionTime: number
-  certification: 'work' | 'learning' | 'fun' | 'inspiration' | 'buying' | null
-  certifiedAt?: number
-  removed: boolean
-  // OAuth-extracted URLs have predicate info
-  oauthPredicate?: string  // ex: "follow", "top_artist", "member_of"
-  oauthSource?: string     // ex: "youtube", "spotify", "discord"
-  // On-chain certification status (from GraphQL)
-  isOnChain?: boolean              // true if certified on-chain
-  onChainCertification?: string    // 'work', 'learning', etc.
-}
-
-export interface PredicateChangeRecord {
-  fromPredicate: string | null
-  toPredicate: string
-  fromLevel: number
-  toLevel: number
-  changedAt: number
-  xpSpent: number
-  reason: string
-}
-
-// 🆕 User XP record
-export interface UserXPRecord {
-  id: 'user'
-  totalXP: number
-  totalEarned: number
-  totalSpent: number
-  lastUpdated: number
-}
 
 /**
  * IndexedDB Database Service

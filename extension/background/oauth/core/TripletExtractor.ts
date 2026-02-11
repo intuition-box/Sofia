@@ -4,7 +4,7 @@ import { PlatformRegistry } from '../platforms/PlatformRegistry'
 import { tripletsDataService } from '../../../lib/database/indexedDB-methods'
 import { badgeService } from '../../../lib/services/BadgeService'
 import { groupManager } from '../../../lib/services/GroupManager'
-import type { GroupUrlRecord } from '../../../lib/database/indexedDB'
+import type { GroupUrlRecord } from '~types/database'
 import { createServiceLogger } from '../../../lib/utils/logger'
 
 const logger = createServiceLogger('TripletExtractor')

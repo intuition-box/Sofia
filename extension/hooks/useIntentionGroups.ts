@@ -6,11 +6,14 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import type { IntentionGroupRecord, GroupUrlRecord } from '~lib/database/indexedDB'
+import type { IntentionGroupRecord, GroupUrlRecord } from '~types/database'
+import type { IntentionGroupWithStats, SortOption } from '~types/groups'
 import type { CertificationType } from '~lib/services/GroupManager'
 import { EXCLUDED_URL_PATTERNS } from '~background/constants'
 import { useOnChainIntentionGroups, type OnChainUrl } from './useOnChainIntentionGroups'
 import { createHookLogger } from '../lib/utils/logger'
+
+export type { IntentionGroupWithStats, SortOption }
 
 const logger = createHookLogger('useIntentionGroups')
 
@@ -36,15 +39,6 @@ function shouldExcludeDomain(domain: string): boolean {
     domain.toLowerCase().includes(pattern.toLowerCase())
   )
 }
-
-export interface IntentionGroupWithStats extends IntentionGroupRecord {
-  activeUrlCount: number
-  certifiedCount: number
-  certificationBreakdown: Record<CertificationType, number>
-  isVirtualGroup?: boolean  // true if group created from on-chain only (no local data)
-}
-
-export type SortOption = 'level' | 'urls' | 'alphabetic' | 'recent'
 
 interface UseIntentionGroupsResult {
   groups: IntentionGroupWithStats[]

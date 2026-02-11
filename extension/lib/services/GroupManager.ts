@@ -5,7 +5,7 @@
  */
 
 import { IntentionGroupsService } from '../database/indexedDB-methods'
-import type { IntentionGroupRecord, GroupUrlRecord, PredicateChangeRecord } from '../database/indexedDB'
+import type { IntentionGroupRecord, GroupUrlRecord, PredicateChangeRecord } from '~types/database'
 import { goldService } from './GoldService'
 import type { DomainCluster, TrackedUrl } from './SessionTracker'
 import { createServiceLogger } from '../utils/logger'
