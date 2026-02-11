@@ -2,7 +2,7 @@
  * Hook to fetch and manage trust circle data
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
@@ -147,6 +147,10 @@ export function useTrustCircle(walletAddress: string | undefined): FollowQueryRe
       setLoading(false)
     }
   }, [walletAddress])
+
+  useEffect(() => {
+    fetchTrustCircle()
+  }, [fetchTrustCircle])
 
   return {
     accounts,
