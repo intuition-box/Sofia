@@ -8,7 +8,6 @@ import { Storage } from '@plasmohq/storage'
 import { cleanupProvider } from '../../lib/services/walletProvider'
 import { tripletsDataService } from '../../lib/database/indexedDB-methods'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
-import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
 import '../styles/Modal.css'
@@ -73,12 +72,7 @@ const SettingsPage = () => {
         console.log('✅ Recommendations cache cleared for account:', account)
       }
 
-      // Clear global resonance service state
-      const globalService = GlobalResonanceService.getInstance()
-      globalService.clearCache()
-      console.log('✅ Global resonance service cache cleared')
-
-      // Clear IndexedDB completely (recommendations + og:images)
+      // Clear IndexedDB completely
       const databases = await indexedDB.databases()
       for (const db of databases) {
         if (db.name) {

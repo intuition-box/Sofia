@@ -32,21 +32,50 @@ export const useCreateAtom = () => {
   // State management removed - let components handle loading/error states
 
   // Ensure user has approved the proxy on MultiVault (required for receiver pattern)
+  // Uses chrome.storage to remember approval status per wallet address
   const ensureProxyApproval = async (): Promise<void> => {
     if (!address) {
       throw new Error('No wallet connected')
     }
 
-    // NOTE: We can't check if approval exists because MultiVault doesn't expose
-    // an 'approvals' getter. So we skip the check and let the actual transaction fail
-    // if approval is missing. The calling code should catch this error and guide the user.
-    // For now, we just do nothing here to avoid unnecessary approval requests.
-    
-    // If you want to force approval every time (not recommended):
-    // const isApproved = await BlockchainService.checkProxyApproval(address)
-    // will always return false, triggering approval request
+    const storageKey = `proxy_approved_${address.toLowerCase()}`
 
-    logger.debug('Skipping proxy approval check (contract has no getter)')
+    try {
+      const stored = await chrome.storage.local.get(storageKey)
+      if (stored[storageKey]) {
+        logger.debug('Proxy already approved (cached)')
+        return
+      }
+    } catch {
+      // Storage unavailable, proceed with approval request
+    }
+
+    logger.info('Requesting proxy approval on MultiVault (first-time setup)')
+
+    try {
+      const txHash = await BlockchainService.requestProxyApproval()
+      const confirmed = await BlockchainService.waitForApprovalConfirmation(txHash)
+
+      if (!confirmed) {
+        throw new Error('Proxy approval transaction failed')
+      }
+
+      // Cache approval status
+      try {
+        await chrome.storage.local.set({ [storageKey]: true })
+      } catch {
+        // Non-critical: approval succeeded even if we can't cache it
+      }
+
+      logger.info('Proxy approval confirmed')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      // If user rejected the transaction in wallet, don't throw a confusing error
+      if (errorMessage.includes('rejected') || errorMessage.includes('denied')) {
+        throw new Error('Proxy approval rejected by user. This is required for your first transaction.')
+      }
+      throw new Error(`Proxy approval failed: ${errorMessage}`)
+    }
   }
 
   /**

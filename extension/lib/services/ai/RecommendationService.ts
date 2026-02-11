@@ -4,15 +4,12 @@
  */
 
 import { StorageRecommendation } from '../../database/StorageRecommendation'
-import { StorageOgImage } from '../../database/StorageOgImage'
-import type { Recommendation, BentoSuggestion, WalletData } from './types'
+import type { Recommendation, WalletData } from './types'
 import { intuitionGraphqlClient } from '../../clients/graphql-client'
 import { SUBJECT_IDS } from '../../config/constants'
 import { getAddress } from 'viem'
 
 export class RecommendationService {
-  private static readonly OG_IMAGES_CACHE_HOURS = 24 * 30         // 30 jours
-
   /**
    * Generate recommendations for a wallet
    */
@@ -241,96 +238,5 @@ export class RecommendationService {
         }
       })
       .filter((rec: Recommendation) => rec.suggestions.length > 0)
-  }
-
-  /**
-   * Get og:image from URL with persistent cache (NO FALLBACK - if no og:image, site is considered dead)
-   */
-  static async getOgImage(url: string): Promise<string | null> {
-    try {
-      // Check persistent cache first
-      const isValid = await StorageOgImage.isValid(url, this.OG_IMAGES_CACHE_HOURS)
-      if (isValid) {
-        const cached = await StorageOgImage.load(url)
-        if (cached !== null) {
-          console.log('💾 [RecommendationService] Using cached og:image for:', url)
-          return cached
-        }
-      }
-
-      console.log('🖼️ [RecommendationService] Fetching og:image for:', url)
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; Sofia-Bot/1.0)',
-        },
-        signal: AbortSignal.timeout(10000) // 10s timeout
-      })
-      
-      if (!response.ok) {
-        await StorageOgImage.save(url, null)
-        return null
-      }
-      
-      const html = await response.text()
-      
-      // Look ONLY for og:image meta tag - no fallback
-      const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']*?)["'][^>]*>/i)
-      if (ogImageMatch && ogImageMatch[1]) {
-        const ogImage = ogImageMatch[1]
-        await StorageOgImage.save(url, ogImage)
-        return ogImage
-      }
-      
-      // No og:image = dead site = cache null and return null
-      await StorageOgImage.save(url, null)
-      return null
-      
-    } catch (error) {
-      console.log(`❌ [RecommendationService] Failed to get og:image for ${url}:`, error)
-      await StorageOgImage.save(url, null)
-      return null
-    }
-  }
-
-  /**
-   * Get suggestions with og:images (filtered - only sites with og:image)
-   * Optimized to reuse existing validItems when possible
-   */
-  static async getSuggestionsWithPreviews(
-    suggestions: { name: string, url: string, category: string, size: 'small' | 'tall' | 'mega' }[], 
-    existingValidItems: Array<{ name: string, url: string, category: string, size: 'small' | 'tall' | 'mega', ogImage: string }> = []
-  ): Promise<Array<{ name: string, url: string, category: string, size: 'small' | 'tall' | 'mega', ogImage: string }>> {
-    const validSuggestions = []
-    
-    // Create a map of existing valid items for fast lookup
-    const existingMap = new Map(existingValidItems.map(item => [item.url, item.ogImage]))
-    
-    for (const suggestion of suggestions) {
-      // Check if we already have this URL with og:image
-      const existingOgImage = existingMap.get(suggestion.url)
-      
-      if (existingOgImage) {
-        // Reuse existing og:image
-        validSuggestions.push({
-          ...suggestion,
-          ogImage: existingOgImage
-        })
-        console.log(`♻️ [RecommendationService] Reusing cached og:image for ${suggestion.url}`)
-      } else {
-        // Fetch new og:image
-        const ogImage = await this.getOgImage(suggestion.url)
-        if (ogImage) { // Only add if og:image exists
-          validSuggestions.push({
-            ...suggestion,
-            ogImage
-          })
-        }
-      }
-    }
-    
-    console.log(`✅ [RecommendationService] Filtered ${validSuggestions.length}/${suggestions.length} valid suggestions with og:image (${existingValidItems.length} reused)`)
-    return validSuggestions
   }
 }

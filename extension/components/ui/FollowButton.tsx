@@ -28,7 +28,6 @@ const FollowButton = ({
 
     if (!address) {
       console.warn('⚠️ FollowButton - No wallet connected')
-      // TODO: Show connect wallet message
       return
     }
 

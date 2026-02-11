@@ -319,25 +319,6 @@ export class BlockchainService {
   } as const
 
   /**
-   * Check if user has approved the proxy for deposits on MultiVault
-   * The proxy needs approval to deposit on behalf of the user (receiver pattern)
-   * @param userAddress The user's wallet address
-   * @returns true if proxy is approved for deposits
-   */
-  static async checkProxyApproval(userAddress?: string): Promise<boolean> {
-    if (!userAddress) {
-      return false
-    }
-
-    // NOTE: MultiVault contract doesn't expose an 'approvals' getter function
-    // So we can't check approval status directly. The contract will revert
-    // if approval is missing, so we just return false to always trigger approval request.
-    // This is safe because if the user already approved, the transaction will succeed anyway.
-
-    return false // Always request approval (wallet will handle if already approved)
-  }
-
-  /**
    * Request user to approve proxy for deposits on MultiVault
    * @returns Transaction hash
    */

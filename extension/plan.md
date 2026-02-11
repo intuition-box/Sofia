@@ -115,9 +115,19 @@ Infrastructure Layer (Database, API Clients, Chrome APIs)
 ```
 
 ### 3.2 - Éclater les God Components
-**REPORTÉ** : `AccountTab.tsx` est en cours de modification par un collègue sur `dev`. Attendre son merge avant de toucher à ce composant pour éviter les conflits.
 
-**`HomeConnectedPage.tsx`** (peut être fait maintenant) :
+**`AccountTab.tsx`** (~387 lignes après merge collègue - DÉBLOQUÉ) :
+Problèmes identifiés :
+- Query GraphQL inline (lines 93-109) → déplacer vers `@0xsofia/graphql`
+- Type Discord profile inline (lines 43-49) → déplacer vers `types/social.ts`
+- Console.log/error (lines 119, 124, 236) → remplacer par logger
+- `changes: any` (line 192) → typer correctement
+- Clés OAuth hardcodées (lines 162-167) → extraire vers `lib/config/oauthKeys.ts`
+- Logique métier dans le composant → extraire :
+  - `loadUserStats` → hook `useUserStats` ou enrichir `useAccountStats`
+  - `checkOAuthTokens` + `connectOAuth` + `disconnectOAuth` → hook `useOAuthConnections`
+
+**`HomeConnectedPage.tsx`** :
 - Extraire la logique Chrome storage vers un service dédié
 - Extraire la logique pulse vers le hook existant
 
@@ -256,7 +266,7 @@ Documenter les couches, conventions de types, et patterns utilisés (singletons,
 | 7 | 2.4 Éliminer `as any` | Moyen | Faible | |
 | 8 | 3.3 Barrel files | Faible | Faible | |
 | 9 | 3.4 Réorg utils | Faible | Faible | + storageKeyUtils.ts |
-| 10 | 3.2 God components | Élevé | Élevé | **Attendre merge collègue** |
+| 10 | 3.2 God components | Élevé | Élevé | AccountTab débloqué (merge fait) |
 | 11 | 5.1 ARCHITECTURE.md | Faible | Aucun | |
 
 ## Fichiers critiques à modifier
