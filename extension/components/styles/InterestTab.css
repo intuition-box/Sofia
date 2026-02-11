@@ -22,23 +22,48 @@
 }
 
 .interest-analyze-btn {
-  background: linear-gradient(135deg, #8276ED 0%, #F6427B 50%, #FFBF33 100%);
-  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  color: #000000;
   font-family: 'Gotu', cursive;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(130, 118, 237, 0.3);
+  transition: all 1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.interest-analyze-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.interest-analyze-btn > * {
+  position: relative;
+  z-index: 1;
 }
 
 .interest-analyze-btn:hover:not(:disabled) {
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
   transform: translateY(-2px);
-  box-shadow: 0 6px 28px rgba(130, 118, 237, 0.6);
-  filter: brightness(1.1);
 }
 
 .interest-analyze-btn:disabled {
@@ -332,4 +357,74 @@
   font-size: 14px;
   margin: 0 0 20px 0;
   max-width: 280px;
+}
+
+/* ===== Analyze button footer ===== */
+
+.interest-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+/* ===== Intentions Breakdown ===== */
+
+.intentions-breakdown-section {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.intentions-breakdown-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #FBF7F5;
+  margin: 0 0 14px 0;
+  text-align: left;
+}
+
+.intentions-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.intention-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intention-label {
+  width: 80px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  flex-shrink: 0;
+}
+
+.intention-bar-container {
+  flex: 1;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.intention-bar {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+.intention-value {
+  min-width: 24px;
+  text-align: right;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
 }

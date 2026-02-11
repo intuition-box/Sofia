@@ -4,7 +4,8 @@ import { createHookLogger } from '../../lib/utils/logger'
 import { useRouter } from '../layout/RouterProvider'
 import {
   usePageBlockchainData, useTrustPage, useIntentionCertify,
-  usePageDiscovery, usePageIntentionStats, useDiscoveryScore
+  usePageDiscovery, usePageIntentionStats, useDiscoveryScore,
+  useGoldSystem
 } from '../../hooks'
 import WeightModal from '../modals/WeightModal'
 import StarBorder from './StarBorder'
@@ -63,6 +64,7 @@ const PageBlockchainCard = () => {
     loading: intentionStatsLoading
   } = usePageIntentionStats(currentUrl)
   const { claimDiscoveryGold } = useDiscoveryScore()
+  const { totalGold } = useGoldSystem()
   const [showDetails, setShowDetails] = useState(false)
 
   // Local state for Trust button UI

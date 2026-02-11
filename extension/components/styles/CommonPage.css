@@ -1001,20 +1001,24 @@
 .oauth-predicate-btn {
   display: inline-block;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #C7866C, #D4A574);
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
   border: none;
-  border-radius: 8px;
-  color: #fff;
+  border-radius: 28px;
+  color: #000000;
+  font-family: 'Gotu', cursive;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
   cursor: pointer;
   text-transform: lowercase;
-  transition: all 0.2s ease;
+  transition: all 1s ease;
 }
 
 .oauth-predicate-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(199, 134, 108, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
 }
 
 .oauth-predicate-btn:disabled {

@@ -1132,67 +1132,6 @@
   font-weight: 400;
 }
 
-/* ========== INTENTIONS BREAKDOWN SECTION ========== */
-.intentions-breakdown-section {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.intentions-breakdown-title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: #FBF7F5;
-  margin: 0 0 14px 0;
-  text-align: left;
-}
-
-.intentions-breakdown-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.intention-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.intention-label {
-  width: 80px;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.65);
-  flex-shrink: 0;
-}
-
-.intention-bar-container {
-  flex: 1;
-  height: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.intention-bar {
-  height: 100%;
-  border-radius: 5px;
-  transition: width 0.5s ease;
-}
-
-.intention-value {
-  min-width: 24px;
-  text-align: right;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-}
-
 /* ========== DISCOVERY MECHANISM PANEL ========== */
 .discovery-mechanism-panel {
   background: rgba(0, 0, 0, 0.35);

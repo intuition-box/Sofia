@@ -4,20 +4,12 @@
  */
 
 import { useDiscoveryScore } from '../../../hooks'
-import { DISCOVERY_GOLD_REWARDS, INTENTION_LABELS, type IntentionPurpose } from '../../../types/discovery'
+import { DISCOVERY_GOLD_REWARDS } from '../../../types/discovery'
 import { getLevelColor } from '../../../types/interests'
 import pioneerBadge from '../../ui/img/badges/pioneer.png'
 import explorerBadge from '../../ui/img/badges/explorer.png'
 import contributorBadge from '../../ui/img/badges/contributor.png'
 import trustBadge from '../../ui/img/badges/trust.png'
-
-const INTENTION_GRADIENTS: Record<IntentionPurpose, string> = {
-  for_work: 'linear-gradient(90deg, #1E40AF, #60A5FA)',
-  for_learning: 'linear-gradient(90deg, #065F46, #34D399)',
-  for_fun: 'linear-gradient(90deg,rgb(146, 122, 14), #FBBF24)',
-  for_inspiration: 'linear-gradient(90deg, #5B21B6, #C4B5FD)',
-  for_buying: 'linear-gradient(90deg,rgb(153, 84, 27), #F87171)'
-}
 
 interface StatsTabProps {
   trustedByCount?: number;
@@ -36,10 +28,6 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }
   const currentColor = getLevelColor(level)
   const nextColor = getLevelColor(level + 1)
   const { stats, loading, error, refetch } = useDiscoveryScore()
-
-  const maxIntention = stats
-    ? Math.max(...Object.values(stats.intentionBreakdown), 1)
-    : 1
 
   if (loading && !stats) {
     return (
@@ -141,30 +129,6 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }
           />
         </div>
           <span className="xp-progress-text">{totalXP} XP</span>
-      </div>
-
-      {/* Intentions Breakdown Section */}
-      <div className="intentions-breakdown-section">
-        <h2 className="intentions-breakdown-title">Intentions Breakdown</h2>
-        <div className="intentions-breakdown-list">
-          {(Object.entries(stats.intentionBreakdown) as [IntentionPurpose, number][]).map(
-            ([intention, count]) => (
-              <div key={intention} className="intention-row">
-                <span className="intention-label">{INTENTION_LABELS[intention]}</span>
-                <div className="intention-bar-container">
-                  <div
-                    className="intention-bar"
-                    style={{
-                      width: `${Math.max((count / maxIntention) * 100, 3)}%`,
-                      background: INTENTION_GRADIENTS[intention]
-                    }}
-                  />
-                </div>
-                <span className="intention-value">{count}</span>
-              </div>
-            )
-          )}
-        </div>
       </div>
 
       {/* Discovery Mechanism Panel */}
