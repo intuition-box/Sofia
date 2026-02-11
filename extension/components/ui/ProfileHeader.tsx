@@ -7,6 +7,7 @@
 
 import React from 'react'
 import Avatar from './Avatar'
+import goldPlaceholder from './img/gold/goldplaceholder.svg'
 import '../styles/ProfileHeader.css'
 
 interface ProfileHeaderProps {
@@ -19,6 +20,8 @@ interface ProfileHeaderProps {
   size?: 'small' | 'medium' | 'large'
   verified?: boolean // For social linked badge
   verifiedLabel?: string // Custom verified label
+  totalGold?: number
+  signalsCreated?: number
 }
 
 const ProfileHeader = ({
@@ -30,7 +33,9 @@ const ProfileHeader = ({
   avatarClassName = '',
   size = 'large',
   verified = false,
-  verifiedLabel = 'Social Linked'
+  verifiedLabel = 'Social Linked',
+  totalGold,
+  signalsCreated
 }: ProfileHeaderProps) => {
   // Check if display name is a real name (ENS) or just a truncated wallet address
   const isRealName = displayName && !displayName.startsWith('0x') && !displayName.includes('...')
@@ -62,6 +67,23 @@ const ProfileHeader = ({
           {/* Verified badge */}
           {verified && (
             <span className="social-linked-badge">{verifiedLabel}</span>
+          )}
+          {/* Gold & Signals row */}
+          {(totalGold !== undefined || signalsCreated !== undefined) && (
+            <div className="profile-info-stats">
+              {totalGold !== undefined && (
+                <div className="groups-gold-badge">
+                  <img src={goldPlaceholder} alt="" className="gold-badge-bg" />
+                  <span className="gold-value">{totalGold}</span>
+                </div>
+              )}
+              {signalsCreated !== undefined && (
+                <div className="xp-signals-count">
+                  <span className="xp-signals-value">{signalsCreated}</span>
+                  <span className="xp-signals-label">Signals</span>
+                </div>
+              )}
+            </div>
           )}
         </div>
         {/* Actions slot (e.g., follow/trust buttons) */}

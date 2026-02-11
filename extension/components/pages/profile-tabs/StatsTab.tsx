@@ -5,6 +5,7 @@
 
 import { useDiscoveryScore } from '../../../hooks/useDiscoveryScore'
 import { DISCOVERY_GOLD_REWARDS, INTENTION_LABELS, type IntentionPurpose } from '../../../types/discovery'
+import { getLevelColor } from '../../../types/interests'
 import pioneerBadge from '../../ui/img/badges/pioneer.png'
 import explorerBadge from '../../ui/img/badges/explorer.png'
 import contributorBadge from '../../ui/img/badges/contributor.png'
@@ -32,6 +33,8 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }
   const xpNeededForNext = 100 * level
   const currentProgress = totalXP - xpAtCurrentLevel
   const progressPercent = Math.min((currentProgress / xpNeededForNext) * 100, 100)
+  const currentColor = getLevelColor(level)
+  const nextColor = getLevelColor(level + 1)
   const { stats, loading, error, refetch } = useDiscoveryScore()
 
   const maxIntention = stats
@@ -118,19 +121,25 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }
       {/* XP Progress Bar */}
       <div className="xp-progress-section">
         <div className="xp-progress-labels">
-          <span className="xp-level-pill">Level {level}</span>
+          <div className="xp-level-badge">
+            <svg viewBox="0 0 198 142" xmlns="http://www.w3.org/2000/svg">
+              <path d="M97.3165 0.496638C98.6954 -0.168559 100.303 -0.165385 101.679 0.505274L195.19 46.0741C196.909 46.9118 198 48.6566 198 50.5688V90.3461C198 92.2436 196.926 93.9776 195.227 94.8227L101.716 141.341C100.319 142.036 98.679 142.039 97.2798 141.35L2.79102 94.8177C1.08223 93.9762 0 92.2369 0 90.3322V50.5826C0 48.6632 1.09876 46.9132 2.82751 46.0793L97.3165 0.496638Z" fill={currentColor}/>
+            </svg>
+            <span className="xp-level-badge-text">{level}</span>
+          </div>
           <span className="xp-progress-text">{totalXP} XP</span>
-          <span className="xp-level-pill">Level {level + 1}</span>
+          <div className="xp-level-badge">
+            <svg viewBox="0 0 198 142" xmlns="http://www.w3.org/2000/svg">
+              <path d="M97.3165 0.496638C98.6954 -0.168559 100.303 -0.165385 101.679 0.505274L195.19 46.0741C196.909 46.9118 198 48.6566 198 50.5688V90.3461C198 92.2436 196.926 93.9776 195.227 94.8227L101.716 141.341C100.319 142.036 98.679 142.039 97.2798 141.35L2.79102 94.8177C1.08223 93.9762 0 92.2369 0 90.3322V50.5826C0 48.6632 1.09876 46.9132 2.82751 46.0793L97.3165 0.496638Z" fill={nextColor}/>
+            </svg>
+            <span className="xp-level-badge-text">{level + 1}</span>
+          </div>
         </div>
         <div className="xp-progress-track">
           <div
             className="xp-progress-fill"
-            style={{ width: `${progressPercent}%` }}
+            style={{ width: `${progressPercent}%`, background: currentColor }}
           />
-        </div>
-        <div className="xp-signals-count">
-          <span className="xp-signals-value">{signalsCreated}</span>
-          <span className="xp-signals-label">Signals</span>
         </div>
       </div>
 

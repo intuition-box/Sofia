@@ -873,8 +873,6 @@
 .groups-gold-badge {
   font-size: 12px;
   color: #FBBF24;
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.25);
   border-radius: 12px;
   padding: 2px 8px;
   font-weight: 600;
