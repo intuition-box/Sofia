@@ -29,15 +29,15 @@ const CERT_COLORS: Record<string, string> = {
 // Semi-circular gauge SVG component
 const LevelGauge = ({ progressPercent, levelColor }: { progressPercent: number; levelColor: string }) => {
   const gradId = `gauge-${levelColor.replace('#', '')}`;
-  const radius = 40;
+  const radius = 50;
   const cx = 60;
-  const cy = 52;
+  const cy = 58;
   const halfCircumference = Math.PI * radius;
   const filledLength = (progressPercent / 100) * halfCircumference;
   const dashOffset = halfCircumference - filledLength;
 
   return (
-    <svg viewBox="0 0 120 62" className="interest-gauge-svg">
+    <svg viewBox="0 0 120 66" className="interest-gauge-svg">
       <defs>
         <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor={levelColor} stopOpacity="0.4" />
@@ -104,9 +104,6 @@ const InterestCard = ({ interest, onClick }: InterestCardProps) => {
     .sort(([, a], [, b]) => b - a)[0];
   const accentColor = dominantCert ? CERT_COLORS[dominantCert[0]] : levelColor;
 
-  // Active cert types (with count > 0)
-  const activeCerts = Object.entries(certifications)
-    .filter(([_, count]) => count > 0);
 
   return (
     <div
@@ -120,9 +117,15 @@ const InterestCard = ({ interest, onClick }: InterestCardProps) => {
       {/* Level gauge + badge */}
       <div className="interest-gauge-container">
         <LevelGauge progressPercent={progressPercent} levelColor={levelColor} />
-        <span className="interest-level-badge" style={{ backgroundColor: levelColor }}>
-          LVL {level}
-        </span>
+        <div className="interest-level-badge">
+          <svg viewBox="0 0 198 142" className="interest-level-badge-bg">
+            <path
+              d="M97.3165 0.496638C98.6954 -0.168559 100.303 -0.165385 101.679 0.505274L195.19 46.0741C196.909 46.9118 198 48.6566 198 50.5688V90.3461C198 92.2436 196.926 93.9776 195.227 94.8227L101.716 141.341C100.319 142.036 98.679 142.039 97.2798 141.35L2.79102 94.8177C1.08223 93.9762 0 92.2369 0 90.3322V50.5826C0 48.6632 1.09876 46.9132 2.82751 46.0793L97.3165 0.496638Z"
+              fill={levelColor}
+            />
+          </svg>
+          <span className="interest-level-badge-text">LVL {level}</span>
+        </div>
       </div>
 
       {/* XP progress bar */}
@@ -144,38 +147,21 @@ const InterestCard = ({ interest, onClick }: InterestCardProps) => {
         </span>
       </div>
 
-      {/* Stats headers */}
-      <div className="interest-stats-header">
-        <span>Certs</span>
-        <span>Domains visited</span>
-      </div>
-
-      {/* Two-column: cert types (left) + domain favicons (right) */}
-      <div className="interest-details-grid">
-        <div className="interest-details-left">
-          {activeCerts.map(([type]) => (
-            <div key={type} className="interest-cert-row">
-              <span className="interest-cert-dot" style={{ backgroundColor: CERT_COLORS[type] }} />
-              <span className="interest-cert-label">{type}</span>
-            </div>
-          ))}
-        </div>
-        <div className="interest-details-right">
-          {domains.slice(0, 3).map((domain) => (
-            <div key={domain} className="interest-domain-row">
-              <img
-                src={getFaviconUrl(domain)}
-                alt=""
-                className="interest-domain-icon"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-              <span className="interest-domain-text">{domain}</span>
-            </div>
-          ))}
-          {domains.length > 3 && (
-            <span className="interest-domain-more">+{domains.length - 3} more</span>
-          )}
-        </div>
+      {/* Domain favicons */}
+      <div className="interest-domains-row">
+        {domains.slice(0, 3).map((domain) => (
+          <img
+            key={domain}
+            src={getFaviconUrl(domain)}
+            alt={domain}
+            title={domain}
+            className="interest-domain-icon"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        ))}
+        {domains.length > 3 && (
+          <span className="interest-domain-more">+{domains.length - 3}</span>
+        )}
       </div>
 
       {/* Activity Summary — always pushed to bottom */}
