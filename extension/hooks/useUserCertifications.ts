@@ -9,7 +9,7 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
-import { normalizeUrl } from '../lib/utils/normalizeUrl'
+import { normalizeUrl } from '../lib/utils'
 import { UserAllCertificationsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('useUserCertifications')

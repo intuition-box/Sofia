@@ -23,9 +23,11 @@ export { useBondingCurveData } from './useBondingCurveData'
 export { useDepositPreview } from './useDepositPreview'
 export { useUserAtomStats } from './useUserAtomStats'
 export { useGetAtomAccount } from './useGetAtomAccount'
+export type { AccountAtom } from './useGetAtomAccount'
 export { useAccountStats } from './useAccountStats'
 
 // Social & Follow
+export { useDiscordProfile } from './useDiscordProfile'
 export { useFollowAccount } from './useFollowAccount'
 export { useCreateFollowTriples } from './useCreateFollowTriples'
 export { useCheckFollowStatus } from './useCheckFollowStatus'
@@ -37,9 +39,9 @@ export { useSocialVerifier } from './useSocialVerifier'
 export { useIdentityResolution } from './useIdentityResolution'
 
 // Groups & Intentions
-export { default as useIntentionGroups } from './useIntentionGroups'
+export { default as useIntentionGroups, type IntentionGroupWithStats, type SortOption } from './useIntentionGroups'
 export { useOnChainIntentionGroups } from './useOnChainIntentionGroups'
-export { default as useGroupOnChainCertifications } from './useGroupOnChainCertifications'
+export { default as useGroupOnChainCertifications, type UrlCertificationStatus } from './useGroupOnChainCertifications'
 export { default as useGroupAmplify } from './useGroupAmplify'
 export { usePageIntentionStats } from './usePageIntentionStats'
 export { default as useIntentionCategories } from './useIntentionCategories'
@@ -53,7 +55,7 @@ export { usePageDiscovery } from './usePageDiscovery'
 export { useQuestSystem } from './useQuestSystem'
 export { useUserQuests } from './useUserQuests'
 export { useGoldSystem } from './useGoldSystem'
-export { default as useLevelUp } from './useLevelUp'
+export { default as useLevelUp, type LevelUpPreview } from './useLevelUp'
 
 // Bookmarks & Lists
 export { useBookmarks } from './useBookmarks'

@@ -4,23 +4,13 @@ import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
 import discordIcon from '../../ui/social/discord.svg'
 import xIcon from '../../ui/social/x.svg'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
+import { useWalletFromStorage } from '../../../hooks'
 import { getAddress } from 'viem'
-import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
+import { useSocialVerifier } from '../../../hooks'
 import { createHookLogger } from '../../../lib/utils/logger'
 import '../../styles/AccountTab.css'
 
 const logger = createHookLogger('SocialsTab')
-
-interface SocialsTabProps {
-  onDiscordProfileChange?: (profile: {
-    id: string
-    username: string
-    global_name?: string
-    avatar?: string
-    verified?: boolean
-  } | null) => void
-}
 
 type Platform = 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter'
 
@@ -32,7 +22,7 @@ const PLATFORMS: { key: Platform; label: string; icon: string; iconClass: string
   { key: 'twitter', label: 'X', icon: xIcon, iconClass: 'twitter-icon' },
 ]
 
-const SocialsTab = ({ onDiscordProfileChange }: SocialsTabProps) => {
+const SocialsTab = () => {
   const { walletAddress } = useWalletFromStorage()
   const { isSocialVerified, canVerify, isVerifying, verifySocials } = useSocialVerifier()
 
@@ -54,9 +44,8 @@ const SocialsTab = ({ onDiscordProfileChange }: SocialsTabProps) => {
       const checksumAddr = getAddress(walletAddress)
 
       const tokenKeys = PLATFORMS.map(p => `oauth_token_${p.key}_${checksumAddr}`)
-      const discordProfileKey = `discord_profile_${checksumAddr}`
 
-      const result = await chrome.storage.local.get([...tokenKeys, discordProfileKey])
+      const result = await chrome.storage.local.get(tokenKeys)
 
       const tokens: Record<string, boolean> = {}
       for (const p of PLATFORMS) {
@@ -65,33 +54,20 @@ const SocialsTab = ({ onDiscordProfileChange }: SocialsTabProps) => {
 
       setOauthTokens(tokens as Record<Platform, boolean>)
 
-      if (result[discordProfileKey]) {
-        onDiscordProfileChange?.(result[discordProfileKey])
-      }
     }
 
     checkOAuthTokens()
 
-    const handleStorageChange = (changes: any) => {
-      const changedKeys = Object.keys(changes)
-      const hasOAuthChange = changedKeys.some(key => key.startsWith('oauth_token_'))
-      const hasDiscordProfileChange = changedKeys.some(key => key.startsWith('discord_profile_'))
-
+    const handleStorageChange = (changes: Record<string, chrome.storage.StorageChange>) => {
+      const hasOAuthChange = Object.keys(changes).some(key => key.startsWith('oauth_token_'))
       if (hasOAuthChange) {
         checkOAuthTokens()
-      }
-      if (hasDiscordProfileChange && walletAddress) {
-        const checksumAddr = getAddress(walletAddress)
-        const discordProfileKey = `discord_profile_${checksumAddr}`
-        if (changes[discordProfileKey]) {
-          onDiscordProfileChange?.(changes[discordProfileKey].newValue || null)
-        }
       }
     }
 
     chrome.storage.onChanged.addListener(handleStorageChange)
     return () => chrome.storage.onChanged.removeListener(handleStorageChange)
-  }, [walletAddress, onDiscordProfileChange])
+  }, [walletAddress])
 
   const connectOAuth = (platform: Platform) => {
     chrome.runtime.sendMessage({ type: 'OAUTH_CONNECT', platform })
@@ -106,11 +82,10 @@ const SocialsTab = ({ onDiscordProfileChange }: SocialsTabProps) => {
 
     if (platform === 'discord') {
       await chrome.storage.local.remove(`discord_profile_${checksumAddr}`)
-      onDiscordProfileChange?.(null)
     }
 
     logger.debug(`Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
-  }, [walletAddress, onDiscordProfileChange])
+  }, [walletAddress])
 
   return (
     <div className="socials-tab">

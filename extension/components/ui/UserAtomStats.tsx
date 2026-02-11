@@ -1,4 +1,4 @@
-import { useUserAtomStats } from '../../hooks/useUserAtomStats'
+import { useUserAtomStats } from '../../hooks'
 import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/AccountStats.css'
 

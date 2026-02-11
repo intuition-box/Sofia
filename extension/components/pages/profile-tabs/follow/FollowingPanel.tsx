@@ -3,13 +3,11 @@
  */
 
 import { useEffect, useState } from 'react'
-import { useFollowing } from '../../../../hooks/useFollowing'
+import { useFollowing, useCheckFollowStatus, useRedeemTriple } from '../../../../hooks'
 import { useRouter } from '../../../layout/RouterProvider'
 import type { FollowAccountVM } from '../../../../types/follows'
-import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
+import { refetchWithBackoff } from '../../../../lib/utils'
 import { intuitionGraphqlClient } from '../../../../lib/clients/graphql-client'
-import { useCheckFollowStatus } from '../../../../hooks/useCheckFollowStatus'
-import { useRedeemTriple } from '../../../../hooks/useRedeemTriple'
 import TrustAccountButton from '../../../ui/TrustAccountButton'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'

@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { useWalletFromStorage, useFollowAccount, type AccountAtom } from '../../hooks'
 import FollowModal from '../modals/FollowModal'
-import { useFollowAccount } from '../../hooks/useFollowAccount'
-import type { AccountAtom } from '../../hooks/useGetAtomAccount'
 import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/FollowButton.css'
 

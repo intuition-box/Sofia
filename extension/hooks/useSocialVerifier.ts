@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createHookLogger } from '../lib/utils/logger'
-import { getWalletKey } from '../lib/utils/storageKeyUtils'
+import { getWalletKey } from '../lib/utils'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { MASTRA_API_URL } from '../config'
 import { getPublicClient } from '../lib/clients/viemClients'

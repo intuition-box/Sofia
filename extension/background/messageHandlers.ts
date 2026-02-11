@@ -1,22 +1,17 @@
-import { MessageBus } from "../lib/services/MessageBus"
+import {
+  badgeService, pageDataService, pulseService, tripletStorageService,
+  groupManager, xpService, XPServiceClass, goldService, getLevelUpCost,
+  currencyMigrationService, sessionTracker, levelUpService,
+  type TrackedUrl, type DomainCluster
+} from "../lib/services"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
 import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { getAddress } from "viem"
 import { getAllBookmarks, getAllHistory } from "./messageSenders"
-import { badgeService } from "../lib/services/BadgeService"
-import { pageDataService } from "../lib/services/PageDataService"
-import { pulseService } from "../lib/services/PulseService"
-import { tripletStorageService } from "../lib/services/TripletStorageService"
 import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
-import { groupManager } from "../lib/services/GroupManager"
-import { IntentionGroupsService } from "../lib/database/indexedDB-methods"
-import { xpService, XPServiceClass } from "../lib/services/XPService"
-import { goldService, getLevelUpCost } from "../lib/services/GoldService"
-import { currencyMigrationService } from "../lib/services/CurrencyMigrationService"
-import { sessionTracker, type TrackedUrl, type DomainCluster } from "../lib/services/SessionTracker"
-import { levelUpService } from "../lib/services/LevelUpService"
+import { IntentionGroupsService } from "../lib/database"
 import { createServiceLogger } from '../lib/utils/logger'
 
 const logger = createServiceLogger('MessageHandlers')

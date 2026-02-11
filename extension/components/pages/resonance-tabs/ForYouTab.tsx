@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from '../../layout/RouterProvider'
-import { useCircleInterestRecommendations } from '../../../hooks/useCircleInterestRecommendations'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
+import { useCircleInterestRecommendations, useWalletFromStorage } from '../../../hooks'
 import SofiaLoader from '../../ui/SofiaLoader'
 import '../../styles/CircleFeedTab.css'
 

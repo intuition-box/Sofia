@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { RecommendationService } from '../lib/services/ai/RecommendationService'
+import { RecommendationService } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import type { Recommendation } from '../lib/services/ai/types'
 

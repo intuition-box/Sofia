@@ -6,44 +6,11 @@ import { useState, useCallback } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
-import { batchFetchIPFS } from '../lib/utils/ipfsCache'
-import { batchGetEnsAvatars } from '../lib/utils/ensUtils'
+import { batchFetchIPFS, batchGetEnsAvatars } from '../lib/utils'
 import { useGetFollowingPositionsQuery, GetFollowingPositionsQuery } from '@0xsofia/graphql'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useFollowing')
-
-interface GraphQLFollowingResponse {
-  triples: Array<{
-    term_id: string
-    created_at: string
-    subject: { label: string; term_id: string; type: string }
-    predicate: { label: string; term_id: string }
-    object: { label: string; term_id: string; type: string; image?: string; data?: string
-      accounts: Array<{
-        atom: {
-          term: {
-            total_market_cap: string
-            positions_aggregate: {
-              aggregate: {
-                count: number
-              }
-            }
-          }
-        }
-      }>
-    }
-    term: {
-      vaults: Array<{
-        positions: Array<{
-          account_id: string
-          shares: string
-          created_at: string
-        }>
-      }>
-    }
-  }>
-}
 
 
 /**

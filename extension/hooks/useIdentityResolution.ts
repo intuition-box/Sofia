@@ -14,7 +14,7 @@ import { createPublicClient, http, getAddress } from 'viem'
 import { mainnet } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { getEnsAvatar } from '../lib/utils/ensUtils'
+import { getEnsAvatar } from '../lib/utils'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useIdentityResolution')

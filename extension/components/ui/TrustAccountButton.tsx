@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useTrustAccount } from '../../hooks/useTrustAccount'
+import { useTrustAccount } from '../../hooks'
 import WeightModal from '../modals/WeightModal'
 import type { EchoTriplet } from '../../types/blockchain'
 import { createHookLogger } from '../../lib/utils/logger'

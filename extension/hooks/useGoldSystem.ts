@@ -15,7 +15,7 @@
 
 import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { getWalletKey } from '../lib/utils/storageKeyUtils'
+import { getWalletKey } from '../lib/utils'
 
 export interface GoldSystemResult {
   discoveryGold: number

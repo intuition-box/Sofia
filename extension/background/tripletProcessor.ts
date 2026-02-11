@@ -1,4 +1,4 @@
-import { tripletsDataService } from "../lib/database/indexedDB-methods"
+import { tripletsDataService } from "../lib/database"
 import { createServiceLogger } from '../lib/utils/logger'
 
 const logger = createServiceLogger('TripletProcessor')

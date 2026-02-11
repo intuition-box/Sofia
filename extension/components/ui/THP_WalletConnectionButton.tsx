@@ -1,4 +1,4 @@
-import { useWalletFromStorage, openAuthTab, disconnectWallet } from '../../hooks/useWalletFromStorage'
+import { useWalletFromStorage, openAuthTab, disconnectWallet } from '../../hooks'
 
 interface WalletConnectionButtonProps {
   disabled?: boolean;

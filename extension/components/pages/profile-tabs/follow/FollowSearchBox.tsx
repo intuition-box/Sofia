@@ -3,9 +3,8 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useGetAtomAccount, AccountAtom } from '../../../../hooks/useGetAtomAccount'
-import { useCheckFollowStatus } from '../../../../hooks/useCheckFollowStatus'
-import { debounce } from '../../../../lib/utils/refetchUtils'
+import { useGetAtomAccount, useCheckFollowStatus, type AccountAtom } from '../../../../hooks'
+import { debounce } from '../../../../lib/utils'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
 import FollowButton from '../../../ui/FollowButton'

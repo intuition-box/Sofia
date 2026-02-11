@@ -6,8 +6,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { messageBus } from '../lib/services/MessageBus'
-import { isRestrictedUrl } from '../lib/utils/pageRestriction'
+import { messageBus } from '../lib/services'
+import { isRestrictedUrl } from '../lib/utils'
 import { createHookLogger } from '../lib/utils/logger'
 import type { PageBlockchainTriplet, PageBlockchainCounts, PageAtomInfo, UsePageBlockchainDataResult } from '../types/page'
 import {

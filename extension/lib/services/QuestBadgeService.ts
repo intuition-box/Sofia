@@ -5,7 +5,7 @@
  */
 
 import { createServiceLogger } from '../utils/logger'
-import { getWalletKey } from '../utils/storageKeyUtils'
+import { getWalletKey } from '../utils'
 import { stringToHex, getAddress } from 'viem'
 import { getClients, getPublicClient } from '../clients/viemClients'
 import { intuitionGraphqlClient } from '../clients/graphql-client'

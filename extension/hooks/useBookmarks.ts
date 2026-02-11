@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BookmarkService } from '../lib/database/indexedDB-methods'
+import { BookmarkService } from '../lib/database'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { getAddress } from 'viem'
 import type { BookmarkList, BookmarkedTriplet, UseBookmarksResult } from '../types/bookmarks'

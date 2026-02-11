@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { parseEther, formatUnits } from 'viem'
 import type { DepositPreview, CurveType } from '../types/bonding-curve'
-import { BlockchainService } from '../lib/services/blockchainService'
+import { BlockchainService } from '../lib/services'
 import { usePublicClient } from 'wagmi'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { MULTIVAULT_CONTRACT_ADDRESS } from '../lib/config/chainConfig'

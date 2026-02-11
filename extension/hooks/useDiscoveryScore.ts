@@ -15,7 +15,7 @@ import { useSyncExternalStore } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import type { IntentionPurpose, UserDiscoveryStats } from '../types/discovery'
 import { DISCOVERY_GOLD_REWARDS } from '../types/discovery'
-import { goldService } from '../lib/services/GoldService'
+import { goldService } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import {
   UserIntentionTriplesDocument,

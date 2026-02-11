@@ -1,6 +1,5 @@
-import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { useWalletFromStorage, useQuestSystem } from '../../hooks'
 import { useRouter } from './RouterProvider'
-import { useQuestSystem } from '../../hooks/useQuestSystem'
 import { Home } from 'lucide-react'
 import Dock, { DockItemData } from '../ui/NavigationBar'
 import sofiaIcon from '../ui/icons/Icon=Sofia.svg'

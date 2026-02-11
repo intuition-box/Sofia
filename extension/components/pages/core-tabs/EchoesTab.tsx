@@ -4,11 +4,10 @@
  */
 
 import { useEffect, useRef } from 'react'
-import { useIntentionGroups, SortOption } from '../../../hooks/useIntentionGroups'
+import { useIntentionGroups, useGoldSystem, type SortOption } from '../../../hooks'
 import GroupBentoCard from '../../ui/GroupBentoCard'
 import GroupDetailView from '../../ui/GroupDetailView'
 import SofiaLoader from '../../ui/SofiaLoader'
-import { useGoldSystem } from '../../../hooks/useGoldSystem'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'

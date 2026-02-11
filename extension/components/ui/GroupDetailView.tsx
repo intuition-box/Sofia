@@ -6,21 +6,18 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import type { IntentionGroupWithStats } from '../../hooks/useIntentionGroups'
+import {
+  useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp, useGoldSystem, useGroupAmplify,
+  type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
+} from '../../hooks'
 import type { GroupUrlRecord } from '~types/database'
-import type { CertificationType } from '../../lib/services/GroupManager'
+import type { CertificationType } from '../../lib/services'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
-import { useIntentionCertify } from '../../hooks/useIntentionCertify'
-import { useRedeemTriple } from '../../hooks/useRedeemTriple'
-import { useGroupOnChainCertifications, type UrlCertificationStatus } from '../../hooks/useGroupOnChainCertifications'
-import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
-import { useGoldSystem } from '../../hooks/useGoldSystem'
-import { useGroupAmplify } from '../../hooks/useGroupAmplify'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import WeightModal from '../modals/WeightModal'
-import { normalizeUrl } from '../../lib/utils/normalizeUrl'
+import { normalizeUrl } from '../../lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('GroupDetailView')

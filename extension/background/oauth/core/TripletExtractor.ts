@@ -1,9 +1,8 @@
 // Triplet extraction and storage logic
 import { UserData, Triplet } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
-import { tripletsDataService } from '../../../lib/database/indexedDB-methods'
-import { badgeService } from '../../../lib/services/BadgeService'
-import { groupManager } from '../../../lib/services/GroupManager'
+import { tripletsDataService } from '../../../lib/database'
+import { badgeService, groupManager } from '../../../lib/services'
 import type { GroupUrlRecord } from '~types/database'
 import { createServiceLogger } from '../../../lib/utils/logger'
 

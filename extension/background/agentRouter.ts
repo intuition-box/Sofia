@@ -3,7 +3,7 @@
  * All agents (SofIA, ThemeExtractor, Pulse, Recommendation, ChatBot) use Mastra HTTP
  */
 
-import { sofiaDB, STORES } from "../lib/database/indexedDB"
+import { sofiaDB, STORES } from "../lib/database"
 import {
   sendThemeExtractionToMastra,
   sendPulseToMastra,

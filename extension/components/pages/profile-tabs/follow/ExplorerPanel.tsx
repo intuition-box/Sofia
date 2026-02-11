@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react'
 import { useRouter } from '../../../layout/RouterProvider'
-import type { AccountAtom } from '../../../../hooks/useGetAtomAccount'
+import type { AccountAtom } from '../../../../hooks'
 import { useGetTopSofiaAccountsQuery } from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '../../../../lib/config/chainConfig'
 import { FollowSearchBox } from './FollowSearchBox'

@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useBookmarks } from '../../../hooks/useBookmarks'
-import { useIntentionCategories } from '../../../hooks/useIntentionCategories'
-import { useIntuitionTriplets } from '../../../hooks/useIntuitionTriplets'
+import { useBookmarks, useIntentionCategories, useIntuitionTriplets } from '../../../hooks'
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import '../../styles/CoreComponents.css'

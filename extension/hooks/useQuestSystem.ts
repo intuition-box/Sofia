@@ -17,10 +17,8 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { useBookmarks } from './useBookmarks'
 import { useDiscoveryScore } from './useDiscoveryScore'
 import { useCreateAtom } from './useCreateAtom'
-import { QuestBadgeService } from '../lib/services/QuestBadgeService'
-import { QuestProgressService } from '../lib/services/QuestProgressService'
-import { computeQuestStatuses, calculateLevelFromXP, calculateXPForNextLevel, getClaimId } from '../lib/utils/questStatusHelpers'
-import { getWalletKey } from '../lib/utils/storageKeyUtils'
+import { QuestBadgeService, QuestProgressService } from '../lib/services'
+import { computeQuestStatuses, calculateLevelFromXP, calculateXPForNextLevel, getClaimId, getWalletKey } from '../lib/utils'
 import { createHookLogger } from '../lib/utils/logger'
 import { QUEST_DEFINITIONS } from '../types/questTypes'
 import type { Quest, UserProgress, QuestSystemResult } from '../types/questTypes'
@@ -62,6 +60,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     twitchConnected: false, twitterConnected: false,
     pioneerCount: 0, explorerCount: 0, contributorCount: 0,
     totalDiscoveries: 0, uniqueIntentionTypes: 0,
+    goldAccumulated: 0,
   })
 
   const [loading, setLoading] = useState(true)

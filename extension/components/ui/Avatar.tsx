@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils/avatar'
+import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Avatar.css'
 

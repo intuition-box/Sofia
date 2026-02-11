@@ -11,7 +11,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../lib/config/constants'
-import { batchFetchIPFS } from '../lib/utils/ipfsCache'
+import { batchFetchIPFS } from '../lib/utils'
 import { createHookLogger } from '../lib/utils/logger'
 
 import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../types/intuition'

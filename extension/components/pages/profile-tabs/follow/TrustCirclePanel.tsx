@@ -3,12 +3,10 @@
  */
 
 import { useEffect, useState } from 'react'
-import { useTrustCircle } from '../../../../hooks/useTrustCircle'
-import { useWeightOnChain } from '../../../../hooks/useWeightOnChain'
-import { useRedeemTriple } from '../../../../hooks/useRedeemTriple'
+import { useTrustCircle, useWeightOnChain, useRedeemTriple } from '../../../../hooks'
 import { useRouter } from '../../../layout/RouterProvider'
 import type { FollowAccountVM } from '../../../../types/follows'
-import { refetchWithBackoff } from '../../../../lib/utils/refetchUtils'
+import { refetchWithBackoff } from '../../../../lib/utils'
 import { intuitionGraphqlClient } from '../../../../lib/clients/graphql-client'
 import StakeModal from '../../../modals/StakeModal'
 import  Avatar  from '../../../ui/Avatar'

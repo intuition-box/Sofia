@@ -5,8 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage';
-import { useInterestAnalysis } from '../../../hooks/useInterestAnalysis';
+import { useWalletFromStorage, useInterestAnalysis } from '../../../hooks';
 import InterestCard from '../../ui/InterestCard';
 import SofiaLoader from '../../ui/SofiaLoader';
 import xIcon from '../../ui/social/x.svg';

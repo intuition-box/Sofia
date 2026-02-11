@@ -1,4 +1,4 @@
-import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { useWalletFromStorage } from '../../hooks'
 import Background from './background'
 import { useRouter } from './RouterProvider'
 import '../styles/Global.css'

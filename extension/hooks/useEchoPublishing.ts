@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
-import { tripletsDataService } from '../lib/database/indexedDB-methods'
+import { tripletsDataService } from '../lib/database'
 import type { EchoTriplet, TripleOnChainResult, BatchTripleResult } from '../types/blockchain'
 
 /**

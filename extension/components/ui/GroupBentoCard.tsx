@@ -4,9 +4,8 @@
  * Shows XP progress toward next level based on on-chain certifications
  */
 
-import type { IntentionGroupWithStats } from '../../hooks/useIntentionGroups'
-import type { CertificationType } from '../../lib/services/GroupManager'
-import { useGroupOnChainCertifications } from '../../hooks/useGroupOnChainCertifications'
+import { useGroupOnChainCertifications, type IntentionGroupWithStats } from '../../hooks'
+import type { CertificationType } from '../../lib/services'
 
 interface GroupBentoCardProps {
   group: IntentionGroupWithStats

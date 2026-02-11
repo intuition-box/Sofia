@@ -3,7 +3,7 @@
  */
 
 import { useEffect } from 'react'
-import { useFollowers } from '../../../../hooks/useFollowers'
+import { useFollowers } from '../../../../hooks'
 import { useRouter } from '../../../layout/RouterProvider'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'

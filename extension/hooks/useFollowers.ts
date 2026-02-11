@@ -6,44 +6,11 @@ import { useState, useCallback } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
-import { batchFetchIPFS } from '../lib/utils/ipfsCache'
-import { batchGetEnsAvatars } from '../lib/utils/ensUtils'
+import { batchFetchIPFS, batchGetEnsAvatars } from '../lib/utils'
 import { useGetAccountAtomByWalletQuery, useGetMyFollowersQuery, useGetAtomDataByLabelsQuery } from '@0xsofia/graphql'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useFollowers')
-
-interface GraphQLFollowersResponse {
-  triples: Array<{
-    term_id: string
-    created_at: string
-    subject: { label: string; term_id: string }
-    predicate: { label: string; term_id: string }
-    object: { label: string; term_id: string }
-    term: {
-      vaults: Array<{
-        total_shares: string
-        positions: Array<{
-          account: {
-            id: string
-            label: string
-            image?: string
-            atom_id: string
-            atom: {
-              term_id: string
-              label: string
-              data?: string
-              type: string
-              image?: string
-            }
-          }
-          shares: string
-          created_at: string
-        }>
-      }>
-    }
-  }>
-}
 
 
 /**
@@ -119,6 +86,8 @@ export function useFollowers(walletAddress: string | undefined): FollowQueryResu
           tripleId: triple.term_id,
           createdAt: new Date(pos.created_at).getTime(),
           trustAmount,
+          signalsCount: 0,
+          marketCapWei: '0',
           image: pos.account.image || pos.account.atom?.image || undefined,
           walletAddress: walletAddr,
           meta: undefined // Will be populated by background fetch

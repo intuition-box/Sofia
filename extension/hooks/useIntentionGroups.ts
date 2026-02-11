@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { IntentionGroupRecord, GroupUrlRecord } from '~types/database'
 import type { IntentionGroupWithStats, SortOption } from '~types/groups'
-import type { CertificationType } from '~lib/services/GroupManager'
+import type { CertificationType } from '~lib/services'
 import { EXCLUDED_URL_PATTERNS } from '~background/constants'
 import { useOnChainIntentionGroups, type OnChainUrl } from './useOnChainIntentionGroups'
 import { createHookLogger } from '../lib/utils/logger'

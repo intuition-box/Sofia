@@ -3,7 +3,7 @@
  * Displays discovery statistics and intention distribution
  */
 
-import { useDiscoveryScore } from '../../../hooks/useDiscoveryScore'
+import { useDiscoveryScore } from '../../../hooks'
 import { DISCOVERY_GOLD_REWARDS, INTENTION_LABELS, type IntentionPurpose } from '../../../types/discovery'
 import { getLevelColor } from '../../../types/interests'
 import pioneerBadge from '../../ui/img/badges/pioneer.png'

@@ -1,5 +1,5 @@
 import { setupMessageHandlers } from "./messageHandlers";
-import { MessageBus } from "../lib/services/MessageBus";
+import { MessageBus } from "../lib/services";
 import { initializeThemeIconManager } from "./themeIconManager";
 import { createServiceLogger } from '../lib/utils/logger'
 import "./oauth/index"; // Initialize OAuth service

@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from '../../layout/RouterProvider'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
-import { useIntentionCategories } from '../../../hooks/useIntentionCategories'
+import { useWalletFromStorage, useIntentionCategories } from '../../../hooks'
 import {
   useGetTrustCirclePositionsQuery,
   useGetSofiaTrustedActivityQuery

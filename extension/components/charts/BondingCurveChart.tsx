@@ -1,4 +1,4 @@
-import { useBondingCurveData } from '../../hooks/useBondingCurveData'
+import { useBondingCurveData } from '../../hooks'
 import type { CurveType, TimeRange } from '../../types/bonding-curve'
 
 interface BondingCurveChartProps {

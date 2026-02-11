@@ -2,12 +2,10 @@ import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { createHookLogger } from '../../lib/utils/logger'
 import { useRouter } from '../layout/RouterProvider'
-import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
-import { useTrustPage } from '../../hooks/useTrustPage'
-import { useIntentionCertify } from '../../hooks/useIntentionCertify'
-import { usePageDiscovery } from '../../hooks/usePageDiscovery'
-import { usePageIntentionStats } from '../../hooks/usePageIntentionStats'
-import { useDiscoveryScore } from '../../hooks/useDiscoveryScore'
+import {
+  usePageBlockchainData, useTrustPage, useIntentionCertify,
+  usePageDiscovery, usePageIntentionStats, useDiscoveryScore
+} from '../../hooks'
 import WeightModal from '../modals/WeightModal'
 import StarBorder from './StarBorder'
 import { IntentionBubbleSelector } from './IntentionBubbleSelector'
@@ -27,7 +25,7 @@ interface ModalTriplet {
   intention?: IntentionPurpose
 }
 import { INTENTION_PREDICATES } from '../../types/discovery'
-import { normalizeUrl } from '../../lib/utils/normalizeUrl'
+import { normalizeUrl } from '../../lib/utils'
 import '../styles/PageBlockchainCard.css'
 
 // Timing constants for UI delays

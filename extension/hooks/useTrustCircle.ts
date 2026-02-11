@@ -6,32 +6,11 @@ import { useState, useCallback } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
-import { batchFetchIPFS } from '../lib/utils/ipfsCache'
-import { batchGetEnsAvatars } from '../lib/utils/ensUtils'
+import { batchFetchIPFS, batchGetEnsAvatars } from '../lib/utils'
 import { useGetMyTrustCircleQuery, useGetAtomDataByLabelsQuery } from '@0xsofia/graphql'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useTrustCircle')
-
-interface GraphQLTrustCircleResponse {
-  triples: Array<{
-    term_id: string
-    created_at: string
-    subject: { label: string; term_id: string; type: string }
-    predicate: { label: string; term_id: string }
-    object: { label: string; term_id: string; type: string; image?: string; data?: string }
-    term: {
-      vaults: Array<{
-        curve_id: string
-        positions: Array<{
-          account_id: string
-          shares: string
-          created_at: string
-        }>
-      }>
-    }
-  }>
-}
 
 
 /**
@@ -104,6 +83,8 @@ export function useTrustCircle(walletAddress: string | undefined): FollowQueryRe
           tripleId: triple.term_id,
           createdAt: new Date(triple.created_at).getTime(),
           trustAmount,
+          signalsCount: 0,
+          marketCapWei: '0',
           image: account.image || undefined,
           walletAddress: walletAddr,
           meta: undefined // Will be populated by background fetch
