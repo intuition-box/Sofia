@@ -187,7 +187,7 @@
 }
 
 .connect-button.twitter:hover {
-  background-color: #00000079;
+  background-color: #5d5d5d;
   border-color: #33333350;
 }
 
@@ -1338,6 +1338,10 @@
   background: #cd7f32;
 }
 
+.achievement-type-badge.gold {
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+}
+
 /* Card info area */
 .achievement-card-info {
   padding: 10px 12px 12px;
@@ -1415,6 +1419,10 @@
 
 .achievement-xp.discovery {
   background: #cd7f32;
+}
+
+.achievement-xp.gold {
+  background: linear-gradient(135deg, #FFD700, #DAA520);
 }
 
 /* Locked achievements */

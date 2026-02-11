@@ -24,6 +24,7 @@ import signalImg from '../../ui/img/questssuccess/Signal.png'
 import socialImg from '../../ui/img/questssuccess/social.png'
 import streakImg from '../../ui/img/questssuccess/streak.png'
 import trustImg from '../../ui/img/questssuccess/trust.png'
+import goldImg from '../../ui/img/questssuccess/gold.png'
 
 const typeImages: Record<string, string> = {
   signal: signalImg,
@@ -37,6 +38,7 @@ const typeImages: Record<string, string> = {
   curator: curatorImg,
   social: socialImg,
   discovery: discoveryImg,
+  gold: goldImg,
 }
 
 const platformImages: Record<string, string> = {
@@ -66,6 +68,7 @@ const typeLabels: Record<string, string> = {
   curator: 'Curator',
   social: 'Social',
   discovery: 'Discovery',
+  gold: 'Gold',
 }
 
 interface AchievementsTabProps {
