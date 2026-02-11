@@ -65,6 +65,9 @@ export const PREDICATE_IDS = {
   VISITS_FOR_FUN: "",
   VISITS_FOR_INSPIRATION: "",
   VISITS_FOR_BUYING: "",
+  // Vote predicates (nested triples - like/dislike certifications)
+  LIKE: "",
+  DISLIKE: "",
   // OAuth predicates (will be created on first use if empty on testnet)
   MEMBER_OF: "",
   OWNER_OF: "",
@@ -92,6 +95,9 @@ export const PREDICATE_NAMES = {
   VISITS_FOR_FUN: "visits for fun",
   VISITS_FOR_INSPIRATION: "visits for inspiration",
   VISITS_FOR_BUYING: "visits for buying",
+  // Vote predicates
+  LIKE: "like",
+  DISLIKE: "dislike",
   // OAuth predicates (from platform imports)
   MEMBER_OF: "member_of",
   OWNER_OF: "owner_of",

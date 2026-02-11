@@ -66,6 +66,9 @@ export const PREDICATE_IDS = {
   VISITS_FOR_FUN: "0xb8b8ab8d23678edad85cec5e580caeb564a88b532f8dfd884f93dcf2cab32459",
   VISITS_FOR_INSPIRATION: "0xd635b7467c9f89a9d243b82c5e4f6a97d238ad91a914b5de9949e107e5f59825",
   VISITS_FOR_BUYING: "0x3b2089f0aa24da0473fd1ad01c555c80c6b17e6ac1de39c68c588640487f845d",
+  // Vote predicates (nested triples - like/dislike certifications)
+  LIKE: "",
+  DISLIKE: "",
   // OAuth predicates (from platform imports)
   MEMBER_OF: "0x928694ed3c5b9f2e119618524ab777177a74e657f09fc488fca98d2790242fd0",
   OWNER_OF: "0x1c83db8148bee049fb7ba383924762f4d0cc2d686e8bdd57dd9fabde05b8bb4a",
@@ -96,6 +99,9 @@ export const PREDICATE_NAMES = {
   VISITS_FOR_FUN: "visits for fun",
   VISITS_FOR_INSPIRATION: "visits for inspiration",
   VISITS_FOR_BUYING: "visits for buying",
+  // Vote predicates
+  LIKE: "like",
+  DISLIKE: "dislike",
   // OAuth predicates (from platform imports)
   MEMBER_OF: "member_of",
   OWNER_OF: "owner_of",

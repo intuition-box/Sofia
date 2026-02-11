@@ -69,6 +69,13 @@ export const useCreateTripleOnChain = () => {
     if (predicateName === 'visits for buying') {
       return PREDICATE_IDS.VISITS_FOR_BUYING || null
     }
+    // Vote predicates
+    if (predicateName === 'like') {
+      return PREDICATE_IDS.LIKE || null
+    }
+    if (predicateName === 'dislike') {
+      return PREDICATE_IDS.DISLIKE || null
+    }
     return null
   }
 
