@@ -127,7 +127,6 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }
             </svg>
             <span className="xp-level-badge-text">{level}</span>
           </div>
-          <span className="xp-progress-text">{totalXP} XP</span>
           <div className="xp-level-badge">
             <svg viewBox="0 0 198 142" xmlns="http://www.w3.org/2000/svg">
               <path d="M97.3165 0.496638C98.6954 -0.168559 100.303 -0.165385 101.679 0.505274L195.19 46.0741C196.909 46.9118 198 48.6566 198 50.5688V90.3461C198 92.2436 196.926 93.9776 195.227 94.8227L101.716 141.341C100.319 142.036 98.679 142.039 97.2798 141.35L2.79102 94.8177C1.08223 93.9762 0 92.2369 0 90.3322V50.5826C0 48.6632 1.09876 46.9132 2.82751 46.0793L97.3165 0.496638Z" fill={nextColor}/>
@@ -141,6 +140,7 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }
             style={{ width: `${progressPercent}%`, background: currentColor }}
           />
         </div>
+          <span className="xp-progress-text">{totalXP} XP</span>
       </div>
 
       {/* Intentions Breakdown Section */}
