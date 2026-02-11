@@ -396,7 +396,7 @@ const PageBlockchainCard = () => {
                 ? '#FFD700'  // Gold - Pioneer opportunity
                 : totalCertifications < 10
                   ? '#3B82F6'  // Blue - Explorer opportunity
-                  : '#9CA3AF'  // Gray - Contributor
+                  : '#8B5CF6'  // Purple - Contributor
             }
             speed="10s"
             thickness={5}
@@ -441,7 +441,7 @@ const PageBlockchainCard = () => {
                 <div className={`discovery-badge discovery-badge-opportunity ${
                   totalCertifications === 0 ? 'discovery-badge-be-first' :
                   totalCertifications < 10 ? 'discovery-badge-explorer-spot' :
-                  'discovery-badge-info'
+                  'discovery-badge-contributor'
                 }`}>
                   <span className="badge-rank">
                     {totalCertifications === 0 && '#1'}
@@ -451,7 +451,7 @@ const PageBlockchainCard = () => {
                   <span className="badge-status">
                     {totalCertifications === 0 && 'Pioneer'}
                     {totalCertifications > 0 && totalCertifications < 10 && 'Explorer'}
-                    {totalCertifications >= 10 && 'certified'}
+                    {totalCertifications >= 10 && 'Contributor'}
                   </span>
                 </div>
               </div>
