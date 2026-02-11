@@ -8,6 +8,9 @@ import { IntentionGroupsService } from '../database/indexedDB-methods'
 import type { IntentionGroupRecord, GroupUrlRecord, PredicateChangeRecord } from '../database/indexedDB'
 import { goldService } from './GoldService'
 import type { DomainCluster, TrackedUrl } from './SessionTracker'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('GroupManager')
 
 // Certification types
 export type CertificationType = 'work' | 'learning' | 'fun' | 'inspiration' | 'buying'
@@ -45,9 +48,9 @@ class GroupManagerService {
   async init(): Promise<void> {
     if (this.initialized) return
 
-    console.log('🚀 [GroupManager] Initializing...')
+    logger.info('Initializing...')
     this.initialized = true
-    console.log('✅ [GroupManager] Initialized')
+    logger.info('Initialized')
   }
 
   /**
@@ -55,7 +58,7 @@ class GroupManagerService {
    * Creates new groups or adds URLs to existing groups
    */
   async processFlush(clusters: DomainCluster[]): Promise<void> {
-    console.log(`📥 [GroupManager] Processing flush with ${clusters.length} domain clusters`)
+    logger.info('Processing flush', { clusterCount: clusters.length })
 
     for (const cluster of clusters) {
       const existingGroup = await IntentionGroupsService.getGroup(cluster.domain)
@@ -67,7 +70,7 @@ class GroupManagerService {
       }
     }
 
-    console.log('✅ [GroupManager] Flush processed')
+    logger.info('Flush processed')
   }
 
   /**
@@ -93,7 +96,7 @@ class GroupManagerService {
     }
 
     await IntentionGroupsService.saveGroup(group)
-    console.log(`🆕 [GroupManager] Created group: ${domain} with ${urls.length} URLs`)
+    logger.info('Created group', { domain, urlCount: urls.length })
 
     return group
   }
@@ -121,7 +124,7 @@ class GroupManagerService {
     group.updatedAt = Date.now()
 
     await IntentionGroupsService.saveGroup(group)
-    console.log(`📝 [GroupManager] Updated group: ${group.domain} (now ${group.urls.length} URLs)`)
+    logger.debug('Updated group', { domain: group.domain, urlCount: group.urls.length })
   }
 
   /**
@@ -189,7 +192,7 @@ class GroupManagerService {
     const wallet = await this.getActiveWallet()
     const goldGained = await goldService.addCertificationGold(wallet)
 
-    console.log(`✅ [GroupManager] Certified URL as ${certification} in ${groupId} (+${goldGained} Gold)`)
+    logger.info('Certified URL', { certification, groupId, goldGained })
 
     return { success: true, goldGained }
   }
@@ -208,7 +211,7 @@ class GroupManagerService {
     group.updatedAt = Date.now()
 
     await IntentionGroupsService.saveGroup(group)
-    console.log(`🗑️ [GroupManager] Removed URL from ${groupId}: ${url}`)
+    logger.info('Removed URL from group', { groupId, url })
 
     return true
   }
@@ -292,7 +295,7 @@ class GroupManagerService {
     group.updatedAt = Date.now()
 
     await IntentionGroupsService.saveGroup(group)
-    console.log(`⬆️ [GroupManager] Level up ${groupId}: Level ${newLevel}, Predicate: "${newPredicate}"`)
+    logger.info('Level up', { groupId, newLevel, newPredicate })
 
     return true
   }
@@ -302,7 +305,7 @@ class GroupManagerService {
    */
   async deleteGroup(groupId: string): Promise<void> {
     await IntentionGroupsService.deleteGroup(groupId)
-    console.log(`🗑️ [GroupManager] Deleted group: ${groupId}`)
+    logger.info('Deleted group', { groupId })
   }
 
   /**
@@ -310,7 +313,7 @@ class GroupManagerService {
    */
   async clearAllGroups(): Promise<void> {
     await IntentionGroupsService.clearAll()
-    console.log('🧹 [GroupManager] Cleared all groups')
+    logger.info('Cleared all groups')
   }
 
   /**
@@ -327,7 +330,7 @@ class GroupManagerService {
         existingGroup.urls.push(urlRecord)
         existingGroup.updatedAt = Date.now()
         await IntentionGroupsService.saveGroup(existingGroup)
-        console.log(`📌 [GroupManager] Added OAuth URL: ${urlRecord.oauthPredicate} ${urlRecord.title}`)
+        logger.info('Added OAuth URL', { oauthPredicate: urlRecord.oauthPredicate, title: urlRecord.title })
       }
     } else {
       // Create new group for OAuth domain
@@ -346,7 +349,7 @@ class GroupManagerService {
         dominantCertification: null
       }
       await IntentionGroupsService.saveGroup(newGroup)
-      console.log(`🆕 [GroupManager] Created OAuth group: ${domain}`)
+      logger.info('Created OAuth group', { domain })
     }
   }
 }

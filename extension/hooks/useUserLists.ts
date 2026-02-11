@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_IDS } from '../lib/config/chainConfig'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useUserLists')
 
 export interface UserList {
   predicateTermId: string
@@ -218,7 +221,7 @@ export const useUserLists = (
       setOffset(currentOffset + initialLimit)
 
     } catch (err) {
-      console.error('Error loading user lists:', err)
+      logger.error('Error loading user lists', err)
       setError(err instanceof Error ? err.message : 'Failed to load lists')
     } finally {
       setLoading(false)

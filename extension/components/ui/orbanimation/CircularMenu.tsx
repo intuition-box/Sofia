@@ -1,5 +1,8 @@
 import { useRouter } from '../../layout/RouterProvider'
+import { createHookLogger } from '../../../lib/utils/logger'
 import './CircularMenu.css'
+
+const logger = createHookLogger('CircularMenu')
 
 interface CircularMenuProps {
   isVisible: boolean
@@ -76,7 +79,7 @@ const CircularMenu = ({ isVisible, onItemClick, onStartAnalysis, onStartImport }
         </svg>
       ),
       action: () => {
-        console.log('Find Similar action')
+        logger.debug('Find Similar action')
         onItemClick?.('find-similar')
       }
     }

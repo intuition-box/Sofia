@@ -1,6 +1,9 @@
 import { useMemo } from 'react'
 import { useGetTripleBondingCurveDataQuery } from '@0xsofia/graphql'
 import type { BondingCurveData, ChartDataPoint, CurveType, TimeRange } from '../types/bonding-curve'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useBondingCurveData')
 
 function formatBalance(value: bigint, decimals: number = 18, precision: number = 6): string {
   const divisor = BigInt(10 ** decimals)
@@ -138,7 +141,7 @@ export function useBondingCurveData(
         totalRedeemed: formatBalance(BigInt(totalRedeemed), 18, 4)
       }
     } catch (err) {
-      console.error('🔴 [useBondingCurveData] Error transforming data:', err)
+      logger.error('Error transforming data', err)
       return {
         chartData: [],
         currentPrice: '0',

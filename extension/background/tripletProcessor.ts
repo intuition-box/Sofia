@@ -1,8 +1,11 @@
 import { tripletsDataService } from "../lib/database/indexedDB-methods"
+import { createServiceLogger } from '../lib/utils/logger'
+
+const logger = createServiceLogger('TripletProcessor')
 
 // Function to convert themes directly to triplets
 export function convertThemesToTriplets(themes: any[]): any {
-  console.log('🔧 Converting themes to triplets:', themes.length, 'themes')
+  logger.info('Converting themes to triplets', { count: themes.length })
   
   const triplets = themes.map((theme, index) => {
     // Use the predicate and object directly from theme (already in correct format)
@@ -10,7 +13,7 @@ export function convertThemesToTriplets(themes: any[]): any {
     let objectName = theme.object || theme.name // Use object field if available, fallback to name
     let firstUrl = theme.urls?.[0] || ""
     
-    console.log(`🔧 Theme ${index}: ${theme.name} -> URL: ${firstUrl}`)
+    logger.debug(`Theme ${index}: ${theme.name}`, { url: firstUrl })
     
     return {
       subject: {
@@ -41,11 +44,11 @@ export async function processUrlsWithThemeAnalysis(
   idPrefix: string,
   successMessage: string
 ): Promise<{success: boolean, message: string, themesExtracted: number, triplesProcessed: boolean}> {
-  console.log(`🔄 Starting ${type} processing pipeline:`, urls.length, 'URLs')
+  logger.info(`Starting ${type} processing pipeline`, { urlCount: urls.length })
   
   try {
     // Step 1: Extract themes
-    console.log(`🎨 Step 1: Extracting themes from ${type}...`)
+    logger.debug(`Step 1: Extracting themes from ${type}`)
     const themeResult = await extractorFunction(urls)
     
     if (!themeResult.success) {
@@ -57,7 +60,7 @@ export async function processUrlsWithThemeAnalysis(
       }
     }
 
-    console.log(`✅ Themes extracted from ${type}:`, themeResult.themes.length)
+    logger.info(`Themes extracted from ${type}`, { count: themeResult.themes.length })
     
     if (themeResult.themes.length === 0) {
       return {
@@ -69,10 +72,10 @@ export async function processUrlsWithThemeAnalysis(
     }
 
     // Step 2: Convert themes to triplets
-    console.log(`📚 Step 2: Converting ${type} themes to Signals...`, themeResult.themes.length, 'themes')
+    logger.debug(`Step 2: Converting ${type} themes to Signals`, { count: themeResult.themes.length })
     
     const tripletData = convertThemesToTriplets(themeResult.themes)
-    console.log(`📚 Generated triplets from ${type}:`, tripletData.triplets.length)
+    logger.info(`Generated triplets from ${type}`, { count: tripletData.triplets.length })
     
     // Step 3: Store triplets in IndexedDB
     try {
@@ -84,8 +87,8 @@ export async function processUrlsWithThemeAnalysis(
       }
       
       await tripletsDataService.storeMessage(newMessage, newMessage.id)
-      console.log(`✅ ${type} triplets stored in IndexedDB:`, newMessage.id)
-      console.log(`🔍 Stored message content:`, newMessage.content.text)
+      logger.info(`${type} triplets stored in IndexedDB`, { id: newMessage.id })
+      logger.debug('Stored message content', { content: newMessage.content.text })
       
       return {
         success: true,
@@ -94,7 +97,7 @@ export async function processUrlsWithThemeAnalysis(
         triplesProcessed: true
       }
     } catch (error) {
-      console.error(`❌ Failed to store ${type} triplets:`, error)
+      logger.error(`Failed to store ${type} triplets`, error)
       return {
         success: false,
         message: `${type} pipeline failed: ${error.message}`,
@@ -104,7 +107,7 @@ export async function processUrlsWithThemeAnalysis(
     }
 
   } catch (error) {
-    console.error(`❌ ${type} pipeline processing failed:`, error)
+    logger.error(`${type} pipeline processing failed`, error)
     return {
       success: false,
       message: `${type} pipeline failed: ${error.message}`,

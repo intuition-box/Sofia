@@ -4,6 +4,9 @@
 
 import { createPublicClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
+import { createServiceLogger } from './logger'
+
+const logger = createServiceLogger('ENSUtils')
 
 // Cache for ENS avatars to avoid repeated lookups
 const ensAvatarCache = new Map<string, string | null>()
@@ -50,7 +53,7 @@ export async function getEnsAvatar(
 
     return avatar
   } catch (error) {
-    console.warn(`Failed to fetch ENS avatar for ${ensName}:`, error)
+    logger.warn(`Failed to fetch ENS avatar for ${ensName}`, error)
     ensAvatarCache.set(ensName, null)
     return null
   }

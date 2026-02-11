@@ -14,7 +14,10 @@ import StakeModal from '../../../modals/StakeModal'
 import  Avatar  from '../../../ui/Avatar'
 import  UserAtomStats  from '../../../ui/UserAtomStats'
 import '../../../styles/CoreComponents.css'
+import { createHookLogger } from '../../../../lib/utils/logger'
 import '../../../styles/FollowTab.css'
+
+const logger = createHookLogger('TrustCirclePanel')
 
 interface TrustCirclePanelProps {
   walletAddress: string | undefined
@@ -121,14 +124,14 @@ export function TrustCirclePanel({ walletAddress }: TrustCirclePanelProps) {
       }
 
       if (result.success) {
-        console.log('✅ Trust adjustment successful, refetching with backoff...')
+        logger.info('Trust adjustment successful, refetching with backoff')
 
         // Refetch with backoff
         refetchWithBackoff(refetch, {
           initialDelay: 1000,
           maxDelay: 4000,
           maxAttempts: 3,
-          onAttempt: (attempt) => console.log(`🔄 Refetch attempt ${attempt}`)
+          onAttempt: (attempt) => logger.debug(`Refetch attempt ${attempt}`)
         })
 
         handleCloseStakeModal()

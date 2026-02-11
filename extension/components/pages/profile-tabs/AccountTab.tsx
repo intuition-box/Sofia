@@ -14,7 +14,10 @@ import AchievementsTab from './AchievementsTab'
 import SocialsTab from './SocialsTab'
 import { useIdentityResolution } from '../../../hooks/useIdentityResolution'
 import ProfileHeader from '../../ui/ProfileHeader'
+import { createHookLogger } from '../../../lib/utils/logger'
 import '../../styles/AccountTab.css'
+
+const logger = createHookLogger('AccountTab')
 
 const InterestTab = lazy(() => import('../core-tabs/InterestTab'))
 
@@ -101,12 +104,12 @@ const AccountTab = () => {
         1000
       )
 
-      console.log('📊 Signals created:', allTriples.length)
+      logger.info('Signals created', allTriples.length)
 
       setUserStats({ signalsCreated: allTriples.length, loading: false })
 
     } catch (error) {
-      console.error('Error loading user stats:', error)
+      logger.error('Error loading user stats', error)
       setUserStats(prev => ({ ...prev, signalsCreated: 0, loading: false }))
     }
   }, [walletAddress])

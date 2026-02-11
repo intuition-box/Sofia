@@ -7,6 +7,9 @@ import type { ParsedSofiaMessage} from '../../types/messages'
 import type { VisitData, DOMData } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
 import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('IndexedDB')
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
@@ -156,13 +159,13 @@ export class SofiaIndexedDB {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
 
       request.onerror = () => {
-        console.error('❌ Error opening IndexedDB:', request.error)
+        logger.error('Error opening IndexedDB', request.error)
         reject(request.error)
       }
 
       request.onsuccess = () => {
         this.db = request.result
-        console.log('✅ IndexedDB initialized successfully')
+        logger.info('IndexedDB initialized successfully')
         resolve(request.result)
       }
 
@@ -179,7 +182,7 @@ export class SofiaIndexedDB {
    * Create object stores and indexes
    */
   private createObjectStores(db: IDBDatabase): void {
-    console.log('🔧 Creating IndexedDB object stores...')
+    logger.debug('Creating IndexedDB object stores')
 
     // Triplets data store
     if (!db.objectStoreNames.contains(STORES.TRIPLETS_DATA)) {
@@ -274,7 +277,7 @@ export class SofiaIndexedDB {
       db.createObjectStore(STORES.USER_XP, { keyPath: 'id' })
     }
 
-    console.log('✅ Object stores created successfully')
+    logger.info('Object stores created successfully')
   }
 
   /**
@@ -430,7 +433,7 @@ export class SofiaIndexedDB {
       this.db.close()
       this.db = null
       this.dbPromise = null
-      console.log('🔒 IndexedDB connection closed')
+      logger.info('IndexedDB connection closed')
     }
   }
 
@@ -442,12 +445,12 @@ export class SofiaIndexedDB {
       const request = indexedDB.deleteDatabase(DB_NAME)
       
       request.onsuccess = () => {
-        console.log('🗑️ Database deleted successfully')
+        logger.info('Database deleted successfully')
         resolve()
       }
       
       request.onerror = () => {
-        console.error('❌ Error deleting database:', request.error)
+        logger.error('Error deleting database', request.error)
         reject(request.error)
       }
     })

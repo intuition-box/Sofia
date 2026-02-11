@@ -4,6 +4,9 @@ import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { stringToHex } from 'viem'
 import type { AtomCheckResult, TripleCheckResult } from '../../types/blockchain'
 import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS, SELECTED_CHAIN } from '../config/chainConfig'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('BlockchainService')
 
 /**
  * Centralized service for blockchain operations
@@ -111,7 +114,7 @@ export class BlockchainService {
     predicateVaultId: string,
     objectVaultId: string
   ): Promise<TripleCheckResult> {
-    console.log('🔍 BlockchainService.checkTripleExists - Starting check', {
+    logger.debug('checkTripleExists - Starting check', {
       subjectVaultId,
       predicateVaultId,
       objectVaultId,
@@ -123,7 +126,7 @@ export class BlockchainService {
     const publicClient = getPublicClient()
 
     try {
-      console.log('🔍 BlockchainService.checkTripleExists - Calculating triple ID')
+      logger.debug('checkTripleExists - Calculating triple ID')
 
       // Calculate the triple ID
       const tripleId = await publicClient.readContract({
@@ -138,13 +141,11 @@ export class BlockchainService {
         authorizationList: undefined
       }) as `0x${string}`
 
-      console.log('🔍 BlockchainService.checkTripleExists - Triple ID calculated', {
-        tripleId
-      })
+      logger.debug('checkTripleExists - Triple ID calculated', { tripleId })
 
       // Check if triple exists using getTriple
       try {
-        console.log('🔍 BlockchainService.checkTripleExists - Calling getTriple')
+        logger.debug('checkTripleExists - Calling getTriple')
 
         const tripleData = await publicClient.readContract({
           address: this.MULTIVAULT_ADDRESS as `0x${string}`,
@@ -154,7 +155,7 @@ export class BlockchainService {
           authorizationList: undefined
         }) as [string, string, string] // [subjectId, predicateId, objectId]
 
-        console.log('🔍 BlockchainService.checkTripleExists - Triple data retrieved', {
+        logger.debug('checkTripleExists - Triple data retrieved', {
           tripleId,
           tripleData,
           expectedSubject: subjectVaultId,
@@ -172,7 +173,7 @@ export class BlockchainService {
           retrievedObject.toLowerCase() === objectVaultId.toLowerCase()
 
         if (exactMatch) {
-          console.log('✅ BlockchainService.checkTripleExists - Exact triple match found!', {
+          logger.info('checkTripleExists - Exact triple match found', {
             tripleId,
             retrievedData: tripleData
           })
@@ -183,7 +184,7 @@ export class BlockchainService {
             tripleHash: tripleId
           }
         } else {
-          console.log('⚠️ BlockchainService.checkTripleExists - Hash collision detected!', {
+          logger.warn('checkTripleExists - Hash collision detected', {
             tripleId,
             expected: [subjectVaultId, predicateVaultId, objectVaultId],
             retrieved: tripleData,
@@ -196,9 +197,8 @@ export class BlockchainService {
           }
         }
       } catch (getTripleError) {
-        console.log('❌ BlockchainService.checkTripleExists - getTriple failed', {
+        logger.debug('checkTripleExists - getTriple failed (triple does not exist)', {
           tripleId,
-          error: getTripleError,
           errorMessage: getTripleError instanceof Error ? getTripleError.message : 'Unknown error',
           errorSignature: (getTripleError as any)?.signature || 'no signature'
         })
@@ -210,8 +210,7 @@ export class BlockchainService {
         }
       }
     } catch (contractError) {
-      console.error('❌ BlockchainService.checkTripleExists - Contract error', {
-        error: contractError,
+      logger.error('checkTripleExists - Contract error', {
         errorMessage: contractError instanceof Error ? contractError.message : 'Unknown error'
       })
 
@@ -276,7 +275,7 @@ export class BlockchainService {
       authorizationList: undefined
     }) as bigint
 
-    console.log('[BlockchainService] getTripleCost returned:', {
+    logger.debug('getTripleCost returned', {
       cost: cost.toString(),
       costInTRUST: Number(cost) / 1e18,
       contractAddress: this.MULTIVAULT_ADDRESS

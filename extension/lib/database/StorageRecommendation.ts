@@ -3,6 +3,9 @@
  */
 
 import type { Recommendation, RecommendationCache } from '../services/ai/types'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('StorageRecommendation')
 
 const DB_NAME = 'sofia-recommendations'
 const DB_VERSION = 2
@@ -59,9 +62,9 @@ export class StorageRecommendation {
         request.onerror = () => reject(request.error)
       })
 
-      console.log('✅ [StorageRecommendation] Saved recommendations for', walletAddress)
+      logger.info('Saved recommendations', { walletAddress })
     } catch (error) {
-      console.error('❌ [StorageRecommendation] Save failed:', error)
+      logger.error('Save failed', error)
       throw error
     }
   }
@@ -82,15 +85,15 @@ export class StorageRecommendation {
       })
 
       if (!cache) {
-        console.log('📭 [StorageRecommendation] No cache found for', walletAddress)
+        logger.debug('No cache found', { walletAddress })
         return null
       }
 
-      console.log('✅ [StorageRecommendation] Loaded recommendations for', walletAddress)
+      logger.info('Loaded recommendations', { walletAddress })
       return cache.recommendations
 
     } catch (error) {
-      console.error('❌ [StorageRecommendation] Load failed:', error)
+      logger.error('Load failed', error)
       return null
     }
   }
@@ -110,9 +113,9 @@ export class StorageRecommendation {
         request.onerror = () => reject(request.error)
       })
 
-      console.log('🗑️ [StorageRecommendation] Cleared cache for', walletAddress)
+      logger.info('Cleared cache', { walletAddress })
     } catch (error) {
-      console.error('❌ [StorageRecommendation] Clear failed:', error)
+      logger.error('Clear failed', error)
       throw error
     }
   }

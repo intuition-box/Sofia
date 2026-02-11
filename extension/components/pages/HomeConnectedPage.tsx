@@ -6,6 +6,9 @@ import PageBlockchainCard from '../ui/PageBlockchainCard'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
+import { createHookLogger } from '../../lib/utils/logger'
+
+const logger = createHookLogger('HomeConnectedPage')
 
 const storage = new Storage()
 
@@ -34,10 +37,10 @@ const HomeConnectedPage = () => {
   }
 
   const handleChatSubmit = async (message: string) => {
-    console.log("🎯 handleChatSubmit called with message:", message)
+    logger.debug('handleChatSubmit called', { message })
     if (message.trim()) {
       await storage.set("pendingChatInput", message)
-      console.log("💾 Message saved to storage:", message)
+      logger.debug('Message saved to storage', { message })
       navigateTo('chat')
     }
   }
@@ -46,13 +49,13 @@ const HomeConnectedPage = () => {
   useEffect(() => {
     const handleMessage = (message: any) => {
       if (message.type === 'PULSE_ANALYSIS_COMPLETE') {
-        console.log('🫀 Pulse analysis completed, redirecting...')
+        logger.info('Pulse analysis completed, redirecting')
         setIsAnalyzing(false)
         localStorage.setItem('targetTab', 'Pulse')
         navigateTo('Sofia')
       }
       if (message.type === 'THEME_EXTRACTION_COMPLETE') {
-        console.log('📚 Theme extraction completed, redirecting to Echoes...')
+        logger.info('Theme extraction completed, redirecting to Echoes')
         setIsImporting(false)
         localStorage.setItem('targetTab', 'Echoes')
         navigateTo('Sofia')
@@ -119,7 +122,7 @@ const HomeConnectedPage = () => {
           <CircularMenu
             isVisible={showMenu}
             onItemClick={(item) => {
-              console.log('Menu item clicked:', item)
+              logger.debug('Menu item clicked', { item })
               setShowMenu(false)
             }}
             onStartAnalysis={handleStartAnalysis}

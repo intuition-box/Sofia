@@ -10,6 +10,9 @@
 import * as devConfig from './chainConfig.dev'
 import * as prodConfig from './chainConfig.prod'
 import * as localConfig from './chainConfig.local'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('ChainConfig')
 
 const network = process.env.PLASMO_PUBLIC_NETWORK || 'testnet'
 
@@ -29,7 +32,7 @@ if (network === 'local') {
 }
 
 // Log which config is being used (for debugging)
-console.log(`[ChainConfig] Using ${networkName} configuration (PLASMO_PUBLIC_NETWORK=${network})`)
+logger.debug(`Using ${networkName} configuration (PLASMO_PUBLIC_NETWORK=${network})`)
 
 // Re-export all configuration from the selected environment
 export const {

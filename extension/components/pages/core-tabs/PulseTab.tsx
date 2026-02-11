@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createHookLogger } from '../../../lib/utils/logger'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { tripletsDataService } from '../../../lib/database/indexedDB-methods'
 import sofiaDB, { STORES, type TripletsRecord } from '../../../lib/database/indexedDB'
@@ -27,6 +28,8 @@ interface PulseAnalysis {
   timestamp: number
   themes: PulseTheme[]
 }
+
+const logger = createHookLogger('PulseTab')
 
 const getHostname = (url: string): string => {
   try { return new URL(url).hostname } catch { return url }
@@ -161,12 +164,12 @@ const PulseTab = () => {
           if (arrayEnd !== -1) {
             // Extract just {"themes":[...]}
             const cleanJson = `{"themes":${jsonStr.substring(arrayStart, arrayEnd + 1)}}`
-            console.log("🫀 [PulseTab] Cleaned JSON:", cleanJson.substring(0, 100) + "...")
+            logger.debug('Cleaned JSON', { preview: cleanJson.substring(0, 100) })
             try {
               const parsed = JSON.parse(cleanJson)
               return parsed.themes || []
             } catch (parseError) {
-              console.warn("🫀 [PulseTab] Cleaned JSON parse failed:", parseError)
+              logger.warn('Cleaned JSON parse failed', parseError)
             }
           }
         }
@@ -177,11 +180,11 @@ const PulseTab = () => {
         const parsed = JSON.parse(jsonStr)
         return parsed.themes || []
       } catch (fallbackError) {
-        console.warn("🫀 [PulseTab] Direct JSON parse failed:", fallbackError)
+        logger.warn('Direct JSON parse failed', fallbackError)
         return []
       }
     } catch (error) {
-      console.warn("🫀 [PulseTab] Failed to parse message:", error)
+      logger.warn('Failed to parse message', error)
       return []
     }
   }
@@ -219,7 +222,7 @@ const PulseTab = () => {
 
           await sofiaDB.put(STORES.TRIPLETS_DATA, updatedMessage)
         } catch (parseError) {
-          console.warn("🫀 [PulseTab] Failed to parse/update message themes:", parseError)
+          logger.warn('Failed to parse/update message themes', parseError)
         }
       }
     }
@@ -228,11 +231,11 @@ const PulseTab = () => {
   // Fetch pulse analyses from IndexedDB
   const fetchPulseAnalyses = async () => {
     try {
-      console.log("🫀 [PulseTab] Fetching pulse analyses from IndexedDB...")
+      logger.info('Fetching pulse analyses from IndexedDB')
       const messages = await tripletsDataService.getAllMessages()
 
-      console.log("🫀 [PulseTab] Total messages in IndexedDB:", messages.length)
-      console.log("🫀 [PulseTab] Message types distribution:", messages.reduce((acc, m) => {
+      logger.debug('Total messages in IndexedDB', { count: messages.length })
+      logger.debug('Message types distribution', messages.reduce((acc, m) => {
         acc[m.type] = (acc[m.type] || 0) + 1
         return acc
       }, {} as Record<string, number>))
@@ -240,16 +243,16 @@ const PulseTab = () => {
       // Filter messages that are pulse analyses
       const pulseMessages = messages.filter(msg => msg.type === 'pulse_analysis')
 
-      console.log("🫀 [PulseTab] Found pulse messages:", pulseMessages.length)
-      console.log("🫀 [PulseTab] Pulse messages details:", pulseMessages)
+      logger.debug('Found pulse messages', { count: pulseMessages.length })
+      logger.debug('Pulse messages details', pulseMessages)
 
       // Parse and group themes by message (analysis session)
       const analysisGroups: PulseAnalysis[] = []
       pulseMessages.forEach((msg, msgIndex) => {
         if (msg.id === undefined) return
-        console.log("🫀 [PulseTab] Parsing message:", msg.id, "content:", msg.content)
+        logger.debug('Parsing message', { id: msg.id, content: msg.content })
         const themes = parseThemesFromMessage(msg)
-        console.log("🫀 [PulseTab] Parsed themes:", themes.length, themes)
+        logger.debug('Parsed themes', { count: themes.length, themes })
         if (themes.length > 0) {
           analysisGroups.push({
             msgIndex,
@@ -263,10 +266,10 @@ const PulseTab = () => {
       // Sort by timestamp (most recent first)
       analysisGroups.sort((a, b) => b.timestamp - a.timestamp)
 
-      console.log("🫀 [PulseTab] Created analysis groups:", analysisGroups.length)
+      logger.info('Created analysis groups', { count: analysisGroups.length })
       setPulseAnalyses(analysisGroups)
     } catch (error) {
-      console.error("🫀 [PulseTab] Error fetching pulse analyses:", error)
+      logger.error('Error fetching pulse analyses', error)
     } finally {
       setLoading(false)
     }
@@ -318,7 +321,7 @@ const PulseTab = () => {
       setTransactionHash(result.txHash)
       setTransactionSuccess(true)
     } catch (error) {
-      console.error('Failed to publish triplets with custom weights:', error)
+      logger.error('Failed to publish triplets with custom weights', error)
       setTransactionError(error instanceof Error ? error.message : 'Failed to publish')
     } finally {
       setIsCreating(false)
@@ -449,9 +452,9 @@ const PulseTab = () => {
       setExpandedSessions(new Set())
       setExpandedTriplets(new Set())
       
-      console.log(`🫀 [PulseTab] Deleted ${sessionCount} research sessions`)
+      logger.info('Deleted research sessions', { count: sessionCount })
     } catch (error) {
-      console.error('🫀 [PulseTab] Error deleting selected sessions:', error)
+      logger.error('Error deleting selected sessions', error)
       alert('Failed to delete selected sessions. Please try again.')
     }
   }
@@ -502,9 +505,9 @@ const PulseTab = () => {
       })
       setSelectedTriplets(new Set())
       
-      console.log(`🫀 [PulseTab] Removed ${selectedTriplets.size} triplets from IndexedDB`)
+      logger.info('Removed triplets from IndexedDB', { count: selectedTriplets.size })
     } catch (error) {
-      console.error('🫀 [PulseTab] Error deleting selected triplets:', error)
+      logger.error('Error deleting selected triplets', error)
       alert('Failed to remove selected triplets. Please try again.')
     }
   }

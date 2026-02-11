@@ -5,7 +5,10 @@ import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
 import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Modal.css'
+
+const logger = createHookLogger('WeightModal')
 
 interface Triplet {
   subject: string
@@ -130,7 +133,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         } else {
           const option = weightOptions.find(opt => opt.id === selectedWeight)
           if (!option || option.value === null) {
-            console.error('WeightModal: Invalid weight option', selectedWeight)
+            logger.error('Invalid weight option', selectedWeight)
             trustValue = defaultValue
           } else {
             trustValue = option.value
@@ -145,7 +148,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       setSelectedWeights(new Array(triplets.length).fill('default'))
       setCustomValues(new Array(triplets.length).fill(''))
     } catch (error) {
-      console.error('Failed to submit weights:', error)
+      logger.error('Failed to submit weights', error)
     }
   }
 

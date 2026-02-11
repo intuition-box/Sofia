@@ -10,8 +10,11 @@ import { useGetTopSofiaAccountsQuery } from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '../../../../lib/config/chainConfig'
 import { FollowSearchBox } from './FollowSearchBox'
 import Avatar from '../../../ui/Avatar'
+import { createHookLogger } from '../../../../lib/utils/logger'
 import '../../../styles/CoreComponents.css'
 import '../../../styles/FollowTab.css'
+
+const logger = createHookLogger('ExplorerPanel')
 
 interface ExplorerPanelProps {
   walletAddress: string | undefined
@@ -103,7 +106,7 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
       <FollowSearchBox
         onSelectAccount={handleSearchResultClick}
         onFollowSuccess={() => {
-          console.log('Follow successful from explorer')
+          logger.debug('Follow successful from explorer')
         }}
         placeholder="Search all accounts on Intuition..."
       />

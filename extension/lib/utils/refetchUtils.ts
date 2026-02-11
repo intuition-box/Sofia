@@ -3,6 +3,10 @@
  * Replaces multiple setTimeout calls with a smarter retry strategy
  */
 
+import { createServiceLogger } from './logger'
+
+const logger = createServiceLogger('RefetchUtils')
+
 interface RefetchOptions {
   /** Initial delay in ms (default: 1000) */
   initialDelay?: number
@@ -54,7 +58,7 @@ export async function refetchWithBackoff(
     if (condition) {
       const conditionMet = await condition()
       if (conditionMet) {
-        console.log(`✅ Refetch condition met after ${attempt} attempt(s)`)
+        logger.info(`Refetch condition met after ${attempt} attempt(s)`)
         return
       }
     }
@@ -63,7 +67,7 @@ export async function refetchWithBackoff(
     delay = Math.min(delay * 2, maxDelay)
   }
 
-  console.log(`⚠️ Refetch completed after ${maxAttempts} attempts`)
+  logger.warn(`Refetch completed after ${maxAttempts} attempts without condition met`)
 }
 
 /**

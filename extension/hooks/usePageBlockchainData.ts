@@ -8,6 +8,7 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { messageBus } from '../lib/services/MessageBus'
 import { isRestrictedUrl } from '../lib/utils/pageRestriction'
+import { createHookLogger } from '../lib/utils/logger'
 import type { PageBlockchainTriplet, PageBlockchainCounts, PageAtomInfo, UsePageBlockchainDataResult } from '../types/page'
 import {
   AtomIdsByUrlDocument,
@@ -32,6 +33,8 @@ const DEFAULT_COUNTS: PageBlockchainCounts = {
   trustRatio: 50
 }
 
+const logger = createHookLogger('usePageBlockchainData')
+
 export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [triplets, setTriplets] = useState<PageBlockchainTriplet[]>([])
   const [counts, setCounts] = useState<PageBlockchainCounts>(DEFAULT_COUNTS)
@@ -50,23 +53,23 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   // Get current page URL and title - fallback to direct access if content script fails
   const getCurrentPageUrl = useCallback(async (): Promise<{ url: string | null, title: string | null }> => {
     try {
-      console.log('🔍 [usePageBlockchainData] Attempting to get clean URL from content script...')
+      logger.debug('Attempting to get clean URL from content script...')
       const response = await messageBus.getCleanUrl()
-      console.log('🔍 [usePageBlockchainData] Response from content script:', response)
+      logger.debug('Response from content script', response)
 
       if (response?.success && response.url) {
-        console.log('🔍 [usePageBlockchainData] Got clean URL:', response.url, 'title:', response.title)
+        logger.debug('Got clean URL', { url: response.url, title: response.title })
         return { url: response.url, title: response.title || null }
       }
       
       // Fallback: get URL from active tab
-      console.log('🔍 [usePageBlockchainData] Content script failed, trying tab query...')
+      logger.debug('Content script failed, trying tab query...')
       const tabResponse = await messageBus.getTabId()
       if (tabResponse?.tabId) {
         return new Promise((resolve) => {
           chrome.tabs.get(tabResponse.tabId, (tab) => {
             if (tab?.url) {
-              console.log('🔍 [usePageBlockchainData] Got URL from tab:', tab.url, 'title:', tab.title)
+              logger.debug('Got URL from tab', { url: tab.url, title: tab.title })
               // Clean URL using proper URL parsing (remove query params and hash)
               try {
                 const urlObj = new URL(tab.url)
@@ -83,10 +86,10 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         })
       }
 
-      console.log('🔍 [usePageBlockchainData] All methods failed')
+      logger.warn('All methods failed to get page URL')
       return { url: null, title: null }
     } catch (error) {
-      console.error('🔍 [usePageBlockchainData] Failed to get current page URL:', error)
+      logger.error('Failed to get current page URL', error)
       return { url: null, title: null }
     }
   }, [])
@@ -100,7 +103,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
   const fetchPageBlockchainData = useCallback(async (url: string): Promise<FetchResult> => {
     try {
-      console.log('🔍 Fetching blockchain data for URL:', url)
+      logger.info('Fetching blockchain data for URL', url)
 
       // Extract hostname from URL for label search
       const hostname = new URL(url).hostname
@@ -111,7 +114,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       })
 
       const foundAtomIds = atomIdsResponse?.atoms?.map((a: any) => a.term_id) || []
-      console.log('🔍 Found atom term_ids from atoms table:', foundAtomIds.length)
+      logger.debug('Found atom term_ids from atoms table', foundAtomIds.length)
 
       // Now get atom details from atoms table
       // Note: Atoms don't have vaults - only triples have vaults
@@ -124,13 +127,13 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         atomsResponse = await intuitionGraphqlClient.request(AtomsByTermIdsDocument, { atomIds: foundAtomIds })
       }
 
-      console.log('📥 Total atoms count:', totalAtomsCount)
-      console.log('📥 Atoms response (first 100):', atomsResponse)
+      logger.debug('Total atoms count', totalAtomsCount)
+      logger.debug('Atoms response (first 100)', atomsResponse)
 
       const atoms = atomsResponse?.atoms || []
       const atomIds = atoms.map((atom: any) => atom.term_id)
 
-      console.log('🔍 Found atom IDs:', atomIds.length, '(displaying first 100)')
+      logger.debug('Found atom IDs (displaying first 100)', atomIds.length)
 
       // Queries now use documents from @0xsofia/graphql:
       // - TriplesCountByAtomIdsDocument
@@ -156,15 +159,15 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         triplesResponse = triplesDataResponse
         trustDistrustData = trustDistrustResponse || { trustTriples: [], distrustTriples: [] }
 
-        console.log('📥 Total triples count:', totalTriplesCount)
-        console.log('📥 Triples response (first 100):', triplesResponse)
-        console.log('📥 Trust/Distrust data:', trustDistrustData)
+        logger.debug('Total triples count', totalTriplesCount)
+        logger.debug('Triples response (first 100)', triplesResponse)
+        logger.debug('Trust/Distrust data', trustDistrustData)
       } else {
-        console.log('📥 No atoms found, skipping triplets query but fetching trust/distrust')
+        logger.debug('No atoms found, skipping triplets query but fetching trust/distrust')
         triplesResponse = { triples: [] }
         // Still fetch trust/distrust even without atoms
         trustDistrustData = await trustDistrustPromise || { trustTriples: [], distrustTriples: [] }
-        console.log('📥 Trust/Distrust data:', trustDistrustData)
+        logger.debug('Trust/Distrust data', trustDistrustData)
       }
 
       // Calculate trust/distrust support counts
@@ -189,11 +192,11 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const totalSupport = trustCount + distrustCount
       const trustRatio = totalSupport > 0 ? Math.round((trustCount / totalSupport) * 100) : 50
 
-      console.log('📊 Trust/Distrust stats:', { trustCount, distrustCount, trustRatio })
-      console.log('📊 Trust positions (unique accounts):', Array.from(trustPositions))
-      console.log('📊 Distrust positions (unique accounts):', Array.from(distrustPositions))
-      console.log('📊 Trust triples found:', trustDistrustData.trustTriples?.length || 0)
-      console.log('📊 Distrust triples found:', trustDistrustData.distrustTriples?.length || 0)
+      logger.debug('Trust/Distrust stats', { trustCount, distrustCount, trustRatio })
+      logger.debug('Trust positions (unique accounts)', Array.from(trustPositions))
+      logger.debug('Distrust positions (unique accounts)', Array.from(distrustPositions))
+      logger.debug('Trust triples found', trustDistrustData.trustTriples?.length || 0)
+      logger.debug('Distrust triples found', trustDistrustData.distrustTriples?.length || 0)
 
       const resultTriplets: PageBlockchainTriplet[] = []
       const resultAtomsList: PageAtomInfo[] = []
@@ -201,8 +204,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       let totalPositions = 0
 
       // Use real total counts (not just displayed ones)
-      console.log('📥 Total atoms (real count):', totalAtomsCount)
-      console.log('📥 Atoms displayed:', atoms.length)
+      logger.debug('Total atoms (real count)', totalAtomsCount)
+      logger.debug('Atoms displayed', atoms.length)
 
       // Store atoms for display
       // Note: Atoms don't have vaults - market cap comes from triples only
@@ -217,13 +220,13 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
       // Display ONLY real triplets in the list (first 100)
       const triples = triplesResponse?.triples || []
-      console.log('📥 Total triples (real count):', totalTriplesCount)
-      console.log('📥 Triples displayed:', triples.length)
+      logger.debug('Total triples (real count)', totalTriplesCount)
+      logger.debug('Triples displayed', triples.length)
 
       for (const triple of triples) {
         // Access vaults through triple.term.vaults
         const vaults = triple.term?.vaults || []
-        console.log('📊 Triple vaults:', vaults)
+        logger.debug('Triple vaults', vaults)
 
         // Add triple shares to total
         for (const vault of vaults) {
@@ -266,7 +269,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       }
 
     } catch (error) {
-      console.error('💥 Error fetching page blockchain data:', error)
+      logger.error('Error fetching page blockchain data', error)
       throw error
     }
   }, [])
@@ -274,19 +277,19 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   // Function to pause/resume refreshes (exposed for external use)
   const pauseRefresh = useCallback(() => {
     pauseRefreshRef.current = true
-    console.log('🔍 [usePageBlockchainData] Refreshes PAUSED')
+    logger.info('Refreshes PAUSED')
   }, [])
 
   const resumeRefresh = useCallback(() => {
     pauseRefreshRef.current = false
-    console.log('🔍 [usePageBlockchainData] Refreshes RESUMED')
+    logger.info('Refreshes RESUMED')
   }, [])
 
   // Manual fetch function
   const fetchDataForCurrentPage = useCallback(async () => {
     // Skip if paused (during transactions)
     if (pauseRefreshRef.current) {
-      console.log('🔍 [usePageBlockchainData] Refresh skipped - paused')
+      logger.debug('Refresh skipped - paused')
       return
     }
 
@@ -319,7 +322,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       setRestrictionMessage(restriction.message || null)
 
       if (restriction.restricted) {
-        console.log('🚫 [usePageBlockchainData] Page is restricted:', restriction.message)
+        logger.info('Page is restricted', restriction.message)
         setTriplets([])
         setLoading(false)
         return
@@ -332,7 +335,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       setAtomsList(result.atomsList)
 
     } catch (error) {
-      console.error('Error fetching page blockchain data:', error)
+      logger.error('Error fetching page blockchain data', error)
       setError(error instanceof Error ? error.message : 'Unknown error')
       setTriplets([])
       setCounts(DEFAULT_COUNTS)
@@ -359,13 +362,13 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         const newUrl = changeInfo.url || ''
         if (newUrl && newUrl !== lastUrl) {
           lastUrl = newUrl
-          console.log('🔍 [usePageBlockchainData] Tab URL changed, refreshing data...')
+          logger.debug('Tab URL changed, refreshing data...')
           setTimeout(() => {
             fetchDataForCurrentPage()
           }, 1000)
         } else if (changeInfo.status === 'complete' && !changeInfo.url) {
           // Page completed loading but no URL change - might be SPA navigation
-          console.log('🔍 [usePageBlockchainData] Page load complete, checking for URL changes...')
+          logger.debug('Page load complete, checking for URL changes...')
           setTimeout(() => {
             fetchDataForCurrentPage()
           }, 500)
@@ -375,7 +378,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
     // Also listen for history changes (SPAs using pushState/replaceState)
     const handleHistoryChange = () => {
-      console.log('🔍 [usePageBlockchainData] History change detected, refreshing data...')
+      logger.debug('History change detected, refreshing data...')
       setTimeout(() => {
         fetchDataForCurrentPage()
       }, 500)
@@ -387,7 +390,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     // Listen for navigation events via content script
     const handleMessage = (message: any) => {
       if (message.type === 'PAGE_ANALYSIS' || message.type === 'URL_CHANGED') {
-        console.log('🔍 [usePageBlockchainData] Content script reported navigation, refreshing data...')
+        logger.debug('Content script reported navigation, refreshing data...')
         setTimeout(() => {
           fetchDataForCurrentPage()
         }, 500)
@@ -402,7 +405,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         const currentTab = tabs[0]
         if (currentTab?.url && currentTab.url !== lastUrl) {
           lastUrl = currentTab.url
-          console.log('🔍 [usePageBlockchainData] URL change detected via polling, refreshing data...')
+          logger.debug('URL change detected via polling, refreshing data...')
           fetchDataForCurrentPage()
         }
       })

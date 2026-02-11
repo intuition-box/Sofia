@@ -1,4 +1,7 @@
 import { MASTRA_API_URL } from "../config"
+import { createServiceLogger } from '../lib/utils/logger'
+
+const logger = createServiceLogger('MastraClient')
 
 /**
  * Call a Mastra agent via HTTP REST API
@@ -7,7 +10,7 @@ import { MASTRA_API_URL } from "../config"
  * @returns Parsed JSON response from the agent
  */
 export async function callMastraAgent(agentName: string, prompt: string): Promise<any> {
-  console.log(`📤 [Mastra] Calling ${agentName} with prompt:`, prompt.substring(0, 100))
+  logger.debug(`Calling ${agentName}`, { prompt: prompt.substring(0, 100) })
 
   const response = await fetch(`${MASTRA_API_URL}/api/agents/${agentName}/generate`, {
     method: 'POST',
@@ -19,18 +22,18 @@ export async function callMastraAgent(agentName: string, prompt: string): Promis
 
   if (!response.ok) {
     const errorText = await response.text()
-    console.error(`❌ [Mastra] Error from ${agentName}:`, response.status, errorText)
+    logger.error(`Error from ${agentName}`, { status: response.status, errorText })
     throw new Error(`Mastra error: ${response.status} - ${errorText}`)
   }
 
   const result = await response.json()
-  console.log(`✅ [Mastra] Response from ${agentName}:`, result.text?.substring(0, 100))
+  logger.debug(`Response from ${agentName}`, { text: result.text?.substring(0, 100) })
 
   // Parse the JSON response from the agent
   try {
     return JSON.parse(result.text)
   } catch (parseError) {
-    console.warn(`⚠️ [Mastra] Could not parse response as JSON, returning raw:`, result.text)
+    logger.warn('Could not parse response as JSON, returning raw', { text: result.text })
     return result.text
   }
 }
@@ -44,13 +47,13 @@ export async function sendThemeExtractionToMastra(urls: string[]): Promise<any[]
   const urlList = urls.join('\n')
   const prompt = `Extract themes from the following URLs:\n\n${urlList}\n\nProvide a JSON array of triplets with their frequencies.`
 
-  console.log(`🎨 [Mastra] Sending ${urls.length} URLs to ThemeExtractor`)
+  logger.info(`Sending ${urls.length} URLs to ThemeExtractor`)
 
   try {
     const result = await callMastraAgent('themeExtractorAgent', prompt)
     return result.triplets || result.themes || []
   } catch (error) {
-    console.error(`❌ [Mastra] ThemeExtractor error:`, error)
+    logger.error('ThemeExtractor error', error)
     return []
   }
 }
@@ -63,13 +66,13 @@ export async function sendThemeExtractionToMastra(urls: string[]): Promise<any[]
 export async function sendPulseToMastra(tabs: any[]): Promise<any> {
   const prompt = JSON.stringify(tabs)
 
-  console.log(`🫀 [Mastra] Sending ${tabs.length} tabs to PulseAgent`)
+  logger.info(`Sending ${tabs.length} tabs to PulseAgent`)
 
   try {
     const result = await callMastraAgent('pulseAgent', prompt)
     return result.themes || result
   } catch (error) {
-    console.error(`❌ [Mastra] PulseAgent error:`, error)
+    logger.error('PulseAgent error', error)
     return { themes: [] }
   }
 }
@@ -82,13 +85,13 @@ export async function sendPulseToMastra(tabs: any[]): Promise<any> {
 export async function sendRecommendationToMastra(walletData: any): Promise<any> {
   const prompt = `Wallet: ${walletData.address || 'unknown'}\nTotal activities: ${walletData.activities || 0}\n\nUser's interests based on blockchain activity:\n${JSON.stringify(walletData.interests || [])}`
 
-  console.log(`💎 [Mastra] Sending recommendation request`)
+  logger.info('Sending recommendation request')
 
   try {
     const result = await callMastraAgent('recommendationAgent', prompt)
     return result
   } catch (error) {
-    console.error(`❌ [Mastra] RecommendationAgent error:`, error)
+    logger.error('RecommendationAgent error', error)
     return null
   }
 }
@@ -100,7 +103,7 @@ export async function sendRecommendationToMastra(walletData: any): Promise<any> 
  * @returns Agent response text
  */
 export async function sendChatbotToMastra(message: string): Promise<string> {
-  console.log(`💬 [Mastra] Sending to ChatBot workflow: ${message.substring(0, 100)}`);
+  logger.info('Sending to ChatBot workflow', { message: message.substring(0, 100) });
 
   try {
     // Use start-async which creates and runs the workflow synchronously
@@ -112,12 +115,12 @@ export async function sendChatbotToMastra(message: string): Promise<string> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ [Mastra] Workflow error:`, response.status, errorText);
+      logger.error('Workflow error', { status: response.status, errorText });
       throw new Error(`Mastra workflow error: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
-    console.log(`📦 [Mastra] Workflow result:`, JSON.stringify(result).substring(0, 500));
+    logger.debug('Workflow result', { result: JSON.stringify(result).substring(0, 500) });
 
     // Extract response from workflow result
     const chatResponse = result?.response
@@ -132,7 +135,7 @@ export async function sendChatbotToMastra(message: string): Promise<string> {
     // Fallback to raw result
     return typeof result === 'string' ? result : JSON.stringify(result);
   } catch (error) {
-    console.error(`❌ [Mastra] ChatBot workflow error:`, error);
+    logger.error('ChatBot workflow error', error);
     throw error;
   }
 }
@@ -170,13 +173,13 @@ export async function generatePredicate(input: PredicateInput): Promise<Predicat
     previousPredicate: input.previousPredicate
   })
 
-  console.log(`🎯 [Mastra] Generating predicate for ${input.domain} (level ${input.level})`)
+  logger.info(`Generating predicate for ${input.domain} (level ${input.level})`)
 
   try {
     const result = await callMastraAgent('predicateAgent', prompt)
 
     if (result && typeof result.predicate === 'string') {
-      console.log(`✅ [Mastra] Generated predicate: "${result.predicate}" - ${result.reason}`)
+      logger.info(`Generated predicate: "${result.predicate}"`, { reason: result.reason })
       return {
         predicate: result.predicate,
         reason: result.reason || 'AI generated'
@@ -184,13 +187,13 @@ export async function generatePredicate(input: PredicateInput): Promise<Predicat
     }
 
     // Fallback if response is malformed
-    console.warn(`⚠️ [Mastra] Malformed predicate response, using fallback`)
+    logger.warn('Malformed predicate response, using fallback')
     return {
       predicate: 'explore',
       reason: 'Fallback predicate'
     }
   } catch (error) {
-    console.error(`❌ [Mastra] PredicateAgent error:`, error)
+    logger.error('PredicateAgent error', error)
     // Return a safe fallback
     return {
       predicate: 'explore',

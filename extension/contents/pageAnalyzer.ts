@@ -1,4 +1,7 @@
 import type { PlasmoCSConfig } from "plasmo"
+import { createServiceLogger } from '../lib/utils/logger'
+
+const logger = createServiceLogger('PageAnalyzer')
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -26,12 +29,12 @@ function sanitizeUrl(url: string): string {
 
 // Listen for page analysis requests from the extension
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("🔍 [Page Analyzer] Received message:", message.type)
+  logger.debug('Received message', { type: message.type })
   
   if (message.type === "GET_CLEAN_URL") {
     const cleanUrl = sanitizeUrl(window.location.href)
     const pageTitle = document.title || ""
-    console.log("🔍 [Page Analyzer] Returning clean URL:", cleanUrl, "title:", pageTitle)
+    logger.debug('Returning clean URL', { cleanUrl, pageTitle })
     sendResponse({ success: true, url: cleanUrl, title: pageTitle })
     return true
   }
@@ -43,7 +46,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       domain: window.location.hostname,
       title: document.title || ""
     }
-    console.log("🔍 [Page Analyzer] Returning page data:", pageData)
+    logger.debug('Returning page data', pageData)
     sendResponse({ success: true, data: pageData })
     return true
   }
@@ -56,7 +59,7 @@ let lastUrl = window.location.href
 function notifyUrlChange() {
   const currentUrl = window.location.href
   if (currentUrl !== lastUrl) {
-    console.log("🔍 [Page Analyzer] URL changed from", lastUrl, "to", currentUrl)
+    logger.debug('URL changed', { oldUrl: lastUrl, newUrl: currentUrl })
     lastUrl = currentUrl
     
     // Notify the extension
@@ -95,4 +98,4 @@ window.addEventListener('popstate', () => {
 // Periodic check for URL changes (fallback)
 setInterval(notifyUrlChange, 2000)
 
-console.log("🔍 [Page Analyzer] Content script loaded for:", window.location.href)
+logger.info('Content script loaded', { url: window.location.href })

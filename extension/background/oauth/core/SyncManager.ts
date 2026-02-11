@@ -3,6 +3,9 @@
 import { SyncInfo } from '../types/interfaces'
 import { TokenManager } from './TokenManager'
 import { getAddress } from 'viem'
+import { createServiceLogger } from '../../../lib/utils/logger'
+
+const logger = createServiceLogger('SyncManager')
 
 export class SyncManager {
   /**
@@ -33,7 +36,7 @@ export class SyncManager {
   async updateSyncInfo(platform: string, itemIds?: string[]): Promise<void> {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) {
-      console.warn(`⚠️ [OAuth] No wallet connected, cannot update sync info for ${platform}`)
+      logger.warn(`No wallet connected, cannot update sync info for ${platform}`)
       return
     }
 
@@ -46,7 +49,7 @@ export class SyncManager {
 
     const key = this.getSyncKey(platform, walletAddress)
     await chrome.storage.local.set({ [key]: syncInfo })
-    console.log(`💾 [OAuth] Sync info updated for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`)
+    logger.info(`Sync info updated for ${platform}`, { wallet: walletAddress.slice(0, 8) })
   }
 
   async getSyncStatus(platform: string | undefined, tokenManager: TokenManager): Promise<any> {
@@ -75,14 +78,14 @@ export class SyncManager {
   async resetSyncInfo(platform?: string): Promise<void> {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) {
-      console.warn(`⚠️ [OAuth] No wallet connected, cannot reset sync info`)
+      logger.warn('No wallet connected, cannot reset sync info')
       return
     }
 
     if (platform) {
       const key = this.getSyncKey(platform, walletAddress)
       await chrome.storage.local.remove(key)
-      console.log(`🗑️ [OAuth] Sync info reset for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`)
+      logger.info(`Sync info reset for ${platform}`, { wallet: walletAddress.slice(0, 8) })
     } else {
       // Reset all platforms for this wallet
       const platforms = ['youtube', 'spotify', 'twitch', 'discord', 'twitter']
@@ -90,7 +93,7 @@ export class SyncManager {
         const key = this.getSyncKey(p, walletAddress)
         await chrome.storage.local.remove(key)
       }
-      console.log(`🗑️ [OAuth] Sync info reset for all platforms (wallet: ${walletAddress.slice(0, 8)}...)`)
+      logger.info('Sync info reset for all platforms', { wallet: walletAddress.slice(0, 8) })
     }
   }
 }

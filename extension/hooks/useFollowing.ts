@@ -9,6 +9,9 @@ import type { FollowAccountVM, FollowQueryResult } from '../types/follows'
 import { batchFetchIPFS } from '../lib/utils/ipfsCache'
 import { batchGetEnsAvatars } from '../lib/utils/ensUtils'
 import { useGetFollowingPositionsQuery, GetFollowingPositionsQuery } from '@0xsofia/graphql'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useFollowing')
 
 interface GraphQLFollowingResponse {
   triples: Array<{
@@ -111,8 +114,7 @@ export function useFollowing(walletAddress: string | undefined): FollowQueryResu
         const signalsCount = accountAtomTerm?.positions_aggregate?.aggregate?.count || 0
         const marketCapWei = accountAtomTerm?.total_market_cap || '0'
 
-        // Debug log
-        console.log('📊 Account stats:', {
+        logger.debug('Account stats', {
           label: account?.label,
           signalsCount,
           marketCapWei
@@ -148,8 +150,7 @@ export function useFollowing(walletAddress: string | undefined): FollowQueryResu
       setAccounts(followAccounts)
       setLoading(false)
 
-      // Log final accounts data
-      console.log('✅ Final followAccounts:', followAccounts.map(acc => ({
+      logger.debug('Final followAccounts', followAccounts.map(acc => ({
         label: acc.label,
         signalsCount: acc.signalsCount,
         marketCapWei: acc.marketCapWei
@@ -190,12 +191,12 @@ export function useFollowing(walletAddress: string | undefined): FollowQueryResu
 
         setAccounts(updatedAccounts)
       }).catch((err) => {
-        console.warn('⚠️ Failed to load avatars/metadata:', err)
+        logger.warn('Failed to load avatars/metadata', err)
         // Keep displaying basic data even if avatars fail
       })
 
     } catch (err) {
-      console.error('❌ Failed to load following:', err)
+      logger.error('Failed to load following', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setLoading(false)
     }

@@ -17,8 +17,11 @@ import { goldService, getLevelUpCost } from "../lib/services/GoldService"
 import { currencyMigrationService } from "../lib/services/CurrencyMigrationService"
 import { sessionTracker, type TrackedUrl, type DomainCluster } from "../lib/services/SessionTracker"
 import { levelUpService } from "../lib/services/LevelUpService"
+import { createServiceLogger } from '../lib/utils/logger'
 
-// 🔥 FIX: Flag to prevent duplicate message handlers registration
+const logger = createServiceLogger('MessageHandlers')
+
+// Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
 
 
@@ -33,14 +36,14 @@ async function handleDataExtraction(
   try {
     const result = await dataFetcher()
     if (result.success && result.urls) {
-      console.log(`🔄 Starting ${type} analysis for`, result.urls.length, 'URLs')
+      logger.info(`Starting ${type} analysis for ${result.urls.length} URLs`)
       const finalResult = await processor(result.urls)
       sendResponse(finalResult)
     } else {
       sendResponse({ success: false, error: result.error })
     }
   } catch (error) {
-    console.error(`❌ ${type} extraction error:`, error)
+    logger.error(`${type} extraction error`, error)
     sendResponse({ success: false, error: error.message })
   }
 }
@@ -55,7 +58,7 @@ async function handleRecommendationGeneration(message: ChromeMessage, sendRespon
       return
     }
 
-    console.log('💎 [messageHandlers] Generating recommendations for wallet:', walletData.address)
+    logger.info('[messageHandlers] Generating recommendations for wallet', { address: walletData.address })
 
     // Send request and wait for response (imported at top)
     const recommendationsData = await sendRecommendationRequest(walletData)
@@ -68,14 +71,14 @@ async function handleRecommendationGeneration(message: ChromeMessage, sendRespon
     // Extract recommendations array from response
     const recommendations = recommendationsData.recommendations || []
 
-    console.log('✅ [messageHandlers] Received', recommendations.length, 'recommendation categories')
+    logger.info(`[messageHandlers] Received ${recommendations.length} recommendation categories`)
     sendResponse({
       success: true,
       recommendations
     })
 
   } catch (error) {
-    console.error('❌ [messageHandlers] Recommendation generation failed:', error)
+    logger.error('[messageHandlers] Recommendation generation failed', error)
     sendResponse({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -95,15 +98,15 @@ const SUPPORTED_OAUTH_PLATFORMS = ['twitter', 'youtube', 'spotify', 'discord', '
 export function setupMessageHandlers(): void {
   // 🔥 FIX: Prevent duplicate handler registration
   if (handlersRegistered) {
-    console.log("⚠️ [messageHandlers] Handlers already registered, skipping")
+    logger.warn("[messageHandlers] Handlers already registered, skipping")
     return
   }
   handlersRegistered = true
-  console.log("📨 [messageHandlers] Registering message handlers...")
+  logger.info("[messageHandlers] Registering message handlers...")
 
   // Handle external messages from auth page (localhost:3000 or sofia.intuition.box)
   chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
-    console.log('📨 External message received:', message.type, 'from:', sender.origin)
+    logger.debug('External message received', { type: message.type, origin: sender.origin })
 
     // SECURITY: Validate origin before processing any external message
     const isAllowedOrigin = sender.origin && ALLOWED_EXTERNAL_ORIGINS.some(
@@ -111,7 +114,7 @@ export function setupMessageHandlers(): void {
     )
 
     if (!isAllowedOrigin) {
-      console.warn('⚠️ Rejected external message from untrusted origin:', sender.origin)
+      logger.warn('Rejected external message from untrusted origin', { origin: sender.origin })
       sendResponse({ success: false, error: 'Untrusted origin' })
       return true
     }
@@ -125,7 +128,7 @@ export function setupMessageHandlers(): void {
             // Check if wallet changed using persistent lastActiveWallet
             const { lastActiveWallet } = await chrome.storage.local.get('lastActiveWallet')
             if (lastActiveWallet && lastActiveWallet.toLowerCase() !== walletAddress.toLowerCase()) {
-              console.log('🔄 [messageHandlers] Wallet changed from', lastActiveWallet, 'to', walletAddress)
+              logger.info('[messageHandlers] Wallet changed', { from: lastActiveWallet, to: walletAddress })
               await IntentionGroupsService.clearAll()
             }
             // Update lastActiveWallet
@@ -135,11 +138,11 @@ export function setupMessageHandlers(): void {
             await XPServiceClass.migrateToWalletKeys(walletAddress)
             // Migrate unified XP to dual currency (XP + Gold) — one-time, idempotent
             await currencyMigrationService.migrate(walletAddress)
-            console.log('✅ Wallet connected from external page:', walletAddress, 'type:', walletType)
+            logger.info('Wallet connected from external page', { walletAddress, walletType })
             await initializeOnWalletConnect()
             sendResponse({ success: true })
           } catch (error) {
-            console.error('❌ Failed to save wallet:', error)
+            logger.error('Failed to save wallet', error)
             sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
           }
         })()
@@ -151,10 +154,10 @@ export function setupMessageHandlers(): void {
 
     if (message.type === 'WALLET_DISCONNECTED') {
       chrome.storage.session.remove(['walletAddress', 'walletType']).then(() => {
-        console.log('✅ Wallet disconnected from external page')
+        logger.info('Wallet disconnected from external page')
         sendResponse({ success: true })
       }).catch((error) => {
-        console.error('❌ Failed to disconnect wallet:', error)
+        logger.error('Failed to disconnect wallet', error)
         sendResponse({ success: false, error: error.message })
       })
       return true
@@ -167,7 +170,7 @@ export function setupMessageHandlers(): void {
       // Validate platform
       const platformName = platform || 'twitter'
       if (!SUPPORTED_OAUTH_PLATFORMS.includes(platformName)) {
-        console.warn('⚠️ Unsupported OAuth platform:', platformName)
+        logger.warn('Unsupported OAuth platform', { platform: platformName })
         sendResponse({ success: false, error: `Unsupported platform: ${platformName}` })
         return true
       }
@@ -179,10 +182,10 @@ export function setupMessageHandlers(): void {
           refreshToken,
           expiresIn
         ).then(() => {
-          console.log(`✅ ${platformName} OAuth token received and stored`)
+          logger.info(`${platformName} OAuth token received and stored`)
           sendResponse({ success: true })
         }).catch((error) => {
-          console.error(`❌ Failed to store ${platformName} token:`, error)
+          logger.error(`Failed to store ${platformName} token`, error)
           sendResponse({ success: false, error: error.message })
         })
       } else {
@@ -226,7 +229,7 @@ export function setupMessageHandlers(): void {
           await sendMessage('CHATBOT', message.text)
           sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ Failed to send chatbot message:", error)
+          logger.error("Failed to send chatbot message", error)
           sendResponse({ success: false, error: error.message })
         }
         return true
@@ -249,7 +252,7 @@ export function setupMessageHandlers(): void {
           const fetchResult = await getAllBookmarks()
           sendResponse({ success: true, bookmarks: fetchResult.bookmarks || [] })
         } catch (error) {
-          console.error("❌ FETCH_BOOKMARKS error:", error)
+          logger.error("FETCH_BOOKMARKS error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -307,7 +310,7 @@ export function setupMessageHandlers(): void {
             message: `Imported ${bookmarksToImport.length} bookmarks into ${clusters.length} groups`
           })
         } catch (error) {
-          console.error("❌ IMPORT_BOOKMARKS error:", error)
+          logger.error("IMPORT_BOOKMARKS error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -368,7 +371,7 @@ export function setupMessageHandlers(): void {
           // For now, just return success - the actual GraphQL query is handled in the frontend
           sendResponse({ success: true, data: { url } })
         } catch (error) {
-          console.error("❌ GET_PAGE_BLOCKCHAIN_DATA error:", error)
+          logger.error("GET_PAGE_BLOCKCHAIN_DATA error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -376,30 +379,30 @@ export function setupMessageHandlers(): void {
       case "PAGE_ANALYSIS":
         try {
           // Log page analysis data for debugging
-          console.log("📋 Page analysis received:", message.data)
+          logger.debug("Page analysis received", message.data)
           // This is a fire-and-forget message, no response needed
         } catch (error) {
-          console.error("❌ PAGE_ANALYSIS error:", error)
+          logger.error("PAGE_ANALYSIS error", error)
         }
         break
 
       case "URL_CHANGED":
         try {
           // Log URL change for debugging
-          console.log("🔗 URL changed:", message.data)
+          logger.debug("URL changed", message.data)
           // This is a fire-and-forget message, no response needed
         } catch (error) {
-          console.error("❌ URL_CHANGED error:", error)
+          logger.error("URL_CHANGED error", error)
         }
         break
 
       case "WALLET_DISCONNECTED":
         try {
           await chrome.storage.session.remove(['walletAddress', 'walletType'])
-          console.log("✅ Wallet disconnected")
+          logger.info("Wallet disconnected")
           sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ WALLET_DISCONNECTED error:", error)
+          logger.error("WALLET_DISCONNECTED error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -413,7 +416,7 @@ export function setupMessageHandlers(): void {
           const groups = await groupManager.getAllGroups()
           sendResponse({ success: true, groups })
         } catch (error) {
-          console.error("❌ GET_INTENTION_GROUPS error:", error)
+          logger.error("GET_INTENTION_GROUPS error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -433,7 +436,7 @@ export function setupMessageHandlers(): void {
             sendResponse({ success: false, error: "Group not found" })
           }
         } catch (error) {
-          console.error("❌ GET_GROUP_DETAILS error:", error)
+          logger.error("GET_GROUP_DETAILS error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -445,7 +448,7 @@ export function setupMessageHandlers(): void {
           const goldStats = await goldService.getStats(xpWallet || '')
           sendResponse({ success: true, xp: xpStats, gold: goldStats })
         } catch (error) {
-          console.error("❌ GET_USER_XP error:", error)
+          logger.error("GET_USER_XP error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -460,7 +463,7 @@ export function setupMessageHandlers(): void {
           const certResult = await groupManager.certifyUrl(certGroupId, certUrl, certification)
           sendResponse({ success: certResult.success, goldGained: certResult.goldGained, error: certResult.error })
         } catch (error) {
-          console.error("❌ CERTIFY_URL error:", error)
+          logger.error("CERTIFY_URL error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -475,7 +478,7 @@ export function setupMessageHandlers(): void {
           const removed = await groupManager.removeUrl(removeGroupId, removeUrl)
           sendResponse({ success: removed })
         } catch (error) {
-          console.error("❌ REMOVE_URL_FROM_GROUP error:", error)
+          logger.error("REMOVE_URL_FROM_GROUP error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -490,7 +493,7 @@ export function setupMessageHandlers(): void {
           await groupManager.deleteGroup(deleteGroupId)
           sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ DELETE_GROUP error:", error)
+          logger.error("DELETE_GROUP error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -516,11 +519,11 @@ export function setupMessageHandlers(): void {
             }
             groupToUpdate.updatedAt = Date.now()
             await IntentionGroupsService.saveGroup(groupToUpdate)
-            console.log(`📊 [messageHandlers] Restored level for ${updateLvlGroupId}: ${newLevel}`)
+            logger.info(`[messageHandlers] Restored level for ${updateLvlGroupId}: ${newLevel}`)
           }
           sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ UPDATE_GROUP_LEVEL error:", error)
+          logger.error("UPDATE_GROUP_LEVEL error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -548,7 +551,7 @@ export function setupMessageHandlers(): void {
             canAfford: goldStats.totalGold >= cost
           })
         } catch (error) {
-          console.error("❌ GET_LEVEL_UP_COST error:", error)
+          logger.error("GET_LEVEL_UP_COST error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -563,7 +566,7 @@ export function setupMessageHandlers(): void {
           sessionTracker.trackUrl({ url: trackUrl, title: trackTitle || trackUrl, duration, favicon })
           sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ TRACK_URL error:", error)
+          logger.error("TRACK_URL error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -573,7 +576,7 @@ export function setupMessageHandlers(): void {
           const clusters = await sessionTracker.forceFlush()
           sendResponse({ success: true, clustersCount: clusters.length })
         } catch (error) {
-          console.error("❌ FORCE_FLUSH_TRACKER error:", error)
+          logger.error("FORCE_FLUSH_TRACKER error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -585,14 +588,14 @@ export function setupMessageHandlers(): void {
             sendResponse({ success: false, error: "groupId required" })
             return true
           }
-          console.log(`🎮 [messageHandlers] Level up request for group: ${levelUpGroupId}`)
+          logger.info(`[messageHandlers] Level up request for group: ${levelUpGroupId}`)
           const levelUpResult = await levelUpService.levelUp(levelUpGroupId, certificationBreakdown)
           sendResponse({
             success: levelUpResult.success,
             ...levelUpResult
           })
         } catch (error) {
-          console.error("❌ LEVEL_UP_GROUP error:", error)
+          logger.error("LEVEL_UP_GROUP error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -611,7 +614,7 @@ export function setupMessageHandlers(): void {
             sendResponse({ success: false, error: "Group not found" })
           }
         } catch (error) {
-          console.error("❌ PREVIEW_LEVEL_UP error:", error)
+          logger.error("PREVIEW_LEVEL_UP error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -655,10 +658,10 @@ export function setupMessageHandlers(): void {
             }
           })
 
-          console.log("🔗 [Deep Link] Profile intent stored for", checksumAddress.slice(0, 8) + "...")
+          logger.info("[Deep Link] Profile intent stored for " + checksumAddress.slice(0, 8) + "...")
           sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ DEEP_LINK_PROFILE error:", error)
+          logger.error("DEEP_LINK_PROFILE error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -667,7 +670,7 @@ export function setupMessageHandlers(): void {
 
     sendResponse({ success: false, error: 'Unknown message type: ' + message.type })
     })().catch(error => {
-      console.error("❌ Message handler error:", error)
+      logger.error("Message handler error", error)
       sendResponse({ success: false, error: error.message })
     })
     return true

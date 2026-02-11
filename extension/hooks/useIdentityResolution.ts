@@ -15,6 +15,9 @@ import { mainnet } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { getEnsAvatar } from '../lib/utils/ensUtils'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useIdentityResolution')
 
 type IdentitySource = 'graphql' | 'ens' | 'discord' | 'fallback'
 
@@ -84,7 +87,7 @@ export const useIdentityResolution = ({
     const resolveIdentity = async () => {
       // Safety check for chrome.storage availability
       if (!chrome?.storage?.local) {
-        console.warn('[useIdentityResolution] chrome.storage.local not available')
+        logger.warn('chrome.storage.local not available')
         setLoading(false)
         return
       }
@@ -100,7 +103,7 @@ export const useIdentityResolution = ({
         
         // Check if walletAddress looks like an ENS name (contains . and doesn't start with 0x)
         if (walletAddress.includes('.') && !walletAddress.startsWith('0x')) {
-          console.log('[useIdentityResolution] Detected ENS name, resolving:', walletAddress)
+          logger.info('Detected ENS name, resolving', { walletAddress })
           try {
             const publicClient = createPublicClient({
               chain: mainnet,
@@ -113,13 +116,13 @@ export const useIdentityResolution = ({
             
             if (address) {
               resolvedAddress = address
-              console.log('[useIdentityResolution] ✅ ENS resolved to:', resolvedAddress)
+              logger.info('ENS resolved successfully', { resolvedAddress })
             } else {
-              console.warn('[useIdentityResolution] ⚠️ ENS resolution returned null for:', walletAddress)
+              logger.warn('ENS resolution returned null', { walletAddress })
               // Fallback to original walletAddress (might still work if it's actually an address)
             }
           } catch (ensError) {
-            console.error('[useIdentityResolution] ❌ ENS resolution failed:', ensError)
+            logger.error('ENS resolution failed', ensError)
             // Fallback to original walletAddress (might still work if it's actually an address)
           }
         }
@@ -137,7 +140,7 @@ export const useIdentityResolution = ({
             const discordHasNewAvatar = discordAvatarUrl && !avatar
             // Cache valid for 1 hour, unless Discord profile changed
             if (Date.now() - timestamp < CACHE_TTL_MS && !discordHasNewAvatar) {
-              console.log('[useIdentityResolution] 📦 Loading from cache:', { avatar, label, source: cachedSource })
+              logger.debug('Loading from cache', { avatar, label, source: cachedSource })
               setDisplayAvatar(avatar)
               setDisplayLabel(label)
               setResolvedAvatar(avatar)
@@ -147,7 +150,7 @@ export const useIdentityResolution = ({
               return
             }
             if (discordHasNewAvatar) {
-              console.log('[useIdentityResolution] 🔄 Cache invalidated: Discord avatar now available')
+              logger.debug('Cache invalidated: Discord avatar now available')
             }
           }
         }
@@ -180,7 +183,7 @@ export const useIdentityResolution = ({
           avatarUrl = account.image || account.atom?.image
           labelValue = account.label || account.atom?.label
 
-          console.log('[useIdentityResolution] 📸 Avatar data from GraphQL:', { avatarUrl, labelValue, account })
+          logger.debug('Avatar data from GraphQL', { avatarUrl, labelValue, account })
 
           if (avatarUrl || labelValue) {
             identitySource = 'graphql'
@@ -195,39 +198,39 @@ export const useIdentityResolution = ({
 
         // If label is truncated or missing, try reverse ENS lookup
         if (!labelValue || !labelValue.endsWith('.eth') && !labelValue.endsWith('.box')) {
-          console.log('[useIdentityResolution] 🔍 Label is not an ENS name, attempting reverse lookup for:', checksumAddress)
+          logger.debug('Label is not an ENS name, attempting reverse lookup', { checksumAddress })
           try {
             const ensName = await publicClient.getEnsName({
               address: checksumAddress as `0x${string}`
             })
             if (ensName) {
-              console.log('[useIdentityResolution] ✅ Found ENS name:', ensName)
+              logger.info('Found ENS name', { ensName })
               labelValue = ensName
               identitySource = 'ens'
             }
           } catch (ensError) {
-            console.warn('[useIdentityResolution] ⚠️ ENS reverse lookup failed:', ensError)
+            logger.warn('ENS reverse lookup failed', ensError)
           }
         }
 
         // If we have an ENS name and no avatar from GraphQL, try to resolve ENS avatar
         if (!avatarUrl && labelValue && (labelValue.endsWith('.eth') || labelValue.endsWith('.box'))) {
-          console.log('[useIdentityResolution] 🔍 Attempting to resolve ENS avatar for:', labelValue)
+          logger.debug('Attempting to resolve ENS avatar', { labelValue })
           try {
             const ensAvatarUrl = await getEnsAvatar(labelValue, avatarUrl)
             if (ensAvatarUrl) {
-              console.log('[useIdentityResolution] ✅ Found ENS avatar:', ensAvatarUrl)
+              logger.info('Found ENS avatar', { ensAvatarUrl })
               avatarUrl = ensAvatarUrl
               identitySource = 'ens'
             }
           } catch (ensError) {
-            console.warn('[useIdentityResolution] ⚠️ ENS avatar resolution failed:', ensError)
+            logger.warn('ENS avatar resolution failed', ensError)
           }
         }
 
         // Fallback to Discord if no real label found
         if (!isRealLabel(labelValue) && discordProfile) {
-          console.log('[useIdentityResolution] 🔄 Using Discord profile as fallback')
+          logger.debug('Using Discord profile as fallback')
           labelValue = discordProfile.global_name || discordProfile.username
           identitySource = 'discord'
         }
@@ -236,7 +239,7 @@ export const useIdentityResolution = ({
         if (!avatarUrl) {
           const discordAvatarUrl = getDiscordAvatarUrl(discordProfile)
           if (discordAvatarUrl) {
-            console.log('[useIdentityResolution] 🔄 Using Discord avatar as fallback')
+            logger.debug('Using Discord avatar as fallback')
             avatarUrl = discordAvatarUrl
             if (identitySource === 'fallback') {
               identitySource = 'discord'
@@ -244,9 +247,7 @@ export const useIdentityResolution = ({
           }
         }
 
-        console.log('[useIdentityResolution] 📸 Final avatar URL:', avatarUrl)
-        console.log('[useIdentityResolution] 📸 Final label:', labelValue)
-        console.log('[useIdentityResolution] 📸 Identity source:', identitySource)
+        logger.info('Identity resolved', { avatarUrl, labelValue, identitySource })
 
         setDisplayAvatar(avatarUrl)
         setDisplayLabel(labelValue)
@@ -264,10 +265,10 @@ export const useIdentityResolution = ({
               timestamp: Date.now()
             }
           })
-          console.log('[useIdentityResolution] 💾 Saved to cache')
+          logger.debug('Saved to cache')
         }
       } catch (error) {
-        console.error('[useIdentityResolution] Error resolving identity:', error)
+        logger.error('Error resolving identity', error)
       } finally {
         setLoading(false)
       }

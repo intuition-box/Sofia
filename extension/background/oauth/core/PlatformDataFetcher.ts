@@ -4,6 +4,9 @@ import { TokenManager } from './TokenManager'
 import { SyncManager } from './SyncManager'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
 import { getAddress } from 'viem'
+import { createServiceLogger } from '../../../lib/utils/logger'
+
+const logger = createServiceLogger('PlatformDataFetcher')
 
 export class PlatformDataFetcher {
   private tripletExtractor?: any
@@ -24,9 +27,9 @@ export class PlatformDataFetcher {
       throw new Error(`Platform ${platform} not configured`)
     }
 
-    console.log(`🔍 [OAuth] Fetching user data for ${platform}`)
-    console.log(`🔍 [OAuth] API Base URL: ${config.apiBaseUrl}`)
-    console.log(`🔍 [OAuth] Profile endpoint: ${config.endpoints.profile}`)
+    logger.info(`Fetching user data for ${platform}`)
+    logger.debug(`API Base URL: ${config.apiBaseUrl}`)
+    logger.debug(`Profile endpoint: ${config.endpoints.profile}`)
 
     // Get sync info for incremental sync
     const lastSync = await this.syncManager.getLastSyncInfo(platform)
@@ -39,7 +42,7 @@ export class PlatformDataFetcher {
       accessToken = await this.tokenManager.getValidToken(platform)
     }
 
-    console.log(`🔍 [OAuth] Token retrieved for ${platform}: ${accessToken ? accessToken.substring(0, 20) + '...' : 'NULL'}`)
+    logger.debug(`Token retrieved for ${platform}: ${accessToken ? accessToken.substring(0, 20) + '...' : 'NULL'}`)
 
 
     const userData: UserData = {
@@ -60,21 +63,21 @@ export class PlatformDataFetcher {
 
       // Fetch profile
       const profileUrl = `${config.apiBaseUrl}${config.endpoints.profile}`
-      console.log(`🔍 [OAuth] Fetching profile from: ${profileUrl}`)
-      console.log(`🔍 [OAuth] Headers:`, JSON.stringify(headers))
+      logger.debug(`Fetching profile from: ${profileUrl}`)
+      logger.debug('Headers', JSON.stringify(headers))
 
       const profileResponse = await fetch(profileUrl, { headers })
 
-      console.log(`🔍 [OAuth] Profile response status: ${profileResponse.status}`)
+      logger.debug(`Profile response status: ${profileResponse.status}`)
 
       if (!profileResponse.ok) {
         const errorBody = await profileResponse.text()
-        console.error(`❌ [OAuth] Profile fetch failed for ${platform}:`, profileResponse.status, errorBody)
+        logger.error(`Profile fetch failed for ${platform}`, { status: profileResponse.status, errorBody })
         throw new Error(`Profile fetch failed: ${profileResponse.status} - ${errorBody}`)
       }
 
       userData.profile = await profileResponse.json()
-      console.log(`✅ [OAuth] Profile fetched for ${platform}:`, JSON.stringify(userData.profile).substring(0, 200))
+      logger.info(`Profile fetched for ${platform}`, JSON.stringify(userData.profile).substring(0, 200))
 
       // Store Discord profile for avatar/username display in UI (per-wallet)
       if (platform === 'discord' && userData.profile) {
@@ -93,11 +96,11 @@ export class PlatformDataFetcher {
           const checksumAddr = getAddress(walletAddress)
           const storageKey = `discord_profile_${checksumAddr}`
           await chrome.storage.local.set({ [storageKey]: discordProfile })
-          console.log(`💾 [OAuth] Stored Discord profile for wallet ${checksumAddr}:`, discordProfile)
+          logger.info(`Stored Discord profile for wallet ${checksumAddr}`, discordProfile)
         } else {
           // Fallback: store without wallet suffix (legacy)
           await chrome.storage.local.set({ discord_profile: discordProfile })
-          console.log('💾 [OAuth] Stored Discord profile (no wallet connected):', discordProfile)
+          logger.info('Stored Discord profile (no wallet connected)', discordProfile)
         }
       }
 
@@ -120,17 +123,17 @@ export class PlatformDataFetcher {
             finalEndpoint = `${endpoint}${separator}user_id=${userId}`
           }
           
-          console.log(`🔍 [OAuth] Fetching: ${config.apiBaseUrl}${finalEndpoint}`)
+          logger.debug(`Fetching: ${config.apiBaseUrl}${finalEndpoint}`)
           
           const dataResponse = await fetch(`${config.apiBaseUrl}${finalEndpoint}`, { headers })
           
           if (dataResponse.ok) {
             const data = await dataResponse.json()
-            console.log(`🔍 [OAuth] Raw data from ${endpoint}:`, data)
+            logger.debug(`Raw data from ${endpoint}`, data)
             
             // Filter for incremental sync
             const filteredData = this.filterNewItems(platform, endpoint, data, lastSync)
-            console.log(`🔍 [OAuth] Filtered data from ${endpoint}:`, filteredData)
+            logger.debug(`Filtered data from ${endpoint}`, filteredData)
             
             userData.data[endpoint] = filteredData
             
@@ -143,7 +146,7 @@ export class PlatformDataFetcher {
                 triplets: [] 
               })
               userData.triplets.push(...endpointTriplets)
-              console.log(`🔍 [OAuth] Extracted ${endpointTriplets.length} triplets from ${endpoint}`)
+              logger.info(`Extracted ${endpointTriplets.length} triplets from ${endpoint}`)
             }
             
             // Extract IDs for next sync
@@ -151,10 +154,10 @@ export class PlatformDataFetcher {
             allItemIds.push(...itemIds)
             
           } else {
-            console.error(`❌ [OAuth] Data fetch failed for ${endpoint}:`, dataResponse.status)
+            logger.error(`Data fetch failed for ${endpoint}`, { status: dataResponse.status })
           }
         } catch (error) {
-          console.error(`❌ [OAuth] Error fetching ${endpoint}:`, error)
+          logger.error(`Error fetching ${endpoint}`, error)
         }
       }
 
@@ -162,10 +165,7 @@ export class PlatformDataFetcher {
       await this.syncManager.updateSyncInfo(platform, allItemIds)
 
     } catch (error) {
-      console.error(`❌ [OAuth] Error fetching user data for ${platform}:`, error)
-      console.error(`❌ [OAuth] Error name:`, error?.name)
-      console.error(`❌ [OAuth] Error message:`, error?.message)
-      console.error(`❌ [OAuth] Error stack:`, error?.stack)
+      logger.error(`Error fetching user data for ${platform}`, { name: error?.name, message: error?.message, stack: error?.stack })
       throw error
     }
 

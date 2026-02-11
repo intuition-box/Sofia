@@ -22,6 +22,9 @@
  */
 
 import type { MigrationStatus } from '../../types/currencyTypes'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('CurrencyMigrationService')
 
 const MIGRATION_VERSION = 1
 const MIGRATION_KEY_PREFIX = 'currency_migration_v1'
@@ -64,11 +67,11 @@ class CurrencyMigrationServiceClass {
     const existing = await chrome.storage.local.get([flagKey])
     const existingStatus = existing[flagKey] as MigrationStatus | undefined
     if (existingStatus?.migrated) {
-      console.log('🪙 [CurrencyMigration] Already migrated, skipping')
+      logger.debug('Already migrated, skipping')
       return existingStatus
     }
 
-    console.log('🪙 [CurrencyMigration] Starting migration for', normalized)
+    logger.info('Starting migration', { wallet: normalized })
 
     try {
       await this.performMigration(normalized)
@@ -80,11 +83,11 @@ class CurrencyMigrationServiceClass {
       }
 
       await chrome.storage.local.set({ [flagKey]: status })
-      console.log('✅ [CurrencyMigration] Migration complete')
+      logger.info('Migration complete')
 
       return status
     } catch (err) {
-      console.error('❌ [CurrencyMigration] Migration failed:', err)
+      logger.error('Migration failed', err)
       return { migrated: false, version: MIGRATION_VERSION }
     }
   }
@@ -108,7 +111,7 @@ class CurrencyMigrationServiceClass {
     // Floor: if total would be negative, cap spentGold
     const rawTotal = discoveryGold + certificationGold - spentGold
     if (rawTotal < 0) {
-      console.log(`🪙 [CurrencyMigration] Negative balance (${rawTotal}), capping spentGold`)
+      logger.warn('Negative balance detected, capping spentGold', { rawTotal })
       spentGold = discoveryGold + certificationGold
     }
 
@@ -124,7 +127,7 @@ class CurrencyMigrationServiceClass {
     })
 
     const finalTotal = discoveryGold + certificationGold - spentGold
-    console.log(`🪙 [CurrencyMigration] Migrated: discovery=${discoveryGold}, cert=${certificationGold}, spent=${spentGold}, total=${finalTotal}`)
+    logger.info('Migration values written', { discoveryGold, certificationGold, spentGold, finalTotal })
   }
 }
 

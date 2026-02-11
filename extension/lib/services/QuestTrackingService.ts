@@ -5,6 +5,9 @@
  */
 
 import { getAddress } from 'viem'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('QuestTrackingService')
 
 export class QuestTrackingService {
   private static instance: QuestTrackingService
@@ -51,7 +54,7 @@ export class QuestTrackingService {
   async recordSignalActivity(): Promise<void> {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) {
-      console.log('⚠️ [QuestTracking] No wallet connected, cannot record signal activity')
+      logger.warn('No wallet connected, cannot record signal activity')
       return
     }
 
@@ -84,7 +87,7 @@ export class QuestTrackingService {
   async recordCertificationActivity(): Promise<void> {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) {
-      console.log('⚠️ [QuestTracking] No wallet connected, cannot record certification activity')
+      logger.warn('No wallet connected, cannot record certification activity')
       return
     }
 
@@ -149,7 +152,7 @@ export class QuestTrackingService {
   async recordPulseLaunch(): Promise<void> {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) {
-      console.log('⚠️ [QuestTracking] No wallet connected, cannot record pulse launch')
+      logger.warn('No wallet connected, cannot record pulse launch')
       return
     }
 

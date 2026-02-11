@@ -4,6 +4,10 @@
  * Works in sidepanel/popup context by messaging the content script in the active tab
  */
 
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('WalletProvider')
+
 let requestCounter = 0
 let eventListeners: Map<string, Set<(data: any) => void>> = new Map()
 
@@ -94,7 +98,7 @@ async function sendWalletRequest(method: string, params?: any[]): Promise<any> {
 const walletProvider = {
   // Main request method (EIP-1193)
   request: async ({ method, params }: { method: string; params?: any[] }): Promise<any> => {
-    console.log("🔌 [WalletProvider] Request:", method, params)
+    logger.debug('Request', { method, params })
     return sendWalletRequest(method, params)
   },
 
@@ -142,7 +146,7 @@ const walletProvider = {
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "WALLET_EVENT") {
     const { event, data } = message
-    console.log("📢 [WalletProvider] Event received:", event, data)
+    logger.debug('Event received', { event, data })
 
     const listeners = eventListeners.get(event)
     if (listeners) {
@@ -150,7 +154,7 @@ chrome.runtime.onMessage.addListener((message) => {
         try {
           callback(data)
         } catch (error) {
-          console.error("Error in wallet event listener:", error)
+          logger.error('Error in wallet event listener', error)
         }
       })
     }
@@ -166,9 +170,9 @@ export const getWalletProvider = async () => {
     try {
       // Try to get chainId as a connectivity test
       await walletProvider.request({ method: "eth_chainId" })
-      console.log("✅ [WalletProvider] Bridge connection verified")
+      logger.info('Bridge connection verified')
     } catch (error) {
-      console.warn("⚠️ [WalletProvider] Bridge test failed, wallet may not be installed:", error)
+      logger.warn('Bridge test failed, wallet may not be installed', error)
       // Don't throw here - let the actual request handle the error
     }
     cachedProvider = walletProvider
@@ -181,9 +185,9 @@ export const cleanupProvider = () => {
     try {
       cachedProvider.removeAllListeners()
       cachedProvider = null
-      console.log("🧹 Wallet provider cleaned up")
+      logger.info('Wallet provider cleaned up')
     } catch (error) {
-      console.error("Error cleaning up provider:", error)
+      logger.error('Error cleaning up provider', error)
     }
   }
 }
@@ -193,7 +197,7 @@ export const listWalletProviders = async (): Promise<Array<{ name: string; rdns:
   try {
     return await sendWalletRequest("wallet_listProviders")
   } catch (error) {
-    console.error("Failed to list wallet providers:", error)
+    logger.error('Failed to list wallet providers', error)
     return []
   }
 }
@@ -202,12 +206,12 @@ export const listWalletProviders = async (): Promise<Array<{ name: string; rdns:
 // walletType can be: 'metamask', 'rabby', 'coinbase', etc.
 export const selectProviderByName = async (walletType: string): Promise<{ found: boolean; selectedProvider: string }> => {
   try {
-    console.log("🔍 [WalletProvider] Selecting provider by name:", walletType)
+    logger.debug('Selecting provider by name', { walletType })
     const result = await sendWalletRequest("wallet_selectProviderByName", [walletType])
-    console.log("✅ [WalletProvider] Provider selected:", result)
+    logger.info('Provider selected', result)
     return result
   } catch (error) {
-    console.error("Failed to select provider by name:", error)
+    logger.error('Failed to select provider by name', error)
     return { found: false, selectedProvider: "" }
   }
 }
@@ -218,12 +222,12 @@ export const selectProviderByName = async (walletType: string): Promise<{ found:
  */
 export const selectProviderByAddress = async (address: string): Promise<{ found: boolean; selectedProvider: string }> => {
   try {
-    console.log("🔍 [WalletProvider] Selecting provider for address:", address)
+    logger.debug('Selecting provider for address', { address })
     const result = await sendWalletRequest("wallet_selectProviderByAddress", [address])
-    console.log("✅ [WalletProvider] Provider selected:", result)
+    logger.info('Provider selected', result)
     return result
   } catch (error) {
-    console.error("Failed to select provider by address:", error)
+    logger.error('Failed to select provider by address', error)
     return { found: false, selectedProvider: "" }
   }
 }
@@ -232,10 +236,10 @@ export const selectProviderByAddress = async (address: string): Promise<{ found:
 // This ensures a fresh wallet selection on next connection
 export const clearProviderSelection = async (): Promise<void> => {
   try {
-    console.log("🧹 [WalletProvider] Clearing provider selection")
+    logger.info('Clearing provider selection')
     await sendWalletRequest("wallet_clearProviderSelection", [])
   } catch (error) {
     // May fail on restricted pages, that's OK
-    console.warn("Could not clear provider selection:", error)
+    logger.warn('Could not clear provider selection', error)
   }
 }

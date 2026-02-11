@@ -1,5 +1,8 @@
 import './PulseAnimation.css'
 import { useState } from 'react'
+import { createHookLogger } from '../../../lib/utils/logger'
+
+const logger = createHookLogger('PulseAnimation')
 
 interface PulseAnimationProps {
   size?: number
@@ -25,9 +28,9 @@ const PulseAnimation = ({
   }
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log("⌨️ Key pressed in PulseAnimation:", e.key, "chatInput:", chatInput)
+    logger.debug('Key pressed in PulseAnimation', { key: e.key, chatInput })
     if (e.key === 'Enter' && chatInput.trim() && onChatSubmit) {
-      console.log("✅ Enter detected, calling onChatSubmit with:", chatInput.trim())
+      logger.debug('Enter detected, calling onChatSubmit', chatInput.trim())
       onChatSubmit(chatInput.trim())
       setChatInput("")
     }

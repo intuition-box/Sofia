@@ -21,6 +21,9 @@ import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import WeightModal from '../modals/WeightModal'
 import { normalizeUrl } from '../../lib/utils/normalizeUrl'
+import { createHookLogger } from '../../lib/utils/logger'
+
+const logger = createHookLogger('GroupDetailView')
 import { cleanTitle, getDisplayTitle } from '../../lib/utils/cleanTitle'
 import '../styles/IntentionBubbleSelector.css'
 import onChainBadgeIcon from './icons/onchainbadge.png'
@@ -407,7 +410,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       setModalTriplets([triplet])
       setShowWeightModal(true)
     } catch (error) {
-      console.error('Invalid URL:', url)
+      logger.error('Invalid URL', url)
     }
   }
 
@@ -475,7 +478,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         await onRefresh()
       }
     } catch (error) {
-      console.error('Certification failed:', error)
+      logger.error('Certification failed', error)
     } finally {
       setProcessingUrls(prev => {
         const newSet = new Set(prev)

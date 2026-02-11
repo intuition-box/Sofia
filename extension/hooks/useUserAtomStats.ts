@@ -4,6 +4,9 @@ import { mainnet } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useUserAtomStats')
 
 export interface UserAtomStats {
   termId: string
@@ -81,7 +84,7 @@ export const useUserAtomStats = (
               resolvedAddress = address
             }
           } catch (ensError) {
-            console.error('[useUserAtomStats] ENS resolution failed:', ensError)
+            logger.error('ENS resolution failed', ensError)
           }
         }
         
@@ -206,7 +209,7 @@ export const useUserAtomStats = (
         })
 
       } catch (error) {
-        console.error('Error loading atom stats:', error)
+        logger.error('Error loading atom stats', error)
         setStats(prev => ({
           ...prev,
           loading: false,

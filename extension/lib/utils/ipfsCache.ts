@@ -3,6 +3,9 @@
  */
 
 import type { IPFSMetadata } from '../../types/follows'
+import { createServiceLogger } from './logger'
+
+const logger = createServiceLogger('IPFSCache')
 
 // In-memory cache: ipfsHash -> metadata
 const ipfsCache = new Map<string, IPFSMetadata | null>()
@@ -49,7 +52,7 @@ async function fetchFromIPFS(ipfsUri: string): Promise<IPFSMetadata | null> {
   }
 
   // All gateways failed
-  console.warn(`Failed to fetch IPFS data from ${ipfsUri} (tried all gateways)`)
+  logger.warn(`Failed to fetch IPFS data from ${ipfsUri} (tried all gateways)`)
   ipfsCache.set(ipfsUri, null)
   return null
 }

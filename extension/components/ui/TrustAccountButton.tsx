@@ -3,6 +3,9 @@ import { createPortal } from 'react-dom'
 import { useTrustAccount } from '../../hooks/useTrustAccount'
 import WeightModal from '../modals/WeightModal'
 import type { EchoTriplet } from '../../types/blockchain'
+import { createHookLogger } from '../../lib/utils/logger'
+
+const logger = createHookLogger('TrustAccountButton')
 
 interface TrustAccountButtonProps {
   accountTermId: string
@@ -52,29 +55,29 @@ const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess }: TrustAcc
         onSuccess()
       }
     } catch (err) {
-      console.error('Failed to trust account:', err)
+      logger.error('Failed to trust account', err)
       setTransactionError(err instanceof Error ? err.message : 'Failed to create trust')
     }
   }
 
   // Sync states from hook - wait for loading to finish before updating
   useEffect(() => {
-    console.log('📊 TrustAccountButton - Hook state changed:', { loading, success, error, transactionHash })
+    logger.debug('Hook state changed', { loading, success, error, transactionHash })
 
     // Only update when not loading (transaction finished)
     if (!loading) {
       if (success && transactionHash) {
-        console.log('✅ TrustAccountButton - Success with txHash:', transactionHash)
+        logger.info('Success with txHash', { transactionHash })
         setTransactionSuccess(true)
         setLocalTransactionHash(transactionHash)
         setTransactionError(null)
       } else if (success && !transactionHash) {
-        console.log('✅ TrustAccountButton - Success without txHash (triple exists)')
+        logger.info('Success without txHash (triple exists)')
         setTransactionSuccess(true)
         setTransactionError(null)
         setLocalTransactionHash(null)
       } else if (error) {
-        console.log('❌ TrustAccountButton - Error:', error)
+        logger.error('Transaction error', error)
         setTransactionSuccess(false)
         setTransactionError(error)
         setLocalTransactionHash(null)

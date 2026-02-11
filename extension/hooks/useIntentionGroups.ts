@@ -10,6 +10,9 @@ import type { IntentionGroupRecord, GroupUrlRecord } from '~lib/database/indexed
 import type { CertificationType } from '~lib/services/GroupManager'
 import { EXCLUDED_URL_PATTERNS } from '~background/constants'
 import { useOnChainIntentionGroups, type OnChainUrl } from './useOnChainIntentionGroups'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useIntentionGroups')
 
 /**
  * Normalize domain by removing common subdomains (www, open, m, mobile, etc.)
@@ -150,7 +153,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         setError(response.error || 'Failed to load groups')
       }
     } catch (err) {
-      console.error('❌ [useIntentionGroups] Error loading groups:', err)
+      logger.error('Error loading groups', err)
       setError(err instanceof Error ? err.message : 'Failed to load groups')
     } finally {
       setIsLoading(false)
@@ -167,9 +170,9 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
     const merged = new Map<string, IntentionGroupWithStats>()
 
     // DEBUG: Log inputs
-    console.log(`🔍 [useIntentionGroups] MERGE START - localGroups: ${localGroups.length}, onChainGroups: ${onChainGroups.length}`)
-    console.log(`🔍 [useIntentionGroups] Local groups:`, localGroups.map(g => ({ domain: g.domain, level: g.level, id: g.id })))
-    console.log(`🔍 [useIntentionGroups] On-chain groups:`, onChainGroups.map(g => ({ domain: g.domain, level: g.level, certifiedCount: g.certifiedCount })))
+    logger.debug(`MERGE START - localGroups: ${localGroups.length}, onChainGroups: ${onChainGroups.length}`)
+    logger.debug('Local groups', localGroups.map(g => ({ domain: g.domain, level: g.level, id: g.id })))
+    logger.debug('On-chain groups', onChainGroups.map(g => ({ domain: g.domain, level: g.level, certifiedCount: g.certifiedCount })))
 
     // 1. Add all local groups first (using normalized domain as key)
     for (const local of localGroups) {
@@ -198,7 +201,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       if (shouldExcludeDomain(onChain.domain)) continue
 
       const existing = merged.get(onChain.domain)
-      console.log(`🔍 [useIntentionGroups] Looking for ${onChain.domain} (level ${onChain.level}) → found: ${existing ? `yes (local level ${existing.level})` : 'no'}`)
+      logger.debug(`Looking for ${onChain.domain} (level ${onChain.level}) -> found: ${existing ? `yes (local level ${existing.level})` : 'no'}`)
 
       if (existing) {
         // CASE 1: Domain exists locally → enrich with on-chain URLs
@@ -236,7 +239,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         // Restore level from on-chain if local level is lower (e.g., after cache clear)
         // Use MAX of local level and on-chain calculated level
         if (onChain.level > existing.level) {
-          console.log(`📊 [useIntentionGroups] Restoring level for ${existing.domain}: ${existing.level} → ${onChain.level} (from on-chain certifications)`)
+          logger.info(`Restoring level for ${existing.domain}: ${existing.level} -> ${onChain.level} (from on-chain certifications)`)
           const oldLevel = existing.level
           existing.level = onChain.level
           // Track for persistence in useEffect (no side effects in useMemo)
@@ -246,7 +249,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
             level: onChain.level,
             certifiedCount: onChain.certifiedCount
           })
-          console.log(`📝 [useIntentionGroups] Queued level update: ${existing.domain} ${oldLevel} → ${onChain.level}`)
+          logger.debug(`Queued level update: ${existing.domain} ${oldLevel} -> ${onChain.level}`)
         }
 
       } else {
@@ -306,7 +309,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
     // Clear the ref immediately to avoid duplicate processing
     pendingLevelUpdatesRef.current = []
 
-    console.log(`💾 [useIntentionGroups] Persisting ${updates.length} level update(s)...`)
+    logger.info(`Persisting ${updates.length} level update(s)...`)
 
     // Persist each level update
     for (const update of updates) {
@@ -317,12 +320,12 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         certifiedCount: update.certifiedCount
       }).then(response => {
         if (response?.success) {
-          console.log(`✅ [useIntentionGroups] Persisted level ${update.level} for ${update.domain}`)
+          logger.info(`Persisted level ${update.level} for ${update.domain}`)
         } else {
-          console.warn(`⚠️ [useIntentionGroups] Failed to persist level for ${update.domain}:`, response?.error)
+          logger.warn(`Failed to persist level for ${update.domain}`, response?.error)
         }
       }).catch(err => {
-        console.warn(`❌ [useIntentionGroups] Error persisting level for ${update.domain}:`, err)
+        logger.warn(`Error persisting level for ${update.domain}`, err)
       })
     }
   }, [mergedGroups]) // Run when mergedGroups changes
@@ -373,7 +376,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         }
       }
     } catch (err) {
-      console.error('❌ [useIntentionGroups] Error refreshing group:', err)
+      logger.error('Error refreshing group', err)
     }
   }, [selectedGroup?.id, loadGroups, refetchOnChain])
 
@@ -398,11 +401,11 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         await refreshGroup(groupId)
         return true
       } else {
-        console.error('❌ Certification failed:', response.error)
+        logger.error('Certification failed', response.error)
         return false
       }
     } catch (err) {
-      console.error('❌ [useIntentionGroups] Error certifying URL:', err)
+      logger.error('Error certifying URL', err)
       return false
     }
   }, [refreshGroup])
@@ -422,11 +425,11 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         await refreshGroup(groupId)
         return true
       } else {
-        console.error('❌ Remove URL failed:', response.error)
+        logger.error('Remove URL failed', response.error)
         return false
       }
     } catch (err) {
-      console.error('❌ [useIntentionGroups] Error removing URL:', err)
+      logger.error('Error removing URL', err)
       return false
     }
   }, [refreshGroup])
@@ -438,7 +441,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
     try {
       // Virtual groups (on-chain only) cannot be deleted locally
       if (groupId.startsWith('onchain-')) {
-        console.warn('⚠️ Cannot delete on-chain only groups')
+        logger.warn('Cannot delete on-chain only groups')
         return false
       }
 
@@ -456,11 +459,11 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         }
         return true
       } else {
-        console.error('❌ Delete group failed:', response.error)
+        logger.error('Delete group failed', response.error)
         return false
       }
     } catch (err) {
-      console.error('❌ [useIntentionGroups] Error deleting group:', err)
+      logger.error('Error deleting group', err)
       return false
     }
   }, [selectedGroup?.id])
@@ -478,7 +481,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
   useEffect(() => {
     const handleMessage = (message: any) => {
       if (message.type === 'GROUPS_UPDATED') {
-        console.log('🔄 [useIntentionGroups] Received GROUPS_UPDATED, refreshing...')
+        logger.info('Received GROUPS_UPDATED, refreshing...')
         loadGroups()
       }
     }

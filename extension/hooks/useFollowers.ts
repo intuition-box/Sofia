@@ -9,6 +9,9 @@ import type { FollowAccountVM, FollowQueryResult } from '../types/follows'
 import { batchFetchIPFS } from '../lib/utils/ipfsCache'
 import { batchGetEnsAvatars } from '../lib/utils/ensUtils'
 import { useGetAccountAtomByWalletQuery, useGetMyFollowersQuery, useGetAtomDataByLabelsQuery } from '@0xsofia/graphql'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useFollowers')
 
 interface GraphQLFollowersResponse {
   triples: Array<{
@@ -78,7 +81,7 @@ export function useFollowers(walletAddress: string | undefined): FollowQueryResu
       })()
 
       if (!myAccountResponse.atoms || myAccountResponse.atoms.length === 0) {
-        console.log('⚠️ No Account atom found for wallet:', lowercaseAddress)
+        logger.debug('No Account atom found for wallet', { address: lowercaseAddress })
         setAccounts([])
         return
       }
@@ -175,11 +178,11 @@ export function useFollowers(walletAddress: string | undefined): FollowQueryResu
 
         setAccounts(updatedAccounts)
       }).catch((err) => {
-        console.warn('⚠️ Failed to load avatars/metadata:', err)
+        logger.warn('Failed to load avatars/metadata', err)
         // Keep displaying basic data even if avatars fail
       })
     } catch (err) {
-      console.error('❌ Failed to load followers:', err)
+      logger.error('Failed to load followers', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)

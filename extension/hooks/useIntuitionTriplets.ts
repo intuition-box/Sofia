@@ -12,11 +12,12 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../lib/config/constants'
 import { batchFetchIPFS } from '../lib/utils/ipfsCache'
+import { createHookLogger } from '../lib/utils/logger'
 
 import type { GraphQLTriplesResponse, IntuitionTripleResponse } from '../types/intuition'
 import { getAddress } from 'viem'
 
-
+const logger = createHookLogger('useIntuitionTriplets')
 
 // Convert shares from Wei to TRUST for Curve 1 (Linear - Support)
 const formatSharesAsLinear = (shares: string): number => {
@@ -88,9 +89,9 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
   const refreshFromAPI = useCallback(async (): Promise<IntuitionTriplet[]> => {
     try {
       setIsLoading(true)
-      console.log('🔍 refreshFromAPI called with account:', account)
+      logger.info('refreshFromAPI called', { account })
       if (!account) {
-        console.log('❌ No account, returning empty array')
+        logger.warn('No account, returning empty array')
         setTriplets([])
         setIsLoading(false)
         return []
@@ -98,8 +99,7 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
 
       // Utiliser viem pour convertir l'adresse au format checksum EIP-55
       const checksumAddress = getAddress(account)
-      console.log('🔄 Original account:', account)
-      console.log('🔄 Checksum address:', checksumAddress)
+      logger.debug('Address conversion', { original: account, checksum: checksumAddress })
 
       const triplesQuery = `
         query Query_root($where: triples_bool_exp, $walletAddress: String!) {
@@ -143,25 +143,23 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
           }
         ]
       }
-      console.log('🚀 Making GraphQL request with where:', where)
-      console.log('🚀 Variables:', { where, walletAddress: checksumAddress })
-      console.log('🚀 SUBJECT_IDS.I value:', SUBJECT_IDS.I)
+      logger.debug('Making GraphQL request', { where, walletAddress: checksumAddress, subjectId: SUBJECT_IDS.I })
 
       const response = (await intuitionGraphqlClient.request(triplesQuery, {
         where,
         walletAddress: checksumAddress
       })) as GraphQLTriplesResponse
 
-      console.log('📥 GraphQL response:', response)
+      logger.debug('GraphQL response received', response)
 
       if (!response?.triples) {
-        console.log('❌ No triples in response')
+        logger.warn('No triples in response')
         setTriplets([])
         setIsLoading(false)
         return []
       }
 
-      console.log('✅ Found triples:', response.triples.length)
+      logger.info('Found triples', { count: response.triples.length })
 
       // Extract ipfs:// URIs from object.data
       const ipfsUris = response.triples
@@ -229,14 +227,13 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
         }
       )
 
-      console.log('📋 Final mapped triplets:', mappedTriplets)
-      console.log('📋 Setting triplets in state, count:', mappedTriplets.length)
+      logger.debug('Final mapped triplets', { count: mappedTriplets.length, triplets: mappedTriplets })
 
       setTriplets(mappedTriplets)
       setIsLoading(false)
       return mappedTriplets
     } catch (error) {
-      console.error('💥 Error in refreshFromAPI:', error)
+      logger.error('Error in refreshFromAPI', error)
       setTriplets([])
       setIsLoading(false)
       return []

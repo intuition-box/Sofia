@@ -14,7 +14,10 @@ import TrustAccountButton from '../../../ui/TrustAccountButton'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
 import '../../../styles/CoreComponents.css'
+import { createHookLogger } from '../../../../lib/utils/logger'
 import '../../../styles/FollowTab.css'
+
+const logger = createHookLogger('FollowingPanel')
 
 interface FollowingPanelProps {
   walletAddress: string | undefined
@@ -179,12 +182,12 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
                   <AccountActionButton
                     account={account}
                     onSuccess={() => {
-                      console.log('✅ Trust created for', account.label)
+                      logger.info('Trust created for', account.label)
                       refetchWithBackoff(refetch, {
                         initialDelay: 1000,
                         maxDelay: 4000,
                         maxAttempts: 3,
-                        onAttempt: (attempt) => console.log(`🔄 Refetch attempt ${attempt}`)
+                        onAttempt: (attempt) => logger.debug(`Refetch attempt ${attempt}`)
                       })
                     }}
                   />

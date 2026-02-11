@@ -4,6 +4,7 @@
  * Extracted from useQuestSystem to separate blockchain concerns from React state
  */
 
+import { createServiceLogger } from '../utils/logger'
 import { stringToHex, getAddress } from 'viem'
 import { getClients, getPublicClient } from '../clients/viemClients'
 import { intuitionGraphqlClient } from '../clients/graphql-client'
@@ -18,6 +19,8 @@ import {
   GetQuestBadgesAndSocialLinksDocument,
   CheckSocialLinkDocument,
 } from '@0xsofia/graphql'
+
+const logger = createServiceLogger('QuestBadgeService')
 
 const MIN_DEPOSIT = 10000000000000000n // 0.01 TRUST
 const CURVE_ID = 1n
@@ -46,7 +49,7 @@ export class QuestBadgeService {
     if (!walletAddress) return new Set()
 
     try {
-      console.log('🔍 [QuestBadgeService] Checking on-chain quest badges for:', walletAddress)
+      logger.info('Checking on-chain quest badges', { walletAddress })
 
       const publicClient = getPublicClient()
 
@@ -60,7 +63,7 @@ export class QuestBadgeService {
         authorizationList: undefined,
       }) as string
 
-      console.log('🔍 [QuestBadgeService] User atom ID:', userAtomId)
+      logger.debug('User atom ID', { userAtomId })
 
       const botVerifierLower = BOT_VERIFIER_ADDRESS.toLowerCase()
 
@@ -88,7 +91,7 @@ export class QuestBadgeService {
           if (objectLabel) {
             const questId = questTitleToId.get(objectLabel)
             if (questId) {
-              console.log(`✅ [QuestBadgeService] Found on-chain badge: ${questId}`)
+              logger.debug(`Found on-chain badge: ${questId}`)
               claimedFromChain.add(questId)
             }
           }
@@ -96,7 +99,7 @@ export class QuestBadgeService {
       }
 
       // Check social links (verified by bot)
-      console.log(`🤖 [QuestBadgeService] Checking social links verified by bot: ${botVerifierLower}`)
+      logger.debug(`Checking social links verified by bot: ${botVerifierLower}`)
       if (data.socialLinks?.length) {
         for (const triple of data.socialLinks) {
           const predicateLabel = triple.predicate?.label?.toLowerCase()
@@ -104,22 +107,22 @@ export class QuestBadgeService {
 
           // Skip invalid labels
           if (!objectLabel || objectLabel.includes('[object') || objectLabel.includes('{')) {
-            console.log(`⚠️ [QuestBadgeService] Skipping invalid social link: ${objectLabel}`)
+            logger.warn(`Skipping invalid social link: ${objectLabel}`)
             continue
           }
 
           if (predicateLabel && PREDICATE_TO_QUEST_ID[predicateLabel]) {
             const questId = PREDICATE_TO_QUEST_ID[predicateLabel]
-            console.log(`✅ [QuestBadgeService] Found verified social link: ${questId}`)
+            logger.debug(`Found verified social link: ${questId}`)
             claimedFromChain.add(questId)
           }
         }
       }
 
-      console.log(`🔍 [QuestBadgeService] Found ${claimedFromChain.size} on-chain badges/links`)
+      logger.info(`Found ${claimedFromChain.size} on-chain badges/links`)
       return claimedFromChain
     } catch (error) {
-      console.error('❌ [QuestBadgeService] Error checking on-chain badges:', error)
+      logger.error('Error checking on-chain badges', error)
       return new Set()
     }
   }
@@ -141,7 +144,7 @@ export class QuestBadgeService {
 
     // Persist if on-chain has badges not in local
     if (mergedClaimed.size > localClaimed.size) {
-      console.log('📝 [QuestBadgeService] Syncing on-chain badges to local storage')
+      logger.info('Syncing on-chain badges to local storage')
       const claimedKey = getWalletKey('claimed_quests', walletAddress)
       const completedKey = getWalletKey('completed_quests', walletAddress)
       await chrome.storage.local.set({
@@ -181,10 +184,10 @@ export class QuestBadgeService {
       }) as { triples: Array<{ term_id: string }> }
 
       const exists = data.triples && data.triples.length > 0
-      console.log(`🔍 [QuestBadgeService] Social link check for ${platform}: ${exists ? 'EXISTS' : 'NOT FOUND'}`)
+      logger.debug(`Social link check for ${platform}: ${exists ? 'EXISTS' : 'NOT FOUND'}`)
       return exists
     } catch (error) {
-      console.error(`❌ [QuestBadgeService] Error checking social link for ${platform}:`, error)
+      logger.error(`Error checking social link for ${platform}`, error)
       return false
     }
   }
@@ -197,7 +200,7 @@ export class QuestBadgeService {
     platform: SocialPlatform,
     oauthToken: string
   ): Promise<{ success: boolean; txHash?: string; error?: string }> {
-    console.log(`🔗 [QuestBadgeService] Calling link-social-workflow for ${platform}...`)
+    logger.info(`Calling link-social-workflow for ${platform}`)
 
     const response = await fetch(`${MASTRA_API_URL}/api/workflows/linkSocialWorkflow/start-async`, {
       method: 'POST',
@@ -214,7 +217,7 @@ export class QuestBadgeService {
     const result = await response.json()
 
     if (result.result?.success) {
-      console.log(`✅ [QuestBadgeService] Social link created on-chain: ${result.result.txHash}`)
+      logger.info('Social link created on-chain', { txHash: result.result.txHash })
       return { success: true, txHash: result.result.txHash }
     } else {
       throw new Error(result.result?.error || 'Link social workflow failed')
@@ -243,7 +246,7 @@ export class QuestBadgeService {
     const alreadyLinked = await this.checkSocialLinkExists(walletAddress, platform)
 
     if (alreadyLinked) {
-      console.log(`✅ [QuestBadgeService] Social link already exists for ${platform}, skipping TX`)
+      logger.info(`Social link already exists for ${platform}, skipping TX`)
       return { success: true }
     }
 
@@ -288,7 +291,7 @@ export class QuestBadgeService {
     }) as boolean
 
     if (!userAtomExists) {
-      console.log('📝 [QuestBadgeService] Creating user atom...')
+      logger.info('Creating user atom')
       const atomCost = await BlockchainService.getAtomCost()
       const atomMultiVaultCost = atomCost + MIN_DEPOSIT
       const atomTotalCost = await BlockchainService.getTotalCreationCost(1, MIN_DEPOSIT, atomMultiVaultCost)
@@ -309,14 +312,14 @@ export class QuestBadgeService {
       if (atomReceipt.status !== 'success') {
         throw new Error('User atom creation failed')
       }
-      console.log('✅ [QuestBadgeService] User atom created')
+      logger.info('User atom created')
     }
 
     // 2. PREDICATE = "has tag" (pre-existing)
     const predicateId = CHAIN_PREDICATE_IDS.HAS_TAG as Address
 
     // 3. Create OBJECT = quest title atom
-    console.log('📝 [QuestBadgeService] Creating quest badge atom...')
+    logger.info('Creating quest badge atom')
     const pinnedAtom = await atomOps.pinAtomToIPFS({
       name: questTitle,
       description: `Sofia Quest Badge: ${questDescription}`,
@@ -358,7 +361,7 @@ export class QuestBadgeService {
     contractAddress: string,
     tripleVaultId: string
   ): Promise<`0x${string}`> {
-    console.log('📝 [QuestBadgeService] Depositing into existing badge triple...', tripleVaultId)
+    logger.info('Depositing into existing badge triple', { tripleVaultId })
 
     const { walletClient, publicClient } = await getClients()
     const totalDepositCost = await BlockchainService.getTotalDepositCost(MIN_DEPOSIT)
@@ -390,7 +393,7 @@ export class QuestBadgeService {
       throw new Error('Deposit on existing badge triple failed')
     }
 
-    console.log('✅ [QuestBadgeService] Deposited into existing badge triple:', txHash)
+    logger.info('Deposited into existing badge triple', { txHash })
     return txHash
   }
 
@@ -404,7 +407,7 @@ export class QuestBadgeService {
     predicateId: Address,
     objectId: Address
   ): Promise<`0x${string}`> {
-    console.log('📝 [QuestBadgeService] Creating badge triple...')
+    logger.info('Creating badge triple')
 
     const { walletClient, publicClient } = await getClients()
 
@@ -438,7 +441,7 @@ export class QuestBadgeService {
       throw new Error('Triple creation failed on-chain')
     }
 
-    console.log('✅ [QuestBadgeService] Badge created on-chain:', txHash)
+    logger.info('Badge created on-chain', { txHash })
     return txHash
   }
 
@@ -496,7 +499,7 @@ export class QuestBadgeService {
           [claimedKey]: mergedClaimed,
         })
         await chrome.storage.local.remove([oldCompletedKey, oldClaimedKey].filter(k => k !== completedKey && k !== claimedKey))
-        console.log('🔄 [QuestBadgeService] Migrated quest states from checksum to lowercase keys')
+        logger.info('Migrated quest states from checksum to lowercase keys')
 
         return {
           completedIds: new Set(mergedCompleted),

@@ -1,9 +1,13 @@
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('Privy')
+
 // Read from environment variables (set in .env.development / .env.production)
 export const PRIVY_APP_ID = process.env.PLASMO_PUBLIC_PRIVY_APP_ID || ''
 export const PRIVY_CLIENT_ID = process.env.PLASMO_PUBLIC_PRIVY_CLIENT_ID || ''
 
 if (!PRIVY_APP_ID || !PRIVY_CLIENT_ID) {
-  console.warn('⚠️ [privy.ts] Missing PLASMO_PUBLIC_PRIVY_APP_ID or PLASMO_PUBLIC_PRIVY_CLIENT_ID in environment')
+  logger.warn('Missing PLASMO_PUBLIC_PRIVY_APP_ID or PLASMO_PUBLIC_PRIVY_CLIENT_ID in environment')
 }
 
 export const privyConfig = {

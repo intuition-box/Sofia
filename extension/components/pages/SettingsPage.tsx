@@ -10,7 +10,10 @@ import { tripletsDataService } from '../../lib/database/indexedDB-methods'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Modal.css'
+
+const logger = createHookLogger('SettingsPage')
 
 const SettingsPage = () => {
   const { navigateTo } = useRouter()
@@ -69,7 +72,7 @@ const SettingsPage = () => {
       // Clear recommendations cache (if user has account)
       if (account) {
         await RecommendationService.clearCache(account)
-        console.log('✅ Recommendations cache cleared for account:', account)
+        logger.info('Recommendations cache cleared for account', account)
       }
 
       // Clear IndexedDB completely
@@ -81,13 +84,13 @@ const SettingsPage = () => {
             deleteReq.onsuccess = () => resolve(true)
             deleteReq.onerror = () => reject(deleteReq.error)
           })
-          console.log('✅ Deleted IndexedDB database:', db.name)
+          logger.info('Deleted IndexedDB database', db.name)
         }
       }
 
       alert('All storage cleared: Plasmo, IndexedDB, OAuth, Wallet, Recommendations, and Images!')
     } catch (error) {
-      console.error('❌ Failed to clear storage:', error)
+      logger.error('Failed to clear storage', error)
       alert('Failed to clear storage. Please try again.')
     } finally {
       setIsClearing(false)

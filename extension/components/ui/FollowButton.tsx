@@ -3,7 +3,10 @@ import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import FollowModal from '../modals/FollowModal'
 import { useFollowAccount } from '../../hooks/useFollowAccount'
 import type { AccountAtom } from '../../hooks/useGetAtomAccount'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/FollowButton.css'
+
+const logger = createHookLogger('FollowButton')
 
 interface FollowButtonProps {
   account: AccountAtom
@@ -20,14 +23,14 @@ const FollowButton = ({
   const [shouldRefreshOnClose, setShouldRefreshOnClose] = useState(false)
 
   const handleFollowClick = () => {
-    console.log('🔄 FollowButton - Follow button clicked', {
+    logger.debug('Follow button clicked', {
       accountId: account.id,
       accountLabel: account.label,
       userAddress: address
     })
 
     if (!address) {
-      console.warn('⚠️ FollowButton - No wallet connected')
+      logger.warn('No wallet connected')
       return
     }
 
@@ -35,7 +38,7 @@ const FollowButton = ({
   }
 
   const handleFollow = async (trustAmount: string) => {
-    console.log('💰 FollowButton - Follow initiated', {
+    logger.info('Follow initiated', {
       accountId: account.id,
       accountLabel: account.label,
       trustAmount,
@@ -46,7 +49,7 @@ const FollowButton = ({
       const result = await followAccount(account, trustAmount)
 
       if (result.success) {
-        console.log('✅ FollowButton - Follow transaction successful', {
+        logger.info('Follow transaction successful', {
           transactionHash: result.transactionHash,
           tripleVaultId: result.tripleVaultId
         })
@@ -60,14 +63,14 @@ const FollowButton = ({
           txHash: result.transactionHash,
         }
       } else {
-        console.error('❌ FollowButton - Follow transaction failed', result.error)
+        logger.error('Follow transaction failed', result.error)
         return {
           success: false,
           error: result.error
         }
       }
     } catch (error) {
-      console.error('❌ FollowButton - Follow transaction failed', error)
+      logger.error('Follow transaction failed', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Transaction failed'
@@ -76,7 +79,7 @@ const FollowButton = ({
   }
 
   const handleModalClose = () => {
-    console.log('🚪 FollowButton - Modal closed')
+    logger.debug('Modal closed')
     setShowModal(false)
 
     // Refresh followers list if transaction was successful

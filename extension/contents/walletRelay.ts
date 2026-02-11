@@ -1,4 +1,7 @@
 import type { PlasmoCSConfig } from "plasmo"
+import { createServiceLogger } from "../lib/utils/logger"
+
+const logger = createServiceLogger('WalletRelay')
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -15,7 +18,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const { requestId, method, params } = message
 
-  console.log("🔄 [WalletRelay] Forwarding to MAIN world:", method)
+  logger.debug("Forwarding to MAIN world", { method })
 
   // Store the callback for this request
   pendingRequests.set(requestId, sendResponse)
@@ -51,7 +54,7 @@ window.addEventListener("message", (event) => {
     const callback = pendingRequests.get(requestId)
 
     if (callback) {
-      console.log("🔄 [WalletRelay] Sending response back:", requestId, result ? "success" : "error")
+      logger.debug("Sending response back", { requestId, status: result ? "success" : "error" })
       callback({ result, error })
       pendingRequests.delete(requestId)
     }
@@ -60,7 +63,7 @@ window.addEventListener("message", (event) => {
   // Handle wallet events (forward to background)
   if (event.data?.type === "SOFIA_WALLET_EVENT") {
     const { event: eventName, data } = event.data
-    console.log("📢 [WalletRelay] Forwarding event:", eventName)
+    logger.debug("Forwarding event", { eventName })
 
     chrome.runtime.sendMessage({
       type: "WALLET_EVENT",
@@ -72,4 +75,4 @@ window.addEventListener("message", (event) => {
   }
 })
 
-console.log("🔄 [WalletRelay] Relay initialized")
+logger.info("Relay initialized")

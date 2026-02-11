@@ -3,6 +3,9 @@
 import { UserToken } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
 import { getAddress } from 'viem'
+import { createServiceLogger } from '../../../lib/utils/logger'
+
+const logger = createServiceLogger('TokenManager')
 
 const TOKEN_REFRESH_MARGIN = 5 * 60 * 1000 // 5 minutes
 
@@ -33,13 +36,13 @@ export class TokenManager {
     }
     const key = this.getStorageKey(platform, walletAddress)
     await chrome.storage.local.set({ [key]: token })
-    console.log(`💾 [OAuth] Token stored for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`)
+    logger.info('Token stored', { platform, wallet: walletAddress.slice(0, 8) })
   }
 
   async getToken(platform: string): Promise<UserToken | null> {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) {
-      console.log(`⚠️ [OAuth] No wallet connected, cannot get token for ${platform}`)
+      logger.warn('No wallet connected, cannot get token', { platform })
       return null
     }
     const key = this.getStorageKey(platform, walletAddress)
@@ -56,11 +59,11 @@ export class TokenManager {
 
     // Check if token needs refresh
     if (this.isTokenExpired(token)) {
-      console.log(`⚠️ [OAuth] Token expired for ${platform}, refreshing...`)
+      logger.warn('Token expired, refreshing', { platform })
       try {
         token = await this.refreshAccessToken(platform, token)
       } catch (error) {
-        console.error(`❌ [OAuth] Failed to refresh token for ${platform}:`, error)
+        logger.error('Failed to refresh token', { platform, error })
         throw new Error(`Token refresh failed for ${platform}. Please reconnect.`)
       }
     }
@@ -88,7 +91,7 @@ export class TokenManager {
     // For now, users must re-authenticate when token expires.
     // Future: implement refresh via landing page endpoint
     if (config?.externalOAuth) {
-      console.log(`⚠️ [OAuth] Token expired for ${platform}. External OAuth requires re-authentication.`)
+      logger.warn('Token expired, external OAuth requires re-authentication', { platform })
       // Clear expired token so user can re-authenticate
       await this.removeToken(platform)
       throw new Error(`Token expired for ${platform}. Please reconnect your account.`)
@@ -96,14 +99,14 @@ export class TokenManager {
 
     // For Twitch (implicit flow), no refresh token available
     if (!token.refreshToken) {
-      console.log(`⚠️ [OAuth] No refresh token for ${platform}. Re-authentication required.`)
+      logger.warn('No refresh token available, re-authentication required', { platform })
       await this.removeToken(platform)
       throw new Error(`Token expired for ${platform}. Please reconnect your account.`)
     }
 
     // This path is no longer used since all auth-code platforms use external OAuth
     // Keeping for backwards compatibility
-    console.log(`🔄 [OAuth] Refreshing token for ${platform}`)
+    logger.info('Refreshing token', { platform })
 
     const response = await fetch(config!.tokenUrl!, {
       method: 'POST',
@@ -118,7 +121,7 @@ export class TokenManager {
     })
 
     if (!response.ok) {
-      console.error(`❌ [OAuth] Token refresh failed for ${platform}:`, response.status)
+      logger.error('Token refresh failed', { platform, status: response.status })
       throw new Error(`Token refresh failed: ${response.status}`)
     }
 
@@ -134,18 +137,18 @@ export class TokenManager {
 
     await this.storeToken(platform, refreshedToken)
 
-    console.log(`✅ [OAuth] Token refreshed successfully for ${platform}`)
+    logger.info('Token refreshed successfully', { platform })
     return refreshedToken
   }
 
   async removeToken(platform: string): Promise<void> {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) {
-      console.log(`⚠️ [OAuth] No wallet connected, cannot remove token for ${platform}`)
+      logger.warn('No wallet connected, cannot remove token', { platform })
       return
     }
     const key = this.getStorageKey(platform, walletAddress)
     await chrome.storage.local.remove(key)
-    console.log(`🗑️ [OAuth] Token removed for ${platform} (wallet: ${walletAddress.slice(0, 8)}...)`)
+    logger.info('Token removed', { platform, wallet: walletAddress.slice(0, 8) })
   }
 }

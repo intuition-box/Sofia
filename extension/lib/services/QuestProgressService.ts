@@ -8,11 +8,14 @@ import { getAddress } from 'viem'
 import { intuitionGraphqlClient } from '../clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../config/constants'
 import { questTrackingService } from './QuestTrackingService'
+import { createServiceLogger } from '../utils/logger'
 import type { UserProgress } from '../../types/questTypes'
 import {
   GetUserSignalsDocument,
   GetFollowCountDocument
 } from '@0xsofia/graphql'
+
+const logger = createServiceLogger('QuestProgressService')
 
 // Cache duration in milliseconds (2 minutes)
 const QUEST_CACHE_DURATION = 120000
@@ -56,7 +59,7 @@ export class QuestProgressService {
         spentGold: result[spentKey] || 0
       }
     } catch (err) {
-      console.error('❌ [QuestProgressService] Failed to load Gold data:', err)
+      logger.error('Failed to load Gold data', err)
       return { discoveryGold: 0, certificationGold: 0, spentGold: 0 }
     }
   }
@@ -75,14 +78,14 @@ export class QuestProgressService {
       if (result[cacheKey]) {
         const cacheAge = Date.now() - (result[timestampKey] || 0)
         if (cacheAge < QUEST_CACHE_DURATION) {
-          console.log('📦 [QuestProgressService] Using cached progress (age:', Math.round(cacheAge / 1000), 's)')
+          logger.debug('Using cached progress', { ageSeconds: Math.round(cacheAge / 1000) })
           return result[cacheKey]
         }
       }
 
       return null
     } catch (err) {
-      console.error('❌ [QuestProgressService] Failed to load cache:', err)
+      logger.error('Failed to load cache', err)
       return null
     }
   }
@@ -209,7 +212,7 @@ export class QuestProgressService {
       [cacheKey]: progress,
       [timestampKey]: Date.now()
     })
-    console.log('💾 [QuestProgressService] Progress cached')
+    logger.debug('Progress cached')
   }
 
   /**
@@ -228,9 +231,9 @@ export class QuestProgressService {
       await chrome.storage.local.set({
         [completedKey]: Array.from(newCompleted)
       })
-      console.log('✅ [QuestProgressService] Saved completed quest:', questId)
+      logger.info('Saved completed quest', { questId })
     } catch (error) {
-      console.error('Error saving completed quest:', error)
+      logger.error('Failed to save completed quest', error)
     }
 
     return newCompleted

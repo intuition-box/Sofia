@@ -3,6 +3,9 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { getAddress, createPublicClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
 import { normalize } from 'viem/ens'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useUserSignals')
 
 interface AtomValue {
   person?: {
@@ -213,7 +216,7 @@ export const useUserSignals = (
             resolvedAddress = address
           }
         } catch (ensError) {
-          console.error('[useUserSignals] ENS resolution failed:', ensError)
+          logger.error('ENS resolution failed', ensError)
         }
       }
       
@@ -386,7 +389,7 @@ export const useUserSignals = (
       setOffset(currentOffset + initialLimit)
 
     } catch (err) {
-      console.error('Error loading user signals:', err)
+      logger.error('Error loading user signals', err)
       setError(err instanceof Error ? err.message : 'Failed to load signals')
     } finally {
       setLoading(false)

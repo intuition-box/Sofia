@@ -1,5 +1,9 @@
 // themeIconManager.ts - Manages extension icon based on system theme
 
+import { createServiceLogger } from '../lib/utils/logger'
+
+const logger = createServiceLogger('ThemeIconManager')
+
 const OFFSCREEN_DOCUMENT_PATH = 'offscreen.html';
 
 // Icon paths for different themes (relative to extension root)
@@ -39,7 +43,7 @@ export async function updateIconForTheme(theme: 'light' | 'dark'): Promise<void>
       path: iconUrls as any
     });
   } catch (error) {
-    console.error('Failed to update extension icon:', error);
+    logger.error('Failed to update extension icon', error);
   }
 }
 
@@ -78,7 +82,7 @@ async function createOffscreenDocument(): Promise<void> {
       justification: 'Detect system theme (light/dark mode) to update extension icon'
     });
   } catch (error) {
-    console.error('Failed to create offscreen document:', error);
+    logger.error('Failed to create offscreen document', error);
   }
 }
 
@@ -102,6 +106,6 @@ export async function initializeThemeIconManager(): Promise<void> {
     setupThemeMessageHandler();
     await createOffscreenDocument();
   } catch (error) {
-    console.error('Failed to initialize theme icon manager:', error);
+    logger.error('Failed to initialize theme icon manager', error);
   }
 }

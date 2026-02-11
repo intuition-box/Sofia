@@ -1,4 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createHookLogger } from '../../lib/utils/logger'
+
+const logger = createHookLogger('RouterProvider')
 
 type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'Sofia' | 'recommendations' | 'resonance' | 'chat' | 'user-profile' | 'discovery-profile' | 'onboarding-import' | 'onboarding-select' | 'onboarding-tutorial'
 
@@ -96,7 +99,7 @@ export const RouterProvider = ({
         })
       }
     } catch (err) {
-      console.error('Failed to check pending profile:', err)
+      logger.error('Failed to check pending profile', err)
     }
   }, [])
 

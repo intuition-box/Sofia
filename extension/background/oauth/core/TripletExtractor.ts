@@ -5,6 +5,9 @@ import { tripletsDataService } from '../../../lib/database/indexedDB-methods'
 import { badgeService } from '../../../lib/services/BadgeService'
 import { groupManager } from '../../../lib/services/GroupManager'
 import type { GroupUrlRecord } from '../../../lib/database/indexedDB'
+import { createServiceLogger } from '../../../lib/utils/logger'
+
+const logger = createServiceLogger('TripletExtractor')
 
 // Platform to domain mapping
 const PLATFORM_DOMAINS: Record<string, string> = {
@@ -24,7 +27,7 @@ export class TripletExtractor {
 
     // Discord: skip ALL triplets if email not verified (proof of humanity required)
     if (platform === 'discord' && !userData.profile?.verified) {
-      console.log('⚠️ [OAuth] Discord email not verified - skipping all triplets (proof of humanity required)')
+      logger.warn('Discord email not verified - skipping all triplets (proof of humanity required)')
       return []
     }
 
@@ -36,7 +39,7 @@ export class TripletExtractor {
         object: userData.profile.global_name || userData.profile.username,
         objectUrl: `https://discord.com/users/${userData.profile.id}`
       })
-      console.log(`🔍 [OAuth] Added Discord identity triplet: i am ${userData.profile.global_name || userData.profile.username}`)
+      logger.debug('Added Discord identity triplet', { name: userData.profile.global_name || userData.profile.username })
     }
 
     // Twitter/X: add "I am username" triplet only if verified (blue checkmark)
@@ -49,9 +52,9 @@ export class TripletExtractor {
           object: twitterProfile.name || twitterProfile.username,
           objectUrl: `https://x.com/${twitterProfile.username}`
         })
-        console.log(`🔍 [OAuth] Added Twitter identity triplet: I am ${twitterProfile.name || twitterProfile.username} (verified)`)
+        logger.debug('Added Twitter identity triplet (verified)', { name: twitterProfile.name || twitterProfile.username })
       } else {
-        console.log('⚠️ [OAuth] Twitter user not verified - skipping identity triplet')
+        logger.warn('Twitter user not verified - skipping identity triplet')
       }
     }
 
@@ -64,23 +67,23 @@ export class TripletExtractor {
             const extractedTriplets = this.extractTripletsForRule(rule, data, platform)
             triplets.push(...extractedTriplets)
           } catch (error) {
-            console.error(`❌ [OAuth] Error extracting triplets for ${rule.pattern}:`, error)
+            logger.error(`Error extracting triplets for ${rule.pattern}`, error)
           }
         }
       }
     }
 
-    console.log(`🔍 [OAuth] Extracted ${triplets.length} triplets for ${platform}`)
+    logger.info(`Extracted ${triplets.length} triplets for ${platform}`)
     return triplets
   }
 
   async storeTriplets(platform: string, triplets: Triplet[], userData: UserData): Promise<void> {
     if (triplets.length === 0) {
-      console.log(`ℹ️ [OAuth] No triplets to store for ${platform}`)
+      logger.info(`No triplets to store for ${platform}`)
       return
     }
 
-    console.log(`🔍 [OAuth] Storing ${triplets.length} triplets for ${platform}`)
+    logger.info(`Storing ${triplets.length} triplets for ${platform}`)
 
     try {
       // Store each triplet individually with its own URL
@@ -99,20 +102,20 @@ export class TripletExtractor {
         await tripletsDataService.storeParsedMessage(parsedMessage, `oauth_${platform}_${Date.now()}_${i}`)
       }
       
-      console.log(`✅ [OAuth] Triplets stored successfully for ${platform}`)
+      logger.info(`Triplets stored successfully for ${platform}`)
 
       // Update badge count after storing OAuth triplets
       try {
         const availableCount = await badgeService.countAvailableEchoes()
         await badgeService.updateEchoBadge(availableCount)
-        console.log(`🔔 [OAuth] Badge updated after ${platform} import:`, availableCount)
+        logger.debug(`Badge updated after ${platform} import`, { availableCount })
       } catch (badgeError) {
-        console.error(`❌ [OAuth] Failed to update badge after ${platform} import:`, badgeError)
+        logger.error(`Failed to update badge after ${platform} import`, badgeError)
       }
 
       // Route OAuth triplets to IntentionGroups
       const domain = PLATFORM_DOMAINS[platform] || `${platform}.com`
-      console.log(`📦 [OAuth] Adding ${triplets.length} URLs to group: ${domain}`)
+      logger.debug(`Adding ${triplets.length} URLs to group: ${domain}`)
 
       for (const triplet of triplets) {
         const tripletUrl = triplet.objectUrl || this.generateUserProfileUrl(platform, userData)
@@ -132,10 +135,10 @@ export class TripletExtractor {
         await groupManager.addOAuthUrlToGroup(domain, groupUrlRecord)
       }
 
-      console.log(`✅ [OAuth] URLs added to IntentionGroup: ${domain}`)
+      logger.info(`URLs added to IntentionGroup: ${domain}`)
 
     } catch (error) {
-      console.error(`❌ [OAuth] Failed to store triplets for ${platform}:`, error)
+      logger.error(`Failed to store triplets for ${platform}`, error)
     }
   }
 
@@ -176,7 +179,7 @@ export class TripletExtractor {
           })
         }
       } catch (error) {
-        console.warn(`❌ [OAuth] Error extracting triplet:`, error)
+        logger.warn('Error extracting triplet', error)
       }
     })
 
@@ -188,15 +191,15 @@ export class TripletExtractor {
       // Priorité 1 : Chercher le premier triplet qui a une objectUrl spécifique
       const tripletWithUrl = userData.triplets.find(t => t.objectUrl)
       if (tripletWithUrl?.objectUrl) {
-        console.log(`🎯 [OAuth] Using specific object URL: ${tripletWithUrl.objectUrl}`)
+        logger.debug('Using specific object URL', { url: tripletWithUrl.objectUrl })
         return tripletWithUrl.objectUrl
       }
 
       // Priorité 2 : Fallback vers votre profil utilisateur
-      console.log(`⚠️ [OAuth] No object URL found, fallback to user profile for ${platform}`)
+      logger.warn(`No object URL found, fallback to user profile for ${platform}`)
       return this.generateUserProfileUrl(platform, userData)
     } catch (error) {
-      console.warn(`⚠️ [OAuth] Error generating specific URL for ${platform}:`, error)
+      logger.warn(`Error generating specific URL for ${platform}`, error)
       return `https://${platform}.com`
     }
   }
@@ -261,7 +264,7 @@ export class TripletExtractor {
           return `https://${platform}.com`
       }
     } catch (error) {
-      console.warn(`⚠️ [OAuth] Error generating user profile URL for ${platform}:`, error)
+      logger.warn(`Error generating user profile URL for ${platform}`, error)
       return `https://${platform}.com`
     }
   }

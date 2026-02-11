@@ -4,6 +4,9 @@
  */
 
 import { groupManager } from './GroupManager'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('SessionTracker')
 
 export interface TrackedUrl {
   url: string
@@ -76,10 +79,10 @@ class SessionTrackerService {
     if (existingIndex !== -1) {
       this.buffer[existingIndex].duration += trackedUrl.duration
       this.buffer[existingIndex].visitedAt = trackedUrl.visitedAt
-      console.log(`📊 [SessionTracker] Updated URL duration: ${data.url}`)
+      logger.debug('Updated URL duration', { url: data.url })
     } else {
       this.buffer.push(trackedUrl)
-      console.log(`📊 [SessionTracker] Tracked URL: ${data.url} (buffer: ${this.buffer.length}/${BUFFER_SIZE_THRESHOLD})`)
+      logger.debug('Tracked URL', { url: data.url, bufferSize: this.buffer.length, threshold: BUFFER_SIZE_THRESHOLD })
     }
 
     // Check if we should flush
@@ -94,7 +97,7 @@ class SessionTrackerService {
     const shouldFlushByTime = Date.now() - this.lastFlushTime >= BUFFER_TIME_THRESHOLD
 
     if (shouldFlushBySize || shouldFlushByTime) {
-      console.log(`🔄 [SessionTracker] Flush triggered (size: ${shouldFlushBySize}, time: ${shouldFlushByTime})`)
+      logger.info('Flush triggered', { bySize: shouldFlushBySize, byTime: shouldFlushByTime })
       this.flush()
     }
   }
@@ -128,7 +131,7 @@ class SessionTrackerService {
    */
   async flush(): Promise<DomainCluster[]> {
     if (this.buffer.length === 0) {
-      console.log('📭 [SessionTracker] Buffer empty, nothing to flush')
+      logger.debug('Buffer empty, nothing to flush')
       return []
     }
 
@@ -137,21 +140,21 @@ class SessionTrackerService {
     this.lastFlushTime = Date.now()
 
     const clusters = this.groupByDomain(urlsToFlush)
-    console.log(`🚀 [SessionTracker] Flushed ${urlsToFlush.length} URLs into ${clusters.length} domain clusters`)
+    logger.info('Flushed buffer', { urlCount: urlsToFlush.length, clusterCount: clusters.length })
 
     // Call the flush callback if set, otherwise use GroupManager directly
     if (this.flushCallback) {
       try {
         await this.flushCallback(clusters)
       } catch (error) {
-        console.error('❌ [SessionTracker] Flush callback error:', error)
+        logger.error('Flush callback error', error)
       }
     } else {
       // Default: send to GroupManager
       try {
         await groupManager.processFlush(clusters)
       } catch (error) {
-        console.error('❌ [SessionTracker] GroupManager.processFlush error:', error)
+        logger.error('GroupManager.processFlush error', error)
       }
     }
 
@@ -162,7 +165,7 @@ class SessionTrackerService {
    * Force flush (for manual triggering)
    */
   async forceFlush(): Promise<DomainCluster[]> {
-    console.log('⚡ [SessionTracker] Force flush requested')
+    logger.info('Force flush requested')
     return this.flush()
   }
 
@@ -183,7 +186,7 @@ class SessionTrackerService {
   clearBuffer(): void {
     this.buffer = []
     this.lastFlushTime = Date.now()
-    console.log('🧹 [SessionTracker] Buffer cleared')
+    logger.info('Buffer cleared')
   }
 }
 

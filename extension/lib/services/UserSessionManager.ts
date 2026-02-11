@@ -5,6 +5,10 @@
  * Each wallet generates a unique, deterministic UUID for user identification.
  */
 
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('UserSessionManager')
+
 // Global server ID (shared across all users)
 const GLOBAL_SERVER_ID = "00000000-0000-0000-0000-000000000000"
 
@@ -88,7 +92,7 @@ export async function getUserId(): Promise<string> {
 
     return userId
   } catch (error) {
-    console.error("❌ Error getting user ID:", error)
+    logger.error('Error getting user ID', error)
     throw error
   }
 }
@@ -130,15 +134,15 @@ export async function getUserAgentIds(
       AGENT_NAME: agentName         // For logging
     }
 
-    console.log(`🔑 Generated IDs for ${agentName}:`, {
+    logger.info(`Generated IDs for ${agentName}`, {
       wallet: await getWalletAddress(),
-      userId: userId.substring(0, 8) + "...",
-      agentId: baseAgentId.substring(0, 8) + "..."
+      userId: userId.substring(0, 8) + '...',
+      agentId: baseAgentId.substring(0, 8) + '...'
     })
 
     return agentIds
   } catch (error) {
-    console.error(`❌ Error generating IDs for ${agentName}:`, error)
+    logger.error(`Error generating IDs for ${agentName}`, error)
     throw error
   }
 }
@@ -151,7 +155,7 @@ export async function getUserMapping(): Promise<Record<string, string>> {
     const result = await chrome.storage.session.get('user-wallet-mapping')
     return result['user-wallet-mapping'] || {}
   } catch (error) {
-    console.error("❌ Error getting user mapping:", error)
+    logger.error('Error getting user mapping', error)
     return {}
   }
 }
@@ -162,9 +166,9 @@ export async function getUserMapping(): Promise<Record<string, string>> {
 export async function resetUserSession(): Promise<void> {
   try {
     await chrome.storage.session.remove('user-wallet-mapping')
-    console.log("✅ User session reset")
+    logger.info('User session reset')
   } catch (error) {
-    console.error("❌ Error resetting user session:", error)
+    logger.error('Error resetting user session', error)
     throw error
   }
 }
@@ -177,7 +181,7 @@ export async function debugUserSession(): Promise<void> {
     const isConnected = await isWalletConnected()
 
     if (!isConnected) {
-      console.log("❌ No wallet connected")
+      logger.warn('No wallet connected')
       return
     }
 
@@ -185,12 +189,12 @@ export async function debugUserSession(): Promise<void> {
     const userId = await getUserId()
     const mapping = await getUserMapping()
 
-    console.log("=== User Session Debug ===")
-    console.log("Wallet Address:", walletAddress)
-    console.log("User UUID:", userId)
-    console.log("Stored Mapping:", mapping)
-    console.log("========================")
+    logger.debug('User session debug', {
+      walletAddress,
+      userId,
+      storedMapping: mapping
+    })
   } catch (error) {
-    console.error("❌ Error in debug:", error)
+    logger.error('Error in debug', error)
   }
 }

@@ -13,6 +13,9 @@ import { normalize } from 'viem/ens'
 import { QuestBadgeService } from '../lib/services/QuestBadgeService'
 import { QUEST_DEFINITIONS, type Quest } from '../types/questTypes'
 import { calculateLevelFromXP } from '../lib/utils/questStatusHelpers'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useUserQuests')
 
 interface UserQuestsResult {
   completedQuests: Quest[]
@@ -162,10 +165,10 @@ export const useUserQuests = (walletAddress?: string): UserQuestsResult => {
           // Cache write failed
         }
 
-        console.log('[useUserQuests] On-chain badges:', claimedIds.size, 'Total XP:', xp, 'Level:', calculateLevelFromXP(xp))
+        logger.debug('On-chain badges loaded', { claimedCount: claimedIds.size, totalXP: xp, level: calculateLevelFromXP(xp) })
 
       } catch (err) {
-        console.error('[useUserQuests] Error fetching user quests:', err)
+        logger.error('Error fetching user quests', err)
         setError('Failed to load quest data')
       } finally {
         setLoading(false)

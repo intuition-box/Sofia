@@ -1,5 +1,8 @@
 import type { PlasmoCSConfig } from "plasmo"
 import { createStore, type EIP1193Provider } from "mipd"
+import { createServiceLogger } from "../lib/utils/logger"
+
+const logger = createServiceLogger('WalletBridge')
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -80,20 +83,20 @@ function initializeProviderStore() {
 
     // Listen for new providers (discovery only, no auto-selection)
     providerStore.subscribe((providers) => {
-      console.log("🔌 [WalletBridge] Providers discovered:", providers.map(p => p.info.name))
+      logger.debug("Providers discovered", { providers: providers.map(p => p.info.name) })
     })
 
-    console.log("🔌 [WalletBridge] mipd store initialized")
+    logger.info("mipd store initialized")
     return providerStore
   } catch (error) {
-    console.error("❌ [WalletBridge] Failed to initialize mipd store:", error)
+    logger.error("Failed to initialize mipd store", error)
     return null
   }
 }
 
 // Clear provider selection (used on disconnect)
 function clearProviderSelection(): void {
-  console.log("🧹 [WalletBridge] Clearing provider selection")
+  logger.debug("Clearing provider selection")
   selectedProvider = null
   selectedProviderName = ""
 }
@@ -114,8 +117,8 @@ function selectProviderByName(walletType: string): boolean {
   const providers = providerStore.getProviders()
   const normalizedType = normalizeWalletType(walletType)
 
-  console.log("🔍 [WalletBridge] Looking for provider by name:", walletType, "→ normalized:", normalizedType)
-  console.log("🔍 [WalletBridge] Available providers:", providers.map(p => ({ name: p.info.name, rdns: p.info.rdns })))
+  logger.debug("Looking for provider by name", { walletType, normalizedType })
+  logger.debug("Available providers", { providers: providers.map(p => ({ name: p.info.name, rdns: p.info.rdns })) })
 
   for (const providerDetail of providers) {
     const name = providerDetail.info.name.toLowerCase()
@@ -126,25 +129,25 @@ function selectProviderByName(walletType: string): boolean {
     if (name.includes(normalizedType) || rdns.includes(normalizedType) || normalizedType.includes(name.split(" ")[0])) {
       selectedProvider = providerDetail.provider
       selectedProviderName = providerDetail.info.name
-      console.log("✅ [WalletBridge] Selected provider by name:", selectedProviderName)
+      logger.info("Selected provider by name", { selectedProviderName })
       return true
     }
   }
 
-  console.warn("⚠️ [WalletBridge] No provider found with name:", walletType)
+  logger.warn("No provider found with name", { walletType })
   return false
 }
 
 // @deprecated - Use selectProviderByName() instead. This queries all wallets and may trigger unwanted popups.
 async function selectProviderByAddress(targetAddress: string): Promise<boolean> {
-  console.warn("⚠️ [WalletBridge] selectProviderByAddress is deprecated — walletType should be provided at connection time")
+  logger.warn("selectProviderByAddress is deprecated — walletType should be provided at connection time")
 
   if (!providerStore) return false
 
   const providers = providerStore.getProviders()
   const normalizedTarget = targetAddress.toLowerCase()
 
-  console.log("🔍 [WalletBridge] Looking for provider with address:", normalizedTarget)
+  logger.debug("Looking for provider with address", { normalizedTarget })
 
   for (const providerDetail of providers) {
     try {
@@ -152,20 +155,20 @@ async function selectProviderByAddress(targetAddress: string): Promise<boolean> 
       const accounts = await providerDetail.provider.request({ method: "eth_accounts", params: [] })
       const normalizedAccounts = (accounts as string[]).map(a => a.toLowerCase())
 
-      console.log(`🔍 [WalletBridge] ${providerDetail.info.name} accounts:`, normalizedAccounts)
+      logger.debug(`${providerDetail.info.name} accounts`, { normalizedAccounts })
 
       if (normalizedAccounts.includes(normalizedTarget)) {
         selectedProvider = providerDetail.provider
         selectedProviderName = providerDetail.info.name
-        console.log("✅ [WalletBridge] Selected provider by address:", selectedProviderName)
+        logger.info("Selected provider by address", { selectedProviderName })
         return true
       }
     } catch (error) {
-      console.warn(`⚠️ [WalletBridge] Could not get accounts from ${providerDetail.info.name}:`, error)
+      logger.warn(`Could not get accounts from ${providerDetail.info.name}`, error)
     }
   }
 
-  console.warn("⚠️ [WalletBridge] No provider found with address:", normalizedTarget)
+  logger.warn("No provider found with address", { normalizedTarget })
   return false
 }
 
@@ -194,7 +197,7 @@ async function handleWalletRequest(event: MessageEvent) {
 
   const { requestId, method, params } = event.data
 
-  console.log("📨 [WalletBridge] Received request:", method, params)
+  logger.debug("Received request", { method, params })
 
   // ==========================================================================
   // INTERNAL BRIDGE METHODS - handled locally, no external wallet involved
@@ -267,7 +270,7 @@ async function handleWalletRequest(event: MessageEvent) {
 
   // Security: check if method is in the allowed RPC whitelist
   if (!ALLOWED_RPC_METHODS.includes(method)) {
-    console.warn("🚫 [WalletBridge] Method not allowed:", method)
+    logger.warn("Method not allowed", { method })
     window.postMessage({
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
@@ -280,7 +283,7 @@ async function handleWalletRequest(event: MessageEvent) {
   const provider = getProvider()
 
   if (!provider) {
-    console.error("❌ [WalletBridge] No provider available")
+    logger.error("No provider available")
     window.postMessage({
       type: "SOFIA_WALLET_RESPONSE",
       requestId,
@@ -291,7 +294,7 @@ async function handleWalletRequest(event: MessageEvent) {
 
   try {
     const result = await provider.request({ method, params })
-    console.log("✅ [WalletBridge] Request successful:", method, result)
+    logger.debug("Request successful", { method, result })
 
     window.postMessage({
       type: "SOFIA_WALLET_RESPONSE",
@@ -299,7 +302,7 @@ async function handleWalletRequest(event: MessageEvent) {
       result
     }, window.location.origin)
   } catch (error: unknown) {
-    console.error("❌ [WalletBridge] Request failed:", method, error)
+    logger.error("Request failed", { method, error })
 
     const errCode = error instanceof Object && 'code' in error ? (error as { code: number }).code : -32603
     const errMessage = error instanceof Error ? error.message : "Unknown error"
@@ -321,7 +324,7 @@ function setupProviderListeners() {
   if (!provider) return
 
   const forwardEvent = (eventName: string) => (data: any) => {
-    console.log(`📢 [WalletBridge] Event: ${eventName}`, data)
+    logger.debug(`Event: ${eventName}`, data)
     window.postMessage({
       type: "SOFIA_WALLET_EVENT",
       event: eventName,
@@ -334,15 +337,15 @@ function setupProviderListeners() {
     provider.on?.("chainChanged", forwardEvent("chainChanged"))
     provider.on?.("connect", forwardEvent("connect"))
     provider.on?.("disconnect", forwardEvent("disconnect"))
-    console.log("👂 [WalletBridge] Provider listeners set up")
+    logger.debug("Provider listeners set up")
   } catch (error) {
-    console.warn("⚠️ [WalletBridge] Could not set up provider listeners:", error)
+    logger.warn("Could not set up provider listeners", error)
   }
 }
 
 // Initialize
 function init() {
-  console.log("🌉 [WalletBridge] Initializing wallet bridge...")
+  logger.info("Initializing wallet bridge...")
 
   // Initialize EIP-6963 provider discovery
   initializeProviderStore()
@@ -353,7 +356,7 @@ function init() {
   // Set up provider event listeners after a short delay (wait for providers)
   setTimeout(setupProviderListeners, 500)
 
-  console.log("✅ [WalletBridge] Wallet bridge ready")
+  logger.info("Wallet bridge ready")
 }
 
 // Start when DOM is ready

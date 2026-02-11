@@ -7,7 +7,10 @@ import xIcon from '../../ui/social/x.svg'
 import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { getAddress } from 'viem'
 import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
+import { createHookLogger } from '../../../lib/utils/logger'
 import '../../styles/AccountTab.css'
+
+const logger = createHookLogger('SocialsTab')
 
 interface SocialsTabProps {
   onDiscordProfileChange?: (profile: {
@@ -106,7 +109,7 @@ const SocialsTab = ({ onDiscordProfileChange }: SocialsTabProps) => {
       onDiscordProfileChange?.(null)
     }
 
-    console.log(`🗑️ [OAuth] Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
+    logger.debug(`Disconnected ${platform} for wallet ${checksumAddr.slice(0, 8)}...`)
   }, [walletAddress, onDiscordProfileChange])
 
   return (

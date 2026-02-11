@@ -9,6 +9,9 @@ import type { FollowAccountVM, FollowQueryResult } from '../types/follows'
 import { batchFetchIPFS } from '../lib/utils/ipfsCache'
 import { batchGetEnsAvatars } from '../lib/utils/ensUtils'
 import { useGetMyTrustCircleQuery, useGetAtomDataByLabelsQuery } from '@0xsofia/graphql'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useTrustCircle')
 
 interface GraphQLTrustCircleResponse {
   triples: Array<{
@@ -160,11 +163,11 @@ export function useTrustCircle(walletAddress: string | undefined): FollowQueryRe
 
         setAccounts(updatedAccounts)
       }).catch((err) => {
-        console.warn('⚠️ Failed to load avatars/metadata:', err)
+        logger.warn('Failed to load avatars/metadata', err)
         // Keep displaying basic data even if avatars fail
       })
     } catch (err) {
-      console.error('❌ Failed to load trust circle:', err)
+      logger.error('Failed to load trust circle', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)

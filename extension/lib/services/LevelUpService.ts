@@ -10,6 +10,7 @@
  * - mastraClient.ts: generates AI predicates
  */
 
+import { createServiceLogger } from '../utils/logger'
 import { groupManager, type CertificationType } from './GroupManager'
 import { goldService, getLevelUpCost } from './GoldService'
 import { generatePredicate, type PredicateInput } from '../../background/mastraClient'
@@ -41,6 +42,8 @@ export interface LevelUpPreview {
  * LevelUpService — Singleton service for managing group level-ups.
  * Spends Gold to increase group level and generate AI predicates.
  */
+const logger = createServiceLogger('LevelUpService')
+
 class LevelUpServiceClass {
   /** Get the active wallet address from storage. */
   private async getActiveWallet(): Promise<string> {
@@ -92,7 +95,7 @@ class LevelUpServiceClass {
    * 4. Update group
    */
   async levelUp(groupId: string, providedCertifications?: Record<CertificationType, number>): Promise<LevelUpResult> {
-    console.log(`🎮 [LevelUpService] Starting level up for ${groupId}`)
+    logger.info(`Starting level up for ${groupId}`)
 
     // Get group
     let group = await groupManager.getGroup(groupId)
@@ -101,7 +104,7 @@ class LevelUpServiceClass {
     // Handle virtual groups (on-chain only) - materialize them into IndexedDB
     if (!group && groupId.startsWith('onchain-')) {
       const domain = groupId.replace('onchain-', '')
-      console.log(`🔄 [LevelUpService] Materializing virtual group: ${domain}`)
+      logger.info(`Materializing virtual group: ${domain}`)
 
       const newGroup: IntentionGroupRecord = {
         id: domain,
@@ -121,7 +124,7 @@ class LevelUpServiceClass {
       await IntentionGroupsService.saveGroup(newGroup)
       group = newGroup
       actualGroupId = domain
-      console.log(`✅ [LevelUpService] Virtual group materialized: ${domain}`)
+      logger.info(`Virtual group materialized: ${domain}`)
     }
 
     if (!group) {
@@ -130,13 +133,13 @@ class LevelUpServiceClass {
 
     // Calculate cost
     const cost = getLevelUpCost(group.level)
-    console.log(`💰 [LevelUpService] Level ${group.level} → ${group.level + 1} costs ${cost} Gold`)
+    logger.debug(`Level ${group.level} -> ${group.level + 1} costs ${cost} Gold`)
 
     // Check Gold availability
     const wallet = await this.getActiveWallet()
     const affordCheck = await goldService.canAffordLevelUp(wallet, group.level)
     if (!affordCheck.canAfford) {
-      console.log(`❌ [LevelUpService] Not enough Gold: ${affordCheck.available} < ${affordCheck.cost}`)
+      logger.warn(`Not enough Gold`, { available: affordCheck.available, required: affordCheck.cost })
       return {
         success: false,
         error: 'Not enough Gold',
@@ -150,7 +153,7 @@ class LevelUpServiceClass {
     const certifications = (isVirtualGroup && providedCertifications)
       ? providedCertifications
       : groupManager.getCertificationBreakdown(group)
-    console.log(`📊 [LevelUpService] Certifications:`, certifications, isVirtualGroup ? '(from UI)' : '(from local)')
+    logger.debug('Certifications', { certifications, source: isVirtualGroup ? 'UI' : 'local' })
 
     // Check if there are any certifications
     const totalCertifications = Object.values(certifications).reduce((sum, count) => sum + count, 0)
@@ -182,14 +185,14 @@ class LevelUpServiceClass {
       previousPredicate: group.currentPredicate
     }
 
-    console.log(`🤖 [LevelUpService] Calling AI for predicate...`)
+    logger.info('Calling AI for predicate')
     const predicateResult = await generatePredicate(predicateInput)
-    console.log(`✨ [LevelUpService] AI generated: "${predicateResult.predicate}"`)
+    logger.info('AI predicate generated', { predicate: predicateResult.predicate })
 
     // Spend Gold
     const spendResult = await goldService.spendGold(wallet, cost)
     if (!spendResult.success) {
-      console.error(`❌ [LevelUpService] Failed to spend Gold`)
+      logger.error('Failed to spend Gold')
       return {
         success: false,
         error: 'Failed to spend Gold'
@@ -207,14 +210,14 @@ class LevelUpServiceClass {
     )
 
     if (!updated) {
-      console.error(`❌ [LevelUpService] Failed to update group`)
+      logger.error('Failed to update group after Gold spent')
       return {
         success: false,
         error: 'Failed to update group after Gold spent'
       }
     }
 
-    console.log(`🎉 [LevelUpService] Level up complete!`)
+    logger.info('Level up complete', { groupId, newLevel: group.level + 1, goldSpent: cost })
 
     return {
       success: true,
