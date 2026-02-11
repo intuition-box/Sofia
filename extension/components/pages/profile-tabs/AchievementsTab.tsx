@@ -6,6 +6,9 @@
 
 import { useState } from 'react'
 import type { Quest } from '../../../types/questTypes'
+import { createHookLogger } from '../../../lib/utils/logger'
+
+const logger = createHookLogger('AchievementsTab')
 
 import bookmarkImg from '../../ui/img/questssuccess/bookmark.png'
 import curatorImg from '../../ui/img/questssuccess/curator.png'
@@ -223,7 +226,7 @@ const AchievementsTab = ({
                     onClick={async () => {
                       const result = await onClaimXP(quest.id)
                       if (!result.success) {
-                        console.error('Claim failed:', result.error)
+                        logger.error('Claim failed', result.error)
                         alert(`Claim failed: ${result.error}`)
                       }
                     }}

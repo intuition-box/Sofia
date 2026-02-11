@@ -1,6 +1,9 @@
 import { createWalletClient, custom, createPublicClient, http } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
-import { getWalletProvider } from '../services/walletProvider'
+import { getWalletProvider, selectProviderByName } from '../services/walletProvider'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('ViemClients')
 
 /**
  * Ensure there's an HTTPS tab available for wallet transactions
@@ -17,7 +20,7 @@ async function ensureHttpsTabForWallet(): Promise<void> {
         }
 
         // No HTTPS tab available - open one
-        console.log('⚠️ No HTTPS tab available, opening sofia.intuition.box/values')
+        logger.warn('No HTTPS tab available, opening sofia.intuition.box/values')
         await chrome.tabs.create({
             url: 'https://sofia.intuition.box/values',
             active: true
@@ -26,7 +29,7 @@ async function ensureHttpsTabForWallet(): Promise<void> {
         // Wait a bit for the tab to load and content script to inject
         await new Promise(resolve => setTimeout(resolve, 1500))
     } catch (error) {
-        console.error('Failed to ensure HTTPS tab:', error)
+        logger.error('Failed to ensure HTTPS tab', error)
         // Don't throw - let the wallet request handle the error
     }
 }
@@ -46,8 +49,14 @@ export const getClients = async () => {
     // Ensure we have an HTTPS tab for wallet operations
     await ensureHttpsTabForWallet()
 
-    // Provider selection is handled by the useWalletFromStorage singleton
-    // No need to call selectProviderByName here — it's already synced
+    // Always re-select the provider on the current tab's content script.
+    // Content scripts lose their selectedProvider state on page navigation
+    // or service worker restart, causing "No wallet found" errors.
+    const storage = await chrome.storage.session.get(['walletType'])
+    if (storage.walletType) {
+        await selectProviderByName(storage.walletType)
+    }
+
     const provider = await getWalletProvider()
 
     const accounts = await provider.request({
@@ -77,6 +86,6 @@ export const getClients = async () => {
         transport: http(SELECTED_CHAIN.rpcUrls.default.http[0]),
     })
 
-    console.log("Clients ready.")
+    logger.debug('Clients ready')
     return { walletClient, publicClient }
 }

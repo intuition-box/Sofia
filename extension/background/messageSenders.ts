@@ -10,13 +10,12 @@
 
 import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { isSensitiveUrl } from "./utils/url"
+import { createServiceLogger } from "../lib/utils/logger"
+import type { BookmarkData } from "~types/bookmarks"
+
+const logger = createServiceLogger('MessageSenders')
 
 // === Chrome API Utilities ===
-
-export interface BookmarkData {
-  url: string
-  title: string
-}
 
 function extractBookmarkData(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): BookmarkData[] {
   const bookmarks: BookmarkData[] = []
@@ -50,11 +49,11 @@ export async function getAllBookmarks(): Promise<{ success: boolean; bookmarks?:
     // Limit to 500 bookmarks
     const bookmarks = filtered.slice(0, 500)
 
-    console.log(`📚 Extracted ${all.length} bookmarks, filtered to ${filtered.length}, using ${bookmarks.length}`)
+    logger.info(`Extracted ${all.length} bookmarks, filtered to ${filtered.length}, using ${bookmarks.length}`)
 
     return { success: true, bookmarks }
   } catch (error) {
-    console.error("❌ Failed to get bookmarks:", error)
+    logger.error("Failed to get bookmarks", error)
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
@@ -74,10 +73,10 @@ export async function getAllHistory(): Promise<{success: boolean, urls?: string[
       .filter((url): url is string => !!url && !isSensitiveUrl(url))
       .filter(url => !EXCLUDED_URL_PATTERNS.some(pattern => url.includes(pattern)))
     
-    console.log('📚 Extracted', urls.length, 'history URLs')
+    logger.info(`Extracted ${urls.length} history URLs`)
     return { success: true, urls }
   } catch (error) {
-    console.error('❌ Failed to get browsing history:', error)
+    logger.error('Failed to get browsing history', error)
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }

@@ -11,6 +11,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { createHookLogger } from '../lib/utils/logger'
+import { getWalletKey } from '../lib/utils'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { MASTRA_API_URL } from '../config'
 import { getPublicClient } from '../lib/clients/viemClients'
@@ -21,10 +23,7 @@ import { CheckSocialLinksDocument } from '@0xsofia/graphql'
 import { stringToHex, getAddress } from 'viem'
 import type { Address } from '../types/viem'
 
-// Helper to generate per-wallet storage keys
-const getWalletKey = (baseKey: string, walletAddress: string): string => {
-  return `${baseKey}_${walletAddress}`
-}
+const logger = createHookLogger('useSocialVerifier')
 
 export interface SocialAttestation {
   txHash: string
@@ -99,7 +98,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
     if (!walletAddress) return false
 
     try {
-      console.log('🔍 [SocialVerifier] Checking on-chain social links for:', walletAddress)
+      logger.info('Checking on-chain social links', { walletAddress })
 
       // Calculate the atom ID for this wallet address
       // Note: Do NOT lowercase - must match the exact format used when creating the triple
@@ -113,13 +112,13 @@ export const useSocialVerifier = (): SocialVerifierResult => {
         authorizationList: undefined,
       }) as string
 
-      console.log('🔢 [SocialVerifier] User atom ID calculated:', userAtomId)
+      logger.debug('User atom ID calculated', { userAtomId })
 
       // Query for triples with social verification predicates
       // Filter by creator_id = BOT_VERIFIER_ADDRESS to only count official verifications
       // Also check for legacy triple [wallet] [socials_platform] [verified]
       const botVerifierLower = BOT_VERIFIER_ADDRESS.toLowerCase()
-      console.log('🤖 [SocialVerifier] Checking social links verified by bot:', botVerifierLower)
+      logger.debug('Checking social links verified by bot', { botVerifierId: botVerifierLower })
 
       const data = await intuitionGraphqlClient.request(CheckSocialLinksDocument, {
         subjectId: userAtomId,
@@ -132,7 +131,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       // Check for legacy triple first (backward compatibility)
       if (data.legacyTriple && data.legacyTriple.length > 0) {
         const legacyTriple = data.legacyTriple[0]
-        console.log('✅ [SocialVerifier] Found LEGACY triple [wallet] [socials_platform] [verified] - GOLDEN BORDER ENABLED')
+        logger.info('Found legacy triple [wallet] [socials_platform] [verified] - golden border enabled')
 
         const attestation: SocialAttestation = {
           txHash: legacyTriple.term_id || '',
@@ -150,7 +149,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       const validTriples = data.newSystemTriples?.filter(triple => {
         const objectLabel = triple.object?.label
         if (!objectLabel || objectLabel.includes('[object') || objectLabel.includes('{')) {
-          console.log(`⚠️ [SocialVerifier] Skipping invalid triple: predicate=${triple.predicate?.label}, object=${objectLabel}`)
+          logger.warn('Skipping invalid triple', { predicate: triple.predicate?.label, object: objectLabel })
           return false
         }
         return true
@@ -159,7 +158,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       if (validTriples.length >= 5) {
         // All 5 platforms are linked with valid IDs (verified by bot)
         const latestTriple = validTriples[0]
-        console.log('✅ [SocialVerifier] All 5 social platforms verified by bot on-chain - GOLDEN BORDER ENABLED')
+        logger.info('All 5 social platforms verified by bot on-chain - golden border enabled')
 
         const attestation: SocialAttestation = {
           txHash: latestTriple.term_id || '',
@@ -173,10 +172,10 @@ export const useSocialVerifier = (): SocialVerifierResult => {
         return true
       }
 
-      console.log(`❌ [SocialVerifier] Only ${validTriples.length}/5 social platforms verified by bot (golden border requires 5/5, or legacy triple)`)
+      logger.info(`Only ${validTriples.length}/5 social platforms verified by bot (golden border requires 5/5, or legacy triple)`)
       return false
     } catch (error) {
-      console.error('Error checking on-chain attestation:', error)
+      logger.error('Error checking on-chain attestation', error)
       return false
     }
   }, [walletAddress])
@@ -201,7 +200,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       const onChainResult = await checkOnChainAttestation()
       return onChainResult
     } catch (error) {
-      console.error('Error loading social attestation:', error)
+      logger.error('Error loading social attestation', error)
     }
     return false
   }, [walletAddress, checkOnChainAttestation])
@@ -223,7 +222,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
     setIsVerifying(true)
 
     try {
-      console.log('🧬 [SocialVerifier] Starting verification...')
+      logger.info('Starting verification')
 
       // Get OAuth tokens (per-wallet)
       const checksumAddr = getAddress(walletAddress)
@@ -238,7 +237,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
       ])
 
       // Call Mastra API - bot will verify AND create the triple
-      console.log('🔍 [SocialVerifier] Calling Mastra workflow (bot will create triple)...')
+      logger.info('Calling Mastra workflow (bot will create triple)')
 
       const requestData = {
         walletAddress,
@@ -264,7 +263,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
 
       const result = await response.json()
 
-      console.log('📦 [SocialVerifier] Workflow result:', JSON.stringify(result).substring(0, 500))
+      logger.debug('Workflow result', { result: JSON.stringify(result).substring(0, 500) })
 
       // Extract data from workflow result
       const data = result?.result
@@ -279,7 +278,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
 
       // Check if verification failed
       if (!data.success) {
-        console.error('❌ [SocialVerifier] Workflow failed:', data)
+        logger.error('Workflow failed', data)
         return {
           success: false,
           error: data.error || `Only ${data.verifiedCount}/5 platforms verified`,
@@ -288,7 +287,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
 
       // Check if triple already existed
       if (data.tripleAlreadyExists) {
-        console.log('✅ [SocialVerifier] Triple already exists, attestation valid')
+        logger.info('Triple already exists, attestation valid')
 
         const attestation: SocialAttestation = {
           txHash: 'existing',
@@ -305,7 +304,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
 
       // Success - bot created the triple
       if (data.txHash) {
-        console.log('✅ [SocialVerifier] Triple created by bot! TX:', data.txHash)
+        logger.info('Triple created by bot', { txHash: data.txHash })
 
         const newAttestation: SocialAttestation = {
           txHash: data.txHash,
@@ -324,7 +323,7 @@ export const useSocialVerifier = (): SocialVerifierResult => {
 
       return { success: false, error: 'No txHash returned from workflow' }
     } catch (error) {
-      console.error('❌ [SocialVerifier] Verification failed:', error)
+      logger.error('Verification failed', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

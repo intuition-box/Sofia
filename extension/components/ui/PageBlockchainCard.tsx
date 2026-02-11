@@ -1,12 +1,11 @@
 import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
+import { createHookLogger } from '../../lib/utils/logger'
 import { useRouter } from '../layout/RouterProvider'
-import { usePageBlockchainData } from '../../hooks/usePageBlockchainData'
-import { useTrustPage } from '../../hooks/useTrustPage'
-import { useIntentionCertify } from '../../hooks/useIntentionCertify'
-import { usePageDiscovery } from '../../hooks/usePageDiscovery'
-import { usePageIntentionStats } from '../../hooks/usePageIntentionStats'
-import { useDiscoveryScore } from '../../hooks/useDiscoveryScore'
+import {
+  usePageBlockchainData, useTrustPage, useIntentionCertify,
+  usePageDiscovery, usePageIntentionStats, useDiscoveryScore
+} from '../../hooks'
 import WeightModal from '../modals/WeightModal'
 import StarBorder from './StarBorder'
 import { IntentionBubbleSelector } from './IntentionBubbleSelector'
@@ -26,7 +25,7 @@ interface ModalTriplet {
   intention?: IntentionPurpose
 }
 import { INTENTION_PREDICATES } from '../../types/discovery'
-import { normalizeUrl } from '../../lib/utils/normalizeUrl'
+import { normalizeUrl } from '../../lib/utils'
 import '../styles/PageBlockchainCard.css'
 
 // Timing constants for UI delays
@@ -36,6 +35,8 @@ const DELAYS = {
   /** Duration to show celebration animation */
   CELEBRATION_DURATION: 3000
 } as const
+
+const logger = createHookLogger('PageBlockchainCard')
 
 const PageBlockchainCard = () => {
   const { navigateTo } = useRouter()
@@ -101,12 +102,12 @@ const PageBlockchainCard = () => {
 
   // Sync hook states to local states - wait for loading to finish before updating
   React.useEffect(() => {
-    console.log('📊 PageBlockchainCard - Hook state changed:', { trustLoading, trustSuccess, trustError, trustTxHash, operationType })
+    logger.debug('Hook state changed', { trustLoading, trustSuccess, trustError, trustTxHash, operationType })
 
     // Only update when not loading (transaction finished)
     if (!trustLoading) {
       if (trustSuccess && trustTxHash) {
-        console.log('✅ PageBlockchainCard - Success with txHash:', trustTxHash)
+        logger.info('Success with txHash', { trustTxHash })
         setLocalTrustSuccess(true)
         setLocalTrustError(null)
         setLocalTransactionHash(trustTxHash)
@@ -114,7 +115,7 @@ const PageBlockchainCard = () => {
           setLocalOperationType(operationType)
         }
       } else if (trustSuccess && !trustTxHash) {
-        console.log('✅ PageBlockchainCard - Success without txHash (triple exists)')
+        logger.info('Success without txHash (triple exists)')
         setLocalTrustSuccess(true)
         setLocalTrustError(null)
         setLocalTransactionHash(null)
@@ -122,7 +123,7 @@ const PageBlockchainCard = () => {
           setLocalOperationType(operationType)
         }
       } else if (trustError) {
-        console.log('❌ PageBlockchainCard - Error:', trustError)
+        logger.error('Trust hook error', { trustError })
         setLocalTrustSuccess(false)
         setLocalTrustError(trustError)
         setLocalTransactionHash(null)
@@ -211,9 +212,9 @@ const PageBlockchainCard = () => {
         // Remember total certifications before transaction for XP calculation
         const prevTotal = totalCertifications
 
-        console.log('📊 PageBlockchainCard - Starting intention certification', { intention: intentionFromTriplet })
+        logger.info('Starting intention certification', { intention: intentionFromTriplet })
         await certifyWithIntention(currentUrl, intentionFromTriplet, pageTitle || undefined, weight as bigint | undefined)
-        console.log('✅ PageBlockchainCard - Intention certification completed')
+        logger.info('Intention certification completed')
 
         resumeRefresh()
 
@@ -240,7 +241,7 @@ const PageBlockchainCard = () => {
 
         setTimeout(() => fetchDataForCurrentPage(), DELAYS.REFRESH_AFTER_TX)
       } catch (error) {
-        console.error('❌ PageBlockchainCard - Intention certification error:', error)
+        logger.error('Intention certification error', error)
         resumeRefresh()
       }
       return
@@ -263,10 +264,10 @@ const PageBlockchainCard = () => {
 
     try {
       const weight = customWeights[0] || undefined
-      console.log('📊 PageBlockchainCard - Starting trustPage call')
+      logger.info('Starting trustPage call')
       // Pass the predicate name based on modal type
       await trustPage(currentUrl, weight as bigint | undefined, modalType === 'trust' ? 'trusts' : 'distrust')
-      console.log('✅ PageBlockchainCard - trustPage completed, hook state:', { trustSuccess, trustError, trustTxHash, operationType })
+      logger.info('trustPage completed', { trustSuccess, trustError, trustTxHash, operationType })
 
       // Don't set success here - let the useEffect sync from hook state
       // This way we only show success if the hook actually succeeded
@@ -298,7 +299,7 @@ const PageBlockchainCard = () => {
       // Refresh blockchain data to show new triple
       setTimeout(() => fetchDataForCurrentPage(), DELAYS.REFRESH_AFTER_TX)
     } catch (error) {
-      console.error('❌ PageBlockchainCard - trustPage error:', error)
+      logger.error('trustPage error', error)
       const errorMessage = error instanceof Error ? error.message : `Failed to create ${modalType}`
       setError(errorMessage)
 
@@ -306,7 +307,7 @@ const PageBlockchainCard = () => {
       resumeRefresh()
     } finally {
       setLoading(false)
-      console.log('📊 PageBlockchainCard - Final state:', { localTrustSuccess, localTransactionHash, trustSuccess, trustError })
+      logger.debug('Final state', { localTrustSuccess, localTransactionHash, trustSuccess, trustError })
     }
   }
 
@@ -335,9 +336,9 @@ const PageBlockchainCard = () => {
     try {
       await claimDiscoveryGold(discoveryReward.gold)
       setRewardClaimed(true)
-      console.log('✅ PageBlockchainCard - Discovery Gold claimed:', discoveryReward.gold)
+      logger.info('Discovery Gold claimed', { gold: discoveryReward.gold })
     } catch (error) {
-      console.error('❌ PageBlockchainCard - Failed to claim reward:', error)
+      logger.error('Failed to claim reward', error)
     }
   }
 

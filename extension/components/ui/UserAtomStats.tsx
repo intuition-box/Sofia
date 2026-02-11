@@ -1,5 +1,8 @@
-import { useUserAtomStats } from '../../hooks/useUserAtomStats'
+import { useUserAtomStats } from '../../hooks'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/AccountStats.css'
+
+const logger = createHookLogger('UserAtomStats')
 
 interface UserAtomStatsProps {
   termId: string | undefined
@@ -23,7 +26,7 @@ const UserAtomStats = ({ termId, accountAddress, compact = false, signalsCount: 
   const hasError = hasPreloadedData ? false : atomStats.error
 
   // Debug log
-  console.log('🎯 UserAtomStats render:', {
+  logger.debug('UserAtomStats render', {
     termId,
     hasPreloadedData,
     preloadedSignals,

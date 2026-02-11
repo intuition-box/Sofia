@@ -1,5 +1,9 @@
 import type { Triplet } from './messages'
 
+export interface BookmarkData {
+  url: string
+  title: string
+}
 
 export interface BookmarkList {
   id: string

@@ -181,7 +181,7 @@ export const useOnChainIntentionGroups = (externalWalletAddress?: string): UseOn
         const label = triple.object?.label || ''
         // New atoms store the page title as label and the actual URL in value.thing.url
         // Old atoms store the URL directly as label
-        const objectUrl = (triple.object as any)?.value?.thing?.url as string | undefined
+        const objectUrl = triple.object?.value?.thing?.url ?? undefined
         const urlSource = objectUrl || label
         const domain = extractDomain(objectUrl || label)
 

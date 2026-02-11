@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { parseEther, formatUnits } from 'viem'
 import type { DepositPreview, CurveType } from '../types/bonding-curve'
-import { BlockchainService } from '../lib/services/blockchainService'
+import { BlockchainService } from '../lib/services'
 import { usePublicClient } from 'wagmi'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { MULTIVAULT_CONTRACT_ADDRESS } from '../lib/config/chainConfig'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useDepositPreview')
 
 export function useDepositPreview(
   tripleId: string,
@@ -57,7 +60,7 @@ export function useDepositPreview(
           return null
         }
         // Log unexpected errors but don't throw them
-        console.warn('Deposit preview unavailable:', err)
+        logger.warn('Deposit preview unavailable', err)
         return null
       }
     },

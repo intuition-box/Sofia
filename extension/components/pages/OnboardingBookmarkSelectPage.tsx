@@ -1,7 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useRouter, type BookmarkData } from '../layout/RouterProvider'
+import { useRouter } from '../layout/RouterProvider'
+import type { BookmarkData } from '~types/bookmarks'
 import FullScreenLoader from '../ui/FullScreenLoader'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/OnboardingStyles.css'
+
+const logger = createHookLogger('OnboardingBookmarkSelectPage')
 
 interface DomainGroup {
   domain: string
@@ -93,7 +97,7 @@ const OnboardingBookmarkSelectPage = () => {
           localStorage.setItem('targetTab', 'Echoes')
           navigateTo('Sofia')
         } else {
-          console.error('Import failed:', response?.error)
+          logger.error('Import failed', response?.error)
         }
       }
     )

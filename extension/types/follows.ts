@@ -60,6 +60,17 @@ export interface CommunityQueryResult {
   refetch: () => Promise<void>
 }
 
+/**
+ * GraphQL atom data response (used by follow/trust hooks)
+ */
+export interface AtomDataResponse {
+  atoms: Array<{
+    label: string
+    data?: string
+    image?: string
+  }>
+}
+
 // Aliases for backward compatibility
 export type FollowAccountVM = CommunityAccountVM
 export type FollowQueryResult = CommunityQueryResult

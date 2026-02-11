@@ -1,12 +1,10 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useIntuitionTriplets } from '../../../hooks/useIntuitionTriplets'
-import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
+import { useIntuitionTriplets, useWeightOnChain, useWalletFromStorage } from '../../../hooks'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import StakeModal from '../../modals/StakeModal'
 import SofiaLoader from '../../ui/SofiaLoader'
 import { BondingCurveChart } from '../../charts/BondingCurveChart'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
 import { getAddress } from 'viem'
 import logoIcon from '../../ui/icons/chatIcon.png'
 import ArrowTopRightIcon from '../../ui/icons/arrow-top-right-thick.svg'
@@ -14,6 +12,9 @@ import LinkVariantIcon from '../../ui/icons/link-variant.svg'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
+import { createHookLogger } from '../../../lib/utils/logger'
+
+const logger = createHookLogger('HistoryTab')
 
 interface HistoryTabProps {
   expandedTriplet: { tripletId: string } | null
@@ -43,9 +44,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
 
-  console.log('🎯 HistoryTab render - address:', address)
-  console.log('🎯 HistoryTab render - triplets:', triplets)
-  console.log('🎯 HistoryTab render - triplets.length:', triplets.length)
+  logger.debug('Render', { address, tripletsCount: triplets.length, triplets })
 
   // Display triplets from Intuition indexer (already sorted by timestamp)
   const publishedTriplets = triplets
@@ -199,7 +198,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
     try {
       setIsProcessingStake(true)
 
-      console.log('Staking:', amount.toString(), 'wei on triple:', selectedStakeTriplet.id, 'curve:', curveId)
+      logger.info('Staking', { amount: amount.toString(), tripleId: selectedStakeTriplet.id, curveId })
 
       let result
       if (curveId === 1) {
@@ -211,7 +210,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
       }
 
       if (result.success) {
-        console.log('✅ Stake successful:', result.txHash)
+        logger.info('Stake successful', { txHash: result.txHash })
 
         // Refresh the data after successful transaction
         await refreshFromAPI()
@@ -224,7 +223,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
         return { success: false, error: result.error || 'Transaction failed' }
       }
     } catch (error) {
-      console.error('Failed to stake:', error)
+      logger.error('Failed to stake', error)
       setIsProcessingStake(false)
       return {
         success: false,
@@ -322,7 +321,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
                   </div>
                 </div>
                 {isExpanded && (() => {
-                  console.log('tripletItem.url:', tripletItem.url, 'tripletItem:', tripletItem)
+                  logger.debug('Expanded triplet detail', { url: tripletItem.url, tripletItem })
                   const currentCurve = selectedChartCurve[tripletItem.id] || 2
                   const checksumAddress = address ? getAddress(address) : undefined
 

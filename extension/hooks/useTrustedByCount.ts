@@ -7,6 +7,9 @@ import { useState, useCallback } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useTrustedByCount')
 
 const FIND_ACCOUNT_ATOM_QUERY = `
   query FindAccountAtom($address: String!) {
@@ -119,7 +122,7 @@ export function useTrustedByCount(walletAddress: string | undefined): UseTrusted
 
       setCount(uniqueAccounts.size)
     } catch (err) {
-      console.error('❌ Failed to load trusted-by count:', err)
+      logger.error('Failed to load trusted-by count', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)

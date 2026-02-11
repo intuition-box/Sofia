@@ -5,12 +5,14 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage';
-import { useInterestAnalysis } from '../../../hooks/useInterestAnalysis';
+import { useWalletFromStorage, useInterestAnalysis } from '../../../hooks';
 import InterestCard from '../../ui/InterestCard';
 import SofiaLoader from '../../ui/SofiaLoader';
 import xIcon from '../../ui/social/x.svg';
+import { createHookLogger } from '../../../lib/utils/logger';
 import '../../styles/InterestTab.css';
+
+const logger = createHookLogger('InterestTab');
 
 const OG_BASE_URL = 'https://sofia-og.vercel.app';
 
@@ -103,7 +105,7 @@ const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explore
         window.open(intentUrl, '_blank');
       }
     } catch (err) {
-      console.error('Failed to create share link:', err);
+      logger.error('Failed to create share link', err);
       if (win) win.close();
     } finally {
       setIsSharing(false);

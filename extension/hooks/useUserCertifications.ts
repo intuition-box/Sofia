@@ -9,7 +9,7 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
-import { normalizeUrl } from '../lib/utils/normalizeUrl'
+import { normalizeUrl } from '../lib/utils'
 import { UserAllCertificationsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('useUserCertifications')
@@ -134,8 +134,10 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
     // Use predicate labels instead of IDs for testnet compatibility - PAGINATED
     // Using document from @0xsofia/graphql
     interface CertTripleResult {
+      term_id?: string
       predicate: { label: string }
       object: { label: string; value?: { thing?: { url?: string } } }
+      positions?: Array<{ shares: string }>
     }
 
     const triples = await intuitionGraphqlClient.fetchAllPages<CertTripleResult>(
@@ -196,8 +198,8 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
 
       // Build triple detail for redeem operations
       const tripleDetail: TripleDetail = {
-        tripleTermId: (triple as any).term_id || '',
-        shares: (triple as any).positions?.[0]?.shares || '0',
+        tripleTermId: triple.term_id || '',
+        shares: triple.positions?.[0]?.shares || '0',
         predicateLabel
       }
 

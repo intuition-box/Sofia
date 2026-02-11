@@ -6,7 +6,7 @@ import { ERROR_MESSAGES } from '../lib/config/constants'
 import { INTENTION_MIN_STAKE, PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { INTENTION_PREDICATES } from '../types/discovery'
-import { questTrackingService } from '../lib/services/QuestTrackingService'
+import { questTrackingService } from '../lib/services'
 import { normalizeUrl } from '../lib/utils/normalizeUrl'
 import { cleanTitle } from '../lib/utils/cleanTitle'
 

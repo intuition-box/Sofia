@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
-import { BookmarkService } from '../lib/database/indexedDB-methods'
+import { BookmarkService } from '../lib/database'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { getAddress } from 'viem'
 import type { BookmarkList, BookmarkedTriplet, UseBookmarksResult } from '../types/bookmarks'
 import type { Triplet } from '../../extension/types/messages'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useBookmarks')
 
 export const useBookmarks = (): UseBookmarksResult => {
   const { walletAddress } = useWalletFromStorage()
@@ -31,7 +34,7 @@ export const useBookmarks = (): UseBookmarksResult => {
       return { lists: storedLists, triplets: storedTriplets }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
-      console.error('❌ [useBookmarks] Error loading bookmarks:', err)
+      logger.error('Error loading bookmarks', err)
       setLists([])
       setTriplets([])
       throw new Error(`Failed to load bookmarks: ${errorMessage}`)

@@ -1,4 +1,4 @@
-import { useAccountStats } from '../../hooks/useAccountStats'
+import { useAccountStats } from '../../hooks'
 import '../styles/AccountStats.css'
 
 interface AccountStatsProps {

@@ -3,8 +3,10 @@ import { useRouter } from '../layout/RouterProvider'
 import logoIcon from '../ui/icons/chatIcon.png'
 import '../styles/ChatPage.css'
 import { Storage } from "@plasmohq/storage"
+import { createHookLogger } from '../../lib/utils/logger'
 
 const storage = new Storage()
+const logger = createHookLogger('ChatPage')
 
 
 interface Message {
@@ -39,12 +41,12 @@ const ChatPage = () => {
     }
 
     setMessages(prev => [...prev, newUserMessage])
-    console.log("✉️ Message utilisateur :", message)
+    logger.debug('User message sent', { message })
 
     chrome.runtime.sendMessage({
       type: "SEND_CHATBOT_MESSAGE",
       text: message
-    }).catch(err => console.error("Failed to send message to background:", err))
+    }).catch(err => logger.error('Failed to send message to background', err))
 
     setChatInput("")
   }
@@ -94,10 +96,10 @@ const ChatPage = () => {
 
   useEffect(() => {
     const handler = (message: any) => {
-      console.log("🔔 [ChatPage] Received message:", message)
+      logger.debug('Received message', message)
 
       if (message?.type === "CHATBOT_RESPONSE") {
-        console.log("✅ [ChatPage] Processing CHATBOT_RESPONSE:", message.text)
+        logger.info('Processing CHATBOT_RESPONSE', { text: message.text })
 
         const response: Message = {
           id: Date.now().toString(),
@@ -107,16 +109,16 @@ const ChatPage = () => {
         }
 
         setMessages(prev => {
-          console.log("📝 [ChatPage] Adding message to state, current count:", prev.length)
+          logger.debug('Adding message to state', { currentCount: prev.length })
           return [...prev, response]
         })
       }
     }
 
-    console.log("🎧 [ChatPage] Message listener registered")
+    logger.info('Message listener registered')
     chrome.runtime.onMessage.addListener(handler)
     return () => {
-      console.log("🔌 [ChatPage] Message listener removed")
+      logger.debug('Message listener removed')
       chrome.runtime.onMessage.removeListener(handler)
     }
   }, [])
@@ -156,7 +158,7 @@ const ChatPage = () => {
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => {
-              console.log("🔑 Key pressed:", e.key)
+              logger.debug('Key pressed', { key: e.key })
               if (e.key === 'Enter') handleSendMessage()
             }}
             placeholder="Talk with Sofia"

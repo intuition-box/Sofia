@@ -5,8 +5,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { RecommendationService } from '../lib/services/ai/RecommendationService'
+import { RecommendationService } from '../lib/services'
+import { createHookLogger } from '../lib/utils/logger'
 import type { Recommendation } from '../lib/services/ai/types'
+
+const logger = createHookLogger('useRecommendations')
 
 export interface UseRecommendationsResult {
   recommendations: Recommendation[]
@@ -20,11 +23,11 @@ export const useRecommendations = (): UseRecommendationsResult => {
   const [isLoading, setIsLoading] = useState(false)
   const { walletAddress: account } = useWalletFromStorage()
 
-  console.log('🔄 useRecommendations hook - account:', account)
+  logger.debug('Hook initialized', { account })
 
   const generateRecommendations = useCallback(async (forceRefresh: boolean = false, additive: boolean = false): Promise<void> => {
     if (!account) {
-      console.log('❌ No account found, skipping recommendations')
+      logger.debug('No account found, skipping recommendations')
       setRecommendations([])
       return
     }
@@ -32,12 +35,12 @@ export const useRecommendations = (): UseRecommendationsResult => {
     setIsLoading(true)
 
     try {
-      console.log('🚀 Generating recommendations for account:', account, additive ? '(adding more)' : '')
+      logger.info('Generating recommendations', { account, additive })
       const result = await RecommendationService.generateRecommendations(account, forceRefresh, additive)
       setRecommendations(result)
-      console.log('✅ Recommendations updated:', result.length, 'categories')
+      logger.info('Recommendations updated', { count: result.length })
     } catch (error) {
-      console.error('❌ Error generating recommendations:', error)
+      logger.error('Error generating recommendations', error)
       if (!additive) {
         setRecommendations([])
       }
@@ -52,19 +55,19 @@ export const useRecommendations = (): UseRecommendationsResult => {
     try {
       await RecommendationService.clearCache(account)
       setRecommendations([])
-      console.log('🗑️ Cache cleared for account:', account)
+      logger.info('Cache cleared', { account })
     } catch (error) {
-      console.error('❌ Error clearing cache:', error)
+      logger.error('Error clearing cache', error)
     }
   }, [account])
 
   // Load recommendations on account change
   useEffect(() => {
-    console.log('🔄 useRecommendations useEffect triggered - account:', account)
+    logger.debug('useEffect triggered', { account })
     if (account) {
       generateRecommendations(false) // Load cached first, then generate if needed
     } else {
-      console.log('❌ No account, clearing recommendations')
+      logger.debug('No account, clearing recommendations')
       setRecommendations([])
     }
   }, [account, generateRecommendations])

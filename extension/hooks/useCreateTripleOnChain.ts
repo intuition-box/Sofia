@@ -4,7 +4,7 @@ import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useCreateAtom } from './useCreateAtom'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { BlockchainService } from '../lib/services/blockchainService'
+import { BlockchainService } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../lib/config/constants'
 import type { TripleOnChainResult, BatchTripleInput, BatchTripleResult } from '../types/blockchain'
@@ -282,7 +282,7 @@ export const useCreateTripleOnChain = () => {
 
         const txParams = {
           address: contractAddress,
-          abi: SofiaFeeProxyAbi as unknown as any[],
+          abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
           args: [
             address,        // receiver - user gets the shares
@@ -526,7 +526,7 @@ export const useCreateTripleOnChain = () => {
           // Execute batch transaction with automatic gas estimation
           const batchTxParams = {
             address: contractAddress,
-            abi: SofiaFeeProxyAbi as unknown as any[],
+            abi: SofiaFeeProxyAbi,
             functionName: 'createTriples',
             args: [address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID],
             value: totalValue,

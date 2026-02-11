@@ -3,22 +3,13 @@ import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
-import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { useWalletFromStorage } from '../../hooks'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
+import { createHookLogger } from '../../lib/utils/logger'
+import type { EchoTriplet } from '../../types/blockchain'
 import '../styles/Modal.css'
 
-interface Triplet {
-  subject: string
-  predicate: string
-  object: string
-}
-
-interface EchoTriplet {
-  id: string
-  triplet: Triplet
-  description: string
-  url: string
-}
+const logger = createHookLogger('WeightModal')
 
 interface DiscoveryReward {
   status: 'Pioneer' | 'Explorer' | 'Contributor'
@@ -130,7 +121,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         } else {
           const option = weightOptions.find(opt => opt.id === selectedWeight)
           if (!option || option.value === null) {
-            console.error('WeightModal: Invalid weight option', selectedWeight)
+            logger.error('Invalid weight option', selectedWeight)
             trustValue = defaultValue
           } else {
             trustValue = option.value
@@ -145,7 +136,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       setSelectedWeights(new Array(triplets.length).fill('default'))
       setCustomValues(new Array(triplets.length).fill(''))
     } catch (error) {
-      console.error('Failed to submit weights:', error)
+      logger.error('Failed to submit weights', error)
     }
   }
 

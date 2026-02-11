@@ -18,11 +18,12 @@
 
 import { QUEST_XP_REWARDS } from '../../types/questTypes'
 import { getAddress } from 'viem'
+import { createServiceLogger } from '../utils/logger'
+import type { XPState } from '~types/currencyTypes'
 
-export interface XPState {
-  questXP: number   // XP from claimed quest badges (on-chain)
-  totalXP: number   // Same as questXP (no deductions)
-}
+export type { XPState }
+
+const logger = createServiceLogger('XPService')
 
 /**
  * XPService — Singleton service for managing quest XP.
@@ -52,7 +53,7 @@ class XPServiceClass {
 
     const questXP = this.calculateQuestXP(claimedQuests)
 
-    console.log(`📊 [XPService] XP State: questXP=${questXP}`)
+    logger.debug('XP State', { questXP })
 
     return { questXP, totalXP: questXP }
   }
@@ -95,7 +96,7 @@ class XPServiceClass {
     if (hasMigration) {
       await chrome.storage.local.set(updates)
       await chrome.storage.local.remove(xpKeys)
-      console.log('🔄 [XPService] Migrated XP data from non-prefixed keys:', updates)
+      logger.info('Migrated XP data from non-prefixed keys', updates)
     }
 
     // Phase 2: Migrate from checksum-format keys to lowercase keys
@@ -115,7 +116,7 @@ class XPServiceClass {
       if (Object.keys(checksumUpdates).length > 0) {
         await chrome.storage.local.set(checksumUpdates)
         await chrome.storage.local.remove(keysToRemove)
-        console.log('🔄 [XPService] Migrated XP data from checksum to lowercase keys:', checksumUpdates)
+        logger.info('Migrated XP data from checksum to lowercase keys', checksumUpdates)
       }
     }
   }

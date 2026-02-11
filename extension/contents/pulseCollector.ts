@@ -1,4 +1,7 @@
 import type { PlasmoCSConfig } from "plasmo"
+import { createServiceLogger } from '../lib/utils/logger'
+
+const logger = createServiceLogger('PulseCollector')
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -52,4 +55,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 })
 
-console.log("🫀 [Pulse Collector] Content script loaded for:", window.location.href)
+logger.debug("Content script loaded for:", window.location.href)

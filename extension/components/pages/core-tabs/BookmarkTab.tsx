@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useBookmarks } from '../../../hooks/useBookmarks'
-import { useIntentionCategories } from '../../../hooks/useIntentionCategories'
-import { useIntuitionTriplets } from '../../../hooks/useIntuitionTriplets'
+import { useBookmarks, useIntentionCategories, useIntuitionTriplets } from '../../../hooks'
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import '../../styles/CoreComponents.css'
@@ -10,6 +8,9 @@ import '../../styles/Modal.css'
 import '../../styles/BookmarkStyles.css'
 import '../../styles/CategoryStyles.css'
 import '../../styles/InterestTab.css'
+import { createHookLogger } from '../../../lib/utils/logger'
+
+const logger = createHookLogger('BookmarkTab')
 
 // Helper to extract domain from URL
 const getDomain = (url: string): string => {
@@ -72,7 +73,7 @@ const BookmarkTab = () => {
       setNewListName('')
       setNewListDescription('')
     } catch (err) {
-      console.error('Failed to create list:', err)
+      logger.error('Failed to create list', err)
     }
   }
 
@@ -88,7 +89,7 @@ const BookmarkTab = () => {
       setNewListName('')
       setNewListDescription('')
     } catch (err) {
-      console.error('Failed to update list:', err)
+      logger.error('Failed to update list', err)
     }
   }
 
@@ -103,7 +104,7 @@ const BookmarkTab = () => {
         setSelectedListId(null)
       }
     } catch (err) {
-      console.error('Failed to delete list:', err)
+      logger.error('Failed to delete list', err)
     }
   }
 
@@ -172,7 +173,7 @@ const BookmarkTab = () => {
       setIsAddingSignal(false)
       setSignalSearchQuery('')
     } catch (err) {
-      console.error('Failed to add signal to bookmark:', err)
+      logger.error('Failed to add signal to bookmark', err)
     }
   }
 
@@ -181,7 +182,7 @@ const BookmarkTab = () => {
     try {
       await removeTripletFromList(listId, tripletId)
     } catch (err) {
-      console.error('Failed to remove triplet from list:', err)
+      logger.error('Failed to remove triplet from list', err)
     }
   }
 

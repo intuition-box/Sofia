@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from '../../layout/RouterProvider'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
-import { useIntentionCategories } from '../../../hooks/useIntentionCategories'
+import { useWalletFromStorage, useIntentionCategories } from '../../../hooks'
 import {
   useGetTrustCirclePositionsQuery,
   useGetSofiaTrustedActivityQuery
@@ -264,9 +263,9 @@ const CircleFeedTab = () => {
       memberSelectCategory(null)
       setViewState({
         type: 'member-profile',
-        address: (viewState as any).address,
-        label: (viewState as any).label,
-        image: (viewState as any).image
+        address: viewState.address,
+        label: viewState.label,
+        image: viewState.image
       })
     } else {
       setViewState({ type: 'feed' })

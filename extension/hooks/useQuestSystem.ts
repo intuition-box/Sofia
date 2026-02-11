@@ -17,17 +17,16 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { useBookmarks } from './useBookmarks'
 import { useDiscoveryScore } from './useDiscoveryScore'
 import { useCreateAtom } from './useCreateAtom'
-import { QuestBadgeService } from '../lib/services/QuestBadgeService'
-import { QuestProgressService } from '../lib/services/QuestProgressService'
-import { computeQuestStatuses, calculateLevelFromXP, calculateXPForNextLevel, getClaimId } from '../lib/utils/questStatusHelpers'
+import { QuestBadgeService, QuestProgressService } from '../lib/services'
+import { computeQuestStatuses, calculateLevelFromXP, calculateXPForNextLevel, getClaimId, getWalletKey } from '../lib/utils'
+import { createHookLogger } from '../lib/utils/logger'
 import { QUEST_DEFINITIONS } from '../types/questTypes'
 import type { Quest, UserProgress, QuestSystemResult } from '../types/questTypes'
 
+const logger = createHookLogger('useQuestSystem')
+
 // Re-export types for backward compatibility
 export type { Quest, UserProgress, QuestSystemResult }
-
-// Helper to generate wallet-scoped storage keys
-const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet}`
 
 /**
  * useQuestSystem Hook
@@ -61,6 +60,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     twitchConnected: false, twitterConnected: false,
     pioneerCount: 0, explorerCount: 0, contributorCount: 0,
     totalDiscoveries: 0, uniqueIntentionTypes: 0,
+    goldAccumulated: 0,
   })
 
   const [loading, setLoading] = useState(true)
@@ -126,7 +126,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
           setClaimedQuestIds(claimedIds)
         }
       } catch (err) {
-        console.error('Error loading quest states:', err)
+        logger.error('Error loading quest states', err)
         setError(err instanceof Error ? err.message : 'Failed to load quest states')
       }
     }
@@ -155,7 +155,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
       // Re-sync on-chain badges (triggers useEffect via onChainSyncDone)
       setOnChainSyncDone(false)
     } catch (err) {
-      console.error('Error fetching quest data:', err)
+      logger.error('Error fetching quest data', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch quest data')
     } finally {
       setLoading(false)
@@ -169,14 +169,14 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
 
       // In read-only mode, always refresh (no cache)
       if (isReadOnlyMode) {
-        console.log('🔄 [QuestSystem] Read-only mode, fetching fresh data...')
+        logger.info('Read-only mode, fetching fresh data')
         refreshQuests()
         return
       }
 
       const isStale = await QuestProgressService.isCacheStale(walletAddress)
       if (isStale || lastCacheWallet !== walletAddress) {
-        console.log('🔄 [QuestSystem] Cache stale or wallet changed, refreshing...')
+        logger.info('Cache stale or wallet changed, refreshing')
         refreshQuests()
         setLastCacheWallet(walletAddress)
       }
@@ -206,7 +206,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     const storageKey = getWalletKey('completed_quests', walletAddress.toLowerCase())
     chrome.storage.local.set({ [storageKey]: Array.from(merged) }).then(() => {
       setCompletedQuestIds(merged)
-      console.log('✅ [QuestSystem] Batch-saved newly completed quests:', newlyCompleted)
+      logger.info('Batch-saved newly completed quests', { newlyCompleted })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newlyCompleted, walletAddress])
@@ -246,7 +246,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     setError(null)
 
     try {
-      console.log('🏆 [QuestSystem] Creating on-chain badge for quest:', quest.title)
+      logger.info('Creating on-chain badge for quest', { title: quest.title })
 
       let result: { success: boolean; txHash?: string; error?: string }
 
@@ -265,12 +265,12 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
         newClaimed.add(claimId)
         setClaimedQuestIds(newClaimed)
         await QuestBadgeService.saveClaimedQuestIds(walletAddress, newClaimed)
-        console.log('✅ [QuestSystem] Claimed XP for quest:', claimId)
+        logger.info('Claimed XP for quest', { claimId })
       }
 
       return result
     } catch (err) {
-      console.error('❌ [QuestSystem] Claim failed:', err)
+      logger.error('Claim failed', err)
 
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
       const isTripleExistsError =
@@ -279,7 +279,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
         errorMessage.includes('Triple creation failed')
 
       if (isTripleExistsError) {
-        console.log('✅ [QuestSystem] Badge already exists on-chain, marking as claimed')
+        logger.info('Badge already exists on-chain, marking as claimed')
         const newClaimed = new Set(claimedQuestIds)
         newClaimed.add(claimId)
         setClaimedQuestIds(newClaimed)

@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { getAddress } from 'viem'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { SUBJECT_IDS } from '../lib/config/constants'
+import { createHookLogger } from '../lib/utils/logger'
+
+const logger = createHookLogger('useAccountStats')
 
 export interface AccountStats {
   signalsCreated: number
@@ -107,7 +110,7 @@ export const useAccountStats = (accountAddress: string | undefined) => {
         })
 
       } catch (error) {
-        console.error('Error loading account stats:', error)
+        logger.error('Error loading account stats', error)
         setStats(prev => ({
           ...prev,
           loading: false,

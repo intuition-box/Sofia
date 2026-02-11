@@ -17,6 +17,9 @@
  */
 
 import type { GoldState, GoldSpendResult } from '../../types/currencyTypes'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('GoldService')
 
 // Gold earned per group URL certification
 const GOLD_PER_CERTIFICATION = 10
@@ -63,7 +66,7 @@ class GoldServiceClass {
     const spentGold = result[spentKey] || 0
     const totalGold = discoveryGold + certificationGold - spentGold
 
-    console.log(`🪙 [GoldService] Gold State: discovery=${discoveryGold}, certification=${certificationGold}, spent=${spentGold}, total=${totalGold}`)
+    logger.debug('Gold state loaded', { discoveryGold, certificationGold, spentGold, totalGold })
 
     return { discoveryGold, certificationGold, spentGold, totalGold }
   }
@@ -79,7 +82,7 @@ class GoldServiceClass {
     const newTotal = current + amount
 
     await chrome.storage.local.set({ [key]: newTotal })
-    console.log(`🪙 [GoldService] Added ${amount} certification Gold (new total: ${newTotal})`)
+    logger.info('Added certification Gold', { amount, newTotal })
 
     return newTotal
   }
@@ -91,7 +94,7 @@ class GoldServiceClass {
   async setDiscoveryGold(walletAddress: string, amount: number): Promise<void> {
     const key = this.getKey('discovery_gold', walletAddress)
     await chrome.storage.local.set({ [key]: amount })
-    console.log(`🪙 [GoldService] Set discovery Gold to ${amount}`)
+    logger.info('Set discovery Gold', { amount })
   }
 
   /**
@@ -102,7 +105,7 @@ class GoldServiceClass {
     const state = await this.getGoldState(walletAddress)
 
     if (state.totalGold < amount) {
-      console.error(`❌ [GoldService] Not enough Gold: ${state.totalGold} < ${amount}`)
+      logger.error('Not enough Gold', { available: state.totalGold, required: amount })
       return {
         success: false,
         error: `Not enough Gold (have ${state.totalGold}, need ${amount})`,
@@ -115,7 +118,7 @@ class GoldServiceClass {
     await chrome.storage.local.set({ [spentKey]: newSpentTotal })
 
     const newBalance = state.totalGold - amount
-    console.log(`💸 [GoldService] Spent ${amount} Gold (new balance: ${newBalance})`)
+    logger.info('Spent Gold', { amount, newBalance })
 
     return { success: true, newBalance }
   }
@@ -151,7 +154,7 @@ class GoldServiceClass {
       [certKey]: 0,
       [spentKey]: 0
     })
-    console.log('🧹 [GoldService] Gold reset')
+    logger.info('Gold reset')
   }
 
   /**

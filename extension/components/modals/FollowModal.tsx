@@ -3,9 +3,12 @@ import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
-import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { useWalletFromStorage } from '../../hooks'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Modal.css'
+
+const logger = createHookLogger('FollowModal')
 
 interface FollowModalProps {
   accountLabel: string
@@ -47,27 +50,24 @@ const FollowModal = ({
   ]
 
   const handleAmountSelect = (amount: string) => {
-    console.log('💰 FollowModal - Amount selected', amount)
+    logger.debug('Amount selected', { amount })
     setTrustAmount(amount)
   }
 
   const handleCustomAmountChange = (e: any) => {
     const value = e.target.value
-    console.log('💰 FollowModal - Custom amount entered', value)
+    logger.debug('Custom amount entered', { value })
     setTrustAmount(value)
   }
 
   const handleConfirmFollow = async () => {
-    console.log('✅ FollowModal - Confirm follow clicked', {
-      accountLabel,
-      trustAmount
-    })
+    logger.info('Confirm follow clicked', { accountLabel, trustAmount })
 
     // Allow empty amount for default weight
     if (trustAmount.trim() !== '') {
       const amount = parseFloat(trustAmount)
       if (amount < 0.01) {
-        console.warn('⚠️ FollowModal - Amount too low', amount)
+        logger.warn('Amount too low', { amount })
         alert('Minimum amount is 0.01 TRUST')
         return
       }
@@ -79,28 +79,28 @@ const FollowModal = ({
     setTransactionHash(null)
     try {
       const result = await onFollow(trustAmount)
-      console.log('📊 FollowModal - Transaction result:', result)
+      logger.debug('Transaction result', result)
 
       if (result.success && result.txHash) {
-        console.log('✅ FollowModal - Success! Setting txHash:', result.txHash)
+        logger.info('Transaction successful', { txHash: result.txHash })
         setTransactionHash(result.txHash)
         setIsSuccess(true)
       } else if (result.error) {
-        console.error('❌ FollowModal - Error:', result.error)
+        logger.error('Transaction error', result.error)
         setTransactionError(result.error)
       }
     } catch (error) {
-      console.error('❌ FollowModal - Follow failed', error)
+      logger.error('Follow failed', error)
       setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
     } finally {
       setLoading(false)
-      console.log('📊 FollowModal - Final state:', { isSuccess, transactionHash, transactionError })
+      logger.debug('Final state', { isSuccess, transactionHash, transactionError })
     }
   }
 
   const handleBackdropClick = (e: any) => {
     if (e.target === e.currentTarget) {
-      console.log('🚪 FollowModal - Backdrop clicked, closing modal')
+      logger.debug('Backdrop clicked, closing modal')
       onClose()
     }
   }

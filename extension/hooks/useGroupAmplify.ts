@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
-import { groupManager } from '../lib/services/GroupManager'
+import { groupManager } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import type { TripleOnChainResult } from '../types/blockchain'
 

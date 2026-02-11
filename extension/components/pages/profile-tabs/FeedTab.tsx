@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
+import { createHookLogger } from '../../../lib/utils/logger'
+import { useWalletFromStorage } from '../../../hooks'
 import { 
   useGetTrustCirclePositionsQuery,
   useGetSofiaTrustedActivityQuery
@@ -7,7 +8,7 @@ import {
 import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
 import { SOFIA_PROXY_ADDRESS } from '../../../lib/config/chainConfig'
 import { getAddress } from 'viem'
-import { useWeightOnChain } from '../../../hooks/useWeightOnChain'
+import { useWeightOnChain } from '../../../hooks'
 import StakeModal from '../../modals/StakeModal'
 import Avatar from '../../ui/Avatar'
 import '../../styles/CoreComponents.css'
@@ -29,6 +30,8 @@ interface FeedEvent {
   amountLabel?: string
 }
 
+const logger = createHookLogger('FeedTab')
+
 const FeedTab = () => {
   const { walletAddress: address } = useWalletFromStorage()
   const [feedItems, setFeedItems] = useState<FeedEvent[]>([])
@@ -44,8 +47,8 @@ const FeedTab = () => {
 
   const checksumAddress = address ? getAddress(address) : ''
 
-  console.log('🔍 FeedTab - Address:', address, 'Checksum:', checksumAddress)
-  console.log('🔍 FeedTab - SOFIA_PROXY_ADDRESS:', SOFIA_PROXY_ADDRESS)
+  logger.debug('Address and checksum', { address, checksumAddress })
+  logger.debug('SOFIA_PROXY_ADDRESS', { SOFIA_PROXY_ADDRESS })
 
   // Step 1: Get Trust Circle accounts with positions
   const { data: trustCircleData, isLoading: trustCircleLoading, error: trustCircleError } = useGetTrustCirclePositionsQuery(
@@ -62,23 +65,23 @@ const FeedTab = () => {
     }
   )
 
-  console.log('📊 Trust Circle Query - Loading:', trustCircleLoading, 'Error:', trustCircleError)
-  console.log('📊 Trust Circle Data:', trustCircleData)
+  logger.debug('Trust Circle Query status', { loading: trustCircleLoading, error: trustCircleError })
+  logger.debug('Trust Circle Data', trustCircleData)
 
   // Extract trusted wallets from Trust Circle data (already filtered by query)
   useEffect(() => {
     if (!trustCircleData?.triples) {
-      console.log('⚠️ No trust circle data available')
+      logger.warn('No trust circle data available')
       return
     }
 
-    console.log('📊 Processing Trust Circle - Total triples with positions:', trustCircleData.triples.length)
+    logger.debug('Processing Trust Circle - Total triples with positions', { count: trustCircleData.triples.length })
 
     // No need to filter - query already returns only triples where user has positions
     const triplesWithPositions = trustCircleData.triples
 
     if (triplesWithPositions.length === 0) {
-      console.log('⚠️ No triples with positions found')
+      logger.warn('No triples with positions found')
       setTrustedWallets([])
       return
     }
@@ -91,7 +94,7 @@ const FeedTab = () => {
       const accounts = triple.object?.accounts || []
       const label = triple.object?.label || ''
 
-      console.log('  Object:', label, 'Accounts:', accounts.length)
+      logger.debug('Object accounts', { label, accountsCount: accounts.length })
 
       for (const account of accounts) {
         if (account?.id) {
@@ -100,9 +103,9 @@ const FeedTab = () => {
             wallets.push(checksumWallet)
             wallets.push(checksumWallet.toLowerCase())
             labelMap.set(checksumWallet.toLowerCase(), account.label || label || checksumWallet)
-            console.log('    ✅ Added wallet:', checksumWallet, 'Label:', account.label || label)
+            logger.debug('Added wallet', { checksumWallet, label: account.label || label })
           } catch {
-            console.log('    ❌ Invalid wallet address:', account.id)
+            logger.warn('Invalid wallet address', { id: account.id })
             continue
           }
         }
@@ -110,7 +113,7 @@ const FeedTab = () => {
     }
 
     const uniqueWallets = [...new Set(wallets)]
-    console.log('📊 Trusted wallets:', uniqueWallets.slice(0, 5), '...')
+    logger.debug('Trusted wallets', { sample: uniqueWallets.slice(0, 5), total: uniqueWallets.length })
 
     setTrustedWallets(uniqueWallets)
     setWalletToLabel(labelMap)
@@ -130,17 +133,17 @@ const FeedTab = () => {
     }
   )
 
-  console.log('📊 Events Query - Enabled:', trustedWallets.length > 0, 'Loading:', eventsLoading, 'Error:', eventsError)
-  console.log('📊 Events Data:', eventsData?.events?.length || 0, 'events')
+  logger.debug('Events Query status', { enabled: trustedWallets.length > 0, loading: eventsLoading, error: eventsError })
+  logger.debug('Events Data', { count: eventsData?.events?.length || 0 })
 
   // Process events into feed items
   useEffect(() => {
     if (!eventsData?.events) {
-      console.log('⚠️ No events data available')
+      logger.warn('No events data available')
       return
     }
 
-    console.log('📊 Processing', eventsData.events.length, 'events')
+    logger.debug('Processing events', { count: eventsData.events.length })
 
     // Events are already filtered by the SofiaTrustedActivity query
     // No need for additional filtering
@@ -228,7 +231,7 @@ const FeedTab = () => {
       }
     }
 
-    console.log('📊 Total feed events:', feedEvents.length)
+    logger.info('Total feed events', { count: feedEvents.length })
     setFeedItems(feedEvents)
   }, [eventsData, walletToLabel])
 
@@ -447,17 +450,17 @@ const FeedTab = () => {
           try {
             setIsProcessing(true)
 
-            console.log('💰 FeedTab - Deposit calculation:', {
+            logger.info('Deposit calculation', {
               amount: amount.toString(),
               depositInTRUST: (Number(amount) / 1e18).toFixed(4),
               curveId
             })
 
             const result = await addWeight(selectedVaultId, amount, BigInt(curveId))
-            console.log('📊 FeedTab - addWeight result:', result)
+            logger.debug('addWeight result', result)
 
             if (result.success) {
-              console.log('✅ FeedTab - Transaction successful, txHash:', result.txHash)
+              logger.info('Transaction successful', { txHash: result.txHash })
               // Don't refresh here - will refresh when modal closes to avoid re-render
               setShouldRefreshOnClose(true)
 
@@ -468,7 +471,7 @@ const FeedTab = () => {
               return { success: false, error: result.error || 'Transaction failed' }
             }
           } catch (error) {
-            console.error('❌ FeedTab - Transaction error:', error)
+            logger.error('Transaction error', error)
             setIsProcessing(false)
             return {
               success: false,

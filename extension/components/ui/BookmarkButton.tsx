@@ -5,12 +5,15 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useBookmarks } from '../../hooks/useBookmarks'
+import { useBookmarks } from '../../hooks'
 import type { Triplet } from '~components/pages/core-tabs/types'
 import type { BookmarkedTriplet } from '../../types/bookmarks'
 import QuickActionButton from './QuickActionButton'
 import BookmarkPlusIcon from './icons/bookmark-plus.svg'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/BookmarkStyles.css'
+
+const logger = createHookLogger('BookmarkButton')
 
 interface BookmarkButtonProps {
   triplet: Triplet
@@ -38,7 +41,7 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
         setNewListName('')
         setIsCreatingList(false)
       } catch (err) {
-        console.error('Failed to create list and add triplet:', err)
+        logger.error('Failed to create list and add triplet', err)
       }
     } else if (selectedListId) {
       // Add to existing list
@@ -46,7 +49,7 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
         await addTripletToList(selectedListId, triplet, sourceInfo)
         setShowModal(false)
       } catch (err) {
-        console.error('Failed to add triplet to list:', err)
+        logger.error('Failed to add triplet to list', err)
       }
     }
   }

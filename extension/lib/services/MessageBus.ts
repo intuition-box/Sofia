@@ -1,12 +1,15 @@
 /**
  * Centralized class to manage Chrome runtime messages
- * Provides safe messaging 
+ * Provides safe messaging
  */
 import type {
   ChromeMessage,
   MessageResponse,
   MessageType
 } from '../../types/messages'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('MessageBus')
 
 export class MessageBus {
   private static instance: MessageBus;
@@ -25,7 +28,7 @@ export class MessageBus {
     try {
       return await chrome.runtime.sendMessage(message);
     } catch (error) {
-      console.warn('MessageBus: Message send error:', error);
+      logger.warn('Message send error', error);
       return null;
     }
   }

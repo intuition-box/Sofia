@@ -4,6 +4,9 @@ import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { stringToHex } from 'viem'
 import type { AtomCheckResult, TripleCheckResult } from '../../types/blockchain'
 import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS, SELECTED_CHAIN } from '../config/chainConfig'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('BlockchainService')
 
 /**
  * Centralized service for blockchain operations
@@ -111,7 +114,7 @@ export class BlockchainService {
     predicateVaultId: string,
     objectVaultId: string
   ): Promise<TripleCheckResult> {
-    console.log('🔍 BlockchainService.checkTripleExists - Starting check', {
+    logger.debug('checkTripleExists - Starting check', {
       subjectVaultId,
       predicateVaultId,
       objectVaultId,
@@ -123,7 +126,7 @@ export class BlockchainService {
     const publicClient = getPublicClient()
 
     try {
-      console.log('🔍 BlockchainService.checkTripleExists - Calculating triple ID')
+      logger.debug('checkTripleExists - Calculating triple ID')
 
       // Calculate the triple ID
       const tripleId = await publicClient.readContract({
@@ -138,13 +141,11 @@ export class BlockchainService {
         authorizationList: undefined
       }) as `0x${string}`
 
-      console.log('🔍 BlockchainService.checkTripleExists - Triple ID calculated', {
-        tripleId
-      })
+      logger.debug('checkTripleExists - Triple ID calculated', { tripleId })
 
       // Check if triple exists using getTriple
       try {
-        console.log('🔍 BlockchainService.checkTripleExists - Calling getTriple')
+        logger.debug('checkTripleExists - Calling getTriple')
 
         const tripleData = await publicClient.readContract({
           address: this.MULTIVAULT_ADDRESS as `0x${string}`,
@@ -154,7 +155,7 @@ export class BlockchainService {
           authorizationList: undefined
         }) as [string, string, string] // [subjectId, predicateId, objectId]
 
-        console.log('🔍 BlockchainService.checkTripleExists - Triple data retrieved', {
+        logger.debug('checkTripleExists - Triple data retrieved', {
           tripleId,
           tripleData,
           expectedSubject: subjectVaultId,
@@ -172,7 +173,7 @@ export class BlockchainService {
           retrievedObject.toLowerCase() === objectVaultId.toLowerCase()
 
         if (exactMatch) {
-          console.log('✅ BlockchainService.checkTripleExists - Exact triple match found!', {
+          logger.info('checkTripleExists - Exact triple match found', {
             tripleId,
             retrievedData: tripleData
           })
@@ -183,7 +184,7 @@ export class BlockchainService {
             tripleHash: tripleId
           }
         } else {
-          console.log('⚠️ BlockchainService.checkTripleExists - Hash collision detected!', {
+          logger.warn('checkTripleExists - Hash collision detected', {
             tripleId,
             expected: [subjectVaultId, predicateVaultId, objectVaultId],
             retrieved: tripleData,
@@ -196,11 +197,10 @@ export class BlockchainService {
           }
         }
       } catch (getTripleError) {
-        console.log('❌ BlockchainService.checkTripleExists - getTriple failed', {
+        logger.debug('checkTripleExists - getTriple failed (triple does not exist)', {
           tripleId,
-          error: getTripleError,
           errorMessage: getTripleError instanceof Error ? getTripleError.message : 'Unknown error',
-          errorSignature: (getTripleError as any)?.signature || 'no signature'
+          errorSignature: getTripleError instanceof Object && 'signature' in getTripleError ? (getTripleError as { signature: string }).signature : 'no signature'
         })
 
         // getTriple reverts if triple doesn't exist
@@ -210,8 +210,7 @@ export class BlockchainService {
         }
       }
     } catch (contractError) {
-      console.error('❌ BlockchainService.checkTripleExists - Contract error', {
-        error: contractError,
+      logger.error('checkTripleExists - Contract error', {
         errorMessage: contractError instanceof Error ? contractError.message : 'Unknown error'
       })
 
@@ -276,7 +275,7 @@ export class BlockchainService {
       authorizationList: undefined
     }) as bigint
 
-    console.log('[BlockchainService] getTripleCost returned:', {
+    logger.debug('getTripleCost returned', {
       cost: cost.toString(),
       costInTRUST: Number(cost) / 1e18,
       contractAddress: this.MULTIVAULT_ADDRESS
@@ -317,25 +316,6 @@ export class BlockchainService {
     REDEMPTION: 2, // Can redeem on behalf
     BOTH: 3       // Can deposit and redeem
   } as const
-
-  /**
-   * Check if user has approved the proxy for deposits on MultiVault
-   * The proxy needs approval to deposit on behalf of the user (receiver pattern)
-   * @param userAddress The user's wallet address
-   * @returns true if proxy is approved for deposits
-   */
-  static async checkProxyApproval(userAddress?: string): Promise<boolean> {
-    if (!userAddress) {
-      return false
-    }
-
-    // NOTE: MultiVault contract doesn't expose an 'approvals' getter function
-    // So we can't check approval status directly. The contract will revert
-    // if approval is missing, so we just return false to always trigger approval request.
-    // This is safe because if the user already approved, the transaction will succeed anyway.
-
-    return false // Always request approval (wallet will handle if already approved)
-  }
 
   /**
    * Request user to approve proxy for deposits on MultiVault

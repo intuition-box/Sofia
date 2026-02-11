@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
+import { useWalletFromStorage } from '../../../hooks'
 import type { CommunityFilterType } from '../../../types/follows'
 import { FollowersPanel } from './follow/FollowersPanel'
 import { FollowingPanel } from './follow/FollowingPanel'

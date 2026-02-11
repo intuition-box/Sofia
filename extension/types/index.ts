@@ -29,9 +29,6 @@ export * from './bookmarks';
 // Bento grid types
 export * from './bento';
 
-// Published triplets types
-export * from './published-triplets';
-
 // Interest analysis types
 export * from './interests';
 

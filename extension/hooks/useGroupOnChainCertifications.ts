@@ -9,7 +9,7 @@ import { useUserCertifications, type TripleDetail } from './useUserCertification
 import { useWalletFromStorage } from './useWalletFromStorage'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
-import { normalizeUrl } from '../lib/utils/normalizeUrl'
+import { normalizeUrl } from '../lib/utils'
 
 const logger = createHookLogger('useGroupOnChainCertifications')
 

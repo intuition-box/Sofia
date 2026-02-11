@@ -1,4 +1,7 @@
 import { API_CONFIG } from '../config/chainConfig'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('GraphQLClient')
 
 // GraphQL endpoint is now dynamically configured based on environment
 // - pnpm dev → testnet
@@ -59,7 +62,7 @@ export const intuitionGraphqlClient = {
         } else {
           // Exponential backoff: 1s, 2s, 4s
           const backoffDelay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt - 1)
-          console.warn(`⏳ [GraphQL] Retry ${attempt}/${MAX_RETRIES} after ${backoffDelay}ms...`)
+          logger.warn(`Retry ${attempt}/${MAX_RETRIES} after ${backoffDelay}ms...`)
           await new Promise(resolve => setTimeout(resolve, backoffDelay))
         }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { BlockchainService } from '../lib/services/blockchainService'
+import { BlockchainService } from '../lib/services'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { createHookLogger } from '../lib/utils/logger'
 

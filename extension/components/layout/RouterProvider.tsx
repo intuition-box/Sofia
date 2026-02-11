@@ -1,4 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import type { BookmarkData } from '~types/bookmarks'
+import { createHookLogger } from '../../lib/utils/logger'
+
+const logger = createHookLogger('RouterProvider')
 
 type Page = 'home' | 'settings' | 'profile' | 'home-connected' | 'Sofia' | 'recommendations' | 'resonance' | 'chat' | 'user-profile' | 'discovery-profile' | 'onboarding-import' | 'onboarding-select' | 'onboarding-tutorial'
 
@@ -14,11 +18,6 @@ export interface UserProfileData {
 interface SearchContext {
   query: string
   showResults: boolean
-}
-
-export interface BookmarkData {
-  url: string
-  title: string
 }
 
 interface RouterContextType {
@@ -96,7 +95,7 @@ export const RouterProvider = ({
         })
       }
     } catch (err) {
-      console.error('Failed to check pending profile:', err)
+      logger.error('Failed to check pending profile', err)
     }
   }, [])
 

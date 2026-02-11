@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
-import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils/avatar'
+import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Avatar.css'
+
+const logger = createHookLogger('Avatar')
 
 interface AvatarProps {
   imgSrc?: string          // URL de l'image (depuis ENS ou autre)
@@ -25,7 +28,7 @@ const Avatar = ({
   }, [imgSrc])
 
   const handleImageError = () => {
-    console.warn('Avatar image failed to load:', imgSrc)
+    logger.warn('Avatar image failed to load', imgSrc)
     setImageError(true)
   }
 

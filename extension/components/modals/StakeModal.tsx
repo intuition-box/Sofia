@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
-import { useDepositPreview } from '../../hooks/useDepositPreview'
-import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { useDepositPreview, useWalletFromStorage } from '../../hooks'
 import type { CurveType } from '../../types/bonding-curve'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Modal.css'
+
+const logger = createHookLogger('StakeModal')
 
 interface StakeModalProps {
   isOpen: boolean
@@ -54,7 +56,7 @@ const StakeModal = ({
     ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
     : 0
 
-  console.log('🟡 [StakeModal] Wallet info:', {
+  logger.debug('Wallet info', {
     walletAddress,
     checksumAddress,
     authenticated,
@@ -117,20 +119,20 @@ const StakeModal = ({
       try {
         // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
         const weiAmount = BigInt(Math.floor(numAmount * 1e18))
-        console.log('📊 StakeModal - Starting transaction:', { amount: numAmount, weiAmount: weiAmount.toString() })
+        logger.info('Starting transaction', { amount: numAmount, weiAmount: weiAmount.toString() })
         const result = await onSubmit(weiAmount, selectedCurve)
-        console.log('📊 StakeModal - Transaction result:', result)
+        logger.info('Transaction result', result)
 
         if (result.success && result.txHash) {
-          console.log('✅ StakeModal - Success! Setting txHash:', result.txHash)
+          logger.info('Transaction successful, setting txHash', { txHash: result.txHash })
           setTransactionHash(result.txHash)
           setIsSuccess(true)
         } else if (result.error) {
-          console.error('❌ StakeModal - Error:', result.error)
+          logger.error('Transaction error', result.error)
           setTransactionError(result.error)
         }
       } catch (error) {
-        console.error('❌ StakeModal - Transaction failed', error)
+        logger.error('Transaction failed', error)
         setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
       }
     }

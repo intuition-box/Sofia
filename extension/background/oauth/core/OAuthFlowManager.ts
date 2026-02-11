@@ -3,6 +3,9 @@ import { OAuthFlow, UserToken } from '../types/interfaces'
 import { PlatformRegistry } from '../platforms/PlatformRegistry'
 import { TokenManager } from './TokenManager'
 import { REDIRECT_URI } from '../config/oauth-config'
+import { createServiceLogger } from '../../../lib/utils/logger'
+
+const logger = createServiceLogger('OAuthFlowManager')
 
 export class OAuthFlowManager {
   private onAuthSuccess?: (platform: string) => Promise<void>
@@ -27,7 +30,7 @@ export class OAuthFlowManager {
       return this.initiateExternalOAuth(platform)
     }
 
-    console.log(`🔍 [OAuth] Initiating ${platform} OAuth using Chrome Identity API`)
+    logger.info(`Initiating ${platform} OAuth using Chrome Identity API`)
 
     const state = this.generateState()
 
@@ -38,7 +41,7 @@ export class OAuthFlowManager {
     if (config.requiresPKCE) {
       codeVerifier = this.generateCodeVerifier()
       codeChallenge = await this.generateCodeChallenge(codeVerifier)
-      console.log(`🔐 [OAuth] Generated PKCE code verifier and challenge for ${platform}`)
+      logger.debug(`Generated PKCE code verifier and challenge for ${platform}`)
     }
 
     await chrome.storage.session.set({
@@ -64,11 +67,11 @@ export class OAuthFlowManager {
     }
 
     const authUrl = `${config.authUrl}?${params.toString()}`
-    console.log(`🔍 [OAuth] Auth URL: ${authUrl}`)
+    logger.debug('Auth URL constructed', { authUrl })
 
     try {
       // Clear cached auth tokens to force fresh authentication
-      console.log(`🔄 [OAuth] Clearing cached tokens for ${platform}`)
+      logger.debug(`Clearing cached tokens for ${platform}`)
       await chrome.identity.clearAllCachedAuthTokens()
       
       // Use Chrome Identity API for professional OAuth handling
@@ -77,7 +80,7 @@ export class OAuthFlowManager {
         interactive: true
       })
 
-      console.log(`✅ [OAuth] Received callback URL: ${responseUrl}`)
+      logger.debug('Received callback URL', { responseUrl })
 
       // Extract parameters based on OAuth flow type
       const urlObj = new URL(responseUrl)
@@ -107,7 +110,7 @@ export class OAuthFlowManager {
       
       return responseUrl
     } catch (error) {
-      console.error(`❌ [OAuth] ${platform} authentication failed:`, error)
+      logger.error(`${platform} authentication failed`, error)
       throw error
     }
   }
@@ -118,7 +121,7 @@ export class OAuthFlowManager {
       throw new Error(`Platform ${platform} not configured for authorization code flow`)
     }
 
-    console.log(`🔍 [OAuth] Handling authorization code for ${platform}`)
+    logger.info(`Handling authorization code for ${platform}`)
 
     // Retrieve PKCE code verifier if this platform requires it
     let codeVerifier: string | undefined
@@ -128,7 +131,7 @@ export class OAuthFlowManager {
       if (!codeVerifier) {
         throw new Error(`PKCE code verifier not found for ${platform}`)
       }
-      console.log(`🔐 [OAuth] Retrieved PKCE code verifier for ${platform}`)
+      logger.debug(`Retrieved PKCE code verifier for ${platform}`)
     }
 
     const tokenData = await this.exchangeCodeForToken(config, code, codeVerifier)
@@ -144,7 +147,7 @@ export class OAuthFlowManager {
     await this.tokenManager.storeToken(platform, userToken)
     await chrome.storage.session.remove(`oauth_state_${state}`)
     
-    console.log(`✅ [OAuth] ${platform} authentication completed`)
+    logger.info(`${platform} authentication completed`)
     
     // Trigger automatic data sync after successful auth
     if (this.onAuthSuccess) {
@@ -155,7 +158,7 @@ export class OAuthFlowManager {
   }
 
   async handleImplicitCallback(platform: string, accessToken: string, state: string): Promise<any> {
-    console.log(`🔍 [OAuth] Handling implicit token for ${platform}`)
+    logger.info(`Handling implicit token for ${platform}`)
 
     const userToken: UserToken = {
       accessToken: accessToken,
@@ -166,7 +169,7 @@ export class OAuthFlowManager {
     await this.tokenManager.storeToken(platform, userToken)
     await chrome.storage.session.remove(`oauth_state_${state}`)
     
-    console.log(`✅ [OAuth] ${platform} implicit authentication completed`)
+    logger.info(`${platform} implicit authentication completed`)
     
     // Trigger automatic data sync after successful auth
     if (this.onAuthSuccess) {
@@ -213,12 +216,12 @@ export class OAuthFlowManager {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`❌ [OAuth] Token exchange failed:`, response.status, errorText)
+      logger.error('Token exchange failed', { status: response.status, errorText })
       throw new Error(`Token exchange failed: ${response.status}`)
     }
 
     const tokenData = await response.json()
-    console.log(`✅ [OAuth] Token exchange successful`)
+    logger.info('Token exchange successful')
     return tokenData
   }
 
@@ -230,7 +233,7 @@ export class OAuthFlowManager {
 
   // External OAuth for platforms that require landing page (YouTube, Spotify, Discord, Twitter)
   private async initiateExternalOAuth(platform: string): Promise<string> {
-    console.log(`🔍 [OAuth] Initiating ${platform} OAuth via external landing page`)
+    logger.info(`Initiating ${platform} OAuth via external landing page`)
 
     // Get extension ID
     const extensionId = chrome.runtime.id
@@ -251,7 +254,7 @@ export class OAuthFlowManager {
 
     const authUrl = `${baseUrl}?extensionId=${extensionId}`
 
-    console.log(`🔍 [OAuth] Opening external auth URL: ${authUrl}`)
+    logger.debug('Opening external auth URL', { authUrl })
 
     // Open landing page in new tab
     await chrome.tabs.create({ url: authUrl })
@@ -267,7 +270,7 @@ export class OAuthFlowManager {
     refreshToken?: string,
     expiresIn?: number
   ): Promise<void> {
-    console.log(`🔍 [OAuth] Received external OAuth token for ${platform}`)
+    logger.info(`Received external OAuth token for ${platform}`)
 
     const userToken: UserToken = {
       accessToken: accessToken,
@@ -279,7 +282,7 @@ export class OAuthFlowManager {
 
     await this.tokenManager.storeToken(platform, userToken)
 
-    console.log(`✅ [OAuth] ${platform} external authentication completed`)
+    logger.info(`${platform} external authentication completed`)
 
     // Trigger automatic data sync after successful auth
     if (this.onAuthSuccess) {

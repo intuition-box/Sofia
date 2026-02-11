@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { useTracking } from '../../hooks/useTracking'
-import { useWalletFromStorage, disconnectWallet } from '../../hooks/useWalletFromStorage'
+import { useTracking } from '../../hooks'
+import { useWalletFromStorage, disconnectWallet } from '../../hooks'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
 import { cleanupProvider } from '../../lib/services/walletProvider'
-import { tripletsDataService } from '../../lib/database/indexedDB-methods'
+import { tripletsDataService } from '../../lib/database'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
-import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Modal.css'
+
+const logger = createHookLogger('SettingsPage')
 
 const SettingsPage = () => {
   const { navigateTo } = useRouter()
@@ -70,15 +72,10 @@ const SettingsPage = () => {
       // Clear recommendations cache (if user has account)
       if (account) {
         await RecommendationService.clearCache(account)
-        console.log('✅ Recommendations cache cleared for account:', account)
+        logger.info('Recommendations cache cleared for account', account)
       }
 
-      // Clear global resonance service state
-      const globalService = GlobalResonanceService.getInstance()
-      globalService.clearCache()
-      console.log('✅ Global resonance service cache cleared')
-
-      // Clear IndexedDB completely (recommendations + og:images)
+      // Clear IndexedDB completely
       const databases = await indexedDB.databases()
       for (const db of databases) {
         if (db.name) {
@@ -87,13 +84,13 @@ const SettingsPage = () => {
             deleteReq.onsuccess = () => resolve(true)
             deleteReq.onerror = () => reject(deleteReq.error)
           })
-          console.log('✅ Deleted IndexedDB database:', db.name)
+          logger.info('Deleted IndexedDB database', db.name)
         }
       }
 
       alert('All storage cleared: Plasmo, IndexedDB, OAuth, Wallet, Recommendations, and Images!')
     } catch (error) {
-      console.error('❌ Failed to clear storage:', error)
+      logger.error('Failed to clear storage', error)
       alert('Failed to clear storage. Please try again.')
     } finally {
       setIsClearing(false)

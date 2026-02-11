@@ -27,7 +27,7 @@ const CorePage = () => {
         {['Echoes', 'Pulse', 'History', 'Bookmarks'].map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveGraphTab(tab as any)}
+            onClick={() => setActiveGraphTab(tab as typeof activeGraphTab)}
             className={`tab ${activeGraphTab === tab ? 'active' : ''}`}
           >
             {tab}

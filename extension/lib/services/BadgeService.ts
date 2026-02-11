@@ -56,17 +56,17 @@ export class BadgeService {
         if (record.type === 'parsed_message' && record.content) {
           try {
             // Parse the content if it's a string
-            let parsed: any
+            let parsed: { triplets?: unknown[] }
             if (typeof record.content === 'string') {
               parsed = JSON.parse(record.content)
             } else if (record.content && typeof record.content === 'object') {
-              parsed = record.content as any
+              parsed = record.content as { triplets?: unknown[] }
             } else {
               continue
             }
-            
-            if (parsed && parsed.triplets && Array.isArray(parsed.triplets) && parsed.triplets.length > 0) {
-              parsed.triplets.forEach((triplet: any, index: number) => {
+
+            if (parsed && Array.isArray(parsed.triplets) && parsed.triplets.length > 0) {
+              parsed.triplets.forEach((_triplet: unknown, index: number) => {
                 const tripletId = `${record.messageId}_${index}`
                 
                 // Only count if not already published
