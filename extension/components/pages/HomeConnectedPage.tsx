@@ -6,7 +6,7 @@ import PageBlockchainCard from '../ui/PageBlockchainCard'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
-import { createHookLogger } from '../../lib/utils/logger'
+import { createHookLogger } from '../../lib/utils'
 
 const logger = createHookLogger('HomeConnectedPage')
 

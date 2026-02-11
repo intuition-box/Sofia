@@ -8,8 +8,7 @@ import { getAddress } from 'viem'
 import { intuitionGraphqlClient } from '../clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../config/constants'
 import { questTrackingService } from './QuestTrackingService'
-import { createServiceLogger } from '../utils/logger'
-import { getWalletKey } from '../utils/storageKeyUtils'
+import { createServiceLogger, getWalletKey } from '../utils'
 import type { UserProgress } from '../../types/questTypes'
 import {
   GetUserSignalsDocument,
