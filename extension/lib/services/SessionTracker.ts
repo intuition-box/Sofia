@@ -24,7 +24,7 @@ export interface DomainCluster {
 }
 
 // Configuration
-const BUFFER_SIZE_THRESHOLD = 5  // Flush after 5 URLs (for testing)
+const BUFFER_SIZE_THRESHOLD = 1  // Flush immediately (MV3 worker can die anytime)
 const BUFFER_TIME_THRESHOLD = 30 * 60 * 1000  // Or after 30 minutes
 
 /**
