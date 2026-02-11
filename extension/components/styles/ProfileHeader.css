@@ -143,3 +143,36 @@
   border-color: rgba(160, 160, 160, 0.4);
   color: #a0a0a0;
 }
+
+/* Share button in profile header */
+.profile-actions .interest-share-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #1a1a1a;
+  color: #e5e7eb;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  font-family: Gotu, cursive;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-actions .interest-share-btn:hover {
+  background: #252525;
+  border-color: #3a3a3a;
+}
+
+.profile-actions .interest-share-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-actions .interest-share-icon {
+  width: 14px;
+  height: 14px;
+  filter: invert(1);
+}

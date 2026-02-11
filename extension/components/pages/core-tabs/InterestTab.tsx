@@ -4,29 +4,17 @@
  * XP and levels are calculated locally from verifiable on-chain data
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useWalletFromStorage, useInterestAnalysis } from '../../../hooks';
 import InterestCard from '../../ui/InterestCard';
 import SofiaLoader from '../../ui/SofiaLoader';
-import xIcon from '../../ui/social/x.svg';
 import { createHookLogger } from '../../../lib/utils/logger';
 import '../../styles/InterestTab.css';
 
 const logger = createHookLogger('InterestTab');
 
-const OG_BASE_URL = 'https://sofia-og.vercel.app';
-
-interface InterestTabProps {
-  level?: number;
-  trustCircleCount?: number;
-  pioneerCount?: number;
-  explorerCount?: number;
-  signalsCreated?: number;
-}
-
-const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explorerCount, signalsCreated }: InterestTabProps) => {
+const InterestTab = () => {
   const { walletAddress } = useWalletFromStorage();
-  const [isSharing, setIsSharing] = useState(false);
   const {
     interests,
     summary,
@@ -65,50 +53,6 @@ const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explore
   const handleAnalyze = () => {
     if (walletAddress) {
       analyzeInterests(walletAddress);
-    }
-  };
-
-  const handleShareOnX = async () => {
-    if (!walletAddress || interests.length === 0 || isSharing) return;
-
-    // Open window immediately to avoid popup blocker (must be in user gesture)
-    const win = window.open('about:blank', '_blank');
-
-    setIsSharing(true);
-    try {
-      const interestsParam = interests
-        .slice(0, 8)
-        .map((i) => `${i.name}:${i.level}`)
-        .join(',');
-
-      const res = await fetch(`${OG_BASE_URL}/api/share`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          wallet: walletAddress,
-          level: String(userLevel || 1),
-          trustCircle: String(trustCircleCount || 0),
-          pioneer: String(pioneerCount || 0),
-          explorer: String(explorerCount || 0),
-          signals: String(signalsCreated || 0),
-          interests: interestsParam,
-        }),
-      });
-
-      const { url: shareUrl } = await res.json();
-      const tweetText = `Check out my Sofia profile!`;
-      const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
-
-      if (win) {
-        win.location.href = intentUrl;
-      } else {
-        window.open(intentUrl, '_blank');
-      }
-    } catch (err) {
-      logger.error('Failed to create share link', err);
-      if (win) win.close();
-    } finally {
-      setIsSharing(false);
     }
   };
 
@@ -204,14 +148,6 @@ const InterestTab = ({ level: userLevel, trustCircleCount, pioneerCount, explore
   return (
     <div className="interest-tab">
       <div className="interest-header">
-        <button
-          className="interest-share-btn"
-          onClick={handleShareOnX}
-          disabled={isSharing}
-        >
-          <img src={xIcon} alt="X" className="interest-share-icon" />
-          {isSharing ? 'Sharing...' : 'Share on X'}
-        </button>
         <button
           className="interest-analyze-btn"
           onClick={handleAnalyze}

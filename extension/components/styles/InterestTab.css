@@ -21,33 +21,6 @@
   margin: 0;
 }
 
-.interest-share-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: #1a1a1a;
-  color: #e5e7eb;
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  font-family: Gotu, cursive;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.interest-share-btn:hover {
-  background: #252525;
-  border-color: #3a3a3a;
-}
-
-.interest-share-icon {
-  width: 16px;
-  height: 16px;
-  filter: invert(1);
-}
-
 .interest-analyze-btn {
   background: linear-gradient(135deg, #8276ED 0%, #F6427B 50%, #FFBF33 100%);
   color: white;
