@@ -2,7 +2,7 @@
 .profile-header {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   padding: 20px 16px;
   gap: 20px;
 }
@@ -1063,15 +1063,28 @@
   width: 100%;
 }
 
-.xp-level-pill {
-  background: linear-gradient(135deg, #8276ED, #F6427B);
+.xp-level-badge {
+  position: relative;
+  width: 36px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.xp-level-badge svg {
+  width: 100%;
+  height: 100%;
+}
+
+.xp-level-badge-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
   font-family: 'Montserrat', sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 20px;
-  letter-spacing: 0.3px;
 }
 
 .xp-progress-text {
@@ -1091,7 +1104,6 @@
 
 .xp-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8276ED, #F6427B);
   border-radius: 5px;
   transition: width 0.5s ease;
   min-width: 2px;

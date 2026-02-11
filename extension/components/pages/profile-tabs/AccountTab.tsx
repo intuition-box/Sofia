@@ -172,6 +172,8 @@ const AccountTab = () => {
         walletAddress={walletAddress}
         verified={isSocialVerified}
         verifiedLabel="Social Linked"
+        totalGold={totalGold}
+        signalsCreated={userStats.signalsCreated}
       />
 
 
