@@ -66,9 +66,5 @@ export interface UserData {
   triplets: any[]
 }
 
-export interface Triplet {
-  subject: string
-  predicate: string
-  object: string
-  objectUrl?: string // URL spécifique de l'objet (artiste, chaîne, etc.)
-}
+// Triplet type is centralized in types/messages.ts
+export type { Triplet } from '~types/messages'

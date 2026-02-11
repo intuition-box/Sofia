@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import type { BookmarkData } from '~types/bookmarks'
 import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('RouterProvider')
@@ -17,11 +18,6 @@ export interface UserProfileData {
 interface SearchContext {
   query: string
   showResults: boolean
-}
-
-export interface BookmarkData {
-  url: string
-  title: string
 }
 
 interface RouterContextType {

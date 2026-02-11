@@ -5,7 +5,7 @@
 import { useState, useCallback } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
-import type { FollowAccountVM, FollowQueryResult } from '../types/follows'
+import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
 import { batchFetchIPFS } from '../lib/utils/ipfsCache'
 import { batchGetEnsAvatars } from '../lib/utils/ensUtils'
 import { useGetMyTrustCircleQuery, useGetAtomDataByLabelsQuery } from '@0xsofia/graphql'
@@ -33,13 +33,6 @@ interface GraphQLTrustCircleResponse {
   }>
 }
 
-interface AtomDataResponse {
-  atoms: Array<{
-    label: string
-    data?: string
-    image?: string
-  }>
-}
 
 /**
  * Hook to fetch trust circle (accounts I trust with positions on ANY curve)

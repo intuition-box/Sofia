@@ -11,15 +11,11 @@
 import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { isSensitiveUrl } from "./utils/url"
 import { createServiceLogger } from "../lib/utils/logger"
+import type { BookmarkData } from "~types/bookmarks"
 
 const logger = createServiceLogger('MessageSenders')
 
 // === Chrome API Utilities ===
-
-export interface BookmarkData {
-  url: string
-  title: string
-}
 
 function extractBookmarkData(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): BookmarkData[] {
   const bookmarks: BookmarkData[] = []

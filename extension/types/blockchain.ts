@@ -3,6 +3,8 @@
  * Eliminates type duplication across hooks
  */
 
+import type { Triplet } from './messages'
+
 // Base blockchain result
 export interface BlockchainResult {
   success: boolean
@@ -91,11 +93,7 @@ export interface TransactionResult {
 // Echo Triplet types
 export interface EchoTriplet {
   id: string
-  triplet: {
-    subject: string
-    predicate: string
-    object: string
-  }
+  triplet: Triplet
   url: string
   description: string
   timestamp: number

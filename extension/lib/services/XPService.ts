@@ -19,13 +19,11 @@
 import { QUEST_XP_REWARDS } from '../../types/questTypes'
 import { getAddress } from 'viem'
 import { createServiceLogger } from '../utils/logger'
+import type { XPState } from '~types/currencyTypes'
+
+export type { XPState }
 
 const logger = createServiceLogger('XPService')
-
-export interface XPState {
-  questXP: number   // XP from claimed quest badges (on-chain)
-  totalXP: number   // Same as questXP (no deductions)
-}
 
 /**
  * XPService — Singleton service for managing quest XP.

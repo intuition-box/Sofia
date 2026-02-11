@@ -10,30 +10,12 @@
  */
 
 import { useState, useCallback } from 'react'
+import type { LevelUpPreview, LevelUpResult } from '~types/levelUp'
 import { createHookLogger } from '../lib/utils/logger'
 
 const logger = createHookLogger('useLevelUp')
 
-export interface LevelUpPreview {
-  canLevelUp: boolean
-  cost: number
-  availableGold: number
-  currentLevel: number
-  nextLevel: number
-}
-
-export interface LevelUpResult {
-  success: boolean
-  error?: string
-  required?: number
-  available?: number
-  previousLevel?: number
-  newLevel?: number
-  previousPredicate?: string | null
-  newPredicate?: string
-  predicateReason?: string
-  goldSpent?: number
-}
+export type { LevelUpPreview, LevelUpResult }
 
 export interface UseLevelUpResult {
   levelUp: (groupId: string, certificationBreakdown?: Record<string, number>) => Promise<LevelUpResult>

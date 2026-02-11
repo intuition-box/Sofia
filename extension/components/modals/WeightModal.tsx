@@ -6,22 +6,10 @@ import SofiaLoader from '../ui/SofiaLoader'
 import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { createHookLogger } from '../../lib/utils/logger'
+import type { EchoTriplet } from '../../types/blockchain'
 import '../styles/Modal.css'
 
 const logger = createHookLogger('WeightModal')
-
-interface Triplet {
-  subject: string
-  predicate: string
-  object: string
-}
-
-interface EchoTriplet {
-  id: string
-  triplet: Triplet
-  description: string
-  url: string
-}
 
 interface DiscoveryReward {
   status: 'Pioneer' | 'Explorer' | 'Contributor'

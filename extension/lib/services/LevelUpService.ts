@@ -16,27 +16,9 @@ import { goldService, getLevelUpCost } from './GoldService'
 import { generatePredicate, type PredicateInput } from '../../background/mastraClient'
 import { IntentionGroupsService } from '../database/indexedDB-methods'
 import type { IntentionGroupRecord } from '../database/indexedDB'
+import type { LevelUpResult, LevelUpPreview } from '~types/levelUp'
 
-export interface LevelUpResult {
-  success: boolean
-  error?: string
-  required?: number
-  available?: number
-  previousLevel?: number
-  newLevel?: number
-  previousPredicate?: string | null
-  newPredicate?: string
-  predicateReason?: string
-  goldSpent?: number
-}
-
-export interface LevelUpPreview {
-  canLevelUp: boolean
-  cost: number
-  availableGold: number
-  currentLevel: number
-  nextLevel: number
-}
+export type { LevelUpResult, LevelUpPreview }
 
 /**
  * LevelUpService — Singleton service for managing group level-ups.
