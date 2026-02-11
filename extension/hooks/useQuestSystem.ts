@@ -20,6 +20,7 @@ import { useCreateAtom } from './useCreateAtom'
 import { QuestBadgeService } from '../lib/services/QuestBadgeService'
 import { QuestProgressService } from '../lib/services/QuestProgressService'
 import { computeQuestStatuses, calculateLevelFromXP, calculateXPForNextLevel, getClaimId } from '../lib/utils/questStatusHelpers'
+import { getWalletKey } from '../lib/utils/storageKeyUtils'
 import { createHookLogger } from '../lib/utils/logger'
 import { QUEST_DEFINITIONS } from '../types/questTypes'
 import type { Quest, UserProgress, QuestSystemResult } from '../types/questTypes'
@@ -28,9 +29,6 @@ const logger = createHookLogger('useQuestSystem')
 
 // Re-export types for backward compatibility
 export type { Quest, UserProgress, QuestSystemResult }
-
-// Helper to generate wallet-scoped storage keys
-const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet}`
 
 /**
  * useQuestSystem Hook

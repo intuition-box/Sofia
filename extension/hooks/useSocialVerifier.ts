@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createHookLogger } from '../lib/utils/logger'
+import { getWalletKey } from '../lib/utils/storageKeyUtils'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { MASTRA_API_URL } from '../config'
 import { getPublicClient } from '../lib/clients/viemClients'
@@ -21,11 +22,6 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { CheckSocialLinksDocument } from '@0xsofia/graphql'
 import { stringToHex, getAddress } from 'viem'
 import type { Address } from '../types/viem'
-
-// Helper to generate per-wallet storage keys
-const getWalletKey = (baseKey: string, walletAddress: string): string => {
-  return `${baseKey}_${walletAddress}`
-}
 
 const logger = createHookLogger('useSocialVerifier')
 

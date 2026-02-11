@@ -20,8 +20,9 @@ export { isValidImageUrl, isEthereumAddress, shouldShowDiceBearAvatar, generateD
 // IPFS
 export { batchFetchIPFS, fetchIPFSMetadata, clearIPFSCache, getIPFSCacheSize } from './ipfsCache'
 
-// Quest Helpers
+// Quest & Storage Helpers
 export { calculateLevelFromXP, calculateXPForNextLevel, getClaimId, computeQuestStatuses } from './questStatusHelpers'
+export { getWalletKey } from './storageKeyUtils'
 
 // Cache & Async
 export { refetchWithBackoff, debounce } from './refetchUtils'

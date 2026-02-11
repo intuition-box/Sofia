@@ -9,6 +9,7 @@ import { intuitionGraphqlClient } from '../clients/graphql-client'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../config/constants'
 import { questTrackingService } from './QuestTrackingService'
 import { createServiceLogger } from '../utils/logger'
+import { getWalletKey } from '../utils/storageKeyUtils'
 import type { UserProgress } from '../../types/questTypes'
 import {
   GetUserSignalsDocument,
@@ -20,8 +21,6 @@ const logger = createServiceLogger('QuestProgressService')
 // Cache duration in milliseconds (2 minutes)
 const QUEST_CACHE_DURATION = 120000
 
-// Helper to generate wallet-scoped storage keys
-const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet}`
 
 // Data from React hooks that can't be fetched in the service
 export interface LocalProgressData {

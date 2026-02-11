@@ -15,9 +15,7 @@
 
 import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
-
-// Helper to generate wallet-scoped storage keys
-const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet}`
+import { getWalletKey } from '../lib/utils/storageKeyUtils'
 
 export interface GoldSystemResult {
   discoveryGold: number

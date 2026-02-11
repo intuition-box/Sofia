@@ -5,6 +5,7 @@
  */
 
 import { createServiceLogger } from '../utils/logger'
+import { getWalletKey } from '../utils/storageKeyUtils'
 import { stringToHex, getAddress } from 'viem'
 import { getClients, getPublicClient } from '../clients/viemClients'
 import { intuitionGraphqlClient } from '../clients/graphql-client'
@@ -33,9 +34,6 @@ const PREDICATE_TO_QUEST_ID: Record<string, string> = {
   'has verified twitch id': 'link-twitch',
   'has verified twitter id': 'link-twitter',
 }
-
-// Helper to generate wallet-scoped storage keys
-const getWalletKey = (baseKey: string, wallet: string) => `${baseKey}_${wallet.toLowerCase()}`
 
 export class QuestBadgeService {
   /**
@@ -145,8 +143,8 @@ export class QuestBadgeService {
     // Persist if on-chain has badges not in local
     if (mergedClaimed.size > localClaimed.size) {
       logger.info('Syncing on-chain badges to local storage')
-      const claimedKey = getWalletKey('claimed_quests', walletAddress)
-      const completedKey = getWalletKey('completed_quests', walletAddress)
+      const claimedKey = getWalletKey('claimed_quests', walletAddress.toLowerCase())
+      const completedKey = getWalletKey('completed_quests', walletAddress.toLowerCase())
       await chrome.storage.local.set({
         [claimedKey]: Array.from(mergedClaimed),
         [completedKey]: Array.from(mergedCompleted)
@@ -449,7 +447,7 @@ export class QuestBadgeService {
    * Save claimed quest IDs to chrome.storage
    */
   static async saveClaimedQuestIds(walletAddress: string, claimedIds: Set<string>): Promise<void> {
-    const claimedKey = getWalletKey('claimed_quests', walletAddress)
+    const claimedKey = getWalletKey('claimed_quests', walletAddress.toLowerCase())
     await chrome.storage.local.set({
       [claimedKey]: Array.from(claimedIds)
     })
@@ -460,8 +458,8 @@ export class QuestBadgeService {
    * Includes migration from checksum-keyed data to lowercase keys
    */
   static async loadQuestStates(walletAddress: string): Promise<{ completedIds: Set<string>; claimedIds: Set<string> }> {
-    const completedKey = getWalletKey('completed_quests', walletAddress)
-    const claimedKey = getWalletKey('claimed_quests', walletAddress)
+    const completedKey = getWalletKey('completed_quests', walletAddress.toLowerCase())
+    const claimedKey = getWalletKey('claimed_quests', walletAddress.toLowerCase())
 
     // Also check checksum-format keys for migration
     const checksumAddr = getAddress(walletAddress)
