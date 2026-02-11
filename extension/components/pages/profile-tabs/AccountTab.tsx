@@ -6,6 +6,7 @@ import { SUBJECT_IDS } from '../../../lib/config/constants'
 import { useQuestSystem } from '../../../hooks/useQuestSystem'
 import { useTrustCircle } from '../../../hooks/useTrustCircle'
 import { useDiscoveryScore } from '../../../hooks/useDiscoveryScore'
+import { useGoldSystem } from '../../../hooks/useGoldSystem'
 import { useSocialVerifier } from '../../../hooks/useSocialVerifier'
 import { useTrustedByCount } from '../../../hooks/useTrustedByCount'
 import StatsTab from './StatsTab'
@@ -49,6 +50,9 @@ const AccountTab = () => {
 
   // Discovery stats hook (pioneer, explorer, certified counts)
   const { stats: discoveryStats } = useDiscoveryScore()
+
+  // Gold system hook (private currency for level-ups)
+  const { totalGold, loading: goldLoading } = useGoldSystem()
 
   // Social Verifier hook - handles Social Linked attestation
   const { isSocialVerified } = useSocialVerifier()

@@ -15,6 +15,7 @@ import { useIntentionCertify } from '../../hooks/useIntentionCertify'
 import { useRedeemTriple } from '../../hooks/useRedeemTriple'
 import { useGroupOnChainCertifications, type UrlCertificationStatus } from '../../hooks/useGroupOnChainCertifications'
 import { useLevelUp, type LevelUpPreview } from '../../hooks/useLevelUp'
+import { useGoldSystem } from '../../hooks/useGoldSystem'
 import { useGroupAmplify } from '../../hooks/useGroupAmplify'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
@@ -258,6 +259,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     refetch: refetchOnChain
   } = useGroupOnChainCertifications(group.domain, activeUrls)
 
+  // Gold system hook (for displaying available Gold)
+  const { totalGold } = useGoldSystem()
+
   // Level up hook
   const {
     levelUp,
@@ -490,17 +494,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     setIntentionRewardClaimed(false)
   }
 
-  // Handle claiming XP reward for URL certification
+  // Handle claiming Gold reward for URL certification
+  // Gold is already awarded during certification via GoldService, this just updates the UI state
   const handleClaimIntentionReward = async () => {
-    try {
-      await chrome.runtime.sendMessage({
-        type: 'AWARD_XP',
-        data: { amount: 10, source: 'intention_certification' }
-      })
-      setIntentionRewardClaimed(true)
-    } catch (error) {
-      console.error('Failed to claim XP reward:', error)
-    }
+    setIntentionRewardClaimed(true)
   }
 
   const handleRemove = async (url: string) => {
@@ -642,7 +639,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             ) : (
               <>
                 <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
-                <span className="level-up-cost">{levelUpPreview.cost} XP</span>
+                <span className="level-up-cost">{levelUpPreview.cost} Gold</span>
               </>
             )}
           </button>
@@ -734,7 +731,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       {/* XP Hint */}
       {uncertifiedCount > 0 && (
         <div className="xp-hint">
-          Certify URLs to earn +10 XP each!
+          Certify URLs to earn +10 Gold each!
         </div>
       )}
 
@@ -760,7 +757,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             <span className="error-text">{levelUpResult.error}</span>
             {levelUpResult.required && levelUpResult.available !== undefined && (
               <span className="error-detail">
-                Need {levelUpResult.required} XP, have {levelUpResult.available} XP
+                Need {levelUpResult.required} Gold, have {levelUpResult.available} Gold
               </span>
             )}
             <button className="dismiss-btn" onClick={resetLevelUp}>×</button>
@@ -782,7 +779,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               Level Up to {levelUpPreview.nextLevel}
             </span>
             <span className="btn-cost">
-              {levelUpPreview.cost} XP
+              {levelUpPreview.cost} Gold
             </span>
           </button>
         )}
@@ -792,6 +789,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
             Need {xpToNextLevel} more certification{xpToNextLevel > 1 ? 's' : ''} to unlock
           </div>
         )}
+
+        <div className="group-gold-balance">{totalGold} Gold available</div>
       </div>
 
       {/* Weight Modal for on-chain certification */}
@@ -806,7 +805,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           createdCount={intentionOperationType === 'created' ? 1 : 0}
           depositCount={intentionOperationType === 'deposit' ? 1 : 0}
           isIntentionCertification={true}
-          discoveryReward={intentionSuccess ? { status: 'Contributor' as const, xp: 10 } : null}
+          discoveryReward={intentionSuccess ? { status: 'Contributor' as const, gold: 10 } : null}
           onClaimReward={handleClaimIntentionReward}
           rewardClaimed={intentionRewardClaimed}
           onClose={handleModalClose}

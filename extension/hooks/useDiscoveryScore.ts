@@ -1,20 +1,21 @@
 /**
  * useDiscoveryScore Hook
- * Calculates user's discovery XP based on their Pioneer/Explorer/Contributor certifications
+ * Calculates user's discovery Gold based on their Pioneer/Explorer/Contributor certifications
  *
  * Uses a singleton store — all consumers share one GraphQL fetch
  * instead of duplicating per-instance (was 4x before)
  *
- * XP Rewards:
- * - Pioneer (1st): +50 XP
- * - Explorer (2-10th): +20 XP
- * - Contributor (11+): +5 XP
+ * Gold Rewards:
+ * - Pioneer (1st): +50 Gold
+ * - Explorer (2-10th): +20 Gold
+ * - Contributor (11+): +5 Gold
  */
 
 import { useSyncExternalStore } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import type { IntentionPurpose, UserDiscoveryStats } from '../types/discovery'
-import { DISCOVERY_XP_REWARDS } from '../types/discovery'
+import { DISCOVERY_GOLD_REWARDS } from '../types/discovery'
+import { goldService } from '../lib/services/GoldService'
 import { createHookLogger } from '../lib/utils/logger'
 import {
   UserIntentionTriplesDocument,
@@ -64,8 +65,8 @@ export interface DiscoveryScoreResult {
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
-  claimedDiscoveryXP: number
-  claimDiscoveryXP: (xpAmount: number) => Promise<number>
+  claimedDiscoveryGold: number
+  claimDiscoveryGold: (goldAmount: number) => Promise<number>
 }
 
 // ─── Singleton external store ───
@@ -74,14 +75,14 @@ interface DiscoveryState {
   stats: UserDiscoveryStats | null
   loading: boolean
   error: string | null
-  claimedDiscoveryXP: number
+  claimedDiscoveryGold: number
 }
 
 let sharedState: DiscoveryState = {
   stats: null,
   loading: false,
   error: null,
-  claimedDiscoveryXP: 0,
+  claimedDiscoveryGold: 0,
 }
 
 let initialized = false
@@ -243,9 +244,9 @@ async function fetchDiscoveryScore(walletAddress: string) {
       }
     }
 
-    const xpFromPioneer = pioneerCount * DISCOVERY_XP_REWARDS.PIONEER
-    const xpFromExplorer = explorerCount * DISCOVERY_XP_REWARDS.EXPLORER
-    const xpFromContributor = contributorCount * DISCOVERY_XP_REWARDS.CONTRIBUTOR
+    const goldFromPioneer = pioneerCount * DISCOVERY_GOLD_REWARDS.PIONEER
+    const goldFromExplorer = explorerCount * DISCOVERY_GOLD_REWARDS.EXPLORER
+    const goldFromContributor = contributorCount * DISCOVERY_GOLD_REWARDS.CONTRIBUTOR
 
     const discoveryStats: UserDiscoveryStats = {
       pioneerCount,
@@ -253,21 +254,31 @@ async function fetchDiscoveryScore(walletAddress: string) {
       contributorCount,
       totalCertifications: processedPages.size,
       intentionBreakdown,
-      discoveryXP: {
-        fromPioneer: xpFromPioneer,
-        fromExplorer: xpFromExplorer,
-        fromContributor: xpFromContributor,
-        total: xpFromPioneer + xpFromExplorer + xpFromContributor
+      discoveryGold: {
+        fromPioneer: goldFromPioneer,
+        fromExplorer: goldFromExplorer,
+        fromContributor: goldFromContributor,
+        total: goldFromPioneer + goldFromExplorer + goldFromContributor
       }
     }
 
-    updateState({ stats: discoveryStats, loading: false })
+    // Sync computed discovery Gold total to storage so useGoldSystem reflects reality.
+    // Only update if on-chain total >= stored value to preserve optimistic claims
+    // (the indexer may not have processed the latest certification yet).
+    const computedTotal = discoveryStats.discoveryGold.total
+    const storedGold = sharedState.claimedDiscoveryGold
+    if (computedTotal >= storedGold) {
+      await goldService.setDiscoveryGold(walletAddress, computedTotal)
+      updateState({ stats: discoveryStats, loading: false, claimedDiscoveryGold: computedTotal })
+    } else {
+      updateState({ stats: discoveryStats, loading: false })
+    }
 
     logger.info('Discovery score calculated', {
       pioneerCount,
       explorerCount,
       contributorCount,
-      totalXP: discoveryStats.discoveryXP.total
+      totalGold: discoveryStats.discoveryGold.total
     })
 
   } catch (err) {
@@ -279,27 +290,27 @@ async function fetchDiscoveryScore(walletAddress: string) {
   }
 }
 
-// ─── Claimed XP management ───
+// ─── Claimed Gold management ───
 
-async function loadClaimedXP(walletAddress: string) {
+async function loadClaimedGold(walletAddress: string) {
   try {
-    const key = `claimed_discovery_xp_${walletAddress}`
+    const key = `discovery_gold_${walletAddress}`
     const result = await chrome.storage.local.get([key])
-    const xp = result[key] || 0
-    updateState({ claimedDiscoveryXP: xp })
-    logger.debug('Loaded claimed discovery XP from storage', { xp, walletAddress })
+    const gold = result[key] || 0
+    updateState({ claimedDiscoveryGold: gold })
+    logger.debug('Loaded claimed discovery Gold from storage', { gold, walletAddress })
   } catch (err) {
-    logger.error('Failed to load claimed discovery XP', err)
+    logger.error('Failed to load claimed discovery Gold', err)
   }
 }
 
-async function claimXP(xpAmount: number): Promise<number> {
-  if (!currentWallet) return sharedState.claimedDiscoveryXP
-  const key = `claimed_discovery_xp_${currentWallet}`
-  const newTotal = sharedState.claimedDiscoveryXP + xpAmount
+async function claimGold(goldAmount: number): Promise<number> {
+  if (!currentWallet) return sharedState.claimedDiscoveryGold
+  const key = `discovery_gold_${currentWallet}`
+  const newTotal = sharedState.claimedDiscoveryGold + goldAmount
   await chrome.storage.local.set({ [key]: newTotal })
-  updateState({ claimedDiscoveryXP: newTotal })
-  logger.info('Claimed discovery XP', { xpAmount, newTotal, walletAddress: currentWallet })
+  updateState({ claimedDiscoveryGold: newTotal })
+  logger.info('Claimed discovery Gold', { goldAmount, newTotal, walletAddress: currentWallet })
   return newTotal
 }
 
@@ -332,11 +343,11 @@ function handleWalletChange(wallet: string | null) {
   currentWallet = normalized
 
   if (!wallet) {
-    updateState({ stats: null, loading: false, error: null, claimedDiscoveryXP: 0 })
+    updateState({ stats: null, loading: false, error: null, claimedDiscoveryGold: 0 })
     return
   }
 
-  loadClaimedXP(wallet)
+  loadClaimedGold(wallet)
   fetchDiscoveryScore(wallet)
 }
 
@@ -355,8 +366,8 @@ export const useDiscoveryScore = (): DiscoveryScoreResult => {
     stats: state.stats,
     loading: state.loading,
     error: state.error,
-    claimedDiscoveryXP: state.claimedDiscoveryXP,
+    claimedDiscoveryGold: state.claimedDiscoveryGold,
     refetch,
-    claimDiscoveryXP: claimXP,
+    claimDiscoveryGold: claimGold,
   }
 }

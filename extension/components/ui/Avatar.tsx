@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils/avatar'
 import '../styles/Avatar.css'
 
@@ -18,6 +18,11 @@ const Avatar = ({
   size = 'medium'
 }: AvatarProps) => {
   const [imageError, setImageError] = useState(false)
+
+  // Reset error state when image source changes
+  useEffect(() => {
+    setImageError(false)
+  }, [imgSrc])
 
   const handleImageError = () => {
     console.warn('Avatar image failed to load:', imgSrc)

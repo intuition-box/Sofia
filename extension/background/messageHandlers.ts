@@ -12,7 +12,9 @@ import { initializeOnWalletConnect } from "./index"
 import { oauthService } from "./oauth"
 import { groupManager } from "../lib/services/GroupManager"
 import { IntentionGroupsService } from "../lib/database/indexedDB-methods"
-import { xpService, XPServiceClass, getLevelUpCost } from "../lib/services/XPService"
+import { xpService, XPServiceClass } from "../lib/services/XPService"
+import { goldService, getLevelUpCost } from "../lib/services/GoldService"
+import { currencyMigrationService } from "../lib/services/CurrencyMigrationService"
 import { sessionTracker, type TrackedUrl, type DomainCluster } from "../lib/services/SessionTracker"
 import { levelUpService } from "../lib/services/LevelUpService"
 
@@ -131,6 +133,8 @@ export function setupMessageHandlers(): void {
             await chrome.storage.session.set({ walletAddress, walletType })
             // Migrate XP from non-prefixed keys to wallet-prefixed keys (one-time)
             await XPServiceClass.migrateToWalletKeys(walletAddress)
+            // Migrate unified XP to dual currency (XP + Gold) — one-time, idempotent
+            await currencyMigrationService.migrate(walletAddress)
             console.log('✅ Wallet connected from external page:', walletAddress, 'type:', walletType)
             await initializeOnWalletConnect()
             sendResponse({ success: true })
@@ -438,7 +442,8 @@ export function setupMessageHandlers(): void {
         try {
           const { lastActiveWallet: xpWallet } = await chrome.storage.local.get('lastActiveWallet')
           const xpStats = await xpService.getStats(xpWallet || '')
-          sendResponse({ success: true, ...xpStats })
+          const goldStats = await goldService.getStats(xpWallet || '')
+          sendResponse({ success: true, xp: xpStats, gold: goldStats })
         } catch (error) {
           console.error("❌ GET_USER_XP error:", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
@@ -453,7 +458,7 @@ export function setupMessageHandlers(): void {
             return true
           }
           const certResult = await groupManager.certifyUrl(certGroupId, certUrl, certification)
-          sendResponse({ success: certResult.success, xpGained: certResult.xpGained, error: certResult.error })
+          sendResponse({ success: certResult.success, goldGained: certResult.goldGained, error: certResult.error })
         } catch (error) {
           console.error("❌ CERTIFY_URL error:", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
@@ -534,13 +539,13 @@ export function setupMessageHandlers(): void {
           }
           const cost = getLevelUpCost(lvlGroup.level)
           const { lastActiveWallet: lvlWallet } = await chrome.storage.local.get('lastActiveWallet')
-          const xpStats = await xpService.getStats(lvlWallet || '')
+          const goldStats = await goldService.getStats(lvlWallet || '')
           sendResponse({
             success: true,
             cost,
             currentLevel: lvlGroup.level,
-            availableXP: xpStats.totalXP,
-            canAfford: xpStats.totalXP >= cost
+            availableGold: goldStats.totalGold,
+            canAfford: goldStats.totalGold >= cost
           })
         } catch (error) {
           console.error("❌ GET_LEVEL_UP_COST error:", error)

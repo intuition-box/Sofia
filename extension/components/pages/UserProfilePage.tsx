@@ -123,6 +123,7 @@ const UserProfilePage = () => {
   return (
     <div className="page profile-page">
     <div className="profile-section account-tab">
+      <div className="page-content">
       {/* Back Button */}
       <button className="user-profile-back-button" onClick={goBack}>
         ← Back
@@ -186,7 +187,6 @@ const UserProfilePage = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="page-content">
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
           {activeTab === 'interest' && (
             <UserInterestTab walletAddress={userProfileData.walletAddress} />

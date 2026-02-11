@@ -1,10 +1,17 @@
 /**
  * LevelUpService
- * Handles group level-up with XP cost and AI predicate generation
+ *
+ * Handles group level-up with Gold cost and AI predicate generation.
+ * Level-ups spend Gold (not XP) since they are local operations.
+ *
+ * Related files:
+ * - GoldService.ts: provides Gold balance and spending
+ * - GroupManager.ts: manages group data in IndexedDB
+ * - mastraClient.ts: generates AI predicates
  */
 
 import { groupManager, type CertificationType } from './GroupManager'
-import { xpService, getLevelUpCost } from './XPService'
+import { goldService, getLevelUpCost } from './GoldService'
 import { generatePredicate, type PredicateInput } from '../../background/mastraClient'
 import { IntentionGroupsService } from '../database/indexedDB-methods'
 import type { IntentionGroupRecord } from '../database/indexedDB'
@@ -19,33 +26,31 @@ export interface LevelUpResult {
   previousPredicate?: string | null
   newPredicate?: string
   predicateReason?: string
-  xpSpent?: number
+  goldSpent?: number
 }
 
 export interface LevelUpPreview {
   canLevelUp: boolean
   cost: number
-  availableXP: number
+  availableGold: number
   currentLevel: number
   nextLevel: number
 }
 
 /**
- * LevelUpService - Singleton service for managing group level-ups
+ * LevelUpService — Singleton service for managing group level-ups.
+ * Spends Gold to increase group level and generate AI predicates.
  */
 class LevelUpServiceClass {
-  /**
-   * Get the active wallet address from storage
-   */
+  /** Get the active wallet address from storage. */
   private async getActiveWallet(): Promise<string> {
     const result = await chrome.storage.local.get(['lastActiveWallet'])
     return result.lastActiveWallet || ''
   }
 
   /**
-   * Preview a level up (check if user can afford it)
-   * Uses total XP from ALL sources (quests + discovery + certifications)
-   * Supports both local groups and virtual (on-chain only) groups
+   * Preview a level up (check if user can afford it).
+   * Uses Gold balance for affordability check.
    */
   async previewLevelUp(groupId: string): Promise<LevelUpPreview | null> {
     const wallet = await this.getActiveWallet()
@@ -53,14 +58,13 @@ class LevelUpServiceClass {
 
     // Handle virtual groups (on-chain only)
     if (!group && groupId.startsWith('onchain-')) {
-      // For virtual groups, use default level 1 for preview
       const cost = getLevelUpCost(1)
-      const xpState = await xpService.getXPState(wallet)
+      const goldState = await goldService.getGoldState(wallet)
 
       return {
-        canLevelUp: xpState.totalXP >= cost,
+        canLevelUp: goldState.totalGold >= cost,
         cost,
-        availableXP: xpState.totalXP,
+        availableGold: goldState.totalGold,
         currentLevel: 1,
         nextLevel: 2
       }
@@ -69,26 +73,23 @@ class LevelUpServiceClass {
     if (!group) return null
 
     const cost = getLevelUpCost(group.level)
-    const xpState = await xpService.getXPState(wallet)
+    const goldState = await goldService.getGoldState(wallet)
 
     return {
-      canLevelUp: xpState.totalXP >= cost,
+      canLevelUp: goldState.totalGold >= cost,
       cost,
-      availableXP: xpState.totalXP,
+      availableGold: goldState.totalGold,
       currentLevel: group.level,
       nextLevel: group.level + 1
     }
   }
 
   /**
-   * Level up a group
-   * 1. Check if user has enough XP
+   * Level up a group.
+   * 1. Check if user has enough Gold
    * 2. Generate predicate via AI
-   * 3. Spend XP
+   * 3. Spend Gold
    * 4. Update group
-   * Supports both local groups and virtual (on-chain only) groups
-   * @param groupId - The group ID (can be "onchain-domain" for virtual groups)
-   * @param providedCertifications - Optional certification breakdown for virtual groups
    */
   async levelUp(groupId: string, providedCertifications?: Record<CertificationType, number>): Promise<LevelUpResult> {
     console.log(`🎮 [LevelUpService] Starting level up for ${groupId}`)
@@ -102,14 +103,13 @@ class LevelUpServiceClass {
       const domain = groupId.replace('onchain-', '')
       console.log(`🔄 [LevelUpService] Materializing virtual group: ${domain}`)
 
-      // Create the group in IndexedDB
       const newGroup: IntentionGroupRecord = {
-        id: domain,  // Use domain as ID (not onchain-domain)
+        id: domain,
         domain: domain,
         title: domain,
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        urls: [],  // URLs are tracked on-chain, not needed locally
+        urls: [],
         level: 1,
         currentPredicate: null,
         predicateHistory: [],
@@ -130,30 +130,29 @@ class LevelUpServiceClass {
 
     // Calculate cost
     const cost = getLevelUpCost(group.level)
-    console.log(`💰 [LevelUpService] Level ${group.level} → ${group.level + 1} costs ${cost} XP`)
+    console.log(`💰 [LevelUpService] Level ${group.level} → ${group.level + 1} costs ${cost} Gold`)
 
-    // Check XP availability
+    // Check Gold availability
     const wallet = await this.getActiveWallet()
-    const affordCheck = await xpService.canAffordLevelUp(wallet, group.level)
+    const affordCheck = await goldService.canAffordLevelUp(wallet, group.level)
     if (!affordCheck.canAfford) {
-      console.log(`❌ [LevelUpService] Not enough XP: ${affordCheck.available} < ${affordCheck.cost}`)
+      console.log(`❌ [LevelUpService] Not enough Gold: ${affordCheck.available} < ${affordCheck.cost}`)
       return {
         success: false,
-        error: 'Not enough XP',
+        error: 'Not enough Gold',
         required: affordCheck.cost,
         available: affordCheck.available
       }
     }
 
     // Collect certifications for AI
-    // For virtual groups, use provided certificationBreakdown; otherwise use local data
     const isVirtualGroup = groupId.startsWith('onchain-')
     const certifications = (isVirtualGroup && providedCertifications)
       ? providedCertifications
       : groupManager.getCertificationBreakdown(group)
     console.log(`📊 [LevelUpService] Certifications:`, certifications, isVirtualGroup ? '(from UI)' : '(from local)')
 
-    // Check if there are any certifications (standard, OAuth, or on-chain)
+    // Check if there are any certifications
     const totalCertifications = Object.values(certifications).reduce((sum, count) => sum + count, 0)
     const hasOAuthUrls = group.urls.some(u => u.oauthPredicate && !u.removed)
     const hasOnChainCerts = group.urls.some(u => u.isOnChain && !u.removed)
@@ -178,7 +177,7 @@ class LevelUpServiceClass {
     const predicateInput: PredicateInput = {
       domain: group.domain,
       title: group.title,
-      level: group.level + 1,  // The level we're going TO
+      level: group.level + 1,
       certifications: enrichedCertifications,
       previousPredicate: group.currentPredicate
     }
@@ -187,17 +186,17 @@ class LevelUpServiceClass {
     const predicateResult = await generatePredicate(predicateInput)
     console.log(`✨ [LevelUpService] AI generated: "${predicateResult.predicate}"`)
 
-    // Spend XP
-    const spendResult = await xpService.spendXP(wallet, cost)
+    // Spend Gold
+    const spendResult = await goldService.spendGold(wallet, cost)
     if (!spendResult.success) {
-      console.error(`❌ [LevelUpService] Failed to spend XP`)
+      console.error(`❌ [LevelUpService] Failed to spend Gold`)
       return {
         success: false,
-        error: 'Failed to spend XP'
+        error: 'Failed to spend Gold'
       }
     }
 
-    // Update group (use actualGroupId for virtual groups that were materialized)
+    // Update group
     const reason = this.buildReason(enrichedCertifications, group.level + 1)
     const updated = await groupManager.updateAfterLevelUp(
       actualGroupId,
@@ -209,11 +208,9 @@ class LevelUpServiceClass {
 
     if (!updated) {
       console.error(`❌ [LevelUpService] Failed to update group`)
-      // Note: XP already spent, but group not updated - this is a bad state
-      // In production, we'd want a transaction
       return {
         success: false,
-        error: 'Failed to update group after XP spent'
+        error: 'Failed to update group after Gold spent'
       }
     }
 
@@ -226,17 +223,14 @@ class LevelUpServiceClass {
       previousPredicate: group.currentPredicate,
       newPredicate: predicateResult.predicate,
       predicateReason: predicateResult.reason,
-      xpSpent: cost
+      goldSpent: cost
     }
   }
 
-  /**
-   * Build a human-readable reason for the level up
-   */
+  /** Build a human-readable reason for the level up. */
   private buildReason(certifications: Record<string, number>, newLevel: number): string {
     const total = Object.values(certifications).reduce((sum, count) => sum + count, 0)
 
-    // Find dominant certification
     let dominant: CertificationType | null = null
     let maxCount = 0
     for (const [cert, count] of Object.entries(certifications)) {
@@ -250,7 +244,6 @@ class LevelUpServiceClass {
       return `Level ${newLevel}: ${maxCount}/${total} URLs certified as ${dominant}`
     }
 
-    // Mixed certifications
     const activeCerts = Object.entries(certifications)
       .filter(([_, count]) => count > 0)
       .map(([cert, count]) => `${cert}: ${count}`)
@@ -260,14 +253,14 @@ class LevelUpServiceClass {
   }
 
   /**
-   * Get level up requirements for UI display
-   * Uses total XP from ALL sources
+   * Get level up requirements for UI display.
+   * Uses Gold balance for affordability.
    */
   async getLevelUpRequirements(groupId: string): Promise<{
     currentLevel: number
     nextLevel: number
     cost: number
-    availableXP: number
+    availableGold: number
     canAfford: boolean
     certificationCount: number
     minimumRequired: number
@@ -277,7 +270,7 @@ class LevelUpServiceClass {
 
     const cost = getLevelUpCost(group.level)
     const wallet = await this.getActiveWallet()
-    const xpState = await xpService.getXPState(wallet)
+    const goldState = await goldService.getGoldState(wallet)
     const certificationCount = Object.values(groupManager.getCertificationBreakdown(group))
       .reduce((sum, count) => sum + count, 0)
 
@@ -285,10 +278,10 @@ class LevelUpServiceClass {
       currentLevel: group.level,
       nextLevel: group.level + 1,
       cost,
-      availableXP: xpState.totalXP,
-      canAfford: xpState.totalXP >= cost,
+      availableGold: goldState.totalGold,
+      canAfford: goldState.totalGold >= cost,
       certificationCount,
-      minimumRequired: 1  // At least 1 certification needed
+      minimumRequired: 1
     }
   }
 }

@@ -50,7 +50,7 @@ export interface UserDiscoveryStats {
   contributorCount: number
   totalCertifications: number
   intentionBreakdown: Record<IntentionPurpose, number>
-  discoveryXP: {
+  discoveryGold: {
     fromPioneer: number
     fromExplorer: number
     fromContributor: number
@@ -73,12 +73,15 @@ export const ATTENTION_REQUIREMENTS = {
   MINIMUM_SCROLL_PERCENTAGE: 0.3
 } as const
 
-// XP rewards for discovery
-export const DISCOVERY_XP_REWARDS = {
+// Gold rewards for discovery
+export const DISCOVERY_GOLD_REWARDS = {
   PIONEER: 50,    // First to certify
   EXPLORER: 20,   // 2nd to 10th
   CONTRIBUTOR: 5  // 11th+
 } as const
+
+/** @deprecated Use DISCOVERY_GOLD_REWARDS instead */
+export const DISCOVERY_XP_REWARDS = DISCOVERY_GOLD_REWARDS
 
 // Thresholds for discovery status
 export const DISCOVERY_THRESHOLDS = {
