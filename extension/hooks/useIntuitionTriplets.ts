@@ -177,13 +177,13 @@ export const useIntuitionTriplets = (): UseIntuitionTripletsResult => {
           const objectTermId = triple.object?.term_id || undefined
 
           // Pull metadata directly from ipfsDataMap (keyed by ipfsUri)
-          const ipfsUri = (triple as any)?.object?.data as string | undefined
+          const ipfsUri = triple.object?.data ?? undefined
           const metadata = ipfsUri ? ipfsDataMap.get(ipfsUri) : undefined
 
           // Get vault data for both curves
-          const vaults = (triple as any).term?.vaults || []
-          const curve1Vault = vaults.find((v: any) => Number(v.curve_id) === 1)
-          const curve2Vault = vaults.find((v: any) => Number(v.curve_id) === 2)
+          const vaults = triple.term?.vaults || []
+          const curve1Vault = vaults.find(v => Number(v.curve_id) === 1)
+          const curve2Vault = vaults.find(v => Number(v.curve_id) === 2)
 
           // Get position data from both curves
           const curve1Shares = curve1Vault?.positions?.[0]?.shares

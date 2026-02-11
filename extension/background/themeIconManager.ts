@@ -40,7 +40,7 @@ export async function updateIconForTheme(theme: 'light' | 'dark'): Promise<void>
     };
 
     await chrome.action.setIcon({
-      path: iconUrls as any
+      path: iconUrls as Record<string, string>
     });
   } catch (error) {
     logger.error('Failed to update extension icon', error);

@@ -82,8 +82,7 @@ async function sendWalletRequest(method: string, params?: any[]): Promise<any> {
         }
 
         if (response.error) {
-          const error = new Error(response.error.message || "Wallet error")
-          ;(error as any).code = response.error.code
+          const error = Object.assign(new Error(response.error.message || "Wallet error"), { code: response.error.code })
           reject(error)
           return
         }

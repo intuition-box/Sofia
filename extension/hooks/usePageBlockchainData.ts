@@ -176,13 +176,13 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const distrustPositions = new Set<string>()
 
       for (const triple of trustDistrustData.trustTriples || []) {
-        for (const pos of (triple as any).positions || []) {
+        for (const pos of triple.positions || []) {
           if (pos.account_id) trustPositions.add(pos.account_id.toLowerCase())
         }
       }
 
       for (const triple of trustDistrustData.distrustTriples || []) {
-        for (const pos of (triple as any).positions || []) {
+        for (const pos of triple.positions || []) {
           if (pos.account_id) distrustPositions.add(pos.account_id.toLowerCase())
         }
       }

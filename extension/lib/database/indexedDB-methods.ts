@@ -113,7 +113,7 @@ export class TripletsDataService {
     // Store new triplet states
     const record: TripletsRecord = {
       messageId: 'echoesTab_triplet_states',
-      content: tripletStates as any,
+      content: tripletStates,
       timestamp: Date.now(),
       type: 'triplet'
     }
@@ -129,7 +129,7 @@ export class TripletsDataService {
   static async loadTripletStates(): Promise<any[]> {
     const records = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_triplet_states')
     if (records.length > 0 && records[0].content) {
-      return records[0].content as any[]
+      return records[0].content as unknown[]
     }
     return []
   }
@@ -149,7 +149,7 @@ export class TripletsDataService {
     // Store new published triplet IDs
     const record: TripletsRecord = {
       messageId: 'echoesTab_published_triplets',
-      content: publishedIds as any,
+      content: publishedIds,
       timestamp: Date.now(),
       type: 'published_triplets'
     }

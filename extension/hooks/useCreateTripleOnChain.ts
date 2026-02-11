@@ -282,7 +282,7 @@ export const useCreateTripleOnChain = () => {
 
         const txParams = {
           address: contractAddress,
-          abi: SofiaFeeProxyAbi as unknown as any[],
+          abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
           args: [
             address,        // receiver - user gets the shares
@@ -526,7 +526,7 @@ export const useCreateTripleOnChain = () => {
           // Execute batch transaction with automatic gas estimation
           const batchTxParams = {
             address: contractAddress,
-            abi: SofiaFeeProxyAbi as unknown as any[],
+            abi: SofiaFeeProxyAbi,
             functionName: 'createTriples',
             args: [address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID],
             value: totalValue,

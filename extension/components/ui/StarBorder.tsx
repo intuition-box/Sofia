@@ -17,6 +17,7 @@ const StarBorder = <T extends React.ElementType = 'button'>({
   speed = '6s',
   thickness = 1,
   children,
+  style,
   ...rest
 }: StarBorderProps<T>) => {
   const Component = as || 'button';
@@ -24,10 +25,10 @@ const StarBorder = <T extends React.ElementType = 'button'>({
   return (
     <Component
       className={`star-border-container ${className}`}
-      {...(rest as any)}
+      {...(rest as Record<string, unknown>)}
       style={{
         padding: `${thickness}px 0`,
-        ...(rest as any).style
+        ...style
       }}
     >
       <div

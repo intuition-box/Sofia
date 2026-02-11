@@ -58,7 +58,7 @@ const SocialsTab = ({ onDiscordProfileChange }: SocialsTabProps) => {
 
       const result = await chrome.storage.local.get([...tokenKeys, discordProfileKey])
 
-      const tokens: Record<string, boolean> = {} as any
+      const tokens: Record<string, boolean> = {}
       for (const p of PLATFORMS) {
         tokens[p.key] = !!result[`oauth_token_${p.key}_${checksumAddr}`]
       }

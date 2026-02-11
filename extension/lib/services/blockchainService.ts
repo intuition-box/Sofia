@@ -200,7 +200,7 @@ export class BlockchainService {
         logger.debug('checkTripleExists - getTriple failed (triple does not exist)', {
           tripleId,
           errorMessage: getTripleError instanceof Error ? getTripleError.message : 'Unknown error',
-          errorSignature: (getTripleError as any)?.signature || 'no signature'
+          errorSignature: getTripleError instanceof Object && 'signature' in getTripleError ? (getTripleError as { signature: string }).signature : 'no signature'
         })
 
         // getTriple reverts if triple doesn't exist
