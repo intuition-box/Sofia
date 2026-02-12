@@ -182,6 +182,69 @@
   max-height: 2.8em;
 }
 
+/* Vote Buttons */
+.circle-card-votes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.circle-vote-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.circle-vote-btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.circle-vote-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.circle-vote-up.active {
+  color: #10B981;
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.circle-vote-up:hover:not(:disabled) {
+  color: #10B981;
+}
+
+.circle-vote-down.active {
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.circle-vote-down:hover:not(:disabled) {
+  color: #EF4444;
+}
+
+.circle-vote-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 16px;
+  text-align: center;
+}
+
 /* Card Footer */
 .circle-card-footer {
   display: flex;
@@ -193,7 +256,6 @@
 .circle-card-time {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.35);
-  margin-left: auto;
   flex-shrink: 0;
 }
 
