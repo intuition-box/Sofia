@@ -5,8 +5,8 @@
 /* ========== BACK BUTTON ========== */
 .user-profile-back-button {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: -30px;
+  left: 0;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;

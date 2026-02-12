@@ -121,17 +121,17 @@ const UserProfilePage = () => {
     <div className="page profile-page">
     <div className="profile-section account-tab">
       <div className="page-content">
-      {/* Back Button */}
-      <button className="user-profile-back-button" onClick={goBack}>
-        ← Back
-      </button>
-
       {/* Profile Header */}
       <ProfileHeader
         avatarUrl={displayAvatar}
         displayName={displayLabel}
         walletAddress={userProfileData.walletAddress}
         actions={renderActions()}
+        backButton={
+          <button className="user-profile-back-button" onClick={goBack}>
+            ← Back
+          </button>
+        }
       />
 
       {/* Stats Section - same design as AccountTab */}

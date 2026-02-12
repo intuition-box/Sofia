@@ -16,6 +16,7 @@ interface ProfileHeaderProps {
   walletAddress?: string
   badges?: JSX.Element | null
   actions?: JSX.Element | null
+  backButton?: JSX.Element | null
   avatarClassName?: string
   size?: 'small' | 'medium' | 'large'
   verified?: boolean // For social linked badge
@@ -30,6 +31,7 @@ const ProfileHeader = ({
   walletAddress,
   badges,
   actions,
+  backButton,
   avatarClassName = '',
   size = 'large',
   verified = false,
@@ -47,6 +49,7 @@ const ProfileHeader = ({
 
   return (
     <div className="profile-header-container">
+      {backButton}
       <div className="profile-header">
         <Avatar
           imgSrc={avatarUrl}
