@@ -153,7 +153,6 @@ query FindTriples(
 
 query FindNestedTriples(
   $where: triples_bool_exp = {}
-  $address: String!
   $limit: Int = 100
 ) {
   triples(where: $where, limit: $limit) {
@@ -161,7 +160,8 @@ query FindNestedTriples(
     subject_id
     predicate_id
     object_id
-    positions(where: { account_id: { _ilike: $address } }) {
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
       shares
     }
   }

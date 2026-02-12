@@ -13,10 +13,9 @@ export interface TripleVoteData {
 /**
  * Query vote state for certification triples.
  *
- * Uses FindTriples which returns `object_id` directly (raw column)
- * instead of going through the `object` relationship. This is required
- * because the object of a vote triple is another TRIPLE (not an atom),
- * and the Hasura `object` relationship may not resolve for triple-objects.
+ * Returns all positions (all voters) for each vote triple,
+ * counts unique accounts for likeCount/dislikeCount,
+ * and detects if the current user has voted.
  */
 export const useTripleVotes = (
   tripleTermIds: string[],
@@ -36,11 +35,10 @@ export const useTripleVotes = (
           { object_id: { _in: tripleTermIds } }
         ]
       },
-      address: userAddress || "",
       limit: tripleTermIds.length
     },
     {
-      enabled: !!userAddress && tripleTermIds.length > 0,
+      enabled: tripleTermIds.length > 0,
       refetchOnWindowFocus: false
     }
   )
@@ -59,54 +57,65 @@ export const useTripleVotes = (
           { object_id: { _in: tripleTermIds } }
         ]
       },
-      address: userAddress || "",
       limit: tripleTermIds.length
     },
     {
-      enabled: !!userAddress && tripleTermIds.length > 0,
+      enabled: tripleTermIds.length > 0,
       refetchOnWindowFocus: false
     }
   )
 
   const votesMap = useMemo(() => {
     const map = new Map<string, TripleVoteData>()
+    const userAddr = userAddress?.toLowerCase()
 
     // Initialize with defaults
     for (const id of tripleTermIds) {
       map.set(id, { userVote: null, likeCount: 0, dislikeCount: 0 })
     }
 
-    // Process likes — match by object_id (direct column = certification tripleTermId)
+    // Process likes — count unique accounts, detect user vote
     if (likeData?.triples) {
       for (const triple of likeData.triples) {
         const entry = map.get(triple.object_id)
-        if (entry) {
-          // User has shares on this like triple → they liked it
-          const userShares = triple.positions?.[0]?.shares
-          if (userShares && BigInt(userShares) > 0n) {
-            entry.userVote = "like"
-            entry.likeCount = 1
+        if (!entry) continue
+
+        const uniqueAccounts = new Set<string>()
+        for (const pos of triple.positions || []) {
+          const acct = pos.account_id?.toLowerCase()
+          if (acct) {
+            uniqueAccounts.add(acct)
+            if (userAddr && acct === userAddr) {
+              entry.userVote = "like"
+            }
           }
         }
+        entry.likeCount = uniqueAccounts.size
       }
     }
 
-    // Process dislikes
+    // Process dislikes — count unique accounts, detect user vote
     if (dislikeData?.triples) {
       for (const triple of dislikeData.triples) {
         const entry = map.get(triple.object_id)
-        if (entry) {
-          const userShares = triple.positions?.[0]?.shares
-          if (userShares && BigInt(userShares) > 0n) {
-            entry.userVote = "dislike"
-            entry.dislikeCount = 1
+        if (!entry) continue
+
+        const uniqueAccounts = new Set<string>()
+        for (const pos of triple.positions || []) {
+          const acct = pos.account_id?.toLowerCase()
+          if (acct) {
+            uniqueAccounts.add(acct)
+            if (userAddr && acct === userAddr) {
+              entry.userVote = "dislike"
+            }
           }
         }
+        entry.dislikeCount = uniqueAccounts.size
       }
     }
 
     return map
-  }, [tripleTermIds, likeData, dislikeData])
+  }, [tripleTermIds, likeData, dislikeData, userAddress])
 
   const loading = likesLoading || dislikesLoading
 

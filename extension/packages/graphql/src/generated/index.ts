@@ -25145,7 +25145,6 @@ export type FindTriplesQuery = {
 
 export type FindNestedTriplesQueryVariables = Exact<{
   where?: InputMaybe<Triples_Bool_Exp>
-  address: Scalars["String"]["input"]
   limit?: InputMaybe<Scalars["Int"]["input"]>
 }>
 
@@ -25157,7 +25156,11 @@ export type FindNestedTriplesQuery = {
     subject_id: string
     predicate_id: string
     object_id: string
-    positions: Array<{ __typename?: "positions"; shares: any }>
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+    }>
   }>
 }
 
@@ -34993,13 +34996,14 @@ useFindTriplesQuery.fetcher = (
   )
 
 export const FindNestedTriplesDocument = `
-    query FindNestedTriples($where: triples_bool_exp = {}, $address: String!, $limit: Int = 100) {
+    query FindNestedTriples($where: triples_bool_exp = {}, $limit: Int = 100) {
   triples(where: $where, limit: $limit) {
     term_id
     subject_id
     predicate_id
     object_id
-    positions(where: {account_id: {_ilike: $address}}) {
+    positions(where: {shares: {_gt: "0"}}) {
+      account_id
       shares
     }
   }
@@ -35010,7 +35014,7 @@ export const useFindNestedTriplesQuery = <
   TData = FindNestedTriplesQuery,
   TError = unknown
 >(
-  variables: FindNestedTriplesQueryVariables,
+  variables?: FindNestedTriplesQueryVariables,
   options?: Omit<
     UseQueryOptions<FindNestedTriplesQuery, TError, TData>,
     "queryKey"
@@ -35023,7 +35027,10 @@ export const useFindNestedTriplesQuery = <
   }
 ) => {
   return useQuery<FindNestedTriplesQuery, TError, TData>({
-    queryKey: ["FindNestedTriples", variables],
+    queryKey:
+      variables === undefined
+        ? ["FindNestedTriples"]
+        : ["FindNestedTriples", variables],
     queryFn: fetcher<FindNestedTriplesQuery, FindNestedTriplesQueryVariables>(
       FindNestedTriplesDocument,
       variables
@@ -35035,8 +35042,11 @@ export const useFindNestedTriplesQuery = <
 useFindNestedTriplesQuery.document = FindNestedTriplesDocument
 
 useFindNestedTriplesQuery.getKey = (
-  variables: FindNestedTriplesQueryVariables
-) => ["FindNestedTriples", variables]
+  variables?: FindNestedTriplesQueryVariables
+) =>
+  variables === undefined
+    ? ["FindNestedTriples"]
+    : ["FindNestedTriples", variables]
 
 export const useInfiniteFindNestedTriplesQuery = <
   TData = InfiniteData<FindNestedTriplesQuery>,
@@ -35058,7 +35068,10 @@ export const useInfiniteFindNestedTriplesQuery = <
     (() => {
       const { queryKey: optionsQueryKey, ...restOptions } = options
       return {
-        queryKey: optionsQueryKey ?? ["FindNestedTriples.infinite", variables],
+        queryKey:
+          optionsQueryKey ?? variables === undefined
+            ? ["FindNestedTriples.infinite"]
+            : ["FindNestedTriples.infinite", variables],
         queryFn: (metaData) =>
           fetcher<FindNestedTriplesQuery, FindNestedTriplesQueryVariables>(
             FindNestedTriplesDocument,
@@ -35071,11 +35084,14 @@ export const useInfiniteFindNestedTriplesQuery = <
 }
 
 useInfiniteFindNestedTriplesQuery.getKey = (
-  variables: FindNestedTriplesQueryVariables
-) => ["FindNestedTriples.infinite", variables]
+  variables?: FindNestedTriplesQueryVariables
+) =>
+  variables === undefined
+    ? ["FindNestedTriples.infinite"]
+    : ["FindNestedTriples.infinite", variables]
 
 useFindNestedTriplesQuery.fetcher = (
-  variables: FindNestedTriplesQueryVariables,
+  variables?: FindNestedTriplesQueryVariables,
   options?: RequestInit["headers"]
 ) =>
   fetcher<FindNestedTriplesQuery, FindNestedTriplesQueryVariables>(
@@ -76752,17 +76768,6 @@ export const FindNestedTriples = {
           kind: "VariableDefinition",
           variable: {
             kind: "Variable",
-            name: { kind: "Name", value: "address" }
-          },
-          type: {
-            kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
-          }
-        },
-        {
-          kind: "VariableDefinition",
-          variable: {
-            kind: "Variable",
             name: { kind: "Name", value: "limit" }
           },
           type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
@@ -76815,16 +76820,17 @@ export const FindNestedTriples = {
                         fields: [
                           {
                             kind: "ObjectField",
-                            name: { kind: "Name", value: "account_id" },
+                            name: { kind: "Name", value: "shares" },
                             value: {
                               kind: "ObjectValue",
                               fields: [
                                 {
                                   kind: "ObjectField",
-                                  name: { kind: "Name", value: "_ilike" },
+                                  name: { kind: "Name", value: "_gt" },
                                   value: {
-                                    kind: "Variable",
-                                    name: { kind: "Name", value: "address" }
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
                                   }
                                 }
                               ]
@@ -76837,6 +76843,10 @@ export const FindNestedTriples = {
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
                       { kind: "Field", name: { kind: "Name", value: "shares" } }
                     ]
                   }
