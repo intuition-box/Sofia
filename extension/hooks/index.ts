@@ -50,6 +50,13 @@ export { default as useIntentionCategories } from './useIntentionCategories'
 export { useUserCertifications, getCertificationForUrl } from './useUserCertifications'
 export { useDiscoveryScore } from './useDiscoveryScore'
 export { usePageDiscovery } from './usePageDiscovery'
+export { useDiscoveryReward } from './useDiscoveryReward'
+
+// UI Hooks
+export { useFavicon } from './useFavicon'
+export { useCredibilityAnalysis, getTotalShares } from './useCredibilityAnalysis'
+export { useCertificationModal } from './useCertificationModal'
+export type { ModalTriplet } from './useCertificationModal'
 
 // Quest & XP
 export { useQuestSystem } from './useQuestSystem'

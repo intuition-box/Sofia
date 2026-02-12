@@ -8,7 +8,7 @@
  * Gold Rewards:
  * - Pioneer (1st): +50 Gold
  * - Explorer (2-10th): +20 Gold
- * - Contributor (11+): +5 Gold
+ * - Contributor (11+): +10 Gold
  */
 
 import { useSyncExternalStore } from 'react'

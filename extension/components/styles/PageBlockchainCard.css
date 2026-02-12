@@ -80,10 +80,13 @@
   text-overflow: ellipsis;
 }
 
-/* Discovery Badge Compact - In Header (replaces credibility circle) */
+/* Discovery Badge Compact - SVG Badge */
 .discovery-badge-compact {
+  position: relative;
   flex-shrink: 0;
   margin-left: auto;
+  width: 70px;
+  height: 70px;
   cursor: pointer;
   transition: transform 0.2s ease;
 }
@@ -96,17 +99,22 @@
   transform: scale(0.98);
 }
 
-.discovery-badge {
+.discovery-badge-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.discovery-badge-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 70px;
-  height: 70px;
-  padding: 8px 12px;
-  border-radius: 12px;
   text-align: center;
-  transition: all 0.3s ease;
 }
 
 .badge-rank {
@@ -116,106 +124,55 @@
 }
 
 .badge-status {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 9px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 /* Pioneer Badge - Gold */
-.discovery-badge-pioneer {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.15) 100%);
-  border: 2px solid rgba(245, 158, 11, 0.6);
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+.discovery-badge-compact.badge-pioneer {
+  filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.4));
 }
 
-.discovery-badge-pioneer .badge-rank {
-  color: #FCD34D;
+.discovery-badge-compact.badge-pioneer .badge-rank {
+  color: #1a1a1a;
+  text-shadow: 0 1px 2px rgba(245, 200, 66, 0.3);
 }
 
-.discovery-badge-pioneer .badge-status {
-  color: #F59E0B;
+.discovery-badge-compact.badge-pioneer .badge-status {
+  color: #3d2800;
 }
 
 /* Explorer Badge - Blue */
-.discovery-badge-explorer {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(37, 99, 235, 0.15) 100%);
-  border: 2px solid rgba(59, 130, 246, 0.6);
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+.discovery-badge-compact.badge-explorer {
+  filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.4));
 }
 
-.discovery-badge-explorer .badge-rank {
-  color: #93C5FD;
+.discovery-badge-compact.badge-explorer .badge-rank {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 30, 80, 0.5);
 }
 
-.discovery-badge-explorer .badge-status {
-  color: #3B82F6;
+.discovery-badge-compact.badge-explorer .badge-status {
+  color: #e0ecff;
 }
 
 /* Contributor Badge - Purple */
-.discovery-badge-contributor {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(109, 40, 217, 0.15) 100%);
-  border: 2px solid rgba(139, 92, 246, 0.6);
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+.discovery-badge-compact.badge-contributor {
+  filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.4));
 }
 
-.discovery-badge-contributor .badge-rank {
-  color: #C4B5FD;
+.discovery-badge-compact.badge-contributor .badge-rank {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(40, 10, 80, 0.5);
 }
 
-.discovery-badge-contributor .badge-status {
-  color: #8B5CF6;
-}
-
-/* Opportunity Badges */
-.discovery-badge-opportunity {
-  border: 2px dashed;
-}
-
-/* Be First! Badge - Gold */
-.discovery-badge-be-first {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%);
-  border-color: rgba(245, 158, 11, 0.6);
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
-}
-
-.discovery-badge-be-first .badge-rank {
-  color: #FCD34D;
-}
-
-.discovery-badge-be-first .badge-status {
-  color: #F59E0B;
-}
-
-/* Explorer Spot Badge - Blue */
-.discovery-badge-explorer-spot {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.08) 100%);
-  border-color: rgba(59, 130, 246, 0.5);
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-}
-
-.discovery-badge-explorer-spot .badge-rank {
-  color: #93C5FD;
-}
-
-.discovery-badge-explorer-spot .badge-status {
-  color: #3B82F6;
-}
-
-/* Info Badge - Gray */
-.discovery-badge-info {
-  background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, rgba(75, 85, 99, 0.1) 100%);
-  border-color: rgba(107, 114, 128, 0.5);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.discovery-badge-info .badge-rank {
-  color: #D1D5DB;
-}
-
-.discovery-badge-info .badge-status {
-  color: #9CA3AF;
+.discovery-badge-compact.badge-contributor .badge-status {
+  color: #e8ddff;
+  font-size: 7px;
+  letter-spacing: 0.2px;
 }
 
 /* Legacy Credibility Circle Compact - In Header (kept for backward compatibility) */

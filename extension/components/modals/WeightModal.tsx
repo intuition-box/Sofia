@@ -6,11 +6,24 @@ import SofiaLoader from '../ui/SofiaLoader'
 import { useWalletFromStorage, useGoldSystem } from '../../hooks'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { createHookLogger } from '../../lib/utils/logger'
-import type { EchoTriplet } from '../../types/blockchain'
+import type { IntentionPurpose } from '../../types/discovery'
 import '../styles/Modal.css'
+
+interface ModalTriplet {
+  id: string
+  triplet: {
+    subject: string
+    predicate: string
+    object: string
+  }
+  description: string
+  url: string
+  intention?: IntentionPurpose
+}
 
 const logger = createHookLogger('WeightModal')
 const goldRewardVideoUrl = chrome.runtime.getURL('assets/bggoldreward.mp4')
+const goldReward50VideoUrl = chrome.runtime.getURL('assets/bggoldreward50.mp4')
 
 interface DiscoveryReward {
   status: 'Pioneer' | 'Explorer' | 'Contributor'
@@ -19,7 +32,7 @@ interface DiscoveryReward {
 
 interface WeightModalProps {
   isOpen: boolean
-  triplets: EchoTriplet[]
+  triplets: ModalTriplet[]
   isProcessing: boolean
   transactionSuccess?: boolean
   transactionError?: string
@@ -375,7 +388,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
           <div className="reward-claimed-overlay">
             <video
               className="reward-claimed-bg-video"
-              src={goldRewardVideoUrl}
+              src={discoveryReward.gold >= 25 ? goldReward50VideoUrl : goldRewardVideoUrl}
               autoPlay
               muted
               loop

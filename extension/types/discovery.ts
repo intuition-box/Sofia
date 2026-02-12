@@ -77,7 +77,7 @@ export const ATTENTION_REQUIREMENTS = {
 export const DISCOVERY_GOLD_REWARDS = {
   PIONEER: 50,    // First to certify
   EXPLORER: 20,   // 2nd to 10th
-  CONTRIBUTOR: 5  // 11th+
+  CONTRIBUTOR: 10  // 11th+
 } as const
 
 /** @deprecated Use DISCOVERY_GOLD_REWARDS instead */

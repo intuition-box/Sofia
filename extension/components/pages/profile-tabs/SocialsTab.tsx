@@ -9,17 +9,18 @@ import { getAddress } from 'viem'
 import { useSocialVerifier } from '../../../hooks'
 import { createHookLogger } from '../../../lib/utils/logger'
 import '../../styles/AccountTab.css'
+import '../../styles/InterestTab.css'
 
 const logger = createHookLogger('SocialsTab')
 
 type Platform = 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter'
 
 const PLATFORMS: { key: Platform; label: string; icon: string; iconClass: string }[] = [
+  { key: 'twitter', label: 'X', icon: xIcon, iconClass: 'twitter-icon' },
+  { key: 'discord', label: 'Discord', icon: discordIcon, iconClass: 'discord-icon' },
   { key: 'youtube', label: 'YouTube', icon: youtubeIcon, iconClass: 'youtube-icon' },
   { key: 'twitch', label: 'Twitch', icon: twitchIcon, iconClass: 'twitch-icon' },
   { key: 'spotify', label: 'Spotify', icon: spotifyIcon, iconClass: 'spotify-icon' },
-  { key: 'discord', label: 'Discord', icon: discordIcon, iconClass: 'discord-icon' },
-  { key: 'twitter', label: 'X', icon: xIcon, iconClass: 'twitter-icon' },
 ]
 
 const SocialsTab = () => {
@@ -89,6 +90,19 @@ const SocialsTab = () => {
 
   return (
     <div className="socials-tab">
+      {/* Social Verification */}
+      {canVerify && !isSocialVerified && (
+        <div className="social-verify-section">
+          <button
+            className="interest-analyze-btn"
+            onClick={verifySocials}
+            disabled={isVerifying}
+          >
+            {isVerifying ? 'Verifying...' : 'Verify Socials'}
+          </button>
+        </div>
+      )}
+
       {/* Platform Icons */}
       <div className="platform-icons-container">
         {PLATFORMS.map(({ key, icon, label, iconClass }) => {
@@ -107,19 +121,6 @@ const SocialsTab = () => {
           )
         })}
       </div>
-
-      {/* Social Verification */}
-      {canVerify && !isSocialVerified && (
-        <div className="social-verify-section">
-          <button
-            className="interest-analyze-btn"
-            onClick={verifySocials}
-            disabled={isVerifying}
-          >
-            {isVerifying ? 'Verifying...' : 'Verify Socials'}
-          </button>
-        </div>
-      )}
     </div>
   )
 }
