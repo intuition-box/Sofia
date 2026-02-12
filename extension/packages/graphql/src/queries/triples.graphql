@@ -150,3 +150,19 @@ query FindTriples(
     }
   }
 }
+
+query FindNestedTriples(
+  $where: triples_bool_exp = {}
+  $address: String!
+  $limit: Int = 100
+) {
+  triples(where: $where, limit: $limit) {
+    term_id
+    subject_id
+    predicate_id
+    object_id
+    positions(where: { account_id: { _ilike: $address } }) {
+      shares
+    }
+  }
+}

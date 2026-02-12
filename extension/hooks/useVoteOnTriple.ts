@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react"
+import { useCreateAtom } from "./useCreateAtom"
+import { useWalletFromStorage } from "./useWalletFromStorage"
 import { getClients } from "../lib/clients/viemClients"
 import { SofiaFeeProxyAbi } from "../ABI/SofiaFeeProxy"
 import { SELECTED_CHAIN } from "../lib/config/chainConfig"
-import { useCreateAtom } from "./useCreateAtom"
-import { useWalletFromStorage } from "./useWalletFromStorage"
 import { BlockchainService } from "../lib/services"
 import { createHookLogger } from "../lib/utils/logger"
 import {
@@ -18,10 +18,7 @@ const logger = createHookLogger("useVoteOnTriple")
 
 // 1 TRUST deposit per vote
 const VOTE_STAKE = 1000000000000000000n
-
-// Curve IDs
 const CREATION_CURVE_ID = 1n
-const DEPOSIT_CURVE_ID = 2n
 
 export type VoteType = "like" | "dislike"
 
@@ -34,6 +31,17 @@ export interface VoteOnTripleResult {
   votingTripleId: string | null
 }
 
+/**
+ * Vote on a certification triple by creating a nested triple:
+ *   I | like/dislike | <certificationTripleTermId>
+ *
+ * The object IS the certification triple itself (referenced by its term_id).
+ * This creates a TRUE nested triple — no new atom is created for the object.
+ *
+ * Uses direct contract calls to bypass createTripleOnChain (which always
+ * creates a new IPFS atom for the object). Only the predicate atom
+ * ("like"/"dislike") is created via IPFS if it doesn't exist yet.
+ */
 export const useVoteOnTriple = (): VoteOnTripleResult => {
   const {
     pinAtomToIPFS,
@@ -46,27 +54,6 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [votingTripleId, setVotingTripleId] = useState<string | null>(null)
-
-  // Get or create the predicate atom for "like" or "dislike"
-  const getPredicateId = async (voteType: VoteType): Promise<string> => {
-    const existingId =
-      voteType === "like" ? PREDICATE_IDS.LIKE : PREDICATE_IDS.DISLIKE
-    if (existingId) return existingId
-
-    // Predicate doesn't exist yet — create it
-    logger.info("Creating predicate atom on-demand", { voteType })
-    const pinned = await pinAtomToIPFS({
-      name: voteType,
-      description: `Predicate representing the relation "${voteType}"`,
-      url: ""
-    })
-    const created = await createAtomsFromPinned([pinned])
-    const result = created[voteType]
-    if (!result?.vaultId) {
-      throw new Error(`Failed to create "${voteType}" predicate atom`)
-    }
-    return result.vaultId
-  }
 
   const vote = useCallback(
     async (tripleTermId: string, voteType: VoteType) => {
@@ -85,36 +72,56 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
       setVotingTripleId(tripleTermId)
 
       try {
+        logger.info("Creating vote triple", { voteType, tripleTermId })
+
+        // 1. Ensure proxy is approved (one-time)
         await ensureProxyApproval()
 
-        const predicateId = await getPredicateId(voteType)
+        // 2. Get or create the predicate atom ("like" or "dislike")
+        const existingPredicateId =
+          voteType === "like"
+            ? PREDICATE_IDS.LIKE || null
+            : PREDICATE_IDS.DISLIKE || null
+
+        let predicateId: string
+
+        if (existingPredicateId) {
+          predicateId = existingPredicateId
+        } else {
+          // Create predicate atom via IPFS pin + on-chain creation
+          const pinnedPredicate = await pinAtomToIPFS({
+            name: voteType,
+            description: `Predicate representing the relation "${voteType}"`,
+            url: ""
+          })
+          const createdAtoms = await createAtomsFromPinned([pinnedPredicate])
+          predicateId = createdAtoms[voteType].vaultId
+        }
+
+        // 3. Subject = universal "I"
+        //    Object = tripleTermId directly (the certification triple's own term_id)
         const subjectId = SUBJECT_IDS.I
+        const objectId = tripleTermId
 
-        logger.info("Creating vote triple", {
-          voteType,
-          tripleTermId,
-          predicateId,
-          subjectId
-        })
-
-        // Check if vote triple already exists
+        // 4. Check if vote triple already exists
         const tripleCheck = await BlockchainService.checkTripleExists(
           subjectId,
           predicateId,
-          tripleTermId
+          objectId
         )
 
         const { walletClient, publicClient } = await getClients()
         const contractAddress = BlockchainService.getContractAddress()
 
         if (tripleCheck.exists) {
-          // Triple exists — deposit on it
+          // 5a. Vote triple exists → deposit additional stake (linear curve, same as creation)
+          const curveId = CREATION_CURVE_ID
           const totalDepositCost =
             await BlockchainService.getTotalDepositCost(VOTE_STAKE)
 
-          logger.debug("Vote triple exists, depositing", {
+          logger.info("Vote triple exists, depositing", {
             tripleVaultId: tripleCheck.tripleVaultId,
-            totalDepositCost: totalDepositCost.toString()
+            depositAmount: VOTE_STAKE.toString()
           })
 
           await publicClient.simulateContract({
@@ -124,7 +131,7 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
             args: [
               address as Address,
               tripleCheck.tripleVaultId as Address,
-              DEPOSIT_CURVE_ID,
+              curveId,
               0n
             ],
             value: totalDepositCost,
@@ -138,7 +145,7 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
             args: [
               address as Address,
               tripleCheck.tripleVaultId as Address,
-              DEPOSIT_CURVE_ID,
+              curveId,
               0n
             ],
             value: totalDepositCost,
@@ -157,21 +164,30 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
             )
           }
 
-          logger.info("Vote deposit successful", { txHash: hash, voteType })
+          logger.info("Vote deposit successful", {
+            tripleVaultId: tripleCheck.tripleVaultId,
+            txHash: hash,
+            voteType
+          })
         } else {
-          // Triple does not exist — create it
+          // 5b. Vote triple doesn't exist → create it
           const tripleCost = await BlockchainService.getTripleCost()
           const multiVaultCost = tripleCost + VOTE_STAKE
-          const totalCost = await BlockchainService.getTotalCreationCost(
-            1,
-            VOTE_STAKE,
-            multiVaultCost
-          )
+          const totalCost =
+            await BlockchainService.getTotalCreationCost(
+              1,
+              VOTE_STAKE,
+              multiVaultCost
+            )
 
-          logger.debug("Creating new vote triple", {
+          logger.info("Creating new vote triple", {
+            subjectId,
+            predicateId,
+            objectId,
             totalCost: totalCost.toString()
           })
 
+          // Simulate first
           await publicClient.simulateContract({
             address: contractAddress as Address,
             abi: SofiaFeeProxyAbi,
@@ -180,7 +196,7 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
               address as Address,
               [subjectId as Address],
               [predicateId as Address],
-              [tripleTermId as Address],
+              [objectId as Address],
               [VOTE_STAKE],
               CREATION_CURVE_ID
             ],
@@ -188,6 +204,7 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
             account: walletClient.account
           })
 
+          // Execute
           const hash = await walletClient.writeContract({
             address: contractAddress as Address,
             abi: SofiaFeeProxyAbi,
@@ -196,7 +213,7 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
               address as Address,
               [subjectId as Address],
               [predicateId as Address],
-              [tripleTermId as Address],
+              [objectId as Address],
               [VOTE_STAKE],
               CREATION_CURVE_ID
             ],

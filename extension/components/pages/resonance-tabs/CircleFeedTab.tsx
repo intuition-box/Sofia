@@ -98,7 +98,7 @@ const CircleFeedTab = () => {
   const checksumAddress = address ? getAddress(address) : ''
 
   // Step 1: Get followed accounts
-  const { data: trustCircleData, isLoading: trustCircleLoading, refetch: refetchTrustCircle } = useGetTrustCirclePositionsQuery(
+  const { data: trustCircleData, isLoading: trustCircleLoading, isFetching: trustCircleFetching, refetch: refetchTrustCircle } = useGetTrustCirclePositionsQuery(
     {
       subjectId: SUBJECT_IDS.I,
       predicateId: PREDICATE_IDS.TRUSTS,
@@ -147,7 +147,7 @@ const CircleFeedTab = () => {
   }, [trustCircleData])
 
   // Step 2: Get events from trusted wallets
-  const { data: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useGetSofiaTrustedActivityQuery(
+  const { data: eventsData, isLoading: eventsLoading, isFetching: eventsFetching, refetch: refetchEvents } = useGetSofiaTrustedActivityQuery(
     {
       trustedWallets: trustedWallets,
       proxy: SOFIA_PROXY_ADDRESS,
@@ -253,11 +253,13 @@ const CircleFeedTab = () => {
   }
 
   const loading = trustCircleLoading || eventsLoading
+  const refreshing = trustCircleFetching || eventsFetching
 
   // Refresh feed data
   const handleRefresh = () => {
     refetchTrustCircle()
     refetchEvents()
+    refetchVotes()
   }
 
   // Handle member click
@@ -375,9 +377,9 @@ const CircleFeedTab = () => {
         <button
           className="circle-go-btn"
           onClick={handleRefresh}
-          disabled={loading}
+          disabled={refreshing}
         >
-          {loading ? '...' : '↻'}
+          {refreshing ? '...' : '↻'}
         </button>
         <button
           className="circle-go-btn"
@@ -451,36 +453,7 @@ const CircleFeedTab = () => {
               {/* Page title */}
               <div className="circle-card-title">{item.pageLabel}</div>
 
-              {/* Vote buttons */}
-              {item.tripleTermId && (
-                <div className="circle-card-votes">
-                  <button
-                    className={`circle-vote-btn circle-vote-up ${votesMap.get(item.tripleTermId)?.userVote === 'like' ? 'active' : ''}`}
-                    onClick={(e) => handleVote(e, item.tripleTermId, 'like')}
-                    disabled={voteLoading && votingTripleId === item.tripleTermId}
-                    title="Like this certification"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                    </svg>
-                  </button>
-                  <span className="circle-vote-count">
-                    {(votesMap.get(item.tripleTermId)?.likeCount || 0) - (votesMap.get(item.tripleTermId)?.dislikeCount || 0)}
-                  </span>
-                  <button
-                    className={`circle-vote-btn circle-vote-down ${votesMap.get(item.tripleTermId)?.userVote === 'dislike' ? 'active' : ''}`}
-                    onClick={(e) => handleVote(e, item.tripleTermId, 'dislike')}
-                    disabled={voteLoading && votingTripleId === item.tripleTermId}
-                    title="Dislike this certification"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 20l8-8h-5V4H9v8H4z" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-
-              {/* Footer: member + time */}
+              {/* Footer: member + votes + time */}
               <div className="circle-card-footer">
                 <span
                   className="circle-card-member-name"
@@ -491,6 +464,33 @@ const CircleFeedTab = () => {
                 >
                   {item.memberLabel}
                 </span>
+                {item.tripleTermId && (
+                  <div className="circle-card-votes">
+                    <button
+                      className={`circle-vote-btn circle-vote-up ${votesMap.get(item.tripleTermId)?.userVote === 'like' ? 'active' : ''}`}
+                      onClick={(e) => handleVote(e, item.tripleTermId, 'like')}
+                      disabled={voteLoading && votingTripleId === item.tripleTermId}
+                      title="Like this certification"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4l-8 8h5v8h6v-8h5z" />
+                      </svg>
+                    </button>
+                    <span className="circle-vote-count">
+                      {(votesMap.get(item.tripleTermId)?.likeCount || 0) - (votesMap.get(item.tripleTermId)?.dislikeCount || 0)}
+                    </span>
+                    <button
+                      className={`circle-vote-btn circle-vote-down ${votesMap.get(item.tripleTermId)?.userVote === 'dislike' ? 'active' : ''}`}
+                      onClick={(e) => handleVote(e, item.tripleTermId, 'dislike')}
+                      disabled={voteLoading && votingTripleId === item.tripleTermId}
+                      title="Dislike this certification"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 20l8-8h-5V4H9v8H4z" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
                 <span className="circle-card-time">{formatTimestamp(item.createdAt)}</span>
               </div>
             </div>

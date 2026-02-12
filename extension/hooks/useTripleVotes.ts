@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { useFindTriplesQuery } from "@0xsofia/graphql"
+import { useFindNestedTriplesQuery } from "@0xsofia/graphql"
 import { SUBJECT_IDS } from "../lib/config/constants"
 
 export type VoteState = "like" | "dislike" | null
@@ -10,16 +10,24 @@ export interface TripleVoteData {
   dislikeCount: number
 }
 
+/**
+ * Query vote state for certification triples.
+ *
+ * Uses FindTriples which returns `object_id` directly (raw column)
+ * instead of going through the `object` relationship. This is required
+ * because the object of a vote triple is another TRIPLE (not an atom),
+ * and the Hasura `object` relationship may not resolve for triple-objects.
+ */
 export const useTripleVotes = (
   tripleTermIds: string[],
   userAddress: string | null
 ) => {
-  // Query like triples where object_id matches any of our certification triples
+  // Query like vote triples: I | like | <certificationTripleTermId>
   const {
     data: likeData,
     isLoading: likesLoading,
     refetch: refetchLikes
-  } = useFindTriplesQuery(
+  } = useFindNestedTriplesQuery(
     {
       where: {
         _and: [
@@ -37,12 +45,12 @@ export const useTripleVotes = (
     }
   )
 
-  // Query dislike triples
+  // Query dislike vote triples
   const {
     data: dislikeData,
     isLoading: dislikesLoading,
     refetch: refetchDislikes
-  } = useFindTriplesQuery(
+  } = useFindNestedTriplesQuery(
     {
       where: {
         _and: [
@@ -68,15 +76,16 @@ export const useTripleVotes = (
       map.set(id, { userVote: null, likeCount: 0, dislikeCount: 0 })
     }
 
-    // Process likes
+    // Process likes — match by object_id (direct column = certification tripleTermId)
     if (likeData?.triples) {
       for (const triple of likeData.triples) {
         const entry = map.get(triple.object_id)
         if (entry) {
-          entry.likeCount = 1 // Triple exists = at least 1 like
+          // User has shares on this like triple → they liked it
           const userShares = triple.positions?.[0]?.shares
           if (userShares && BigInt(userShares) > 0n) {
             entry.userVote = "like"
+            entry.likeCount = 1
           }
         }
       }
@@ -87,11 +96,10 @@ export const useTripleVotes = (
       for (const triple of dislikeData.triples) {
         const entry = map.get(triple.object_id)
         if (entry) {
-          entry.dislikeCount = 1
           const userShares = triple.positions?.[0]?.shares
           if (userShares && BigInt(userShares) > 0n) {
-            // Dislike overrides like if user has both (edge case)
             entry.userVote = "dislike"
+            entry.dislikeCount = 1
           }
         }
       }

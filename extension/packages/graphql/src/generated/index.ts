@@ -17692,7 +17692,12 @@ export type GetTrustCirclePositionsQuery = {
       term_id: string
       label?: string | null
       type: any
-      accounts: Array<{ __typename?: "accounts"; id: string; label: string }>
+      accounts: Array<{
+        __typename?: "accounts"
+        id: string
+        label: string
+        image?: string | null
+      }>
     } | null
     term?: {
       __typename?: "terms"
@@ -17741,7 +17746,12 @@ export type GetTrustCircleAccountsQuery = {
       term_id: string
       label?: string | null
       type: any
-      accounts: Array<{ __typename?: "accounts"; id: string; label: string }>
+      accounts: Array<{
+        __typename?: "accounts"
+        id: string
+        label: string
+        image?: string | null
+      }>
     } | null
     term?: {
       __typename?: "terms"
@@ -25133,6 +25143,24 @@ export type FindTriplesQuery = {
   }>
 }
 
+export type FindNestedTriplesQueryVariables = Exact<{
+  where?: InputMaybe<Triples_Bool_Exp>
+  address: Scalars["String"]["input"]
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+}>
+
+export type FindNestedTriplesQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    subject_id: string
+    predicate_id: string
+    object_id: string
+    positions: Array<{ __typename?: "positions"; shares: any }>
+  }>
+}
+
 export type GetVaultsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars["Int"]["input"]>
   offset?: InputMaybe<Scalars["Int"]["input"]>
@@ -27783,6 +27811,7 @@ export const GetTrustCirclePositionsDocument = `
       accounts {
         id
         label
+        image
       }
     }
     term {
@@ -27907,6 +27936,7 @@ export const GetTrustCircleAccountsDocument = `
       accounts {
         id
         label
+        image
       }
     }
     term {
@@ -34958,6 +34988,98 @@ useFindTriplesQuery.fetcher = (
 ) =>
   fetcher<FindTriplesQuery, FindTriplesQueryVariables>(
     FindTriplesDocument,
+    variables,
+    options
+  )
+
+export const FindNestedTriplesDocument = `
+    query FindNestedTriples($where: triples_bool_exp = {}, $address: String!, $limit: Int = 100) {
+  triples(where: $where, limit: $limit) {
+    term_id
+    subject_id
+    predicate_id
+    object_id
+    positions(where: {account_id: {_ilike: $address}}) {
+      shares
+    }
+  }
+}
+    `
+
+export const useFindNestedTriplesQuery = <
+  TData = FindNestedTriplesQuery,
+  TError = unknown
+>(
+  variables: FindNestedTriplesQueryVariables,
+  options?: Omit<
+    UseQueryOptions<FindNestedTriplesQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      FindNestedTriplesQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<FindNestedTriplesQuery, TError, TData>({
+    queryKey: ["FindNestedTriples", variables],
+    queryFn: fetcher<FindNestedTriplesQuery, FindNestedTriplesQueryVariables>(
+      FindNestedTriplesDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useFindNestedTriplesQuery.document = FindNestedTriplesDocument
+
+useFindNestedTriplesQuery.getKey = (
+  variables: FindNestedTriplesQueryVariables
+) => ["FindNestedTriples", variables]
+
+export const useInfiniteFindNestedTriplesQuery = <
+  TData = InfiniteData<FindNestedTriplesQuery>,
+  TError = unknown
+>(
+  variables: FindNestedTriplesQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<FindNestedTriplesQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      FindNestedTriplesQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<FindNestedTriplesQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["FindNestedTriples.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<FindNestedTriplesQuery, FindNestedTriplesQueryVariables>(
+            FindNestedTriplesDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteFindNestedTriplesQuery.getKey = (
+  variables: FindNestedTriplesQueryVariables
+) => ["FindNestedTriples.infinite", variables]
+
+useFindNestedTriplesQuery.fetcher = (
+  variables: FindNestedTriplesQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<FindNestedTriplesQuery, FindNestedTriplesQueryVariables>(
+    FindNestedTriplesDocument,
     variables,
     options
   )
@@ -48900,6 +49022,10 @@ export const GetTrustCirclePositions = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "label" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "image" }
                             }
                           ]
                         }
@@ -49277,6 +49403,10 @@ export const GetTrustCircleAccounts = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "label" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "image" }
                             }
                           ]
                         }
@@ -76571,6 +76701,127 @@ export const FindTriples = {
                                 {
                                   kind: "ObjectField",
                                   name: { kind: "Name", value: "_eq" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "address" }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "shares" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const FindNestedTriples = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "FindNestedTriples" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "where" }
+          },
+          type: {
+            kind: "NamedType",
+            name: { kind: "Name", value: "triples_bool_exp" }
+          },
+          defaultValue: { kind: "ObjectValue", fields: [] }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "address" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "limit" }
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+          defaultValue: { kind: "IntValue", value: "100" }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "where" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "limit" }
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                { kind: "Field", name: { kind: "Name", value: "subject_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate_id" }
+                },
+                { kind: "Field", name: { kind: "Name", value: "object_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
                                   value: {
                                     kind: "Variable",
                                     name: { kind: "Name", value: "address" }
