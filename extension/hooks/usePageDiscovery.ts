@@ -58,7 +58,7 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
 
     try {
       // Extract hostname for matching
-      const hostname = new URL(pageUrl).hostname
+      const hostname = new URL(pageUrl).hostname.toLowerCase().replace(/^www\./, '')
 
       logger.debug('Fetching discovery status', { pageUrl, hostname, walletAddress })
       console.log('🔍 [usePageDiscovery] Query params:', {

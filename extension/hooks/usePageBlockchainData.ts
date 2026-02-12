@@ -106,7 +106,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       logger.info('Fetching blockchain data for URL', url)
 
       // Extract hostname from URL for label search
-      const hostname = new URL(url).hostname
+      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '')
 
       // First, get atom term_ids from the atoms table (using document from @0xsofia/graphql)
       const atomIdsResponse = await intuitionGraphqlClient.request(AtomIdsByUrlDocument, {
