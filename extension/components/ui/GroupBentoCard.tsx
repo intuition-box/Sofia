@@ -16,11 +16,13 @@ interface GroupBentoCardProps {
 
 // Certification colors
 const CERTIFICATION_COLORS: Record<CertificationType, string> = {
-  work: '#3B82F6',      // blue
-  learning: '#10B981',  // green
-  fun: '#F59E0B',       // yellow/orange
+  trusted: '#22C55E',     // green
+  distrusted: '#EF4444',  // red
+  work: '#3B82F6',        // blue
+  learning: '#06B6D4',    // cyan
+  fun: '#F59E0B',         // yellow/orange
   inspiration: '#8B5CF6', // purple
-  buying: '#EF4444'     // red
+  buying: '#EC4899'       // rose
 }
 
 // Get favicon URL from domain

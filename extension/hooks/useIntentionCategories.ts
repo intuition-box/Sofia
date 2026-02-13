@@ -28,6 +28,8 @@ export function useIntentionCategories(walletAddress?: string): UseIntentionCate
   // Transform domain-grouped data into intention-grouped categories
   const categories = useMemo(() => {
     const categoryMap: Record<IntentionType, CategoryUrl[]> = {
+      trusted: [],
+      distrusted: [],
       work: [],
       learning: [],
       fun: [],

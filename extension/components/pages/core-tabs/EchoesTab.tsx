@@ -3,16 +3,20 @@
  * Displays intention groups as a bento grid with detail view
  */
 
-import { useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useIntentionGroups, useGoldSystem, type SortOption } from '../../../hooks'
+import type { IntentionType } from '../../../types/intentionCategories'
+import { INTENTION_CONFIG } from '../../../types/intentionCategories'
 import GroupBentoCard from '../../ui/GroupBentoCard'
 import GroupDetailView from '../../ui/GroupDetailView'
 import SofiaLoader from '../../ui/SofiaLoader'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
+import '../../styles/CircleFeedTab.css'
 
 const EchoesTab = () => {
+  const [certFilter, setCertFilter] = useState<IntentionType | 'all'>('all')
   const { totalGold } = useGoldSystem()
   const {
     groups,
@@ -48,9 +52,14 @@ const EchoesTab = () => {
   ]
 
   // Filter out ENS names (.eth) and wallet addresses (0x)
-  const filteredGroups = groups.filter(g =>
+  const baseGroups = groups.filter(g =>
     !g.domain.endsWith('.eth') && !g.domain.startsWith('0x')
   )
+
+  // Filter by certification type
+  const filteredGroups = certFilter === 'all'
+    ? baseGroups
+    : baseGroups.filter(g => (g.certificationBreakdown[certFilter] || 0) > 0)
 
   const handleDeleteGroup = async (groupId: string) => {
     const group = groups.find(g => g.id === groupId)
@@ -107,8 +116,8 @@ const EchoesTab = () => {
     )
   }
 
-  // Empty state
-  if (filteredGroups.length === 0) {
+  // Empty state (no groups at all)
+  if (baseGroups.length === 0) {
     return (
       <div className="triples-container">
         <div className="groups-empty">
@@ -119,11 +128,6 @@ const EchoesTab = () => {
         </div>
       </div>
     )
-  }
-
-  // All cards same size
-  const getCardSize = (): 'small' | 'tall' => {
-    return 'small'
   }
 
   return (
@@ -143,21 +147,48 @@ const EchoesTab = () => {
             ))}
           </div>
         </div>
-        {/* Unlock Proofs CTA */}
-        
 
-
-        <div className="bento-grid">
-          {filteredGroups.map((group) => (
-            <GroupBentoCard
-              key={group.id}
-              group={group}
-              onClick={() => selectGroup(group.id)}
-              onDelete={handleDeleteGroup}
-              size={getCardSize()}
-            />
-          ))}
+        {/* Certification filter chips */}
+        <div className="circle-category-chips">
+          <button
+            className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setCertFilter('all')}
+          >
+            All
+          </button>
+          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
+            ([type, config]) => (
+              <button
+                key={type}
+                className={`circle-chip ${certFilter === type ? 'active' : ''}`}
+                style={{
+                  '--chip-color': config.color
+                } as React.CSSProperties}
+                onClick={() => setCertFilter(type)}
+              >
+                {config.label}
+              </button>
+            )
+          )}
         </div>
+
+        {filteredGroups.length === 0 ? (
+          <div className="groups-empty">
+            <p>No groups match this filter</p>
+          </div>
+        ) : (
+          <div className="bento-grid">
+            {filteredGroups.map((group) => (
+              <GroupBentoCard
+                key={group.id}
+                group={group}
+                onClick={() => selectGroup(group.id)}
+                onDelete={handleDeleteGroup}
+                size="small"
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
