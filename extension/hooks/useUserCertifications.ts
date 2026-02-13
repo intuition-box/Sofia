@@ -6,7 +6,7 @@
 
 import { useEffect, useCallback, useRef, useSyncExternalStore } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { PREDICATE_NAMES } from '../lib/config/chainConfig'
+import { PREDICATE_IDS, PREDICATE_NAMES } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
 import { normalizeUrl } from '../lib/utils'
@@ -42,12 +42,29 @@ const TRUST_PREDICATE_LABELS = [
   PREDICATE_NAMES.DISTRUST           // "distrust"
 ].filter(Boolean)
 
-// All predicate labels to query
+// All predicate labels to query (fallback for testnet where IDs are empty)
 const ALL_PREDICATE_LABELS = [
   ...INTENTION_PREDICATE_LABELS,
   ...OAUTH_PREDICATE_LABELS,
   ...TRUST_PREDICATE_LABELS
 ]
+
+// All predicate IDs for precise filtering (mainnet has all IDs, testnet partial)
+// Query uses _or: IDs take priority, labels as fallback
+const ALL_PREDICATE_IDS = [
+  PREDICATE_IDS.VISITS_FOR_WORK,
+  PREDICATE_IDS.VISITS_FOR_LEARNING,
+  PREDICATE_IDS.VISITS_FOR_FUN,
+  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
+  PREDICATE_IDS.VISITS_FOR_BUYING,
+  PREDICATE_IDS.FOLLOW,
+  PREDICATE_IDS.MEMBER_OF,
+  PREDICATE_IDS.OWNER_OF,
+  PREDICATE_IDS.TOP_ARTIST,
+  PREDICATE_IDS.TOP_TRACK,
+  PREDICATE_IDS.TRUSTS,
+  PREDICATE_IDS.DISTRUST
+].filter(Boolean)
 
 // Map trust predicate labels to certification types
 const TRUST_LABEL_TO_TYPE: Record<string, string> = {
@@ -127,7 +144,7 @@ function getSnapshot(): StoreState {
 }
 
 async function fetchCertifications(walletAddress: string): Promise<void> {
-  if (!walletAddress || ALL_PREDICATE_LABELS.length === 0) {
+  if (!walletAddress || (ALL_PREDICATE_IDS.length === 0 && ALL_PREDICATE_LABELS.length === 0)) {
     storeState = { ...storeState, certifications: new Map(), loading: false }
     emitChange()
     return
@@ -143,20 +160,26 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
   emitChange()
 
   try {
-    logger.info('Fetching ALL user certifications with pagination', { predicateLabels: ALL_PREDICATE_LABELS })
+    logger.info('Fetching ALL user certifications with pagination', {
+      predicateIds: ALL_PREDICATE_IDS.length,
+      predicateLabels: ALL_PREDICATE_LABELS.length
+    })
 
-    // Use predicate labels instead of IDs for testnet compatibility - PAGINATED
-    // Using document from @0xsofia/graphql
+    // Query uses _or: predicate_id (precise, mainnet) + label fallback (testnet)
     interface CertTripleResult {
       term_id?: string
-      predicate: { label: string }
+      predicate: { term_id?: string; label: string }
       object: { label: string; value?: { thing?: { url?: string } } }
       positions?: Array<{ shares: string }>
     }
 
     const triples = await intuitionGraphqlClient.fetchAllPages<CertTripleResult>(
       UserAllCertificationsDocument,
-      { predicateLabels: ALL_PREDICATE_LABELS, userAddress: walletAddress.toLowerCase() },
+      {
+        predicateIds: ALL_PREDICATE_IDS,
+        predicateLabels: ALL_PREDICATE_LABELS,
+        userAddress: walletAddress.toLowerCase()
+      },
       'triples',
       100,
       100

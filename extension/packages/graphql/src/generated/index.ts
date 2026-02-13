@@ -17996,6 +17996,7 @@ export type GetUserIntentionPositionsQuery = {
 }
 
 export type UserAllCertificationsQueryVariables = Exact<{
+  predicateIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
   predicateLabels:
     | Array<Scalars["String"]["input"]>
     | Scalars["String"]["input"]
@@ -18010,7 +18011,11 @@ export type UserAllCertificationsQuery = {
     __typename?: "triples"
     term_id: string
     created_at: any
-    predicate?: { __typename?: "atoms"; label?: string | null } | null
+    predicate?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
     object?: {
       __typename?: "atoms"
       term_id: string
@@ -28730,9 +28735,9 @@ useGetUserIntentionPositionsQuery.fetcher = (
   >(GetUserIntentionPositionsDocument, variables, options)
 
 export const UserAllCertificationsDocument = `
-    query UserAllCertifications($predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
+    query UserAllCertifications($predicateIds: [String!]!, $predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
   triples(
-    where: {predicate: {label: {_in: $predicateLabels}}, positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}
+    where: {_or: [{predicate_id: {_in: $predicateIds}}, {predicate: {label: {_in: $predicateLabels}}}], positions: {account_id: {_ilike: $userAddress}, shares: {_gt: "0"}}}
     limit: $limit
     offset: $offset
     order_by: {created_at: desc}
@@ -28740,6 +28745,7 @@ export const UserAllCertificationsDocument = `
     term_id
     created_at
     predicate {
+      term_id
       label
     }
     object {
@@ -51694,6 +51700,26 @@ export const UserAllCertifications = {
           kind: "VariableDefinition",
           variable: {
             kind: "Variable",
+            name: { kind: "Name", value: "predicateIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
             name: { kind: "Name", value: "predicateLabels" }
           },
           type: {
@@ -51759,29 +51785,71 @@ export const UserAllCertifications = {
                   fields: [
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "predicate" },
+                      name: { kind: "Name", value: "_or" },
                       value: {
-                        kind: "ObjectValue",
-                        fields: [
+                        kind: "ListValue",
+                        values: [
                           {
-                            kind: "ObjectField",
-                            name: { kind: "Name", value: "label" },
-                            value: {
-                              kind: "ObjectValue",
-                              fields: [
-                                {
-                                  kind: "ObjectField",
-                                  name: { kind: "Name", value: "_in" },
-                                  value: {
-                                    kind: "Variable",
-                                    name: {
-                                      kind: "Name",
-                                      value: "predicateLabels"
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "predicate_id" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "_in" },
+                                      value: {
+                                        kind: "Variable",
+                                        name: {
+                                          kind: "Name",
+                                          value: "predicateIds"
+                                        }
+                                      }
                                     }
-                                  }
+                                  ]
                                 }
-                              ]
-                            }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "predicate" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "label" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_in"
+                                            },
+                                            value: {
+                                              kind: "Variable",
+                                              name: {
+                                                kind: "Name",
+                                                value: "predicateLabels"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -51875,6 +51943,10 @@ export const UserAllCertifications = {
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
                       { kind: "Field", name: { kind: "Name", value: "label" } }
                     ]
                   }

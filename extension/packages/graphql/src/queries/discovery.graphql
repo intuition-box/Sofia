@@ -170,7 +170,9 @@ query GetUserIntentionPositions(
 }
 
 # Get all user certifications (trust, distrust, intentions)
+# Uses _or: predicate_id (precise, mainnet) + label fallback (testnet, dynamic IDs)
 query UserAllCertifications(
+  $predicateIds: [String!]!
   $predicateLabels: [String!]!
   $userAddress: String!
   $limit: Int!
@@ -178,7 +180,10 @@ query UserAllCertifications(
 ) {
   triples(
     where: {
-      predicate: { label: { _in: $predicateLabels } }
+      _or: [
+        { predicate_id: { _in: $predicateIds } }
+        { predicate: { label: { _in: $predicateLabels } } }
+      ]
       positions: {
         account_id: { _ilike: $userAddress }
         shares: { _gt: "0" }
@@ -191,6 +196,7 @@ query UserAllCertifications(
     term_id
     created_at
     predicate {
+      term_id
       label
     }
     object {

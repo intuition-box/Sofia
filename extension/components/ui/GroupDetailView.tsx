@@ -36,6 +36,7 @@ interface GroupDetailViewProps {
 // Certification options (for display/filtering) — colors match INTENTION_CONFIG
 const CERTIFICATIONS: { type: CertificationType; label: string; color: string }[] = [
   { type: 'trusted', label: 'Trusted', color: '#22C55E' },
+  { type: 'distrusted', label: 'Distrusted', color: '#EF4444' },
   { type: 'work', label: 'Work', color: '#3B82F6' },
   { type: 'learning', label: 'Learning', color: '#06B6D4' },
   { type: 'fun', label: 'Fun', color: '#F59E0B' },
@@ -59,6 +60,33 @@ const intentionToCertification: Record<IntentionPurpose, CertificationType> = {
   for_fun: 'fun',
   for_inspiration: 'inspiration',
   for_buying: 'buying'
+}
+
+/**
+ * Get effective certification status for a URL.
+ * Pipeline 2 (useGroupOnChainCertifications) may miss trust/distrust triples
+ * because it queries by predicate label (case-sensitive _in).
+ * Pipeline 1 (useOnChainIntentionGroups) queries by predicate ID and stores
+ * the result in urlRecord.onChainCertification during the merge.
+ * This helper uses Pipeline 1 data as fallback.
+ */
+function getEffectiveCertStatus(
+  urlRecord: GroupUrlRecord,
+  onChainStatus: UrlCertificationStatus | undefined
+): { isCertified: boolean; labels: string[] } {
+  if (onChainStatus?.isCertifiedOnChain) {
+    return {
+      isCertified: true,
+      labels: onChainStatus.allCertificationLabels || []
+    }
+  }
+  if (urlRecord.isOnChain && urlRecord.onChainCertification) {
+    return {
+      isCertified: true,
+      labels: [urlRecord.onChainCertification]
+    }
+  }
+  return { isCertified: false, labels: [] }
 }
 
 // Get favicon URL
@@ -106,12 +134,10 @@ const UrlRow = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // ONLY on-chain certifications count for badges
-  // Local certification (urlRecord.certification) is just for pre-fill, not for display
-  const isCertifiedOnChain = onChainStatus?.isCertifiedOnChain === true
+  // Use Pipeline 2 data with Pipeline 1 fallback for trust/distrust
+  const { isCertified: isCertifiedOnChain, labels: allCertLabels } =
+    getEffectiveCertStatus(urlRecord, onChainStatus)
 
-  // Get all certification labels from on-chain ONLY
-  const allCertLabels = onChainStatus?.allCertificationLabels || []
   const allCertInfos = allCertLabels
     .map(label => CERTIFICATIONS.find(c => c.type === label))
     .filter(Boolean) as typeof CERTIFICATIONS
@@ -141,7 +167,7 @@ const UrlRow = ({
           <div className="url-meta">
             <span className="url-date">{formatDate(urlRecord.addedAt)}</span>
             <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
-            {onChainStatus?.isCertifiedOnChain && (
+            {isCertifiedOnChain && (
               <img src={onChainBadgeIcon} alt="" className="on-chain-badge" title="Certified on-chain" />
             )}
           </div>
@@ -345,8 +371,16 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     if (result.success) setAmplified(true)
   }
 
-  // Use on-chain stats for certification count
-  const certifiedCount = onChainStats?.certifiedCount ?? group.certifiedCount
+  // Use on-chain stats for certification count, with Pipeline 1 fallback
+  const certifiedCount = useMemo(() => {
+    // Count from Pipeline 2 (useGroupOnChainCertifications)
+    const p2Count = onChainStats?.certifiedCount ?? 0
+    // Count from Pipeline 1 fallback (urlRecord.onChainCertification)
+    const p1Count = group.urls.filter(u =>
+      !u.removed && u.isOnChain && u.onChainCertification
+    ).length
+    return Math.max(p2Count, p1Count, group.certifiedCount)
+  }, [onChainStats, group.urls, group.certifiedCount])
 
   // IMPORTANT: currentLevel is the CONFIRMED level (from group.level after explicit level up)
   // NOT the calculated level from certifications count
@@ -362,27 +396,24 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
   ))
 
-  // Filter URLs - ONLY use on-chain status (not local certification)
+  // Filter URLs - use Pipeline 2 with Pipeline 1 fallback for trust/distrust
   const filteredUrls = group.urls.filter(url => {
     if (url.removed) return false
-    const onChainStatus = getUrlCertification(url.url)
-    const isCertifiedOnChain = onChainStatus?.isCertifiedOnChain === true
+    const status = getEffectiveCertStatus(url, getUrlCertification(url.url))
 
     if (filter === 'all') return true
-    if (filter === 'uncertified') return !isCertifiedOnChain
-    // For certification type filters, check on-chain labels only
-    const certLabels = onChainStatus?.allCertificationLabels || []
-    return certLabels.includes(filter)
+    if (filter === 'uncertified') return !status.isCertified
+    return status.labels.includes(filter)
   })
 
   // Sort by most recent first
   const sortedUrls = [...filteredUrls].sort((a, b) => b.addedAt - a.addedAt)
 
-  // Calculate uncertified count using ONLY on-chain data
+  // Calculate uncertified count using Pipeline 2 + Pipeline 1 fallback
   const uncertifiedCount = group.urls.filter(u => {
     if (u.removed) return false
-    const onChainStatus = getUrlCertification(u.url)
-    return onChainStatus?.isCertifiedOnChain !== true
+    const status = getEffectiveCertStatus(u, getUrlCertification(u.url))
+    return !status.isCertified
   }).length
 
   // Handle intention selection - opens the WeightModal
@@ -503,6 +534,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   const handleRemove = async (url: string) => {
     const onChainStatus = getUrlCertification(url)
+    const urlRecord = group.urls.find(u => u.url === url)
+    const effectiveStatus = urlRecord
+      ? getEffectiveCertStatus(urlRecord, onChainStatus)
+      : { isCertified: false, labels: [] }
 
     // If URL is certified on-chain, redeem positions first
     if (onChainStatus?.isCertifiedOnChain && onChainStatus.tripleDetails?.length) {
@@ -685,12 +720,13 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           Uncertified ({uncertifiedCount})
         </button>
         {CERTIFICATIONS.map(cert => {
-          // Count from on-chain data only (not local certificationBreakdown)
-          const count = onChainStats?.certifiedUrls
-            ? Array.from(onChainStats.certifiedUrls.values()).filter(
-                status => status.allCertificationLabels?.includes(cert.type)
-              ).length
-            : 0
+          // Count from Pipeline 2 + Pipeline 1 fallback
+          let count = 0
+          for (const u of group.urls) {
+            if (u.removed) continue
+            const status = getEffectiveCertStatus(u, getUrlCertification(u.url))
+            if (status.labels.includes(cert.type)) count++
+          }
           if (count === 0) return null
           return (
             <button
