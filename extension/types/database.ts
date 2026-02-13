@@ -83,7 +83,7 @@ export interface GroupUrlRecord {
   favicon?: string
   addedAt: number
   attentionTime: number
-  certification: 'work' | 'learning' | 'fun' | 'inspiration' | 'buying' | null
+  certification: 'work' | 'learning' | 'fun' | 'inspiration' | 'buying' | 'trusted' | 'distrusted' | null
   certifiedAt?: number
   removed: boolean
   oauthPredicate?: string

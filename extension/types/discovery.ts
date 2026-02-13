@@ -50,6 +50,7 @@ export interface UserDiscoveryStats {
   contributorCount: number
   totalCertifications: number
   intentionBreakdown: Record<IntentionPurpose, number>
+  trustBreakdown: { trusted: number; distrusted: number }
   discoveryGold: {
     fromPioneer: number
     fromExplorer: number

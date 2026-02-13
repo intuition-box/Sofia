@@ -34,6 +34,8 @@ const predicateLabelToType = (label: string): IntentionType | null => {
   if (trimmed === 'visits for fun') return 'fun'
   if (trimmed === 'visits for inspiration') return 'inspiration'
   if (trimmed === 'visits for buying') return 'buying'
+  if (trimmed === 'trusts') return 'trusted'
+  if (trimmed === 'distrust') return 'distrusted'
   return null
 }
 

@@ -13,7 +13,7 @@ import { createServiceLogger } from '../utils/logger'
 const logger = createServiceLogger('GroupManager')
 
 // Certification types
-export type CertificationType = 'work' | 'learning' | 'fun' | 'inspiration' | 'buying'
+export type CertificationType = 'work' | 'learning' | 'fun' | 'inspiration' | 'buying' | 'trusted' | 'distrusted'
 
 export interface CertifyResult {
   success: boolean
@@ -239,7 +239,9 @@ class GroupManagerService {
       learning: 0,
       fun: 0,
       inspiration: 0,
-      buying: 0
+      buying: 0,
+      trusted: 0,
+      distrusted: 0
     }
 
     for (const url of group.urls) {

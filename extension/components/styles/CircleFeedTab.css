@@ -43,7 +43,7 @@
 /* Category Filter Chips */
 .circle-category-chips {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
   padding: 8px 0;
   scrollbar-width: none;
@@ -57,9 +57,9 @@
 
 .circle-chip {
   flex-shrink: 0;
-  padding: 6px 14px;
+  padding: 5px 10px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
