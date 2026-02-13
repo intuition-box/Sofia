@@ -22,6 +22,12 @@ const intentionToCertification: Record<IntentionPurpose, string> = {
   for_buying: 'buying'
 }
 
+// Map trust predicate labels to certification types
+const trustToCertification: Record<string, string> = {
+  trusts: 'trusted',
+  distrust: 'distrusted'
+}
+
 export interface UrlCertificationStatus {
   url: string
   isCertifiedOnChain: boolean
@@ -135,16 +141,17 @@ export const useGroupOnChainCertifications = (
           continue
         }
 
-        // Build all certification labels (intentions + OAuth predicates)
+        // Build all certification labels (intentions + OAuth + trust predicates)
         const intentionLabels = certification.intentions.map(i => intentionToCertification[i])
         const oauthLabels = certification.oauthPredicates || []
-        const allLabels = [...intentionLabels, ...oauthLabels]
+        const trustLabels = (certification.trustPredicates || []).map(t => trustToCertification[t] || t)
+        const allLabels = [...intentionLabels, ...oauthLabels, ...trustLabels]
 
-        // Primary label: prefer intention, fall back to OAuth predicate
+        // Primary label: prefer intention, fall back to trust, then OAuth predicate
         const primaryIntention = certification.intentions[0]
         const primaryLabel = primaryIntention
           ? intentionToCertification[primaryIntention]
-          : oauthLabels[0]
+          : trustLabels[0] || oauthLabels[0]
 
         certifiedUrls.set(url, {
           url,

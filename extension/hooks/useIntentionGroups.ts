@@ -92,11 +92,13 @@ function calculateGroupStats(group: IntentionGroupRecord): IntentionGroupWithSta
     learning: 0,
     fun: 0,
     inspiration: 0,
-    buying: 0
+    buying: 0,
+    trusted: 0,
+    distrusted: 0
   }
 
   for (const url of activeUrls) {
-    if (url.certification) {
+    if (url.certification && url.certification in breakdown) {
       breakdown[url.certification]++
     }
   }
@@ -230,6 +232,18 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         const activeUrls = existing.urls.filter(u => !u.removed)
         existing.activeUrlCount = activeUrls.length
         existing.certifiedCount = activeUrls.filter(u => u.isOnChain).length
+
+        // Recalculate certification breakdown from on-chain data
+        const breakdown: Record<CertificationType, number> = {
+          work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, trusted: 0, distrusted: 0
+        }
+        for (const url of activeUrls) {
+          const cert = url.onChainCertification
+          if (cert && cert in breakdown) {
+            breakdown[cert as CertificationType]++
+          }
+        }
+        existing.certificationBreakdown = breakdown
         // Restore level from on-chain if local level is lower (e.g., after cache clear)
         // Use MAX of local level and on-chain calculated level
         if (onChain.level > existing.level) {
@@ -268,7 +282,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
           level: onChain.level,
           activeUrlCount: onChain.urls.length,
           certifiedCount: onChain.certifiedCount,
-          certificationBreakdown: { work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0 },
+          certificationBreakdown: { work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, trusted: 0, distrusted: 0 },
           isVirtualGroup: true,
           currentPredicate: null,
           predicateHistory: [],

@@ -36,11 +36,24 @@ const OAUTH_PREDICATE_LABELS: string[] = [
   PREDICATE_NAMES.AM,               // Identity: "I am username" (Discord, Twitter)
 ].filter(Boolean)
 
+// Trust/distrust predicate labels
+const TRUST_PREDICATE_LABELS = [
+  PREDICATE_NAMES.TRUSTS,            // "trusts"
+  PREDICATE_NAMES.DISTRUST           // "distrust"
+].filter(Boolean)
+
 // All predicate labels to query
 const ALL_PREDICATE_LABELS = [
   ...INTENTION_PREDICATE_LABELS,
-  ...OAUTH_PREDICATE_LABELS
+  ...OAUTH_PREDICATE_LABELS,
+  ...TRUST_PREDICATE_LABELS
 ]
+
+// Map trust predicate labels to certification types
+const TRUST_LABEL_TO_TYPE: Record<string, string> = {
+  'trusts': 'trusted',
+  'distrust': 'distrusted'
+}
 
 // Map predicate labels to intention types (handle both with/without trailing space)
 const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
@@ -64,6 +77,7 @@ export interface CertificationEntry {
   label: string                     // The object label (e.g., "youtube.com/watch?v=xxx")
   intentions: IntentionPurpose[]    // Intention predicates (for_work, for_learning, etc.)
   oauthPredicates: string[]         // OAuth predicates (follow, member_of, etc.)
+  trustPredicates: string[]         // Trust predicates (trusts, distrust)
   isRootDomain: boolean             // True if label has no path (e.g., "youtube.com")
   triples: TripleDetail[]           // All triples for this URL (for redeem operations)
 }
@@ -161,14 +175,15 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
       const objectLabel = triple.object?.label || ''
       const predicateLabel = triple.predicate?.label || ''
 
-      // Check if it's an intention predicate or OAuth predicate
+      // Check if it's an intention, OAuth, or trust predicate
       const intention = PREDICATE_LABEL_TO_INTENTION[predicateLabel]
       const isOAuthPredicate = OAUTH_PREDICATE_LABELS.includes(predicateLabel)
+      const isTrustPredicate = predicateLabel in TRUST_LABEL_TO_TYPE
 
       // Debug: Log each triple processing
-      logger.debug('Processing triple:', { objectLabel, predicateLabel, intention, isOAuthPredicate })
+      logger.debug('Processing triple:', { objectLabel, predicateLabel, intention, isOAuthPredicate, isTrustPredicate })
 
-      if (!objectLabel || (!intention && !isOAuthPredicate)) continue
+      if (!objectLabel || (!intention && !isOAuthPredicate && !isTrustPredicate)) continue
 
       // Use URL field as primary key (new atoms have title as name, URL in value.thing.url)
       // Fallback to label for old atoms where name = normalized URL
@@ -211,6 +226,9 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
         if (isOAuthPredicate && !existing.oauthPredicates.includes(predicateLabel)) {
           existing.oauthPredicates.push(predicateLabel)
         }
+        if (isTrustPredicate && !existing.trustPredicates.includes(predicateLabel)) {
+          existing.trustPredicates.push(predicateLabel)
+        }
         // Add triple detail if not already present
         if (tripleDetail.tripleTermId && !existing.triples.some(t => t.tripleTermId === tripleDetail.tripleTermId)) {
           existing.triples.push(tripleDetail)
@@ -220,6 +238,7 @@ async function fetchCertifications(walletAddress: string): Promise<void> {
           label: normalizedLabel,
           intentions: intention ? [intention] : [],
           oauthPredicates: isOAuthPredicate ? [predicateLabel] : [],
+          trustPredicates: isTrustPredicate ? [predicateLabel] : [],
           isRootDomain,
           triples: tripleDetail.tripleTermId ? [tripleDetail] : []
         })

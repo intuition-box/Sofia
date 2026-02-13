@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
-import { useIntentionGroups, useGoldSystem, type SortOption } from '../../../hooks'
+import { useIntentionGroups, type SortOption } from '../../../hooks'
 import type { IntentionType } from '../../../types/intentionCategories'
 import { INTENTION_CONFIG } from '../../../types/intentionCategories'
 import GroupBentoCard from '../../ui/GroupBentoCard'
@@ -17,7 +17,6 @@ import '../../styles/CircleFeedTab.css'
 
 const EchoesTab = () => {
   const [certFilter, setCertFilter] = useState<IntentionType | 'all'>('all')
-  const { totalGold } = useGoldSystem()
   const {
     groups,
     selectedGroup,
@@ -134,7 +133,6 @@ const EchoesTab = () => {
     <div className="triples-container">
       <div className="groups-section">
         <div className="groups-header">
-          <span className="groups-gold-badge">{totalGold} Gold</span>
           <div className="sort-buttons">
             {sortOptions.map(option => (
               <button

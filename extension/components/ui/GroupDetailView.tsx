@@ -33,13 +33,14 @@ interface GroupDetailViewProps {
   onRefresh?: () => Promise<void>
 }
 
-// Certification options (for display/filtering)
+// Certification options (for display/filtering) — colors match INTENTION_CONFIG
 const CERTIFICATIONS: { type: CertificationType; label: string; color: string }[] = [
+  { type: 'trusted', label: 'Trusted', color: '#22C55E' },
   { type: 'work', label: 'Work', color: '#3B82F6' },
-  { type: 'learning', label: 'Learning', color: '#10B981' },
+  { type: 'learning', label: 'Learning', color: '#06B6D4' },
   { type: 'fun', label: 'Fun', color: '#F59E0B' },
   { type: 'inspiration', label: 'Inspiration', color: '#8B5CF6' },
-  { type: 'buying', label: 'Buying', color: '#EF4444' }
+  { type: 'buying', label: 'Buying', color: '#EC4899' }
 ]
 
 // Intention options for inline rendering in UrlRow
