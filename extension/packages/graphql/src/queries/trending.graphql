@@ -1,0 +1,69 @@
+# Get trending certifications for a specific predicate type
+# Returns top triples ordered by position_count (number of unique certifiers)
+# Used by: useTrendingCertifications
+query GetTrendingByPredicate(
+  $predicateId: String!
+  $limit: Int!
+  $offset: Int!
+) {
+  total: triples_aggregate(
+    where: {
+      predicate_id: { _eq: $predicateId }
+      triple_vault: { position_count: { _gt: 0 } }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  triples(
+    where: {
+      predicate_id: { _eq: $predicateId }
+      triple_vault: { position_count: { _gt: 0 } }
+    }
+    order_by: { triple_vault: { position_count: desc } }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    created_at
+    object {
+      term_id
+      label
+      image
+      value {
+        thing {
+          url
+        }
+      }
+    }
+    triple_vault {
+      position_count
+      total_shares
+      total_assets
+    }
+  }
+}
+
+# Get certifiers (position holders) for a specific triple
+# Used by: TrendingTab detail view on click
+query GetTripleCertifiers(
+  $termId: String!
+  $limit: Int!
+) {
+  positions(
+    where: {
+      vault: { term_id: { _eq: $termId } }
+    }
+    order_by: { shares: desc }
+    limit: $limit
+  ) {
+    account {
+      id
+      label
+      image
+    }
+    shares
+    created_at
+  }
+}

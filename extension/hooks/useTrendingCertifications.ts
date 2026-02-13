@@ -1,0 +1,209 @@
+/**
+ * useTrendingCertifications Hook
+ * Fetches trending certifications across ALL users for each predicate category
+ * Uses direct GraphQL client (not React Query hooks in a loop)
+ */
+
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
+import { GetTrendingByPredicateDocument, GetTripleCertifiersDocument } from '@0xsofia/graphql'
+import { PREDICATE_IDS } from '../lib/config/chainConfig'
+import { createHookLogger } from '../lib/utils/logger'
+import type { IntentionType } from '../types/intentionCategories'
+
+const logger = createHookLogger('useTrendingCertifications')
+
+// Map each IntentionType to its predicate ID
+const TRENDING_CATEGORIES: { type: IntentionType; predicateId: string }[] = [
+  { type: 'trusted', predicateId: PREDICATE_IDS.TRUSTS },
+  { type: 'distrusted', predicateId: PREDICATE_IDS.DISTRUST },
+  { type: 'work', predicateId: PREDICATE_IDS.VISITS_FOR_WORK },
+  { type: 'learning', predicateId: PREDICATE_IDS.VISITS_FOR_LEARNING },
+  { type: 'fun', predicateId: PREDICATE_IDS.VISITS_FOR_FUN },
+  { type: 'inspiration', predicateId: PREDICATE_IDS.VISITS_FOR_INSPIRATION },
+  { type: 'buying', predicateId: PREDICATE_IDS.VISITS_FOR_BUYING },
+].filter(c => !!c.predicateId)
+
+export interface Certifier {
+  accountId: string
+  label: string
+  image: string | null
+  shares: string
+}
+
+export interface TrendingItem {
+  termId: string
+  objectLabel: string
+  objectUrl: string
+  domain: string
+  positionCount: number
+  totalShares: string
+  createdAt: string
+}
+
+export interface TrendingCategory {
+  type: IntentionType
+  items: TrendingItem[]
+  totalCount: number
+}
+
+export interface UseTrendingResult {
+  categories: TrendingCategory[]
+  loading: boolean
+  error: string | null
+  refetchAll: () => Promise<void>
+  available: boolean  // false on testnet when no predicate IDs
+  fetchCertifiers: (termId: string) => Promise<Certifier[]>
+  certifiersCache: Record<string, Certifier[]>
+  loadingCertifiers: Set<string>
+}
+
+const ITEMS_PER_CATEGORY = 10
+
+function extractDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return url.split('/')[0] || url
+  }
+}
+
+export function useTrendingCertifications(): UseTrendingResult {
+  const [categories, setCategories] = useState<TrendingCategory[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [certifiersCache, setCertifiersCache] = useState<Record<string, Certifier[]>>({})
+  const [loadingCertifiers, setLoadingCertifiers] = useState<Set<string>>(new Set())
+  const isFetchingRef = useRef(false)
+
+  const fetchAll = useCallback(async () => {
+    if (isFetchingRef.current) return
+    if (TRENDING_CATEGORIES.length === 0) {
+      setLoading(false)
+      return
+    }
+
+    isFetchingRef.current = true
+    setLoading(true)
+    setError(null)
+
+    try {
+      logger.info('Fetching trending certifications', {
+        categories: TRENDING_CATEGORIES.length
+      })
+
+      const promises = TRENDING_CATEGORIES.map(async ({ type, predicateId }) => {
+        const data = await intuitionGraphqlClient.request(
+          GetTrendingByPredicateDocument,
+          { predicateId, limit: ITEMS_PER_CATEGORY, offset: 0 }
+        )
+        return { type, data }
+      })
+
+      const results = await Promise.allSettled(promises)
+
+      const cats: TrendingCategory[] = results.map((result, i) => {
+        const type = TRENDING_CATEGORIES[i].type
+
+        if (result.status === 'fulfilled') {
+          const { data } = result.value
+          const triples = data?.triples || []
+
+          const ENS_SUFFIXES = ['.eth', '.box']
+
+          const items: TrendingItem[] = triples
+            .filter((triple: any) => {
+              const label = (triple.object?.label || '').toLowerCase()
+              return !ENS_SUFFIXES.some(suffix => label.endsWith(suffix))
+            })
+            .map((triple: any) => {
+              const label = triple.object?.label || ''
+              const thingUrl = triple.object?.value?.thing?.url
+              const objectUrl = thingUrl || (label.startsWith('http') ? label : `https://${label}`)
+              const domain = extractDomain(objectUrl)
+
+              return {
+                termId: triple.term_id,
+                objectLabel: label || domain,
+                objectUrl,
+                domain,
+                positionCount: Number(triple.triple_vault?.position_count || 0),
+                totalShares: String(triple.triple_vault?.total_shares || '0'),
+                createdAt: triple.created_at
+              }
+            })
+
+          return {
+            type,
+            items,
+            totalCount: data?.total?.aggregate?.count || 0
+          }
+        }
+
+        logger.error(`Failed to fetch trending for ${type}`, result.reason)
+        return { type, items: [], totalCount: 0 }
+      })
+
+      setCategories(cats)
+      logger.info('Trending certifications loaded', {
+        categories: cats.map(c => ({ type: c.type, count: c.items.length, total: c.totalCount }))
+      })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to fetch trending'
+      logger.error('Failed to fetch trending certifications', err)
+      setError(msg)
+    } finally {
+      setLoading(false)
+      isFetchingRef.current = false
+    }
+  }, [])
+
+  const fetchCertifiers = useCallback(async (termId: string): Promise<Certifier[]> => {
+    // Return cached if available
+    if (certifiersCache[termId]) return certifiersCache[termId]
+
+    setLoadingCertifiers(prev => new Set(prev).add(termId))
+    try {
+      const data = await intuitionGraphqlClient.request(
+        GetTripleCertifiersDocument,
+        { termId, limit: 20 }
+      )
+
+      const certifiers: Certifier[] = (data?.positions || []).map((pos: any) => ({
+        accountId: pos.account?.id || '',
+        label: pos.account?.label || pos.account?.id?.slice(0, 8) || '?',
+        image: pos.account?.image || null,
+        shares: String(pos.shares || '0')
+      }))
+
+      setCertifiersCache(prev => ({ ...prev, [termId]: certifiers }))
+      return certifiers
+    } catch (err) {
+      logger.error(`Failed to fetch certifiers for ${termId}`, err)
+      return []
+    } finally {
+      setLoadingCertifiers(prev => {
+        const next = new Set(prev)
+        next.delete(termId)
+        return next
+      })
+    }
+  }, [certifiersCache])
+
+  useEffect(() => {
+    fetchAll()
+  }, [fetchAll])
+
+  return {
+    categories,
+    loading,
+    error,
+    refetchAll: fetchAll,
+    available: TRENDING_CATEGORIES.length > 0,
+    fetchCertifiers,
+    certifiersCache,
+    loadingCertifiers
+  }
+}
+
+export default useTrendingCertifications
