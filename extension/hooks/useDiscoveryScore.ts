@@ -60,6 +60,12 @@ const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
   'visits for buying': 'for_buying'
 }
 
+// Map predicate labels to trust types
+const PREDICATE_LABEL_TO_TRUST: Record<string, 'trusted' | 'distrusted'> = {
+  'trusts': 'trusted',
+  'distrust': 'distrusted'
+}
+
 export interface DiscoveryScoreResult {
   stats: UserDiscoveryStats | null
   loading: boolean
@@ -215,18 +221,23 @@ async function fetchDiscoveryScore(walletAddress: string) {
       for_inspiration: 0,
       for_buying: 0
     }
+    const trustBreakdown = { trusted: 0, distrusted: 0 }
 
     const processedPages = new Set<string>()
 
     for (const triple of userTriples) {
       const objectId = triple.object?.term_id
-      const predicateLabel = triple.predicate?.label?.toLowerCase()
+      const predicateLabel = triple.predicate?.label
 
       if (!objectId) continue
 
       const intentionPurpose = predicateLabel ? PREDICATE_LABEL_TO_INTENTION[predicateLabel] : null
       if (intentionPurpose) {
         intentionBreakdown[intentionPurpose]++
+      }
+      const trustType = predicateLabel ? PREDICATE_LABEL_TO_TRUST[predicateLabel] : null
+      if (trustType) {
+        trustBreakdown[trustType]++
       }
 
       if (processedPages.has(objectId)) continue
@@ -254,6 +265,7 @@ async function fetchDiscoveryScore(walletAddress: string) {
       contributorCount,
       totalCertifications: processedPages.size,
       intentionBreakdown,
+      trustBreakdown,
       discoveryGold: {
         fromPioneer: goldFromPioneer,
         fromExplorer: goldFromExplorer,

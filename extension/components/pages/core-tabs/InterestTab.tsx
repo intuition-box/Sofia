@@ -14,12 +14,18 @@ import '../../styles/InterestTab.css';
 
 const logger = createHookLogger('InterestTab');
 
+// Gradients matching INTENTION_CONFIG colors
 const INTENTION_GRADIENTS: Record<IntentionPurpose, string> = {
-  for_work: 'linear-gradient(90deg, #1E40AF, #60A5FA)',
-  for_learning: 'linear-gradient(90deg, #065F46, #34D399)',
-  for_fun: 'linear-gradient(90deg,rgb(146, 122, 14), #FBBF24)',
-  for_inspiration: 'linear-gradient(90deg, #5B21B6, #C4B5FD)',
-  for_buying: 'linear-gradient(90deg,rgb(153, 84, 27), #F87171)'
+  for_work: 'linear-gradient(90deg, #1D4ED8, #3B82F6)',
+  for_learning: 'linear-gradient(90deg, #0891B2, #06B6D4)',
+  for_fun: 'linear-gradient(90deg, #D97706, #F59E0B)',
+  for_inspiration: 'linear-gradient(90deg, #6D28D9, #8B5CF6)',
+  for_buying: 'linear-gradient(90deg, #DB2777, #EC4899)'
+};
+
+const TRUST_GRADIENTS: Record<string, string> = {
+  trusted: 'linear-gradient(90deg, #16A34A, #22C55E)',
+  distrusted: 'linear-gradient(90deg, #DC2626, #EF4444)'
 };
 
 const InterestTab = () => {
@@ -39,7 +45,11 @@ const InterestTab = () => {
 
   const hasResults = interests.length > 0;
   const maxIntention = discoveryStats
-    ? Math.max(...Object.values(discoveryStats.intentionBreakdown), 1)
+    ? Math.max(
+        ...Object.values(discoveryStats.intentionBreakdown),
+        ...Object.values(discoveryStats.trustBreakdown),
+        1
+      )
     : 1;
 
   // Load cached data on mount
@@ -86,6 +96,23 @@ const InterestTab = () => {
                   style={{
                     width: `${Math.max((count / maxIntention) * 100, 3)}%`,
                     background: INTENTION_GRADIENTS[intention]
+                  }}
+                />
+              </div>
+              <span className="intention-value">{count}</span>
+            </div>
+          )
+        )}
+        {(Object.entries(discoveryStats.trustBreakdown) as ['trusted' | 'distrusted', number][]).map(
+          ([type, count]) => (
+            <div key={type} className="intention-row">
+              <span className="intention-label">{type}</span>
+              <div className="intention-bar-container">
+                <div
+                  className="intention-bar"
+                  style={{
+                    width: `${Math.max((count / maxIntention) * 100, 3)}%`,
+                    background: TRUST_GRADIENTS[type]
                   }}
                 />
               </div>
