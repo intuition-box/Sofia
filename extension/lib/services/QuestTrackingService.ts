@@ -149,6 +149,113 @@ export class QuestTrackingService {
     return streak
   }
 
+  // ── Vote tracking ──
+
+  async recordVoteActivity(): Promise<void> {
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) {
+      logger.warn('No wallet connected, cannot record vote activity')
+      return
+    }
+
+    const today = this.getToday()
+
+    // Record vote date for streak calculation
+    const dateKey = this.getStorageKey('vote_activity_dates', walletAddress)
+    const dateResult = await chrome.storage.local.get(dateKey)
+    const vote_activity_dates = dateResult[dateKey] || []
+
+    if (!vote_activity_dates.includes(today)) {
+      vote_activity_dates.push(today)
+      const cutoff = new Date(Date.now() - 120 * 86400000).toISOString().split('T')[0]
+      await chrome.storage.local.set({
+        [dateKey]: vote_activity_dates.filter((d: string) => d >= cutoff)
+      })
+    }
+
+    // Increment total vote count
+    const totalKey = this.getStorageKey('total_votes', walletAddress)
+    const totalResult = await chrome.storage.local.get(totalKey)
+    const totalVotes = totalResult[totalKey] || 0
+    await chrome.storage.local.set({ [totalKey]: totalVotes + 1 })
+
+    // Increment daily vote count (for Gold cap)
+    const dailyCountKey = this.getStorageKey('daily_vote_count', walletAddress)
+    const dailyDateKey = this.getStorageKey('daily_vote_date', walletAddress)
+    const dailyResult = await chrome.storage.local.get([dailyCountKey, dailyDateKey])
+
+    if (dailyResult[dailyDateKey] === today) {
+      await chrome.storage.local.set({ [dailyCountKey]: (dailyResult[dailyCountKey] || 0) + 1 })
+    } else {
+      await chrome.storage.local.set({ [dailyCountKey]: 1, [dailyDateKey]: today })
+    }
+  }
+
+  async hasVotedToday(): Promise<boolean> {
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) return false
+
+    const key = this.getStorageKey('vote_activity_dates', walletAddress)
+    const result = await chrome.storage.local.get(key)
+    const vote_activity_dates = result[key] || []
+    return vote_activity_dates.includes(this.getToday())
+  }
+
+  async getTotalVotes(): Promise<number> {
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) return 0
+
+    const key = this.getStorageKey('total_votes', walletAddress)
+    const result = await chrome.storage.local.get(key)
+    return result[key] || 0
+  }
+
+  async getDailyVoteCount(): Promise<number> {
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) return 0
+
+    const dailyCountKey = this.getStorageKey('daily_vote_count', walletAddress)
+    const dailyDateKey = this.getStorageKey('daily_vote_date', walletAddress)
+    const result = await chrome.storage.local.get([dailyCountKey, dailyDateKey])
+
+    if (result[dailyDateKey] !== this.getToday()) return 0
+    return result[dailyCountKey] || 0
+  }
+
+  async getCurrentVoteStreak(): Promise<number> {
+    const walletAddress = await this.getWalletAddress()
+    if (!walletAddress) return 0
+
+    const key = this.getStorageKey('vote_activity_dates', walletAddress)
+    const result = await chrome.storage.local.get(key)
+    const vote_activity_dates = result[key] || []
+
+    if (vote_activity_dates.length === 0) return 0
+
+    const sorted = [...vote_activity_dates].sort().reverse()
+    const today = this.getToday()
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+
+    if (sorted[0] !== today && sorted[0] !== yesterday) return 0
+
+    let streak = 0
+    let expected = sorted[0] === today ? today : yesterday
+
+    for (const date of sorted) {
+      if (date === expected) {
+        streak++
+        const d = new Date(expected + 'T00:00:00Z')
+        d.setUTCDate(d.getUTCDate() - 1)
+        expected = d.toISOString().split('T')[0]
+      } else if (date < expected) {
+        break
+      }
+    }
+    return streak
+  }
+
+  // ── Pulse tracking ──
+
   async recordPulseLaunch(): Promise<void> {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) {

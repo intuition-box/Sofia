@@ -16,7 +16,7 @@ export interface Quest {
   status: 'locked' | 'active' | 'completed' | 'claimable_xp'
   statusColor: string
   xpReward: number
-  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social' | 'social-link' | 'discovery' | 'gold'
+  type: 'signal' | 'bookmark' | 'oauth' | 'follow' | 'trust' | 'streak' | 'pulse' | 'curator' | 'social' | 'social-link' | 'discovery' | 'gold' | 'vote'
   milestone?: number
   claimable?: boolean
   recurringType?: 'daily' | 'weekly'
@@ -50,6 +50,9 @@ export interface UserProgress {
   totalDiscoveries: number
   uniqueIntentionTypes: number
   goldAccumulated: number
+  totalVotes: number
+  hasVotedToday: boolean
+  currentVoteStreak: number
 }
 
 // Quest system result (hook return type)
@@ -144,6 +147,15 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   { id: 'discovery-50', title: 'Cartographer', description: 'Certify 50 pages', total: 50, xpReward: 300, type: 'discovery', milestone: 50 },
   { id: 'discovery-100', title: 'World Explorer', description: 'Certify 100 pages', total: 100, xpReward: 500, type: 'discovery', milestone: 100 },
   { id: 'intention-variety', title: 'Multi-Purpose', description: 'Use all 5 intention types', total: 5, xpReward: 150, type: 'discovery', milestone: 5 },
+
+  // Vote quests
+  { id: 'daily-vote', title: 'Daily Voter', description: 'Vote once today', total: 1, xpReward: 15, type: 'vote', recurringType: 'daily' },
+  { id: 'vote-1', title: 'First Vote', description: 'Cast your first vote', total: 1, xpReward: 50, type: 'vote', milestone: 1 },
+  { id: 'vote-10', title: 'Critic', description: 'Cast 10 votes', total: 10, xpReward: 100, type: 'vote', milestone: 10 },
+  { id: 'vote-50', title: 'Judge', description: 'Cast 50 votes', total: 50, xpReward: 300, type: 'vote', milestone: 50 },
+  { id: 'vote-100', title: 'Supreme Court', description: 'Cast 100 votes', total: 100, xpReward: 500, type: 'vote', milestone: 100 },
+  { id: 'vote-streak-7', title: 'Engaged Voter', description: 'Maintain a 7-day voting streak', total: 7, xpReward: 200, type: 'vote', milestone: 7 },
+  { id: 'vote-streak-30', title: 'Civic Duty', description: 'Maintain a 30-day voting streak', total: 30, xpReward: 1000, type: 'vote', milestone: 30 },
 
   // Gold accumulation quests
   { id: 'gold-100', title: 'Gold Digger', description: 'Accumulate 100 Gold', total: 100, xpReward: 100, type: 'gold', milestone: 100 },
