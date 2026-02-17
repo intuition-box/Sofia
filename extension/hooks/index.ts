@@ -67,6 +67,8 @@ export { useQuestSystem } from './useQuestSystem'
 export { useUserQuests } from './useUserQuests'
 export { useGoldSystem } from './useGoldSystem'
 export { default as useLevelUp, type LevelUpPreview } from './useLevelUp'
+export { useDailyStreakProfit } from './useDailyStreakProfit'
+export type { DailyStreakProfitData } from './useDailyStreakProfit'
 
 // Bookmarks & Lists
 export { useBookmarks } from './useBookmarks'

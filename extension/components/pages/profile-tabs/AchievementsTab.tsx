@@ -82,6 +82,13 @@ interface AchievementsTabProps {
   onVerifySocials: () => Promise<{ success: boolean; error?: string }>
   onMarkCompleted: (questId: string) => void
   onRefresh?: () => Promise<void>
+  streakProfit?: {
+    hasPosition: boolean
+    sharesFormatted: string
+    currentValue: number
+    profit: number
+    participantCount: number
+  } | null
 }
 
 const AchievementsTab = ({
@@ -94,7 +101,8 @@ const AchievementsTab = ({
   onClaimXP,
   onVerifySocials,
   onMarkCompleted,
-  onRefresh
+  onRefresh,
+  streakProfit
 }: AchievementsTabProps) => {
   const [refreshing, setRefreshing] = useState(false)
 
@@ -151,6 +159,31 @@ const AchievementsTab = ({
         >
           {refreshing ? '...' : '\u21BB'}
         </button>
+      )}
+      {streakProfit?.hasPosition && (
+        <div className="streak-vault-card">
+          <div className="streak-vault-header">
+            <img src={streakImg} alt="" className="streak-vault-icon" />
+            <span className="streak-vault-title">Daily Streak Vault</span>
+            <span className="streak-vault-participants">{streakProfit.participantCount} streakers</span>
+          </div>
+          <div className="streak-vault-stats">
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Shares</span>
+              <span className="streak-vault-value">{streakProfit.sharesFormatted}</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Value</span>
+              <span className="streak-vault-value">{streakProfit.currentValue.toFixed(4)} TRUST</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Profit</span>
+              <span className={`streak-vault-value ${streakProfit.profit >= 0 ? 'positive' : 'negative'}`}>
+                {streakProfit.profit >= 0 ? '+' : ''}{streakProfit.profit.toFixed(4)} TRUST
+              </span>
+            </div>
+          </div>
+        </div>
       )}
       <div className="achievements-grid">
         {sorted.map((quest) => {

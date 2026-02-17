@@ -9,7 +9,8 @@ import {
   useTrustedByCount,
   useAccountStats,
   useDiscordProfile,
-  useIdentityResolution
+  useIdentityResolution,
+  useDailyStreakProfit
 } from '../../../hooks'
 import StatsTab from './StatsTab'
 import AchievementsTab from './AchievementsTab'
@@ -42,6 +43,7 @@ const AccountTab = () => {
   const { stats: discoveryStats } = useDiscoveryScore()
   const { totalGold } = useGoldSystem()
   const { isSocialVerified } = useSocialVerifier()
+  const { data: streakProfitData } = useDailyStreakProfit()
   const { displayLabel, displayAvatar } = useIdentityResolution({
     walletAddress,
     discordProfile,
@@ -187,6 +189,7 @@ const AccountTab = () => {
           onVerifySocials={async () => ({ success: false })}
           onMarkCompleted={markQuestCompleted}
           onRefresh={handleFullRefresh}
+          streakProfit={streakProfitData}
         />
       )}
 

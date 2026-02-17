@@ -1187,6 +1187,73 @@
   margin-bottom: 20px;
 }
 
+/* Streak Vault Card */
+.streak-vault-card {
+  background: linear-gradient(135deg, rgba(234, 182, 122, 0.12) 0%, rgba(106, 204, 147, 0.08) 100%);
+  border: 1px solid rgba(234, 182, 122, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.streak-vault-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.streak-vault-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.streak-vault-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #EAB67A;
+  flex: 1;
+}
+
+.streak-vault-participants {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.streak-vault-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.streak-vault-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.streak-vault-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.streak-vault-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.streak-vault-value.positive {
+  color: #6ACC93;
+}
+
+.streak-vault-value.negative {
+  color: #e57373;
+}
+
 .achievements-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
