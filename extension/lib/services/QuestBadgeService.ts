@@ -339,26 +339,21 @@ export class QuestBadgeService {
         objectId as string
       )
 
+      // Always create or deposit into the individual triple (backward compatible)
       if (tripleCheck.exists && tripleCheck.tripleVaultId) {
         txHash = await this.depositIntoBadgeTriple(walletAddress, contractAddress, tripleCheck.tripleVaultId)
       } else {
         txHash = await this.createBadgeTriple(walletAddress, contractAddress, userAtomId, predicateId, objectId)
       }
+
+      // Daily certification: also deposit into shared atom vault
+      if (questId === 'daily-certification' && DAILY_CERTIFICATION_ATOM_ID) {
+        const atomTxHash = await this.depositIntoSharedAtomVault(walletAddress, contractAddress)
+        if (atomTxHash) txHash = atomTxHash
+      }
     } else {
       // One-time quest: always create the triple
       txHash = await this.createBadgeTriple(walletAddress, contractAddress, userAtomId, predicateId, objectId)
-    }
-
-    // If daily-certification quest, also deposit into shared atom vault
-    if (questId === 'daily-certification' && DAILY_CERTIFICATION_ATOM_ID) {
-      try {
-        await this.depositIntoSharedAtomVault(walletAddress, contractAddress)
-      } catch (sharedDepositErr) {
-        // Log but don't fail the claim — the badge was already claimed
-        logger.warn('Shared atom vault deposit failed (badge still claimed)', {
-          error: sharedDepositErr instanceof Error ? sharedDepositErr.message : 'unknown'
-        })
-      }
     }
 
     return { success: true, txHash }
@@ -410,21 +405,22 @@ export class QuestBadgeService {
 
   /**
    * Deposit into the shared "Daily Certification" atom vault.
-   * Called after the normal badge claim for daily-certification quest.
+   * Called for daily-certification quest: day 1 (after triple creation) and day 2+ (only deposit).
    * Amount: 1 TRUST fixed (DAILY_STREAK_STAKE).
    */
   private static async depositIntoSharedAtomVault(
     walletAddress: string,
     contractAddress: string
-  ): Promise<void> {
-    logger.info('Depositing into shared Daily Certification atom vault', {
-      atomId: DAILY_CERTIFICATION_ATOM_ID,
-      amount: DAILY_STREAK_STAKE.toString()
-    })
-
+  ): Promise<`0x${string}`> {
     const { walletClient, publicClient } = await getClients()
     const totalDepositCost = await BlockchainService.getTotalDepositCost(DAILY_STREAK_STAKE)
     const curveId = 1n // atom vault curve
+
+    logger.info('Shared atom vault deposit', {
+      atomId: DAILY_CERTIFICATION_ATOM_ID,
+      stakeAmount: DAILY_STREAK_STAKE.toString(),
+      totalCostWithFees: totalDepositCost.toString()
+    })
 
     // Simulate first
     await publicClient.simulateContract({
@@ -461,7 +457,7 @@ export class QuestBadgeService {
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
     if (receipt.status !== 'success') {
-      throw new Error('Shared atom vault deposit failed')
+      throw new Error('Shared atom vault deposit tx reverted')
     }
 
     logger.info('Shared atom vault deposit successful', { txHash })
@@ -476,6 +472,8 @@ export class QuestBadgeService {
     } catch (trackErr) {
       logger.warn('Failed to track deposit amount', { error: trackErr })
     }
+
+    return txHash
   }
 
   /**

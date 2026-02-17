@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
-import { DAILY_CERTIFICATION_ATOM_ID } from "../lib/config/chainConfig"
+import { DAILY_CERTIFICATION_ATOM_ID, PREDICATE_IDS } from "../lib/config/chainConfig"
 import { createHookLogger } from "../lib/utils/logger"
 
 const logger = createHookLogger("useStreakLeaderboard")
@@ -16,6 +16,7 @@ const GET_STREAK_LEADERBOARD = `
     $atomId: String!
     $curveId: numeric!
     $limit: Int!
+    $predicateId: String!
   ) {
     vaults(where: { term_id: { _eq: $atomId }, curve_id: { _eq: $curveId } }) {
       current_share_price
@@ -32,6 +33,14 @@ const GET_STREAK_LEADERBOARD = `
           image
         }
         shares
+      }
+    }
+    triples(where: {
+      predicate_id: { _eq: $predicateId }
+      object: { label: { _eq: "Daily Certification" } }
+    }) {
+      subject {
+        wallet_id
       }
     }
   }
@@ -81,7 +90,8 @@ export const useStreakLeaderboard = (
         {
           atomId: DAILY_CERTIFICATION_ATOM_ID,
           curveId: "1",
-          limit
+          limit,
+          predicateId: PREDICATE_IDS.HAS_TAG
         }
       ) as {
         vaults: Array<{
@@ -94,6 +104,9 @@ export const useStreakLeaderboard = (
             shares: string
           }>
         }>
+        triples: Array<{
+          subject: { wallet_id: string } | null
+        }>
       }
 
       const vault = response?.vaults?.[0]
@@ -105,7 +118,6 @@ export const useStreakLeaderboard = (
       const price = BigInt(vault.current_share_price || "0")
       setCurrentSharePrice(vault.current_share_price || "0")
       setTotalShares(vault.total_shares || "0")
-      setTotalParticipants(vault.position_count || 0)
 
       const leaderboard: LeaderboardEntry[] = vault.positions.map(
         (pos, index) => {
@@ -128,7 +140,23 @@ export const useStreakLeaderboard = (
         }
       )
 
-      setEntries(leaderboard)
+      // Build set of verified wallets (those with has_tag Daily Certification triple)
+      const verifiedWallets = new Set(
+        (response.triples || [])
+          .map(t => t.subject?.wallet_id?.toLowerCase())
+          .filter(Boolean)
+      )
+
+      // Filter: only show accounts that have the has_tag triple
+      const verified = verifiedWallets.size > 0
+        ? leaderboard.filter(entry => verifiedWallets.has(entry.address.toLowerCase()))
+        : leaderboard // If no triples found, show all (graceful fallback)
+
+      // Re-rank after filtering
+      verified.forEach((entry, i) => { entry.rank = i + 1 })
+
+      setEntries(verified)
+      setTotalParticipants(verified.length)
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to fetch leaderboard"
       logger.error("Leaderboard fetch failed", { error: msg })
