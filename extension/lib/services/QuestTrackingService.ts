@@ -120,13 +120,13 @@ export class QuestTrackingService {
     const walletAddress = await this.getWalletAddress()
     if (!walletAddress) return 0
 
-    const key = this.getStorageKey('signal_activity_dates', walletAddress)
+    const key = this.getStorageKey('certification_activity_dates', walletAddress)
     const result = await chrome.storage.local.get(key)
-    const signal_activity_dates = result[key] || []
+    const certification_activity_dates = result[key] || []
 
-    if (signal_activity_dates.length === 0) return 0
+    if (certification_activity_dates.length === 0) return 0
 
-    const sorted = [...signal_activity_dates].sort().reverse()
+    const sorted = [...certification_activity_dates].sort().reverse()
     const today = this.getToday()
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
 

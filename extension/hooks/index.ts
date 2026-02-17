@@ -69,6 +69,8 @@ export { useGoldSystem } from './useGoldSystem'
 export { default as useLevelUp, type LevelUpPreview } from './useLevelUp'
 export { useDailyStreakProfit } from './useDailyStreakProfit'
 export type { DailyStreakProfitData } from './useDailyStreakProfit'
+export { useStreakLeaderboard } from './useStreakLeaderboard'
+export type { LeaderboardEntry } from './useStreakLeaderboard'
 
 // Bookmarks & Lists
 export { useBookmarks } from './useBookmarks'

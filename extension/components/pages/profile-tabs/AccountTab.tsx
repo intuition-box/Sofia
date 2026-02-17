@@ -37,7 +37,7 @@ const AccountTab = () => {
   // Data hooks
   const discordProfile = useDiscordProfile(walletAddress)
   const { signalsCreated } = useAccountStats(walletAddress ?? undefined)
-  const { quests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
+  const { quests, claimableQuests, level, totalXP, userProgress, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
   useTrustCircle(walletAddress)
   const { count: trustedByCount } = useTrustedByCount(walletAddress)
   const { stats: discoveryStats } = useDiscoveryScore()
@@ -122,6 +122,7 @@ const AccountTab = () => {
         verifiedLabel="Social Linked"
         totalGold={totalGold}
         signalsCreated={signalsCreated}
+        currentStreak={userProgress.currentStreak}
         actions={hasCachedInterests ? (
           <button
             className="interest-share-btn"

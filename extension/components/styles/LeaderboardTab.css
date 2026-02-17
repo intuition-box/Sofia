@@ -1,0 +1,181 @@
+/* ========== LEADERBOARD TAB ========== */
+
+.leaderboard-tab {
+  padding: 0 16px 16px;
+}
+
+.leaderboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 12px;
+}
+
+.leaderboard-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.leaderboard-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.leaderboard-count {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.leaderboard-refresh {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.leaderboard-refresh:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.leaderboard-refresh:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* List */
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Row */
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.15s;
+}
+
+.leaderboard-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.leaderboard-row.current-user {
+  background: rgba(106, 204, 147, 0.1);
+  border: 1px solid rgba(106, 204, 147, 0.2);
+}
+
+.leaderboard-row.top-3 {
+  background: rgba(234, 182, 122, 0.06);
+}
+
+.leaderboard-row.top-3.current-user {
+  background: rgba(106, 204, 147, 0.12);
+  border: 1px solid rgba(106, 204, 147, 0.25);
+}
+
+/* Rank */
+.leaderboard-rank {
+  width: 32px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.top-3 .leaderboard-rank {
+  font-size: 18px;
+}
+
+/* Avatar */
+.leaderboard-avatar {
+  flex-shrink: 0;
+}
+
+/* Info */
+.leaderboard-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-address {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: monospace;
+}
+
+/* Stats */
+.leaderboard-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.leaderboard-shares {
+  font-size: 13px;
+  font-weight: 600;
+  color: #EAB67A;
+}
+
+.leaderboard-value {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* States */
+.leaderboard-loading,
+.leaderboard-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 14px;
+}
+
+.leaderboard-error {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.leaderboard-retry-btn {
+  margin-top: 12px;
+  padding: 8px 20px;
+  background: rgba(106, 204, 147, 0.15);
+  border: 1px solid rgba(106, 204, 147, 0.3);
+  border-radius: 8px;
+  color: #6ACC93;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.leaderboard-retry-btn:hover {
+  background: rgba(106, 204, 147, 0.25);
+}

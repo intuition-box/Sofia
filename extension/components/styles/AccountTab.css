@@ -1254,6 +1254,153 @@
   color: #e57373;
 }
 
+/* Streak Section (Daily & Streak quests) */
+.streak-section {
+  margin-bottom: 16px;
+}
+
+.streak-section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.streak-section-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.streak-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s;
+}
+
+.streak-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.streak-card.claimable_xp {
+  border-color: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.15);
+}
+
+.streak-card.completed {
+  opacity: 0.6;
+}
+
+.streak-card-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.streak-card.locked .streak-card-img,
+.streak-card.completed .streak-card-img {
+  filter: grayscale(80%);
+}
+
+.streak-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.streak-card-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.streak-card-progress {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.streak-card-claim {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #0f1420;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.streak-card-claim:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.streak-card-claim:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.streak-card-bar {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.streak-card-bar-fill {
+  height: 100%;
+  background: #EAB67A;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Section label for daily/other groups */
+.achievements-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.achievements-section-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Separator between daily and other quests */
+.achievements-separator {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+  margin: 16px 0;
+}
+
 .achievements-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

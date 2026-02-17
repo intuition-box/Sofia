@@ -150,16 +150,6 @@ const AchievementsTab = ({
 
   return (
     <div className="achievements-tab-content">
-      {onRefresh && (
-        <button
-          className="quest-refresh-btn-inline"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          title="Refresh"
-        >
-          {refreshing ? '...' : '\u21BB'}
-        </button>
-      )}
       {streakProfit?.hasPosition && (
         <div className="streak-vault-card">
           <div className="streak-vault-header">
@@ -185,10 +175,14 @@ const AchievementsTab = ({
           </div>
         </div>
       )}
-      <div className="achievements-grid">
-        {sorted.map((quest) => {
+      {(() => {
+        const isDailyOrStreak = (q: Quest) => q.recurringType === 'daily' || q.type === 'streak' || q.id.startsWith('vote-streak')
+        const dailyQuests = sorted.filter(isDailyOrStreak)
+        const otherQuests = sorted.filter(q => !isDailyOrStreak(q))
+
+        const renderCard = (quest: Quest) => {
           const progress = quest.total > 0 ? (quest.current / quest.total) * 100 : 0
-          const showProgress = quest.status === 'active' || quest.status === 'claimable_xp'
+          const showProgress = quest.status === 'active' || quest.status === 'claimable_xp' || quest.type === 'streak'
           const radius = 22
           const circumference = 2 * Math.PI * radius
           const strokeDashoffset = circumference - (progress / 100) * circumference
@@ -201,7 +195,6 @@ const AchievementsTab = ({
                   alt={quest.title}
                   className="achievement-card-img"
                 />
-                {/* Progress circle overlay */}
                 {showProgress && (
                   <div className="achievement-progress-overlay">
                     <svg width="54" height="54" viewBox="0 0 54 54">
@@ -241,8 +234,7 @@ const AchievementsTab = ({
 
                 <div className="achievement-description">{quest.description}</div>
 
-                {/* Progress text for active quests */}
-                {quest.status === 'active' && (
+                {(quest.status === 'active' || quest.type === 'streak') && (
                   <div className="achievement-progress-text">
                     {quest.current}/{quest.total}
                   </div>
@@ -252,7 +244,6 @@ const AchievementsTab = ({
                   {quest.xpReward} XP
                 </span>
 
-                {/* Claim XP button */}
                 {quest.status === 'claimable_xp' && quest.id !== 'social-linked' && (
                   <button
                     className={`achievement-claim-btn ${claimingQuestId === quest.id ? 'claiming' : ''}`}
@@ -269,7 +260,6 @@ const AchievementsTab = ({
                   </button>
                 )}
 
-                {/* Social Linked: verify first */}
                 {quest.id === 'social-linked' && quest.status === 'claimable_xp' && !isSocialVerified && canVerify && (
                   <button
                     className="achievement-claim-btn verify"
@@ -287,7 +277,6 @@ const AchievementsTab = ({
                   </button>
                 )}
 
-                {/* Social Linked: claim after verify */}
                 {quest.id === 'social-linked' && quest.status === 'claimable_xp' && isSocialVerified && (
                   <button
                     className={`achievement-claim-btn ${claimingQuestId === quest.id ? 'claiming' : ''}`}
@@ -305,8 +294,41 @@ const AchievementsTab = ({
               </div>
             </div>
           )
-        })}
-      </div>
+        }
+
+        return (
+          <>
+            {dailyQuests.length > 0 && (
+              <>
+                <div className="achievements-section-header">
+                  <div className="achievements-section-label">Daily</div>
+                  {onRefresh && (
+                    <button
+                      className="quest-refresh-btn-inline"
+                      onClick={handleRefresh}
+                      disabled={refreshing}
+                      title="Refresh"
+                    >
+                      {refreshing ? '...' : '\u21BB'}
+                    </button>
+                  )}
+                </div>
+                <div className="achievements-grid">
+                  {dailyQuests.map(renderCard)}
+                </div>
+                {otherQuests.length > 0 && (
+                  <div className="achievements-separator" />
+                )}
+              </>
+            )}
+            {otherQuests.length > 0 && (
+              <div className="achievements-grid">
+                {otherQuests.map(renderCard)}
+              </div>
+            )}
+          </>
+        )
+      })()}
     </div>
   )
 }

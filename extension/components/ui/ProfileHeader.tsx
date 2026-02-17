@@ -23,6 +23,7 @@ interface ProfileHeaderProps {
   verifiedLabel?: string // Custom verified label
   totalGold?: number
   signalsCreated?: number
+  currentStreak?: number
 }
 
 const ProfileHeader = ({
@@ -37,7 +38,8 @@ const ProfileHeader = ({
   verified = false,
   verifiedLabel = 'Social Linked',
   totalGold,
-  signalsCreated
+  signalsCreated,
+  currentStreak
 }: ProfileHeaderProps) => {
   // Check if display name is a real name (ENS) or just a truncated wallet address
   const isRealName = displayName && !displayName.startsWith('0x') && !displayName.includes('...')
@@ -71,9 +73,16 @@ const ProfileHeader = ({
           {verified && (
             <span className="social-linked-badge">{verifiedLabel}</span>
           )}
-          {/* Gold & Signals row */}
-          {(totalGold !== undefined || signalsCreated !== undefined) && (
+          {/* Gold, Signals & Streak row */}
+          {(totalGold !== undefined || signalsCreated !== undefined || (currentStreak !== undefined && currentStreak > 0)) && (
             <div className="profile-info-stats">
+              {currentStreak !== undefined && currentStreak > 0 && (
+                <div className="streak-indicator">
+                  <span className="streak-flame">{"\uD83D\uDD25"}</span>
+                  <span className="streak-count">{currentStreak}</span>
+                  <span className="streak-label">day streak</span>
+                </div>
+              )}
               {totalGold !== undefined && (
                 <div className="groups-gold-badge">
                   <img src={goldPlaceholder} alt="" className="gold-badge-bg" />
