@@ -46,7 +46,9 @@ export const {
   SUBJECT_IDS,
   PREDICATE_NAMES,
   BOT_VERIFIER_ADDRESS,
-  INTENTION_MIN_STAKE
+  INTENTION_MIN_STAKE,
+  DAILY_CERTIFICATION_ATOM_ID,
+  DAILY_STREAK_STAKE
 } = config
 
 // Export Sofia proxy address (only available in local config)

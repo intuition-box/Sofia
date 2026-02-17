@@ -12,7 +12,7 @@ import { intuitionGraphqlClient } from '../clients/graphql-client'
 import { BlockchainService } from './blockchainService'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
-import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, BOT_VERIFIER_ADDRESS } from '../config/chainConfig'
+import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, BOT_VERIFIER_ADDRESS, DAILY_CERTIFICATION_ATOM_ID, DAILY_STREAK_STAKE } from '../config/chainConfig'
 import { MASTRA_API_URL } from '../../config'
 import type { Address } from '../../types/viem'
 import type { QuestDefinition, SocialPlatform, AtomOperations } from '../../types/questTypes'
@@ -261,7 +261,8 @@ export class QuestBadgeService {
     questTitle: string,
     questDescription: string,
     isRecurring: boolean,
-    atomOps: AtomOperations
+    atomOps: AtomOperations,
+    questId?: string
   ): Promise<{ success: boolean; txHash?: string; error?: string }> {
     // Ensure proxy is approved
     await atomOps.ensureProxyApproval()
@@ -348,6 +349,18 @@ export class QuestBadgeService {
       txHash = await this.createBadgeTriple(walletAddress, contractAddress, userAtomId, predicateId, objectId)
     }
 
+    // If daily-certification quest, also deposit into shared atom vault
+    if (questId === 'daily-certification' && DAILY_CERTIFICATION_ATOM_ID) {
+      try {
+        await this.depositIntoSharedAtomVault(walletAddress, contractAddress)
+      } catch (sharedDepositErr) {
+        // Log but don't fail the claim — the badge was already claimed
+        logger.warn('Shared atom vault deposit failed (badge still claimed)', {
+          error: sharedDepositErr instanceof Error ? sharedDepositErr.message : 'unknown'
+        })
+      }
+    }
+
     return { success: true, txHash }
   }
 
@@ -393,6 +406,76 @@ export class QuestBadgeService {
 
     logger.info('Deposited into existing badge triple', { txHash })
     return txHash
+  }
+
+  /**
+   * Deposit into the shared "Daily Certification" atom vault.
+   * Called after the normal badge claim for daily-certification quest.
+   * Amount: 1 TRUST fixed (DAILY_STREAK_STAKE).
+   */
+  private static async depositIntoSharedAtomVault(
+    walletAddress: string,
+    contractAddress: string
+  ): Promise<void> {
+    logger.info('Depositing into shared Daily Certification atom vault', {
+      atomId: DAILY_CERTIFICATION_ATOM_ID,
+      amount: DAILY_STREAK_STAKE.toString()
+    })
+
+    const { walletClient, publicClient } = await getClients()
+    const totalDepositCost = await BlockchainService.getTotalDepositCost(DAILY_STREAK_STAKE)
+    const curveId = 1n // atom vault curve
+
+    // Simulate first
+    await publicClient.simulateContract({
+      address: contractAddress as Address,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'deposit',
+      args: [
+        walletAddress as Address,
+        DAILY_CERTIFICATION_ATOM_ID as Address,
+        curveId,
+        0n
+      ],
+      value: totalDepositCost,
+      account: walletClient.account
+    })
+
+    // Execute
+    const txHash = await walletClient.writeContract({
+      address: contractAddress as Address,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'deposit',
+      args: [
+        walletAddress as Address,
+        DAILY_CERTIFICATION_ATOM_ID as Address,
+        curveId,
+        0n
+      ],
+      value: totalDepositCost,
+      chain: SELECTED_CHAIN,
+      maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+      maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+      account: walletAddress as Address,
+    })
+
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+    if (receipt.status !== 'success') {
+      throw new Error('Shared atom vault deposit failed')
+    }
+
+    logger.info('Shared atom vault deposit successful', { txHash })
+
+    // Track the deposit amount locally (for profit calculation)
+    try {
+      const key = `daily_streak_total_deposited_${walletAddress.toLowerCase()}`
+      const result = await chrome.storage.local.get([key])
+      const currentTotal = result[key] || '0'
+      const newTotal = (BigInt(currentTotal) + DAILY_STREAK_STAKE).toString()
+      await chrome.storage.local.set({ [key]: newTotal })
+    } catch (trackErr) {
+      logger.warn('Failed to track deposit amount', { error: trackErr })
+    }
   }
 
   /**

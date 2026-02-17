@@ -256,7 +256,8 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
         result = await QuestBadgeService.claimStandardBadge(
           walletAddress, quest.title, quest.description,
           !!quest.recurringType,
-          { ensureProxyApproval, pinAtomToIPFS, createAtomsFromPinned }
+          { ensureProxyApproval, pinAtomToIPFS, createAtomsFromPinned },
+          questId
         )
       }
 
