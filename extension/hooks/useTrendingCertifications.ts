@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { GetTrendingByPredicateDocument, GetTripleCertifiersDocument } from '@0xsofia/graphql'
+import { GetTrendingByPredicateDocument } from '@0xsofia/graphql'
 import { PREDICATE_IDS } from '../lib/config/chainConfig'
 import { createHookLogger } from '../lib/utils/logger'
 import type { IntentionType } from '../types/intentionCategories'
@@ -14,7 +14,7 @@ import type { IntentionType } from '../types/intentionCategories'
 const logger = createHookLogger('useTrendingCertifications')
 
 // Map each IntentionType to its predicate ID
-const TRENDING_CATEGORIES: { type: IntentionType; predicateId: string }[] = [
+const TRENDING_CATEGORIES = ([
   { type: 'trusted', predicateId: PREDICATE_IDS.TRUSTS },
   { type: 'distrusted', predicateId: PREDICATE_IDS.DISTRUST },
   { type: 'work', predicateId: PREDICATE_IDS.VISITS_FOR_WORK },
@@ -22,17 +22,11 @@ const TRENDING_CATEGORIES: { type: IntentionType; predicateId: string }[] = [
   { type: 'fun', predicateId: PREDICATE_IDS.VISITS_FOR_FUN },
   { type: 'inspiration', predicateId: PREDICATE_IDS.VISITS_FOR_INSPIRATION },
   { type: 'buying', predicateId: PREDICATE_IDS.VISITS_FOR_BUYING },
-].filter(c => !!c.predicateId)
-
-export interface Certifier {
-  accountId: string
-  label: string
-  image: string | null
-  shares: string
-}
+] as { type: IntentionType; predicateId: string }[]).filter(c => !!c.predicateId)
 
 export interface TrendingItem {
   termId: string
+  objectTermId: string
   objectLabel: string
   objectUrl: string
   domain: string
@@ -53,9 +47,6 @@ export interface UseTrendingResult {
   error: string | null
   refetchAll: () => Promise<void>
   available: boolean  // false on testnet when no predicate IDs
-  fetchCertifiers: (termId: string) => Promise<Certifier[]>
-  certifiersCache: Record<string, Certifier[]>
-  loadingCertifiers: Set<string>
 }
 
 const ITEMS_PER_CATEGORY = 10
@@ -72,8 +63,6 @@ export function useTrendingCertifications(): UseTrendingResult {
   const [categories, setCategories] = useState<TrendingCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [certifiersCache, setCertifiersCache] = useState<Record<string, Certifier[]>>({})
-  const [loadingCertifiers, setLoadingCertifiers] = useState<Set<string>>(new Set())
   const isFetchingRef = useRef(false)
 
   const fetchAll = useCallback(async () => {
@@ -124,6 +113,7 @@ export function useTrendingCertifications(): UseTrendingResult {
 
               return {
                 termId: triple.term_id,
+                objectTermId: triple.object?.term_id || '',
                 objectLabel: label || domain,
                 objectUrl,
                 domain,
@@ -158,38 +148,6 @@ export function useTrendingCertifications(): UseTrendingResult {
     }
   }, [])
 
-  const fetchCertifiers = useCallback(async (termId: string): Promise<Certifier[]> => {
-    // Return cached if available
-    if (certifiersCache[termId]) return certifiersCache[termId]
-
-    setLoadingCertifiers(prev => new Set(prev).add(termId))
-    try {
-      const data = await intuitionGraphqlClient.request(
-        GetTripleCertifiersDocument,
-        { termId, limit: 20 }
-      )
-
-      const certifiers: Certifier[] = (data?.positions || []).map((pos: any) => ({
-        accountId: pos.account?.id || '',
-        label: pos.account?.label || pos.account?.id?.slice(0, 8) || '?',
-        image: pos.account?.image || null,
-        shares: String(pos.shares || '0')
-      }))
-
-      setCertifiersCache(prev => ({ ...prev, [termId]: certifiers }))
-      return certifiers
-    } catch (err) {
-      logger.error(`Failed to fetch certifiers for ${termId}`, err)
-      return []
-    } finally {
-      setLoadingCertifiers(prev => {
-        const next = new Set(prev)
-        next.delete(termId)
-        return next
-      })
-    }
-  }, [certifiersCache])
-
   useEffect(() => {
     fetchAll()
   }, [fetchAll])
@@ -199,10 +157,7 @@ export function useTrendingCertifications(): UseTrendingResult {
     loading,
     error,
     refetchAll: fetchAll,
-    available: TRENDING_CATEGORIES.length > 0,
-    fetchCertifiers,
-    certifiersCache,
-    loadingCertifiers
+    available: TRENDING_CATEGORIES.length > 0
   }
 }
 

@@ -2,69 +2,35 @@
  * TrendingTab Component
  * Displays globally trending certifications across all users
  * Filterable by category (trusted, distrusted, work, learning, fun, inspiration, buying)
- * Click an item to see who certified it
  */
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { useTrendingCertifications } from '../../../hooks'
-import type { TrendingItem, Certifier } from '../../../hooks'
 import type { IntentionType } from '../../../types/intentionCategories'
 import { INTENTION_CONFIG } from '../../../types/intentionCategories'
-import { Avatar } from '../../ui'
 import SofiaLoader from '../../ui/SofiaLoader'
 import '../../styles/CircleFeedTab.css'
 import '../../styles/TrendingTab.css'
 
 const TrendingTab = () => {
   const {
-    categories, loading, error, refetchAll, available,
-    fetchCertifiers, certifiersCache, loadingCertifiers
+    categories, loading, error, refetchAll, available
   } = useTrendingCertifications()
-  const [filter, setFilter] = useState<IntentionType | 'all'>('all')
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<IntentionType | null>(null)
 
-  // Build display items based on active filter
+  // First category with items as default
+  const activeFilter = useMemo(() => {
+    if (filter) return filter
+    const first = categories.find(c => c.items.length > 0)
+    return first?.type || null
+  }, [filter, categories])
+
   const displayItems = useMemo(() => {
-    if (filter === 'all') {
-      const all: (TrendingItem & { category: IntentionType })[] = []
-      for (const cat of categories) {
-        for (const item of cat.items) {
-          all.push({ ...item, category: cat.type })
-        }
-      }
-      return all.sort((a, b) => b.positionCount - a.positionCount)
-    }
-
-    const cat = categories.find(c => c.type === filter)
+    if (!activeFilter) return []
+    const cat = categories.find(c => c.type === activeFilter)
     if (!cat) return []
-    return cat.items.map(item => ({ ...item, category: filter }))
-  }, [categories, filter])
-
-  const totalForFilter = useMemo(() => {
-    if (filter === 'all') {
-      return categories.reduce((sum, c) => sum + c.totalCount, 0)
-    }
-    return categories.find(c => c.type === filter)?.totalCount || 0
-  }, [categories, filter])
-
-  const handleItemClick = useCallback((item: TrendingItem) => {
-    const key = item.termId
-    if (expandedId === key) {
-      setExpandedId(null)
-    } else {
-      setExpandedId(key)
-      fetchCertifiers(key)
-    }
-  }, [expandedId, fetchCertifiers])
-
-  const formatShares = (shares: string): string => {
-    const n = Number(shares)
-    if (n === 0) return '0'
-    if (n >= 1e18) return `${(n / 1e18).toFixed(2)} ETH`
-    if (n >= 1e15) return `${(n / 1e15).toFixed(1)}e15`
-    if (n >= 1e12) return `${(n / 1e12).toFixed(1)}e12`
-    return shares
-  }
+    return cat.items
+  }, [categories, activeFilter])
 
   // Not available on testnet
   if (!available) {
@@ -106,24 +72,18 @@ const TrendingTab = () => {
       {/* Top bar: chips + refresh */}
       <div className="trending-top-bar">
         <div className="circle-category-chips">
-          <button
-            className={`circle-chip ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >
-            All
-          </button>
           {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
             ([type, config]) => {
               const cat = categories.find(c => c.type === type)
-              if (!cat || cat.totalCount === 0) return null
+              if (!cat || cat.items.length === 0) return null
               return (
                 <button
                   key={type}
-                  className={`circle-chip ${filter === type ? 'active' : ''}`}
+                  className={`circle-chip ${activeFilter === type ? 'active' : ''}`}
                   style={{ '--chip-color': config.color } as React.CSSProperties}
                   onClick={() => setFilter(type)}
                 >
-                  {config.label} ({cat.totalCount})
+                  {config.label}
                 </button>
               )
             }
@@ -151,22 +111,12 @@ const TrendingTab = () => {
       {/* Trending list */}
       {displayItems.length > 0 && (
         <div className="trending-list">
-          {displayItems.map((item, index) => {
-            const config = INTENTION_CONFIG[item.category]
-            const isExpanded = expandedId === item.termId
-            const certifiers = certifiersCache[item.termId]
-            const isLoadingCertifiers = loadingCertifiers.has(item.termId)
-
-            return (
+          {displayItems.map((item, index) => (
               <div
-                key={`${item.termId}-${item.category}`}
-                className={`trending-item-wrapper ${isExpanded ? 'expanded' : ''}`}
+                key={item.termId}
+                className="trending-item-wrapper"
               >
-                {/* Main row */}
-                <div
-                  className="trending-item"
-                  onClick={() => handleItemClick(item)}
-                >
+                <div className="trending-item">
                   <span className="trending-rank">#{index + 1}</span>
                   <img
                     src={`https://www.google.com/s2/favicons?domain=${item.domain}&sz=32`}
@@ -180,79 +130,14 @@ const TrendingTab = () => {
                     </div>
                     <div className="trending-item-domain">{item.domain}</div>
                   </div>
-                  {filter === 'all' && (
-                    <span
-                      className="trending-category-dot"
-                      style={{ backgroundColor: config?.color }}
-                      title={config?.label}
-                    />
-                  )}
                   <div className="trending-item-stats">
                     <span className="trending-certifiers">
                       {item.positionCount} {item.positionCount === 1 ? 'certifier' : 'certifiers'}
                     </span>
                   </div>
-                  <span className={`trending-chevron ${isExpanded ? 'open' : ''}`}>▸</span>
                 </div>
-
-                {/* Expanded detail: certifiers list */}
-                {isExpanded && (
-                  <div className="trending-detail">
-                    <div className="trending-detail-header">
-                      <a
-                        href={item.objectUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="trending-open-link"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Open {item.domain} ↗
-                      </a>
-                    </div>
-
-                    {isLoadingCertifiers && (
-                      <div className="trending-detail-loading">
-                        <SofiaLoader size={24} />
-                      </div>
-                    )}
-
-                    {!isLoadingCertifiers && certifiers && certifiers.length > 0 && (
-                      <div className="trending-certifier-list">
-                        {certifiers.map((c: Certifier) => (
-                          <div key={c.accountId} className="trending-certifier-row">
-                            <Avatar
-                              imgSrc={c.image || undefined}
-                              name={c.label || c.accountId}
-                              size="small"
-                            />
-                            <span className="trending-certifier-name">
-                              {c.label}
-                            </span>
-                            <span className="trending-certifier-shares">
-                              {formatShares(c.shares)} shares
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {!isLoadingCertifiers && certifiers && certifiers.length === 0 && (
-                      <div className="trending-detail-empty">No certifiers found</div>
-                    )}
-                  </div>
-                )}
               </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Total count */}
-      {totalForFilter > displayItems.length && (
-        <div className="trending-empty">
-          <p className="empty-subtext">
-            Showing {displayItems.length} of {totalForFilter} certifications
-          </p>
+            ))}
         </div>
       )}
     </div>
