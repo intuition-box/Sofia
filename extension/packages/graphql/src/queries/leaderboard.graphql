@@ -44,6 +44,21 @@ query GetStreakLeaderboard(
   }
 }
 
+# Deposit days per user via proxy — used to calculate streak days
+query GetProxyDepositDays($senderId: String!, $termId: String!) {
+  deposits(
+    where: {
+      sender_id: { _eq: $senderId }
+      term_id: { _eq: $termId }
+      assets_after_fees: { _neq: "0" }
+    }
+    order_by: { created_at: desc }
+  ) {
+    receiver_id
+    created_at
+  }
+}
+
 # Verified wallets: accounts that have the has_tag triple for a given tag
 query GetVerifiedWallets($predicateId: String!, $tagLabel: String!) {
   triples(where: {

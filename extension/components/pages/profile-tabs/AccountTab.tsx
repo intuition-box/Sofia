@@ -124,7 +124,6 @@ const AccountTab = () => {
         verifiedLabel="Social Linked"
         totalGold={totalGold}
         signalsCreated={signalsCreated}
-        currentStreak={userProgress.currentStreak}
         actions={hasCachedInterests ? (
           <button
             className="interest-share-btn"
@@ -150,7 +149,7 @@ const AccountTab = () => {
           className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
           onClick={() => setActiveTab('achievements')}
         >
-          Success
+          Quest
         </button>
         <button
           className={`sub-tab ${activeTab === 'interest' ? 'active' : ''}`}
@@ -178,8 +177,6 @@ const AccountTab = () => {
             level={level}
             totalXP={totalXP}
             signalsCreated={signalsCreated}
-            streakProfit={streakProfitData}
-            voteProfit={voteProfitData}
           />
         )}
 
@@ -195,6 +192,10 @@ const AccountTab = () => {
           onVerifySocials={async () => ({ success: false })}
           onMarkCompleted={markQuestCompleted}
           onRefresh={handleFullRefresh}
+          walletAddress={walletAddress}
+          streakProfit={streakProfitData}
+          voteProfit={voteProfitData}
+          currentStreak={userProgress.currentStreak}
         />
       )}
 

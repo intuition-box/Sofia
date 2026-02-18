@@ -161,6 +161,18 @@
   font-family: monospace;
 }
 
+/* Streak badge */
+.leaderboard-streak {
+  font-size: 12px;
+  font-weight: 600;
+  color: #EAB67A;
+  background: rgba(234, 182, 122, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 /* Stats */
 .leaderboard-stats {
   display: flex;

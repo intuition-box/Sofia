@@ -85,6 +85,9 @@ const LeaderboardTab = () => {
                     {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
                   </span>
                 </div>
+                {entry.streakDays > 0 && (
+                  <span className="leaderboard-streak">🔥 {entry.streakDays}</span>
+                )}
                 <div className="leaderboard-stats">
                   <span className="leaderboard-shares">{entry.sharesFormatted}</span>
                   <span className="leaderboard-value">{entry.value.toFixed(2)} TRUST</span>

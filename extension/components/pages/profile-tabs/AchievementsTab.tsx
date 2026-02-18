@@ -4,7 +4,8 @@
  * Merges quest actions into the achievement grid layout
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getAddress } from 'viem'
 import type { Quest } from '../../../types/questTypes'
 import { createHookLogger } from '../../../lib/utils/logger'
 
@@ -71,6 +72,31 @@ const typeLabels: Record<string, string> = {
   gold: 'Gold',
 }
 
+interface VaultProfitData {
+  hasPosition: boolean
+  sharesFormatted: string
+  currentValue: number
+  profit: number
+  participantCount: number
+}
+
+const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+
+const getWeekDates = (): string[] => {
+  const now = new Date()
+  const day = now.getDay()
+  const mondayOffset = day === 0 ? -6 : 1 - day
+  const monday = new Date(now)
+  monday.setDate(now.getDate() + mondayOffset)
+  monday.setHours(0, 0, 0, 0)
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    return d.toISOString().split('T')[0]
+  })
+}
+
 interface AchievementsTabProps {
   quests: Quest[]
   loading: boolean
@@ -82,6 +108,10 @@ interface AchievementsTabProps {
   onVerifySocials: () => Promise<{ success: boolean; error?: string }>
   onMarkCompleted: (questId: string) => void
   onRefresh?: () => Promise<void>
+  walletAddress?: string | null
+  streakProfit?: VaultProfitData | null
+  voteProfit?: VaultProfitData | null
+  currentStreak?: number
 }
 
 const AchievementsTab = ({
@@ -94,9 +124,36 @@ const AchievementsTab = ({
   onClaimXP,
   onVerifySocials,
   onMarkCompleted,
-  onRefresh
+  onRefresh,
+  walletAddress,
+  streakProfit,
+  voteProfit,
+  currentStreak
 }: AchievementsTabProps) => {
   const [refreshing, setRefreshing] = useState(false)
+  const [certDays, setCertDays] = useState<Set<string>>(new Set())
+  const [voteDays, setVoteDays] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!walletAddress) return
+    try {
+      const checksummed = getAddress(walletAddress)
+      const certKey = `certification_activity_dates_${checksummed}`
+      const voteKey = `vote_activity_dates_${checksummed}`
+      const weekDates = getWeekDates()
+
+      chrome.storage.local.get([certKey, voteKey]).then(result => {
+        setCertDays(new Set<string>(
+          ((result[certKey] || []) as string[]).filter(d => weekDates.includes(d))
+        ))
+        setVoteDays(new Set<string>(
+          ((result[voteKey] || []) as string[]).filter(d => weekDates.includes(d))
+        ))
+      })
+    } catch {
+      // invalid address
+    }
+  }, [walletAddress])
 
   const handleRefresh = async () => {
     if (!onRefresh || refreshing) return
@@ -142,6 +199,75 @@ const AchievementsTab = ({
 
   return (
     <div className="achievements-tab-content">
+      {/* Vault Cards */}
+      {streakProfit?.hasPosition && (
+        <div className="streak-vault-card">
+          <div className="streak-vault-header">
+            <div className="streak-vault-header-left">
+              {currentStreak !== undefined && currentStreak > 0 && (
+                <span className="streak-vault-badge">{"\uD83D\uDD25"} {currentStreak} day streak</span>
+              )}
+              <span className="streak-vault-participants">{streakProfit.participantCount} streakers</span>
+            </div>
+            <span className="streak-vault-title">Certification Vault</span>
+          </div>
+          <div className="streak-week-bubbles">
+            {getWeekDates().map((date, i) => (
+              <div key={date} className={`streak-bubble ${certDays.has(date) ? 'validated' : ''}`}>
+                {certDays.has(date) ? '✓' : DAY_LABELS[i]}
+              </div>
+            ))}
+          </div>
+          <div className="streak-vault-stats">
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Shares</span>
+              <span className="streak-vault-value">{streakProfit.sharesFormatted}</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Value</span>
+              <span className="streak-vault-value">{streakProfit.currentValue.toFixed(4)} TRUST</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Profit</span>
+              <span className={`streak-vault-value ${streakProfit.profit >= 0 ? 'positive' : 'negative'}`}>
+                {streakProfit.profit >= 0 ? '+' : ''}{streakProfit.profit.toFixed(4)} TRUST
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+      {voteProfit?.hasPosition && (
+        <div className="streak-vault-card">
+          <div className="streak-vault-header">
+            <span className="streak-vault-title">Vote Vault</span>
+            <span className="streak-vault-participants">{voteProfit.participantCount} voters</span>
+          </div>
+          <div className="streak-week-bubbles">
+            {getWeekDates().map((date, i) => (
+              <div key={date} className={`streak-bubble ${voteDays.has(date) ? 'validated' : ''}`}>
+                {voteDays.has(date) ? '✓' : DAY_LABELS[i]}
+              </div>
+            ))}
+          </div>
+          <div className="streak-vault-stats">
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Shares</span>
+              <span className="streak-vault-value">{voteProfit.sharesFormatted}</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Value</span>
+              <span className="streak-vault-value">{voteProfit.currentValue.toFixed(4)} TRUST</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Profit</span>
+              <span className={`streak-vault-value ${voteProfit.profit >= 0 ? 'positive' : 'negative'}`}>
+                {voteProfit.profit >= 0 ? '+' : ''}{voteProfit.profit.toFixed(4)} TRUST
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {(() => {
         const isDailyOrStreak = (q: Quest) => q.recurringType === 'daily' || q.type === 'streak' || q.id.startsWith('vote-streak')
         const dailyQuests = sorted.filter(isDailyOrStreak)

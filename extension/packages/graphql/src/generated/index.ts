@@ -20235,6 +20235,20 @@ export type GetStreakLeaderboardQuery = {
   }>
 }
 
+export type GetProxyDepositDaysQueryVariables = Exact<{
+  senderId: Scalars["String"]["input"]
+  termId: Scalars["String"]["input"]
+}>
+
+export type GetProxyDepositDaysQuery = {
+  __typename?: "query_root"
+  deposits: Array<{
+    __typename?: "deposits"
+    receiver_id: string
+    created_at: any
+  }>
+}
+
 export type GetVerifiedWalletsQueryVariables = Exact<{
   predicateId: Scalars["String"]["input"]
   tagLabel: Scalars["String"]["input"]
@@ -31240,6 +31254,99 @@ useGetStreakLeaderboardQuery.fetcher = (
 ) =>
   fetcher<GetStreakLeaderboardQuery, GetStreakLeaderboardQueryVariables>(
     GetStreakLeaderboardDocument,
+    variables,
+    options
+  )
+
+export const GetProxyDepositDaysDocument = `
+    query GetProxyDepositDays($senderId: String!, $termId: String!) {
+  deposits(
+    where: {sender_id: {_eq: $senderId}, term_id: {_eq: $termId}, assets_after_fees: {_neq: "0"}}
+    order_by: {created_at: desc}
+  ) {
+    receiver_id
+    created_at
+  }
+}
+    `
+
+export const useGetProxyDepositDaysQuery = <
+  TData = GetProxyDepositDaysQuery,
+  TError = unknown
+>(
+  variables: GetProxyDepositDaysQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetProxyDepositDaysQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetProxyDepositDaysQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetProxyDepositDaysQuery, TError, TData>({
+    queryKey: ["GetProxyDepositDays", variables],
+    queryFn: fetcher<
+      GetProxyDepositDaysQuery,
+      GetProxyDepositDaysQueryVariables
+    >(GetProxyDepositDaysDocument, variables),
+    ...options
+  })
+}
+
+useGetProxyDepositDaysQuery.document = GetProxyDepositDaysDocument
+
+useGetProxyDepositDaysQuery.getKey = (
+  variables: GetProxyDepositDaysQueryVariables
+) => ["GetProxyDepositDays", variables]
+
+export const useInfiniteGetProxyDepositDaysQuery = <
+  TData = InfiniteData<GetProxyDepositDaysQuery>,
+  TError = unknown
+>(
+  variables: GetProxyDepositDaysQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetProxyDepositDaysQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetProxyDepositDaysQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetProxyDepositDaysQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetProxyDepositDays.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<GetProxyDepositDaysQuery, GetProxyDepositDaysQueryVariables>(
+            GetProxyDepositDaysDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetProxyDepositDaysQuery.getKey = (
+  variables: GetProxyDepositDaysQueryVariables
+) => ["GetProxyDepositDays.infinite", variables]
+
+useGetProxyDepositDaysQuery.fetcher = (
+  variables: GetProxyDepositDaysQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetProxyDepositDaysQuery, GetProxyDepositDaysQueryVariables>(
+    GetProxyDepositDaysDocument,
     variables,
     options
   )
@@ -60147,6 +60254,133 @@ export const GetStreakLeaderboard = {
                     ]
                   }
                 }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetProxyDepositDays = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetProxyDepositDays" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "senderId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "termId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "deposits" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "sender_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "senderId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "termId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "assets_after_fees" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_neq" },
+                            value: {
+                              kind: "StringValue",
+                              value: "0",
+                              block: false
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "order_by" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "created_at" },
+                      value: { kind: "EnumValue", value: "desc" }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "receiver_id" } },
+                { kind: "Field", name: { kind: "Name", value: "created_at" } }
               ]
             }
           }

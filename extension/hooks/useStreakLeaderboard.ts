@@ -10,15 +10,70 @@ import { useState, useEffect, useCallback } from "react"
 import {
   type GetStreakLeaderboardQuery,
   type GetVerifiedWalletsQuery,
+  type GetProxyDepositDaysQuery,
   GetStreakLeaderboardDocument,
-  GetVerifiedWalletsDocument
+  GetVerifiedWalletsDocument,
+  GetProxyDepositDaysDocument
 } from "@0xsofia/graphql"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
-import { PREDICATE_IDS } from "../lib/config/chainConfig"
+import { PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from "../lib/config/chainConfig"
 import { createHookLogger } from "../lib/utils/logger"
 
 const logger = createHookLogger("useStreakLeaderboard")
+
+/**
+ * Calculate current streak (consecutive days) per user from deposit records.
+ * Returns Map<lowercased address, streak days>.
+ */
+function calculateStreaks(
+  deposits: { receiver_id: string; created_at: string }[]
+): Map<string, number> {
+  // Group unique deposit dates (YYYY-MM-DD) per user
+  const userDates = new Map<string, Set<string>>()
+  for (const d of deposits) {
+    const addr = d.receiver_id.toLowerCase()
+    if (!userDates.has(addr)) userDates.set(addr, new Set())
+    const day = d.created_at.slice(0, 10) // "YYYY-MM-DD"
+    userDates.get(addr)!.add(day)
+  }
+
+  const result = new Map<string, number>()
+  const today = new Date()
+  const todayStr = toDateStr(today)
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayStr = toDateStr(yesterday)
+
+  for (const [addr, dates] of userDates) {
+    // Start from today or yesterday
+    let streak = 0
+    let checkDate: Date
+
+    if (dates.has(todayStr)) {
+      checkDate = new Date(today)
+    } else if (dates.has(yesterdayStr)) {
+      checkDate = new Date(yesterday)
+    } else {
+      result.set(addr, 0)
+      continue
+    }
+
+    // Count consecutive days backward
+    while (dates.has(toDateStr(checkDate))) {
+      streak++
+      checkDate.setDate(checkDate.getDate() - 1)
+    }
+
+    result.set(addr, streak)
+  }
+
+  return result
+}
+
+function toDateStr(d: Date): string {
+  return d.toISOString().slice(0, 10)
+}
 
 export interface LeaderboardEntry {
   rank: number
@@ -29,6 +84,7 @@ export interface LeaderboardEntry {
   sharesFormatted: string
   value: number
   isCurrentUser: boolean
+  streakDays: number
 }
 
 export interface UseStreakLeaderboardResult {
@@ -61,8 +117,8 @@ export const useStreakLeaderboard = (
     setError(null)
 
     try {
-      // Execute both queries in parallel
-      const [verifiedResponse, vaultResponse] = await Promise.all([
+      // Execute all three queries in parallel
+      const [verifiedResponse, vaultResponse, depositsResponse] = await Promise.all([
         intuitionGraphqlClient.request(
           GetVerifiedWalletsDocument,
           { predicateId: PREDICATE_IDS.HAS_TAG, tagLabel }
@@ -70,8 +126,17 @@ export const useStreakLeaderboard = (
         intuitionGraphqlClient.request(
           GetStreakLeaderboardDocument,
           { atomId, curveId: "1", limit }
-        ) as Promise<GetStreakLeaderboardQuery>
+        ) as Promise<GetStreakLeaderboardQuery>,
+        SOFIA_PROXY_ADDRESS
+          ? intuitionGraphqlClient.request(
+              GetProxyDepositDaysDocument,
+              { senderId: SOFIA_PROXY_ADDRESS, termId: atomId }
+            ) as Promise<GetProxyDepositDaysQuery>
+          : Promise.resolve({ deposits: [] } as GetProxyDepositDaysQuery)
       ])
+
+      // Calculate streak days per user from proxy deposits
+      const streakMap = calculateStreaks(depositsResponse.deposits || [])
 
       const vault = vaultResponse?.vaults?.[0]
       if (!vault) {
@@ -98,9 +163,10 @@ export const useStreakLeaderboard = (
           const valueWei = (sharesBI * price) / BigInt(1e18)
           const value = Number(valueWei) / 1e18
 
+          const address = pos.account?.id || pos.account_id
           return {
             rank: index + 1,
-            address: pos.account?.id || pos.account_id,
+            address,
             label: pos.account?.label || `${pos.account_id.slice(0, 6)}...${pos.account_id.slice(-4)}`,
             image: pos.account?.image || "",
             shares: pos.shares,
@@ -108,7 +174,8 @@ export const useStreakLeaderboard = (
             value,
             isCurrentUser: walletAddress
               ? pos.account_id.toLowerCase() === walletAddress.toLowerCase()
-              : false
+              : false,
+            streakDays: streakMap.get(address.toLowerCase()) || 0
           }
         }
       )
@@ -118,7 +185,13 @@ export const useStreakLeaderboard = (
         ? leaderboard.filter(entry => verifiedWallets.has(entry.address.toLowerCase()))
         : leaderboard // Fallback if no triples found
 
-      // Re-rank after filtering
+      // Sort by streak days desc, then shares desc as tiebreaker
+      verified.sort((a, b) => {
+        if (b.streakDays !== a.streakDays) return b.streakDays - a.streakDays
+        return Number(BigInt(b.shares) - BigInt(a.shares))
+      })
+
+      // Re-rank after sorting
       verified.forEach((entry, i) => { entry.rank = i + 1 })
 
       setEntries(verified)
