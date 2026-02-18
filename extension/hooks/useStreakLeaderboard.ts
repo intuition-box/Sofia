@@ -7,6 +7,8 @@
  */
 
 import { useState, useEffect, useCallback } from "react"
+import { createPublicClient, http } from "viem"
+import { mainnet } from "viem/chains"
 import {
   type GetStreakLeaderboardQuery,
   type GetVerifiedWalletsQuery,
@@ -19,6 +21,7 @@ import { useWalletFromStorage } from "./useWalletFromStorage"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from "../lib/config/chainConfig"
 import { createHookLogger } from "../lib/utils/logger"
+import { getEnsAvatar } from "../lib/utils"
 
 const logger = createHookLogger("useStreakLeaderboard")
 
@@ -73,6 +76,37 @@ function calculateStreaks(
 
 function toDateStr(d: Date): string {
   return d.toISOString().slice(0, 10)
+}
+
+const ensClient = createPublicClient({ chain: mainnet, transport: http() })
+
+/**
+ * Batch-resolve ENS names + avatars for entries whose label looks like a truncated address.
+ * Mutates entries in place for performance.
+ */
+async function resolveEnsForEntries(entries: LeaderboardEntry[]): Promise<void> {
+  const toResolve = entries.filter(
+    e => !e.label || e.label.startsWith("0x") || e.label.includes("...")
+  )
+  if (toResolve.length === 0) return
+
+  await Promise.allSettled(
+    toResolve.map(async (entry) => {
+      try {
+        const ensName = await ensClient.getEnsName({
+          address: entry.address as `0x${string}`
+        })
+        if (ensName) {
+          entry.label = ensName
+          // Try to resolve ENS avatar too
+          const avatarUrl = await getEnsAvatar(ensName)
+          if (avatarUrl) entry.image = avatarUrl
+        }
+      } catch {
+        // Keep original label on failure
+      }
+    })
+  )
 }
 
 export interface LeaderboardEntry {
@@ -202,8 +236,14 @@ export const useStreakLeaderboard = (
       // Re-rank after sorting
       verified.forEach((entry, i) => { entry.rank = i + 1 })
 
-      setEntries(verified)
+      // Set entries immediately, then resolve ENS in background
+      setEntries([...verified])
       setTotalParticipants(verified.length)
+
+      // Batch resolve ENS names for all entries with truncated labels
+      resolveEnsForEntries(verified).then(() => {
+        setEntries([...verified])
+      })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to fetch leaderboard"
       logger.error("Leaderboard fetch failed", { error: msg })
