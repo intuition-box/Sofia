@@ -17,6 +17,7 @@ import AchievementsTab from './AchievementsTab'
 import SocialsTab from './SocialsTab'
 import ProfileHeader from '../../ui/ProfileHeader'
 import xIcon from '../../ui/social/x.svg'
+import { DAILY_VOTE_ATOM_ID } from '../../../lib/config/chainConfig'
 import { createHookLogger } from '../../../lib/utils/logger'
 import '../../styles/AccountTab.css'
 
@@ -44,6 +45,7 @@ const AccountTab = () => {
   const { totalGold } = useGoldSystem()
   const { isSocialVerified } = useSocialVerifier()
   const { data: streakProfitData } = useDailyStreakProfit()
+  const { data: voteProfitData } = useDailyStreakProfit(DAILY_VOTE_ATOM_ID)
   const { displayLabel, displayAvatar } = useIdentityResolution({
     walletAddress,
     discordProfile,
@@ -191,6 +193,7 @@ const AccountTab = () => {
           onMarkCompleted={markQuestCompleted}
           onRefresh={handleFullRefresh}
           streakProfit={streakProfitData}
+          voteProfit={voteProfitData}
         />
       )}
 

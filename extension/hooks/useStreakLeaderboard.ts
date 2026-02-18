@@ -1,12 +1,13 @@
 /**
  * useStreakLeaderboard
- * Fetches ranked positions from the shared "Daily Certification" atom vault
+ * Fetches ranked positions from a shared atom vault (Daily Certification or Daily Voter)
+ * and validates entries against has_tag triples.
  */
 
 import { useState, useEffect, useCallback } from "react"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
-import { DAILY_CERTIFICATION_ATOM_ID, PREDICATE_IDS } from "../lib/config/chainConfig"
+import { PREDICATE_IDS } from "../lib/config/chainConfig"
 import { createHookLogger } from "../lib/utils/logger"
 
 const logger = createHookLogger("useStreakLeaderboard")
@@ -17,6 +18,7 @@ const GET_STREAK_LEADERBOARD = `
     $curveId: numeric!
     $limit: Int!
     $predicateId: String!
+    $tagLabel: String!
   ) {
     vaults(where: { term_id: { _eq: $atomId }, curve_id: { _eq: $curveId } }) {
       current_share_price
@@ -37,7 +39,7 @@ const GET_STREAK_LEADERBOARD = `
     }
     triples(where: {
       predicate_id: { _eq: $predicateId }
-      object: { label: { _eq: "Daily Certification" } }
+      object: { label: { _eq: $tagLabel } }
     }) {
       subject {
         wallet_id
@@ -68,6 +70,8 @@ export interface UseStreakLeaderboardResult {
 }
 
 export const useStreakLeaderboard = (
+  atomId: string,
+  tagLabel: string,
   limit: number = 50
 ): UseStreakLeaderboardResult => {
   const { walletAddress } = useWalletFromStorage()
@@ -79,7 +83,7 @@ export const useStreakLeaderboard = (
   const [error, setError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
-    if (!DAILY_CERTIFICATION_ATOM_ID) return
+    if (!atomId) return
 
     setLoading(true)
     setError(null)
@@ -88,10 +92,11 @@ export const useStreakLeaderboard = (
       const response = await intuitionGraphqlClient.request(
         GET_STREAK_LEADERBOARD,
         {
-          atomId: DAILY_CERTIFICATION_ATOM_ID,
+          atomId,
           curveId: "1",
           limit,
-          predicateId: PREDICATE_IDS.HAS_TAG
+          predicateId: PREDICATE_IDS.HAS_TAG,
+          tagLabel
         }
       ) as {
         vaults: Array<{
@@ -164,7 +169,7 @@ export const useStreakLeaderboard = (
     } finally {
       setLoading(false)
     }
-  }, [walletAddress, limit])
+  }, [walletAddress, limit, atomId, tagLabel])
 
   useEffect(() => {
     fetchData()

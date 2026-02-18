@@ -50,14 +50,16 @@ export interface UseDailyStreakProfitResult {
   refetch: () => Promise<void>
 }
 
-export const useDailyStreakProfit = (): UseDailyStreakProfitResult => {
+export const useDailyStreakProfit = (atomId?: string): UseDailyStreakProfitResult => {
   const { walletAddress } = useWalletFromStorage()
   const [data, setData] = useState<DailyStreakProfitData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const effectiveAtomId = atomId || DAILY_CERTIFICATION_ATOM_ID
+
   const fetchData = useCallback(async () => {
-    if (!walletAddress || !DAILY_CERTIFICATION_ATOM_ID) return
+    if (!walletAddress || !effectiveAtomId) return
 
     setLoading(true)
     setError(null)
@@ -66,7 +68,7 @@ export const useDailyStreakProfit = (): UseDailyStreakProfitResult => {
       const response = await intuitionGraphqlClient.request(
         GET_ATOM_VAULT_DATA,
         {
-          atomId: DAILY_CERTIFICATION_ATOM_ID,
+          atomId: effectiveAtomId,
           curveId: "1",
           walletAddress
         }
@@ -123,7 +125,7 @@ export const useDailyStreakProfit = (): UseDailyStreakProfitResult => {
     } finally {
       setLoading(false)
     }
-  }, [walletAddress])
+  }, [walletAddress, effectiveAtomId])
 
   useEffect(() => {
     fetchData()

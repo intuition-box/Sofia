@@ -89,6 +89,13 @@ interface AchievementsTabProps {
     profit: number
     participantCount: number
   } | null
+  voteProfit?: {
+    hasPosition: boolean
+    sharesFormatted: string
+    currentValue: number
+    profit: number
+    participantCount: number
+  } | null
 }
 
 const AchievementsTab = ({
@@ -102,7 +109,8 @@ const AchievementsTab = ({
   onVerifySocials,
   onMarkCompleted,
   onRefresh,
-  streakProfit
+  streakProfit,
+  voteProfit
 }: AchievementsTabProps) => {
   const [refreshing, setRefreshing] = useState(false)
 
@@ -170,6 +178,31 @@ const AchievementsTab = ({
               <span className="streak-vault-label">Profit</span>
               <span className={`streak-vault-value ${streakProfit.profit >= 0 ? 'positive' : 'negative'}`}>
                 {streakProfit.profit >= 0 ? '+' : ''}{streakProfit.profit.toFixed(4)} TRUST
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+      {voteProfit?.hasPosition && (
+        <div className="streak-vault-card">
+          <div className="streak-vault-header">
+            <img src={goldImg} alt="" className="streak-vault-icon" />
+            <span className="streak-vault-title">Daily Vote Vault</span>
+            <span className="streak-vault-participants">{voteProfit.participantCount} voters</span>
+          </div>
+          <div className="streak-vault-stats">
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Shares</span>
+              <span className="streak-vault-value">{voteProfit.sharesFormatted}</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Value</span>
+              <span className="streak-vault-value">{voteProfit.currentValue.toFixed(4)} TRUST</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Profit</span>
+              <span className={`streak-vault-value ${voteProfit.profit >= 0 ? 'positive' : 'negative'}`}>
+                {voteProfit.profit >= 0 ? '+' : ''}{voteProfit.profit.toFixed(4)} TRUST
               </span>
             </div>
           </div>

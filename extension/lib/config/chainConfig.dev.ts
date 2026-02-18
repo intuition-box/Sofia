@@ -117,3 +117,7 @@ export const DAILY_CERTIFICATION_ATOM_ID = "" as const
 
 // Fixed stake amount for daily streak deposit (1 TRUST)
 export const DAILY_STREAK_STAKE = 1000000000000000000n // 1 TRUST
+
+// Shared atom vault for daily vote deposits (not yet created on testnet)
+export const DAILY_VOTE_ATOM_ID = "" as const
+export const DAILY_VOTE_STAKE = 1000000000000000000n // 1 TRUST

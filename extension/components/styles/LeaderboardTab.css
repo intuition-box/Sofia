@@ -4,6 +4,38 @@
   padding: 0 16px 16px;
 }
 
+/* Tab switcher */
+.leaderboard-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 0 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 4px;
+}
+
+.leaderboard-tab-btn {
+  flex: 1;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.leaderboard-tab-btn:hover {
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.leaderboard-tab-btn.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .leaderboard-header {
   display: flex;
   align-items: center;

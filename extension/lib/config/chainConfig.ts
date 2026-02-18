@@ -48,7 +48,9 @@ export const {
   BOT_VERIFIER_ADDRESS,
   INTENTION_MIN_STAKE,
   DAILY_CERTIFICATION_ATOM_ID,
-  DAILY_STREAK_STAKE
+  DAILY_STREAK_STAKE,
+  DAILY_VOTE_ATOM_ID,
+  DAILY_VOTE_STAKE
 } = config
 
 // Export Sofia proxy address (only available in local config)
