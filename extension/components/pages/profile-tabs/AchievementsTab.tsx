@@ -202,13 +202,13 @@ const AchievementsTab = ({
       {/* Vault Cards */}
       {streakProfit?.hasPosition && (
         <div className="streak-vault-card">
-          <div className="streak-vault-header">
-            <div className="streak-vault-header-left">
-              {currentStreak !== undefined && currentStreak > 0 && (
-                <span className="streak-vault-badge">{"\uD83D\uDD25"} {currentStreak} day streak</span>
-              )}
-              <span className="streak-vault-participants">{streakProfit.participantCount} streakers</span>
-            </div>
+          <div className="streak-vault-header-top">
+            {currentStreak !== undefined && currentStreak > 0 && (
+              <span className="streak-vault-badge">{"\uD83D\uDD25"} {currentStreak} day streak</span>
+            )}
+            <span className="streak-vault-participants">{streakProfit.participantCount} streakers</span>
+          </div>
+          <div className="streak-vault-title-row">
             <span className="streak-vault-title">Certification Vault</span>
           </div>
           <div className="streak-week-bubbles">
@@ -269,9 +269,18 @@ const AchievementsTab = ({
       )}
 
       {(() => {
-        const isDailyOrStreak = (q: Quest) => q.recurringType === 'daily' || q.type === 'streak' || q.id.startsWith('vote-streak')
-        const dailyQuests = sorted.filter(isDailyOrStreak)
-        const otherQuests = sorted.filter(q => !isDailyOrStreak(q))
+        // Section "Task" : daily-certification + daily-vote
+        const taskQuests = sorted.filter(q => q.id === 'daily-certification' || q.id === 'daily-vote')
+        const remaining = sorted.filter(q => q.id !== 'daily-certification' && q.id !== 'daily-vote')
+
+        // Group remaining quests by type
+        const SECTION_ORDER = ['streak', 'vote', 'signal', 'discovery', 'bookmark', 'social-link', 'follow', 'trust', 'pulse', 'gold']
+        const groupedByType = new Map<string, Quest[]>()
+        for (const q of remaining) {
+          const group = groupedByType.get(q.type) || []
+          group.push(q)
+          groupedByType.set(q.type, group)
+        }
 
         const renderCard = (quest: Quest) => {
           const progress = quest.total > 0 ? (quest.current / quest.total) * 100 : 0
@@ -391,10 +400,10 @@ const AchievementsTab = ({
 
         return (
           <>
-            {dailyQuests.length > 0 && (
+            {taskQuests.length > 0 && (
               <>
                 <div className="achievements-section-header">
-                  <div className="achievements-section-label">Daily</div>
+                  <div className="achievements-section-label">Task</div>
                   {onRefresh && (
                     <button
                       className="quest-refresh-btn-inline"
@@ -407,18 +416,25 @@ const AchievementsTab = ({
                   )}
                 </div>
                 <div className="achievements-grid">
-                  {dailyQuests.map(renderCard)}
+                  {taskQuests.map(renderCard)}
                 </div>
-                {otherQuests.length > 0 && (
-                  <div className="achievements-separator" />
-                )}
               </>
             )}
-            {otherQuests.length > 0 && (
-              <div className="achievements-grid">
-                {otherQuests.map(renderCard)}
-              </div>
-            )}
+            {SECTION_ORDER.map(type => {
+              const quests = groupedByType.get(type)
+              if (!quests || quests.length === 0) return null
+              return (
+                <div key={type}>
+                  <div className="achievements-separator" />
+                  <div className="achievements-section-header">
+                    <div className="achievements-section-label">{typeLabels[type] || type}</div>
+                  </div>
+                  <div className="achievements-grid">
+                    {quests.map(renderCard)}
+                  </div>
+                </div>
+              )
+            })}
           </>
         )
       })()}

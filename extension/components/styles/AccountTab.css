@@ -1196,19 +1196,16 @@
   margin-bottom: 14px;
 }
 
-.streak-vault-header {
+.streak-vault-header-top {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
-.streak-vault-header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  align-self: flex-start;
+.streak-vault-title-row {
+  text-align: center;
+  margin-bottom: 12px;
 }
 
 .streak-vault-badge {

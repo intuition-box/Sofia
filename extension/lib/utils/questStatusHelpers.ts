@@ -56,8 +56,7 @@ function computeQuestProgress(
       return userProgress.signalsCreated
     case 'bookmark':
       if (questDef.id === 'bookmark-list-1') return userProgress.bookmarkListsCreated
-      if (questDef.id.startsWith('bookmark-signal')) return userProgress.bookmarkedSignals
-      return 0
+      return userProgress.bookmarkedSignals
     case 'oauth':
       if (questDef.id === 'social-linked') {
         return ['link-discord', 'link-youtube', 'link-spotify', 'link-twitch', 'link-twitter']
@@ -86,11 +85,6 @@ function computeQuestProgress(
     case 'pulse':
       if (questDef.id === 'pulse-first') return userProgress.pulseLaunches
       if (questDef.id === 'pulse-weekly-5') return userProgress.weeklyPulseUses
-      return 0
-    case 'curator':
-      return userProgress.bookmarkedSignals
-    case 'social':
-      if (questDef.id === 'networker-25') return userProgress.followedUsers
       return 0
     case 'discovery':
       if (questDef.id === 'discovery-first') return userProgress.totalDiscoveries

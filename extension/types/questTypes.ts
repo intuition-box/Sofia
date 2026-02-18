@@ -118,10 +118,18 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   { id: 'bookmark-signal-50', title: 'Archivist', description: 'Bookmark 50 signals', total: 50, xpReward: 250, type: 'bookmark', milestone: 50 },
 
   // Follow milestones
+  { id: 'follow-1', title: 'First Follow', description: 'Follow your first user', total: 1, xpReward: 25, type: 'follow', milestone: 1 },
+  { id: 'follow-5', title: 'Friendly', description: 'Follow 5 users', total: 5, xpReward: 50, type: 'follow', milestone: 5 },
+  { id: 'follow-10', title: 'Connected', description: 'Follow 10 users', total: 10, xpReward: 100, type: 'follow', milestone: 10 },
   { id: 'follow-50', title: 'Influencer', description: 'Follow 50 users', total: 50, xpReward: 300, type: 'follow', milestone: 50 },
+  { id: 'follow-100', title: 'Hub', description: 'Follow 100 users', total: 100, xpReward: 500, type: 'follow', milestone: 100 },
 
   // Trust milestones
+  { id: 'trust-1', title: 'First Trust', description: 'Trust your first user', total: 1, xpReward: 25, type: 'trust', milestone: 1 },
+  { id: 'trust-5', title: 'Believer', description: 'Trust 5 users', total: 5, xpReward: 100, type: 'trust', milestone: 5 },
   { id: 'trust-10', title: 'Trustworthy', description: 'Trust 10 users', total: 10, xpReward: 200, type: 'trust', milestone: 10 },
+  { id: 'trust-25', title: 'Guardian', description: 'Trust 25 users', total: 25, xpReward: 400, type: 'trust', milestone: 25 },
+  { id: 'trust-50', title: 'Pillar', description: 'Trust 50 users', total: 50, xpReward: 800, type: 'trust', milestone: 50 },
 
   // Streak quests
   { id: 'streak-7', title: 'Committed', description: 'Maintain a 7-day signal streak', total: 7, xpReward: 200, type: 'streak', milestone: 7 },
@@ -132,13 +140,13 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   { id: 'pulse-first', title: 'Explorer', description: 'Launch your first Pulse analysis', total: 1, xpReward: 30, type: 'pulse', milestone: 1 },
   { id: 'pulse-weekly-5', title: 'Pulse Master', description: 'Use Pulse 5 times this week', total: 5, xpReward: 150, type: 'pulse', recurringType: 'weekly' },
 
-  // Curator quests
-  { id: 'curator-10', title: 'Collector', description: 'Bookmark 10 signals', total: 10, xpReward: 150, type: 'curator', milestone: 10 },
-  { id: 'curator-50', title: 'Curator', description: 'Bookmark 50 signals', total: 50, xpReward: 400, type: 'curator', milestone: 50 },
+  // Bookmark quests (curator)
+  { id: 'curator-10', title: 'Collector', description: 'Bookmark 10 signals', total: 10, xpReward: 150, type: 'bookmark', milestone: 10 },
+  { id: 'curator-50', title: 'Curator', description: 'Bookmark 50 signals', total: 50, xpReward: 400, type: 'bookmark', milestone: 50 },
 
-  // Social quests
-  { id: 'social-butterfly', title: 'Social Butterfly', description: 'Follow 10 users this week', total: 10, xpReward: 200, type: 'social', recurringType: 'weekly' },
-  { id: 'networker-25', title: 'Networker', description: 'Follow 25 users', total: 25, xpReward: 350, type: 'social', milestone: 25 },
+  // Follow quests (social)
+  { id: 'social-butterfly', title: 'Social Butterfly', description: 'Follow 10 users this week', total: 10, xpReward: 200, type: 'follow', recurringType: 'weekly' },
+  { id: 'networker-25', title: 'Networker', description: 'Follow 25 users', total: 25, xpReward: 350, type: 'follow', milestone: 25 },
 
   // Discovery quests
   { id: 'discovery-first', title: 'First Step', description: 'Certify your first page', total: 1, xpReward: 50, type: 'discovery', milestone: 1 },
@@ -158,11 +166,14 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   { id: 'vote-streak-30', title: 'Civic Duty', description: 'Maintain a 30-day voting streak', total: 30, xpReward: 1000, type: 'vote', milestone: 30 },
 
   // Gold accumulation quests
+  { id: 'gold-10', title: 'First Coins', description: 'Accumulate 10 Gold', total: 10, xpReward: 25, type: 'gold', milestone: 10 },
+  { id: 'gold-50', title: 'Saver', description: 'Accumulate 50 Gold', total: 50, xpReward: 50, type: 'gold', milestone: 50 },
   { id: 'gold-100', title: 'Gold Digger', description: 'Accumulate 100 Gold', total: 100, xpReward: 100, type: 'gold', milestone: 100 },
   { id: 'gold-500', title: 'Treasurer', description: 'Accumulate 500 Gold', total: 500, xpReward: 300, type: 'gold', milestone: 500 },
   { id: 'gold-1000', title: 'Midas Touch', description: 'Accumulate 1,000 Gold', total: 1000, xpReward: 500, type: 'gold', milestone: 1000 },
   { id: 'gold-5000', title: 'Gold Reserve', description: 'Accumulate 5,000 Gold', total: 5000, xpReward: 1000, type: 'gold', milestone: 5000 },
   { id: 'gold-10000', title: 'Fort Knox', description: 'Accumulate 10,000 Gold', total: 10000, xpReward: 2500, type: 'gold', milestone: 10000 },
+  { id: 'gold-50000', title: 'El Dorado', description: 'Accumulate 50,000 Gold', total: 50000, xpReward: 5000, type: 'gold', milestone: 50000 },
 ]
 
 // Build QUEST_XP_REWARDS map from definitions (single source of truth)
