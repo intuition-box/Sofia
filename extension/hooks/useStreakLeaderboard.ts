@@ -85,6 +85,7 @@ export interface LeaderboardEntry {
   value: number
   isCurrentUser: boolean
   streakDays: number
+  termId?: string
 }
 
 export interface UseStreakLeaderboardResult {
@@ -144,13 +145,18 @@ export const useStreakLeaderboard = (
         return
       }
 
-      // Build verified wallet set from has_tag triples
+      // Build verified wallet set + termId map from has_tag triples
       // subject.value.account.id = full wallet address (from accounts table)
-      const verifiedWallets = new Set(
-        (verifiedResponse.triples || [])
-          .map(t => t.subject?.value?.account?.id?.toLowerCase())
-          .filter(Boolean) as string[]
-      )
+      const verifiedWallets = new Set<string>()
+      const termIdMap = new Map<string, string>()
+      for (const t of verifiedResponse.triples || []) {
+        const addr = t.subject?.value?.account?.id?.toLowerCase()
+        const termId = t.subject?.term_id
+        if (addr) {
+          verifiedWallets.add(addr)
+          if (termId) termIdMap.set(addr, termId)
+        }
+      }
 
       const price = BigInt(vault.current_share_price || "0")
       setCurrentSharePrice(vault.current_share_price || "0")
@@ -164,6 +170,7 @@ export const useStreakLeaderboard = (
           const value = Number(valueWei) / 1e18
 
           const address = pos.account?.id || pos.account_id
+          const addrLower = address.toLowerCase()
           return {
             rank: index + 1,
             address,
@@ -175,7 +182,8 @@ export const useStreakLeaderboard = (
             isCurrentUser: walletAddress
               ? pos.account_id.toLowerCase() === walletAddress.toLowerCase()
               : false,
-            streakDays: streakMap.get(address.toLowerCase()) || 0
+            streakDays: streakMap.get(addrLower) || 0,
+            termId: termIdMap.get(addrLower)
           }
         }
       )

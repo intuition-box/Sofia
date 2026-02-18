@@ -6,6 +6,7 @@
 import { useState } from "react"
 import { useStreakLeaderboard } from "../../../hooks/useStreakLeaderboard"
 import { useWalletFromStorage, useIdentityResolution } from "../../../hooks"
+import { useRouter } from "../../layout/RouterProvider"
 import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from "../../../lib/config/chainConfig"
 import Avatar from "../../ui/Avatar"
 import "../../styles/LeaderboardTab.css"
@@ -17,6 +18,7 @@ type LeaderboardType = "signals" | "vote"
 const LeaderboardTab = () => {
   const [activeTab, setActiveTab] = useState<LeaderboardType>("signals")
   const { walletAddress } = useWalletFromStorage()
+  const { navigateTo } = useRouter()
 
   const signalsLeaderboard = useStreakLeaderboard(DAILY_CERTIFICATION_ATOM_ID, "Daily Certification", 50)
   const voteLeaderboard = useStreakLeaderboard(DAILY_VOTE_ATOM_ID, "Daily Voter", 50)
@@ -86,7 +88,19 @@ const LeaderboardTab = () => {
             {entries.map((entry) => (
               <div
                 key={entry.address}
-                className={`leaderboard-row ${entry.isCurrentUser ? "current-user" : ""} ${entry.rank <= 3 ? "top-3" : ""}`}
+                className={`leaderboard-row ${entry.isCurrentUser ? "current-user" : ""} ${entry.rank <= 3 ? "top-3" : ""} clickable`}
+                onClick={() => {
+                  if (entry.isCurrentUser) {
+                    navigateTo("profile")
+                    return
+                  }
+                  navigateTo("user-profile", {
+                    termId: entry.termId || "",
+                    label: entry.label,
+                    image: entry.image,
+                    walletAddress: entry.address
+                  })
+                }}
               >
                 <div className="leaderboard-rank">
                   {entry.rank <= 3 ? MEDAL_EMOJIS[entry.rank] : `#${entry.rank}`}

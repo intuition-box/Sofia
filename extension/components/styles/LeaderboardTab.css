@@ -100,7 +100,11 @@
   transition: background 0.15s;
 }
 
-.leaderboard-row:hover {
+.leaderboard-row.clickable {
+  cursor: pointer;
+}
+
+.leaderboard-row.clickable:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
