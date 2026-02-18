@@ -10,15 +10,27 @@ import pioneerBadge from '../../ui/img/badges/pioneer.png'
 import explorerBadge from '../../ui/img/badges/explorer.png'
 import contributorBadge from '../../ui/img/badges/contributor.png'
 import trustBadge from '../../ui/img/badges/trust.png'
+import streakImg from '../../ui/img/questssuccess/streak.png'
+import goldImg from '../../ui/img/questssuccess/gold.png'
+
+interface VaultProfitData {
+  hasPosition: boolean
+  sharesFormatted: string
+  currentValue: number
+  profit: number
+  participantCount: number
+}
 
 interface StatsTabProps {
   trustedByCount?: number;
   level?: number;
   totalXP?: number;
   signalsCreated?: number;
+  streakProfit?: VaultProfitData | null;
+  voteProfit?: VaultProfitData | null;
 }
 
-const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }: StatsTabProps) => {
+const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0, streakProfit, voteProfit }: StatsTabProps) => {
   // XP progress calculation
   // Cumulative XP to reach current level = 100 * level*(level-1)/2
   const xpAtCurrentLevel = 100 * level * (level - 1) / 2
@@ -65,6 +77,58 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }
 
   return (
     <div className="stats-tab-content">
+
+      {/* Vault Cards */}
+      {streakProfit?.hasPosition && (
+        <div className="streak-vault-card">
+          <div className="streak-vault-header">
+            <img src={streakImg} alt="" className="streak-vault-icon" />
+            <span className="streak-vault-title">Daily Streak Vault</span>
+            <span className="streak-vault-participants">{streakProfit.participantCount} streakers</span>
+          </div>
+          <div className="streak-vault-stats">
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Shares</span>
+              <span className="streak-vault-value">{streakProfit.sharesFormatted}</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Value</span>
+              <span className="streak-vault-value">{streakProfit.currentValue.toFixed(4)} TRUST</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Profit</span>
+              <span className={`streak-vault-value ${streakProfit.profit >= 0 ? 'positive' : 'negative'}`}>
+                {streakProfit.profit >= 0 ? '+' : ''}{streakProfit.profit.toFixed(4)} TRUST
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+      {voteProfit?.hasPosition && (
+        <div className="streak-vault-card">
+          <div className="streak-vault-header">
+            <img src={goldImg} alt="" className="streak-vault-icon" />
+            <span className="streak-vault-title">Daily Vote Vault</span>
+            <span className="streak-vault-participants">{voteProfit.participantCount} voters</span>
+          </div>
+          <div className="streak-vault-stats">
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Shares</span>
+              <span className="streak-vault-value">{voteProfit.sharesFormatted}</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Value</span>
+              <span className="streak-vault-value">{voteProfit.currentValue.toFixed(4)} TRUST</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Profit</span>
+              <span className={`streak-vault-value ${voteProfit.profit >= 0 ? 'positive' : 'negative'}`}>
+                {voteProfit.profit >= 0 ? '+' : ''}{voteProfit.profit.toFixed(4)} TRUST
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Discovery Badges Section */}
       <div className="discovery-section">

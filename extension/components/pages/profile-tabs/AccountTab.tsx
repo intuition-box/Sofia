@@ -177,6 +177,8 @@ const AccountTab = () => {
             level={level}
             totalXP={totalXP}
             signalsCreated={signalsCreated}
+            streakProfit={streakProfitData}
+            voteProfit={voteProfitData}
           />
         )}
 
@@ -192,8 +194,6 @@ const AccountTab = () => {
           onVerifySocials={async () => ({ success: false })}
           onMarkCompleted={markQuestCompleted}
           onRefresh={handleFullRefresh}
-          streakProfit={streakProfitData}
-          voteProfit={voteProfitData}
         />
       )}
 
