@@ -14,8 +14,8 @@ import type { GroupUrlRecord } from '~types/database'
 import type { CertificationType } from '../../lib/services'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
+import { PREDICATE_NAMES, EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
-import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import WeightModal from '../modals/WeightModal'
 import { normalizeUrl } from '../../lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
@@ -41,7 +41,8 @@ const CERTIFICATIONS: { type: CertificationType; label: string; color: string }[
   { type: 'learning', label: 'Learning', color: '#06B6D4' },
   { type: 'fun', label: 'Fun', color: '#F59E0B' },
   { type: 'inspiration', label: 'Inspiration', color: '#8B5CF6' },
-  { type: 'buying', label: 'Buying', color: '#EC4899' }
+  { type: 'buying', label: 'Buying', color: '#EC4899' },
+  { type: 'music', label: 'Music', color: '#FF5722' }
 ]
 
 // Intention options for inline rendering in UrlRow
@@ -50,7 +51,8 @@ const INTENTIONS_LIST: { key: IntentionPurpose; label: string }[] = [
   { key: 'for_learning', label: 'learning' },
   { key: 'for_fun', label: 'fun' },
   { key: 'for_inspiration', label: 'inspiration' },
-  { key: 'for_buying', label: 'buying' }
+  { key: 'for_buying', label: 'buying' },
+  { key: 'for_music', label: 'music' }
 ]
 
 // Map IntentionPurpose to CertificationType
@@ -59,8 +61,15 @@ const intentionToCertification: Record<IntentionPurpose, CertificationType> = {
   for_learning: 'learning',
   for_fun: 'fun',
   for_inspiration: 'inspiration',
-  for_buying: 'buying'
+  for_buying: 'buying',
+  for_music: 'music'
 }
+
+// Trust/distrust pills for inline rendering in UrlRow
+const TRUST_PILLS: { predicateName: string; certType: CertificationType; label: string }[] = [
+  { predicateName: PREDICATE_NAMES.TRUSTS, certType: 'trusted', label: 'trust' },
+  { predicateName: PREDICATE_NAMES.DISTRUST, certType: 'distrusted', label: 'distrust' }
+]
 
 /**
  * Get effective certification status for a URL.
@@ -121,6 +130,7 @@ const UrlRow = ({
   urlRecord,
   onChainStatus,
   onIntentionSelect,
+  onTrustSelect,
   onOAuthCertify,
   onRemove,
   isProcessing
@@ -128,6 +138,7 @@ const UrlRow = ({
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
   onIntentionSelect: (intention: IntentionPurpose, title?: string) => void
+  onTrustSelect: (predicateName: string, title?: string) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
@@ -237,6 +248,28 @@ const UrlRow = ({
                 {urlRecord.oauthPredicate}
               </button>
             )}
+            {TRUST_PILLS.map(({ predicateName, certType, label }) => {
+              const isAlreadyCertified = allCertLabels.includes(certType)
+              const certInfo = CERTIFICATIONS.find(c => c.type === certType)
+              return (
+                <button
+                  key={certType}
+                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''}`}
+                  onClick={() => {
+                    onTrustSelect(predicateName, urlRecord.title)
+                    setIsExpanded(false)
+                  }}
+                  disabled={isProcessing}
+                  style={isAlreadyCertified ? {
+                    backgroundColor: certInfo?.color,
+                    borderColor: certInfo?.color,
+                    color: '#fff'
+                  } : undefined}
+                >
+                  {label}
+                </button>
+              )
+            })}
             {INTENTIONS_LIST.map(({ key, label }) => {
               const certType = intentionToCertification[key]
               const isAlreadyCertified = allCertLabels.includes(certType)
@@ -436,6 +469,32 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       }
 
       setPendingCertification({ url, intention, title })
+      setModalTriplets([triplet])
+      setShowWeightModal(true)
+    } catch (error) {
+      logger.error('Invalid URL', url)
+    }
+  }
+
+  // Handle trust/distrust selection - opens the WeightModal with trust predicate
+  const handleTrustSelect = (url: string, predicateName: string, title?: string) => {
+    try {
+      const { label: pageLabel } = normalizeUrl(url)
+      const displayName = (title ? cleanTitle(title) : null) || pageLabel
+
+      const triplet = {
+        id: `trust-${predicateName}`,
+        triplet: {
+          subject: 'I',
+          predicate: predicateName,
+          object: displayName
+        },
+        description: `I ${predicateName} ${displayName}`,
+        url: url,
+        intention: 'for_fun' as IntentionPurpose // Fallback for type compat
+      }
+
+      setPendingCertification({ url, intention: 'for_fun', oauthPredicate: predicateName, title })
       setModalTriplets([triplet])
       setShowWeightModal(true)
     } catch (error) {
@@ -757,6 +816,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               urlRecord={urlRecord}
               onChainStatus={getUrlCertification(urlRecord.url)}
               onIntentionSelect={(intention, title) => handleIntentionSelect(urlRecord.url, intention, title)}
+              onTrustSelect={(predicateName, title) => handleTrustSelect(urlRecord.url, predicateName, title)}
               onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
               isProcessing={processingUrls.has(urlRecord.url) || intentionLoading}

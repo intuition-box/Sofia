@@ -14,13 +14,13 @@ import { IntentionStatsDocument } from '@0xsofia/graphql'
 const logger = createHookLogger('usePageIntentionStats')
 
 // Map predicate IDs to intention purposes
-const PREDICATE_TO_INTENTION: Record<string, IntentionPurpose> = {
-  [PREDICATE_IDS.VISITS_FOR_WORK]: 'for_work',
-  [PREDICATE_IDS.VISITS_FOR_LEARNING]: 'for_learning',
-  [PREDICATE_IDS.VISITS_FOR_FUN]: 'for_fun',
-  [PREDICATE_IDS.VISITS_FOR_INSPIRATION]: 'for_inspiration',
-  [PREDICATE_IDS.VISITS_FOR_BUYING]: 'for_buying'
-}
+const PREDICATE_TO_INTENTION: Record<string, IntentionPurpose> = {}
+if (PREDICATE_IDS.VISITS_FOR_WORK) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_WORK] = 'for_work'
+if (PREDICATE_IDS.VISITS_FOR_LEARNING) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_LEARNING] = 'for_learning'
+if (PREDICATE_IDS.VISITS_FOR_FUN) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_FUN] = 'for_fun'
+if (PREDICATE_IDS.VISITS_FOR_INSPIRATION) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_INSPIRATION] = 'for_inspiration'
+if (PREDICATE_IDS.VISITS_FOR_BUYING) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_BUYING] = 'for_buying'
+if (PREDICATE_IDS.VISITS_FOR_MUSIC) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_MUSIC] = 'for_music'
 
 // Filter out empty predicate IDs (dev config)
 const INTENTION_PREDICATE_IDS = Object.keys(PREDICATE_TO_INTENTION).filter(id => id)
@@ -40,7 +40,8 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
     for_learning: 0,
     for_fun: 0,
     for_inspiration: 0,
-    for_buying: 0
+    for_buying: 0,
+    for_music: 0
   })
   const [totalCertifications, setTotalCertifications] = useState(0)
   const [maxIntentionCount, setMaxIntentionCount] = useState(0)
@@ -54,7 +55,8 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
         for_learning: 0,
         for_fun: 0,
         for_inspiration: 0,
-        for_buying: 0
+        for_buying: 0,
+        for_music: 0
       })
       setTotalCertifications(0)
       setMaxIntentionCount(0)
@@ -87,7 +89,8 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
         for_learning: new Set(),
         for_fun: new Set(),
         for_inspiration: new Set(),
-        for_buying: new Set()
+        for_buying: new Set(),
+        for_music: new Set()
       }
 
       for (const triple of triples) {
@@ -111,7 +114,8 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
         for_learning: intentionCounts.for_learning.size,
         for_fun: intentionCounts.for_fun.size,
         for_inspiration: intentionCounts.for_inspiration.size,
-        for_buying: intentionCounts.for_buying.size
+        for_buying: intentionCounts.for_buying.size,
+        for_music: intentionCounts.for_music.size
       }
 
       // Calculate totals

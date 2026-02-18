@@ -66,6 +66,7 @@ export const PREDICATE_IDS = {
   VISITS_FOR_FUN: "0xb8b8ab8d23678edad85cec5e580caeb564a88b532f8dfd884f93dcf2cab32459",
   VISITS_FOR_INSPIRATION: "0xd635b7467c9f89a9d243b82c5e4f6a97d238ad91a914b5de9949e107e5f59825",
   VISITS_FOR_BUYING: "0x3b2089f0aa24da0473fd1ad01c555c80c6b17e6ac1de39c68c588640487f845d",
+  VISITS_FOR_MUSIC: "0xdeced28a3213eec9e29e42ded5302864b0db614f708599e552a7aac7f40f8fb7",
   // Vote predicates (nested triples - like/dislike certifications)
   LIKE: "",
   DISLIKE: "",
@@ -99,6 +100,7 @@ export const PREDICATE_NAMES = {
   VISITS_FOR_FUN: "visits for fun",
   VISITS_FOR_INSPIRATION: "visits for inspiration",
   VISITS_FOR_BUYING: "visits for buying",
+  VISITS_FOR_MUSIC: "visits for music",
   // Vote predicates
   LIKE: "like",
   DISLIKE: "dislike",
