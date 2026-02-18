@@ -105,7 +105,7 @@ export const useGroupOnChainCertifications = (
   urls: string[]
 ): UseGroupOnChainCertificationsResult => {
   const { walletAddress } = useWalletFromStorage()
-  const { certifications, loading: globalLoading, error: globalError, refetch: globalRefetch } = useUserCertifications(walletAddress)
+  const { certifications, loading: globalLoading, error: globalError, refetch: globalRefetch, lastFetchedAt } = useUserCertifications(walletAddress)
 
   // Stabilize urls reference
   const urlsKey = urls.join('|')
@@ -116,8 +116,10 @@ export const useGroupOnChainCertifications = (
       return null
     }
 
-    // Return null while global cache is still loading
-    if (globalLoading) {
+    // Return null while global cache hasn't been loaded yet
+    // Without this, the store starts with loading:false + empty Map,
+    // causing certifiedCount=0 on first render before fetch even starts
+    if (globalLoading || lastFetchedAt === null) {
       return null
     }
 
@@ -180,7 +182,7 @@ export const useGroupOnChainCertifications = (
       currentLevel: level,
       progressPercent: progress
     }
-  }, [domain, urlsKey, certifications, globalLoading])
+  }, [domain, urlsKey, certifications, globalLoading, lastFetchedAt])
 
   // Helper to check if a specific URL is certified
   const isUrlCertified = useCallback((url: string): boolean => {
