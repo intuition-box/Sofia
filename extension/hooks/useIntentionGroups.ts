@@ -5,7 +5,7 @@
  * Used by the UI to display and interact with domain-based groups
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { IntentionGroupRecord, GroupUrlRecord } from '~types/database'
 import type { IntentionGroupWithStats, SortOption } from '~types/groups'
 import type { CertificationType } from '~lib/services'
@@ -126,9 +126,6 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
   // Fetch on-chain intention groups
   const { groups: onChainGroups, loading: onChainLoading, refetch: refetchOnChain } = useOnChainIntentionGroups()
 
-  // Track groups that need level persistence (to avoid side effects in useMemo)
-  const pendingLevelUpdatesRef = useRef<Array<{ groupId: string; domain: string; level: number; certifiedCount: number }>>([])
-
   /**
    * Load all groups from background service (local IndexedDB)
    */
@@ -232,34 +229,26 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
         // Recalculate stats after enrichment
         const activeUrls = existing.urls.filter(u => !u.removed)
         existing.activeUrlCount = activeUrls.length
-        existing.certifiedCount = activeUrls.filter(u => u.isOnChain).length
+        // Use max of on-chain count (including follow URLs from Pipeline 1), merged URLs, and local count
+        const mergedOnChainCount = activeUrls.filter(u => u.isOnChain).length
+        const localCertCount = activeUrls.filter(u => u.certification).length
+        // onChain.certifiedCount includes follow URLs which are counted for level but not displayed
+        existing.certifiedCount = Math.max(mergedOnChainCount, localCertCount, onChain.certifiedCount)
 
-        // Recalculate certification breakdown from on-chain data
+        // Recalculate certification breakdown from on-chain + local data
         const breakdown: Record<CertificationType, number> = {
           work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, music: 0, trusted: 0, distrusted: 0
         }
         for (const url of activeUrls) {
-          const cert = url.onChainCertification
+          // Prefer on-chain certification, fall back to local (handles indexer lag)
+          const cert = url.onChainCertification || url.certification
           if (cert && cert in breakdown) {
             breakdown[cert as CertificationType]++
           }
         }
         existing.certificationBreakdown = breakdown
-        // Restore level from on-chain if local level is lower (e.g., after cache clear)
-        // Use MAX of local level and on-chain calculated level
-        if (onChain.level > existing.level) {
-          logger.info(`Restoring level for ${existing.domain}: ${existing.level} -> ${onChain.level} (from on-chain certifications)`)
-          const oldLevel = existing.level
-          existing.level = onChain.level
-          // Track for persistence in useEffect (no side effects in useMemo)
-          pendingLevelUpdatesRef.current.push({
-            groupId: existing.id,
-            domain: existing.domain,
-            level: onChain.level,
-            certifiedCount: onChain.certifiedCount
-          })
-          logger.debug(`Queued level update: ${existing.domain} ${oldLevel} -> ${onChain.level}`)
-        }
+        // Level is NOT auto-bumped from on-chain data
+        // Levels require explicit "Level Up" action (costs Gold, generates AI predicate)
 
       } else {
         // CASE 2: Domain exists ONLY on-chain → create "virtual" group
@@ -306,38 +295,6 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
 
     return Array.from(merged.values())
   }, [localGroups, onChainGroups])
-
-  /**
-   * Persist pending level updates to IndexedDB
-   * This runs after mergedGroups is computed to avoid side effects in useMemo
-   */
-  useEffect(() => {
-    const updates = pendingLevelUpdatesRef.current
-    if (updates.length === 0) return
-
-    // Clear the ref immediately to avoid duplicate processing
-    pendingLevelUpdatesRef.current = []
-
-    logger.info(`Persisting ${updates.length} level update(s)...`)
-
-    // Persist each level update
-    for (const update of updates) {
-      chrome.runtime.sendMessage({
-        type: 'UPDATE_GROUP_LEVEL',
-        groupId: update.groupId,
-        level: update.level,
-        certifiedCount: update.certifiedCount
-      }).then(response => {
-        if (response?.success) {
-          logger.info(`Persisted level ${update.level} for ${update.domain}`)
-        } else {
-          logger.warn(`Failed to persist level for ${update.domain}`, response?.error)
-        }
-      }).catch(err => {
-        logger.warn(`Error persisting level for ${update.domain}`, err)
-      })
-    }
-  }, [mergedGroups]) // Run when mergedGroups changes
 
   /**
    * Select a group to view details

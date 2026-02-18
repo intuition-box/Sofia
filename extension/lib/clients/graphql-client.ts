@@ -46,7 +46,8 @@ export const intuitionGraphqlClient = {
     }
 
     // Queue the request to prevent concurrent calls
-    const result = await (requestQueue = requestQueue.then(async () => {
+    // .catch(() => {}) ensures a failed request doesn't break the chain for subsequent requests
+    const result = await (requestQueue = requestQueue.catch(() => {}).then(async () => {
       // Double-check cache (another request might have populated it)
       const cached2 = queryCache.get(cacheKey)
       if (cached2 && Date.now() - cached2.timestamp < CACHE_TTL_MS) {

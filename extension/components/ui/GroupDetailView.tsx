@@ -404,7 +404,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     if (result.success) setAmplified(true)
   }
 
-  // Use on-chain stats for certification count, with Pipeline 1 fallback
+  // Use on-chain stats for certification count, with Pipeline 1 and local fallbacks
   const certifiedCount = useMemo(() => {
     // Count from Pipeline 2 (useGroupOnChainCertifications)
     const p2Count = onChainStats?.certifiedCount ?? 0
@@ -412,7 +412,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     const p1Count = group.urls.filter(u =>
       !u.removed && u.isOnChain && u.onChainCertification
     ).length
-    return Math.max(p2Count, p1Count, group.certifiedCount)
+    // Count from local DB (ahead of on-chain indexer after fresh certification)
+    const localCount = group.urls.filter(u => !u.removed && u.certification).length
+    return Math.max(p2Count, p1Count, group.certifiedCount, localCount)
   }, [onChainStats, group.urls, group.certifiedCount])
 
   // IMPORTANT: currentLevel is the CONFIRMED level (from group.level after explicit level up)
@@ -425,8 +427,11 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const currentThreshold = LEVEL_THRESHOLDS[currentLevel - 1] || 0
   const nextThreshold = LEVEL_THRESHOLDS[currentLevel] || currentThreshold + 10
   const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
+  // Use certifiedCount floored at currentThreshold to avoid negative progress
+  // (level was confirmed at that threshold, so progress should never go backward)
+  const effectiveCount = Math.max(certifiedCount, currentThreshold)
   const progressPercent = Math.min(100, Math.max(0,
-    ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
+    ((effectiveCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
   ))
 
   // Filter URLs - use Pipeline 2 with Pipeline 1 fallback for trust/distrust
@@ -714,7 +719,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               onClick={handleAmplify}
               disabled={amplifyLoading}
             >
-              {amplifyLoading ? '...' : '⛓️ Amplify'}
+              {amplifyLoading ? '...' : 'Amplify'}
             </button>
           )}
         </div>
