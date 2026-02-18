@@ -87,7 +87,7 @@ const validateOutput = createStep({
   outputSchema: tripletSchema,
   execute: async ({ inputData }) => {
     if (!inputData?.triplets?.length) {
-      throw new Error('No triplets found in output');
+      throw new Error('No signal found in output');
     }
 
     const triplet = inputData.triplets[0];

@@ -22,7 +22,8 @@ const INTENTION_PREDICATE_LABELS = [
   'visits for learning ',  // Legacy version with trailing space (old on-chain data)
   'visits for fun',
   'visits for inspiration',
-  'visits for buying'
+  'visits for buying',
+  'visits for music'
 ]
 
 // OAuth predicate labels (from PlatformRegistry.ts)
@@ -57,6 +58,7 @@ const ALL_PREDICATE_IDS = [
   PREDICATE_IDS.VISITS_FOR_FUN,
   PREDICATE_IDS.VISITS_FOR_INSPIRATION,
   PREDICATE_IDS.VISITS_FOR_BUYING,
+  PREDICATE_IDS.VISITS_FOR_MUSIC,
   PREDICATE_IDS.FOLLOW,
   PREDICATE_IDS.MEMBER_OF,
   PREDICATE_IDS.OWNER_OF,
@@ -79,7 +81,8 @@ const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
   'visits for learning ': 'for_learning',  // Handle trailing space variant
   'visits for fun': 'for_fun',
   'visits for inspiration': 'for_inspiration',
-  'visits for buying': 'for_buying'
+  'visits for buying': 'for_buying',
+  'visits for music': 'for_music'
 }
 
 // Triple detail for redeem operations

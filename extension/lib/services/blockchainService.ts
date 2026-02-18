@@ -247,6 +247,30 @@ export class BlockchainService {
   }
 
   /**
+   * Get user's shares in an atom vault
+   * Returns > 0n if the user has deposited into this atom
+   */
+  static async getUserSharesInAtom(
+    userAddress: string,
+    atomTermId: string
+  ): Promise<bigint> {
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
+
+    return await publicClient.readContract({
+      address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
+      functionName: 'getShares',
+      args: [
+        userAddress as `0x${string}`,
+        atomTermId as `0x${string}`,
+        1n // curveId = 1 for atom vaults
+      ],
+      authorizationList: undefined
+    }) as bigint
+  }
+
+  /**
    * Get atom cost from contract (reads from MultiVault)
    */
   static async getAtomCost(): Promise<bigint> {

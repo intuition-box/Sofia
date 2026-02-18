@@ -102,6 +102,34 @@
   color: #FBBF24;
 }
 
+/* Streak Indicator */
+.streak-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(234, 182, 122, 0.15);
+  border: 1px solid rgba(234, 182, 122, 0.25);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.streak-flame {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.streak-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #EAB67A;
+}
+
+.streak-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .profile-actions {
   display: flex;
   align-items: center;

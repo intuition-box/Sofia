@@ -69,6 +69,10 @@ export { useQuestSystem } from './useQuestSystem'
 export { useUserQuests } from './useUserQuests'
 export { useGoldSystem } from './useGoldSystem'
 export { default as useLevelUp, type LevelUpPreview } from './useLevelUp'
+export { useDailyStreakProfit } from './useDailyStreakProfit'
+export type { DailyStreakProfitData } from './useDailyStreakProfit'
+export { useStreakLeaderboard } from './useStreakLeaderboard'
+export type { LeaderboardEntry } from './useStreakLeaderboard'
 
 // Bookmarks & Lists
 export { useBookmarks } from './useBookmarks'
@@ -79,7 +83,7 @@ export { useUserSignals } from './useUserSignals'
 export { useRecommendations } from './useRecommendations'
 export { default as useInterestAnalysis } from './useInterestAnalysis'
 export { useInterestAttention } from './useInterestAttention'
-export { default as useCircleInterestRecommendations } from './useCircleInterestRecommendations'
+
 
 // Tracking
 export { useTracking } from './useTracking'

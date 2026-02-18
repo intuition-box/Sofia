@@ -127,6 +127,7 @@ function mergeInterests(cached: Interest[], newInterests: Interest[]): Interest[
         fun: Math.max(existing.certifications.fun, newItem.certifications.fun),
         inspiration: Math.max(existing.certifications.inspiration, newItem.certifications.inspiration),
         buying: Math.max(existing.certifications.buying, newItem.certifications.buying),
+        music: Math.max(existing.certifications.music, newItem.certifications.music),
       };
 
       // Recalculate XP/level with merged certifications
@@ -353,6 +354,7 @@ function mapPredicatesToCertifications(
     fun: predicates['visits for fun'] || 0,
     inspiration: predicates['visits for inspiration'] || 0,
     buying: predicates['visits for buying'] || 0,
+    music: predicates['visits for music'] || 0,
   };
 }
 
@@ -386,6 +388,7 @@ async function analyzeInterestsWithAgent(
       fun: 0,
       inspiration: 0,
       buying: 0,
+      music: 0,
     };
 
     for (const domain of item.domains) {

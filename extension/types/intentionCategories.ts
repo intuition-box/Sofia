@@ -3,7 +3,7 @@
  * Types for grouping on-chain certified URLs by intention type
  */
 
-export type IntentionType = 'trusted' | 'distrusted' | 'work' | 'learning' | 'fun' | 'inspiration' | 'buying'
+export type IntentionType = 'trusted' | 'distrusted' | 'work' | 'learning' | 'fun' | 'inspiration' | 'buying' | 'music'
 
 export interface CategoryUrl {
   url: string
@@ -29,5 +29,6 @@ export const INTENTION_CONFIG: Record<IntentionType, { label: string; color: str
   learning: { label: 'Learning', color: '#06B6D4' },
   fun: { label: 'Fun', color: '#F59E0B' },
   inspiration: { label: 'Inspiration', color: '#8B5CF6' },
-  buying: { label: 'Buying', color: '#EC4899' }
+  buying: { label: 'Buying', color: '#EC4899' },
+  music: { label: 'Music', color: '#FF5722' }
 }

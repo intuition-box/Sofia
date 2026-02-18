@@ -22,7 +22,8 @@ const CERTIFICATION_COLORS: Record<CertificationType, string> = {
   learning: '#06B6D4',    // cyan
   fun: '#F59E0B',         // yellow/orange
   inspiration: '#8B5CF6', // purple
-  buying: '#EC4899'       // rose
+  buying: '#EC4899',       // rose
+  music: '#FF5722'        // deep orange
 }
 
 // Get favicon URL from domain

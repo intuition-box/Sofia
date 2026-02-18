@@ -34,7 +34,8 @@ export function useIntentionCategories(walletAddress?: string): UseIntentionCate
       learning: [],
       fun: [],
       inspiration: [],
-      buying: []
+      buying: [],
+      music: []
     }
 
     // Iterate through all domain groups and their URLs

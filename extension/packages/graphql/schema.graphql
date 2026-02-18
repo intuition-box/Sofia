@@ -3602,6 +3602,11 @@ type events {
   """
   An object relationship
   """
+  protocol_fee_accrued: protocol_fee_accruals
+  protocol_fee_accrued_id: String
+  """
+  An object relationship
+  """
   redemption: redemptions
   redemption_id: String
   transaction_hash: String!
@@ -3661,6 +3666,8 @@ input events_bool_exp {
   fee_transfer: fee_transfers_bool_exp
   fee_transfer_id: String_comparison_exp
   id: String_comparison_exp
+  protocol_fee_accrued: protocol_fee_accruals_bool_exp
+  protocol_fee_accrued_id: String_comparison_exp
   redemption: redemptions_bool_exp
   redemption_id: String_comparison_exp
   transaction_hash: String_comparison_exp
@@ -3679,6 +3686,7 @@ type events_max_fields {
   deposit_id: String
   fee_transfer_id: String
   id: String
+  protocol_fee_accrued_id: String
   redemption_id: String
   transaction_hash: String
   triple_id: String
@@ -3695,6 +3703,7 @@ type events_min_fields {
   deposit_id: String
   fee_transfer_id: String
   id: String
+  protocol_fee_accrued_id: String
   redemption_id: String
   transaction_hash: String
   triple_id: String
@@ -3714,6 +3723,8 @@ input events_order_by {
   fee_transfer: fee_transfers_order_by
   fee_transfer_id: order_by
   id: order_by
+  protocol_fee_accrued: protocol_fee_accruals_order_by
+  protocol_fee_accrued_id: order_by
   redemption: redemptions_order_by
   redemption_id: order_by
   transaction_hash: order_by
@@ -3750,6 +3761,10 @@ enum events_select_column {
   column name
   """
   id
+  """
+  column name
+  """
+  protocol_fee_accrued_id
   """
   column name
   """
@@ -3813,6 +3828,7 @@ input events_stream_cursor_value_input {
   deposit_id: String
   fee_transfer_id: String
   id: String
+  protocol_fee_accrued_id: String
   redemption_id: String
   transaction_hash: String
   triple_id: String
@@ -6672,6 +6688,7 @@ type positions_with_value {
   log_index: bigint
   pnl: numeric
   pnl_pct: numeric
+  redeemable_assets: numeric
   shares: numeric
   """
   An object relationship
@@ -6724,6 +6741,7 @@ type positions_with_value_avg_fields {
   log_index: Float
   pnl: Float
   pnl_pct: Float
+  redeemable_assets: Float
   shares: Float
   theoretical_value: Float
   total_deposit_assets_after_total_fees: Float
@@ -6747,6 +6765,7 @@ input positions_with_value_bool_exp {
   log_index: bigint_comparison_exp
   pnl: numeric_comparison_exp
   pnl_pct: numeric_comparison_exp
+  redeemable_assets: numeric_comparison_exp
   shares: numeric_comparison_exp
   term: terms_bool_exp
   term_id: String_comparison_exp
@@ -6771,6 +6790,7 @@ type positions_with_value_max_fields {
   log_index: bigint
   pnl: numeric
   pnl_pct: numeric
+  redeemable_assets: numeric
   shares: numeric
   term_id: String
   theoretical_value: numeric
@@ -6793,6 +6813,7 @@ type positions_with_value_min_fields {
   log_index: bigint
   pnl: numeric
   pnl_pct: numeric
+  redeemable_assets: numeric
   shares: numeric
   term_id: String
   theoretical_value: numeric
@@ -6816,6 +6837,7 @@ input positions_with_value_order_by {
   log_index: order_by
   pnl: order_by
   pnl_pct: order_by
+  redeemable_assets: order_by
   shares: order_by
   term: terms_order_by
   term_id: order_by
@@ -6867,6 +6889,10 @@ enum positions_with_value_select_column {
   """
   column name
   """
+  redeemable_assets
+  """
+  column name
+  """
   shares
   """
   column name
@@ -6907,6 +6933,7 @@ type positions_with_value_stddev_fields {
   log_index: Float
   pnl: Float
   pnl_pct: Float
+  redeemable_assets: Float
   shares: Float
   theoretical_value: Float
   total_deposit_assets_after_total_fees: Float
@@ -6923,6 +6950,7 @@ type positions_with_value_stddev_pop_fields {
   log_index: Float
   pnl: Float
   pnl_pct: Float
+  redeemable_assets: Float
   shares: Float
   theoretical_value: Float
   total_deposit_assets_after_total_fees: Float
@@ -6939,6 +6967,7 @@ type positions_with_value_stddev_samp_fields {
   log_index: Float
   pnl: Float
   pnl_pct: Float
+  redeemable_assets: Float
   shares: Float
   theoretical_value: Float
   total_deposit_assets_after_total_fees: Float
@@ -6972,6 +7001,7 @@ input positions_with_value_stream_cursor_value_input {
   log_index: bigint
   pnl: numeric
   pnl_pct: numeric
+  redeemable_assets: numeric
   shares: numeric
   term_id: String
   theoretical_value: numeric
@@ -6991,6 +7021,7 @@ type positions_with_value_sum_fields {
   log_index: bigint
   pnl: numeric
   pnl_pct: numeric
+  redeemable_assets: numeric
   shares: numeric
   theoretical_value: numeric
   total_deposit_assets_after_total_fees: numeric
@@ -7007,6 +7038,7 @@ type positions_with_value_var_pop_fields {
   log_index: Float
   pnl: Float
   pnl_pct: Float
+  redeemable_assets: Float
   shares: Float
   theoretical_value: Float
   total_deposit_assets_after_total_fees: Float
@@ -7023,6 +7055,7 @@ type positions_with_value_var_samp_fields {
   log_index: Float
   pnl: Float
   pnl_pct: Float
+  redeemable_assets: Float
   shares: Float
   theoretical_value: Float
   total_deposit_assets_after_total_fees: Float
@@ -7039,6 +7072,7 @@ type positions_with_value_variance_fields {
   log_index: Float
   pnl: Float
   pnl_pct: Float
+  redeemable_assets: Float
   shares: Float
   theoretical_value: Float
   total_deposit_assets_after_total_fees: Float
@@ -7437,6 +7471,241 @@ input predicate_objects_variance_order_by {
   total_market_cap: order_by
   total_position_count: order_by
   triple_count: order_by
+}
+
+"""
+columns and relationships of "protocol_fee_accrued"
+"""
+type protocol_fee_accruals {
+  amount: numeric!
+  block_number: numeric!
+  created_at: timestamptz!
+  epoch: numeric!
+  id: String!
+  """
+  An object relationship
+  """
+  sender: accounts
+  sender_id: String!
+  transaction_hash: String!
+}
+
+"""
+aggregated selection of "protocol_fee_accrued"
+"""
+type protocol_fee_accruals_aggregate {
+  aggregate: protocol_fee_accruals_aggregate_fields
+  nodes: [protocol_fee_accruals!]!
+}
+
+"""
+aggregate fields of "protocol_fee_accrued"
+"""
+type protocol_fee_accruals_aggregate_fields {
+  avg: protocol_fee_accruals_avg_fields
+  count(
+    columns: [protocol_fee_accruals_select_column!]
+    distinct: Boolean
+  ): Int!
+  max: protocol_fee_accruals_max_fields
+  min: protocol_fee_accruals_min_fields
+  stddev: protocol_fee_accruals_stddev_fields
+  stddev_pop: protocol_fee_accruals_stddev_pop_fields
+  stddev_samp: protocol_fee_accruals_stddev_samp_fields
+  sum: protocol_fee_accruals_sum_fields
+  var_pop: protocol_fee_accruals_var_pop_fields
+  var_samp: protocol_fee_accruals_var_samp_fields
+  variance: protocol_fee_accruals_variance_fields
+}
+
+"""
+aggregate avg on columns
+"""
+type protocol_fee_accruals_avg_fields {
+  amount: Float
+  block_number: Float
+  epoch: Float
+}
+
+"""
+Boolean expression to filter rows from the table "protocol_fee_accrued". All fields are combined with a logical 'AND'.
+"""
+input protocol_fee_accruals_bool_exp {
+  _and: [protocol_fee_accruals_bool_exp!]
+  _not: protocol_fee_accruals_bool_exp
+  _or: [protocol_fee_accruals_bool_exp!]
+  amount: numeric_comparison_exp
+  block_number: numeric_comparison_exp
+  created_at: timestamptz_comparison_exp
+  epoch: numeric_comparison_exp
+  id: String_comparison_exp
+  sender: accounts_bool_exp
+  sender_id: String_comparison_exp
+  transaction_hash: String_comparison_exp
+}
+
+"""
+aggregate max on columns
+"""
+type protocol_fee_accruals_max_fields {
+  amount: numeric
+  block_number: numeric
+  created_at: timestamptz
+  epoch: numeric
+  id: String
+  sender_id: String
+  transaction_hash: String
+}
+
+"""
+aggregate min on columns
+"""
+type protocol_fee_accruals_min_fields {
+  amount: numeric
+  block_number: numeric
+  created_at: timestamptz
+  epoch: numeric
+  id: String
+  sender_id: String
+  transaction_hash: String
+}
+
+"""
+Ordering options when selecting data from "protocol_fee_accrued".
+"""
+input protocol_fee_accruals_order_by {
+  amount: order_by
+  block_number: order_by
+  created_at: order_by
+  epoch: order_by
+  id: order_by
+  sender: accounts_order_by
+  sender_id: order_by
+  transaction_hash: order_by
+}
+
+"""
+select columns of table "protocol_fee_accrued"
+"""
+enum protocol_fee_accruals_select_column {
+  """
+  column name
+  """
+  amount
+  """
+  column name
+  """
+  block_number
+  """
+  column name
+  """
+  created_at
+  """
+  column name
+  """
+  epoch
+  """
+  column name
+  """
+  id
+  """
+  column name
+  """
+  sender_id
+  """
+  column name
+  """
+  transaction_hash
+}
+
+"""
+aggregate stddev on columns
+"""
+type protocol_fee_accruals_stddev_fields {
+  amount: Float
+  block_number: Float
+  epoch: Float
+}
+
+"""
+aggregate stddev_pop on columns
+"""
+type protocol_fee_accruals_stddev_pop_fields {
+  amount: Float
+  block_number: Float
+  epoch: Float
+}
+
+"""
+aggregate stddev_samp on columns
+"""
+type protocol_fee_accruals_stddev_samp_fields {
+  amount: Float
+  block_number: Float
+  epoch: Float
+}
+
+"""
+Streaming cursor of the table "protocol_fee_accruals"
+"""
+input protocol_fee_accruals_stream_cursor_input {
+  """
+  Stream column input with initial value
+  """
+  initial_value: protocol_fee_accruals_stream_cursor_value_input!
+  """
+  cursor ordering
+  """
+  ordering: cursor_ordering
+}
+
+"""
+Initial value of the column from where the streaming should start
+"""
+input protocol_fee_accruals_stream_cursor_value_input {
+  amount: numeric
+  block_number: numeric
+  created_at: timestamptz
+  epoch: numeric
+  id: String
+  sender_id: String
+  transaction_hash: String
+}
+
+"""
+aggregate sum on columns
+"""
+type protocol_fee_accruals_sum_fields {
+  amount: numeric
+  block_number: numeric
+  epoch: numeric
+}
+
+"""
+aggregate var_pop on columns
+"""
+type protocol_fee_accruals_var_pop_fields {
+  amount: Float
+  block_number: Float
+  epoch: Float
+}
+
+"""
+aggregate var_samp on columns
+"""
+type protocol_fee_accruals_var_samp_fields {
+  amount: Float
+  block_number: Float
+  epoch: Float
+}
+
+"""
+aggregate variance on columns
+"""
+type protocol_fee_accruals_variance_fields {
+  amount: Float
+  block_number: Float
+  epoch: Float
 }
 
 type query_root {
@@ -8941,6 +9210,60 @@ type query_root {
     object_id: String!
     predicate_id: String!
   ): predicate_objects
+  """
+  fetch data from the table: "protocol_fee_accrued"
+  """
+  protocol_fee_accruals(
+    """
+    distinct select on columns
+    """
+    distinct_on: [protocol_fee_accruals_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [protocol_fee_accruals_order_by!]
+    """
+    filter the rows returned
+    """
+    where: protocol_fee_accruals_bool_exp
+  ): [protocol_fee_accruals!]!
+  """
+  fetch aggregated fields from the table: "protocol_fee_accrued"
+  """
+  protocol_fee_accruals_aggregate(
+    """
+    distinct select on columns
+    """
+    distinct_on: [protocol_fee_accruals_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [protocol_fee_accruals_order_by!]
+    """
+    filter the rows returned
+    """
+    where: protocol_fee_accruals_bool_exp
+  ): protocol_fee_accruals_aggregate!
+  """
+  fetch data from the table: "protocol_fee_accrued" using primary key columns
+  """
+  protocol_fee_accrued(id: String!): protocol_fee_accruals
   """
   fetch data from the table: "redemption" using primary key columns
   """
@@ -15565,6 +15888,77 @@ type subscription_root {
     """
     where: predicate_objects_bool_exp
   ): [predicate_objects!]!
+  """
+  fetch data from the table: "protocol_fee_accrued"
+  """
+  protocol_fee_accruals(
+    """
+    distinct select on columns
+    """
+    distinct_on: [protocol_fee_accruals_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [protocol_fee_accruals_order_by!]
+    """
+    filter the rows returned
+    """
+    where: protocol_fee_accruals_bool_exp
+  ): [protocol_fee_accruals!]!
+  """
+  fetch aggregated fields from the table: "protocol_fee_accrued"
+  """
+  protocol_fee_accruals_aggregate(
+    """
+    distinct select on columns
+    """
+    distinct_on: [protocol_fee_accruals_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [protocol_fee_accruals_order_by!]
+    """
+    filter the rows returned
+    """
+    where: protocol_fee_accruals_bool_exp
+  ): protocol_fee_accruals_aggregate!
+  """
+  fetch data from the table in a streaming manner: "protocol_fee_accrued"
+  """
+  protocol_fee_accruals_stream(
+    """
+    maximum number of rows returned in a single batch
+    """
+    batch_size: Int!
+    """
+    cursor to stream the results returned by the query
+    """
+    cursor: [protocol_fee_accruals_stream_cursor_input]!
+    """
+    filter the rows returned
+    """
+    where: protocol_fee_accruals_bool_exp
+  ): [protocol_fee_accruals!]!
+  """
+  fetch data from the table: "protocol_fee_accrued" using primary key columns
+  """
+  protocol_fee_accrued(id: String!): protocol_fee_accruals
   """
   fetch data from the table: "redemption" using primary key columns
   """

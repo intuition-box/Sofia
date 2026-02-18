@@ -422,7 +422,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
         </div>
       ) : (
         <div className="empty-state">
-          <p>No triplets found</p>
+          <p>No signals found</p>
         </div>
       )}
 

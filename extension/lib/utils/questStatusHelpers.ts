@@ -45,6 +45,8 @@ function computeQuestProgress(
       return userProgress.hasSignalToday ? 1 : 0
     } else if (questDef.id === 'daily-certification') {
       return userProgress.hasCertificationToday ? 1 : 0
+    } else if (questDef.id === 'daily-vote') {
+      return userProgress.hasVotedToday ? 1 : 0
     }
     return 0
   }
@@ -54,8 +56,7 @@ function computeQuestProgress(
       return userProgress.signalsCreated
     case 'bookmark':
       if (questDef.id === 'bookmark-list-1') return userProgress.bookmarkListsCreated
-      if (questDef.id.startsWith('bookmark-signal')) return userProgress.bookmarkedSignals
-      return 0
+      return userProgress.bookmarkedSignals
     case 'oauth':
       if (questDef.id === 'social-linked') {
         return ['link-discord', 'link-youtube', 'link-spotify', 'link-twitch', 'link-twitter']
@@ -85,11 +86,6 @@ function computeQuestProgress(
       if (questDef.id === 'pulse-first') return userProgress.pulseLaunches
       if (questDef.id === 'pulse-weekly-5') return userProgress.weeklyPulseUses
       return 0
-    case 'curator':
-      return userProgress.bookmarkedSignals
-    case 'social':
-      if (questDef.id === 'networker-25') return userProgress.followedUsers
-      return 0
     case 'discovery':
       if (questDef.id === 'discovery-first') return userProgress.totalDiscoveries
       if (questDef.id === 'discovery-pioneer') return userProgress.pioneerCount
@@ -98,6 +94,11 @@ function computeQuestProgress(
       }
       if (questDef.id === 'intention-variety') return userProgress.uniqueIntentionTypes
       return 0
+    case 'vote':
+      if (questDef.id === 'vote-streak-7' || questDef.id === 'vote-streak-30') {
+        return userProgress.currentVoteStreak
+      }
+      return userProgress.totalVotes
     case 'gold':
       return userProgress.goldAccumulated
     default:

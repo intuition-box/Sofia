@@ -10,6 +10,7 @@ export type IntentionPurpose =
   | 'for_fun'
   | 'for_inspiration'
   | 'for_buying'
+  | 'for_music'
 
 // Discovery status based on certification order
 export type DiscoveryStatus = 'Pioneer' | 'Explorer' | 'Contributor' | null
@@ -21,7 +22,8 @@ export const INTENTION_PREDICATES: Record<IntentionPurpose, string> = {
   for_learning: 'visits for learning',
   for_fun: 'visits for fun',
   for_inspiration: 'visits for inspiration',
-  for_buying: 'visits for buying'
+  for_buying: 'visits for buying',
+  for_music: 'visits for music'
 } as const
 
 // Display labels for UI
@@ -30,7 +32,8 @@ export const INTENTION_LABELS: Record<IntentionPurpose, string> = {
   for_learning: 'learning',
   for_fun: 'fun',
   for_inspiration: 'inspiration',
-  for_buying: 'buying'
+  for_buying: 'buying',
+  for_music: 'music'
 } as const
 
 // Discovery record for a specific page

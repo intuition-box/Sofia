@@ -2689,6 +2689,9 @@ export type Events = {
   fee_transfer_id?: Maybe<Scalars["String"]["output"]>
   id: Scalars["String"]["output"]
   /** An object relationship */
+  protocol_fee_accrued?: Maybe<Protocol_Fee_Accruals>
+  protocol_fee_accrued_id?: Maybe<Scalars["String"]["output"]>
+  /** An object relationship */
   redemption?: Maybe<Redemptions>
   redemption_id?: Maybe<Scalars["String"]["output"]>
   transaction_hash: Scalars["String"]["output"]
@@ -2747,6 +2750,8 @@ export type Events_Bool_Exp = {
   fee_transfer?: InputMaybe<Fee_Transfers_Bool_Exp>
   fee_transfer_id?: InputMaybe<String_Comparison_Exp>
   id?: InputMaybe<String_Comparison_Exp>
+  protocol_fee_accrued?: InputMaybe<Protocol_Fee_Accruals_Bool_Exp>
+  protocol_fee_accrued_id?: InputMaybe<String_Comparison_Exp>
   redemption?: InputMaybe<Redemptions_Bool_Exp>
   redemption_id?: InputMaybe<String_Comparison_Exp>
   transaction_hash?: InputMaybe<String_Comparison_Exp>
@@ -2764,6 +2769,7 @@ export type Events_Max_Fields = {
   deposit_id?: Maybe<Scalars["String"]["output"]>
   fee_transfer_id?: Maybe<Scalars["String"]["output"]>
   id?: Maybe<Scalars["String"]["output"]>
+  protocol_fee_accrued_id?: Maybe<Scalars["String"]["output"]>
   redemption_id?: Maybe<Scalars["String"]["output"]>
   transaction_hash?: Maybe<Scalars["String"]["output"]>
   triple_id?: Maybe<Scalars["String"]["output"]>
@@ -2779,6 +2785,7 @@ export type Events_Min_Fields = {
   deposit_id?: Maybe<Scalars["String"]["output"]>
   fee_transfer_id?: Maybe<Scalars["String"]["output"]>
   id?: Maybe<Scalars["String"]["output"]>
+  protocol_fee_accrued_id?: Maybe<Scalars["String"]["output"]>
   redemption_id?: Maybe<Scalars["String"]["output"]>
   transaction_hash?: Maybe<Scalars["String"]["output"]>
   triple_id?: Maybe<Scalars["String"]["output"]>
@@ -2796,6 +2803,8 @@ export type Events_Order_By = {
   fee_transfer?: InputMaybe<Fee_Transfers_Order_By>
   fee_transfer_id?: InputMaybe<Order_By>
   id?: InputMaybe<Order_By>
+  protocol_fee_accrued?: InputMaybe<Protocol_Fee_Accruals_Order_By>
+  protocol_fee_accrued_id?: InputMaybe<Order_By>
   redemption?: InputMaybe<Redemptions_Order_By>
   redemption_id?: InputMaybe<Order_By>
   transaction_hash?: InputMaybe<Order_By>
@@ -2818,6 +2827,8 @@ export type Events_Select_Column =
   | "fee_transfer_id"
   /** column name */
   | "id"
+  /** column name */
+  | "protocol_fee_accrued_id"
   /** column name */
   | "redemption_id"
   /** column name */
@@ -2861,6 +2872,7 @@ export type Events_Stream_Cursor_Value_Input = {
   deposit_id?: InputMaybe<Scalars["String"]["input"]>
   fee_transfer_id?: InputMaybe<Scalars["String"]["input"]>
   id?: InputMaybe<Scalars["String"]["input"]>
+  protocol_fee_accrued_id?: InputMaybe<Scalars["String"]["input"]>
   redemption_id?: InputMaybe<Scalars["String"]["input"]>
   transaction_hash?: InputMaybe<Scalars["String"]["input"]>
   triple_id?: InputMaybe<Scalars["String"]["input"]>
@@ -5241,6 +5253,7 @@ export type Positions_With_Value = {
   log_index?: Maybe<Scalars["bigint"]["output"]>
   pnl?: Maybe<Scalars["numeric"]["output"]>
   pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets?: Maybe<Scalars["numeric"]["output"]>
   shares?: Maybe<Scalars["numeric"]["output"]>
   /** An object relationship */
   term?: Maybe<Terms>
@@ -5292,6 +5305,7 @@ export type Positions_With_Value_Avg_Fields = {
   log_index?: Maybe<Scalars["Float"]["output"]>
   pnl?: Maybe<Scalars["Float"]["output"]>
   pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -5313,6 +5327,7 @@ export type Positions_With_Value_Bool_Exp = {
   log_index?: InputMaybe<Bigint_Comparison_Exp>
   pnl?: InputMaybe<Numeric_Comparison_Exp>
   pnl_pct?: InputMaybe<Numeric_Comparison_Exp>
+  redeemable_assets?: InputMaybe<Numeric_Comparison_Exp>
   shares?: InputMaybe<Numeric_Comparison_Exp>
   term?: InputMaybe<Terms_Bool_Exp>
   term_id?: InputMaybe<String_Comparison_Exp>
@@ -5336,6 +5351,7 @@ export type Positions_With_Value_Max_Fields = {
   log_index?: Maybe<Scalars["bigint"]["output"]>
   pnl?: Maybe<Scalars["numeric"]["output"]>
   pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets?: Maybe<Scalars["numeric"]["output"]>
   shares?: Maybe<Scalars["numeric"]["output"]>
   term_id?: Maybe<Scalars["String"]["output"]>
   theoretical_value?: Maybe<Scalars["numeric"]["output"]>
@@ -5357,6 +5373,7 @@ export type Positions_With_Value_Min_Fields = {
   log_index?: Maybe<Scalars["bigint"]["output"]>
   pnl?: Maybe<Scalars["numeric"]["output"]>
   pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets?: Maybe<Scalars["numeric"]["output"]>
   shares?: Maybe<Scalars["numeric"]["output"]>
   term_id?: Maybe<Scalars["String"]["output"]>
   theoretical_value?: Maybe<Scalars["numeric"]["output"]>
@@ -5378,6 +5395,7 @@ export type Positions_With_Value_Order_By = {
   log_index?: InputMaybe<Order_By>
   pnl?: InputMaybe<Order_By>
   pnl_pct?: InputMaybe<Order_By>
+  redeemable_assets?: InputMaybe<Order_By>
   shares?: InputMaybe<Order_By>
   term?: InputMaybe<Terms_Order_By>
   term_id?: InputMaybe<Order_By>
@@ -5409,6 +5427,8 @@ export type Positions_With_Value_Select_Column =
   /** column name */
   | "pnl_pct"
   /** column name */
+  | "redeemable_assets"
+  /** column name */
   | "shares"
   /** column name */
   | "term_id"
@@ -5433,6 +5453,7 @@ export type Positions_With_Value_Stddev_Fields = {
   log_index?: Maybe<Scalars["Float"]["output"]>
   pnl?: Maybe<Scalars["Float"]["output"]>
   pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -5448,6 +5469,7 @@ export type Positions_With_Value_Stddev_Pop_Fields = {
   log_index?: Maybe<Scalars["Float"]["output"]>
   pnl?: Maybe<Scalars["Float"]["output"]>
   pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -5463,6 +5485,7 @@ export type Positions_With_Value_Stddev_Samp_Fields = {
   log_index?: Maybe<Scalars["Float"]["output"]>
   pnl?: Maybe<Scalars["Float"]["output"]>
   pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -5488,6 +5511,7 @@ export type Positions_With_Value_Stream_Cursor_Value_Input = {
   log_index?: InputMaybe<Scalars["bigint"]["input"]>
   pnl?: InputMaybe<Scalars["numeric"]["input"]>
   pnl_pct?: InputMaybe<Scalars["numeric"]["input"]>
+  redeemable_assets?: InputMaybe<Scalars["numeric"]["input"]>
   shares?: InputMaybe<Scalars["numeric"]["input"]>
   term_id?: InputMaybe<Scalars["String"]["input"]>
   theoretical_value?: InputMaybe<Scalars["numeric"]["input"]>
@@ -5508,6 +5532,7 @@ export type Positions_With_Value_Sum_Fields = {
   log_index?: Maybe<Scalars["bigint"]["output"]>
   pnl?: Maybe<Scalars["numeric"]["output"]>
   pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets?: Maybe<Scalars["numeric"]["output"]>
   shares?: Maybe<Scalars["numeric"]["output"]>
   theoretical_value?: Maybe<Scalars["numeric"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["numeric"]["output"]>
@@ -5523,6 +5548,7 @@ export type Positions_With_Value_Var_Pop_Fields = {
   log_index?: Maybe<Scalars["Float"]["output"]>
   pnl?: Maybe<Scalars["Float"]["output"]>
   pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -5538,6 +5564,7 @@ export type Positions_With_Value_Var_Samp_Fields = {
   log_index?: Maybe<Scalars["Float"]["output"]>
   pnl?: Maybe<Scalars["Float"]["output"]>
   pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -5553,6 +5580,7 @@ export type Positions_With_Value_Variance_Fields = {
   log_index?: Maybe<Scalars["Float"]["output"]>
   pnl?: Maybe<Scalars["Float"]["output"]>
   pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets?: Maybe<Scalars["Float"]["output"]>
   shares?: Maybe<Scalars["Float"]["output"]>
   theoretical_value?: Maybe<Scalars["Float"]["output"]>
   total_deposit_assets_after_total_fees?: Maybe<Scalars["Float"]["output"]>
@@ -5867,6 +5895,200 @@ export type Predicate_Objects_Variance_Order_By = {
   triple_count?: InputMaybe<Order_By>
 }
 
+/** columns and relationships of "protocol_fee_accrued" */
+export type Protocol_Fee_Accruals = {
+  __typename?: "protocol_fee_accruals"
+  amount: Scalars["numeric"]["output"]
+  block_number: Scalars["numeric"]["output"]
+  created_at: Scalars["timestamptz"]["output"]
+  epoch: Scalars["numeric"]["output"]
+  id: Scalars["String"]["output"]
+  /** An object relationship */
+  sender?: Maybe<Accounts>
+  sender_id: Scalars["String"]["output"]
+  transaction_hash: Scalars["String"]["output"]
+}
+
+/** aggregated selection of "protocol_fee_accrued" */
+export type Protocol_Fee_Accruals_Aggregate = {
+  __typename?: "protocol_fee_accruals_aggregate"
+  aggregate?: Maybe<Protocol_Fee_Accruals_Aggregate_Fields>
+  nodes: Array<Protocol_Fee_Accruals>
+}
+
+/** aggregate fields of "protocol_fee_accrued" */
+export type Protocol_Fee_Accruals_Aggregate_Fields = {
+  __typename?: "protocol_fee_accruals_aggregate_fields"
+  avg?: Maybe<Protocol_Fee_Accruals_Avg_Fields>
+  count: Scalars["Int"]["output"]
+  max?: Maybe<Protocol_Fee_Accruals_Max_Fields>
+  min?: Maybe<Protocol_Fee_Accruals_Min_Fields>
+  stddev?: Maybe<Protocol_Fee_Accruals_Stddev_Fields>
+  stddev_pop?: Maybe<Protocol_Fee_Accruals_Stddev_Pop_Fields>
+  stddev_samp?: Maybe<Protocol_Fee_Accruals_Stddev_Samp_Fields>
+  sum?: Maybe<Protocol_Fee_Accruals_Sum_Fields>
+  var_pop?: Maybe<Protocol_Fee_Accruals_Var_Pop_Fields>
+  var_samp?: Maybe<Protocol_Fee_Accruals_Var_Samp_Fields>
+  variance?: Maybe<Protocol_Fee_Accruals_Variance_Fields>
+}
+
+/** aggregate fields of "protocol_fee_accrued" */
+export type Protocol_Fee_Accruals_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Protocol_Fee_Accruals_Select_Column>>
+  distinct?: InputMaybe<Scalars["Boolean"]["input"]>
+}
+
+/** aggregate avg on columns */
+export type Protocol_Fee_Accruals_Avg_Fields = {
+  __typename?: "protocol_fee_accruals_avg_fields"
+  amount?: Maybe<Scalars["Float"]["output"]>
+  block_number?: Maybe<Scalars["Float"]["output"]>
+  epoch?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Boolean expression to filter rows from the table "protocol_fee_accrued". All fields are combined with a logical 'AND'. */
+export type Protocol_Fee_Accruals_Bool_Exp = {
+  _and?: InputMaybe<Array<Protocol_Fee_Accruals_Bool_Exp>>
+  _not?: InputMaybe<Protocol_Fee_Accruals_Bool_Exp>
+  _or?: InputMaybe<Array<Protocol_Fee_Accruals_Bool_Exp>>
+  amount?: InputMaybe<Numeric_Comparison_Exp>
+  block_number?: InputMaybe<Numeric_Comparison_Exp>
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>
+  epoch?: InputMaybe<Numeric_Comparison_Exp>
+  id?: InputMaybe<String_Comparison_Exp>
+  sender?: InputMaybe<Accounts_Bool_Exp>
+  sender_id?: InputMaybe<String_Comparison_Exp>
+  transaction_hash?: InputMaybe<String_Comparison_Exp>
+}
+
+/** aggregate max on columns */
+export type Protocol_Fee_Accruals_Max_Fields = {
+  __typename?: "protocol_fee_accruals_max_fields"
+  amount?: Maybe<Scalars["numeric"]["output"]>
+  block_number?: Maybe<Scalars["numeric"]["output"]>
+  created_at?: Maybe<Scalars["timestamptz"]["output"]>
+  epoch?: Maybe<Scalars["numeric"]["output"]>
+  id?: Maybe<Scalars["String"]["output"]>
+  sender_id?: Maybe<Scalars["String"]["output"]>
+  transaction_hash?: Maybe<Scalars["String"]["output"]>
+}
+
+/** aggregate min on columns */
+export type Protocol_Fee_Accruals_Min_Fields = {
+  __typename?: "protocol_fee_accruals_min_fields"
+  amount?: Maybe<Scalars["numeric"]["output"]>
+  block_number?: Maybe<Scalars["numeric"]["output"]>
+  created_at?: Maybe<Scalars["timestamptz"]["output"]>
+  epoch?: Maybe<Scalars["numeric"]["output"]>
+  id?: Maybe<Scalars["String"]["output"]>
+  sender_id?: Maybe<Scalars["String"]["output"]>
+  transaction_hash?: Maybe<Scalars["String"]["output"]>
+}
+
+/** Ordering options when selecting data from "protocol_fee_accrued". */
+export type Protocol_Fee_Accruals_Order_By = {
+  amount?: InputMaybe<Order_By>
+  block_number?: InputMaybe<Order_By>
+  created_at?: InputMaybe<Order_By>
+  epoch?: InputMaybe<Order_By>
+  id?: InputMaybe<Order_By>
+  sender?: InputMaybe<Accounts_Order_By>
+  sender_id?: InputMaybe<Order_By>
+  transaction_hash?: InputMaybe<Order_By>
+}
+
+/** select columns of table "protocol_fee_accrued" */
+export type Protocol_Fee_Accruals_Select_Column =
+  /** column name */
+  | "amount"
+  /** column name */
+  | "block_number"
+  /** column name */
+  | "created_at"
+  /** column name */
+  | "epoch"
+  /** column name */
+  | "id"
+  /** column name */
+  | "sender_id"
+  /** column name */
+  | "transaction_hash"
+
+/** aggregate stddev on columns */
+export type Protocol_Fee_Accruals_Stddev_Fields = {
+  __typename?: "protocol_fee_accruals_stddev_fields"
+  amount?: Maybe<Scalars["Float"]["output"]>
+  block_number?: Maybe<Scalars["Float"]["output"]>
+  epoch?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_pop on columns */
+export type Protocol_Fee_Accruals_Stddev_Pop_Fields = {
+  __typename?: "protocol_fee_accruals_stddev_pop_fields"
+  amount?: Maybe<Scalars["Float"]["output"]>
+  block_number?: Maybe<Scalars["Float"]["output"]>
+  epoch?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_samp on columns */
+export type Protocol_Fee_Accruals_Stddev_Samp_Fields = {
+  __typename?: "protocol_fee_accruals_stddev_samp_fields"
+  amount?: Maybe<Scalars["Float"]["output"]>
+  block_number?: Maybe<Scalars["Float"]["output"]>
+  epoch?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Streaming cursor of the table "protocol_fee_accruals" */
+export type Protocol_Fee_Accruals_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Protocol_Fee_Accruals_Stream_Cursor_Value_Input
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>
+}
+
+/** Initial value of the column from where the streaming should start */
+export type Protocol_Fee_Accruals_Stream_Cursor_Value_Input = {
+  amount?: InputMaybe<Scalars["numeric"]["input"]>
+  block_number?: InputMaybe<Scalars["numeric"]["input"]>
+  created_at?: InputMaybe<Scalars["timestamptz"]["input"]>
+  epoch?: InputMaybe<Scalars["numeric"]["input"]>
+  id?: InputMaybe<Scalars["String"]["input"]>
+  sender_id?: InputMaybe<Scalars["String"]["input"]>
+  transaction_hash?: InputMaybe<Scalars["String"]["input"]>
+}
+
+/** aggregate sum on columns */
+export type Protocol_Fee_Accruals_Sum_Fields = {
+  __typename?: "protocol_fee_accruals_sum_fields"
+  amount?: Maybe<Scalars["numeric"]["output"]>
+  block_number?: Maybe<Scalars["numeric"]["output"]>
+  epoch?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** aggregate var_pop on columns */
+export type Protocol_Fee_Accruals_Var_Pop_Fields = {
+  __typename?: "protocol_fee_accruals_var_pop_fields"
+  amount?: Maybe<Scalars["Float"]["output"]>
+  block_number?: Maybe<Scalars["Float"]["output"]>
+  epoch?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate var_samp on columns */
+export type Protocol_Fee_Accruals_Var_Samp_Fields = {
+  __typename?: "protocol_fee_accruals_var_samp_fields"
+  amount?: Maybe<Scalars["Float"]["output"]>
+  block_number?: Maybe<Scalars["Float"]["output"]>
+  epoch?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate variance on columns */
+export type Protocol_Fee_Accruals_Variance_Fields = {
+  __typename?: "protocol_fee_accruals_variance_fields"
+  amount?: Maybe<Scalars["Float"]["output"]>
+  block_number?: Maybe<Scalars["Float"]["output"]>
+  epoch?: Maybe<Scalars["Float"]["output"]>
+}
+
 export type Query_Root = {
   __typename?: "query_root"
   /** fetch data from the table: "account" using primary key columns */
@@ -6025,6 +6247,12 @@ export type Query_Root = {
   predicate_objects_aggregate: Predicate_Objects_Aggregate
   /** fetch data from the table: "predicate_object" using primary key columns */
   predicate_objects_by_pk?: Maybe<Predicate_Objects>
+  /** fetch data from the table: "protocol_fee_accrued" */
+  protocol_fee_accruals: Array<Protocol_Fee_Accruals>
+  /** fetch aggregated fields from the table: "protocol_fee_accrued" */
+  protocol_fee_accruals_aggregate: Protocol_Fee_Accruals_Aggregate
+  /** fetch data from the table: "protocol_fee_accrued" using primary key columns */
+  protocol_fee_accrued?: Maybe<Protocol_Fee_Accruals>
   /** fetch data from the table: "redemption" using primary key columns */
   redemption?: Maybe<Redemptions>
   /** An array relationship */
@@ -6680,6 +6908,26 @@ export type Query_RootPredicate_Objects_AggregateArgs = {
 export type Query_RootPredicate_Objects_By_PkArgs = {
   object_id: Scalars["String"]["input"]
   predicate_id: Scalars["String"]["input"]
+}
+
+export type Query_RootProtocol_Fee_AccrualsArgs = {
+  distinct_on?: InputMaybe<Array<Protocol_Fee_Accruals_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Protocol_Fee_Accruals_Order_By>>
+  where?: InputMaybe<Protocol_Fee_Accruals_Bool_Exp>
+}
+
+export type Query_RootProtocol_Fee_Accruals_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Protocol_Fee_Accruals_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Protocol_Fee_Accruals_Order_By>>
+  where?: InputMaybe<Protocol_Fee_Accruals_Bool_Exp>
+}
+
+export type Query_RootProtocol_Fee_AccruedArgs = {
+  id: Scalars["String"]["input"]
 }
 
 export type Query_RootRedemptionArgs = {
@@ -10133,6 +10381,14 @@ export type Subscription_Root = {
   predicate_objects_by_pk?: Maybe<Predicate_Objects>
   /** fetch data from the table in a streaming manner: "predicate_object" */
   predicate_objects_stream: Array<Predicate_Objects>
+  /** fetch data from the table: "protocol_fee_accrued" */
+  protocol_fee_accruals: Array<Protocol_Fee_Accruals>
+  /** fetch aggregated fields from the table: "protocol_fee_accrued" */
+  protocol_fee_accruals_aggregate: Protocol_Fee_Accruals_Aggregate
+  /** fetch data from the table in a streaming manner: "protocol_fee_accrued" */
+  protocol_fee_accruals_stream: Array<Protocol_Fee_Accruals>
+  /** fetch data from the table: "protocol_fee_accrued" using primary key columns */
+  protocol_fee_accrued?: Maybe<Protocol_Fee_Accruals>
   /** fetch data from the table: "redemption" using primary key columns */
   redemption?: Maybe<Redemptions>
   /** An array relationship */
@@ -10946,6 +11202,32 @@ export type Subscription_RootPredicate_Objects_StreamArgs = {
   batch_size: Scalars["Int"]["input"]
   cursor: Array<InputMaybe<Predicate_Objects_Stream_Cursor_Input>>
   where?: InputMaybe<Predicate_Objects_Bool_Exp>
+}
+
+export type Subscription_RootProtocol_Fee_AccrualsArgs = {
+  distinct_on?: InputMaybe<Array<Protocol_Fee_Accruals_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Protocol_Fee_Accruals_Order_By>>
+  where?: InputMaybe<Protocol_Fee_Accruals_Bool_Exp>
+}
+
+export type Subscription_RootProtocol_Fee_Accruals_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Protocol_Fee_Accruals_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Protocol_Fee_Accruals_Order_By>>
+  where?: InputMaybe<Protocol_Fee_Accruals_Bool_Exp>
+}
+
+export type Subscription_RootProtocol_Fee_Accruals_StreamArgs = {
+  batch_size: Scalars["Int"]["input"]
+  cursor: Array<InputMaybe<Protocol_Fee_Accruals_Stream_Cursor_Input>>
+  where?: InputMaybe<Protocol_Fee_Accruals_Bool_Exp>
+}
+
+export type Subscription_RootProtocol_Fee_AccruedArgs = {
+  id: Scalars["String"]["input"]
 }
 
 export type Subscription_RootRedemptionArgs = {
@@ -17665,6 +17947,28 @@ export type GetTripleBondingCurveDataQuery = {
   }>
 }
 
+export type GetAtomVaultDataQueryVariables = Exact<{
+  atomId: Scalars["String"]["input"]
+  curveId: Scalars["numeric"]["input"]
+  walletAddress: Scalars["String"]["input"]
+}>
+
+export type GetAtomVaultDataQuery = {
+  __typename?: "query_root"
+  vaults: Array<{
+    __typename?: "vaults"
+    current_share_price: any
+    total_shares: any
+    position_count: number
+    positions: Array<{
+      __typename?: "positions"
+      shares: any
+      total_deposit_assets_after_total_fees: any
+      total_redeem_assets_for_receiver: any
+    }>
+  }>
+}
+
 export type GetTrustCirclePositionsQueryVariables = Exact<{
   subjectId: Scalars["String"]["input"]
   predicateId: Scalars["String"]["input"]
@@ -19900,6 +20204,68 @@ export type GetTopSofiaAccountsQuery = {
       label: string
       image?: string | null
       atom?: { __typename?: "atoms"; term_id: string } | null
+    } | null
+  }>
+}
+
+export type GetStreakLeaderboardQueryVariables = Exact<{
+  atomId: Scalars["String"]["input"]
+  curveId: Scalars["numeric"]["input"]
+  limit: Scalars["Int"]["input"]
+}>
+
+export type GetStreakLeaderboardQuery = {
+  __typename?: "query_root"
+  vaults: Array<{
+    __typename?: "vaults"
+    current_share_price: any
+    total_shares: any
+    position_count: number
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+      account?: {
+        __typename?: "accounts"
+        id: string
+        label: string
+        image?: string | null
+      } | null
+    }>
+  }>
+}
+
+export type GetProxyDepositDaysQueryVariables = Exact<{
+  senderId: Scalars["String"]["input"]
+  termId: Scalars["String"]["input"]
+}>
+
+export type GetProxyDepositDaysQuery = {
+  __typename?: "query_root"
+  deposits: Array<{
+    __typename?: "deposits"
+    receiver_id: string
+    created_at: any
+  }>
+}
+
+export type GetVerifiedWalletsQueryVariables = Exact<{
+  predicateId: Scalars["String"]["input"]
+  tagLabel: Scalars["String"]["input"]
+}>
+
+export type GetVerifiedWalletsQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    subject?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+      value?: {
+        __typename?: "atom_values"
+        account?: { __typename?: "accounts"; id: string } | null
+      } | null
     } | null
   }>
 }
@@ -27850,6 +28216,95 @@ useGetTripleBondingCurveDataQuery.fetcher = (
     GetTripleBondingCurveDataQueryVariables
   >(GetTripleBondingCurveDataDocument, variables, options)
 
+export const GetAtomVaultDataDocument = `
+    query GetAtomVaultData($atomId: String!, $curveId: numeric!, $walletAddress: String!) {
+  vaults(where: {term_id: {_eq: $atomId}, curve_id: {_eq: $curveId}}) {
+    current_share_price
+    total_shares
+    position_count
+    positions(where: {account_id: {_ilike: $walletAddress}}) {
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+}
+    `
+
+export const useGetAtomVaultDataQuery = <
+  TData = GetAtomVaultDataQuery,
+  TError = unknown
+>(
+  variables: GetAtomVaultDataQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetAtomVaultDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<GetAtomVaultDataQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<GetAtomVaultDataQuery, TError, TData>({
+    queryKey: ["GetAtomVaultData", variables],
+    queryFn: fetcher<GetAtomVaultDataQuery, GetAtomVaultDataQueryVariables>(
+      GetAtomVaultDataDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useGetAtomVaultDataQuery.document = GetAtomVaultDataDocument
+
+useGetAtomVaultDataQuery.getKey = (
+  variables: GetAtomVaultDataQueryVariables
+) => ["GetAtomVaultData", variables]
+
+export const useInfiniteGetAtomVaultDataQuery = <
+  TData = InfiniteData<GetAtomVaultDataQuery>,
+  TError = unknown
+>(
+  variables: GetAtomVaultDataQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetAtomVaultDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetAtomVaultDataQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetAtomVaultDataQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["GetAtomVaultData.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<GetAtomVaultDataQuery, GetAtomVaultDataQueryVariables>(
+            GetAtomVaultDataDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetAtomVaultDataQuery.getKey = (
+  variables: GetAtomVaultDataQueryVariables
+) => ["GetAtomVaultData.infinite", variables]
+
+useGetAtomVaultDataQuery.fetcher = (
+  variables: GetAtomVaultDataQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetAtomVaultDataQuery, GetAtomVaultDataQueryVariables>(
+    GetAtomVaultDataDocument,
+    variables,
+    options
+  )
+
 export const GetTrustCirclePositionsDocument = `
     query GetTrustCirclePositions($subjectId: String!, $predicateId: String!, $address: String!, $offset: Int, $positionsOrderBy: [positions_order_by!]) {
   triples_aggregate(
@@ -30754,6 +31209,298 @@ useGetTopSofiaAccountsQuery.fetcher = (
 ) =>
   fetcher<GetTopSofiaAccountsQuery, GetTopSofiaAccountsQueryVariables>(
     GetTopSofiaAccountsDocument,
+    variables,
+    options
+  )
+
+export const GetStreakLeaderboardDocument = `
+    query GetStreakLeaderboard($atomId: String!, $curveId: numeric!, $limit: Int!) {
+  vaults(where: {term_id: {_eq: $atomId}, curve_id: {_eq: $curveId}}) {
+    current_share_price
+    total_shares
+    position_count
+    positions(limit: $limit, order_by: {shares: desc}) {
+      account_id
+      account {
+        id
+        label
+        image
+      }
+      shares
+    }
+  }
+}
+    `
+
+export const useGetStreakLeaderboardQuery = <
+  TData = GetStreakLeaderboardQuery,
+  TError = unknown
+>(
+  variables: GetStreakLeaderboardQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetStreakLeaderboardQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetStreakLeaderboardQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetStreakLeaderboardQuery, TError, TData>({
+    queryKey: ["GetStreakLeaderboard", variables],
+    queryFn: fetcher<
+      GetStreakLeaderboardQuery,
+      GetStreakLeaderboardQueryVariables
+    >(GetStreakLeaderboardDocument, variables),
+    ...options
+  })
+}
+
+useGetStreakLeaderboardQuery.document = GetStreakLeaderboardDocument
+
+useGetStreakLeaderboardQuery.getKey = (
+  variables: GetStreakLeaderboardQueryVariables
+) => ["GetStreakLeaderboard", variables]
+
+export const useInfiniteGetStreakLeaderboardQuery = <
+  TData = InfiniteData<GetStreakLeaderboardQuery>,
+  TError = unknown
+>(
+  variables: GetStreakLeaderboardQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetStreakLeaderboardQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetStreakLeaderboardQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetStreakLeaderboardQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetStreakLeaderboard.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            GetStreakLeaderboardQuery,
+            GetStreakLeaderboardQueryVariables
+          >(GetStreakLeaderboardDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetStreakLeaderboardQuery.getKey = (
+  variables: GetStreakLeaderboardQueryVariables
+) => ["GetStreakLeaderboard.infinite", variables]
+
+useGetStreakLeaderboardQuery.fetcher = (
+  variables: GetStreakLeaderboardQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetStreakLeaderboardQuery, GetStreakLeaderboardQueryVariables>(
+    GetStreakLeaderboardDocument,
+    variables,
+    options
+  )
+
+export const GetProxyDepositDaysDocument = `
+    query GetProxyDepositDays($senderId: String!, $termId: String!) {
+  deposits(
+    where: {sender_id: {_eq: $senderId}, term_id: {_eq: $termId}, assets_after_fees: {_neq: "0"}}
+    order_by: {created_at: desc}
+  ) {
+    receiver_id
+    created_at
+  }
+}
+    `
+
+export const useGetProxyDepositDaysQuery = <
+  TData = GetProxyDepositDaysQuery,
+  TError = unknown
+>(
+  variables: GetProxyDepositDaysQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetProxyDepositDaysQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetProxyDepositDaysQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetProxyDepositDaysQuery, TError, TData>({
+    queryKey: ["GetProxyDepositDays", variables],
+    queryFn: fetcher<
+      GetProxyDepositDaysQuery,
+      GetProxyDepositDaysQueryVariables
+    >(GetProxyDepositDaysDocument, variables),
+    ...options
+  })
+}
+
+useGetProxyDepositDaysQuery.document = GetProxyDepositDaysDocument
+
+useGetProxyDepositDaysQuery.getKey = (
+  variables: GetProxyDepositDaysQueryVariables
+) => ["GetProxyDepositDays", variables]
+
+export const useInfiniteGetProxyDepositDaysQuery = <
+  TData = InfiniteData<GetProxyDepositDaysQuery>,
+  TError = unknown
+>(
+  variables: GetProxyDepositDaysQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetProxyDepositDaysQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetProxyDepositDaysQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetProxyDepositDaysQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetProxyDepositDays.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<GetProxyDepositDaysQuery, GetProxyDepositDaysQueryVariables>(
+            GetProxyDepositDaysDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetProxyDepositDaysQuery.getKey = (
+  variables: GetProxyDepositDaysQueryVariables
+) => ["GetProxyDepositDays.infinite", variables]
+
+useGetProxyDepositDaysQuery.fetcher = (
+  variables: GetProxyDepositDaysQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetProxyDepositDaysQuery, GetProxyDepositDaysQueryVariables>(
+    GetProxyDepositDaysDocument,
+    variables,
+    options
+  )
+
+export const GetVerifiedWalletsDocument = `
+    query GetVerifiedWallets($predicateId: String!, $tagLabel: String!) {
+  triples(
+    where: {predicate_id: {_eq: $predicateId}, object: {label: {_eq: $tagLabel}}}
+  ) {
+    subject {
+      term_id
+      label
+      value {
+        account {
+          id
+        }
+      }
+    }
+  }
+}
+    `
+
+export const useGetVerifiedWalletsQuery = <
+  TData = GetVerifiedWalletsQuery,
+  TError = unknown
+>(
+  variables: GetVerifiedWalletsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetVerifiedWalletsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetVerifiedWalletsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetVerifiedWalletsQuery, TError, TData>({
+    queryKey: ["GetVerifiedWallets", variables],
+    queryFn: fetcher<GetVerifiedWalletsQuery, GetVerifiedWalletsQueryVariables>(
+      GetVerifiedWalletsDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useGetVerifiedWalletsQuery.document = GetVerifiedWalletsDocument
+
+useGetVerifiedWalletsQuery.getKey = (
+  variables: GetVerifiedWalletsQueryVariables
+) => ["GetVerifiedWallets", variables]
+
+export const useInfiniteGetVerifiedWalletsQuery = <
+  TData = InfiniteData<GetVerifiedWalletsQuery>,
+  TError = unknown
+>(
+  variables: GetVerifiedWalletsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetVerifiedWalletsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetVerifiedWalletsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetVerifiedWalletsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["GetVerifiedWallets.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<GetVerifiedWalletsQuery, GetVerifiedWalletsQueryVariables>(
+            GetVerifiedWalletsDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetVerifiedWalletsQuery.getKey = (
+  variables: GetVerifiedWalletsQueryVariables
+) => ["GetVerifiedWallets.infinite", variables]
+
+useGetVerifiedWalletsQuery.fetcher = (
+  variables: GetVerifiedWalletsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetVerifiedWalletsQuery, GetVerifiedWalletsQueryVariables>(
+    GetVerifiedWalletsDocument,
     variables,
     options
   )
@@ -48917,6 +49664,183 @@ export const GetTripleBondingCurveData = {
     }
   ]
 } as unknown as DocumentNode
+export const GetAtomVaultData = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetAtomVaultData" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "atomId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "curveId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "numeric" }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "walletAddress" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "vaults" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "atomId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "current_share_price" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "total_shares" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "position_count" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "walletAddress"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_deposit_assets_after_total_fees"
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_redeem_assets_for_receiver"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
 export const GetTrustCirclePositions = {
   kind: "Document",
   definitions: [
@@ -59422,6 +60346,449 @@ export const GetTopSofiaAccounts = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "term_id" }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetStreakLeaderboard = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetStreakLeaderboard" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "atomId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "curveId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "numeric" }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "limit" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "vaults" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "atomId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "current_share_price" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "total_shares" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "position_count" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "limit" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "limit" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "order_by" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: { kind: "EnumValue", value: "desc" }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "label" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "image" }
+                            }
+                          ]
+                        }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "shares" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetProxyDepositDays = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetProxyDepositDays" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "senderId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "termId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "deposits" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "sender_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "senderId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "termId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "assets_after_fees" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_neq" },
+                            value: {
+                              kind: "StringValue",
+                              value: "0",
+                              block: false
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "order_by" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "created_at" },
+                      value: { kind: "EnumValue", value: "desc" }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "receiver_id" } },
+                { kind: "Field", name: { kind: "Name", value: "created_at" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetVerifiedWallets = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetVerifiedWallets" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "tagLabel" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "predicateId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "object" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_eq" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "tagLabel" }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "subject" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "value" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "account" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" }
+                                  }
+                                ]
+                              }
                             }
                           ]
                         }

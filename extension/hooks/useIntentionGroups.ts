@@ -93,6 +93,7 @@ function calculateGroupStats(group: IntentionGroupRecord): IntentionGroupWithSta
     fun: 0,
     inspiration: 0,
     buying: 0,
+    music: 0,
     trusted: 0,
     distrusted: 0
   }
@@ -235,7 +236,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
 
         // Recalculate certification breakdown from on-chain data
         const breakdown: Record<CertificationType, number> = {
-          work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, trusted: 0, distrusted: 0
+          work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, music: 0, trusted: 0, distrusted: 0
         }
         for (const url of activeUrls) {
           const cert = url.onChainCertification
@@ -282,7 +283,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
           level: onChain.level,
           activeUrlCount: onChain.urls.length,
           certifiedCount: onChain.certifiedCount,
-          certificationBreakdown: { work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, trusted: 0, distrusted: 0 },
+          certificationBreakdown: { work: 0, learning: 0, fun: 0, inspiration: 0, buying: 0, music: 0, trusted: 0, distrusted: 0 },
           isVirtualGroup: true,
           currentPredicate: null,
           predicateHistory: [],

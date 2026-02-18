@@ -20,7 +20,8 @@ const INTENTION_GRADIENTS: Record<IntentionPurpose, string> = {
   for_learning: 'linear-gradient(90deg, #0891B2, #06B6D4)',
   for_fun: 'linear-gradient(90deg, #D97706, #F59E0B)',
   for_inspiration: 'linear-gradient(90deg, #6D28D9, #8B5CF6)',
-  for_buying: 'linear-gradient(90deg, #DB2777, #EC4899)'
+  for_buying: 'linear-gradient(90deg, #DB2777, #EC4899)',
+  for_music: 'linear-gradient(90deg, #E64A19, #FF5722)'
 };
 
 const TRUST_GRADIENTS: Record<string, string> = {

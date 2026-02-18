@@ -38,6 +38,7 @@ const CERTIFICATION_PREDICATE_LABELS = [
   'visits for fun',
   'visits for inspiration',
   'visits for buying',
+  'visits for music',
   'trusts',
   'distrust'
 ]
@@ -48,7 +49,8 @@ const INTENTION_PREDICATE_LABELS = [
   'visits for learning ',
   'visits for fun',
   'visits for inspiration',
-  'visits for buying'
+  'visits for buying',
+  'visits for music'
 ]
 
 // Map predicate labels to intention purposes
@@ -57,7 +59,8 @@ const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
   'visits for learning ': 'for_learning',  // trailing space (official atom)
   'visits for fun': 'for_fun',
   'visits for inspiration': 'for_inspiration',
-  'visits for buying': 'for_buying'
+  'visits for buying': 'for_buying',
+  'visits for music': 'for_music'
 }
 
 // Map predicate labels to trust types
@@ -219,7 +222,8 @@ async function fetchDiscoveryScore(walletAddress: string) {
       for_learning: 0,
       for_fun: 0,
       for_inspiration: 0,
-      for_buying: 0
+      for_buying: 0,
+      for_music: 0
     }
     const trustBreakdown = { trusted: 0, distrusted: 0 }
 
