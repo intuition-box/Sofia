@@ -15,6 +15,7 @@ interface IntentionStats {
   for_fun: number
   for_inspiration: number
   for_buying: number
+  for_music: number
 }
 
 interface ExtendedMetricsPanelProps {
@@ -34,7 +35,8 @@ const INTENTION_ITEMS: { key: IntentionPurpose; label: string }[] = [
   { key: "for_learning", label: "learning" },
   { key: "for_fun", label: "fun" },
   { key: "for_inspiration", label: "inspiration" },
-  { key: "for_buying", label: "buying" }
+  { key: "for_buying", label: "buying" },
+  { key: "for_music", label: "music" }
 ]
 
 const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({

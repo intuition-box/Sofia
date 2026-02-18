@@ -19,7 +19,8 @@ const intentionToCertification: Record<IntentionPurpose, string> = {
   for_learning: 'learning',
   for_fun: 'fun',
   for_inspiration: 'inspiration',
-  for_buying: 'buying'
+  for_buying: 'buying',
+  for_music: 'music'
 }
 
 // Map trust predicate labels to certification types

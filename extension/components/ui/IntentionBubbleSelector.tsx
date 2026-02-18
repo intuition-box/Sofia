@@ -13,7 +13,8 @@ const INTENTIONS: { key: IntentionPurpose; label: string }[] = [
   { key: 'for_learning', label: 'learning' },
   { key: 'for_fun', label: 'fun' },
   { key: 'for_inspiration', label: 'inspiration' },
-  { key: 'for_buying', label: 'buying' }
+  { key: 'for_buying', label: 'buying' },
+  { key: 'for_music', label: 'music' }
 ]
 
 export const IntentionBubbleSelector = ({

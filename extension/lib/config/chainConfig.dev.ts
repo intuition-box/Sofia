@@ -65,6 +65,7 @@ export const PREDICATE_IDS = {
   VISITS_FOR_FUN: "",
   VISITS_FOR_INSPIRATION: "",
   VISITS_FOR_BUYING: "",
+  VISITS_FOR_MUSIC: "",
   // Vote predicates (nested triples - like/dislike certifications)
   LIKE: "",
   DISLIKE: "",
@@ -95,6 +96,7 @@ export const PREDICATE_NAMES = {
   VISITS_FOR_FUN: "visits for fun",
   VISITS_FOR_INSPIRATION: "visits for inspiration",
   VISITS_FOR_BUYING: "visits for buying",
+  VISITS_FOR_MUSIC: "visits for music",
   // Vote predicates
   LIKE: "like",
   DISLIKE: "dislike",

@@ -10,6 +10,7 @@ export interface CertificationBreakdown {
   fun: number;
   inspiration: number;
   buying: number;
+  music: number;
 }
 
 // Interest as returned by the AI agent
@@ -104,7 +105,8 @@ export function getTotalCertifications(certifications: CertificationBreakdown): 
     certifications.learning +
     certifications.fun +
     certifications.inspiration +
-    certifications.buying
+    certifications.buying +
+    certifications.music
   );
 }
 
