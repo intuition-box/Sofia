@@ -42,7 +42,7 @@ const GET_STREAK_LEADERBOARD = `
       object: { label: { _eq: $tagLabel } }
     }) {
       subject {
-        wallet_id
+        label
       }
     }
   }
@@ -83,6 +83,7 @@ export const useStreakLeaderboard = (
   const [error, setError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
+    logger.info("fetchData called", { atomId, tagLabel })
     if (!atomId) return
 
     setLoading(true)
@@ -110,7 +111,7 @@ export const useStreakLeaderboard = (
           }>
         }>
         triples: Array<{
-          subject: { wallet_id: string } | null
+          subject: { label: string } | null
         }>
       }
 
@@ -145,12 +146,20 @@ export const useStreakLeaderboard = (
         }
       )
 
-      // Build set of verified wallets (those with has_tag Daily Certification triple)
+      // Build set of verified wallets from has_tag triples
+      // subject.label on account atoms IS the wallet address
       const verifiedWallets = new Set(
         (response.triples || [])
-          .map(t => t.subject?.wallet_id?.toLowerCase())
-          .filter(Boolean)
+          .map(t => t.subject?.label?.toLowerCase())
+          .filter(Boolean) as string[]
       )
+
+      logger.info("Leaderboard data", {
+        positionCount: leaderboard.length,
+        verifiedCount: verifiedWallets.size,
+        verifiedWallets: [...verifiedWallets],
+        positions: leaderboard.map(e => e.address.toLowerCase())
+      })
 
       // Filter: only show accounts that have the has_tag triple
       const verified = verifiedWallets.size > 0
@@ -159,6 +168,8 @@ export const useStreakLeaderboard = (
 
       // Re-rank after filtering
       verified.forEach((entry, i) => { entry.rank = i + 1 })
+
+      logger.info("Leaderboard result", { verified: verified.length, total: leaderboard.length })
 
       setEntries(verified)
       setTotalParticipants(verified.length)

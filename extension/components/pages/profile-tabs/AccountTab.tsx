@@ -173,6 +173,7 @@ const AccountTab = () => {
 
       {activeTab === 'stats' && (
           <StatsTab
+            walletAddress={walletAddress}
             trustedByCount={trustedByCount}
             level={level}
             totalXP={totalXP}

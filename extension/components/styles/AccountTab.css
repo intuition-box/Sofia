@@ -1254,6 +1254,33 @@
   color: #e57373;
 }
 
+/* Week day bubbles inside vault cards */
+.streak-week-bubbles {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 4px;
+  gap: 4px;
+}
+
+.streak-bubble {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s;
+}
+
+.streak-bubble.validated {
+  background: rgba(106, 204, 147, 0.2);
+  color: #6ACC93;
+}
+
 /* Streak Section (Daily & Streak quests) */
 .streak-section {
   margin-bottom: 16px;

@@ -3,6 +3,8 @@
  * Displays discovery statistics and intention distribution
  */
 
+import { useState, useEffect } from 'react'
+import { getAddress } from 'viem'
 import { useDiscoveryScore } from '../../../hooks'
 import { DISCOVERY_GOLD_REWARDS } from '../../../types/discovery'
 import { getLevelColor } from '../../../types/interests'
@@ -10,8 +12,6 @@ import pioneerBadge from '../../ui/img/badges/pioneer.png'
 import explorerBadge from '../../ui/img/badges/explorer.png'
 import contributorBadge from '../../ui/img/badges/contributor.png'
 import trustBadge from '../../ui/img/badges/trust.png'
-import streakImg from '../../ui/img/questssuccess/streak.png'
-import goldImg from '../../ui/img/questssuccess/gold.png'
 
 interface VaultProfitData {
   hasPosition: boolean
@@ -22,6 +22,7 @@ interface VaultProfitData {
 }
 
 interface StatsTabProps {
+  walletAddress?: string | null;
   trustedByCount?: number;
   level?: number;
   totalXP?: number;
@@ -30,7 +31,52 @@ interface StatsTabProps {
   voteProfit?: VaultProfitData | null;
 }
 
-const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0, streakProfit, voteProfit }: StatsTabProps) => {
+const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+
+/** Returns the 7 dates (Mon→Sun) of the current week as "YYYY-MM-DD" strings */
+const getWeekDates = (): string[] => {
+  const now = new Date()
+  const day = now.getDay() // 0=Sun, 1=Mon...
+  const mondayOffset = day === 0 ? -6 : 1 - day
+  const monday = new Date(now)
+  monday.setDate(now.getDate() + mondayOffset)
+  monday.setHours(0, 0, 0, 0)
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    return d.toISOString().split('T')[0]
+  })
+}
+
+const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signalsCreated = 0, streakProfit, voteProfit }: StatsTabProps) => {
+  // Week bubbles state
+  const [certDays, setCertDays] = useState<Set<string>>(new Set())
+  const [voteDays, setVoteDays] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!walletAddress) return
+    try {
+      const checksummed = getAddress(walletAddress)
+      const certKey = `certification_activity_dates_${checksummed}`
+      const voteKey = `vote_activity_dates_${checksummed}`
+      const weekDates = getWeekDates()
+
+      chrome.storage.local.get([certKey, voteKey]).then(result => {
+        const certDates = new Set<string>(
+          ((result[certKey] || []) as string[]).filter(d => weekDates.includes(d))
+        )
+        const voteDates = new Set<string>(
+          ((result[voteKey] || []) as string[]).filter(d => weekDates.includes(d))
+        )
+        setCertDays(certDates)
+        setVoteDays(voteDates)
+      })
+    } catch {
+      // invalid address
+    }
+  }, [walletAddress])
+
   // XP progress calculation
   // Cumulative XP to reach current level = 100 * level*(level-1)/2
   const xpAtCurrentLevel = 100 * level * (level - 1) / 2
@@ -82,9 +128,15 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0, 
       {streakProfit?.hasPosition && (
         <div className="streak-vault-card">
           <div className="streak-vault-header">
-            <img src={streakImg} alt="" className="streak-vault-icon" />
             <span className="streak-vault-title">Daily Streak Vault</span>
             <span className="streak-vault-participants">{streakProfit.participantCount} streakers</span>
+          </div>
+          <div className="streak-week-bubbles">
+            {getWeekDates().map((date, i) => (
+              <div key={date} className={`streak-bubble ${certDays.has(date) ? 'validated' : ''}`}>
+                {certDays.has(date) ? '✓' : DAY_LABELS[i]}
+              </div>
+            ))}
           </div>
           <div className="streak-vault-stats">
             <div className="streak-vault-stat">
@@ -107,9 +159,15 @@ const StatsTab = ({ trustedByCount, level = 1, totalXP = 0, signalsCreated = 0, 
       {voteProfit?.hasPosition && (
         <div className="streak-vault-card">
           <div className="streak-vault-header">
-            <img src={goldImg} alt="" className="streak-vault-icon" />
             <span className="streak-vault-title">Daily Vote Vault</span>
             <span className="streak-vault-participants">{voteProfit.participantCount} voters</span>
+          </div>
+          <div className="streak-week-bubbles">
+            {getWeekDates().map((date, i) => (
+              <div key={date} className={`streak-bubble ${voteDays.has(date) ? 'validated' : ''}`}>
+                {voteDays.has(date) ? '✓' : DAY_LABELS[i]}
+              </div>
+            ))}
           </div>
           <div className="streak-vault-stats">
             <div className="streak-vault-stat">
