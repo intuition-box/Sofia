@@ -81,7 +81,7 @@ export { useUserSignals } from './useUserSignals'
 export { useRecommendations } from './useRecommendations'
 export { default as useInterestAnalysis } from './useInterestAnalysis'
 export { useInterestAttention } from './useInterestAttention'
-export { default as useCircleInterestRecommendations } from './useCircleInterestRecommendations'
+
 
 // Tracking
 export { useTracking } from './useTracking'
