@@ -5,6 +5,7 @@
 
 import { useState } from "react"
 import { useStreakLeaderboard } from "../../../hooks/useStreakLeaderboard"
+import { useWalletFromStorage, useIdentityResolution } from "../../../hooks"
 import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from "../../../lib/config/chainConfig"
 import Avatar from "../../ui/Avatar"
 import "../../styles/LeaderboardTab.css"
@@ -15,12 +16,29 @@ type LeaderboardType = "signals" | "vote"
 
 const LeaderboardTab = () => {
   const [activeTab, setActiveTab] = useState<LeaderboardType>("signals")
+  const { walletAddress } = useWalletFromStorage()
 
   const signalsLeaderboard = useStreakLeaderboard(DAILY_CERTIFICATION_ATOM_ID, "Daily Certification", 50)
   const voteLeaderboard = useStreakLeaderboard(DAILY_VOTE_ATOM_ID, "Daily Voter", 50)
 
+  // Resolve current user identity (ENS, avatar)
+  const { displayLabel, displayAvatar } = useIdentityResolution({
+    walletAddress,
+    enableCache: true
+  })
+
   const active = activeTab === "signals" ? signalsLeaderboard : voteLeaderboard
-  const { entries, totalParticipants, loading, error, refetch } = active
+  const { entries: rawEntries, totalParticipants, loading, error, refetch } = active
+
+  // Override current user's label/image with resolved identity
+  const entries = rawEntries.map(entry => {
+    if (!entry.isCurrentUser) return entry
+    return {
+      ...entry,
+      label: displayLabel || entry.label,
+      image: displayAvatar || entry.image
+    }
+  })
 
   return (
     <div className="leaderboard-tab">
