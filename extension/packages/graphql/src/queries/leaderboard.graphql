@@ -43,3 +43,21 @@ query GetStreakLeaderboard(
     }
   }
 }
+
+# Verified wallets: accounts that have the has_tag triple for a given tag
+query GetVerifiedWallets($predicateId: String!, $tagLabel: String!) {
+  triples(where: {
+    predicate_id: { _eq: $predicateId }
+    object: { label: { _eq: $tagLabel } }
+  }) {
+    subject {
+      term_id
+      label
+      value {
+        account {
+          id
+        }
+      }
+    }
+  }
+}
