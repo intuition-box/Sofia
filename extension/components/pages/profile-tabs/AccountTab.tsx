@@ -9,13 +9,15 @@ import {
   useTrustedByCount,
   useAccountStats,
   useDiscordProfile,
-  useIdentityResolution
+  useIdentityResolution,
+  useDailyStreakProfit
 } from '../../../hooks'
 import StatsTab from './StatsTab'
 import AchievementsTab from './AchievementsTab'
 import SocialsTab from './SocialsTab'
 import ProfileHeader from '../../ui/ProfileHeader'
 import xIcon from '../../ui/social/x.svg'
+import { DAILY_VOTE_ATOM_ID } from '../../../lib/config/chainConfig'
 import { createHookLogger } from '../../../lib/utils/logger'
 import '../../styles/AccountTab.css'
 
@@ -36,12 +38,14 @@ const AccountTab = () => {
   // Data hooks
   const discordProfile = useDiscordProfile(walletAddress)
   const { signalsCreated } = useAccountStats(walletAddress ?? undefined)
-  const { quests, claimableQuests, level, totalXP, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
+  const { quests, claimableQuests, level, totalXP, userProgress, loading: questsLoading, claimingQuestId, markQuestCompleted, claimQuestXP, refreshQuests } = useQuestSystem()
   useTrustCircle(walletAddress)
   const { count: trustedByCount } = useTrustedByCount(walletAddress)
   const { stats: discoveryStats } = useDiscoveryScore()
   const { totalGold } = useGoldSystem()
   const { isSocialVerified } = useSocialVerifier()
+  const { data: streakProfitData } = useDailyStreakProfit()
+  const { data: voteProfitData } = useDailyStreakProfit(DAILY_VOTE_ATOM_ID)
   const { displayLabel, displayAvatar } = useIdentityResolution({
     walletAddress,
     discordProfile,
@@ -145,7 +149,7 @@ const AccountTab = () => {
           className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
           onClick={() => setActiveTab('achievements')}
         >
-          Success
+          Quest
         </button>
         <button
           className={`sub-tab ${activeTab === 'interest' ? 'active' : ''}`}
@@ -168,6 +172,7 @@ const AccountTab = () => {
 
       {activeTab === 'stats' && (
           <StatsTab
+            walletAddress={walletAddress}
             trustedByCount={trustedByCount}
             level={level}
             totalXP={totalXP}
@@ -187,6 +192,10 @@ const AccountTab = () => {
           onVerifySocials={async () => ({ success: false })}
           onMarkCompleted={markQuestCompleted}
           onRefresh={handleFullRefresh}
+          walletAddress={walletAddress}
+          streakProfit={streakProfitData}
+          voteProfit={voteProfitData}
+          currentStreak={userProgress.currentStreak}
         />
       )}
 

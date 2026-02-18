@@ -17947,6 +17947,28 @@ export type GetTripleBondingCurveDataQuery = {
   }>
 }
 
+export type GetAtomVaultDataQueryVariables = Exact<{
+  atomId: Scalars["String"]["input"]
+  curveId: Scalars["numeric"]["input"]
+  walletAddress: Scalars["String"]["input"]
+}>
+
+export type GetAtomVaultDataQuery = {
+  __typename?: "query_root"
+  vaults: Array<{
+    __typename?: "vaults"
+    current_share_price: any
+    total_shares: any
+    position_count: number
+    positions: Array<{
+      __typename?: "positions"
+      shares: any
+      total_deposit_assets_after_total_fees: any
+      total_redeem_assets_for_receiver: any
+    }>
+  }>
+}
+
 export type GetTrustCirclePositionsQueryVariables = Exact<{
   subjectId: Scalars["String"]["input"]
   predicateId: Scalars["String"]["input"]
@@ -20182,6 +20204,68 @@ export type GetTopSofiaAccountsQuery = {
       label: string
       image?: string | null
       atom?: { __typename?: "atoms"; term_id: string } | null
+    } | null
+  }>
+}
+
+export type GetStreakLeaderboardQueryVariables = Exact<{
+  atomId: Scalars["String"]["input"]
+  curveId: Scalars["numeric"]["input"]
+  limit: Scalars["Int"]["input"]
+}>
+
+export type GetStreakLeaderboardQuery = {
+  __typename?: "query_root"
+  vaults: Array<{
+    __typename?: "vaults"
+    current_share_price: any
+    total_shares: any
+    position_count: number
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+      account?: {
+        __typename?: "accounts"
+        id: string
+        label: string
+        image?: string | null
+      } | null
+    }>
+  }>
+}
+
+export type GetProxyDepositDaysQueryVariables = Exact<{
+  senderId: Scalars["String"]["input"]
+  termId: Scalars["String"]["input"]
+}>
+
+export type GetProxyDepositDaysQuery = {
+  __typename?: "query_root"
+  deposits: Array<{
+    __typename?: "deposits"
+    receiver_id: string
+    created_at: any
+  }>
+}
+
+export type GetVerifiedWalletsQueryVariables = Exact<{
+  predicateId: Scalars["String"]["input"]
+  tagLabel: Scalars["String"]["input"]
+}>
+
+export type GetVerifiedWalletsQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    subject?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+      value?: {
+        __typename?: "atom_values"
+        account?: { __typename?: "accounts"; id: string } | null
+      } | null
     } | null
   }>
 }
@@ -28074,6 +28158,95 @@ useGetTripleBondingCurveDataQuery.fetcher = (
     GetTripleBondingCurveDataQueryVariables
   >(GetTripleBondingCurveDataDocument, variables, options)
 
+export const GetAtomVaultDataDocument = `
+    query GetAtomVaultData($atomId: String!, $curveId: numeric!, $walletAddress: String!) {
+  vaults(where: {term_id: {_eq: $atomId}, curve_id: {_eq: $curveId}}) {
+    current_share_price
+    total_shares
+    position_count
+    positions(where: {account_id: {_ilike: $walletAddress}}) {
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+}
+    `
+
+export const useGetAtomVaultDataQuery = <
+  TData = GetAtomVaultDataQuery,
+  TError = unknown
+>(
+  variables: GetAtomVaultDataQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetAtomVaultDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<GetAtomVaultDataQuery, TError, TData>["queryKey"]
+  }
+) => {
+  return useQuery<GetAtomVaultDataQuery, TError, TData>({
+    queryKey: ["GetAtomVaultData", variables],
+    queryFn: fetcher<GetAtomVaultDataQuery, GetAtomVaultDataQueryVariables>(
+      GetAtomVaultDataDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useGetAtomVaultDataQuery.document = GetAtomVaultDataDocument
+
+useGetAtomVaultDataQuery.getKey = (
+  variables: GetAtomVaultDataQueryVariables
+) => ["GetAtomVaultData", variables]
+
+export const useInfiniteGetAtomVaultDataQuery = <
+  TData = InfiniteData<GetAtomVaultDataQuery>,
+  TError = unknown
+>(
+  variables: GetAtomVaultDataQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetAtomVaultDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetAtomVaultDataQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetAtomVaultDataQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["GetAtomVaultData.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<GetAtomVaultDataQuery, GetAtomVaultDataQueryVariables>(
+            GetAtomVaultDataDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetAtomVaultDataQuery.getKey = (
+  variables: GetAtomVaultDataQueryVariables
+) => ["GetAtomVaultData.infinite", variables]
+
+useGetAtomVaultDataQuery.fetcher = (
+  variables: GetAtomVaultDataQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetAtomVaultDataQuery, GetAtomVaultDataQueryVariables>(
+    GetAtomVaultDataDocument,
+    variables,
+    options
+  )
+
 export const GetTrustCirclePositionsDocument = `
     query GetTrustCirclePositions($subjectId: String!, $predicateId: String!, $address: String!, $offset: Int, $positionsOrderBy: [positions_order_by!]) {
   triples_aggregate(
@@ -30978,6 +31151,298 @@ useGetTopSofiaAccountsQuery.fetcher = (
 ) =>
   fetcher<GetTopSofiaAccountsQuery, GetTopSofiaAccountsQueryVariables>(
     GetTopSofiaAccountsDocument,
+    variables,
+    options
+  )
+
+export const GetStreakLeaderboardDocument = `
+    query GetStreakLeaderboard($atomId: String!, $curveId: numeric!, $limit: Int!) {
+  vaults(where: {term_id: {_eq: $atomId}, curve_id: {_eq: $curveId}}) {
+    current_share_price
+    total_shares
+    position_count
+    positions(limit: $limit, order_by: {shares: desc}) {
+      account_id
+      account {
+        id
+        label
+        image
+      }
+      shares
+    }
+  }
+}
+    `
+
+export const useGetStreakLeaderboardQuery = <
+  TData = GetStreakLeaderboardQuery,
+  TError = unknown
+>(
+  variables: GetStreakLeaderboardQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetStreakLeaderboardQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetStreakLeaderboardQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetStreakLeaderboardQuery, TError, TData>({
+    queryKey: ["GetStreakLeaderboard", variables],
+    queryFn: fetcher<
+      GetStreakLeaderboardQuery,
+      GetStreakLeaderboardQueryVariables
+    >(GetStreakLeaderboardDocument, variables),
+    ...options
+  })
+}
+
+useGetStreakLeaderboardQuery.document = GetStreakLeaderboardDocument
+
+useGetStreakLeaderboardQuery.getKey = (
+  variables: GetStreakLeaderboardQueryVariables
+) => ["GetStreakLeaderboard", variables]
+
+export const useInfiniteGetStreakLeaderboardQuery = <
+  TData = InfiniteData<GetStreakLeaderboardQuery>,
+  TError = unknown
+>(
+  variables: GetStreakLeaderboardQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetStreakLeaderboardQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetStreakLeaderboardQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetStreakLeaderboardQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetStreakLeaderboard.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            GetStreakLeaderboardQuery,
+            GetStreakLeaderboardQueryVariables
+          >(GetStreakLeaderboardDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetStreakLeaderboardQuery.getKey = (
+  variables: GetStreakLeaderboardQueryVariables
+) => ["GetStreakLeaderboard.infinite", variables]
+
+useGetStreakLeaderboardQuery.fetcher = (
+  variables: GetStreakLeaderboardQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetStreakLeaderboardQuery, GetStreakLeaderboardQueryVariables>(
+    GetStreakLeaderboardDocument,
+    variables,
+    options
+  )
+
+export const GetProxyDepositDaysDocument = `
+    query GetProxyDepositDays($senderId: String!, $termId: String!) {
+  deposits(
+    where: {sender_id: {_eq: $senderId}, term_id: {_eq: $termId}, assets_after_fees: {_neq: "0"}}
+    order_by: {created_at: desc}
+  ) {
+    receiver_id
+    created_at
+  }
+}
+    `
+
+export const useGetProxyDepositDaysQuery = <
+  TData = GetProxyDepositDaysQuery,
+  TError = unknown
+>(
+  variables: GetProxyDepositDaysQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetProxyDepositDaysQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetProxyDepositDaysQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetProxyDepositDaysQuery, TError, TData>({
+    queryKey: ["GetProxyDepositDays", variables],
+    queryFn: fetcher<
+      GetProxyDepositDaysQuery,
+      GetProxyDepositDaysQueryVariables
+    >(GetProxyDepositDaysDocument, variables),
+    ...options
+  })
+}
+
+useGetProxyDepositDaysQuery.document = GetProxyDepositDaysDocument
+
+useGetProxyDepositDaysQuery.getKey = (
+  variables: GetProxyDepositDaysQueryVariables
+) => ["GetProxyDepositDays", variables]
+
+export const useInfiniteGetProxyDepositDaysQuery = <
+  TData = InfiniteData<GetProxyDepositDaysQuery>,
+  TError = unknown
+>(
+  variables: GetProxyDepositDaysQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetProxyDepositDaysQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetProxyDepositDaysQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetProxyDepositDaysQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetProxyDepositDays.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<GetProxyDepositDaysQuery, GetProxyDepositDaysQueryVariables>(
+            GetProxyDepositDaysDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetProxyDepositDaysQuery.getKey = (
+  variables: GetProxyDepositDaysQueryVariables
+) => ["GetProxyDepositDays.infinite", variables]
+
+useGetProxyDepositDaysQuery.fetcher = (
+  variables: GetProxyDepositDaysQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetProxyDepositDaysQuery, GetProxyDepositDaysQueryVariables>(
+    GetProxyDepositDaysDocument,
+    variables,
+    options
+  )
+
+export const GetVerifiedWalletsDocument = `
+    query GetVerifiedWallets($predicateId: String!, $tagLabel: String!) {
+  triples(
+    where: {predicate_id: {_eq: $predicateId}, object: {label: {_eq: $tagLabel}}}
+  ) {
+    subject {
+      term_id
+      label
+      value {
+        account {
+          id
+        }
+      }
+    }
+  }
+}
+    `
+
+export const useGetVerifiedWalletsQuery = <
+  TData = GetVerifiedWalletsQuery,
+  TError = unknown
+>(
+  variables: GetVerifiedWalletsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetVerifiedWalletsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetVerifiedWalletsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetVerifiedWalletsQuery, TError, TData>({
+    queryKey: ["GetVerifiedWallets", variables],
+    queryFn: fetcher<GetVerifiedWalletsQuery, GetVerifiedWalletsQueryVariables>(
+      GetVerifiedWalletsDocument,
+      variables
+    ),
+    ...options
+  })
+}
+
+useGetVerifiedWalletsQuery.document = GetVerifiedWalletsDocument
+
+useGetVerifiedWalletsQuery.getKey = (
+  variables: GetVerifiedWalletsQueryVariables
+) => ["GetVerifiedWallets", variables]
+
+export const useInfiniteGetVerifiedWalletsQuery = <
+  TData = InfiniteData<GetVerifiedWalletsQuery>,
+  TError = unknown
+>(
+  variables: GetVerifiedWalletsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetVerifiedWalletsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetVerifiedWalletsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetVerifiedWalletsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? ["GetVerifiedWallets.infinite", variables],
+        queryFn: (metaData) =>
+          fetcher<GetVerifiedWalletsQuery, GetVerifiedWalletsQueryVariables>(
+            GetVerifiedWalletsDocument,
+            { ...variables, ...(metaData.pageParam ?? {}) }
+          )(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetVerifiedWalletsQuery.getKey = (
+  variables: GetVerifiedWalletsQueryVariables
+) => ["GetVerifiedWallets.infinite", variables]
+
+useGetVerifiedWalletsQuery.fetcher = (
+  variables: GetVerifiedWalletsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetVerifiedWalletsQuery, GetVerifiedWalletsQueryVariables>(
+    GetVerifiedWalletsDocument,
     variables,
     options
   )
@@ -48922,6 +49387,183 @@ export const GetTripleBondingCurveData = {
     }
   ]
 } as unknown as DocumentNode
+export const GetAtomVaultData = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetAtomVaultData" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "atomId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "curveId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "numeric" }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "walletAddress" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "vaults" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "atomId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "current_share_price" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "total_shares" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "position_count" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "walletAddress"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_deposit_assets_after_total_fees"
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_redeem_assets_for_receiver"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
 export const GetTrustCirclePositions = {
   kind: "Document",
   definitions: [
@@ -59427,6 +60069,449 @@ export const GetTopSofiaAccounts = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "term_id" }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetStreakLeaderboard = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetStreakLeaderboard" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "atomId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "curveId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "numeric" }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "limit" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "vaults" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "atomId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "current_share_price" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "total_shares" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "position_count" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "limit" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "limit" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "order_by" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: { kind: "EnumValue", value: "desc" }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "label" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "image" }
+                            }
+                          ]
+                        }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "shares" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetProxyDepositDays = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetProxyDepositDays" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "senderId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "termId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "deposits" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "sender_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "senderId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "termId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "assets_after_fees" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_neq" },
+                            value: {
+                              kind: "StringValue",
+                              value: "0",
+                              block: false
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "order_by" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "created_at" },
+                      value: { kind: "EnumValue", value: "desc" }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "receiver_id" } },
+                { kind: "Field", name: { kind: "Name", value: "created_at" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetVerifiedWallets = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetVerifiedWallets" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "tagLabel" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "predicateId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "object" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_eq" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "tagLabel" }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "subject" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "value" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "account" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" }
+                                  }
+                                ]
+                              }
                             }
                           ]
                         }

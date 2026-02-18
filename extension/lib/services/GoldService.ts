@@ -24,6 +24,10 @@ const logger = createServiceLogger('GoldService')
 // Gold earned per group URL certification
 const GOLD_PER_CERTIFICATION = 10
 
+// Gold earned per vote (capped at VOTE_GOLD_DAILY_CAP votes/day)
+const GOLD_PER_VOTE = 5
+const VOTE_GOLD_DAILY_CAP = 10
+
 // Level-up costs (progressive, paid in Gold)
 const LEVEL_UP_COSTS: Record<number, number> = {
   1: 30,   // Level 1 → 2
@@ -142,6 +146,37 @@ class GoldServiceClass {
   }
 
   /**
+   * Add Gold from a vote action.
+   * Uses a separate storage key (vote_gold_{wallet}) to track vote Gold.
+   * Returns the amount awarded (0 if daily cap reached).
+   */
+  async addVoteGold(walletAddress: string, dailyVoteCount: number): Promise<number> {
+    if (dailyVoteCount > VOTE_GOLD_DAILY_CAP) {
+      logger.debug('Vote Gold daily cap reached', { dailyVoteCount })
+      return 0
+    }
+
+    const key = this.getKey('vote_gold', walletAddress)
+    const certKey = this.getKey('certification_gold', walletAddress)
+
+    const result = await chrome.storage.local.get([key, certKey])
+    const currentVoteGold = result[key] || 0
+    const currentCertGold = result[certKey] || 0
+
+    // Store vote Gold in certification_gold bucket (same spending pool)
+    const newCertGold = currentCertGold + GOLD_PER_VOTE
+    const newVoteGold = currentVoteGold + GOLD_PER_VOTE
+
+    await chrome.storage.local.set({
+      [certKey]: newCertGold,
+      [key]: newVoteGold
+    })
+    logger.info('Added vote Gold', { amount: GOLD_PER_VOTE, totalVoteGold: newVoteGold })
+
+    return GOLD_PER_VOTE
+  }
+
+  /**
    * Reset Gold data (for testing/debugging).
    */
   async resetGold(walletAddress: string): Promise<void> {
@@ -183,4 +218,4 @@ export const goldService = new GoldServiceClass()
 export { GoldServiceClass }
 
 // Export constants
-export { GOLD_PER_CERTIFICATION, LEVEL_UP_COSTS, MAX_LEVEL_UP_COST }
+export { GOLD_PER_CERTIFICATION, GOLD_PER_VOTE, VOTE_GOLD_DAILY_CAP, LEVEL_UP_COSTS, MAX_LEVEL_UP_COST }

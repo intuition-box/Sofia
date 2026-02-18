@@ -12,7 +12,7 @@ import { intuitionGraphqlClient } from '../clients/graphql-client'
 import { BlockchainService } from './blockchainService'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
-import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, BOT_VERIFIER_ADDRESS } from '../config/chainConfig'
+import { MULTIVAULT_CONTRACT_ADDRESS, SELECTED_CHAIN, BLOCKCHAIN_CONFIG, PREDICATE_IDS as CHAIN_PREDICATE_IDS, BOT_VERIFIER_ADDRESS, DAILY_CERTIFICATION_ATOM_ID, DAILY_STREAK_STAKE, DAILY_VOTE_ATOM_ID, DAILY_VOTE_STAKE } from '../config/chainConfig'
 import { MASTRA_API_URL } from '../../config'
 import type { Address } from '../../types/viem'
 import type { QuestDefinition, SocialPlatform, AtomOperations } from '../../types/questTypes'
@@ -261,7 +261,8 @@ export class QuestBadgeService {
     questTitle: string,
     questDescription: string,
     isRecurring: boolean,
-    atomOps: AtomOperations
+    atomOps: AtomOperations,
+    questId?: string
   ): Promise<{ success: boolean; txHash?: string; error?: string }> {
     // Ensure proxy is approved
     await atomOps.ensureProxyApproval()
@@ -338,10 +339,23 @@ export class QuestBadgeService {
         objectId as string
       )
 
+      // Always create or deposit into the individual triple (backward compatible)
       if (tripleCheck.exists && tripleCheck.tripleVaultId) {
         txHash = await this.depositIntoBadgeTriple(walletAddress, contractAddress, tripleCheck.tripleVaultId)
       } else {
         txHash = await this.createBadgeTriple(walletAddress, contractAddress, userAtomId, predicateId, objectId)
+      }
+
+      // Daily certification: also deposit into shared atom vault
+      if (questId === 'daily-certification' && DAILY_CERTIFICATION_ATOM_ID) {
+        const atomTxHash = await this.depositIntoSharedAtomVault(walletAddress, contractAddress, DAILY_CERTIFICATION_ATOM_ID, DAILY_STREAK_STAKE, 'daily_streak')
+        if (atomTxHash) txHash = atomTxHash
+      }
+
+      // Daily vote: also deposit into shared atom vault
+      if (questId === 'daily-vote' && DAILY_VOTE_ATOM_ID) {
+        const atomTxHash = await this.depositIntoSharedAtomVault(walletAddress, contractAddress, DAILY_VOTE_ATOM_ID, DAILY_VOTE_STAKE, 'daily_vote')
+        if (atomTxHash) txHash = atomTxHash
       }
     } else {
       // One-time quest: always create the triple
@@ -392,6 +406,82 @@ export class QuestBadgeService {
     }
 
     logger.info('Deposited into existing badge triple', { txHash })
+    return txHash
+  }
+
+  /**
+   * Deposit into a shared atom vault.
+   * Used for daily-certification (Daily Certification atom) and daily-vote (Daily Voter atom).
+   * Amount: fixed stake per quest type (1 TRUST).
+   */
+  private static async depositIntoSharedAtomVault(
+    walletAddress: string,
+    contractAddress: string,
+    atomId: string,
+    stakeAmount: bigint,
+    storageKeyPrefix: string
+  ): Promise<`0x${string}`> {
+    const { walletClient, publicClient } = await getClients()
+    const totalDepositCost = await BlockchainService.getTotalDepositCost(stakeAmount)
+    const curveId = 1n // atom vault curve
+
+    logger.info('Shared atom vault deposit', {
+      atomId,
+      stakeAmount: stakeAmount.toString(),
+      totalCostWithFees: totalDepositCost.toString()
+    })
+
+    // Simulate first
+    await publicClient.simulateContract({
+      address: contractAddress as Address,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'deposit',
+      args: [
+        walletAddress as Address,
+        atomId as Address,
+        curveId,
+        0n
+      ],
+      value: totalDepositCost,
+      account: walletClient.account
+    })
+
+    // Execute
+    const txHash = await walletClient.writeContract({
+      address: contractAddress as Address,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'deposit',
+      args: [
+        walletAddress as Address,
+        atomId as Address,
+        curveId,
+        0n
+      ],
+      value: totalDepositCost,
+      chain: SELECTED_CHAIN,
+      maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+      maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+      account: walletAddress as Address,
+    })
+
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+    if (receipt.status !== 'success') {
+      throw new Error('Shared atom vault deposit tx reverted')
+    }
+
+    logger.info('Shared atom vault deposit successful', { txHash, atomId })
+
+    // Track the deposit amount locally (for profit calculation)
+    try {
+      const key = `${storageKeyPrefix}_total_deposited_${walletAddress.toLowerCase()}`
+      const result = await chrome.storage.local.get([key])
+      const currentTotal = result[key] || '0'
+      const newTotal = (BigInt(currentTotal) + stakeAmount).toString()
+      await chrome.storage.local.set({ [key]: newTotal })
+    } catch (trackErr) {
+      logger.warn('Failed to track deposit amount', { error: trackErr })
+    }
+
     return txHash
   }
 

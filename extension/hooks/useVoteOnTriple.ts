@@ -6,6 +6,8 @@ import { SofiaFeeProxyAbi } from "../ABI/SofiaFeeProxy"
 import { SELECTED_CHAIN } from "../lib/config/chainConfig"
 import { BlockchainService } from "../lib/services"
 import { createHookLogger } from "../lib/utils/logger"
+import { questTrackingService } from "../lib/services/QuestTrackingService"
+import { goldService } from "../lib/services/GoldService"
 import {
   BLOCKCHAIN_CONFIG,
   ERROR_MESSAGES,
@@ -237,6 +239,17 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
         }
 
         setSuccess(true)
+
+        // Track vote activity for quests + award Gold
+        try {
+          await questTrackingService.recordVoteActivity()
+          const dailyCount = await questTrackingService.getDailyVoteCount()
+          if (address) {
+            await goldService.addVoteGold(address, dailyCount)
+          }
+        } catch (trackErr) {
+          logger.warn("Failed to track vote activity", { error: trackErr })
+        }
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : ERROR_MESSAGES.UNKNOWN_ERROR

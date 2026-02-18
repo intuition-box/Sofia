@@ -28,4 +28,4 @@ export { getWalletKey } from './storageKeyUtils'
 export { refetchWithBackoff, debounce } from './refetchUtils'
 
 // Circle & Interest
-export { loadMemberActivityCache, saveMemberActivityCache, loadCircleRecsCache, saveCircleRecsCache, clearCircleRecsCache, clearAllMemberActivityCaches, areInterestNamesSimilar, fetchMemberDomainActivity, aggregateActivities, buildMemberDomainMap, findRecommendations } from './circleInterestUtils'
+export { fetchMemberDomainActivity } from './circleInterestUtils'

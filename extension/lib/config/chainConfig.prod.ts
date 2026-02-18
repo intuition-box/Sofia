@@ -116,3 +116,14 @@ export const PREDICATE_NAMES = {
 
 // Minimum stake for intention certification (0.1 TRUST = 1e17 wei)
 export const INTENTION_MIN_STAKE = 100000000000000000n // 0.1 TRUST
+
+// Shared atom vault for daily streak deposits
+// This is the existing "Daily Certification" atom on mainnet
+export const DAILY_CERTIFICATION_ATOM_ID = "0x047a274edc6bb2776c611945efbb45ac77b904e915c0abe79fb77963a6de9eff" as const
+
+// Fixed stake amount for daily streak deposit (1 TRUST)
+export const DAILY_STREAK_STAKE = 1000000000000000000n // 1 TRUST
+
+// Shared atom vault for daily vote deposits
+export const DAILY_VOTE_ATOM_ID = "0xd33d7e785a7c6c7775947961b20b1c7176a4e764c309c769c85cd5aa8195a3eb" as const
+export const DAILY_VOTE_STAKE = 1000000000000000000n // 1 TRUST

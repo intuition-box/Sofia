@@ -4,7 +4,8 @@
  * Merges quest actions into the achievement grid layout
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getAddress } from 'viem'
 import type { Quest } from '../../../types/questTypes'
 import { createHookLogger } from '../../../lib/utils/logger'
 
@@ -71,6 +72,31 @@ const typeLabels: Record<string, string> = {
   gold: 'Gold',
 }
 
+interface VaultProfitData {
+  hasPosition: boolean
+  sharesFormatted: string
+  currentValue: number
+  profit: number
+  participantCount: number
+}
+
+const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+
+const getWeekDates = (): string[] => {
+  const now = new Date()
+  const day = now.getDay()
+  const mondayOffset = day === 0 ? -6 : 1 - day
+  const monday = new Date(now)
+  monday.setDate(now.getDate() + mondayOffset)
+  monday.setHours(0, 0, 0, 0)
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    return d.toISOString().split('T')[0]
+  })
+}
+
 interface AchievementsTabProps {
   quests: Quest[]
   loading: boolean
@@ -82,6 +108,10 @@ interface AchievementsTabProps {
   onVerifySocials: () => Promise<{ success: boolean; error?: string }>
   onMarkCompleted: (questId: string) => void
   onRefresh?: () => Promise<void>
+  walletAddress?: string | null
+  streakProfit?: VaultProfitData | null
+  voteProfit?: VaultProfitData | null
+  currentStreak?: number
 }
 
 const AchievementsTab = ({
@@ -94,9 +124,36 @@ const AchievementsTab = ({
   onClaimXP,
   onVerifySocials,
   onMarkCompleted,
-  onRefresh
+  onRefresh,
+  walletAddress,
+  streakProfit,
+  voteProfit,
+  currentStreak
 }: AchievementsTabProps) => {
   const [refreshing, setRefreshing] = useState(false)
+  const [certDays, setCertDays] = useState<Set<string>>(new Set())
+  const [voteDays, setVoteDays] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!walletAddress) return
+    try {
+      const checksummed = getAddress(walletAddress)
+      const certKey = `certification_activity_dates_${checksummed}`
+      const voteKey = `vote_activity_dates_${checksummed}`
+      const weekDates = getWeekDates()
+
+      chrome.storage.local.get([certKey, voteKey]).then(result => {
+        setCertDays(new Set<string>(
+          ((result[certKey] || []) as string[]).filter(d => weekDates.includes(d))
+        ))
+        setVoteDays(new Set<string>(
+          ((result[voteKey] || []) as string[]).filter(d => weekDates.includes(d))
+        ))
+      })
+    } catch {
+      // invalid address
+    }
+  }, [walletAddress])
 
   const handleRefresh = async () => {
     if (!onRefresh || refreshing) return
@@ -142,20 +199,92 @@ const AchievementsTab = ({
 
   return (
     <div className="achievements-tab-content">
-      {onRefresh && (
-        <button
-          className="quest-refresh-btn-inline"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          title="Refresh"
-        >
-          {refreshing ? '...' : '\u21BB'}
-        </button>
+      {/* Vault Cards */}
+      {streakProfit?.hasPosition && (
+        <div className="streak-vault-card">
+          <div className="streak-vault-header-top">
+            {currentStreak !== undefined && currentStreak > 0 && (
+              <span className="streak-vault-badge">{"\uD83D\uDD25"} {currentStreak} day streak</span>
+            )}
+            <span className="streak-vault-participants">{streakProfit.participantCount} streakers</span>
+          </div>
+          <div className="streak-vault-title-row">
+            <span className="streak-vault-title">Certification Vault</span>
+          </div>
+          <div className="streak-week-bubbles">
+            {getWeekDates().map((date, i) => (
+              <div key={date} className={`streak-bubble ${certDays.has(date) ? 'validated' : ''}`}>
+                {certDays.has(date) ? '✓' : DAY_LABELS[i]}
+              </div>
+            ))}
+          </div>
+          <div className="streak-vault-stats">
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Shares</span>
+              <span className="streak-vault-value">{streakProfit.sharesFormatted}</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Value</span>
+              <span className="streak-vault-value">{streakProfit.currentValue.toFixed(4)} TRUST</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Profit</span>
+              <span className={`streak-vault-value ${streakProfit.profit >= 0 ? 'positive' : 'negative'}`}>
+                {streakProfit.profit >= 0 ? '+' : ''}{streakProfit.profit.toFixed(4)} TRUST
+              </span>
+            </div>
+          </div>
+        </div>
       )}
-      <div className="achievements-grid">
-        {sorted.map((quest) => {
+      {voteProfit?.hasPosition && (
+        <div className="streak-vault-card">
+          <div className="streak-vault-header">
+            <span className="streak-vault-title">Vote Vault</span>
+            <span className="streak-vault-participants">{voteProfit.participantCount} voters</span>
+          </div>
+          <div className="streak-week-bubbles">
+            {getWeekDates().map((date, i) => (
+              <div key={date} className={`streak-bubble ${voteDays.has(date) ? 'validated' : ''}`}>
+                {voteDays.has(date) ? '✓' : DAY_LABELS[i]}
+              </div>
+            ))}
+          </div>
+          <div className="streak-vault-stats">
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Shares</span>
+              <span className="streak-vault-value">{voteProfit.sharesFormatted}</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Value</span>
+              <span className="streak-vault-value">{voteProfit.currentValue.toFixed(4)} TRUST</span>
+            </div>
+            <div className="streak-vault-stat">
+              <span className="streak-vault-label">Profit</span>
+              <span className={`streak-vault-value ${voteProfit.profit >= 0 ? 'positive' : 'negative'}`}>
+                {voteProfit.profit >= 0 ? '+' : ''}{voteProfit.profit.toFixed(4)} TRUST
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(() => {
+        // Section "Task" : daily-certification + daily-vote
+        const taskQuests = sorted.filter(q => q.id === 'daily-certification' || q.id === 'daily-vote')
+        const remaining = sorted.filter(q => q.id !== 'daily-certification' && q.id !== 'daily-vote')
+
+        // Group remaining quests by type
+        const SECTION_ORDER = ['streak', 'vote', 'signal', 'discovery', 'bookmark', 'social-link', 'follow', 'trust', 'pulse', 'gold']
+        const groupedByType = new Map<string, Quest[]>()
+        for (const q of remaining) {
+          const group = groupedByType.get(q.type) || []
+          group.push(q)
+          groupedByType.set(q.type, group)
+        }
+
+        const renderCard = (quest: Quest) => {
           const progress = quest.total > 0 ? (quest.current / quest.total) * 100 : 0
-          const showProgress = quest.status === 'active' || quest.status === 'claimable_xp'
+          const showProgress = quest.status === 'active' || quest.status === 'claimable_xp' || quest.type === 'streak'
           const radius = 22
           const circumference = 2 * Math.PI * radius
           const strokeDashoffset = circumference - (progress / 100) * circumference
@@ -168,7 +297,6 @@ const AchievementsTab = ({
                   alt={quest.title}
                   className="achievement-card-img"
                 />
-                {/* Progress circle overlay */}
                 {showProgress && (
                   <div className="achievement-progress-overlay">
                     <svg width="54" height="54" viewBox="0 0 54 54">
@@ -208,8 +336,7 @@ const AchievementsTab = ({
 
                 <div className="achievement-description">{quest.description}</div>
 
-                {/* Progress text for active quests */}
-                {quest.status === 'active' && (
+                {(quest.status === 'active' || quest.type === 'streak') && (
                   <div className="achievement-progress-text">
                     {quest.current}/{quest.total}
                   </div>
@@ -219,7 +346,6 @@ const AchievementsTab = ({
                   {quest.xpReward} XP
                 </span>
 
-                {/* Claim XP button */}
                 {quest.status === 'claimable_xp' && quest.id !== 'social-linked' && (
                   <button
                     className={`achievement-claim-btn ${claimingQuestId === quest.id ? 'claiming' : ''}`}
@@ -236,7 +362,6 @@ const AchievementsTab = ({
                   </button>
                 )}
 
-                {/* Social Linked: verify first */}
                 {quest.id === 'social-linked' && quest.status === 'claimable_xp' && !isSocialVerified && canVerify && (
                   <button
                     className="achievement-claim-btn verify"
@@ -254,7 +379,6 @@ const AchievementsTab = ({
                   </button>
                 )}
 
-                {/* Social Linked: claim after verify */}
                 {quest.id === 'social-linked' && quest.status === 'claimable_xp' && isSocialVerified && (
                   <button
                     className={`achievement-claim-btn ${claimingQuestId === quest.id ? 'claiming' : ''}`}
@@ -272,8 +396,48 @@ const AchievementsTab = ({
               </div>
             </div>
           )
-        })}
-      </div>
+        }
+
+        return (
+          <>
+            {taskQuests.length > 0 && (
+              <>
+                <div className="achievements-section-header">
+                  <div className="achievements-section-label">Task</div>
+                  {onRefresh && (
+                    <button
+                      className="quest-refresh-btn-inline"
+                      onClick={handleRefresh}
+                      disabled={refreshing}
+                      title="Refresh"
+                    >
+                      {refreshing ? '...' : '\u21BB'}
+                    </button>
+                  )}
+                </div>
+                <div className="achievements-grid">
+                  {taskQuests.map(renderCard)}
+                </div>
+              </>
+            )}
+            {SECTION_ORDER.map(type => {
+              const quests = groupedByType.get(type)
+              if (!quests || quests.length === 0) return null
+              return (
+                <div key={type}>
+                  <div className="achievements-separator" />
+                  <div className="achievements-section-header">
+                    <div className="achievements-section-label">{typeLabels[type] || type}</div>
+                  </div>
+                  <div className="achievements-grid">
+                    {quests.map(renderCard)}
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        )
+      })()}
     </div>
   )
 }
