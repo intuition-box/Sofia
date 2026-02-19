@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, type CSSProperties, type FC } from 'react';
 import * as THREE from 'three';
 import { EffectComposer, EffectPass, RenderPass, Effect } from 'postprocessing';
 import './PixelBlast.css';
@@ -10,7 +10,7 @@ type PixelBlastProps = {
   pixelSize?: number;
   color?: string;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   antialias?: boolean;
   patternScale?: number;
   patternDensity?: number;
@@ -327,7 +327,7 @@ void main(){
 
 const MAX_CLICKS = 10;
 
-const PixelBlast: React.FC<PixelBlastProps> = ({
+const PixelBlast: FC<PixelBlastProps> = ({
   variant = 'square',
   pixelSize = 3,
   color = '#B19EEF',
