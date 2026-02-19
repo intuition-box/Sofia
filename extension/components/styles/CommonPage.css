@@ -540,9 +540,11 @@
   justify-content: space-between;
   padding: 16px;
   margin: 4px 0;
-  background: linear-gradient(135deg, rgba(199, 134, 108, 0.15), rgba(212, 165, 116, 0.1));
+  background: linear-gradient(135deg, rgba(215, 144, 199, 0.12) 0%, rgba(211, 124, 191, 0.10) 20%, rgba(255, 198, 176, 0.10) 50%, rgba(255, 167, 177, 0.10) 80%, rgba(206, 162, 253, 0.12) 100%);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
   border-radius: 12px;
-  border: 1px solid rgba(199, 134, 108, 0.3);
+  border: 1px solid rgba(215, 144, 199, 0.2);
 }
 
 .identity-triple {
@@ -557,7 +559,7 @@
 }
 
 .identity-predicate {
-  color: #C7866C;
+  color: #d79cc7;
   font-weight: 600;
 }
 
@@ -567,19 +569,29 @@
 
 .amplify-btn-inline {
   padding: 8px 16px;
-  background: linear-gradient(135deg, #C7866C, #D4A574);
-  border: none;
   border-radius: 8px;
-  color: #fff;
-  font-weight: 500;
-  cursor: pointer;
+  border: none;
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  color: #000000;
+  font-family: 'Gotu', cursive;
   font-size: 13px;
-  transition: all 0.2s;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  cursor: pointer;
+  transition: all 1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
-.amplify-btn-inline:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(199, 134, 108, 0.3);
+.amplify-btn-inline:hover:not(:disabled) {
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
 }
 
 .amplify-btn-inline:disabled {

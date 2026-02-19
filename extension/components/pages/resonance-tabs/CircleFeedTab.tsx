@@ -23,7 +23,8 @@ const INTENTION_PREDICATE_LABELS = [
   'visits for learning ', // legacy trailing space
   'visits for fun',
   'visits for inspiration',
-  'visits for buying'
+  'visits for buying', 
+  'visits for music'
 ]
 
 // Map predicate label to IntentionType
@@ -34,6 +35,7 @@ const predicateLabelToType = (label: string): IntentionType | null => {
   if (trimmed === 'visits for fun') return 'fun'
   if (trimmed === 'visits for inspiration') return 'inspiration'
   if (trimmed === 'visits for buying') return 'buying'
+  if (trimmed === 'visits for music') return 'music'
   if (trimmed === 'trusts') return 'trusted'
   if (trimmed === 'distrust') return 'distrusted'
   return null
