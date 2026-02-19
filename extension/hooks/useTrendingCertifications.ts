@@ -22,6 +22,7 @@ const TRENDING_CATEGORIES = ([
   { type: 'fun', predicateId: PREDICATE_IDS.VISITS_FOR_FUN },
   { type: 'inspiration', predicateId: PREDICATE_IDS.VISITS_FOR_INSPIRATION },
   { type: 'buying', predicateId: PREDICATE_IDS.VISITS_FOR_BUYING },
+  { type: 'music', predicateId: PREDICATE_IDS.VISITS_FOR_MUSIC },
 ] as { type: IntentionType; predicateId: string }[]).filter(c => !!c.predicateId)
 
 export interface TrendingItem {
@@ -49,7 +50,8 @@ export interface UseTrendingResult {
   available: boolean  // false on testnet when no predicate IDs
 }
 
-const ITEMS_PER_CATEGORY = 10
+const FETCH_LIMIT = 50
+const DISPLAY_LIMIT = 20
 
 function extractDomain(url: string): string {
   try {
@@ -84,7 +86,7 @@ export function useTrendingCertifications(): UseTrendingResult {
       const promises = TRENDING_CATEGORIES.map(async ({ type, predicateId }) => {
         const data = await intuitionGraphqlClient.request(
           GetTrendingByPredicateDocument,
-          { predicateId, limit: ITEMS_PER_CATEGORY, offset: 0 }
+          { predicateId, limit: FETCH_LIMIT, offset: 0 }
         )
         return { type, data }
       })
@@ -97,19 +99,24 @@ export function useTrendingCertifications(): UseTrendingResult {
         if (result.status === 'fulfilled') {
           const { data } = result.value
           const triples = data?.triples || []
-
           const ENS_SUFFIXES = ['.eth', '.box']
+          const WALLET_RE = /^0x[0-9a-f]{4,}$/i
 
           const items: TrendingItem[] = triples
             .filter((triple: any) => {
               const label = (triple.object?.label || '').toLowerCase()
-              return !ENS_SUFFIXES.some(suffix => label.endsWith(suffix))
+              if (ENS_SUFFIXES.some(suffix => label.endsWith(suffix))) return false
+              if (WALLET_RE.test(label.replace(/[\u2026.]+/g, ''))) return false
+              const thingUrl = triple.object?.value?.thing?.url
+              if (!thingUrl && !label.startsWith('http') && !/[\w-]+\.[\w.-]+/.test(label)) return false
+              return true
             })
             .map((triple: any) => {
               const label = triple.object?.label || ''
               const thingUrl = triple.object?.value?.thing?.url
               const objectUrl = thingUrl || (label.startsWith('http') ? label : `https://${label}`)
               const domain = extractDomain(objectUrl)
+              const positionCount = Number(triple.positions_aggregate?.aggregate?.count || 0)
 
               return {
                 termId: triple.term_id,
@@ -117,11 +124,13 @@ export function useTrendingCertifications(): UseTrendingResult {
                 objectLabel: label || domain,
                 objectUrl,
                 domain,
-                positionCount: Number(triple.triple_vault?.position_count || 0),
+                positionCount,
                 totalShares: String(triple.triple_vault?.total_shares || '0'),
                 createdAt: triple.created_at
               }
             })
+            .sort((a, b) => b.positionCount - a.positionCount)
+            .slice(0, DISPLAY_LIMIT)
 
           return {
             type,

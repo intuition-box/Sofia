@@ -1,5 +1,5 @@
 # Get trending certifications for a specific predicate type
-# Returns top triples ordered by position_count (number of unique certifiers)
+# Counts actual positions (not triple_vault.position_count which is unreliable)
 # Used by: useTrendingCertifications
 query GetTrendingByPredicate(
   $predicateId: String!
@@ -9,7 +9,6 @@ query GetTrendingByPredicate(
   total: triples_aggregate(
     where: {
       predicate_id: { _eq: $predicateId }
-      triple_vault: { position_count: { _gt: 0 } }
     }
   ) {
     aggregate {
@@ -19,9 +18,8 @@ query GetTrendingByPredicate(
   triples(
     where: {
       predicate_id: { _eq: $predicateId }
-      triple_vault: { position_count: { _gt: 0 } }
     }
-    order_by: { triple_vault: { position_count: desc } }
+    order_by: { created_at: desc }
     limit: $limit
     offset: $offset
   ) {
@@ -37,10 +35,13 @@ query GetTrendingByPredicate(
         }
       }
     }
+    positions_aggregate {
+      aggregate {
+        count
+      }
+    }
     triple_vault {
-      position_count
       total_shares
-      total_assets
     }
   }
 }

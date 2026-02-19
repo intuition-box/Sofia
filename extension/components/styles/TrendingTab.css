@@ -1,3 +1,14 @@
+/* Shared tab description */
+.tab-description {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  line-height: 1.4;
+}
+
 /* TrendingTab - Global trending certifications */
 
 .trending-tab {

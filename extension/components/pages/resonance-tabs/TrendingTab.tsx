@@ -69,6 +69,10 @@ const TrendingTab = () => {
 
   return (
     <div className="trending-tab">
+      <div className="tab-description">
+        Most certified URLs across all Sofia users, ranked by number of certifiers.
+      </div>
+
       {/* Top bar: chips + refresh */}
       <div className="trending-top-bar">
         <div className="circle-category-chips">
@@ -115,6 +119,7 @@ const TrendingTab = () => {
               <div
                 key={item.termId}
                 className="trending-item-wrapper"
+                onClick={() => chrome.tabs.create({ url: item.objectUrl })}
               >
                 <div className="trending-item">
                   <span className="trending-rank">#{index + 1}</span>
@@ -128,7 +133,9 @@ const TrendingTab = () => {
                     <div className="trending-item-title">
                       {item.objectLabel || item.domain}
                     </div>
-                    <div className="trending-item-domain">{item.domain}</div>
+                    {item.domain.includes('.') && item.domain !== item.objectLabel && (
+                      <div className="trending-item-domain">{item.domain}</div>
+                    )}
                   </div>
                   <div className="trending-item-stats">
                     <span className="trending-certifiers">

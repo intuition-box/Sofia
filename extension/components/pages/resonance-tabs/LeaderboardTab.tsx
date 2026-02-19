@@ -9,6 +9,7 @@ import { useRouter } from "../../layout/RouterProvider"
 import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from "../../../lib/config/chainConfig"
 import Avatar from "../../ui/Avatar"
 import "../../styles/LeaderboardTab.css"
+import "../../styles/TrendingTab.css"
 
 const MEDAL_EMOJIS = ["", "\u{1F947}", "\u{1F948}", "\u{1F949}"]
 
@@ -26,6 +27,10 @@ const LeaderboardTab = () => {
 
   return (
     <div className="leaderboard-tab">
+      <div className="tab-description">
+        Top users ranked by their daily streak participation.
+      </div>
+
       <div className="leaderboard-tabs">
         <button
           className={`leaderboard-tab-btn ${activeTab === "signals" ? "active" : ""}`}
