@@ -33,8 +33,11 @@ export { fetchMemberDomainActivity } from './circleInterestUtils'
 // Level System (Groups/Echoes)
 export { LEVEL_THRESHOLDS, calculateLevel, calculateLevelProgress } from './levelCalculation'
 
+// Domain Utilities
+export { normalizeDomain, extractDomain, extractHostname, shouldExcludeDomain } from './domainUtils'
+
 // Formatters
-export { getFaviconUrl, formatDuration, formatShortDate } from './formatters'
+export { getFaviconUrl, formatDuration, formatShortDate, formatBalance } from './formatters'
 
 // Certification Helpers
-export { intentionToCertification, trustToCertification, getEffectiveCertStatus } from './certificationHelpers'
+export { intentionToCertification, trustToCertification, getEffectiveCertStatus, calculateDominantCertification, sumCertifications } from './certificationHelpers'

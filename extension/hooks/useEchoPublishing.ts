@@ -6,6 +6,7 @@
 import { useCallback } from 'react'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
 import { tripletsDataService } from '../lib/database'
+import { getFaviconUrl } from '../lib/utils'
 import type { EchoTriplet, TripleOnChainResult, BatchTripleResult } from '../types/blockchain'
 
 /**
@@ -49,15 +50,7 @@ export const useEchoPublishing = ({
     
     try {
       // Calculate favicon URL from triplet URL
-      let faviconUrl = ''
-      if (triplet.url) {
-        try {
-          const urlObj = new URL(triplet.url)
-          faviconUrl = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=128`
-        } catch {
-          // Invalid URL, skip favicon
-        }
-      }
+      const faviconUrl = triplet.url ? getFaviconUrl(triplet.url, 128) : ''
 
       const result = await createTripleOnChain(
         triplet.triplet.predicate,
@@ -91,15 +84,7 @@ export const useEchoPublishing = ({
     try {
       const batchInput = selectedTriplets.map((triplet, index) => {
         // Extract favicon from URL if available
-        let faviconUrl = ''
-        if (triplet.url) {
-          try {
-            const urlObj = new URL(triplet.url)
-            faviconUrl = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=128`
-          } catch {
-            // Invalid URL, skip favicon
-          }
-        }
+        const faviconUrl = triplet.url ? getFaviconUrl(triplet.url, 128) : ''
 
         return {
           predicateName: triplet.triplet.predicate,

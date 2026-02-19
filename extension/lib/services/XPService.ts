@@ -19,6 +19,7 @@
 import { QUEST_XP_REWARDS } from '../../types/questTypes'
 import { getAddress } from 'viem'
 import { createServiceLogger } from '../utils/logger'
+import { getWalletKey } from '../utils/storageKeyUtils'
 import type { XPState } from '~types/currencyTypes'
 
 export type { XPState }
@@ -30,11 +31,6 @@ const logger = createServiceLogger('XPService')
  * XP is derived from claimed quest IDs stored in chrome.storage.local.
  */
 class XPServiceClass {
-  /** Build a wallet-prefixed storage key. */
-  private getKey(baseKey: string, wallet: string): string {
-    return `${baseKey}_${wallet.toLowerCase()}`
-  }
-
   /** Calculate quest XP from claimed quest IDs. */
   private calculateQuestXP(claimedQuests: string[]): number {
     return claimedQuests.reduce((total, questId) => {
@@ -47,7 +43,7 @@ class XPServiceClass {
    * XP = sum of quest rewards for all claimed quests (no deductions).
    */
   async getXPState(walletAddress: string): Promise<XPState> {
-    const claimedKey = this.getKey('claimed_quests', walletAddress)
+    const claimedKey = getWalletKey('claimed_quests', walletAddress.toLowerCase())
     const result = await chrome.storage.local.get([claimedKey])
     const claimedQuests: string[] = result[claimedKey] || []
 

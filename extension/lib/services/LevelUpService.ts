@@ -11,6 +11,7 @@
  */
 
 import { createServiceLogger } from '../utils/logger'
+import { calculateDominantCertification, sumCertifications } from '../utils/certificationHelpers'
 import { groupManager, type CertificationType } from './GroupManager'
 import { goldService, getLevelUpCost } from './GoldService'
 import { generatePredicate, type PredicateInput } from '../../background/mastraClient'
@@ -141,7 +142,7 @@ class LevelUpServiceClass {
     logger.debug('Certifications', { certifications, source: isVirtualGroup ? 'UI' : 'local' })
 
     // Check if there are any certifications
-    const totalCertifications = Object.values(certifications).reduce((sum, count) => sum + count, 0)
+    const totalCertifications = sumCertifications(certifications)
     const hasOAuthUrls = group.urls.some(u => u.oauthPredicate && !u.removed)
     const hasOnChainCerts = group.urls.some(u => u.isOnChain && !u.removed)
     if (totalCertifications === 0 && !isVirtualGroup && !hasOAuthUrls && !hasOnChainCerts && !targetLevel) {
@@ -217,19 +218,11 @@ class LevelUpServiceClass {
 
   /** Build a human-readable reason for the level up. */
   private buildReason(certifications: Record<string, number>, newLevel: number): string {
-    const total = Object.values(certifications).reduce((sum, count) => sum + count, 0)
+    const total = sumCertifications(certifications)
+    const dominant = calculateDominantCertification(certifications)
 
-    let dominant: CertificationType | null = null
-    let maxCount = 0
-    for (const [cert, count] of Object.entries(certifications)) {
-      if (count > maxCount) {
-        maxCount = count
-        dominant = cert as CertificationType
-      }
-    }
-
-    if (dominant && maxCount > total / 2) {
-      return `Level ${newLevel}: ${maxCount}/${total} URLs certified as ${dominant}`
+    if (dominant && dominant.count > total / 2) {
+      return `Level ${newLevel}: ${dominant.count}/${total} URLs certified as ${dominant.type}`
     }
 
     const activeCerts = Object.entries(certifications)

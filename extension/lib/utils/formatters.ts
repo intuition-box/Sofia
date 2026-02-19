@@ -44,6 +44,27 @@ export function formatDuration(ms: number): string {
 }
 
 /**
+ * Format a bigint balance to a decimal string.
+ * @param value - The raw bigint value
+ * @param decimals - Number of decimal places in the token (default 18)
+ * @param precision - Number of fractional digits to display (default 6)
+ */
+export function formatBalance(
+  value: bigint,
+  decimals: number = 18,
+  precision: number = 6
+): string {
+  const divisor = BigInt(10 ** decimals)
+  const integerPart = value / divisor
+  const fractionalPart = value % divisor
+  const fractionalStr = fractionalPart
+    .toString()
+    .padStart(decimals, "0")
+    .slice(0, precision)
+  return `${integerPart}.${fractionalStr}`
+}
+
+/**
  * Format timestamp to short date ("Jan 15").
  */
 export function formatShortDate(timestamp: number): string {

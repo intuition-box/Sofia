@@ -55,3 +55,30 @@ export function getEffectiveCertStatus(
   }
   return { isCertified: false, labels: [] }
 }
+
+/**
+ * Find the dominant certification type from a breakdown record.
+ * Returns the type with the highest count, or null if empty.
+ */
+export function calculateDominantCertification(
+  breakdown: Record<string, number>
+): { type: string; count: number } | null {
+  let maxCount = 0
+  let dominant: string | null = null
+  for (const [cert, count] of Object.entries(breakdown)) {
+    if (count > maxCount) {
+      maxCount = count
+      dominant = cert
+    }
+  }
+  return dominant ? { type: dominant, count: maxCount } : null
+}
+
+/**
+ * Sum all certification counts from a breakdown record.
+ */
+export function sumCertifications(
+  breakdown: Record<string, number>
+): number {
+  return Object.values(breakdown).reduce((sum, count) => sum + count, 0)
+}

@@ -2,17 +2,9 @@ import { useMemo } from 'react'
 import { useGetTripleBondingCurveDataQuery } from '@0xsofia/graphql'
 import type { BondingCurveData, ChartDataPoint, CurveType, TimeRange } from '../types/bonding-curve'
 import { createHookLogger } from '../lib/utils/logger'
+import { formatBalance } from '../lib/utils'
 
 const logger = createHookLogger('useBondingCurveData')
-
-function formatBalance(value: bigint, decimals: number = 18, precision: number = 6): string {
-  const divisor = BigInt(10 ** decimals)
-  const integerPart = value / divisor
-  const fractionalPart = value % divisor
-
-  const fractionalStr = fractionalPart.toString().padStart(decimals, '0').slice(0, precision)
-  return `${integerPart}.${fractionalStr}`
-}
 
 function getTimeRangeBoundaries(timeRange: TimeRange) {
   const now = Math.floor(Date.now() / 1000)
