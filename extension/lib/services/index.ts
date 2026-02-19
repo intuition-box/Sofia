@@ -48,5 +48,16 @@ export type { AgentIds } from './UserSessionManager'
 // Storage
 export { TripletStorageService, tripletStorageService } from './TripletStorageService'
 
+// MCP & Interest Analysis
+export { MCPServiceClass, mcpService } from './MCPService'
+export { InterestAnalysisServiceClass, interestAnalysisService } from './InterestAnalysisService'
+export type { CachedInterestData } from './InterestAnalysisService'
+
+// Discovery & Certifications
+export { DiscoveryScoreServiceClass, discoveryScoreService } from './DiscoveryScoreService'
+export type { DiscoveryState } from './DiscoveryScoreService'
+export { UserCertificationsServiceClass, userCertificationsService } from './UserCertificationsService'
+export type { TripleDetail, CertificationEntry, CertificationsStoreState } from './UserCertificationsService'
+
 // AI
 export { RecommendationService } from './ai/RecommendationService'
