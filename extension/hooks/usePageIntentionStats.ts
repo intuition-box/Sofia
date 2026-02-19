@@ -6,24 +6,15 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { PREDICATE_IDS } from '../lib/config/chainConfig'
 import type { IntentionPurpose } from '../types/discovery'
+import {
+  INTENTION_PREDICATE_IDS,
+  PREDICATE_ID_TO_INTENTION
+} from '../lib/config/predicateConstants'
 import { createHookLogger } from '../lib/utils/logger'
 import { IntentionStatsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('usePageIntentionStats')
-
-// Map predicate IDs to intention purposes
-const PREDICATE_TO_INTENTION: Record<string, IntentionPurpose> = {}
-if (PREDICATE_IDS.VISITS_FOR_WORK) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_WORK] = 'for_work'
-if (PREDICATE_IDS.VISITS_FOR_LEARNING) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_LEARNING] = 'for_learning'
-if (PREDICATE_IDS.VISITS_FOR_FUN) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_FUN] = 'for_fun'
-if (PREDICATE_IDS.VISITS_FOR_INSPIRATION) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_INSPIRATION] = 'for_inspiration'
-if (PREDICATE_IDS.VISITS_FOR_BUYING) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_BUYING] = 'for_buying'
-if (PREDICATE_IDS.VISITS_FOR_MUSIC) PREDICATE_TO_INTENTION[PREDICATE_IDS.VISITS_FOR_MUSIC] = 'for_music'
-
-// Filter out empty predicate IDs (dev config)
-const INTENTION_PREDICATE_IDS = Object.keys(PREDICATE_TO_INTENTION).filter(id => id)
 
 export interface PageIntentionStats {
   intentions: Record<IntentionPurpose, number>
@@ -95,7 +86,7 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
 
       for (const triple of triples) {
         const predicateId = triple.predicate_id
-        const intentionPurpose = PREDICATE_TO_INTENTION[predicateId]
+        const intentionPurpose = PREDICATE_ID_TO_INTENTION[predicateId]
 
         if (intentionPurpose && triple.positions) {
           // Count unique position holders

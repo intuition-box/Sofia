@@ -18,6 +18,11 @@ import { DISCOVERY_GOLD_REWARDS } from '../types/discovery'
 import { goldService } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import {
+  CERTIFICATION_PREDICATE_LABELS,
+  PREDICATE_LABEL_TO_INTENTION,
+  PREDICATE_LABEL_TO_TRUST
+} from '../lib/config/predicateConstants'
+import {
   UserIntentionTriplesDocument,
   AllIntentionTriplesDocument,
   type UserIntentionTriplesQuery,
@@ -29,45 +34,6 @@ const logger = createHookLogger('useDiscoveryScore')
 // Types extracted from generated query results
 type UserTripleResult = UserIntentionTriplesQuery['triples'][number]
 type AllTripleResult = AllIntentionTriplesQuery['triples'][number]
-
-// Predicate labels for all certification types (intentions + trust/distrust)
-// NOTE: 'visits for learning ' has a trailing space due to a bug in atom creation
-const CERTIFICATION_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning ',  // trailing space (official atom)
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-  'trusts',
-  'distrust'
-]
-
-// Only intention predicates (for intention breakdown stats)
-const INTENTION_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning ',
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music'
-]
-
-// Map predicate labels to intention purposes
-const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
-  'visits for work': 'for_work',
-  'visits for learning ': 'for_learning',  // trailing space (official atom)
-  'visits for fun': 'for_fun',
-  'visits for inspiration': 'for_inspiration',
-  'visits for buying': 'for_buying',
-  'visits for music': 'for_music'
-}
-
-// Map predicate labels to trust types
-const PREDICATE_LABEL_TO_TRUST: Record<string, 'trusted' | 'distrusted'> = {
-  'trusts': 'trusted',
-  'distrust': 'distrusted'
-}
 
 export interface DiscoveryScoreResult {
   stats: UserDiscoveryStats | null
@@ -160,7 +126,7 @@ async function fetchDiscoveryScore(walletAddress: string) {
     for (const triple of allTriples) {
       if (triple.predicate?.label) foundPredicateLabels.add(triple.predicate.label)
     }
-    console.log('🔍 [useDiscoveryScore] Predicate labels we search for:', INTENTION_PREDICATE_LABELS)
+    console.log('🔍 [useDiscoveryScore] Predicate labels we search for:', CERTIFICATION_PREDICATE_LABELS)
     console.log('🔍 [useDiscoveryScore] Predicate labels found in results:', Array.from(foundPredicateLabels))
 
     // Debug: show all account_ids in positions to compare with userAddress

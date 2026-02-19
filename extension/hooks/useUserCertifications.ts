@@ -6,84 +6,18 @@
 
 import { useEffect, useCallback, useRef, useSyncExternalStore } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { PREDICATE_IDS, PREDICATE_NAMES } from '../lib/config/chainConfig'
-import type { IntentionPurpose } from '../types/discovery'
+import {
+  ALL_PREDICATE_IDS,
+  ALL_PREDICATE_LABELS,
+  OAUTH_PREDICATE_LABELS,
+  PREDICATE_LABEL_TO_INTENTION,
+  TRUST_LABEL_TO_TYPE
+} from '../lib/config/predicateConstants'
 import { createHookLogger } from '../lib/utils/logger'
 import { normalizeUrl } from '../lib/utils'
 import { UserAllCertificationsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('useUserCertifications')
-
-// Intention predicate labels - clean labels WITHOUT trailing spaces
-// We search for BOTH versions (with/without space) to catch legacy data
-const INTENTION_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning',   // Clean version (new)
-  'visits for learning ',  // Legacy version with trailing space (old on-chain data)
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music'
-]
-
-// OAuth predicate labels (from PlatformRegistry.ts)
-const OAUTH_PREDICATE_LABELS: string[] = [
-  PREDICATE_NAMES.FOLLOW,           // "follow" - YouTube subs, Spotify, Twitch
-  PREDICATE_NAMES.MEMBER_OF,        // Discord guilds
-  PREDICATE_NAMES.OWNER_OF,         // Discord guild owner
-  PREDICATE_NAMES.CREATED_PLAYLIST, // YouTube playlists
-  PREDICATE_NAMES.TOP_TRACK,        // Spotify
-  PREDICATE_NAMES.TOP_ARTIST,       // Spotify
-  PREDICATE_NAMES.AM,               // Identity: "I am username" (Discord, Twitter)
-].filter(Boolean)
-
-// Trust/distrust predicate labels
-const TRUST_PREDICATE_LABELS = [
-  PREDICATE_NAMES.TRUSTS,            // "trusts"
-  PREDICATE_NAMES.DISTRUST           // "distrust"
-].filter(Boolean)
-
-// All predicate labels to query (fallback for testnet where IDs are empty)
-const ALL_PREDICATE_LABELS = [
-  ...INTENTION_PREDICATE_LABELS,
-  ...OAUTH_PREDICATE_LABELS,
-  ...TRUST_PREDICATE_LABELS
-]
-
-// All predicate IDs for precise filtering (mainnet has all IDs, testnet partial)
-// Query uses _or: IDs take priority, labels as fallback
-const ALL_PREDICATE_IDS = [
-  PREDICATE_IDS.VISITS_FOR_WORK,
-  PREDICATE_IDS.VISITS_FOR_LEARNING,
-  PREDICATE_IDS.VISITS_FOR_FUN,
-  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
-  PREDICATE_IDS.VISITS_FOR_BUYING,
-  PREDICATE_IDS.VISITS_FOR_MUSIC,
-  PREDICATE_IDS.FOLLOW,
-  PREDICATE_IDS.MEMBER_OF,
-  PREDICATE_IDS.OWNER_OF,
-  PREDICATE_IDS.TOP_ARTIST,
-  PREDICATE_IDS.TOP_TRACK,
-  PREDICATE_IDS.TRUSTS,
-  PREDICATE_IDS.DISTRUST
-].filter(Boolean)
-
-// Map trust predicate labels to certification types
-const TRUST_LABEL_TO_TYPE: Record<string, string> = {
-  'trusts': 'trusted',
-  'distrust': 'distrusted'
-}
-
-// Map predicate labels to intention types (handle both with/without trailing space)
-const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
-  'visits for work': 'for_work',
-  'visits for learning': 'for_learning',
-  'visits for learning ': 'for_learning',  // Handle trailing space variant
-  'visits for fun': 'for_fun',
-  'visits for inspiration': 'for_inspiration',
-  'visits for buying': 'for_buying',
-  'visits for music': 'for_music'
-}
 
 // Triple detail for redeem operations
 export interface TripleDetail {

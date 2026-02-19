@@ -17,6 +17,7 @@ import {
   getXpToNextLevel,
 } from '../types/interests';
 import { createHookLogger } from '../lib/utils/logger';
+import { WEB_ACTIVITY_PREDICATES } from '../lib/config/predicateConstants';
 
 const logger = createHookLogger('useInterestAnalysis');
 
@@ -162,15 +163,6 @@ function mergeInterests(cached: Interest[], newInterests: Interest[]): Interest[
   return merged;
 }
 
-// Predicate labels for web activity
-const WEB_ACTIVITY_PREDICATES = [
-  'visits for work',
-  'visits for learning',
-  'visits for learning ', // Legacy with trailing space
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-];
 
 export interface InterestAnalysisState {
   interests: Interest[];

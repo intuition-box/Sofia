@@ -9,6 +9,7 @@ import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { GetTrendingByPredicateDocument } from '@0xsofia/graphql'
 import { PREDICATE_IDS } from '../lib/config/chainConfig'
 import { createHookLogger } from '../lib/utils/logger'
+import { extractDomain } from '../lib/utils/domainUtils'
 import type { IntentionType } from '../types/intentionCategories'
 
 const logger = createHookLogger('useTrendingCertifications')
@@ -52,14 +53,6 @@ export interface UseTrendingResult {
 
 const FETCH_LIMIT = 50
 const DISPLAY_LIMIT = 20
-
-function extractDomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return url.split('/')[0] || url
-  }
-}
 
 export function useTrendingCertifications(): UseTrendingResult {
   const [categories, setCategories] = useState<TrendingCategory[]>([])
@@ -115,7 +108,7 @@ export function useTrendingCertifications(): UseTrendingResult {
               const label = triple.object?.label || ''
               const thingUrl = triple.object?.value?.thing?.url
               const objectUrl = thingUrl || (label.startsWith('http') ? label : `https://${label}`)
-              const domain = extractDomain(objectUrl)
+              const domain = extractDomain(objectUrl) || objectUrl
               const positionCount = Number(triple.positions_aggregate?.aggregate?.count || 0)
 
               return {
