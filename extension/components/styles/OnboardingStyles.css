@@ -126,13 +126,13 @@
 /* Tutorial specific */
 .tutorial-progress {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: var(--spacing-xl);
 }
 
 .tutorial-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
@@ -141,7 +141,7 @@
 .tutorial-dot.active {
   background: var(--color-primary, #ec4899);
   box-shadow: 0 0 8px rgba(236, 72, 153, 0.5);
-  transform: scale(1.2);
+  transform: scale(1.4);
 }
 
 .tutorial-dot.completed {
