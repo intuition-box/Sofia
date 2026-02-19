@@ -9,25 +9,9 @@ import { useUserCertifications, type TripleDetail } from './useUserCertification
 import { useWalletFromStorage } from './useWalletFromStorage'
 import type { IntentionPurpose } from '../types/discovery'
 import { createHookLogger } from '../lib/utils/logger'
-import { normalizeUrl } from '../lib/utils'
+import { normalizeUrl, calculateLevelProgress, intentionToCertification, trustToCertification } from '../lib/utils'
 
 const logger = createHookLogger('useGroupOnChainCertifications')
-
-// Map IntentionPurpose to CertificationType (for display)
-const intentionToCertification: Record<IntentionPurpose, string> = {
-  for_work: 'work',
-  for_learning: 'learning',
-  for_fun: 'fun',
-  for_inspiration: 'inspiration',
-  for_buying: 'buying',
-  for_music: 'music'
-}
-
-// Map trust predicate labels to certification types
-const trustToCertification: Record<string, string> = {
-  trusts: 'trusted',
-  distrust: 'distrusted'
-}
 
 export interface UrlCertificationStatus {
   url: string
@@ -49,30 +33,6 @@ export interface GroupCertificationStats {
   xpToNextLevel: number      // XP needed for next level
   currentLevel: number       // Current level based on certifications
   progressPercent: number    // Progress toward next level (0-100)
-}
-
-// Level thresholds (certifications needed per level)
-const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75] // Level 1 starts at 0
-
-/**
- * Calculate level and progress from certification count
- */
-function calculateLevelProgress(certifiedCount: number): { level: number; xpToNext: number; progress: number } {
-  let level = 1
-  for (let i = 1; i < LEVEL_THRESHOLDS.length; i++) {
-    if (certifiedCount >= LEVEL_THRESHOLDS[i]) {
-      level = i + 1
-    } else {
-      break
-    }
-  }
-
-  const currentThreshold = LEVEL_THRESHOLDS[level - 1] || 0
-  const nextThreshold = LEVEL_THRESHOLDS[level] || currentThreshold + 10
-  const xpToNext = nextThreshold - certifiedCount
-  const progress = ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
-
-  return { level, xpToNext: Math.max(0, xpToNext), progress: Math.min(100, Math.max(0, progress)) }
 }
 
 /**
@@ -171,16 +131,16 @@ export const useGroupOnChainCertifications = (
 
     // Calculate stats
     const certifiedCount = certifiedUrls.size
-    const { level, xpToNext, progress } = calculateLevelProgress(certifiedCount)
+    const { level, xpToNextLevel, progressPercent } = calculateLevelProgress(certifiedCount)
 
     return {
       certifiedCount,
       totalUrls: urls.length,
       certifiedUrls,
       xpEarned: certifiedCount * 10,
-      xpToNextLevel: xpToNext * 10,
+      xpToNextLevel: xpToNextLevel * 10,
       currentLevel: level,
-      progressPercent: progress
+      progressPercent
     }
   }, [domain, urlsKey, certifications, globalLoading, lastFetchedAt])
 

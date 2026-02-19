@@ -13,6 +13,7 @@ import { INTENTION_CONFIG } from '../../../types/intentionCategories'
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import Avatar from '../../ui/Avatar'
+import { getFaviconUrl } from '~/lib/utils'
 import '../../styles/CircleFeedTab.css'
 import '../../styles/CategoryStyles.css'
 
@@ -41,10 +42,6 @@ const predicateLabelToType = (label: string): IntentionType | null => {
   return null
 }
 
-// Get favicon URL from domain (high-res for large display)
-const getFaviconUrl = (domain: string): string => {
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
-}
 
 // Extract domain from URL
 const getDomain = (url: string): string => {
@@ -436,7 +433,7 @@ const CircleFeedTab = () => {
               {/* Header: favicon + badge */}
               <div className="circle-card-header">
                 <img
-                  src={getFaviconUrl(item.domain)}
+                  src={getFaviconUrl(item.domain, 64)}
                   alt=""
                   className="circle-card-favicon"
                   onError={(e) => {

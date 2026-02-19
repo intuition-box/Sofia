@@ -11,13 +11,13 @@ import {
   type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
 } from '../../hooks'
 import type { GroupUrlRecord } from '~types/database'
-import type { CertificationType } from '../../lib/services'
+import type { CertificationType } from '~/lib/services'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { PREDICATE_NAMES, EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
-import { normalizeUrl } from '../../lib/utils'
+import { normalizeUrl, calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('GroupDetailView')
@@ -55,75 +55,11 @@ const INTENTIONS_LIST: { key: IntentionPurpose; label: string }[] = [
   { key: 'for_music', label: 'music' }
 ]
 
-// Map IntentionPurpose to CertificationType
-const intentionToCertification: Record<IntentionPurpose, CertificationType> = {
-  for_work: 'work',
-  for_learning: 'learning',
-  for_fun: 'fun',
-  for_inspiration: 'inspiration',
-  for_buying: 'buying',
-  for_music: 'music'
-}
-
 // Trust/distrust pills for inline rendering in UrlRow
 const TRUST_PILLS: { predicateName: string; certType: CertificationType; label: string }[] = [
   { predicateName: PREDICATE_NAMES.TRUSTS, certType: 'trusted', label: 'trust' },
   { predicateName: PREDICATE_NAMES.DISTRUST, certType: 'distrusted', label: 'distrust' }
 ]
-
-/**
- * Get effective certification status for a URL.
- * Pipeline 2 (useGroupOnChainCertifications) may miss trust/distrust triples
- * because it queries by predicate label (case-sensitive _in).
- * Pipeline 1 (useOnChainIntentionGroups) queries by predicate ID and stores
- * the result in urlRecord.onChainCertification during the merge.
- * This helper uses Pipeline 1 data as fallback.
- */
-function getEffectiveCertStatus(
-  urlRecord: GroupUrlRecord,
-  onChainStatus: UrlCertificationStatus | undefined
-): { isCertified: boolean; labels: string[] } {
-  if (onChainStatus?.isCertifiedOnChain) {
-    return {
-      isCertified: true,
-      labels: onChainStatus.allCertificationLabels || []
-    }
-  }
-  if (urlRecord.isOnChain && urlRecord.onChainCertification) {
-    return {
-      isCertified: true,
-      labels: [urlRecord.onChainCertification]
-    }
-  }
-  return { isCertified: false, labels: [] }
-}
-
-// Get favicon URL
-const getFaviconUrl = (url: string): string => {
-  try {
-    const urlObj = new URL(url)
-    return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`
-  } catch {
-    return ''
-  }
-}
-
-// Format date for display
-const formatDate = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-// Format duration
-const formatDuration = (ms: number): string => {
-  const minutes = Math.floor(ms / 60000)
-  if (minutes < 1) return '<1m'
-  if (minutes < 60) return `${minutes}m`
-  const hours = Math.floor(minutes / 60)
-  return `${hours}h ${minutes % 60}m`
-}
 
 // URL Row Component
 const UrlRow = ({
@@ -157,7 +93,7 @@ const UrlRow = ({
     <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''} ${isCertifiedOnChain ? 'on-chain' : ''}`}>
       <div className="url-row-main">
         <img
-          src={getFaviconUrl(urlRecord.url)}
+          src={getFaviconUrl(urlRecord.url, 16)}
           alt=""
           className="url-favicon"
           onError={(e) => {
@@ -176,7 +112,7 @@ const UrlRow = ({
             {urlRecord.title ? getDisplayTitle(urlRecord.title, urlRecord.url) : urlRecord.url}
           </a>
           <div className="url-meta">
-            <span className="url-date">{formatDate(urlRecord.addedAt)}</span>
+            <span className="url-date">{formatShortDate(urlRecord.addedAt)}</span>
             <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
             {isCertifiedOnChain && (
               <img src={onChainBadgeIcon} alt="" className="on-chain-badge" title="Certified on-chain" />
@@ -379,13 +315,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   }, [onChainStats, group.urls, group.certifiedCount])
 
   // Level from on-chain certifications (auto up/down, no local fallback)
-  const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
-  const currentLevel = (() => {
-    for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-      if (certifiedCount >= LEVEL_THRESHOLDS[i]) return i + 1
-    }
-    return 1
-  })()
+  const currentLevel = calculateLevel(certifiedCount)
 
   // Fetch level up preview when group changes
   useEffect(() => {
@@ -420,12 +350,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   }
 
   // Progress toward NEXT level threshold
-  const currentThreshold = LEVEL_THRESHOLDS[currentLevel - 1] || 0
-  const nextThreshold = LEVEL_THRESHOLDS[currentLevel] || currentThreshold + 10
-  const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
-  const progressPercent = Math.min(100, Math.max(0,
-    ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
-  ))
+  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, currentLevel)
 
   // Level Up available when on-chain level exceeds highest level with a generated predicate
   const highestPredicateLevel = group.predicateHistory?.length > 0

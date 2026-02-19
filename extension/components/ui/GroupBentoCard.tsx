@@ -5,7 +5,8 @@
  */
 
 import { useGroupOnChainCertifications, type IntentionGroupWithStats } from '../../hooks'
-import type { CertificationType } from '../../lib/services'
+import type { CertificationType } from '~/lib/services'
+import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration } from '~/lib/utils'
 
 interface GroupBentoCardProps {
   group: IntentionGroupWithStats
@@ -26,22 +27,6 @@ const CERTIFICATION_COLORS: Record<CertificationType, string> = {
   music: '#FF5722'        // deep orange
 }
 
-// Get favicon URL from domain
-const getFaviconUrl = (domain: string): string => {
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
-}
-
-// Format duration for display
-const formatDuration = (ms: number): string => {
-  const minutes = Math.floor(ms / 60000)
-  const hours = Math.floor(minutes / 60)
-
-  if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`
-  }
-  return `${minutes}m`
-}
-
 const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBentoCardProps) => {
   const { domain, activeUrlCount, totalAttentionTime, currentPredicate, certificationBreakdown, urls } = group
 
@@ -55,23 +40,11 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
   const certifiedCount = onChainStats?.certifiedCount ?? group.certifiedCount
 
   // Level from on-chain certifications (auto up/down, no local fallback)
-  const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
-  const displayLevel = (() => {
-    for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-      if (certifiedCount >= LEVEL_THRESHOLDS[i]) return i + 1
-    }
-    return 1
-  })()
+  const displayLevel = calculateLevel(certifiedCount)
 
   // Progress bar from confirmed level (group.level = last Level Up level)
   // Fills past 100% when on-chain level exceeds confirmed level → triggers glow
-  const confirmedLevel = group.level
-  const currentThreshold = LEVEL_THRESHOLDS[confirmedLevel - 1] || 0
-  const nextThreshold = LEVEL_THRESHOLDS[confirmedLevel] || currentThreshold + 10
-  const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
-  const progressPercent = Math.min(100, Math.max(0,
-    ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
-  ))
+  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, group.level)
 
   // Get dominant certification for styling
   const dominantCert = Object.entries(certificationBreakdown)

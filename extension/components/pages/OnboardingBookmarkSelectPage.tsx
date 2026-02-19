@@ -3,6 +3,7 @@ import { useRouter } from '../layout/RouterProvider'
 import type { BookmarkData } from '~types/bookmarks'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import { createHookLogger } from '../../lib/utils/logger'
+import { getFaviconUrl } from '~/lib/utils'
 import '../styles/OnboardingStyles.css'
 
 const logger = createHookLogger('OnboardingBookmarkSelectPage')
@@ -107,15 +108,6 @@ const OnboardingBookmarkSelectPage = () => {
     navigateTo('onboarding-tutorial')
   }
 
-  const getFavicon = (url: string) => {
-    try {
-      const domain = new URL(url).hostname
-      return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`
-    } catch {
-      return ''
-    }
-  }
-
   return (
     <>
       <FullScreenLoader
@@ -151,7 +143,7 @@ const OnboardingBookmarkSelectPage = () => {
                     onChange={(e) => { e.stopPropagation(); toggleDomain(group) }}
                     className="bookmark-checkbox"
                   />
-                  <img src={getFavicon(group.bookmarks[0].url)} alt="" className="bookmark-favicon" />
+                  <img src={getFaviconUrl(group.bookmarks[0].url, 16)} alt="" className="bookmark-favicon" />
                   <span className="bookmark-domain-name">{group.domain}</span>
                   <span className="bookmark-domain-count">{group.bookmarks.length}</span>
                   <span className={`bookmark-chevron ${isCollapsed ? '' : 'open'}`}>&#9662;</span>
