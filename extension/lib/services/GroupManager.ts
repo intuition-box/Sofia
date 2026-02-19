@@ -304,6 +304,19 @@ class GroupManagerService {
   }
 
   /**
+   * Save amplified predicate after successful on-chain publish
+   */
+  async saveAmplifiedPredicate(groupId: string, predicate: string): Promise<void> {
+    const group = await IntentionGroupsService.getGroup(groupId)
+    if (!group) return
+
+    group.amplifiedPredicate = predicate
+    group.updatedAt = Date.now()
+    await IntentionGroupsService.saveGroup(group)
+    logger.info('Saved amplified predicate', { groupId, predicate })
+  }
+
+  /**
    * Delete a group entirely
    */
   async deleteGroup(groupId: string): Promise<void> {

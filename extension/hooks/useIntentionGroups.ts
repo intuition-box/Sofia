@@ -245,20 +245,24 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
           }
         }
         existing.certificationBreakdown = breakdown
-        // Restore level from on-chain if local level is lower (e.g., after cache clear)
-        // Use MAX of local level and on-chain calculated level
-        if (onChain.level > existing.level) {
-          logger.info(`Restoring level for ${existing.domain}: ${existing.level} -> ${onChain.level} (from on-chain certifications)`)
-          const oldLevel = existing.level
-          existing.level = onChain.level
-          // Track for persistence in useEffect (no side effects in useMemo)
+        // Fix group.level to reflect actual predicate level (not auto-bumped value)
+        // group.level = last level with a generated predicate, capped by on-chain level
+        const highestPredicateLevel = existing.predicateHistory?.length > 0
+          ? Math.max(...existing.predicateHistory.map(h => h.toLevel))
+          : 0
+        const correctLevel = Math.min(
+          Math.max(highestPredicateLevel, 1),  // at least 1, at most highest predicate
+          onChain.level                         // capped by on-chain (redeem scenario)
+        )
+        if (existing.level !== correctLevel) {
+          logger.info(`Fixing group.level for ${existing.domain}: ${existing.level} -> ${correctLevel} (predicate: ${highestPredicateLevel}, on-chain: ${onChain.level})`)
+          existing.level = correctLevel
           pendingLevelUpdatesRef.current.push({
             groupId: existing.id,
             domain: existing.domain,
-            level: onChain.level,
+            level: correctLevel,
             certifiedCount: onChain.certifiedCount
           })
-          logger.debug(`Queued level update: ${existing.domain} ${oldLevel} -> ${onChain.level}`)
         }
 
       } else {

@@ -54,14 +54,18 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
   // Use on-chain stats for certification count
   const certifiedCount = onChainStats?.certifiedCount ?? group.certifiedCount
 
-  // IMPORTANT: Use CONFIRMED level from group.level, NOT calculated level
-  const confirmedLevel = group.level
-
-  // Calculate progress toward NEXT level based on CONFIRMED level
-  // Level thresholds: [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
+  // Level from on-chain certifications (auto up/down, no local fallback)
   const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
-  const currentThreshold = LEVEL_THRESHOLDS[confirmedLevel - 1] || 0
-  const nextThreshold = LEVEL_THRESHOLDS[confirmedLevel] || currentThreshold + 10
+  const displayLevel = (() => {
+    for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+      if (certifiedCount >= LEVEL_THRESHOLDS[i]) return i + 1
+    }
+    return 1
+  })()
+
+  // Progress toward NEXT level threshold
+  const currentThreshold = LEVEL_THRESHOLDS[displayLevel - 1] || 0
+  const nextThreshold = LEVEL_THRESHOLDS[displayLevel] || currentThreshold + 10
   const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
   const progressPercent = Math.min(100, Math.max(0,
     ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
@@ -74,8 +78,11 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
 
   const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as CertificationType] : '#C7866C'
 
-  // Ready to level up when progress bar is full (100%) based on CONFIRMED level
-  const canLevelUp = progressPercent >= 100
+  // Level Up available when on-chain level exceeds highest level with a generated predicate
+  const highestPredicateLevel = group.predicateHistory?.length > 0
+    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
+    : 0
+  const canLevelUp = displayLevel > 1 && displayLevel > highestPredicateLevel
 
   return (
     <div
@@ -115,7 +122,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
               ×
             </button>
           )}
-          <span className={`level-badge level-${Math.min(confirmedLevel, 10)}`}>LVL {confirmedLevel}</span>
+          <span className={`level-badge level-${Math.min(displayLevel, 10)}`}>LVL {displayLevel}</span>
         </div>
       </div>
 
@@ -149,7 +156,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
         <span className="progress-label">
           {onChainLoading ? '...' : (
             xpToNextLevel > 0
-              ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${confirmedLevel + 1}`
+              ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
               : 'Max level!'
           )}
         </span>
