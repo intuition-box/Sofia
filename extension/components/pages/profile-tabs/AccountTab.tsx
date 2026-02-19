@@ -196,6 +196,7 @@ const AccountTab = () => {
           streakProfit={streakProfitData}
           voteProfit={voteProfitData}
           currentStreak={userProgress.currentStreak}
+          currentVoteStreak={userProgress.currentVoteStreak}
         />
       )}
 
