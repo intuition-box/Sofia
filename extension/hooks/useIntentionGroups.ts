@@ -9,36 +9,14 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { IntentionGroupRecord, GroupUrlRecord } from '~types/database'
 import type { IntentionGroupWithStats, SortOption } from '~types/groups'
 import type { CertificationType } from '~lib/services'
-import { EXCLUDED_URL_PATTERNS } from '~background/constants'
 import { useOnChainIntentionGroups, type OnChainUrl } from './useOnChainIntentionGroups'
 import { createHookLogger } from '../lib/utils/logger'
+import { normalizeDomain, shouldExcludeDomain } from '../lib/utils/domainUtils'
 
 export type { IntentionGroupWithStats, SortOption }
 
 const logger = createHookLogger('useIntentionGroups')
 
-/**
- * Normalize domain by removing common subdomains (www, open, m, mobile, etc.)
- */
-function normalizeDomain(domain: string): string {
-  const lower = domain.toLowerCase()
-  const prefixes = ['www.', 'open.', 'm.', 'mobile.', 'app.', 'web.']
-  for (const prefix of prefixes) {
-    if (lower.startsWith(prefix)) {
-      return lower.slice(prefix.length)
-    }
-  }
-  return lower
-}
-
-/**
- * Check if a domain should be excluded from display
- */
-function shouldExcludeDomain(domain: string): boolean {
-  return EXCLUDED_URL_PATTERNS.some(pattern =>
-    domain.toLowerCase().includes(pattern.toLowerCase())
-  )
-}
 
 interface UseIntentionGroupsResult {
   groups: IntentionGroupWithStats[]

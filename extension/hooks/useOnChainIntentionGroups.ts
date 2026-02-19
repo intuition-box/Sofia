@@ -8,63 +8,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { PREDICATE_IDS, PREDICATE_NAMES } from '../lib/config/chainConfig'
+import { PREDICATE_IDS } from '../lib/config/chainConfig'
+import { ALL_PREDICATE_IDS, PREDICATE_ID_TO_CERTIFICATION } from '../lib/config/predicateConstants'
 import { createHookLogger } from '../lib/utils/logger'
 import { calculateLevel } from '../lib/utils'
+import { extractDomain } from '../lib/utils/domainUtils'
 import { GetUserIntentionPositionsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('useOnChainIntentionGroups')
-
-// Intention predicate IDs (for visits for work/learning/fun/etc)
-const INTENTION_PREDICATE_IDS = [
-  PREDICATE_IDS.VISITS_FOR_WORK,
-  PREDICATE_IDS.VISITS_FOR_LEARNING,
-  PREDICATE_IDS.VISITS_FOR_FUN,
-  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
-  PREDICATE_IDS.VISITS_FOR_BUYING,
-  PREDICATE_IDS.VISITS_FOR_MUSIC
-].filter(Boolean)
-
-// OAuth predicate IDs (for follow, top_artist, top_track, member_of, owner_of)
-const OAUTH_PREDICATE_IDS = [
-  PREDICATE_IDS.FOLLOW,
-  PREDICATE_IDS.MEMBER_OF,
-  PREDICATE_IDS.OWNER_OF,
-  PREDICATE_IDS.TOP_ARTIST,
-  PREDICATE_IDS.TOP_TRACK
-].filter(Boolean)
-
-// Trust/distrust predicate IDs
-const TRUST_PREDICATE_IDS = [
-  PREDICATE_IDS.TRUSTS,
-  PREDICATE_IDS.DISTRUST
-].filter(Boolean)
-
-// All predicate IDs to query (intention + OAuth + trust/distrust) - all count toward level
-const ALL_PREDICATE_IDS = [
-  ...INTENTION_PREDICATE_IDS,
-  ...OAUTH_PREDICATE_IDS,
-  ...TRUST_PREDICATE_IDS
-]
-
-// Map predicate IDs to certification labels
-const PREDICATE_TO_CERTIFICATION: Record<string, string> = {}
-// Intention predicates
-if (PREDICATE_IDS.VISITS_FOR_WORK) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_WORK] = 'work'
-if (PREDICATE_IDS.VISITS_FOR_LEARNING) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_LEARNING] = 'learning'
-if (PREDICATE_IDS.VISITS_FOR_FUN) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_FUN] = 'fun'
-if (PREDICATE_IDS.VISITS_FOR_INSPIRATION) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_INSPIRATION] = 'inspiration'
-if (PREDICATE_IDS.VISITS_FOR_BUYING) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_BUYING] = 'buying'
-if (PREDICATE_IDS.VISITS_FOR_MUSIC) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.VISITS_FOR_MUSIC] = 'music'
-// OAuth predicates
-if (PREDICATE_IDS.FOLLOW) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.FOLLOW] = PREDICATE_NAMES.FOLLOW
-if (PREDICATE_IDS.MEMBER_OF) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.MEMBER_OF] = PREDICATE_NAMES.MEMBER_OF
-if (PREDICATE_IDS.OWNER_OF) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.OWNER_OF] = PREDICATE_NAMES.OWNER_OF
-if (PREDICATE_IDS.TOP_ARTIST) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.TOP_ARTIST] = PREDICATE_NAMES.TOP_ARTIST
-if (PREDICATE_IDS.TOP_TRACK) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.TOP_TRACK] = PREDICATE_NAMES.TOP_TRACK
-// Trust/distrust predicates
-if (PREDICATE_IDS.TRUSTS) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.TRUSTS] = 'trusted'
-if (PREDICATE_IDS.DISTRUST) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.DISTRUST] = 'distrusted'
 
 export interface OnChainUrl {
   url: string
@@ -89,41 +40,6 @@ export interface UseOnChainIntentionGroupsResult {
   refetch: () => Promise<void>
 }
 
-/**
- * Normalize domain by removing common subdomains (www, open, m, mobile, etc.)
- */
-function normalizeDomain(domain: string): string {
-  const lower = domain.toLowerCase()
-  // Remove common subdomains
-  const prefixes = ['www.', 'open.', 'm.', 'mobile.', 'app.', 'web.']
-  for (const prefix of prefixes) {
-    if (lower.startsWith(prefix)) {
-      return lower.slice(prefix.length)
-    }
-  }
-  return lower
-}
-
-/**
- * Extract domain from a label (format: "domain.com" or "domain.com/path")
- */
-function extractDomain(label: string): string | null {
-  if (!label) return null
-  try {
-    // Remove protocol if present
-    let cleaned = label.replace(/^https?:\/\//, '')
-    // Get the domain part (before first /)
-    const parts = cleaned.split('/')
-    const domain = parts[0]
-    // Basic validation
-    if (domain && domain.includes('.')) {
-      return normalizeDomain(domain)
-    }
-    return null
-  } catch {
-    return null
-  }
-}
 
 /**
  * Hook to fetch all on-chain intention certifications for the current user
@@ -189,7 +105,7 @@ export const useOnChainIntentionGroups = (externalWalletAddress?: string): UseOn
         }
 
         const predicateId = triple.predicate?.term_id || ''
-        const certification = PREDICATE_TO_CERTIFICATION[predicateId] || 'unknown'
+        const certification = PREDICATE_ID_TO_CERTIFICATION[predicateId] || 'unknown'
         const position = triple.positions?.[0]
 
         const urlRecord: OnChainUrl = {

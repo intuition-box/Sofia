@@ -1,106 +1,24 @@
 /**
  * useUserCertifications Hook
- * Singleton store pattern - fetches ALL on-chain certifications for the current user
- * No Provider needed - uses module-level cache with React subscription
+ * Singleton store pattern - accesses ALL on-chain certifications for the current user
+ *
+ * Business logic delegated to UserCertificationsService.
+ * No Provider needed - uses useSyncExternalStore with service singleton.
  */
 
-import { useEffect, useCallback, useRef, useSyncExternalStore } from 'react'
-import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { PREDICATE_IDS, PREDICATE_NAMES } from '../lib/config/chainConfig'
-import type { IntentionPurpose } from '../types/discovery'
-import { createHookLogger } from '../lib/utils/logger'
-import { normalizeUrl } from '../lib/utils'
-import { UserAllCertificationsDocument } from '@0xsofia/graphql'
+import { useEffect, useCallback, useRef, useSyncExternalStore } from "react"
+import {
+  userCertificationsService,
+  UserCertificationsServiceClass
+} from "../lib/services/UserCertificationsService"
+import type {
+  TripleDetail,
+  CertificationEntry
+} from "../lib/services/UserCertificationsService"
+import type { IntentionPurpose } from "../types/discovery"
 
-const logger = createHookLogger('useUserCertifications')
-
-// Intention predicate labels - clean labels WITHOUT trailing spaces
-// We search for BOTH versions (with/without space) to catch legacy data
-const INTENTION_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning',   // Clean version (new)
-  'visits for learning ',  // Legacy version with trailing space (old on-chain data)
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music'
-]
-
-// OAuth predicate labels (from PlatformRegistry.ts)
-const OAUTH_PREDICATE_LABELS: string[] = [
-  PREDICATE_NAMES.FOLLOW,           // "follow" - YouTube subs, Spotify, Twitch
-  PREDICATE_NAMES.MEMBER_OF,        // Discord guilds
-  PREDICATE_NAMES.OWNER_OF,         // Discord guild owner
-  PREDICATE_NAMES.CREATED_PLAYLIST, // YouTube playlists
-  PREDICATE_NAMES.TOP_TRACK,        // Spotify
-  PREDICATE_NAMES.TOP_ARTIST,       // Spotify
-  PREDICATE_NAMES.AM,               // Identity: "I am username" (Discord, Twitter)
-].filter(Boolean)
-
-// Trust/distrust predicate labels
-const TRUST_PREDICATE_LABELS = [
-  PREDICATE_NAMES.TRUSTS,            // "trusts"
-  PREDICATE_NAMES.DISTRUST           // "distrust"
-].filter(Boolean)
-
-// All predicate labels to query (fallback for testnet where IDs are empty)
-const ALL_PREDICATE_LABELS = [
-  ...INTENTION_PREDICATE_LABELS,
-  ...OAUTH_PREDICATE_LABELS,
-  ...TRUST_PREDICATE_LABELS
-]
-
-// All predicate IDs for precise filtering (mainnet has all IDs, testnet partial)
-// Query uses _or: IDs take priority, labels as fallback
-const ALL_PREDICATE_IDS = [
-  PREDICATE_IDS.VISITS_FOR_WORK,
-  PREDICATE_IDS.VISITS_FOR_LEARNING,
-  PREDICATE_IDS.VISITS_FOR_FUN,
-  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
-  PREDICATE_IDS.VISITS_FOR_BUYING,
-  PREDICATE_IDS.VISITS_FOR_MUSIC,
-  PREDICATE_IDS.FOLLOW,
-  PREDICATE_IDS.MEMBER_OF,
-  PREDICATE_IDS.OWNER_OF,
-  PREDICATE_IDS.TOP_ARTIST,
-  PREDICATE_IDS.TOP_TRACK,
-  PREDICATE_IDS.TRUSTS,
-  PREDICATE_IDS.DISTRUST
-].filter(Boolean)
-
-// Map trust predicate labels to certification types
-const TRUST_LABEL_TO_TYPE: Record<string, string> = {
-  'trusts': 'trusted',
-  'distrust': 'distrusted'
-}
-
-// Map predicate labels to intention types (handle both with/without trailing space)
-const PREDICATE_LABEL_TO_INTENTION: Record<string, IntentionPurpose> = {
-  'visits for work': 'for_work',
-  'visits for learning': 'for_learning',
-  'visits for learning ': 'for_learning',  // Handle trailing space variant
-  'visits for fun': 'for_fun',
-  'visits for inspiration': 'for_inspiration',
-  'visits for buying': 'for_buying',
-  'visits for music': 'for_music'
-}
-
-// Triple detail for redeem operations
-export interface TripleDetail {
-  tripleTermId: string   // bytes32 - the triple vault ID needed for redeem
-  shares: string         // User's shares in this triple
-  predicateLabel: string // e.g., "visits for work", "follow"
-}
-
-// Certification entry stored in the cache
-export interface CertificationEntry {
-  label: string                     // The object label (e.g., "youtube.com/watch?v=xxx")
-  intentions: IntentionPurpose[]    // Intention predicates (for_work, for_learning, etc.)
-  oauthPredicates: string[]         // OAuth predicates (follow, member_of, etc.)
-  trustPredicates: string[]         // Trust predicates (trusts, distrust)
-  isRootDomain: boolean             // True if label has no path (e.g., "youtube.com")
-  triples: TripleDetail[]           // All triples for this URL (for redeem operations)
-}
+// Re-export types so existing consumers don't break
+export type { TripleDetail, CertificationEntry, IntentionPurpose }
 
 export interface UserCertificationsState {
   certifications: Map<string, CertificationEntry>
@@ -110,224 +28,17 @@ export interface UserCertificationsState {
   refetch: () => Promise<void>
 }
 
-// ============================================
-// Singleton Store (module-level state)
-// ============================================
-
-interface StoreState {
-  certifications: Map<string, CertificationEntry>
-  loading: boolean
-  error: string | null
-  lastFetchedAt: number | null
-  walletAddress: string | null
-}
-
-let storeState: StoreState = {
-  certifications: new Map(),
-  loading: false,
-  error: null,
-  lastFetchedAt: null,
-  walletAddress: null
-}
-
-let isFetching = false
-const listeners = new Set<() => void>()
-
-function emitChange() {
-  listeners.forEach(listener => listener())
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function getSnapshot(): StoreState {
-  return storeState
-}
-
-async function fetchCertifications(walletAddress: string): Promise<void> {
-  if (!walletAddress || (ALL_PREDICATE_IDS.length === 0 && ALL_PREDICATE_LABELS.length === 0)) {
-    storeState = { ...storeState, certifications: new Map(), loading: false }
-    emitChange()
-    return
-  }
-
-  if (isFetching) {
-    logger.debug('Skipping fetch - already in progress')
-    return
-  }
-
-  isFetching = true
-  storeState = { ...storeState, loading: true, error: null }
-  emitChange()
-
-  try {
-    logger.info('Fetching ALL user certifications with pagination', {
-      predicateIds: ALL_PREDICATE_IDS.length,
-      predicateLabels: ALL_PREDICATE_LABELS.length
-    })
-
-    // Query uses _or: predicate_id (precise, mainnet) + label fallback (testnet)
-    interface CertTripleResult {
-      term_id?: string
-      predicate: { term_id?: string; label: string }
-      object: { label: string; value?: { thing?: { url?: string } } }
-      positions?: Array<{ shares: string }>
-    }
-
-    const triples = await intuitionGraphqlClient.fetchAllPages<CertTripleResult>(
-      UserAllCertificationsDocument,
-      {
-        predicateIds: ALL_PREDICATE_IDS,
-        predicateLabels: ALL_PREDICATE_LABELS,
-        userAddress: walletAddress.toLowerCase()
-      },
-      'triples',
-      100,
-      100
-    )
-    logger.info('Fetched user certifications (paginated)', { count: triples.length })
-
-    // Debug: Log all raw triples for investigation
-    logger.debug('Raw triples from GraphQL:', triples.map((t: { predicate?: { label?: string }, object?: { label?: string } }) => ({
-      predicate: t.predicate?.label,
-      object: t.object?.label
-    })))
-
-    const newCertifications = new Map<string, CertificationEntry>()
-
-    for (const triple of triples) {
-      const objectLabel = triple.object?.label || ''
-      const predicateLabel = triple.predicate?.label || ''
-
-      // Check if it's an intention, OAuth, or trust predicate
-      const intention = PREDICATE_LABEL_TO_INTENTION[predicateLabel]
-      const isOAuthPredicate = OAUTH_PREDICATE_LABELS.includes(predicateLabel)
-      const isTrustPredicate = predicateLabel in TRUST_LABEL_TO_TYPE
-
-      // Debug: Log each triple processing
-      logger.debug('Processing triple:', { objectLabel, predicateLabel, intention, isOAuthPredicate, isTrustPredicate })
-
-      if (!objectLabel || (!intention && !isOAuthPredicate && !isTrustPredicate)) continue
-
-      // Use URL field as primary key (new atoms have title as name, URL in value.thing.url)
-      // Fallback to label for old atoms where name = normalized URL
-      const objectUrl = triple.object?.value?.thing?.url
-
-      let normalizedLabel: string
-      let isRootDomain: boolean
-
-      if (objectUrl) {
-        try {
-          const result = normalizeUrl(objectUrl)
-          normalizedLabel = result.label
-          isRootDomain = result.isRootDomain
-        } catch {
-          normalizedLabel = objectLabel.toLowerCase()
-          isRootDomain = !normalizedLabel.includes('/')
-        }
-      } else {
-        // Old atoms: label IS the normalized URL
-        normalizedLabel = objectLabel
-          .replace(/^https?:\/\//, '')
-          .replace(/^www\./, '')
-          .replace(/\/$/, '')
-          .toLowerCase()
-        isRootDomain = !normalizedLabel.includes('/')
-      }
-
-      // Build triple detail for redeem operations
-      const tripleDetail: TripleDetail = {
-        tripleTermId: triple.term_id || '',
-        shares: triple.positions?.[0]?.shares || '0',
-        predicateLabel
-      }
-
-      const existing = newCertifications.get(normalizedLabel)
-      if (existing) {
-        if (intention && !existing.intentions.includes(intention)) {
-          existing.intentions.push(intention)
-        }
-        if (isOAuthPredicate && !existing.oauthPredicates.includes(predicateLabel)) {
-          existing.oauthPredicates.push(predicateLabel)
-        }
-        if (isTrustPredicate && !existing.trustPredicates.includes(predicateLabel)) {
-          existing.trustPredicates.push(predicateLabel)
-        }
-        // Add triple detail if not already present
-        if (tripleDetail.tripleTermId && !existing.triples.some(t => t.tripleTermId === tripleDetail.tripleTermId)) {
-          existing.triples.push(tripleDetail)
-        }
-      } else {
-        newCertifications.set(normalizedLabel, {
-          label: normalizedLabel,
-          intentions: intention ? [intention] : [],
-          oauthPredicates: isOAuthPredicate ? [predicateLabel] : [],
-          trustPredicates: isTrustPredicate ? [predicateLabel] : [],
-          isRootDomain,
-          triples: tripleDetail.tripleTermId ? [tripleDetail] : []
-        })
-      }
-    }
-
-    storeState = {
-      ...storeState,
-      certifications: newCertifications,
-      loading: false,
-      lastFetchedAt: Date.now(),
-      walletAddress
-    }
-
-    // Debug: Log full cache details
-    logger.info('User certifications cache updated', {
-      uniqueLabels: newCertifications.size,
-      labels: Array.from(newCertifications.keys()).slice(0, 20)
-    })
-
-    // Debug: Log certifications with their intentions for investigation
-    newCertifications.forEach((entry, key) => {
-      if (entry.intentions.length > 0 || entry.oauthPredicates.length > 0) {
-        logger.debug('Cached certification:', {
-          key,
-          intentions: entry.intentions,
-          oauthPredicates: entry.oauthPredicates,
-          isRootDomain: entry.isRootDomain
-        })
-      }
-    })
-
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Failed to fetch certifications'
-    logger.error('Failed to fetch user certifications', err)
-    storeState = { ...storeState, loading: false, error: errorMessage }
-  } finally {
-    isFetching = false
-    emitChange()
-  }
-}
-
-function clearCache(): void {
-  storeState = {
-    certifications: new Map(),
-    loading: false,
-    error: null,
-    lastFetchedAt: null,
-    walletAddress: null
-  }
-  emitChange()
-}
-
-// ============================================
-// React Hook
-// ============================================
-
 /**
- * Hook to access the global certifications cache
- * Automatically fetches when wallet address changes
+ * Hook to access the global certifications cache.
+ * Automatically fetches when wallet address changes.
  */
-export function useUserCertifications(walletAddress: string | null): UserCertificationsState {
-  const state = useSyncExternalStore(subscribe, getSnapshot)
+export function useUserCertifications(
+  walletAddress: string | null
+): UserCertificationsState {
+  const state = useSyncExternalStore(
+    userCertificationsService.subscribe,
+    userCertificationsService.getSnapshot
+  )
 
   // Fetch when wallet prop changes (don't depend on store state to avoid feedback loop)
   const storeWalletRef = useRef(state.walletAddress)
@@ -335,15 +46,15 @@ export function useUserCertifications(walletAddress: string | null): UserCertifi
 
   useEffect(() => {
     if (walletAddress && walletAddress !== storeWalletRef.current) {
-      fetchCertifications(walletAddress)
+      userCertificationsService.fetchCertifications(walletAddress)
     } else if (!walletAddress && storeWalletRef.current) {
-      clearCache()
+      userCertificationsService.clearCache()
     }
   }, [walletAddress])
 
   const refetch = useCallback(async () => {
     if (walletAddress) {
-      await fetchCertifications(walletAddress)
+      await userCertificationsService.fetchCertifications(walletAddress)
     }
   }, [walletAddress])
 
@@ -357,19 +68,10 @@ export function useUserCertifications(walletAddress: string | null): UserCertifi
 }
 
 /**
- * Helper to check if a URL is certified
- * Returns the intentions if certified, null otherwise
+ * Helper to check if a URL is certified.
+ * Returns the certification entry if certified, null otherwise.
  */
-export function getCertificationForUrl(
-  certifications: Map<string, CertificationEntry>,
-  url: string
-): CertificationEntry | null {
-  try {
-    const { label } = normalizeUrl(url)
-    return certifications.get(label) || null
-  } catch {
-    return null
-  }
-}
+export const getCertificationForUrl =
+  UserCertificationsServiceClass.getCertificationForUrl
 
 export default useUserCertifications

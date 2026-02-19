@@ -3,58 +3,14 @@
  * Pure functions for fetching member domain activity.
  */
 
-import { intuitionGraphqlClient } from '../clients/graphql-client'
-import { GetUserIntentionPositionsDocument } from '@0xsofia/graphql'
-import { PREDICATE_IDS, PREDICATE_NAMES } from '../config/chainConfig'
-import type { DomainActivityGroup } from '../../types/interests'
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-// Only intention predicates (not OAuth)
-const INTENTION_PREDICATE_IDS = [
-  PREDICATE_IDS.VISITS_FOR_WORK,
-  PREDICATE_IDS.VISITS_FOR_LEARNING,
-  PREDICATE_IDS.VISITS_FOR_FUN,
-  PREDICATE_IDS.VISITS_FOR_INSPIRATION,
-  PREDICATE_IDS.VISITS_FOR_BUYING,
-  PREDICATE_IDS.VISITS_FOR_MUSIC
-].filter(Boolean)
-
-// Map predicate ID → predicate label (for DomainActivityGroup format)
-const PREDICATE_ID_TO_LABEL: Record<string, string> = {}
-if (PREDICATE_IDS.VISITS_FOR_WORK) PREDICATE_ID_TO_LABEL[PREDICATE_IDS.VISITS_FOR_WORK] = PREDICATE_NAMES.VISITS_FOR_WORK
-if (PREDICATE_IDS.VISITS_FOR_LEARNING) PREDICATE_ID_TO_LABEL[PREDICATE_IDS.VISITS_FOR_LEARNING] = PREDICATE_NAMES.VISITS_FOR_LEARNING
-if (PREDICATE_IDS.VISITS_FOR_FUN) PREDICATE_ID_TO_LABEL[PREDICATE_IDS.VISITS_FOR_FUN] = PREDICATE_NAMES.VISITS_FOR_FUN
-if (PREDICATE_IDS.VISITS_FOR_INSPIRATION) PREDICATE_ID_TO_LABEL[PREDICATE_IDS.VISITS_FOR_INSPIRATION] = PREDICATE_NAMES.VISITS_FOR_INSPIRATION
-if (PREDICATE_IDS.VISITS_FOR_BUYING) PREDICATE_ID_TO_LABEL[PREDICATE_IDS.VISITS_FOR_BUYING] = PREDICATE_NAMES.VISITS_FOR_BUYING
-if (PREDICATE_IDS.VISITS_FOR_MUSIC) PREDICATE_ID_TO_LABEL[PREDICATE_IDS.VISITS_FOR_MUSIC] = PREDICATE_NAMES.VISITS_FOR_MUSIC
-
-// ---------------------------------------------------------------------------
-// Domain extraction
-// ---------------------------------------------------------------------------
-
-function normalizeDomain(domain: string): string {
-  const lower = domain.toLowerCase()
-  const prefixes = ['www.', 'open.', 'm.', 'mobile.', 'app.', 'web.']
-  for (const prefix of prefixes) {
-    if (lower.startsWith(prefix)) return lower.slice(prefix.length)
-  }
-  return lower
-}
-
-function extractDomain(label: string): string | null {
-  if (!label) return null
-  try {
-    const cleaned = label.replace(/^https?:\/\//, '')
-    const domain = cleaned.split('/')[0]
-    if (domain && domain.includes('.')) return normalizeDomain(domain)
-    return null
-  } catch {
-    return null
-  }
-}
+import { intuitionGraphqlClient } from "../clients/graphql-client"
+import { GetUserIntentionPositionsDocument } from "@0xsofia/graphql"
+import type { DomainActivityGroup } from "../../types/interests"
+import { extractDomain } from "./domainUtils"
+import {
+  INTENTION_PREDICATE_IDS,
+  PREDICATE_ID_TO_LABEL
+} from "../config/predicateConstants"
 
 // ---------------------------------------------------------------------------
 // Fetch member domain activity via GraphQL
@@ -97,7 +53,7 @@ export async function fetchMemberDomainActivity(walletAddress: string): Promise<
     return {
       key: domain,
       count,
-      total_shares: '0',
+      total_shares: "0",
       predicates
     }
   })

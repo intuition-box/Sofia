@@ -9,6 +9,7 @@ import { INTENTION_PREDICATES } from '../types/discovery'
 import { questTrackingService } from '../lib/services'
 import { normalizeUrl } from '../lib/utils/normalizeUrl'
 import { cleanTitle } from '../lib/utils/cleanTitle'
+import { getFaviconUrl } from '../lib/utils'
 
 const logger = createHookLogger('useIntentionCertify')
 
@@ -96,8 +97,7 @@ export const useIntentionCertify = (): IntentionCertifyResult => {
       // Normalize URL for consistent matching (strips tracking params, keeps content params)
       const { label: pageLabel } = normalizeUrl(url)
       const atomName = (title ? cleanTitle(title) : null) || pageLabel  // Use cleaned title if provided, fallback to cleaned URL
-      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '')
-      const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`
+      const faviconUrl = getFaviconUrl(url, 128)
 
       logger.debug(`Creating intention triple via useCreateTripleOnChain`, {
         pageLabel,

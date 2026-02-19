@@ -9,6 +9,7 @@ import type { IntentionGroupRecord, GroupUrlRecord, PredicateChangeRecord } from
 import { goldService } from './GoldService'
 import type { DomainCluster, TrackedUrl } from './SessionTracker'
 import { createServiceLogger } from '../utils/logger'
+import { calculateDominantCertification } from '../utils/certificationHelpers'
 
 const logger = createServiceLogger('GroupManager')
 
@@ -176,15 +177,8 @@ class GroupManagerService {
 
     // Calculate dominant certification
     const breakdown = this.getCertificationBreakdown(group)
-    let maxCount = 0
-    let dominant: CertificationType | null = null
-    for (const [cert, count] of Object.entries(breakdown)) {
-      if (count > maxCount) {
-        maxCount = count
-        dominant = cert as CertificationType
-      }
-    }
-    group.dominantCertification = dominant
+    const dominant = calculateDominantCertification(breakdown)
+    group.dominantCertification = dominant ? dominant.type as CertificationType : null
 
     await IntentionGroupsService.saveGroup(group)
 

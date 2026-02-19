@@ -23,18 +23,12 @@
 
 import type { MigrationStatus } from '../../types/currencyTypes'
 import { createServiceLogger } from '../utils/logger'
+import { getWalletKey } from '../utils/storageKeyUtils'
 
 const logger = createServiceLogger('CurrencyMigrationService')
 
 const MIGRATION_VERSION = 1
 const MIGRATION_KEY_PREFIX = 'currency_migration_v1'
-
-/**
- * Build a wallet-prefixed storage key.
- */
-function getKey(baseKey: string, wallet: string): string {
-  return `${baseKey}_${wallet.toLowerCase()}`
-}
 
 /**
  * CurrencyMigrationService — handles the one-time unified-XP-to-dual-currency migration.
@@ -45,7 +39,7 @@ class CurrencyMigrationServiceClass {
    * Check if migration has already been completed for this wallet.
    */
   async needsMigration(walletAddress: string): Promise<boolean> {
-    const flagKey = getKey(MIGRATION_KEY_PREFIX, walletAddress)
+    const flagKey = getWalletKey(MIGRATION_KEY_PREFIX, walletAddress)
     const result = await chrome.storage.local.get([flagKey])
     const status = result[flagKey] as MigrationStatus | undefined
     return !status?.migrated
@@ -61,7 +55,7 @@ class CurrencyMigrationServiceClass {
     }
 
     const normalized = walletAddress.toLowerCase()
-    const flagKey = getKey(MIGRATION_KEY_PREFIX, normalized)
+    const flagKey = getWalletKey(MIGRATION_KEY_PREFIX, normalized)
 
     // Check if already migrated
     const existing = await chrome.storage.local.get([flagKey])
@@ -98,9 +92,9 @@ class CurrencyMigrationServiceClass {
    */
   private async performMigration(wallet: string): Promise<void> {
     // Read old keys
-    const oldDiscoveryKey = getKey('claimed_discovery_xp', wallet)
-    const oldCertKey = getKey('group_certification_xp', wallet)
-    const oldSpentKey = getKey('spent_xp', wallet)
+    const oldDiscoveryKey = getWalletKey('claimed_discovery_xp', wallet)
+    const oldCertKey = getWalletKey('group_certification_xp', wallet)
+    const oldSpentKey = getWalletKey('spent_xp', wallet)
 
     const oldData = await chrome.storage.local.get([oldDiscoveryKey, oldCertKey, oldSpentKey])
 
@@ -116,9 +110,9 @@ class CurrencyMigrationServiceClass {
     }
 
     // Write new Gold keys
-    const newDiscoveryKey = getKey('discovery_gold', wallet)
-    const newCertKey = getKey('certification_gold', wallet)
-    const newSpentKey = getKey('spent_gold', wallet)
+    const newDiscoveryKey = getWalletKey('discovery_gold', wallet)
+    const newCertKey = getWalletKey('certification_gold', wallet)
+    const newSpentKey = getWalletKey('spent_gold', wallet)
 
     await chrome.storage.local.set({
       [newDiscoveryKey]: discoveryGold,

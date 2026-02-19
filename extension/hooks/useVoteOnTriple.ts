@@ -1,26 +1,18 @@
 import { useState, useCallback } from "react"
 import { useCreateAtom } from "./useCreateAtom"
 import { useWalletFromStorage } from "./useWalletFromStorage"
-import { getClients } from "../lib/clients/viemClients"
-import { SofiaFeeProxyAbi } from "../ABI/SofiaFeeProxy"
-import { SELECTED_CHAIN } from "../lib/config/chainConfig"
-import { BlockchainService } from "../lib/services"
+import { tripleService } from "../lib/services/TripleService"
 import { createHookLogger } from "../lib/utils/logger"
 import { questTrackingService } from "../lib/services/QuestTrackingService"
 import { goldService } from "../lib/services/GoldService"
-import {
-  BLOCKCHAIN_CONFIG,
-  ERROR_MESSAGES,
-  PREDICATE_IDS,
-  SUBJECT_IDS
-} from "../lib/config/constants"
-import type { Address } from "../types/viem"
+import { ERROR_MESSAGES, SUBJECT_IDS } from "../lib/config/constants"
 
 const logger = createHookLogger("useVoteOnTriple")
 
 // 1 TRUST deposit per vote
 const VOTE_STAKE = 1000000000000000000n
-const CREATION_CURVE_ID = 1n
+// Linear curve for votes (same as creation curve)
+const VOTE_DEPOSIT_CURVE_ID = 1n
 
 export type VoteType = "like" | "dislike"
 
@@ -40,8 +32,7 @@ export interface VoteOnTripleResult {
  * The object IS the certification triple itself (referenced by its term_id).
  * This creates a TRUE nested triple — no new atom is created for the object.
  *
- * Uses direct contract calls to bypass createTripleOnChain (which always
- * creates a new IPFS atom for the object). Only the predicate atom
+ * Uses TripleService for on-chain creation/deposit. Only the predicate atom
  * ("like"/"dislike") is created via IPFS if it doesn't exist yet.
  */
 export const useVoteOnTriple = (): VoteOnTripleResult => {
@@ -80,10 +71,7 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
         await ensureProxyApproval()
 
         // 2. Get or create the predicate atom ("like" or "dislike")
-        const existingPredicateId =
-          voteType === "like"
-            ? PREDICATE_IDS.LIKE || null
-            : PREDICATE_IDS.DISLIKE || null
+        const existingPredicateId = tripleService.getPredicateIdIfExists(voteType)
 
         let predicateId: string
 
@@ -100,143 +88,19 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
           predicateId = createdAtoms[voteType].vaultId
         }
 
-        // 3. Subject = universal "I"
-        //    Object = tripleTermId directly (the certification triple's own term_id)
+        // 3. Subject = universal "I", Object = tripleTermId directly
         const subjectId = SUBJECT_IDS.I
         const objectId = tripleTermId
 
-        // 4. Check if vote triple already exists
-        const tripleCheck = await BlockchainService.checkTripleExists(
+        // 4. Create or deposit via TripleService (linear curve for votes)
+        await tripleService.createTripleOnChain(
           subjectId,
           predicateId,
-          objectId
+          objectId,
+          address,
+          VOTE_STAKE,
+          VOTE_DEPOSIT_CURVE_ID
         )
-
-        const { walletClient, publicClient } = await getClients()
-        const contractAddress = BlockchainService.getContractAddress()
-
-        if (tripleCheck.exists) {
-          // 5a. Vote triple exists → deposit additional stake (linear curve, same as creation)
-          const curveId = CREATION_CURVE_ID
-          const totalDepositCost =
-            await BlockchainService.getTotalDepositCost(VOTE_STAKE)
-
-          logger.info("Vote triple exists, depositing", {
-            tripleVaultId: tripleCheck.tripleVaultId,
-            depositAmount: VOTE_STAKE.toString()
-          })
-
-          await publicClient.simulateContract({
-            address: contractAddress as Address,
-            abi: SofiaFeeProxyAbi,
-            functionName: "deposit",
-            args: [
-              address as Address,
-              tripleCheck.tripleVaultId as Address,
-              curveId,
-              0n
-            ],
-            value: totalDepositCost,
-            account: walletClient.account
-          })
-
-          const hash = await walletClient.writeContract({
-            address: contractAddress as Address,
-            abi: SofiaFeeProxyAbi,
-            functionName: "deposit",
-            args: [
-              address as Address,
-              tripleCheck.tripleVaultId as Address,
-              curveId,
-              0n
-            ],
-            value: totalDepositCost,
-            chain: SELECTED_CHAIN,
-            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-            account: address as Address
-          })
-
-          const receipt = await publicClient.waitForTransactionReceipt({
-            hash
-          })
-          if (receipt.status !== "success") {
-            throw new Error(
-              `${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`
-            )
-          }
-
-          logger.info("Vote deposit successful", {
-            tripleVaultId: tripleCheck.tripleVaultId,
-            txHash: hash,
-            voteType
-          })
-        } else {
-          // 5b. Vote triple doesn't exist → create it
-          const tripleCost = await BlockchainService.getTripleCost()
-          const multiVaultCost = tripleCost + VOTE_STAKE
-          const totalCost =
-            await BlockchainService.getTotalCreationCost(
-              1,
-              VOTE_STAKE,
-              multiVaultCost
-            )
-
-          logger.info("Creating new vote triple", {
-            subjectId,
-            predicateId,
-            objectId,
-            totalCost: totalCost.toString()
-          })
-
-          // Simulate first
-          await publicClient.simulateContract({
-            address: contractAddress as Address,
-            abi: SofiaFeeProxyAbi,
-            functionName: "createTriples",
-            args: [
-              address as Address,
-              [subjectId as Address],
-              [predicateId as Address],
-              [objectId as Address],
-              [VOTE_STAKE],
-              CREATION_CURVE_ID
-            ],
-            value: totalCost,
-            account: walletClient.account
-          })
-
-          // Execute
-          const hash = await walletClient.writeContract({
-            address: contractAddress as Address,
-            abi: SofiaFeeProxyAbi,
-            functionName: "createTriples",
-            args: [
-              address as Address,
-              [subjectId as Address],
-              [predicateId as Address],
-              [objectId as Address],
-              [VOTE_STAKE],
-              CREATION_CURVE_ID
-            ],
-            value: totalCost,
-            chain: SELECTED_CHAIN,
-            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-            account: address as Address
-          })
-
-          const receipt = await publicClient.waitForTransactionReceipt({
-            hash
-          })
-          if (receipt.status !== "success") {
-            throw new Error(
-              `${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`
-            )
-          }
-
-          logger.info("Vote triple created", { txHash: hash, voteType })
-        }
 
         setSuccess(true)
 

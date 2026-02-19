@@ -10,7 +10,6 @@ const logger = createServiceLogger('BlockchainService')
 
 /**
  * Centralized service for blockchain operations
- * Eliminates code duplication across multiple hooks
  *
  * All write operations go through the Sofia Fee Proxy which:
  * - Collects fees (0.1 TRUST fixed per deposit + 5% of deposit amount)

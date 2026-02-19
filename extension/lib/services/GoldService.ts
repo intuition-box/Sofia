@@ -18,6 +18,7 @@
 
 import type { GoldState, GoldSpendResult } from '../../types/currencyTypes'
 import { createServiceLogger } from '../utils/logger'
+import { getWalletKey } from '../utils/storageKeyUtils'
 
 const logger = createServiceLogger('GoldService')
 
@@ -49,19 +50,15 @@ export function getLevelUpCost(currentLevel: number): number {
  * All storage keys are wallet-prefixed (e.g. discovery_gold_{wallet}).
  */
 class GoldServiceClass {
-  /** Build a wallet-prefixed storage key. */
-  private getKey(baseKey: string, wallet: string): string {
-    return `${baseKey}_${wallet.toLowerCase()}`
-  }
 
   /**
    * Get current Gold state from chrome.storage.local.
    * Aggregates discovery + certification - spent.
    */
   async getGoldState(walletAddress: string): Promise<GoldState> {
-    const discoveryKey = this.getKey('discovery_gold', walletAddress)
-    const certKey = this.getKey('certification_gold', walletAddress)
-    const spentKey = this.getKey('spent_gold', walletAddress)
+    const discoveryKey = getWalletKey('discovery_gold', walletAddress.toLowerCase())
+    const certKey = getWalletKey('certification_gold', walletAddress.toLowerCase())
+    const spentKey = getWalletKey('spent_gold', walletAddress.toLowerCase())
 
     const result = await chrome.storage.local.get([discoveryKey, certKey, spentKey])
 
@@ -80,7 +77,7 @@ class GoldServiceClass {
    * @returns The new certification Gold total.
    */
   async addCertificationGold(walletAddress: string, amount: number = GOLD_PER_CERTIFICATION): Promise<number> {
-    const key = this.getKey('certification_gold', walletAddress)
+    const key = getWalletKey('certification_gold', walletAddress.toLowerCase())
     const result = await chrome.storage.local.get([key])
     const current = result[key] || 0
     const newTotal = current + amount
@@ -96,7 +93,7 @@ class GoldServiceClass {
    * Called when discovery score is re-derived from on-chain data.
    */
   async setDiscoveryGold(walletAddress: string, amount: number): Promise<void> {
-    const key = this.getKey('discovery_gold', walletAddress)
+    const key = getWalletKey('discovery_gold', walletAddress.toLowerCase())
     await chrome.storage.local.set({ [key]: amount })
     logger.info('Set discovery Gold', { amount })
   }
@@ -117,7 +114,7 @@ class GoldServiceClass {
       }
     }
 
-    const spentKey = this.getKey('spent_gold', walletAddress)
+    const spentKey = getWalletKey('spent_gold', walletAddress.toLowerCase())
     const newSpentTotal = state.spentGold + amount
     await chrome.storage.local.set({ [spentKey]: newSpentTotal })
 
@@ -156,8 +153,8 @@ class GoldServiceClass {
       return 0
     }
 
-    const key = this.getKey('vote_gold', walletAddress)
-    const certKey = this.getKey('certification_gold', walletAddress)
+    const key = getWalletKey('vote_gold', walletAddress.toLowerCase())
+    const certKey = getWalletKey('certification_gold', walletAddress.toLowerCase())
 
     const result = await chrome.storage.local.get([key, certKey])
     const currentVoteGold = result[key] || 0
@@ -180,9 +177,9 @@ class GoldServiceClass {
    * Reset Gold data (for testing/debugging).
    */
   async resetGold(walletAddress: string): Promise<void> {
-    const discoveryKey = this.getKey('discovery_gold', walletAddress)
-    const certKey = this.getKey('certification_gold', walletAddress)
-    const spentKey = this.getKey('spent_gold', walletAddress)
+    const discoveryKey = getWalletKey('discovery_gold', walletAddress.toLowerCase())
+    const certKey = getWalletKey('certification_gold', walletAddress.toLowerCase())
+    const spentKey = getWalletKey('spent_gold', walletAddress.toLowerCase())
 
     await chrome.storage.local.set({
       [discoveryKey]: 0,

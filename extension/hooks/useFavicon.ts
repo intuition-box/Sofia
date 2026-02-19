@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from "react"
+import { getFaviconUrl } from "~/lib/utils"
 
 export interface FaviconResult {
   faviconUrl: string | null
@@ -21,12 +22,11 @@ export const useFavicon = (url: string | null): FaviconResult => {
       return
     }
 
-    try {
-      const urlObj = new URL(url)
-      const faviconPath = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`
-      setFaviconUrl(faviconPath)
+    const result = getFaviconUrl(url, 32)
+    if (result) {
+      setFaviconUrl(result)
       setFaviconError(false)
-    } catch {
+    } else {
       setFaviconUrl(null)
       setFaviconError(true)
     }
