@@ -4,6 +4,7 @@
  * Shows XP progress toward next level based on on-chain certifications
  */
 
+import { useMemo } from 'react'
 import { useGroupOnChainCertifications, type IntentionGroupWithStats } from '../../hooks'
 import type { CertificationType } from '~/lib/services'
 import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration } from '~/lib/utils'
@@ -36,15 +37,20 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
   // Fetch on-chain certification status
   const { stats: onChainStats, loading: onChainLoading } = useGroupOnChainCertifications(domain, activeUrls)
 
-  // Use on-chain stats for certification count
-  const certifiedCount = onChainStats?.certifiedCount ?? group.certifiedCount
+  // Use on-chain stats with Pipeline 1 fallback (same logic as DetailView)
+  const certifiedCount = useMemo(() => {
+    const p2Count = onChainStats?.certifiedCount ?? 0
+    const p1Count = urls.filter(u =>
+      !u.removed && u.isOnChain && u.onChainCertification
+    ).length
+    return Math.max(p2Count, p1Count, group.certifiedCount)
+  }, [onChainStats, urls, group.certifiedCount])
 
   // Level from on-chain certifications (auto up/down, no local fallback)
   const displayLevel = calculateLevel(certifiedCount)
 
-  // Progress bar from confirmed level (group.level = last Level Up level)
-  // Fills past 100% when on-chain level exceeds confirmed level → triggers glow
-  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, group.level)
+  // Progress toward next level (same baseLevel as DetailView)
+  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, displayLevel)
 
   // Get dominant certification for styling
   const dominantCert = Object.entries(certificationBreakdown)
@@ -53,8 +59,11 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
 
   const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as CertificationType] : '#C7866C'
 
-  // Ready to level up when progress bar is full (100%) based on confirmed level
-  const canLevelUp = progressPercent >= 100
+  // Level Up available when on-chain level exceeds highest predicate level (same as DetailView)
+  const highestPredicateLevel = group.predicateHistory?.length > 0
+    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
+    : 0
+  const canLevelUp = displayLevel > 1 && displayLevel > highestPredicateLevel
 
   return (
     <div
