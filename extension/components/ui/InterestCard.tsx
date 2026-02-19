@@ -6,16 +6,12 @@
 
 import type { Interest } from '../../types/interests';
 import { getXpProgressPercent, getLevelColor } from '../../types/interests';
+import { getFaviconUrl } from '~/lib/utils';
 
 interface InterestCardProps {
   interest: Interest;
   onClick?: () => void;
 }
-
-// Get favicon URL from domain
-const getFaviconUrl = (domain: string): string => {
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-};
 
 // Certification type colors
 const CERT_COLORS: Record<string, string> = {

@@ -11,13 +11,13 @@ import {
   type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
 } from '../../hooks'
 import type { GroupUrlRecord } from '~types/database'
-import type { CertificationType } from '../../lib/services'
+import type { CertificationType } from '~/lib/services'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
 import { PREDICATE_NAMES, EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
-import { normalizeUrl } from '../../lib/utils'
+import { normalizeUrl, calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('GroupDetailView')
@@ -55,75 +55,11 @@ const INTENTIONS_LIST: { key: IntentionPurpose; label: string }[] = [
   { key: 'for_music', label: 'music' }
 ]
 
-// Map IntentionPurpose to CertificationType
-const intentionToCertification: Record<IntentionPurpose, CertificationType> = {
-  for_work: 'work',
-  for_learning: 'learning',
-  for_fun: 'fun',
-  for_inspiration: 'inspiration',
-  for_buying: 'buying',
-  for_music: 'music'
-}
-
 // Trust/distrust pills for inline rendering in UrlRow
 const TRUST_PILLS: { predicateName: string; certType: CertificationType; label: string }[] = [
   { predicateName: PREDICATE_NAMES.TRUSTS, certType: 'trusted', label: 'trust' },
   { predicateName: PREDICATE_NAMES.DISTRUST, certType: 'distrusted', label: 'distrust' }
 ]
-
-/**
- * Get effective certification status for a URL.
- * Pipeline 2 (useGroupOnChainCertifications) may miss trust/distrust triples
- * because it queries by predicate label (case-sensitive _in).
- * Pipeline 1 (useOnChainIntentionGroups) queries by predicate ID and stores
- * the result in urlRecord.onChainCertification during the merge.
- * This helper uses Pipeline 1 data as fallback.
- */
-function getEffectiveCertStatus(
-  urlRecord: GroupUrlRecord,
-  onChainStatus: UrlCertificationStatus | undefined
-): { isCertified: boolean; labels: string[] } {
-  if (onChainStatus?.isCertifiedOnChain) {
-    return {
-      isCertified: true,
-      labels: onChainStatus.allCertificationLabels || []
-    }
-  }
-  if (urlRecord.isOnChain && urlRecord.onChainCertification) {
-    return {
-      isCertified: true,
-      labels: [urlRecord.onChainCertification]
-    }
-  }
-  return { isCertified: false, labels: [] }
-}
-
-// Get favicon URL
-const getFaviconUrl = (url: string): string => {
-  try {
-    const urlObj = new URL(url)
-    return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`
-  } catch {
-    return ''
-  }
-}
-
-// Format date for display
-const formatDate = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-// Format duration
-const formatDuration = (ms: number): string => {
-  const minutes = Math.floor(ms / 60000)
-  if (minutes < 1) return '<1m'
-  if (minutes < 60) return `${minutes}m`
-  const hours = Math.floor(minutes / 60)
-  return `${hours}h ${minutes % 60}m`
-}
 
 // URL Row Component
 const UrlRow = ({
@@ -157,7 +93,7 @@ const UrlRow = ({
     <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''} ${isCertifiedOnChain ? 'on-chain' : ''}`}>
       <div className="url-row-main">
         <img
-          src={getFaviconUrl(urlRecord.url)}
+          src={getFaviconUrl(urlRecord.url, 16)}
           alt=""
           className="url-favicon"
           onError={(e) => {
@@ -176,7 +112,7 @@ const UrlRow = ({
             {urlRecord.title ? getDisplayTitle(urlRecord.title, urlRecord.url) : urlRecord.url}
           </a>
           <div className="url-meta">
-            <span className="url-date">{formatDate(urlRecord.addedAt)}</span>
+            <span className="url-date">{formatShortDate(urlRecord.addedAt)}</span>
             <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
             {isCertifiedOnChain && (
               <img src={onChainBadgeIcon} alt="" className="on-chain-badge" title="Certified on-chain" />
@@ -341,12 +277,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     result: amplifyResult,
     reset: resetAmplify
   } = useGroupAmplify()
-  const [amplified, setAmplified] = useState(false)
-
-  // Reset amplified state when level changes (new predicate available)
-  useEffect(() => {
-    setAmplified(false)
-  }, [group.level])
+  // Amplified = true if current predicate was already published on-chain
+  const isAmplified = group.amplifiedPredicate === group.currentPredicate && !!group.currentPredicate
 
   // Modal state for on-chain certification
   const [showWeightModal, setShowWeightModal] = useState(false)
@@ -371,39 +303,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     transactionHash: intentionTxHash
   } = useIntentionCertify()
 
-  // Fetch level up preview when group changes
-  useEffect(() => {
-    const fetchPreview = async () => {
-      const preview = await previewLevelUp(group.id)
-      setLevelUpPreview(preview)
-    }
-    fetchPreview()
-  }, [group.id, group.level, previewLevelUp])
-
-  // Handle level up
-  const handleLevelUp = async () => {
-    // For virtual groups, pass the certification breakdown from on-chain data
-    const isVirtualGroup = group.isVirtualGroup || group.id.startsWith('onchain-')
-    const certBreakdown = isVirtualGroup ? group.certificationBreakdown : undefined
-
-    const result = await levelUp(group.id, certBreakdown)
-    if (result.success) {
-      // Refresh the preview after successful level up
-      const newPreview = await previewLevelUp(group.id)
-      setLevelUpPreview(newPreview)
-      // Refresh the group to get updated predicate
-      if (onRefresh) {
-        await onRefresh()
-      }
-    }
-  }
-
-  // Handle amplify (publish identity on-chain)
-  const handleAmplify = async () => {
-    const result = await amplify(group.id)
-    if (result.success) setAmplified(true)
-  }
-
   // Use on-chain stats for certification count, with Pipeline 1 fallback
   const certifiedCount = useMemo(() => {
     // Count from Pipeline 2 (useGroupOnChainCertifications)
@@ -415,19 +314,49 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     return Math.max(p2Count, p1Count, group.certifiedCount)
   }, [onChainStats, group.urls, group.certifiedCount])
 
-  // IMPORTANT: currentLevel is the CONFIRMED level (from group.level after explicit level up)
-  // NOT the calculated level from certifications count
-  const currentLevel = group.level
+  // Level from on-chain certifications (auto up/down, no local fallback)
+  const currentLevel = calculateLevel(certifiedCount)
 
-  // Calculate progress toward NEXT level based on current confirmed level
-  // Level thresholds: [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
-  const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
-  const currentThreshold = LEVEL_THRESHOLDS[currentLevel - 1] || 0
-  const nextThreshold = LEVEL_THRESHOLDS[currentLevel] || currentThreshold + 10
-  const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
-  const progressPercent = Math.min(100, Math.max(0,
-    ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
-  ))
+  // Fetch level up preview when group changes
+  useEffect(() => {
+    const fetchPreview = async () => {
+      const preview = await previewLevelUp(group.id, currentLevel)
+      setLevelUpPreview(preview)
+    }
+    fetchPreview()
+  }, [group.id, group.level, currentLevel, previewLevelUp])
+
+  // Handle level up
+  const handleLevelUp = async () => {
+    // Always pass certification breakdown from UI (has on-chain data)
+    const result = await levelUp(group.id, group.certificationBreakdown, currentLevel)
+    if (result.success) {
+      // Refresh the preview after successful level up
+      const newPreview = await previewLevelUp(group.id, currentLevel)
+      setLevelUpPreview(newPreview)
+      // Refresh the group to get updated predicate
+      if (onRefresh) {
+        await onRefresh()
+      }
+    }
+  }
+
+  // Handle amplify (publish identity on-chain)
+  const handleAmplify = async () => {
+    const result = await amplify(group.id)
+    if (result.success && onRefresh) {
+      await onRefresh()
+    }
+  }
+
+  // Progress toward NEXT level threshold
+  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, currentLevel)
+
+  // Level Up available when on-chain level exceeds highest level with a generated predicate
+  const highestPredicateLevel = group.predicateHistory?.length > 0
+    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
+    : 0
+  const canLevelUp = currentLevel > 1 && currentLevel > highestPredicateLevel
 
   // Filter URLs - use Pipeline 2 with Pipeline 1 fallback for trust/distrust
   const filteredUrls = group.urls.filter(url => {
@@ -675,7 +604,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
       {/* Identity Hero Section - Visible triple with Amplify button */}
       {/* Hide when Level Up is available to focus user attention on leveling up */}
-      {group.currentPredicate && !(progressPercent >= 100 && levelUpPreview?.canLevelUp && !levelUpResult?.success) && (
+      {group.currentPredicate && !(canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success) && (
         <div className="identity-hero-section">
           <div className="identity-content">
             <div className="identity-triple">
@@ -708,7 +637,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               </div>
             )}
           </div>
-          {!amplified && !amplifyResult?.success && (
+          {!isAmplified && !amplifyResult?.success && (
             <button
               className="amplify-btn-inline"
               onClick={handleAmplify}
@@ -721,8 +650,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       )}
 
       {/* Level Progress - transforms into Level Up when ready */}
-      <div className={`level-progress-section ${progressPercent >= 100 && levelUpPreview?.canLevelUp ? 'ready-to-level-up' : ''}`}>
-        {progressPercent >= 100 && levelUpPreview?.canLevelUp && !levelUpResult?.success ? (
+      <div className={`level-progress-section ${canLevelUp && levelUpPreview?.canLevelUp ? 'ready-to-level-up' : ''}`}>
+        {canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success ? (
           /* Ready to Level Up - show integrated button */
           <button
             className="level-up-integrated-btn"
@@ -861,29 +790,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           </div>
         )}
 
-        {/* Level Up Button - only show when progress bar is NOT full (< 100%) */}
-        {/* When progress >= 100%, the button is integrated into the progress section above */}
-        {/* Button is disabled if not enough certifications OR not enough XP */}
-        {levelUpPreview && !levelUpResult?.success && progressPercent < 100 && (
-          <button
-            className={`level-up-btn ${levelUpPreview.canLevelUp ? 'can-afford' : 'cannot-afford'}`}
-            onClick={handleLevelUp}
-            disabled={true}
-            title="Complete more certifications to level up"
-          >
-            <span className="btn-icon">🔒</span>
-            <span className="btn-text">
-              Level Up to {levelUpPreview.nextLevel}
-            </span>
-            <span className="btn-cost">
-              {levelUpPreview.cost} Gold
-            </span>
-          </button>
-        )}
-
-        {progressPercent < 100 && (
+        {/* Show progress hint when not yet ready to level up */}
+        {!canLevelUp && xpToNextLevel > 0 && (
           <div className="xp-needed">
-            Need {xpToNextLevel} more certification{xpToNextLevel > 1 ? 's' : ''} to unlock
+            {xpToNextLevel} cert{xpToNextLevel > 1 ? 's' : ''} to Level {currentLevel + 1}
           </div>
         )}
 

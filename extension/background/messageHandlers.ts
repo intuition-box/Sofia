@@ -506,15 +506,15 @@ export function setupMessageHandlers(): void {
             sendResponse({ success: false, error: "Group not found" })
             return true
           }
-          // Only update if on-chain level is higher (don't downgrade)
-          if (newLevel > groupToUpdate.level) {
+          // Allow both upgrades and downgrades (sync with on-chain)
+          if (newLevel !== groupToUpdate.level) {
             groupToUpdate.level = newLevel
             if (certifiedCount) {
               groupToUpdate.totalCertifications = certifiedCount
             }
             groupToUpdate.updatedAt = Date.now()
             await IntentionGroupsService.saveGroup(groupToUpdate)
-            logger.info(`[messageHandlers] Restored level for ${updateLvlGroupId}: ${newLevel}`)
+            logger.info(`[messageHandlers] Updated level for ${updateLvlGroupId}: ${newLevel}`)
           }
           sendResponse({ success: true })
         } catch (error) {
@@ -578,13 +578,13 @@ export function setupMessageHandlers(): void {
 
       case "LEVEL_UP_GROUP":
         try {
-          const { groupId: levelUpGroupId, certificationBreakdown } = message.data || message
+          const { groupId: levelUpGroupId, certificationBreakdown, targetLevel } = message.data || message
           if (!levelUpGroupId) {
             sendResponse({ success: false, error: "groupId required" })
             return true
           }
-          logger.info(`[messageHandlers] Level up request for group: ${levelUpGroupId}`)
-          const levelUpResult = await levelUpService.levelUp(levelUpGroupId, certificationBreakdown)
+          logger.info(`[messageHandlers] Level up request for group: ${levelUpGroupId}`, { targetLevel })
+          const levelUpResult = await levelUpService.levelUp(levelUpGroupId, certificationBreakdown, targetLevel)
           sendResponse({
             success: levelUpResult.success,
             ...levelUpResult
@@ -597,12 +597,12 @@ export function setupMessageHandlers(): void {
 
       case "PREVIEW_LEVEL_UP":
         try {
-          const { groupId: previewGroupId } = message.data || message
+          const { groupId: previewGroupId, targetLevel: previewTargetLevel } = message.data || message
           if (!previewGroupId) {
             sendResponse({ success: false, error: "groupId required" })
             return true
           }
-          const preview = await levelUpService.previewLevelUp(previewGroupId)
+          const preview = await levelUpService.previewLevelUp(previewGroupId, previewTargetLevel)
           if (preview) {
             sendResponse({ success: true, ...preview })
           } else {

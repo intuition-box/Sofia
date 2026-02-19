@@ -37,7 +37,7 @@ class LevelUpServiceClass {
    * Preview a level up (check if user can afford it).
    * Uses Gold balance for affordability check.
    */
-  async previewLevelUp(groupId: string): Promise<LevelUpPreview | null> {
+  async previewLevelUp(groupId: string, targetLevel?: number): Promise<LevelUpPreview | null> {
     const wallet = await this.getActiveWallet()
     let group = await groupManager.getGroup(groupId)
 
@@ -45,13 +45,14 @@ class LevelUpServiceClass {
     if (!group && groupId.startsWith('onchain-')) {
       const cost = getLevelUpCost(1)
       const goldState = await goldService.getGoldState(wallet)
+      const nextLevel = targetLevel || 2
 
       return {
         canLevelUp: goldState.totalGold >= cost,
         cost,
         availableGold: goldState.totalGold,
         currentLevel: 1,
-        nextLevel: 2
+        nextLevel
       }
     }
 
@@ -59,13 +60,14 @@ class LevelUpServiceClass {
 
     const cost = getLevelUpCost(group.level)
     const goldState = await goldService.getGoldState(wallet)
+    const nextLevel = targetLevel || group.level + 1
 
     return {
       canLevelUp: goldState.totalGold >= cost,
       cost,
       availableGold: goldState.totalGold,
       currentLevel: group.level,
-      nextLevel: group.level + 1
+      nextLevel
     }
   }
 
@@ -76,8 +78,8 @@ class LevelUpServiceClass {
    * 3. Spend Gold
    * 4. Update group
    */
-  async levelUp(groupId: string, providedCertifications?: Record<CertificationType, number>): Promise<LevelUpResult> {
-    logger.info(`Starting level up for ${groupId}`)
+  async levelUp(groupId: string, providedCertifications?: Record<CertificationType, number>, targetLevel?: number): Promise<LevelUpResult> {
+    logger.info(`Starting level up for ${groupId}`, { targetLevel })
 
     // Get group
     let group = await groupManager.getGroup(groupId)
@@ -113,9 +115,10 @@ class LevelUpServiceClass {
       return { success: false, error: 'Group not found' }
     }
 
-    // Calculate cost
+    // Calculate target level and cost
+    const newLevel = targetLevel || group.level + 1
     const cost = getLevelUpCost(group.level)
-    logger.debug(`Level ${group.level} -> ${group.level + 1} costs ${cost} Gold`)
+    logger.debug(`Level ${group.level} -> ${newLevel} costs ${cost} Gold`)
 
     // Check Gold availability
     const wallet = await this.getActiveWallet()
@@ -132,7 +135,7 @@ class LevelUpServiceClass {
 
     // Collect certifications for AI
     const isVirtualGroup = groupId.startsWith('onchain-')
-    const certifications = (isVirtualGroup && providedCertifications)
+    const certifications = providedCertifications
       ? providedCertifications
       : groupManager.getCertificationBreakdown(group)
     logger.debug('Certifications', { certifications, source: isVirtualGroup ? 'UI' : 'local' })
@@ -141,7 +144,7 @@ class LevelUpServiceClass {
     const totalCertifications = Object.values(certifications).reduce((sum, count) => sum + count, 0)
     const hasOAuthUrls = group.urls.some(u => u.oauthPredicate && !u.removed)
     const hasOnChainCerts = group.urls.some(u => u.isOnChain && !u.removed)
-    if (totalCertifications === 0 && !isVirtualGroup && !hasOAuthUrls && !hasOnChainCerts) {
+    if (totalCertifications === 0 && !isVirtualGroup && !hasOAuthUrls && !hasOnChainCerts && !targetLevel) {
       return {
         success: false,
         error: 'No certifications yet. Certify some URLs first!'
@@ -162,7 +165,7 @@ class LevelUpServiceClass {
     const predicateInput: PredicateInput = {
       domain: group.domain,
       title: group.title,
-      level: group.level + 1,
+      level: newLevel,
       certifications: enrichedCertifications,
       previousPredicate: group.currentPredicate
     }
@@ -182,10 +185,10 @@ class LevelUpServiceClass {
     }
 
     // Update group
-    const reason = this.buildReason(enrichedCertifications, group.level + 1)
+    const reason = this.buildReason(enrichedCertifications, newLevel)
     const updated = await groupManager.updateAfterLevelUp(
       actualGroupId,
-      group.level + 1,
+      newLevel,
       predicateResult.predicate,
       reason,
       cost
@@ -199,12 +202,12 @@ class LevelUpServiceClass {
       }
     }
 
-    logger.info('Level up complete', { groupId, newLevel: group.level + 1, goldSpent: cost })
+    logger.info('Level up complete', { groupId, newLevel, goldSpent: cost })
 
     return {
       success: true,
       previousLevel: group.level,
-      newLevel: group.level + 1,
+      newLevel,
       previousPredicate: group.currentPredicate,
       newPredicate: predicateResult.predicate,
       predicateReason: predicateResult.reason,

@@ -13,6 +13,7 @@ import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
 import { createHookLogger } from '../../../lib/utils/logger'
+import { getFaviconUrl } from '~/lib/utils'
 
 const logger = createHookLogger('HistoryTab')
 
@@ -147,19 +148,6 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
   const formatWalletAddress = (address: string) => {
     if (!address || address.length < 10) return address
     return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
-
-  // Function to get favicon URL from a website URL
-  const getFaviconUrl = (url: string): string => {
-    if (!url) return ''
-
-    try {
-      const urlObj = new URL(url)
-      // Use Google's favicon service as fallback, it's very reliable
-      return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`
-    } catch {
-      return ''
-    }
   }
 
   const handleViewOnExplorer = (txHash?: string, vaultId?: string) => {
@@ -309,7 +297,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
                   <div className="triplet-actions-container">
                     {tripletItem.url && (
                       <img
-                        src={getFaviconUrl(tripletItem.url)}
+                        src={getFaviconUrl(tripletItem.url, 16)}
                         alt="favicon"
                         className="triplet-favicon-small"
                         onError={(e) => {

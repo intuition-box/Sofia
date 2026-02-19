@@ -18,8 +18,8 @@ const logger = createHookLogger('useLevelUp')
 export type { LevelUpPreview, LevelUpResult }
 
 export interface UseLevelUpResult {
-  levelUp: (groupId: string, certificationBreakdown?: Record<string, number>) => Promise<LevelUpResult>
-  preview: (groupId: string) => Promise<LevelUpPreview | null>
+  levelUp: (groupId: string, certificationBreakdown?: Record<string, number>, targetLevel?: number) => Promise<LevelUpResult>
+  preview: (groupId: string, targetLevel?: number) => Promise<LevelUpPreview | null>
   loading: boolean
   error: string | null
   result: LevelUpResult | null
@@ -37,13 +37,13 @@ export const useLevelUp = (): UseLevelUpResult => {
   /**
    * Preview a level up (check cost and Gold availability).
    */
-  const preview = useCallback(async (groupId: string): Promise<LevelUpPreview | null> => {
+  const preview = useCallback(async (groupId: string, targetLevel?: number): Promise<LevelUpPreview | null> => {
     try {
-      logger.debug('Previewing level up', { groupId })
+      logger.debug('Previewing level up', { groupId, targetLevel })
 
       const response = await chrome.runtime.sendMessage({
         type: 'PREVIEW_LEVEL_UP',
-        data: { groupId }
+        data: { groupId, targetLevel }
       })
 
       if (response.success) {
@@ -67,17 +67,17 @@ export const useLevelUp = (): UseLevelUpResult => {
   /**
    * Execute a level up (spends Gold).
    */
-  const levelUp = useCallback(async (groupId: string, certificationBreakdown?: Record<string, number>): Promise<LevelUpResult> => {
+  const levelUp = useCallback(async (groupId: string, certificationBreakdown?: Record<string, number>, targetLevel?: number): Promise<LevelUpResult> => {
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
-      logger.info('Starting level up', { groupId, hasCertBreakdown: !!certificationBreakdown })
+      logger.info('Starting level up', { groupId, hasCertBreakdown: !!certificationBreakdown, targetLevel })
 
       const response = await chrome.runtime.sendMessage({
         type: 'LEVEL_UP_GROUP',
-        data: { groupId, certificationBreakdown }
+        data: { groupId, certificationBreakdown, targetLevel }
       })
 
       if (response.success) {

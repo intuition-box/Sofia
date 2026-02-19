@@ -74,6 +74,7 @@ export interface IntentionGroupRecord {
   totalAttentionTime: number
   totalCertifications: number
   dominantCertification: string | null
+  amplifiedPredicate?: string | null
 }
 
 export interface GroupUrlRecord {

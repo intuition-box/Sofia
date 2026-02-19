@@ -10,6 +10,7 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
 import { PREDICATE_IDS, PREDICATE_NAMES } from '../lib/config/chainConfig'
 import { createHookLogger } from '../lib/utils/logger'
+import { calculateLevel } from '../lib/utils'
 import { GetUserIntentionPositionsDocument } from '@0xsofia/graphql'
 
 const logger = createHookLogger('useOnChainIntentionGroups')
@@ -64,9 +65,6 @@ if (PREDICATE_IDS.TOP_TRACK) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.TOP_TRACK]
 // Trust/distrust predicates
 if (PREDICATE_IDS.TRUSTS) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.TRUSTS] = 'trusted'
 if (PREDICATE_IDS.DISTRUST) PREDICATE_TO_CERTIFICATION[PREDICATE_IDS.DISTRUST] = 'distrusted'
-
-// Level thresholds (certifications needed per level)
-const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
 
 export interface OnChainUrl {
   url: string
@@ -125,18 +123,6 @@ function extractDomain(label: string): string | null {
   } catch {
     return null
   }
-}
-
-/**
- * Calculate level from certification count
- */
-function calculateLevel(certCount: number): number {
-  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-    if (certCount >= LEVEL_THRESHOLDS[i]) {
-      return i + 1
-    }
-  }
-  return 1
 }
 
 /**

@@ -29,3 +29,12 @@ export { refetchWithBackoff, debounce } from './refetchUtils'
 
 // Circle & Interest
 export { fetchMemberDomainActivity } from './circleInterestUtils'
+
+// Level System (Groups/Echoes)
+export { LEVEL_THRESHOLDS, calculateLevel, calculateLevelProgress } from './levelCalculation'
+
+// Formatters
+export { getFaviconUrl, formatDuration, formatShortDate } from './formatters'
+
+// Certification Helpers
+export { intentionToCertification, trustToCertification, getEffectiveCertStatus } from './certificationHelpers'

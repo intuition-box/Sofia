@@ -103,6 +103,10 @@ export const useGroupAmplify = (): UseGroupAmplifyResult => {
       }
 
       setResult(amplifyResult)
+
+      // Persist amplified state in IndexedDB
+      await groupManager.saveAmplifiedPredicate(groupId, group.currentPredicate!)
+
       logger.info('Group amplified successfully', {
         groupId,
         tripleVaultId: onChainResult.tripleVaultId,

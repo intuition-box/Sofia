@@ -4,8 +4,10 @@
  * Shows XP progress toward next level based on on-chain certifications
  */
 
+import { useMemo } from 'react'
 import { useGroupOnChainCertifications, type IntentionGroupWithStats } from '../../hooks'
-import type { CertificationType } from '../../lib/services'
+import type { CertificationType } from '~/lib/services'
+import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration } from '~/lib/utils'
 
 interface GroupBentoCardProps {
   group: IntentionGroupWithStats
@@ -26,22 +28,6 @@ const CERTIFICATION_COLORS: Record<CertificationType, string> = {
   music: '#FF5722'        // deep orange
 }
 
-// Get favicon URL from domain
-const getFaviconUrl = (domain: string): string => {
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
-}
-
-// Format duration for display
-const formatDuration = (ms: number): string => {
-  const minutes = Math.floor(ms / 60000)
-  const hours = Math.floor(minutes / 60)
-
-  if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`
-  }
-  return `${minutes}m`
-}
-
 const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBentoCardProps) => {
   const { domain, activeUrlCount, totalAttentionTime, currentPredicate, certificationBreakdown, urls } = group
 
@@ -51,21 +37,20 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
   // Fetch on-chain certification status
   const { stats: onChainStats, loading: onChainLoading } = useGroupOnChainCertifications(domain, activeUrls)
 
-  // Use on-chain stats for certification count
-  const certifiedCount = onChainStats?.certifiedCount ?? group.certifiedCount
+  // Use on-chain stats with Pipeline 1 fallback (same logic as DetailView)
+  const certifiedCount = useMemo(() => {
+    const p2Count = onChainStats?.certifiedCount ?? 0
+    const p1Count = urls.filter(u =>
+      !u.removed && u.isOnChain && u.onChainCertification
+    ).length
+    return Math.max(p2Count, p1Count, group.certifiedCount)
+  }, [onChainStats, urls, group.certifiedCount])
 
-  // IMPORTANT: Use CONFIRMED level from group.level, NOT calculated level
-  const confirmedLevel = group.level
+  // Level from on-chain certifications (auto up/down, no local fallback)
+  const displayLevel = calculateLevel(certifiedCount)
 
-  // Calculate progress toward NEXT level based on CONFIRMED level
-  // Level thresholds: [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
-  const LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75]
-  const currentThreshold = LEVEL_THRESHOLDS[confirmedLevel - 1] || 0
-  const nextThreshold = LEVEL_THRESHOLDS[confirmedLevel] || currentThreshold + 10
-  const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
-  const progressPercent = Math.min(100, Math.max(0,
-    ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
-  ))
+  // Progress toward next level (same baseLevel as DetailView)
+  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, displayLevel)
 
   // Get dominant certification for styling
   const dominantCert = Object.entries(certificationBreakdown)
@@ -74,8 +59,11 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
 
   const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as CertificationType] : '#C7866C'
 
-  // Ready to level up when progress bar is full (100%) based on CONFIRMED level
-  const canLevelUp = progressPercent >= 100
+  // Level Up available when on-chain level exceeds highest predicate level (same as DetailView)
+  const highestPredicateLevel = group.predicateHistory?.length > 0
+    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
+    : 0
+  const canLevelUp = displayLevel > 1 && displayLevel > highestPredicateLevel
 
   return (
     <div
@@ -115,7 +103,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
               ×
             </button>
           )}
-          <span className={`level-badge level-${Math.min(confirmedLevel, 10)}`}>LVL {confirmedLevel}</span>
+          <span className={`level-badge level-${Math.min(displayLevel, 10)}`}>LVL {displayLevel}</span>
         </div>
       </div>
 
@@ -148,9 +136,11 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
         </div>
         <span className="progress-label">
           {onChainLoading ? '...' : (
-            xpToNextLevel > 0
-              ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${confirmedLevel + 1}`
-              : 'Max level!'
+            canLevelUp
+              ? `Level Up to ${displayLevel}!`
+              : xpToNextLevel > 0
+                ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
+                : 'Max level!'
           )}
         </span>
       </div>

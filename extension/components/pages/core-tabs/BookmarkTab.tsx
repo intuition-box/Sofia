@@ -9,6 +9,7 @@ import '../../styles/BookmarkStyles.css'
 import '../../styles/CategoryStyles.css'
 import '../../styles/InterestTab.css'
 import { createHookLogger } from '../../../lib/utils/logger'
+import { getFaviconUrl } from '~/lib/utils'
 
 const logger = createHookLogger('BookmarkTab')
 
@@ -18,16 +19,6 @@ const getDomain = (url: string): string => {
     return new URL(url).hostname.replace('www.', '')
   } catch {
     return url
-  }
-}
-
-// Helper to get favicon URL (Google service for high-res icons)
-const getFavicon = (url: string, size: number = 64): string => {
-  try {
-    const domain = new URL(url).hostname
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`
-  } catch {
-    return ''
   }
 }
 
@@ -462,7 +453,7 @@ const BookmarkTab = () => {
                     >
                       {signal.url && (
                         <img
-                          src={getFavicon(signal.url)}
+                          src={getFaviconUrl(signal.url, 64)}
                           alt=""
                           className="category-url-favicon"
                           onError={(e) => {
@@ -596,7 +587,7 @@ const BookmarkTab = () => {
                     {bookmarkedTriplet.url && (
                       <div className="bookmark-favicon-grid">
                         <img
-                          src={getFavicon(bookmarkedTriplet.url)}
+                          src={getFaviconUrl(bookmarkedTriplet.url, 64)}
                           alt={getDomain(bookmarkedTriplet.url)}
                           className="bookmark-favicon-icon"
                           onClick={() => window.open(bookmarkedTriplet.url, '_blank', 'noopener,noreferrer')}
