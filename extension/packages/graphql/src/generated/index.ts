@@ -3213,9 +3213,56 @@ export type Get_Account_Pnl_Rank_Args = {
   p_time_filter?: InputMaybe<Scalars["String"]["input"]>
 }
 
+export type Get_Pnl_Leaderboard_Args = {
+  p_end_time?: InputMaybe<Scalars["timestamptz"]["input"]>
+  p_exclude_protocol_accounts?: InputMaybe<Scalars["Boolean"]["input"]>
+  p_limit?: InputMaybe<Scalars["Int"]["input"]>
+  p_min_positions?: InputMaybe<Scalars["Int"]["input"]>
+  p_min_volume?: InputMaybe<Scalars["numeric"]["input"]>
+  p_offset?: InputMaybe<Scalars["Int"]["input"]>
+  p_sort_by?: InputMaybe<Scalars["String"]["input"]>
+  p_sort_order?: InputMaybe<Scalars["String"]["input"]>
+  p_start_time?: InputMaybe<Scalars["timestamptz"]["input"]>
+  p_term_id?: InputMaybe<Scalars["String"]["input"]>
+  p_time_filter?: InputMaybe<Scalars["String"]["input"]>
+}
+
+export type Get_Pnl_Leaderboard_Period_Args = {
+  p_end_date?: InputMaybe<Scalars["timestamptz"]["input"]>
+  p_exclude_protocol_accounts?: InputMaybe<Scalars["Boolean"]["input"]>
+  p_limit?: InputMaybe<Scalars["Int"]["input"]>
+  p_min_positions?: InputMaybe<Scalars["Int"]["input"]>
+  p_min_volume?: InputMaybe<Scalars["numeric"]["input"]>
+  p_offset?: InputMaybe<Scalars["Int"]["input"]>
+  p_sort_by?: InputMaybe<Scalars["String"]["input"]>
+  p_sort_order?: InputMaybe<Scalars["String"]["input"]>
+  p_start_date?: InputMaybe<Scalars["timestamptz"]["input"]>
+  p_term_id?: InputMaybe<Scalars["String"]["input"]>
+}
+
 export type Get_Pnl_Leaderboard_Stats_Args = {
   p_term_id?: InputMaybe<Scalars["String"]["input"]>
   p_time_filter?: InputMaybe<Scalars["String"]["input"]>
+}
+
+export type Get_Vault_Leaderboard_Args = {
+  p_curve_id?: InputMaybe<Scalars["numeric"]["input"]>
+  p_limit?: InputMaybe<Scalars["Int"]["input"]>
+  p_offset?: InputMaybe<Scalars["Int"]["input"]>
+  p_sort_by?: InputMaybe<Scalars["String"]["input"]>
+  p_sort_order?: InputMaybe<Scalars["String"]["input"]>
+  p_term_id?: InputMaybe<Scalars["String"]["input"]>
+}
+
+export type Get_Vault_Leaderboard_Period_Args = {
+  p_curve_id?: InputMaybe<Scalars["numeric"]["input"]>
+  p_end_date?: InputMaybe<Scalars["timestamptz"]["input"]>
+  p_limit?: InputMaybe<Scalars["Int"]["input"]>
+  p_offset?: InputMaybe<Scalars["Int"]["input"]>
+  p_sort_by?: InputMaybe<Scalars["String"]["input"]>
+  p_sort_order?: InputMaybe<Scalars["String"]["input"]>
+  p_start_date?: InputMaybe<Scalars["timestamptz"]["input"]>
+  p_term_id?: InputMaybe<Scalars["String"]["input"]>
 }
 
 /** columns and relationships of "json_object" */
@@ -3641,6 +3688,619 @@ export type Persons_Stream_Cursor_Value_Input = {
   image?: InputMaybe<Scalars["String"]["input"]>
   name?: InputMaybe<Scalars["String"]["input"]>
   url?: InputMaybe<Scalars["String"]["input"]>
+}
+
+/** columns and relationships of "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry = {
+  __typename?: "pnl_leaderboard_entry"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  active_position_count?: Maybe<Scalars["bigint"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["numeric"]["output"]>
+  first_position_at?: Maybe<Scalars["timestamptz"]["output"]>
+  last_activity_at?: Maybe<Scalars["timestamptz"]["output"]>
+  losing_positions?: Maybe<Scalars["bigint"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["numeric"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_volume_raw?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+  winning_positions?: Maybe<Scalars["bigint"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+}
+
+export type Pnl_Leaderboard_Entry_Aggregate = {
+  __typename?: "pnl_leaderboard_entry_aggregate"
+  aggregate?: Maybe<Pnl_Leaderboard_Entry_Aggregate_Fields>
+  nodes: Array<Pnl_Leaderboard_Entry>
+}
+
+/** aggregate fields of "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry_Aggregate_Fields = {
+  __typename?: "pnl_leaderboard_entry_aggregate_fields"
+  avg?: Maybe<Pnl_Leaderboard_Entry_Avg_Fields>
+  count: Scalars["Int"]["output"]
+  max?: Maybe<Pnl_Leaderboard_Entry_Max_Fields>
+  min?: Maybe<Pnl_Leaderboard_Entry_Min_Fields>
+  stddev?: Maybe<Pnl_Leaderboard_Entry_Stddev_Fields>
+  stddev_pop?: Maybe<Pnl_Leaderboard_Entry_Stddev_Pop_Fields>
+  stddev_samp?: Maybe<Pnl_Leaderboard_Entry_Stddev_Samp_Fields>
+  sum?: Maybe<Pnl_Leaderboard_Entry_Sum_Fields>
+  var_pop?: Maybe<Pnl_Leaderboard_Entry_Var_Pop_Fields>
+  var_samp?: Maybe<Pnl_Leaderboard_Entry_Var_Samp_Fields>
+  variance?: Maybe<Pnl_Leaderboard_Entry_Variance_Fields>
+}
+
+/** aggregate fields of "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  distinct?: InputMaybe<Scalars["Boolean"]["input"]>
+}
+
+/** aggregate avg on columns */
+export type Pnl_Leaderboard_Entry_Avg_Fields = {
+  __typename?: "pnl_leaderboard_entry_avg_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["Float"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_volume_raw?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Boolean expression to filter rows from the table "pnl_leaderboard_entry". All fields are combined with a logical 'AND'. */
+export type Pnl_Leaderboard_Entry_Bool_Exp = {
+  _and?: InputMaybe<Array<Pnl_Leaderboard_Entry_Bool_Exp>>
+  _not?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+  _or?: InputMaybe<Array<Pnl_Leaderboard_Entry_Bool_Exp>>
+  account_id?: InputMaybe<String_Comparison_Exp>
+  account_image?: InputMaybe<String_Comparison_Exp>
+  account_label?: InputMaybe<String_Comparison_Exp>
+  active_position_count?: InputMaybe<Bigint_Comparison_Exp>
+  best_trade_pnl_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  best_trade_pnl_raw?: InputMaybe<Numeric_Comparison_Exp>
+  current_equity_value_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  current_equity_value_raw?: InputMaybe<Numeric_Comparison_Exp>
+  first_position_at?: InputMaybe<Timestamptz_Comparison_Exp>
+  last_activity_at?: InputMaybe<Timestamptz_Comparison_Exp>
+  losing_positions?: InputMaybe<Bigint_Comparison_Exp>
+  pnl_change_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  pnl_change_raw?: InputMaybe<Numeric_Comparison_Exp>
+  pnl_pct?: InputMaybe<Numeric_Comparison_Exp>
+  rank?: InputMaybe<Bigint_Comparison_Exp>
+  realized_pnl_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  realized_pnl_raw?: InputMaybe<Numeric_Comparison_Exp>
+  redeemable_assets_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  redeemable_assets_raw?: InputMaybe<Numeric_Comparison_Exp>
+  total_deposits_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  total_deposits_raw?: InputMaybe<Numeric_Comparison_Exp>
+  total_pnl_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  total_pnl_raw?: InputMaybe<Numeric_Comparison_Exp>
+  total_position_count?: InputMaybe<Bigint_Comparison_Exp>
+  total_redemptions_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  total_redemptions_raw?: InputMaybe<Numeric_Comparison_Exp>
+  total_volume_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  total_volume_raw?: InputMaybe<Numeric_Comparison_Exp>
+  unrealized_pnl_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  unrealized_pnl_raw?: InputMaybe<Numeric_Comparison_Exp>
+  win_rate?: InputMaybe<Numeric_Comparison_Exp>
+  winning_positions?: InputMaybe<Bigint_Comparison_Exp>
+  worst_trade_pnl_formatted?: InputMaybe<Numeric_Comparison_Exp>
+  worst_trade_pnl_raw?: InputMaybe<Numeric_Comparison_Exp>
+}
+
+/** aggregate max on columns */
+export type Pnl_Leaderboard_Entry_Max_Fields = {
+  __typename?: "pnl_leaderboard_entry_max_fields"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  active_position_count?: Maybe<Scalars["bigint"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["numeric"]["output"]>
+  first_position_at?: Maybe<Scalars["timestamptz"]["output"]>
+  last_activity_at?: Maybe<Scalars["timestamptz"]["output"]>
+  losing_positions?: Maybe<Scalars["bigint"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["numeric"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_volume_raw?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+  winning_positions?: Maybe<Scalars["bigint"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** aggregate min on columns */
+export type Pnl_Leaderboard_Entry_Min_Fields = {
+  __typename?: "pnl_leaderboard_entry_min_fields"
+  account_id?: Maybe<Scalars["String"]["output"]>
+  account_image?: Maybe<Scalars["String"]["output"]>
+  account_label?: Maybe<Scalars["String"]["output"]>
+  active_position_count?: Maybe<Scalars["bigint"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["numeric"]["output"]>
+  first_position_at?: Maybe<Scalars["timestamptz"]["output"]>
+  last_activity_at?: Maybe<Scalars["timestamptz"]["output"]>
+  losing_positions?: Maybe<Scalars["bigint"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["numeric"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_volume_raw?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+  winning_positions?: Maybe<Scalars["bigint"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** Ordering options when selecting data from "pnl_leaderboard_entry". */
+export type Pnl_Leaderboard_Entry_Order_By = {
+  account_id?: InputMaybe<Order_By>
+  account_image?: InputMaybe<Order_By>
+  account_label?: InputMaybe<Order_By>
+  active_position_count?: InputMaybe<Order_By>
+  best_trade_pnl_formatted?: InputMaybe<Order_By>
+  best_trade_pnl_raw?: InputMaybe<Order_By>
+  current_equity_value_formatted?: InputMaybe<Order_By>
+  current_equity_value_raw?: InputMaybe<Order_By>
+  first_position_at?: InputMaybe<Order_By>
+  last_activity_at?: InputMaybe<Order_By>
+  losing_positions?: InputMaybe<Order_By>
+  pnl_change_formatted?: InputMaybe<Order_By>
+  pnl_change_raw?: InputMaybe<Order_By>
+  pnl_pct?: InputMaybe<Order_By>
+  rank?: InputMaybe<Order_By>
+  realized_pnl_formatted?: InputMaybe<Order_By>
+  realized_pnl_raw?: InputMaybe<Order_By>
+  redeemable_assets_formatted?: InputMaybe<Order_By>
+  redeemable_assets_raw?: InputMaybe<Order_By>
+  total_deposits_formatted?: InputMaybe<Order_By>
+  total_deposits_raw?: InputMaybe<Order_By>
+  total_pnl_formatted?: InputMaybe<Order_By>
+  total_pnl_raw?: InputMaybe<Order_By>
+  total_position_count?: InputMaybe<Order_By>
+  total_redemptions_formatted?: InputMaybe<Order_By>
+  total_redemptions_raw?: InputMaybe<Order_By>
+  total_volume_formatted?: InputMaybe<Order_By>
+  total_volume_raw?: InputMaybe<Order_By>
+  unrealized_pnl_formatted?: InputMaybe<Order_By>
+  unrealized_pnl_raw?: InputMaybe<Order_By>
+  win_rate?: InputMaybe<Order_By>
+  winning_positions?: InputMaybe<Order_By>
+  worst_trade_pnl_formatted?: InputMaybe<Order_By>
+  worst_trade_pnl_raw?: InputMaybe<Order_By>
+}
+
+/** select columns of table "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry_Select_Column =
+  /** column name */
+  | "account_id"
+  /** column name */
+  | "account_image"
+  /** column name */
+  | "account_label"
+  /** column name */
+  | "active_position_count"
+  /** column name */
+  | "best_trade_pnl_formatted"
+  /** column name */
+  | "best_trade_pnl_raw"
+  /** column name */
+  | "current_equity_value_formatted"
+  /** column name */
+  | "current_equity_value_raw"
+  /** column name */
+  | "first_position_at"
+  /** column name */
+  | "last_activity_at"
+  /** column name */
+  | "losing_positions"
+  /** column name */
+  | "pnl_change_formatted"
+  /** column name */
+  | "pnl_change_raw"
+  /** column name */
+  | "pnl_pct"
+  /** column name */
+  | "rank"
+  /** column name */
+  | "realized_pnl_formatted"
+  /** column name */
+  | "realized_pnl_raw"
+  /** column name */
+  | "redeemable_assets_formatted"
+  /** column name */
+  | "redeemable_assets_raw"
+  /** column name */
+  | "total_deposits_formatted"
+  /** column name */
+  | "total_deposits_raw"
+  /** column name */
+  | "total_pnl_formatted"
+  /** column name */
+  | "total_pnl_raw"
+  /** column name */
+  | "total_position_count"
+  /** column name */
+  | "total_redemptions_formatted"
+  /** column name */
+  | "total_redemptions_raw"
+  /** column name */
+  | "total_volume_formatted"
+  /** column name */
+  | "total_volume_raw"
+  /** column name */
+  | "unrealized_pnl_formatted"
+  /** column name */
+  | "unrealized_pnl_raw"
+  /** column name */
+  | "win_rate"
+  /** column name */
+  | "winning_positions"
+  /** column name */
+  | "worst_trade_pnl_formatted"
+  /** column name */
+  | "worst_trade_pnl_raw"
+
+/** aggregate stddev on columns */
+export type Pnl_Leaderboard_Entry_Stddev_Fields = {
+  __typename?: "pnl_leaderboard_entry_stddev_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["Float"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_volume_raw?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_pop on columns */
+export type Pnl_Leaderboard_Entry_Stddev_Pop_Fields = {
+  __typename?: "pnl_leaderboard_entry_stddev_pop_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["Float"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_volume_raw?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate stddev_samp on columns */
+export type Pnl_Leaderboard_Entry_Stddev_Samp_Fields = {
+  __typename?: "pnl_leaderboard_entry_stddev_samp_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["Float"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_volume_raw?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** Streaming cursor of the table "pnl_leaderboard_entry" */
+export type Pnl_Leaderboard_Entry_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Pnl_Leaderboard_Entry_Stream_Cursor_Value_Input
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>
+}
+
+/** Initial value of the column from where the streaming should start */
+export type Pnl_Leaderboard_Entry_Stream_Cursor_Value_Input = {
+  account_id?: InputMaybe<Scalars["String"]["input"]>
+  account_image?: InputMaybe<Scalars["String"]["input"]>
+  account_label?: InputMaybe<Scalars["String"]["input"]>
+  active_position_count?: InputMaybe<Scalars["bigint"]["input"]>
+  best_trade_pnl_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  best_trade_pnl_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  current_equity_value_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  current_equity_value_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  first_position_at?: InputMaybe<Scalars["timestamptz"]["input"]>
+  last_activity_at?: InputMaybe<Scalars["timestamptz"]["input"]>
+  losing_positions?: InputMaybe<Scalars["bigint"]["input"]>
+  pnl_change_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  pnl_change_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  pnl_pct?: InputMaybe<Scalars["numeric"]["input"]>
+  rank?: InputMaybe<Scalars["bigint"]["input"]>
+  realized_pnl_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  realized_pnl_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  redeemable_assets_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  redeemable_assets_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  total_deposits_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  total_deposits_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  total_pnl_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  total_pnl_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  total_position_count?: InputMaybe<Scalars["bigint"]["input"]>
+  total_redemptions_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  total_redemptions_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  total_volume_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  total_volume_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  unrealized_pnl_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  unrealized_pnl_raw?: InputMaybe<Scalars["numeric"]["input"]>
+  win_rate?: InputMaybe<Scalars["numeric"]["input"]>
+  winning_positions?: InputMaybe<Scalars["bigint"]["input"]>
+  worst_trade_pnl_formatted?: InputMaybe<Scalars["numeric"]["input"]>
+  worst_trade_pnl_raw?: InputMaybe<Scalars["numeric"]["input"]>
+}
+
+/** aggregate sum on columns */
+export type Pnl_Leaderboard_Entry_Sum_Fields = {
+  __typename?: "pnl_leaderboard_entry_sum_fields"
+  active_position_count?: Maybe<Scalars["bigint"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["numeric"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["numeric"]["output"]>
+  losing_positions?: Maybe<Scalars["bigint"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["numeric"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["numeric"]["output"]>
+  pnl_pct?: Maybe<Scalars["numeric"]["output"]>
+  rank?: Maybe<Scalars["bigint"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["numeric"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_position_count?: Maybe<Scalars["bigint"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["numeric"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["numeric"]["output"]>
+  total_volume_raw?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+  win_rate?: Maybe<Scalars["numeric"]["output"]>
+  winning_positions?: Maybe<Scalars["bigint"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["numeric"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["numeric"]["output"]>
+}
+
+/** aggregate var_pop on columns */
+export type Pnl_Leaderboard_Entry_Var_Pop_Fields = {
+  __typename?: "pnl_leaderboard_entry_var_pop_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["Float"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_volume_raw?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate var_samp on columns */
+export type Pnl_Leaderboard_Entry_Var_Samp_Fields = {
+  __typename?: "pnl_leaderboard_entry_var_samp_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["Float"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_volume_raw?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+}
+
+/** aggregate variance on columns */
+export type Pnl_Leaderboard_Entry_Variance_Fields = {
+  __typename?: "pnl_leaderboard_entry_variance_fields"
+  active_position_count?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  best_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_formatted?: Maybe<Scalars["Float"]["output"]>
+  current_equity_value_raw?: Maybe<Scalars["Float"]["output"]>
+  losing_positions?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_formatted?: Maybe<Scalars["Float"]["output"]>
+  pnl_change_raw?: Maybe<Scalars["Float"]["output"]>
+  pnl_pct?: Maybe<Scalars["Float"]["output"]>
+  rank?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  realized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_formatted?: Maybe<Scalars["Float"]["output"]>
+  redeemable_assets_raw?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_deposits_raw?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  total_position_count?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_redemptions_raw?: Maybe<Scalars["Float"]["output"]>
+  total_volume_formatted?: Maybe<Scalars["Float"]["output"]>
+  total_volume_raw?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  unrealized_pnl_raw?: Maybe<Scalars["Float"]["output"]>
+  win_rate?: Maybe<Scalars["Float"]["output"]>
+  winning_positions?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_formatted?: Maybe<Scalars["Float"]["output"]>
+  worst_trade_pnl_raw?: Maybe<Scalars["Float"]["output"]>
 }
 
 /** columns and relationships of "pnl_leaderboard_stats" */
@@ -5737,10 +6397,26 @@ export type Query_Root = {
   get_account_pnl_rank: Array<Account_Pnl_Rank>
   /** execute function "get_account_pnl_rank" and query aggregates on result of table type "account_pnl_rank" */
   get_account_pnl_rank_aggregate: Account_Pnl_Rank_Aggregate
+  /** execute function "get_pnl_leaderboard" which returns "pnl_leaderboard_entry" */
+  get_pnl_leaderboard: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_pnl_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_pnl_leaderboard_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** execute function "get_pnl_leaderboard_period" which returns "pnl_leaderboard_entry" */
+  get_pnl_leaderboard_period: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_pnl_leaderboard_period" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_pnl_leaderboard_period_aggregate: Pnl_Leaderboard_Entry_Aggregate
   /** execute function "get_pnl_leaderboard_stats" which returns "pnl_leaderboard_stats" */
   get_pnl_leaderboard_stats: Array<Pnl_Leaderboard_Stats>
   /** execute function "get_pnl_leaderboard_stats" and query aggregates on result of table type "pnl_leaderboard_stats" */
   get_pnl_leaderboard_stats_aggregate: Pnl_Leaderboard_Stats_Aggregate
+  /** execute function "get_vault_leaderboard" which returns "pnl_leaderboard_entry" */
+  get_vault_leaderboard: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_vault_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_vault_leaderboard_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** execute function "get_vault_leaderboard_period" which returns "pnl_leaderboard_entry" */
+  get_vault_leaderboard_period: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_vault_leaderboard_period" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_vault_leaderboard_period_aggregate: Pnl_Leaderboard_Entry_Aggregate
   /** fetch data from the table: "json_object" using primary key columns */
   json_object?: Maybe<Json_Objects>
   /** fetch data from the table: "json_object" */
@@ -5759,6 +6435,10 @@ export type Query_Root = {
   persons: Array<Persons>
   /** fetch aggregated fields from the table: "person" */
   persons_aggregate: Persons_Aggregate
+  /** fetch data from the table: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry: Array<Pnl_Leaderboard_Entry>
+  /** fetch aggregated fields from the table: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry_aggregate: Pnl_Leaderboard_Entry_Aggregate
   /** fetch data from the table: "pnl_leaderboard_stats" */
   pnl_leaderboard_stats: Array<Pnl_Leaderboard_Stats>
   /** fetch aggregated fields from the table: "pnl_leaderboard_stats" */
@@ -6201,6 +6881,42 @@ export type Query_RootGet_Account_Pnl_Rank_AggregateArgs = {
   where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
 }
 
+export type Query_RootGet_Pnl_LeaderboardArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Pnl_Leaderboard_AggregateArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Pnl_Leaderboard_PeriodArgs = {
+  args: Get_Pnl_Leaderboard_Period_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Pnl_Leaderboard_Period_AggregateArgs = {
+  args: Get_Pnl_Leaderboard_Period_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
 export type Query_RootGet_Pnl_Leaderboard_StatsArgs = {
   args?: InputMaybe<Get_Pnl_Leaderboard_Stats_Args>
   distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
@@ -6217,6 +6933,42 @@ export type Query_RootGet_Pnl_Leaderboard_Stats_AggregateArgs = {
   offset?: InputMaybe<Scalars["Int"]["input"]>
   order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
   where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Query_RootGet_Vault_LeaderboardArgs = {
+  args: Get_Vault_Leaderboard_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Vault_Leaderboard_AggregateArgs = {
+  args: Get_Vault_Leaderboard_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Vault_Leaderboard_PeriodArgs = {
+  args: Get_Vault_Leaderboard_Period_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootGet_Vault_Leaderboard_Period_AggregateArgs = {
+  args: Get_Vault_Leaderboard_Period_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
 }
 
 export type Query_RootJson_ObjectArgs = {
@@ -6277,6 +7029,22 @@ export type Query_RootPersons_AggregateArgs = {
   offset?: InputMaybe<Scalars["Int"]["input"]>
   order_by?: InputMaybe<Array<Persons_Order_By>>
   where?: InputMaybe<Persons_Bool_Exp>
+}
+
+export type Query_RootPnl_Leaderboard_EntryArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Query_RootPnl_Leaderboard_Entry_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
 }
 
 export type Query_RootPnl_Leaderboard_StatsArgs = {
@@ -9785,10 +10553,26 @@ export type Subscription_Root = {
   get_account_pnl_rank: Array<Account_Pnl_Rank>
   /** execute function "get_account_pnl_rank" and query aggregates on result of table type "account_pnl_rank" */
   get_account_pnl_rank_aggregate: Account_Pnl_Rank_Aggregate
+  /** execute function "get_pnl_leaderboard" which returns "pnl_leaderboard_entry" */
+  get_pnl_leaderboard: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_pnl_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_pnl_leaderboard_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** execute function "get_pnl_leaderboard_period" which returns "pnl_leaderboard_entry" */
+  get_pnl_leaderboard_period: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_pnl_leaderboard_period" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_pnl_leaderboard_period_aggregate: Pnl_Leaderboard_Entry_Aggregate
   /** execute function "get_pnl_leaderboard_stats" which returns "pnl_leaderboard_stats" */
   get_pnl_leaderboard_stats: Array<Pnl_Leaderboard_Stats>
   /** execute function "get_pnl_leaderboard_stats" and query aggregates on result of table type "pnl_leaderboard_stats" */
   get_pnl_leaderboard_stats_aggregate: Pnl_Leaderboard_Stats_Aggregate
+  /** execute function "get_vault_leaderboard" which returns "pnl_leaderboard_entry" */
+  get_vault_leaderboard: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_vault_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_vault_leaderboard_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** execute function "get_vault_leaderboard_period" which returns "pnl_leaderboard_entry" */
+  get_vault_leaderboard_period: Array<Pnl_Leaderboard_Entry>
+  /** execute function "get_vault_leaderboard_period" and query aggregates on result of table type "pnl_leaderboard_entry" */
+  get_vault_leaderboard_period_aggregate: Pnl_Leaderboard_Entry_Aggregate
   /** fetch data from the table: "json_object" using primary key columns */
   json_object?: Maybe<Json_Objects>
   /** fetch data from the table: "json_object" */
@@ -9813,6 +10597,12 @@ export type Subscription_Root = {
   persons_aggregate: Persons_Aggregate
   /** fetch data from the table in a streaming manner: "person" */
   persons_stream: Array<Persons>
+  /** fetch data from the table: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry: Array<Pnl_Leaderboard_Entry>
+  /** fetch aggregated fields from the table: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry_aggregate: Pnl_Leaderboard_Entry_Aggregate
+  /** fetch data from the table in a streaming manner: "pnl_leaderboard_entry" */
+  pnl_leaderboard_entry_stream: Array<Pnl_Leaderboard_Entry>
   /** fetch data from the table: "pnl_leaderboard_stats" */
   pnl_leaderboard_stats: Array<Pnl_Leaderboard_Stats>
   /** fetch aggregated fields from the table: "pnl_leaderboard_stats" */
@@ -10363,6 +11153,42 @@ export type Subscription_RootGet_Account_Pnl_Rank_AggregateArgs = {
   where?: InputMaybe<Account_Pnl_Rank_Bool_Exp>
 }
 
+export type Subscription_RootGet_Pnl_LeaderboardArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Pnl_Leaderboard_AggregateArgs = {
+  args?: InputMaybe<Get_Pnl_Leaderboard_Args>
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Pnl_Leaderboard_PeriodArgs = {
+  args: Get_Pnl_Leaderboard_Period_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Pnl_Leaderboard_Period_AggregateArgs = {
+  args: Get_Pnl_Leaderboard_Period_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
 export type Subscription_RootGet_Pnl_Leaderboard_StatsArgs = {
   args?: InputMaybe<Get_Pnl_Leaderboard_Stats_Args>
   distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Stats_Select_Column>>
@@ -10379,6 +11205,42 @@ export type Subscription_RootGet_Pnl_Leaderboard_Stats_AggregateArgs = {
   offset?: InputMaybe<Scalars["Int"]["input"]>
   order_by?: InputMaybe<Array<Pnl_Leaderboard_Stats_Order_By>>
   where?: InputMaybe<Pnl_Leaderboard_Stats_Bool_Exp>
+}
+
+export type Subscription_RootGet_Vault_LeaderboardArgs = {
+  args: Get_Vault_Leaderboard_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Vault_Leaderboard_AggregateArgs = {
+  args: Get_Vault_Leaderboard_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Vault_Leaderboard_PeriodArgs = {
+  args: Get_Vault_Leaderboard_Period_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootGet_Vault_Leaderboard_Period_AggregateArgs = {
+  args: Get_Vault_Leaderboard_Period_Args
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
 }
 
 export type Subscription_RootJson_ObjectArgs = {
@@ -10457,6 +11319,28 @@ export type Subscription_RootPersons_StreamArgs = {
   batch_size: Scalars["Int"]["input"]
   cursor: Array<InputMaybe<Persons_Stream_Cursor_Input>>
   where?: InputMaybe<Persons_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_EntryArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_Entry_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Pnl_Leaderboard_Entry_Select_Column>>
+  limit?: InputMaybe<Scalars["Int"]["input"]>
+  offset?: InputMaybe<Scalars["Int"]["input"]>
+  order_by?: InputMaybe<Array<Pnl_Leaderboard_Entry_Order_By>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
+}
+
+export type Subscription_RootPnl_Leaderboard_Entry_StreamArgs = {
+  batch_size: Scalars["Int"]["input"]
+  cursor: Array<InputMaybe<Pnl_Leaderboard_Entry_Stream_Cursor_Input>>
+  where?: InputMaybe<Pnl_Leaderboard_Entry_Bool_Exp>
 }
 
 export type Subscription_RootPnl_Leaderboard_StatsArgs = {
@@ -22952,6 +23836,7 @@ export type GetTrendingByPredicateQuery = {
         count: number
       } | null
     }
+    triple_vault?: { __typename?: "triple_vault"; total_shares: any } | null
   }>
 }
 
@@ -34514,6 +35399,9 @@ export const GetTrendingByPredicateDocument = `
       aggregate {
         count
       }
+    }
+    triple_vault {
+      total_shares
     }
   }
 }
@@ -73876,6 +74764,19 @@ export const GetTrendingByPredicate = {
                             }
                           ]
                         }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "triple_vault" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "total_shares" }
                       }
                     ]
                   }

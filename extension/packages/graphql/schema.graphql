@@ -4239,9 +4239,56 @@ input get_account_pnl_rank_args {
   p_time_filter: String
 }
 
+input get_pnl_leaderboard_args {
+  p_end_time: timestamptz
+  p_exclude_protocol_accounts: Boolean
+  p_limit: Int
+  p_min_positions: Int
+  p_min_volume: numeric
+  p_offset: Int
+  p_sort_by: String
+  p_sort_order: String
+  p_start_time: timestamptz
+  p_term_id: String
+  p_time_filter: String
+}
+
+input get_pnl_leaderboard_period_args {
+  p_end_date: timestamptz
+  p_exclude_protocol_accounts: Boolean
+  p_limit: Int
+  p_min_positions: Int
+  p_min_volume: numeric
+  p_offset: Int
+  p_sort_by: String
+  p_sort_order: String
+  p_start_date: timestamptz
+  p_term_id: String
+}
+
 input get_pnl_leaderboard_stats_args {
   p_term_id: String
   p_time_filter: String
+}
+
+input get_vault_leaderboard_args {
+  p_curve_id: numeric
+  p_limit: Int
+  p_offset: Int
+  p_sort_by: String
+  p_sort_order: String
+  p_term_id: String
+}
+
+input get_vault_leaderboard_period_args {
+  p_curve_id: numeric
+  p_end_date: timestamptz
+  p_limit: Int
+  p_offset: Int
+  p_sort_by: String
+  p_sort_order: String
+  p_start_date: timestamptz
+  p_term_id: String
 }
 
 """
@@ -4761,6 +4808,710 @@ input persons_stream_cursor_value_input {
   image: String
   name: String
   url: String
+}
+
+"""
+columns and relationships of "pnl_leaderboard_entry"
+"""
+type pnl_leaderboard_entry {
+  account_id: String
+  account_image: String
+  account_label: String
+  active_position_count: bigint
+  best_trade_pnl_formatted: numeric
+  best_trade_pnl_raw: numeric
+  current_equity_value_formatted: numeric
+  current_equity_value_raw: numeric
+  first_position_at: timestamptz
+  last_activity_at: timestamptz
+  losing_positions: bigint
+  pnl_change_formatted: numeric
+  pnl_change_raw: numeric
+  pnl_pct: numeric
+  rank: bigint
+  realized_pnl_formatted: numeric
+  realized_pnl_raw: numeric
+  redeemable_assets_formatted: numeric
+  redeemable_assets_raw: numeric
+  total_deposits_formatted: numeric
+  total_deposits_raw: numeric
+  total_pnl_formatted: numeric
+  total_pnl_raw: numeric
+  total_position_count: bigint
+  total_redemptions_formatted: numeric
+  total_redemptions_raw: numeric
+  total_volume_formatted: numeric
+  total_volume_raw: numeric
+  unrealized_pnl_formatted: numeric
+  unrealized_pnl_raw: numeric
+  win_rate: numeric
+  winning_positions: bigint
+  worst_trade_pnl_formatted: numeric
+  worst_trade_pnl_raw: numeric
+}
+
+type pnl_leaderboard_entry_aggregate {
+  aggregate: pnl_leaderboard_entry_aggregate_fields
+  nodes: [pnl_leaderboard_entry!]!
+}
+
+"""
+aggregate fields of "pnl_leaderboard_entry"
+"""
+type pnl_leaderboard_entry_aggregate_fields {
+  avg: pnl_leaderboard_entry_avg_fields
+  count(
+    columns: [pnl_leaderboard_entry_select_column!]
+    distinct: Boolean
+  ): Int!
+  max: pnl_leaderboard_entry_max_fields
+  min: pnl_leaderboard_entry_min_fields
+  stddev: pnl_leaderboard_entry_stddev_fields
+  stddev_pop: pnl_leaderboard_entry_stddev_pop_fields
+  stddev_samp: pnl_leaderboard_entry_stddev_samp_fields
+  sum: pnl_leaderboard_entry_sum_fields
+  var_pop: pnl_leaderboard_entry_var_pop_fields
+  var_samp: pnl_leaderboard_entry_var_samp_fields
+  variance: pnl_leaderboard_entry_variance_fields
+}
+
+"""
+aggregate avg on columns
+"""
+type pnl_leaderboard_entry_avg_fields {
+  active_position_count: Float
+  best_trade_pnl_formatted: Float
+  best_trade_pnl_raw: Float
+  current_equity_value_formatted: Float
+  current_equity_value_raw: Float
+  losing_positions: Float
+  pnl_change_formatted: Float
+  pnl_change_raw: Float
+  pnl_pct: Float
+  rank: Float
+  realized_pnl_formatted: Float
+  realized_pnl_raw: Float
+  redeemable_assets_formatted: Float
+  redeemable_assets_raw: Float
+  total_deposits_formatted: Float
+  total_deposits_raw: Float
+  total_pnl_formatted: Float
+  total_pnl_raw: Float
+  total_position_count: Float
+  total_redemptions_formatted: Float
+  total_redemptions_raw: Float
+  total_volume_formatted: Float
+  total_volume_raw: Float
+  unrealized_pnl_formatted: Float
+  unrealized_pnl_raw: Float
+  win_rate: Float
+  winning_positions: Float
+  worst_trade_pnl_formatted: Float
+  worst_trade_pnl_raw: Float
+}
+
+"""
+Boolean expression to filter rows from the table "pnl_leaderboard_entry". All fields are combined with a logical 'AND'.
+"""
+input pnl_leaderboard_entry_bool_exp {
+  _and: [pnl_leaderboard_entry_bool_exp!]
+  _not: pnl_leaderboard_entry_bool_exp
+  _or: [pnl_leaderboard_entry_bool_exp!]
+  account_id: String_comparison_exp
+  account_image: String_comparison_exp
+  account_label: String_comparison_exp
+  active_position_count: bigint_comparison_exp
+  best_trade_pnl_formatted: numeric_comparison_exp
+  best_trade_pnl_raw: numeric_comparison_exp
+  current_equity_value_formatted: numeric_comparison_exp
+  current_equity_value_raw: numeric_comparison_exp
+  first_position_at: timestamptz_comparison_exp
+  last_activity_at: timestamptz_comparison_exp
+  losing_positions: bigint_comparison_exp
+  pnl_change_formatted: numeric_comparison_exp
+  pnl_change_raw: numeric_comparison_exp
+  pnl_pct: numeric_comparison_exp
+  rank: bigint_comparison_exp
+  realized_pnl_formatted: numeric_comparison_exp
+  realized_pnl_raw: numeric_comparison_exp
+  redeemable_assets_formatted: numeric_comparison_exp
+  redeemable_assets_raw: numeric_comparison_exp
+  total_deposits_formatted: numeric_comparison_exp
+  total_deposits_raw: numeric_comparison_exp
+  total_pnl_formatted: numeric_comparison_exp
+  total_pnl_raw: numeric_comparison_exp
+  total_position_count: bigint_comparison_exp
+  total_redemptions_formatted: numeric_comparison_exp
+  total_redemptions_raw: numeric_comparison_exp
+  total_volume_formatted: numeric_comparison_exp
+  total_volume_raw: numeric_comparison_exp
+  unrealized_pnl_formatted: numeric_comparison_exp
+  unrealized_pnl_raw: numeric_comparison_exp
+  win_rate: numeric_comparison_exp
+  winning_positions: bigint_comparison_exp
+  worst_trade_pnl_formatted: numeric_comparison_exp
+  worst_trade_pnl_raw: numeric_comparison_exp
+}
+
+"""
+aggregate max on columns
+"""
+type pnl_leaderboard_entry_max_fields {
+  account_id: String
+  account_image: String
+  account_label: String
+  active_position_count: bigint
+  best_trade_pnl_formatted: numeric
+  best_trade_pnl_raw: numeric
+  current_equity_value_formatted: numeric
+  current_equity_value_raw: numeric
+  first_position_at: timestamptz
+  last_activity_at: timestamptz
+  losing_positions: bigint
+  pnl_change_formatted: numeric
+  pnl_change_raw: numeric
+  pnl_pct: numeric
+  rank: bigint
+  realized_pnl_formatted: numeric
+  realized_pnl_raw: numeric
+  redeemable_assets_formatted: numeric
+  redeemable_assets_raw: numeric
+  total_deposits_formatted: numeric
+  total_deposits_raw: numeric
+  total_pnl_formatted: numeric
+  total_pnl_raw: numeric
+  total_position_count: bigint
+  total_redemptions_formatted: numeric
+  total_redemptions_raw: numeric
+  total_volume_formatted: numeric
+  total_volume_raw: numeric
+  unrealized_pnl_formatted: numeric
+  unrealized_pnl_raw: numeric
+  win_rate: numeric
+  winning_positions: bigint
+  worst_trade_pnl_formatted: numeric
+  worst_trade_pnl_raw: numeric
+}
+
+"""
+aggregate min on columns
+"""
+type pnl_leaderboard_entry_min_fields {
+  account_id: String
+  account_image: String
+  account_label: String
+  active_position_count: bigint
+  best_trade_pnl_formatted: numeric
+  best_trade_pnl_raw: numeric
+  current_equity_value_formatted: numeric
+  current_equity_value_raw: numeric
+  first_position_at: timestamptz
+  last_activity_at: timestamptz
+  losing_positions: bigint
+  pnl_change_formatted: numeric
+  pnl_change_raw: numeric
+  pnl_pct: numeric
+  rank: bigint
+  realized_pnl_formatted: numeric
+  realized_pnl_raw: numeric
+  redeemable_assets_formatted: numeric
+  redeemable_assets_raw: numeric
+  total_deposits_formatted: numeric
+  total_deposits_raw: numeric
+  total_pnl_formatted: numeric
+  total_pnl_raw: numeric
+  total_position_count: bigint
+  total_redemptions_formatted: numeric
+  total_redemptions_raw: numeric
+  total_volume_formatted: numeric
+  total_volume_raw: numeric
+  unrealized_pnl_formatted: numeric
+  unrealized_pnl_raw: numeric
+  win_rate: numeric
+  winning_positions: bigint
+  worst_trade_pnl_formatted: numeric
+  worst_trade_pnl_raw: numeric
+}
+
+"""
+Ordering options when selecting data from "pnl_leaderboard_entry".
+"""
+input pnl_leaderboard_entry_order_by {
+  account_id: order_by
+  account_image: order_by
+  account_label: order_by
+  active_position_count: order_by
+  best_trade_pnl_formatted: order_by
+  best_trade_pnl_raw: order_by
+  current_equity_value_formatted: order_by
+  current_equity_value_raw: order_by
+  first_position_at: order_by
+  last_activity_at: order_by
+  losing_positions: order_by
+  pnl_change_formatted: order_by
+  pnl_change_raw: order_by
+  pnl_pct: order_by
+  rank: order_by
+  realized_pnl_formatted: order_by
+  realized_pnl_raw: order_by
+  redeemable_assets_formatted: order_by
+  redeemable_assets_raw: order_by
+  total_deposits_formatted: order_by
+  total_deposits_raw: order_by
+  total_pnl_formatted: order_by
+  total_pnl_raw: order_by
+  total_position_count: order_by
+  total_redemptions_formatted: order_by
+  total_redemptions_raw: order_by
+  total_volume_formatted: order_by
+  total_volume_raw: order_by
+  unrealized_pnl_formatted: order_by
+  unrealized_pnl_raw: order_by
+  win_rate: order_by
+  winning_positions: order_by
+  worst_trade_pnl_formatted: order_by
+  worst_trade_pnl_raw: order_by
+}
+
+"""
+select columns of table "pnl_leaderboard_entry"
+"""
+enum pnl_leaderboard_entry_select_column {
+  """
+  column name
+  """
+  account_id
+  """
+  column name
+  """
+  account_image
+  """
+  column name
+  """
+  account_label
+  """
+  column name
+  """
+  active_position_count
+  """
+  column name
+  """
+  best_trade_pnl_formatted
+  """
+  column name
+  """
+  best_trade_pnl_raw
+  """
+  column name
+  """
+  current_equity_value_formatted
+  """
+  column name
+  """
+  current_equity_value_raw
+  """
+  column name
+  """
+  first_position_at
+  """
+  column name
+  """
+  last_activity_at
+  """
+  column name
+  """
+  losing_positions
+  """
+  column name
+  """
+  pnl_change_formatted
+  """
+  column name
+  """
+  pnl_change_raw
+  """
+  column name
+  """
+  pnl_pct
+  """
+  column name
+  """
+  rank
+  """
+  column name
+  """
+  realized_pnl_formatted
+  """
+  column name
+  """
+  realized_pnl_raw
+  """
+  column name
+  """
+  redeemable_assets_formatted
+  """
+  column name
+  """
+  redeemable_assets_raw
+  """
+  column name
+  """
+  total_deposits_formatted
+  """
+  column name
+  """
+  total_deposits_raw
+  """
+  column name
+  """
+  total_pnl_formatted
+  """
+  column name
+  """
+  total_pnl_raw
+  """
+  column name
+  """
+  total_position_count
+  """
+  column name
+  """
+  total_redemptions_formatted
+  """
+  column name
+  """
+  total_redemptions_raw
+  """
+  column name
+  """
+  total_volume_formatted
+  """
+  column name
+  """
+  total_volume_raw
+  """
+  column name
+  """
+  unrealized_pnl_formatted
+  """
+  column name
+  """
+  unrealized_pnl_raw
+  """
+  column name
+  """
+  win_rate
+  """
+  column name
+  """
+  winning_positions
+  """
+  column name
+  """
+  worst_trade_pnl_formatted
+  """
+  column name
+  """
+  worst_trade_pnl_raw
+}
+
+"""
+aggregate stddev on columns
+"""
+type pnl_leaderboard_entry_stddev_fields {
+  active_position_count: Float
+  best_trade_pnl_formatted: Float
+  best_trade_pnl_raw: Float
+  current_equity_value_formatted: Float
+  current_equity_value_raw: Float
+  losing_positions: Float
+  pnl_change_formatted: Float
+  pnl_change_raw: Float
+  pnl_pct: Float
+  rank: Float
+  realized_pnl_formatted: Float
+  realized_pnl_raw: Float
+  redeemable_assets_formatted: Float
+  redeemable_assets_raw: Float
+  total_deposits_formatted: Float
+  total_deposits_raw: Float
+  total_pnl_formatted: Float
+  total_pnl_raw: Float
+  total_position_count: Float
+  total_redemptions_formatted: Float
+  total_redemptions_raw: Float
+  total_volume_formatted: Float
+  total_volume_raw: Float
+  unrealized_pnl_formatted: Float
+  unrealized_pnl_raw: Float
+  win_rate: Float
+  winning_positions: Float
+  worst_trade_pnl_formatted: Float
+  worst_trade_pnl_raw: Float
+}
+
+"""
+aggregate stddev_pop on columns
+"""
+type pnl_leaderboard_entry_stddev_pop_fields {
+  active_position_count: Float
+  best_trade_pnl_formatted: Float
+  best_trade_pnl_raw: Float
+  current_equity_value_formatted: Float
+  current_equity_value_raw: Float
+  losing_positions: Float
+  pnl_change_formatted: Float
+  pnl_change_raw: Float
+  pnl_pct: Float
+  rank: Float
+  realized_pnl_formatted: Float
+  realized_pnl_raw: Float
+  redeemable_assets_formatted: Float
+  redeemable_assets_raw: Float
+  total_deposits_formatted: Float
+  total_deposits_raw: Float
+  total_pnl_formatted: Float
+  total_pnl_raw: Float
+  total_position_count: Float
+  total_redemptions_formatted: Float
+  total_redemptions_raw: Float
+  total_volume_formatted: Float
+  total_volume_raw: Float
+  unrealized_pnl_formatted: Float
+  unrealized_pnl_raw: Float
+  win_rate: Float
+  winning_positions: Float
+  worst_trade_pnl_formatted: Float
+  worst_trade_pnl_raw: Float
+}
+
+"""
+aggregate stddev_samp on columns
+"""
+type pnl_leaderboard_entry_stddev_samp_fields {
+  active_position_count: Float
+  best_trade_pnl_formatted: Float
+  best_trade_pnl_raw: Float
+  current_equity_value_formatted: Float
+  current_equity_value_raw: Float
+  losing_positions: Float
+  pnl_change_formatted: Float
+  pnl_change_raw: Float
+  pnl_pct: Float
+  rank: Float
+  realized_pnl_formatted: Float
+  realized_pnl_raw: Float
+  redeemable_assets_formatted: Float
+  redeemable_assets_raw: Float
+  total_deposits_formatted: Float
+  total_deposits_raw: Float
+  total_pnl_formatted: Float
+  total_pnl_raw: Float
+  total_position_count: Float
+  total_redemptions_formatted: Float
+  total_redemptions_raw: Float
+  total_volume_formatted: Float
+  total_volume_raw: Float
+  unrealized_pnl_formatted: Float
+  unrealized_pnl_raw: Float
+  win_rate: Float
+  winning_positions: Float
+  worst_trade_pnl_formatted: Float
+  worst_trade_pnl_raw: Float
+}
+
+"""
+Streaming cursor of the table "pnl_leaderboard_entry"
+"""
+input pnl_leaderboard_entry_stream_cursor_input {
+  """
+  Stream column input with initial value
+  """
+  initial_value: pnl_leaderboard_entry_stream_cursor_value_input!
+  """
+  cursor ordering
+  """
+  ordering: cursor_ordering
+}
+
+"""
+Initial value of the column from where the streaming should start
+"""
+input pnl_leaderboard_entry_stream_cursor_value_input {
+  account_id: String
+  account_image: String
+  account_label: String
+  active_position_count: bigint
+  best_trade_pnl_formatted: numeric
+  best_trade_pnl_raw: numeric
+  current_equity_value_formatted: numeric
+  current_equity_value_raw: numeric
+  first_position_at: timestamptz
+  last_activity_at: timestamptz
+  losing_positions: bigint
+  pnl_change_formatted: numeric
+  pnl_change_raw: numeric
+  pnl_pct: numeric
+  rank: bigint
+  realized_pnl_formatted: numeric
+  realized_pnl_raw: numeric
+  redeemable_assets_formatted: numeric
+  redeemable_assets_raw: numeric
+  total_deposits_formatted: numeric
+  total_deposits_raw: numeric
+  total_pnl_formatted: numeric
+  total_pnl_raw: numeric
+  total_position_count: bigint
+  total_redemptions_formatted: numeric
+  total_redemptions_raw: numeric
+  total_volume_formatted: numeric
+  total_volume_raw: numeric
+  unrealized_pnl_formatted: numeric
+  unrealized_pnl_raw: numeric
+  win_rate: numeric
+  winning_positions: bigint
+  worst_trade_pnl_formatted: numeric
+  worst_trade_pnl_raw: numeric
+}
+
+"""
+aggregate sum on columns
+"""
+type pnl_leaderboard_entry_sum_fields {
+  active_position_count: bigint
+  best_trade_pnl_formatted: numeric
+  best_trade_pnl_raw: numeric
+  current_equity_value_formatted: numeric
+  current_equity_value_raw: numeric
+  losing_positions: bigint
+  pnl_change_formatted: numeric
+  pnl_change_raw: numeric
+  pnl_pct: numeric
+  rank: bigint
+  realized_pnl_formatted: numeric
+  realized_pnl_raw: numeric
+  redeemable_assets_formatted: numeric
+  redeemable_assets_raw: numeric
+  total_deposits_formatted: numeric
+  total_deposits_raw: numeric
+  total_pnl_formatted: numeric
+  total_pnl_raw: numeric
+  total_position_count: bigint
+  total_redemptions_formatted: numeric
+  total_redemptions_raw: numeric
+  total_volume_formatted: numeric
+  total_volume_raw: numeric
+  unrealized_pnl_formatted: numeric
+  unrealized_pnl_raw: numeric
+  win_rate: numeric
+  winning_positions: bigint
+  worst_trade_pnl_formatted: numeric
+  worst_trade_pnl_raw: numeric
+}
+
+"""
+aggregate var_pop on columns
+"""
+type pnl_leaderboard_entry_var_pop_fields {
+  active_position_count: Float
+  best_trade_pnl_formatted: Float
+  best_trade_pnl_raw: Float
+  current_equity_value_formatted: Float
+  current_equity_value_raw: Float
+  losing_positions: Float
+  pnl_change_formatted: Float
+  pnl_change_raw: Float
+  pnl_pct: Float
+  rank: Float
+  realized_pnl_formatted: Float
+  realized_pnl_raw: Float
+  redeemable_assets_formatted: Float
+  redeemable_assets_raw: Float
+  total_deposits_formatted: Float
+  total_deposits_raw: Float
+  total_pnl_formatted: Float
+  total_pnl_raw: Float
+  total_position_count: Float
+  total_redemptions_formatted: Float
+  total_redemptions_raw: Float
+  total_volume_formatted: Float
+  total_volume_raw: Float
+  unrealized_pnl_formatted: Float
+  unrealized_pnl_raw: Float
+  win_rate: Float
+  winning_positions: Float
+  worst_trade_pnl_formatted: Float
+  worst_trade_pnl_raw: Float
+}
+
+"""
+aggregate var_samp on columns
+"""
+type pnl_leaderboard_entry_var_samp_fields {
+  active_position_count: Float
+  best_trade_pnl_formatted: Float
+  best_trade_pnl_raw: Float
+  current_equity_value_formatted: Float
+  current_equity_value_raw: Float
+  losing_positions: Float
+  pnl_change_formatted: Float
+  pnl_change_raw: Float
+  pnl_pct: Float
+  rank: Float
+  realized_pnl_formatted: Float
+  realized_pnl_raw: Float
+  redeemable_assets_formatted: Float
+  redeemable_assets_raw: Float
+  total_deposits_formatted: Float
+  total_deposits_raw: Float
+  total_pnl_formatted: Float
+  total_pnl_raw: Float
+  total_position_count: Float
+  total_redemptions_formatted: Float
+  total_redemptions_raw: Float
+  total_volume_formatted: Float
+  total_volume_raw: Float
+  unrealized_pnl_formatted: Float
+  unrealized_pnl_raw: Float
+  win_rate: Float
+  winning_positions: Float
+  worst_trade_pnl_formatted: Float
+  worst_trade_pnl_raw: Float
+}
+
+"""
+aggregate variance on columns
+"""
+type pnl_leaderboard_entry_variance_fields {
+  active_position_count: Float
+  best_trade_pnl_formatted: Float
+  best_trade_pnl_raw: Float
+  current_equity_value_formatted: Float
+  current_equity_value_raw: Float
+  losing_positions: Float
+  pnl_change_formatted: Float
+  pnl_change_raw: Float
+  pnl_pct: Float
+  rank: Float
+  realized_pnl_formatted: Float
+  realized_pnl_raw: Float
+  redeemable_assets_formatted: Float
+  redeemable_assets_raw: Float
+  total_deposits_formatted: Float
+  total_deposits_raw: Float
+  total_pnl_formatted: Float
+  total_pnl_raw: Float
+  total_position_count: Float
+  total_redemptions_formatted: Float
+  total_redemptions_raw: Float
+  total_volume_formatted: Float
+  total_volume_raw: Float
+  unrealized_pnl_formatted: Float
+  unrealized_pnl_raw: Float
+  win_rate: Float
+  winning_positions: Float
+  worst_trade_pnl_formatted: Float
+  worst_trade_pnl_raw: Float
 }
 
 """
@@ -7945,6 +8696,122 @@ type query_root {
     where: account_pnl_rank_bool_exp
   ): account_pnl_rank_aggregate!
   """
+  execute function "get_pnl_leaderboard" which returns "pnl_leaderboard_entry"
+  """
+  get_pnl_leaderboard(
+    """
+    input parameters for function "get_pnl_leaderboard"
+    """
+    args: get_pnl_leaderboard_args
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  execute function "get_pnl_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry"
+  """
+  get_pnl_leaderboard_aggregate(
+    """
+    input parameters for function "get_pnl_leaderboard_aggregate"
+    """
+    args: get_pnl_leaderboard_args
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
+  """
+  execute function "get_pnl_leaderboard_period" which returns "pnl_leaderboard_entry"
+  """
+  get_pnl_leaderboard_period(
+    """
+    input parameters for function "get_pnl_leaderboard_period"
+    """
+    args: get_pnl_leaderboard_period_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  execute function "get_pnl_leaderboard_period" and query aggregates on result of table type "pnl_leaderboard_entry"
+  """
+  get_pnl_leaderboard_period_aggregate(
+    """
+    input parameters for function "get_pnl_leaderboard_period_aggregate"
+    """
+    args: get_pnl_leaderboard_period_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
+  """
   execute function "get_pnl_leaderboard_stats" which returns "pnl_leaderboard_stats"
   """
   get_pnl_leaderboard_stats(
@@ -8002,6 +8869,122 @@ type query_root {
     """
     where: pnl_leaderboard_stats_bool_exp
   ): pnl_leaderboard_stats_aggregate!
+  """
+  execute function "get_vault_leaderboard" which returns "pnl_leaderboard_entry"
+  """
+  get_vault_leaderboard(
+    """
+    input parameters for function "get_vault_leaderboard"
+    """
+    args: get_vault_leaderboard_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  execute function "get_vault_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry"
+  """
+  get_vault_leaderboard_aggregate(
+    """
+    input parameters for function "get_vault_leaderboard_aggregate"
+    """
+    args: get_vault_leaderboard_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
+  """
+  execute function "get_vault_leaderboard_period" which returns "pnl_leaderboard_entry"
+  """
+  get_vault_leaderboard_period(
+    """
+    input parameters for function "get_vault_leaderboard_period"
+    """
+    args: get_vault_leaderboard_period_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  execute function "get_vault_leaderboard_period" and query aggregates on result of table type "pnl_leaderboard_entry"
+  """
+  get_vault_leaderboard_period_aggregate(
+    """
+    input parameters for function "get_vault_leaderboard_period_aggregate"
+    """
+    args: get_vault_leaderboard_period_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
   """
   fetch data from the table: "json_object" using primary key columns
   """
@@ -8164,6 +9147,56 @@ type query_root {
     """
     where: persons_bool_exp
   ): persons_aggregate!
+  """
+  fetch data from the table: "pnl_leaderboard_entry"
+  """
+  pnl_leaderboard_entry(
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  fetch aggregated fields from the table: "pnl_leaderboard_entry"
+  """
+  pnl_leaderboard_entry_aggregate(
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
   """
   fetch data from the table: "pnl_leaderboard_stats"
   """
@@ -14270,6 +15303,122 @@ type subscription_root {
     where: account_pnl_rank_bool_exp
   ): account_pnl_rank_aggregate!
   """
+  execute function "get_pnl_leaderboard" which returns "pnl_leaderboard_entry"
+  """
+  get_pnl_leaderboard(
+    """
+    input parameters for function "get_pnl_leaderboard"
+    """
+    args: get_pnl_leaderboard_args
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  execute function "get_pnl_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry"
+  """
+  get_pnl_leaderboard_aggregate(
+    """
+    input parameters for function "get_pnl_leaderboard_aggregate"
+    """
+    args: get_pnl_leaderboard_args
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
+  """
+  execute function "get_pnl_leaderboard_period" which returns "pnl_leaderboard_entry"
+  """
+  get_pnl_leaderboard_period(
+    """
+    input parameters for function "get_pnl_leaderboard_period"
+    """
+    args: get_pnl_leaderboard_period_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  execute function "get_pnl_leaderboard_period" and query aggregates on result of table type "pnl_leaderboard_entry"
+  """
+  get_pnl_leaderboard_period_aggregate(
+    """
+    input parameters for function "get_pnl_leaderboard_period_aggregate"
+    """
+    args: get_pnl_leaderboard_period_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
+  """
   execute function "get_pnl_leaderboard_stats" which returns "pnl_leaderboard_stats"
   """
   get_pnl_leaderboard_stats(
@@ -14327,6 +15476,122 @@ type subscription_root {
     """
     where: pnl_leaderboard_stats_bool_exp
   ): pnl_leaderboard_stats_aggregate!
+  """
+  execute function "get_vault_leaderboard" which returns "pnl_leaderboard_entry"
+  """
+  get_vault_leaderboard(
+    """
+    input parameters for function "get_vault_leaderboard"
+    """
+    args: get_vault_leaderboard_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  execute function "get_vault_leaderboard" and query aggregates on result of table type "pnl_leaderboard_entry"
+  """
+  get_vault_leaderboard_aggregate(
+    """
+    input parameters for function "get_vault_leaderboard_aggregate"
+    """
+    args: get_vault_leaderboard_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
+  """
+  execute function "get_vault_leaderboard_period" which returns "pnl_leaderboard_entry"
+  """
+  get_vault_leaderboard_period(
+    """
+    input parameters for function "get_vault_leaderboard_period"
+    """
+    args: get_vault_leaderboard_period_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  execute function "get_vault_leaderboard_period" and query aggregates on result of table type "pnl_leaderboard_entry"
+  """
+  get_vault_leaderboard_period_aggregate(
+    """
+    input parameters for function "get_vault_leaderboard_period_aggregate"
+    """
+    args: get_vault_leaderboard_period_args!
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
   """
   fetch data from the table: "json_object" using primary key columns
   """
@@ -14540,6 +15805,73 @@ type subscription_root {
     """
     where: persons_bool_exp
   ): [persons!]!
+  """
+  fetch data from the table: "pnl_leaderboard_entry"
+  """
+  pnl_leaderboard_entry(
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
+  """
+  fetch aggregated fields from the table: "pnl_leaderboard_entry"
+  """
+  pnl_leaderboard_entry_aggregate(
+    """
+    distinct select on columns
+    """
+    distinct_on: [pnl_leaderboard_entry_select_column!]
+    """
+    limit the number of rows returned
+    """
+    limit: Int
+    """
+    skip the first n rows. Use only with order_by
+    """
+    offset: Int
+    """
+    sort the rows by one or more columns
+    """
+    order_by: [pnl_leaderboard_entry_order_by!]
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): pnl_leaderboard_entry_aggregate!
+  """
+  fetch data from the table in a streaming manner: "pnl_leaderboard_entry"
+  """
+  pnl_leaderboard_entry_stream(
+    """
+    maximum number of rows returned in a single batch
+    """
+    batch_size: Int!
+    """
+    cursor to stream the results returned by the query
+    """
+    cursor: [pnl_leaderboard_entry_stream_cursor_input]!
+    """
+    filter the rows returned
+    """
+    where: pnl_leaderboard_entry_bool_exp
+  ): [pnl_leaderboard_entry!]!
   """
   fetch data from the table: "pnl_leaderboard_stats"
   """

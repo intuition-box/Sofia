@@ -24,6 +24,8 @@ import pulseImg from '../../ui/img/questssuccess/pulse.png'
 import signalImg from '../../ui/img/questssuccess/Signal.png'
 import socialImg from '../../ui/img/questssuccess/social.png'
 import streakImg from '../../ui/img/questssuccess/streak.png'
+import streakFireImg from '../../ui/img/questssuccess/Streak/mid.png'
+import streakNoFireImg from '../../ui/img/questssuccess/Streak/low.png'
 import trustImg from '../../ui/img/questssuccess/trust.png'
 import goldImg from '../../ui/img/questssuccess/gold.png'
 
@@ -80,7 +82,7 @@ interface VaultProfitData {
   participantCount: number
 }
 
-const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const getWeekDates = (): string[] => {
   const now = new Date()
@@ -112,7 +114,10 @@ interface AchievementsTabProps {
   streakProfit?: VaultProfitData | null
   voteProfit?: VaultProfitData | null
   currentStreak?: number
+  currentVoteStreak?: number
 }
+
+const STREAK_MILESTONES = [7, 30, 100]
 
 const AchievementsTab = ({
   quests,
@@ -126,9 +131,8 @@ const AchievementsTab = ({
   onMarkCompleted,
   onRefresh,
   walletAddress,
-  streakProfit,
-  voteProfit,
-  currentStreak
+  currentStreak,
+  currentVoteStreak
 }: AchievementsTabProps) => {
   const [refreshing, setRefreshing] = useState(false)
   const [certDays, setCertDays] = useState<Set<string>>(new Set())
@@ -197,81 +201,128 @@ const AchievementsTab = ({
     return 'achievement-card locked'
   }
 
+  // Streak hub data
+  const maxStreak = Math.max(currentStreak || 0, currentVoteStreak || 0)
+  const prevMilestone = STREAK_MILESTONES.filter(m => m <= maxStreak).pop() || 0
+  const nextMilestone = STREAK_MILESTONES.find(m => m > maxStreak) || 100
+  const streakProgress = maxStreak >= 100
+    ? 100
+    : ((maxStreak - prevMilestone) / (nextMilestone - prevMilestone)) * 100
+
+  const dailyVoteQuest = quests.find(q => q.id === "daily-vote")
+  const dailyCertQuest = quests.find(q => q.id === "daily-certification")
+  const weekDates = getWeekDates()
+
+  const renderWeekRow = (days: Set<string>) => {
+    // Group consecutive active days into pill runs
+    const runs: { indices: number[]; active: boolean }[] = []
+    let current: { indices: number[]; active: boolean } | null = null
+
+    weekDates.forEach((date, i) => {
+      const isActive = days.has(date)
+      if (!current || current.active !== isActive) {
+        current = { indices: [i], active: isActive }
+        runs.push(current)
+      } else {
+        current.indices.push(i)
+      }
+    })
+
+    return (
+      <div className="streak-hub-week">
+        {runs.map((run, ri) =>
+          run.active ? (
+            <div key={ri} className="streak-hub-pill" style={{ flex: run.indices.length }}>
+              {run.indices.map(i => (
+                <div key={i} className="streak-hub-day active">
+                  {"\u2713"}
+                </div>
+              ))}
+            </div>
+          ) : (
+            run.indices.map(i => (
+              <div key={i} className="streak-hub-day">
+                {DAY_LABELS[i]}
+              </div>
+            ))
+          )
+        )}
+      </div>
+    )
+  }
+
+  const renderDailyAction = (
+    quest: Quest | undefined,
+    title: string,
+    subtitle: string,
+    days: Set<string>
+  ) => {
+    if (!quest) return null
+    return (
+      <div className="streak-hub-action">
+        <div className="streak-hub-action-title">{title}</div>
+        {quest.status === "claimable_xp" ? (
+          <button
+            className={`streak-hub-claim-btn ${claimingQuestId === quest.id ? "claiming" : ""}`}
+            onClick={async () => {
+              const result = await onClaimXP(quest.id)
+              if (!result.success) {
+                logger.error("Claim failed", result.error)
+              }
+            }}
+            disabled={claimingQuestId !== null}
+          >
+            {claimingQuestId === quest.id ? "..." : "CLAIM XP"}
+          </button>
+        ) : (
+          renderWeekRow(days)
+        )}
+        <div className="streak-hub-subtitle">{subtitle}</div>
+      </div>
+    )
+  }
+
   return (
     <div className="achievements-tab-content">
-      {/* Vault Cards */}
-      {streakProfit?.hasPosition && (
-        <div className="streak-vault-card">
-          <div className="streak-vault-header-top">
-            {currentStreak !== undefined && currentStreak > 0 && (
-              <span className="streak-vault-badge">{"\uD83D\uDD25"} {currentStreak} day streak</span>
-            )}
-            <span className="streak-vault-participants">{streakProfit.participantCount} streakers</span>
+      {/* Streak Hub Card */}
+      <div className="streak-hub-card">
+        <div className="streak-hub-left">
+          <img
+            src={maxStreak >= 7 ? streakFireImg : streakNoFireImg}
+            alt="Streak"
+            className="streak-hub-logo"
+          />
+          <div className="streak-hub-days">{maxStreak} days</div>
+          <div className="streak-hub-progress">
+            <div
+              className="streak-hub-progress-fill"
+              style={{ width: `${Math.round(streakProgress)}%` }}
+            />
           </div>
-          <div className="streak-vault-title-row">
-            <span className="streak-vault-title">Certification Vault</span>
-          </div>
-          <div className="streak-week-bubbles">
-            {getWeekDates().map((date, i) => (
-              <div key={date} className={`streak-bubble ${certDays.has(date) ? 'validated' : ''}`}>
-                {certDays.has(date) ? '✓' : DAY_LABELS[i]}
-              </div>
-            ))}
-          </div>
-          <div className="streak-vault-stats">
-            <div className="streak-vault-stat">
-              <span className="streak-vault-label">Shares</span>
-              <span className="streak-vault-value">{streakProfit.sharesFormatted}</span>
-            </div>
-            <div className="streak-vault-stat">
-              <span className="streak-vault-label">Value</span>
-              <span className="streak-vault-value">{streakProfit.currentValue.toFixed(4)} TRUST</span>
-            </div>
-            <div className="streak-vault-stat">
-              <span className="streak-vault-label">Profit</span>
-              <span className={`streak-vault-value ${streakProfit.profit >= 0 ? 'positive' : 'negative'}`}>
-                {streakProfit.profit >= 0 ? '+' : ''}{streakProfit.profit.toFixed(4)} TRUST
-              </span>
-            </div>
+          <div className="streak-hub-progress-pct">
+            {Math.round(streakProgress)}%
           </div>
         </div>
-      )}
-      {voteProfit?.hasPosition && (
-        <div className="streak-vault-card">
-          <div className="streak-vault-header">
-            <span className="streak-vault-title">Vote Vault</span>
-            <span className="streak-vault-participants">{voteProfit.participantCount} voters</span>
-          </div>
-          <div className="streak-week-bubbles">
-            {getWeekDates().map((date, i) => (
-              <div key={date} className={`streak-bubble ${voteDays.has(date) ? 'validated' : ''}`}>
-                {voteDays.has(date) ? '✓' : DAY_LABELS[i]}
-              </div>
-            ))}
-          </div>
-          <div className="streak-vault-stats">
-            <div className="streak-vault-stat">
-              <span className="streak-vault-label">Shares</span>
-              <span className="streak-vault-value">{voteProfit.sharesFormatted}</span>
-            </div>
-            <div className="streak-vault-stat">
-              <span className="streak-vault-label">Value</span>
-              <span className="streak-vault-value">{voteProfit.currentValue.toFixed(4)} TRUST</span>
-            </div>
-            <div className="streak-vault-stat">
-              <span className="streak-vault-label">Profit</span>
-              <span className={`streak-vault-value ${voteProfit.profit >= 0 ? 'positive' : 'negative'}`}>
-                {voteProfit.profit >= 0 ? '+' : ''}{voteProfit.profit.toFixed(4)} TRUST
-              </span>
-            </div>
-          </div>
+        <div className="streak-hub-right">
+          {renderDailyAction(
+            dailyVoteQuest,
+            "DAILY VOTER",
+            "Vote once today",
+            voteDays
+          )}
+          {renderDailyAction(
+            dailyCertQuest,
+            "DAILY CERTIFICATION",
+            "Certify a page today",
+            certDays
+          )}
         </div>
-      )}
+      </div>
 
       {(() => {
-        // Section "Task" : daily-certification + daily-vote
-        const taskQuests = sorted.filter(q => q.id === 'daily-certification' || q.id === 'daily-vote')
-        const remaining = sorted.filter(q => q.id !== 'daily-certification' && q.id !== 'daily-vote')
+        const remaining = sorted.filter(
+          q => q.id !== "daily-certification" && q.id !== "daily-vote"
+        )
 
         // Group remaining quests by type
         const SECTION_ORDER = ['streak', 'vote', 'signal', 'discovery', 'bookmark', 'social-link', 'follow', 'trust', 'pulse', 'gold']
@@ -400,26 +451,6 @@ const AchievementsTab = ({
 
         return (
           <>
-            {taskQuests.length > 0 && (
-              <>
-                <div className="achievements-section-header">
-                  <div className="achievements-section-label">Task</div>
-                  {onRefresh && (
-                    <button
-                      className="quest-refresh-btn-inline"
-                      onClick={handleRefresh}
-                      disabled={refreshing}
-                      title="Refresh"
-                    >
-                      {refreshing ? '...' : '\u21BB'}
-                    </button>
-                  )}
-                </div>
-                <div className="achievements-grid">
-                  {taskQuests.map(renderCard)}
-                </div>
-              </>
-            )}
             {SECTION_ORDER.map(type => {
               const quests = groupedByType.get(type)
               if (!quests || quests.length === 0) return null

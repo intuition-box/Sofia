@@ -28,6 +28,7 @@
   margin-bottom: var(--spacing-xl);
   max-width: 320px;
   text-align: center;
+  backdrop-filter: blur(20px);
 }
 
 .description-paragraph {
