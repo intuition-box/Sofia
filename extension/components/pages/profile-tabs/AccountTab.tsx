@@ -149,7 +149,7 @@ const AccountTab = () => {
           className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''} ${claimableQuests.length > 0 ? 'has-claimable' : ''}`}
           onClick={() => setActiveTab('achievements')}
         >
-          Quest
+          Quests
         </button>
         <button
           className={`sub-tab ${activeTab === 'interest' ? 'active' : ''}`}

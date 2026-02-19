@@ -44,6 +44,7 @@ const Avatar = ({
           alt={name || 'Avatar'}
           className={`avatar-image ${imageClassName}`}
           onError={handleImageError}
+          referrerPolicy="no-referrer"
         />
       </div>
     )

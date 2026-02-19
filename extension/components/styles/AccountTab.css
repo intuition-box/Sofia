@@ -1,56 +1,4 @@
-/* ========== PROFILE HEADER ========== */
-.profile-header {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  padding: 20px 16px;
-  gap: 20px;
-}
-
-.profile-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-info {
-  flex: 1;
-}
-
-.profile-name {
-  font-family: 'Gotu', cursive;
-  font-size: 20px;
-  font-weight: 600;
-  color: #FBF7F5;
-  margin: 0 0 4px 0;
-}
-
-.profile-email {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.profile-wallet {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  margin: 4px 0 0 0;
-  font-weight: 400;
-}
+/* Profile header styles are in ProfileHeader.css */
 
 /* ========== STATS SECTION ========== */
 .stats-section {
@@ -728,58 +676,7 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* ========== SOCIAL LINKED AVATAR BORDER ========== */
-.profile-avatar.social-linked {
-  border: 3px solid transparent;
-  background:
-    linear-gradient(#1a1a1a, #1a1a1a) padding-box,
-    linear-gradient(135deg, #7C3AED 0%, #5B21B6 50%, #7C3AED 100%) border-box;
-  box-shadow: 0 0 12px rgba(124, 58, 237, 0.4), 0 0 24px rgba(91, 33, 182, 0.2);
-  animation: socialGlow 2s ease-in-out infinite alternate;
-}
-
-@keyframes socialGlow {
-  0% {
-    box-shadow: 0 0 8px rgba(124, 58, 237, 0.3), 0 0 16px rgba(91, 33, 182, 0.15);
-  }
-  100% {
-    box-shadow: 0 0 16px rgba(124, 58, 237, 0.5), 0 0 32px rgba(91, 33, 182, 0.3);
-  }
-}
-
-/* ========== SOCIAL LINKED BADGE ========== */
-.social-linked-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(91, 33, 182, 0.15) 100%);
-  border: 1px solid rgba(124, 58, 237, 0.5);
-  color: #A78BFA;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 4px;
-  box-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
-  animation: socialBadgeGlow 2s ease-in-out infinite alternate;
-}
-
-.social-linked-badge::before {
-  content: '\2713';
-  font-size: 10px;
-  font-weight: bold;
-}
-
-@keyframes socialBadgeGlow {
-  0% {
-    box-shadow: 0 0 4px rgba(124, 58, 237, 0.2);
-  }
-  100% {
-    box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
-  }
-}
+/* Social linked styles are in ProfileHeader.css */
 
 /* ========== CLAIM XP BUTTON ========== */
 .claim-xp-button {
@@ -1346,6 +1243,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 }
 
 .streak-hub-action-title {
