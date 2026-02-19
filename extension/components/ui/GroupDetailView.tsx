@@ -714,7 +714,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               onClick={handleAmplify}
               disabled={amplifyLoading}
             >
-              {amplifyLoading ? '...' : '⛓️ Amplify'}
+              {amplifyLoading ? '...' : 'Amplify'}
             </button>
           )}
         </div>
