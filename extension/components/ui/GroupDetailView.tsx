@@ -398,11 +398,8 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   // Handle level up
   const handleLevelUp = async () => {
-    // For virtual groups, pass the certification breakdown from on-chain data
-    const isVirtualGroup = group.isVirtualGroup || group.id.startsWith('onchain-')
-    const certBreakdown = isVirtualGroup ? group.certificationBreakdown : undefined
-
-    const result = await levelUp(group.id, certBreakdown, currentLevel)
+    // Always pass certification breakdown from UI (has on-chain data)
+    const result = await levelUp(group.id, group.certificationBreakdown, currentLevel)
     if (result.success) {
       // Refresh the preview after successful level up
       const newPreview = await previewLevelUp(group.id, currentLevel)
@@ -416,7 +413,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
 
   // Handle amplify (publish identity on-chain)
   const handleAmplify = async () => {
-    await amplify(group.id)
+    const result = await amplify(group.id)
+    if (result.success && onRefresh) {
+      await onRefresh()
+    }
   }
 
   // Progress toward NEXT level threshold

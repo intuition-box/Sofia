@@ -63,9 +63,11 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
     return 1
   })()
 
-  // Progress toward NEXT level threshold
-  const currentThreshold = LEVEL_THRESHOLDS[displayLevel - 1] || 0
-  const nextThreshold = LEVEL_THRESHOLDS[displayLevel] || currentThreshold + 10
+  // Progress bar from confirmed level (group.level = last Level Up level)
+  // Fills past 100% when on-chain level exceeds confirmed level → triggers glow
+  const confirmedLevel = group.level
+  const currentThreshold = LEVEL_THRESHOLDS[confirmedLevel - 1] || 0
+  const nextThreshold = LEVEL_THRESHOLDS[confirmedLevel] || currentThreshold + 10
   const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
   const progressPercent = Math.min(100, Math.max(0,
     ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
@@ -78,11 +80,8 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
 
   const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as CertificationType] : '#C7866C'
 
-  // Level Up available when on-chain level exceeds highest level with a generated predicate
-  const highestPredicateLevel = group.predicateHistory?.length > 0
-    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
-    : 0
-  const canLevelUp = displayLevel > 1 && displayLevel > highestPredicateLevel
+  // Ready to level up when progress bar is full (100%) based on confirmed level
+  const canLevelUp = progressPercent >= 100
 
   return (
     <div
@@ -155,9 +154,11 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
         </div>
         <span className="progress-label">
           {onChainLoading ? '...' : (
-            xpToNextLevel > 0
-              ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
-              : 'Max level!'
+            canLevelUp
+              ? `Level Up to ${displayLevel}!`
+              : xpToNextLevel > 0
+                ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
+                : 'Max level!'
           )}
         </span>
       </div>

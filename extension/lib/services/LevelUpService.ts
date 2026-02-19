@@ -135,7 +135,7 @@ class LevelUpServiceClass {
 
     // Collect certifications for AI
     const isVirtualGroup = groupId.startsWith('onchain-')
-    const certifications = (isVirtualGroup && providedCertifications)
+    const certifications = providedCertifications
       ? providedCertifications
       : groupManager.getCertificationBreakdown(group)
     logger.debug('Certifications', { certifications, source: isVirtualGroup ? 'UI' : 'local' })
@@ -144,7 +144,7 @@ class LevelUpServiceClass {
     const totalCertifications = Object.values(certifications).reduce((sum, count) => sum + count, 0)
     const hasOAuthUrls = group.urls.some(u => u.oauthPredicate && !u.removed)
     const hasOnChainCerts = group.urls.some(u => u.isOnChain && !u.removed)
-    if (totalCertifications === 0 && !isVirtualGroup && !hasOAuthUrls && !hasOnChainCerts) {
+    if (totalCertifications === 0 && !isVirtualGroup && !hasOAuthUrls && !hasOnChainCerts && !targetLevel) {
       return {
         success: false,
         error: 'No certifications yet. Certify some URLs first!'
