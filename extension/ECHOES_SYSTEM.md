@@ -219,22 +219,23 @@ User certifies URLs on-chain
 displayLevel increases automatically (e.g. 1 → 3)
         │
         ▼
-Progress bar fills past 100% (based on confirmedLevel thresholds)
+displayLevel > highestPredicateLevel → "Level Up!" available
         │
         ▼
 "Level Up!" button appears ← requires Gold + AI predicate generation
         │
         ▼
-confirmedLevel catches up to displayLevel
+highestPredicateLevel catches up to displayLevel
 ```
 
 The level can also **decrease** if the user redeems on-chain positions (withdraws stake). In that case `displayLevel` drops but `confirmedLevel` stays — the predicate history is permanent.
 
 ### Progress Bar Calculation
 
-The progress bar shows advancement toward the **next** level:
+Both components use the same unified logic. The progress bar shows advancement toward the **next** level, using `displayLevel` (on-chain) as base:
 
 ```typescript
+// Shared: lib/utils/levelCalculation.ts → calculateLevelProgress()
 const currentThreshold = LEVEL_THRESHOLDS[baseLevel - 1] || 0
 const nextThreshold = LEVEL_THRESHOLDS[baseLevel] || currentThreshold + 10
 const progressPercent = Math.min(100, Math.max(0,
@@ -243,28 +244,22 @@ const progressPercent = Math.min(100, Math.max(0,
 const xpToNextLevel = Math.max(0, nextThreshold - certifiedCount)
 ```
 
-**Important:** `baseLevel` differs between components:
-- **GroupBentoCard** uses `confirmedLevel` (`group.level`) — shows progress from last Level Up
-- **GroupDetailView** uses `currentLevel` (on-chain) — shows progress from current actual level
+Both `GroupBentoCard` and `GroupDetailView` pass `displayLevel` / `currentLevel` (from `calculateLevel(certifiedCount)`) as `baseLevel`. This ensures the "X certs to LVL Y" text is identical in both views.
 
-### canLevelUp Logic
+### canLevelUp Logic (unified)
 
-Two different checks, both intentional:
+Both components use the same predicate-history-based check:
 
-**GroupBentoCard** (visual indicator — triggers glow CSS):
-```typescript
-const canLevelUp = progressPercent >= 100
-// "Is the progress bar full?" — decorative, triggers .can-level-up CSS class
-```
-
-**GroupDetailView** (functional guard — enables Level Up button):
 ```typescript
 const highestPredicateLevel = group.predicateHistory?.length > 0
   ? Math.max(...group.predicateHistory.map(h => h.toLevel))
   : 0
-const canLevelUp = currentLevel > 1 && currentLevel > highestPredicateLevel
+const canLevelUp = displayLevel > 1 && displayLevel > highestPredicateLevel
 // "Can I generate a NEW predicate?" — prevents double level-up at same level
 ```
+
+In `GroupBentoCard`, this triggers the `.can-level-up` CSS class (glow effect).
+In `GroupDetailView`, this enables the "Level Up" button.
 
 ---
 
@@ -356,10 +351,10 @@ Global user certifications cache (useUserCertifications)
 
 | Component | Pipeline | certifiedCount Source |
 |-----------|----------|----------------------|
-| GroupBentoCard | Pipeline 2 only | `onChainStats?.certifiedCount ?? group.certifiedCount` |
+| GroupBentoCard | Both (MAX) | `Math.max(p2Count, p1Count, group.certifiedCount)` |
 | GroupDetailView | Both (MAX) | `Math.max(p2Count, p1Count, group.certifiedCount)` |
 
-GroupDetailView uses `Math.max()` of all three sources to guarantee no certifications are under-counted.
+Both components use `Math.max()` of all three sources (Pipeline 2 count, Pipeline 1 count, stored count) to guarantee no certifications are under-counted and consistent values between card and detail views.
 
 ### Effective Certification Status
 
@@ -551,11 +546,11 @@ Compact card for the grid. Displays:
 - Current predicate (if any)
 - Level badge (`LVL {displayLevel}`)
 - Stats: URL count, on-chain count, total time
-- Progress bar toward next level (based on `confirmedLevel`)
+- Progress bar toward next level (based on `displayLevel`)
 - Certification type breakdown dots
-- Glow effect when `canLevelUp` (progress >= 100%)
+- Glow effect when `canLevelUp` (on-chain level > highest predicate level)
 
-**Data source:** Pipeline 2 only (`useGroupOnChainCertifications`)
+**Data source:** Both Pipeline 1 and Pipeline 2 (MAX of all sources, same as DetailView)
 
 ### GroupDetailView
 
@@ -584,49 +579,34 @@ Per-URL row component (174 lines, defined inside GroupDetailView). Displays:
 
 ---
 
-## Known Redundancies & Refactoring Plan
+## Refactoring Status
 
-### Duplicated Constants (4+ files)
+### Completed Extractions
 
-| Constant | Files | Action |
-|----------|-------|--------|
-| `LEVEL_THRESHOLDS` | GroupBentoCard, GroupDetailView, useGroupOnChainCertifications, useOnChainIntentionGroups | Extract to `~/lib/utils/levelCalculation.ts` |
-| `CERTIFICATION_COLORS` | GroupBentoCard (Record), GroupDetailView (Array), InterestCard | Extract to `~/lib/constants/certifications.ts` |
-| `intentionToCertification` | GroupDetailView, useGroupOnChainCertifications | Extract to shared constants |
+Shared utilities extracted from duplicated code across 10+ files:
 
-### Duplicated Functions (2-5 files)
+| File | Exports | Consumers |
+|------|---------|-----------|
+| `lib/utils/levelCalculation.ts` | `LEVEL_THRESHOLDS`, `calculateLevel()`, `calculateLevelProgress()` | GroupBentoCard, GroupDetailView, useGroupOnChainCertifications, useOnChainIntentionGroups |
+| `lib/utils/formatters.ts` | `getFaviconUrl()`, `formatDuration()`, `formatShortDate()` | GroupBentoCard, GroupDetailView, InterestCard, CircleFeedTab, HistoryTab, BookmarkTab, OnboardingBookmarkSelectPage |
+| `lib/utils/certificationHelpers.ts` | `intentionToCertification`, `trustToCertification`, `getEffectiveCertStatus()` | GroupDetailView, useGroupOnChainCertifications |
 
-| Function | Files | Action |
-|----------|-------|--------|
-| `getFaviconUrl()` | GroupBentoCard, GroupDetailView, InterestCard, CircleFeedTab, HistoryTab (5x) | Extract to `~/lib/utils/formatters.ts` |
-| `formatDuration()` | GroupBentoCard, GroupDetailView (2x, slightly different) | Extract to `~/lib/utils/formatters.ts` |
-| Level calculation | GroupBentoCard, GroupDetailView, useGroupOnChainCertifications, useOnChainIntentionGroups (4x) | Extract to `~/lib/utils/levelCalculation.ts` |
-| Progress bar calc | GroupBentoCard, GroupDetailView (2x) | Extract to `~/lib/utils/levelCalculation.ts` |
+All re-exported via `lib/utils/index.ts` barrel file.
 
-### Business Logic in Components
+### Unified Logic (BentoCard = DetailView)
 
-| Logic | Location | Target |
-|-------|----------|--------|
-| Level calculation from certifiedCount | GroupBentoCard:59-64, GroupDetailView:383-388 | `~/lib/utils/levelCalculation.ts` |
-| Progress bar calculation | GroupBentoCard:69-74, GroupDetailView:423-428 | Same utility |
-| `getEffectiveCertStatus()` | GroupDetailView:82-99 | `~/lib/utils/certificationHelpers.ts` |
-| Certification breakdown IIFE in JSX | GroupBentoCard:169-188 | Extract to `useMemo` or hook |
-| `canLevelUp` determination | GroupBentoCard:84, GroupDetailView:431-434 | `LevelUpService` method |
+| Logic | Shared Implementation |
+|-------|----------------------|
+| `certifiedCount` | `Math.max(p2Count, p1Count, group.certifiedCount)` — both components |
+| `displayLevel` | `calculateLevel(certifiedCount)` — both components |
+| `progressPercent` / `xpToNextLevel` | `calculateLevelProgress(certifiedCount, displayLevel)` — both components |
+| `canLevelUp` | `displayLevel > 1 && displayLevel > highestPredicateLevel` — both components |
 
-### Type Safety Issues
+### Remaining Opportunities
 
-| Issue | Location | Fix |
-|-------|----------|-----|
-| `modalTriplets` typed as `any[]` | GroupDetailView:349 | Type as `ModalTriplet[]` |
-| `IntentionType` used instead of `CertificationType` | EchoesTab:19 | Replace with `CertificationType` |
-| Relative imports instead of barrel `~/lib/services` | GroupBentoCard:8, GroupDetailView:14 | Use barrel imports |
-
-### Proposed New Files
-
-```
-lib/utils/levelCalculation.ts    — LEVEL_THRESHOLDS, calculateLevel(), calculateProgress()
-lib/utils/certificationHelpers.ts — getEffectiveCertStatus(), counting utilities
-lib/utils/formatters.ts           — getFaviconUrl(), formatDuration(), formatDate()
-lib/constants/certifications.ts   — CERTIFICATION_COLORS, CERTIFICATIONS array, mappings
-components/ui/UrlRow.tsx          — Extract from GroupDetailView (174 lines)
-```
+| Item | Location | Action |
+|------|----------|--------|
+| `CERTIFICATION_COLORS` | GroupBentoCard (Record), GroupDetailView (Array) | Extract to `~/lib/constants/certifications.ts` |
+| `modalTriplets` typed as `any[]` | GroupDetailView:285 | Type as `ModalTriplet[]` |
+| `IntentionType` vs `CertificationType` | EchoesTab | Replace with `CertificationType` |
+| UrlRow inline component (174 lines) | GroupDetailView:65-237 | Extract to `components/ui/UrlRow.tsx` |
