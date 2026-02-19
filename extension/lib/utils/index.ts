@@ -41,3 +41,9 @@ export { getFaviconUrl, formatDuration, formatShortDate, formatBalance } from '.
 
 // Certification Helpers
 export { intentionToCertification, trustToCertification, getEffectiveCertStatus, calculateDominantCertification, sumCertifications } from './certificationHelpers'
+
+// Discovery Calculations
+export { buildPagePositionMap, calculateDiscoveryRanking, calculateDiscoveryGold, buildDiscoveryStats } from './discoveryUtils'
+
+// Streak Calculations
+export { calculateStreaks, toDateStr } from './streakUtils'

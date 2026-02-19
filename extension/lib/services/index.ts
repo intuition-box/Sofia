@@ -5,6 +5,10 @@
 
 // Blockchain
 export { BlockchainService } from './blockchainService'
+export { AtomServiceClass, atomService } from './AtomService'
+export type { PinnedAtomData, PinThingFn } from './AtomService'
+export { TripleServiceClass, tripleService } from './TripleService'
+export type { ResolvedTriple } from './TripleService'
 
 // Wallet
 export { getWalletProvider, cleanupProvider, listWalletProviders, selectProviderByName, selectProviderByAddress, clearProviderSelection } from './walletProvider'

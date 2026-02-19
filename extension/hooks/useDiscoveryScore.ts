@@ -13,15 +13,16 @@
 
 import { useSyncExternalStore } from 'react'
 import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import type { IntentionPurpose, UserDiscoveryStats } from '../types/discovery'
-import { DISCOVERY_GOLD_REWARDS } from '../types/discovery'
+import type { UserDiscoveryStats } from '../types/discovery'
 import { goldService } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
+import { CERTIFICATION_PREDICATE_LABELS } from '../lib/config/predicateConstants'
 import {
-  CERTIFICATION_PREDICATE_LABELS,
-  PREDICATE_LABEL_TO_INTENTION,
-  PREDICATE_LABEL_TO_TRUST
-} from '../lib/config/predicateConstants'
+  buildPagePositionMap,
+  calculateDiscoveryRanking,
+  calculateDiscoveryGold,
+  buildDiscoveryStats
+} from '../lib/utils/discoveryUtils'
 import {
   UserIntentionTriplesDocument,
   AllIntentionTriplesDocument,
@@ -150,99 +151,11 @@ async function fetchDiscoveryScore(walletAddress: string) {
       allTriples: allTriples.length
     })
 
-    // Build a map of pages -> ordered list of unique position holders (by created_at)
-    const pagePositionMap = new Map<string, { accountId: string; createdAt: string }[]>()
-
-    for (const triple of allTriples) {
-      const objectId = triple.object?.term_id
-      const positions = triple.positions || []
-
-      if (!objectId) continue
-
-      if (!pagePositionMap.has(objectId)) {
-        pagePositionMap.set(objectId, [])
-      }
-
-      const pagePositions = pagePositionMap.get(objectId)!
-
-      for (const pos of positions) {
-        const accountId = pos.account_id?.toLowerCase()
-        const createdAt = pos.created_at
-        if (accountId && createdAt && !pagePositions.some(p => p.accountId === accountId)) {
-          pagePositions.push({ accountId, createdAt })
-        }
-      }
-    }
-
-    // Positions are already sorted by created_at from GraphQL, but ensure sort
-    for (const [, positions] of pagePositionMap) {
-      positions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-    }
-
-    // Calculate user's status on each page they certified
-    let pioneerCount = 0
-    let explorerCount = 0
-    let contributorCount = 0
-    const intentionBreakdown: Record<IntentionPurpose, number> = {
-      for_work: 0,
-      for_learning: 0,
-      for_fun: 0,
-      for_inspiration: 0,
-      for_buying: 0,
-      for_music: 0
-    }
-    const trustBreakdown = { trusted: 0, distrusted: 0 }
-
-    const processedPages = new Set<string>()
-
-    for (const triple of userTriples) {
-      const objectId = triple.object?.term_id
-      const predicateLabel = triple.predicate?.label
-
-      if (!objectId) continue
-
-      const intentionPurpose = predicateLabel ? PREDICATE_LABEL_TO_INTENTION[predicateLabel] : null
-      if (intentionPurpose) {
-        intentionBreakdown[intentionPurpose]++
-      }
-      const trustType = predicateLabel ? PREDICATE_LABEL_TO_TRUST[predicateLabel] : null
-      if (trustType) {
-        trustBreakdown[trustType]++
-      }
-
-      if (processedPages.has(objectId)) continue
-      processedPages.add(objectId)
-
-      const pagePositions = pagePositionMap.get(objectId) || []
-      const userRank = pagePositions.findIndex(p => p.accountId === userAddress) + 1
-
-      if (userRank === 1) {
-        pioneerCount++
-      } else if (userRank <= 10) {
-        explorerCount++
-      } else if (userRank > 0) {
-        contributorCount++
-      }
-    }
-
-    const goldFromPioneer = pioneerCount * DISCOVERY_GOLD_REWARDS.PIONEER
-    const goldFromExplorer = explorerCount * DISCOVERY_GOLD_REWARDS.EXPLORER
-    const goldFromContributor = contributorCount * DISCOVERY_GOLD_REWARDS.CONTRIBUTOR
-
-    const discoveryStats: UserDiscoveryStats = {
-      pioneerCount,
-      explorerCount,
-      contributorCount,
-      totalCertifications: processedPages.size,
-      intentionBreakdown,
-      trustBreakdown,
-      discoveryGold: {
-        fromPioneer: goldFromPioneer,
-        fromExplorer: goldFromExplorer,
-        fromContributor: goldFromContributor,
-        total: goldFromPioneer + goldFromExplorer + goldFromContributor
-      }
-    }
+    // Calculate discovery ranking using extracted utils
+    const pagePositionMap = buildPagePositionMap(allTriples)
+    const ranking = calculateDiscoveryRanking(userTriples, pagePositionMap, userAddress)
+    const gold = calculateDiscoveryGold(ranking)
+    const discoveryStats = buildDiscoveryStats(ranking, gold)
 
     // Sync computed discovery Gold total to storage so useGoldSystem reflects reality.
     // Only update if on-chain total >= stored value to preserve optimistic claims
@@ -257,9 +170,9 @@ async function fetchDiscoveryScore(walletAddress: string) {
     }
 
     logger.info('Discovery score calculated', {
-      pioneerCount,
-      explorerCount,
-      contributorCount,
+      pioneerCount: ranking.pioneerCount,
+      explorerCount: ranking.explorerCount,
+      contributorCount: ranking.contributorCount,
       totalGold: discoveryStats.discoveryGold.total
     })
 
