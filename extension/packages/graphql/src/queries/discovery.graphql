@@ -77,7 +77,10 @@ query CertificationTriples(
   triples(
     where: {
       predicate_id: { _in: $predicateIds }
-      object: { label: { _ilike: $hostnameLike } }
+      _or: [
+        { object: { label: { _ilike: $hostnameLike } } }
+        { object: { value: { thing: { url: { _ilike: $hostnameLike } } } } }
+      ]
       positions: { shares: { _gt: "0" } }
     }
     limit: 100
@@ -107,7 +110,10 @@ query IntentionStats(
   triples(
     where: {
       predicate_id: { _in: $predicateIds }
-      object: { label: { _ilike: $hostnameLike } }
+      _or: [
+        { object: { label: { _ilike: $hostnameLike } } }
+        { object: { value: { thing: { url: { _ilike: $hostnameLike } } } } }
+      ]
     }
     limit: 100
   ) {

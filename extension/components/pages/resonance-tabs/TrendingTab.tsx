@@ -131,10 +131,10 @@ const TrendingTab = () => {
                   />
                   <div className="trending-item-info">
                     <div className="trending-item-title">
-                      {item.domain}
+                      {item.objectLabel || item.domain}
                     </div>
-                    {item.objectLabel && item.objectLabel !== item.domain && (
-                      <div className="trending-item-domain">{item.objectLabel}</div>
+                    {item.domain !== item.objectLabel && (
+                      <div className="trending-item-domain">{item.domain}</div>
                     )}
                   </div>
                   <div className="trending-item-stats">
