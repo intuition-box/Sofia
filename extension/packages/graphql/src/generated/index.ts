@@ -35379,7 +35379,7 @@ export const GetTrendingByPredicateDocument = `
   }
   triples(
     where: {predicate_id: {_eq: $predicateId}}
-    order_by: {created_at: desc}
+    order_by: [{positions_aggregate: {count: desc}}, {created_at: desc}]
     limit: $limit
     offset: $offset
   ) {
@@ -35395,7 +35395,7 @@ export const GetTrendingByPredicateDocument = `
         }
       }
     }
-    positions_aggregate {
+    positions_aggregate(where: {shares: {_gt: "0"}}) {
       aggregate {
         count
       }
@@ -74677,12 +74677,36 @@ export const GetTrendingByPredicate = {
                 kind: "Argument",
                 name: { kind: "Name", value: "order_by" },
                 value: {
-                  kind: "ObjectValue",
-                  fields: [
+                  kind: "ListValue",
+                  values: [
                     {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "created_at" },
-                      value: { kind: "EnumValue", value: "desc" }
+                      kind: "ObjectValue",
+                      fields: [
+                        {
+                          kind: "ObjectField",
+                          name: { kind: "Name", value: "positions_aggregate" },
+                          value: {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "count" },
+                                value: { kind: "EnumValue", value: "desc" }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      kind: "ObjectValue",
+                      fields: [
+                        {
+                          kind: "ObjectField",
+                          name: { kind: "Name", value: "created_at" },
+                          value: { kind: "EnumValue", value: "desc" }
+                        }
+                      ]
                     }
                   ]
                 }
@@ -74749,6 +74773,35 @@ export const GetTrendingByPredicate = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "positions_aggregate" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [

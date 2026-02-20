@@ -60,7 +60,7 @@ export function useTrendingCertifications(): UseTrendingResult {
   const [error, setError] = useState<string | null>(null)
   const isFetchingRef = useRef(false)
 
-  const fetchAll = useCallback(async () => {
+  const fetchAll = useCallback(async (bypassCache = false) => {
     if (isFetchingRef.current) return
     if (TRENDING_CATEGORIES.length === 0) {
       setLoading(false)
@@ -71,9 +71,15 @@ export function useTrendingCertifications(): UseTrendingResult {
     setLoading(true)
     setError(null)
 
+    // Clear cache on manual refetch to get fresh data
+    if (bypassCache) {
+      intuitionGraphqlClient.clearCache()
+    }
+
     try {
       logger.info('Fetching trending certifications', {
-        categories: TRENDING_CATEGORIES.length
+        categories: TRENDING_CATEGORIES.length,
+        bypassCache
       })
 
       const promises = TRENDING_CATEGORIES.map(async ({ type, predicateId }) => {
@@ -158,7 +164,7 @@ export function useTrendingCertifications(): UseTrendingResult {
     categories,
     loading,
     error,
-    refetchAll: fetchAll,
+    refetchAll: () => fetchAll(true),
     available: TRENDING_CATEGORIES.length > 0
   }
 }

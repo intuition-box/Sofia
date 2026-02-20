@@ -22,9 +22,9 @@ export function getFaviconUrl(
   size: number = 32
 ): string {
   try {
-    const domain = domainOrUrl.includes("://")
+    const domain = (domainOrUrl.includes("://")
       ? new URL(domainOrUrl).hostname
-      : domainOrUrl
+      : domainOrUrl).replace(/^www\./, "")
     return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`
   } catch {
     return ""
