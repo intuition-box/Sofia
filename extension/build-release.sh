@@ -1,219 +1,203 @@
 #!/bin/bash
 set -e
 
-# Sofia Extension - Alpha Release Builder
-# This script creates a distributable ZIP for GitHub Releases
+# Sofia Extension — Release Builder
+# Usage: bash build-release.sh <version>
+# Example: bash build-release.sh 0.2.3
 
-VERSION=${1:-"0.1.0-alpha.1"}
+VERSION=${1:-""}
 BUILD_DIR="build/chrome-mv3-prod"
 RELEASE_DIR="releases"
 RELEASE_NAME="sofia-extension-${VERSION}"
 ZIP_FILE="${RELEASE_DIR}/${RELEASE_NAME}.zip"
 
-echo "🚀 Building Sofia Extension - Alpha Release"
-echo "============================================"
-echo "Version: ${VERSION}"
+if [ -z "$VERSION" ]; then
+  echo "Usage: bash build-release.sh <version>"
+  echo "Example: bash build-release.sh 0.2.3"
+  exit 1
+fi
+
+echo ""
+echo "  Sofia Extension — Release v${VERSION}"
+echo "  ======================================"
 echo ""
 
-# Step 1: Clean and build
-echo "📦 Step 1: Building extension..."
+# Step 1: Bump version in package.json
+echo "[1/5] Updating version in package.json..."
+sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/" package.json
+echo "  Done: version set to ${VERSION}"
+echo ""
+
+# Step 2: Build
+echo "[2/5] Building extension (pnpm build)..."
 pnpm build
 
 if [ ! -d "$BUILD_DIR" ]; then
-  echo "❌ Error: Build directory not found: $BUILD_DIR"
+  echo "Error: Build directory not found: $BUILD_DIR"
   exit 1
 fi
-
-echo "✅ Build completed"
-echo ""
-
-# Step 2: Create releases directory
-echo "📁 Step 2: Creating releases directory..."
-mkdir -p "$RELEASE_DIR"
-echo "✅ Releases directory ready"
+echo "  Done: build output in ${BUILD_DIR}"
 echo ""
 
 # Step 3: Create ZIP
-echo "📦 Step 3: Creating ZIP package..."
+echo "[3/5] Creating ZIP..."
+mkdir -p "$RELEASE_DIR"
 cd "$BUILD_DIR"
 zip -r "../../${ZIP_FILE}" . -x "*.DS_Store" -x "__MACOSX/*"
 cd ../..
-
-if [ ! -f "$ZIP_FILE" ]; then
-  echo "❌ Error: ZIP file creation failed"
-  exit 1
-fi
-
-echo "✅ ZIP created: ${ZIP_FILE}"
-echo ""
-
-# Step 4: Show file info
 FILE_SIZE=$(du -h "$ZIP_FILE" | cut -f1)
-echo "📊 Package Information:"
-echo "   File: ${ZIP_FILE}"
-echo "   Size: ${FILE_SIZE}"
+echo "  Done: ${ZIP_FILE} (${FILE_SIZE})"
 echo ""
 
-# Step 5: Generate installation instructions
+# Step 4: Generate installation instructions
+echo "[4/5] Generating installation guide..."
 INSTRUCTIONS_FILE="${RELEASE_DIR}/INSTALLATION_${VERSION}.md"
 
 cat > "$INSTRUCTIONS_FILE" << 'EOL'
-# Sofia Extension - Installation Guide
+# Sofia Extension — Installation Guide
 
-## 📋 Alpha Version Installation
+## Prerequisites
+- Google Chrome, Brave, or any Chromium-based browser
+- A crypto wallet (MetaMask, Rabby, etc.) for on-chain features
 
-Thank you for testing Sofia! Follow these steps to install the extension:
+## Installation
 
-### Prerequisites
-- Google Chrome or Chromium-based browser (Brave, Edge, etc.)
-- Operating System: Windows, macOS, or Linux
+1. **Download** `sofia-extension-X.X.X.zip` from the release
+2. **Extract** the ZIP to a permanent folder (e.g. `Documents/Sofia`)
+3. Open `chrome://extensions/` in your browser
+4. Enable **Developer mode** (toggle top-right)
+5. Click **Load unpacked** and select the extracted folder
+6. Sofia should appear in your extensions toolbar
 
-### Installation Steps
+> The "Developer mode" warning is normal for alpha versions.
 
-1. **Download the ZIP file**
-   - Download `sofia-extension-X.X.X-alpha.X.zip` from this release
+## First Launch
 
-2. **Extract the ZIP**
-   - Right-click the downloaded ZIP file
-   - Select "Extract All..." (Windows) or double-click (macOS)
-   - Choose a permanent location (e.g., `Documents/Sofia`)
-   - ⚠️ **Important**: Don't delete this folder after installation!
+1. Click the Sofia icon in your toolbar to open the side panel
+2. Connect your wallet via the login screen (Privy)
+3. Start browsing — Sofia tracks your visits and groups them by domain
 
-3. **Open Chrome Extensions**
-   - Open Google Chrome
-   - Go to `chrome://extensions/`
-   - Or: Menu → More Tools → Extensions
+## Key Features
 
-4. **Enable Developer Mode**
-   - Toggle "Developer mode" switch in the top-right corner
+- **Echoes**: Your browsing organized by intention (work, learning, fun...). Certify URLs on-chain and level up groups with Gold.
+- **Resonance**: Community feed, trending pages, and streak leaderboard.
+- **Pulse**: AI analysis of your current browsing session.
+- **Chat**: Talk to SofIA, your AI browsing assistant.
+- **Profile**: Track your certifications, followers, and activity.
 
-5. **Load the Extension**
-   - Click "Load unpacked"
-   - Navigate to the extracted folder
-   - Select the folder and click "Select Folder"
+## Troubleshooting
 
-6. **Verify Installation**
-   - You should see "Sofia" in your extensions list
-   - The Sofia icon should appear in your toolbar
-   - Status should show "Enabled"
+| Problem | Solution |
+|---------|----------|
+| Extension not visible | Make sure Developer mode is ON, refresh `chrome://extensions/` |
+| Side panel doesn't open | Right-click the Sofia icon > "Open side panel" |
+| Wallet not connecting | Check your wallet extension is installed and unlocked |
+| Features not loading | Open DevTools (F12) > Console for error details |
 
-### First Launch
+## Updating
 
-1. Click the Sofia icon in your toolbar
-2. The extension will connect to: `https://sofia-agent.intuition.box`
-3. Check the console (F12) to verify connection
-
-### Troubleshooting
-
-**Extension not appearing:**
-- Make sure you extracted the ZIP (not just opened it)
-- Ensure "Developer mode" is enabled
-- Try refreshing the extensions page (F5)
-
-**Connection issues:**
-- Open DevTools (F12) and check Console for errors
-- Verify you have internet connection
-- Reload extension and see the agent websocket connection 
-
-**"Mode développeur" warning:**
-- This is normal for alpha versions
-- The warning will disappear in beta/production releases
-
-### Known Issues
-
-- This is an alpha version - expect bugs!
-- Some features may not work as expected
-- Data may be reset between versions
-
-### Reporting Bugs
-
-Please report any issues on GitHub:
-- Include Chrome version
-- Include OS (Windows/macOS/Linux)
-- Describe steps to reproduce
-- Include console errors if any
-
-### Updates
-
-For now, updates require manual reinstallation:
-1. Download new version
-2. Delete old folder (after extracting new one!)
-3. Go to `chrome://extensions/`
-4. Click "Remove" on old Sofia
-5. Install new version following steps above
+1. Download the new version ZIP
+2. Extract to a new folder
+3. Go to `chrome://extensions/` > Remove old Sofia
+4. Load unpacked with the new folder
 
 ---
 
-**Need help?** Open an issue on GitHub!
+**Bug reports**: https://github.com/intuition-box/Sofia/issues
 EOL
 
-echo "✅ Installation instructions created: ${INSTRUCTIONS_FILE}"
+echo "  Done: ${INSTRUCTIONS_FILE}"
 echo ""
 
-# Step 6: Generate release notes template
+# Step 5: Generate release notes
+echo "[5/5] Generating release notes..."
 RELEASE_NOTES="${RELEASE_DIR}/RELEASE_NOTES_${VERSION}.md"
 
 cat > "$RELEASE_NOTES" << EOL
-# 🧪 Sofia Extension - Alpha ${VERSION}
+# Sofia Extension v${VERSION} — Alpha Release
 
-**Release Date:** $(date +%Y-%m-%d)
-**Type:** Alpha Release (Private Testing)
+**Date:** $(date +%Y-%m-%d)
+**Type:** Alpha (Private Testing)
 
-## ⚠️ Important Notes
+> This is an alpha version for private testers. Expect bugs, incomplete features, and possible data resets between versions.
 
-- This is an **alpha test version** for private testing only
-- Expect bugs and incomplete features
-- Data may be reset between versions
+## What's in this release
 
-## 📝 Testing Checklist
+### Echoes (Browsing Intentions)
+- Automatic URL grouping by domain
+- Certify URLs on-chain with intentions: work, learning, fun, inspiration, buying, music
+- Level up groups using Gold currency
+- Publish identity predicates to the blockchain (Amplify)
 
-Please test these features and report any issues:
+### Resonance (Community)
+- **Circle Feed**: See community certifications, vote like/dislike
+- **Trending**: Discover popular pages and intentions
+- **Streak Leaderboard**: Track activity streaks across the community
 
-- [ ] Extension loads without errors
-- [ ] Connection to server successful
-- [ ] SofIA agent responds to page visits
-- [ ] Chatbot works in side panel
-- [ ] ThemeExtractor analyzes content
-- [ ] PulseAgent collect and analyse your tab
+### Pulse (AI Analysis)
+- Analyze your current browsing session with AI
+- Extract themes from visited pages
+- Import and analyze bookmarks
+
+### Chat
+- Talk to SofIA, your AI browsing assistant
+- Get insights about your browsing patterns
+
+### Gold & XP
+- Earn Gold from certifications and discovery
+- Pioneer/Explorer/Contributor discovery rankings
+- Spend Gold to level up intention groups
+- Earn XP from quest badges
+
+### Community
+- Follow other users
+- View other users' profiles and certifications
+- Vote on community certifications (like/dislike)
+
+### OAuth Integrations
+- Import activity from Spotify, GitHub, and more
+
+---
+
+## Testing Checklist
+
+- [ ] Extension loads without console errors
+- [ ] Wallet connects via Privy login
+- [ ] Browsing URLs appear in Echoes groups
+- [ ] Certifying a URL creates an on-chain triple
+- [ ] Gold is earned after certification
+- [ ] Group level-up works (spend Gold)
+- [ ] Circle feed shows community certifications
+- [ ] Voting (like/dislike) works on circle feed items
+- [ ] Trending tab displays popular pages
+- [ ] Streak leaderboard loads and ranks users
+- [ ] Pulse analysis runs on current session
+- [ ] Chat responds to messages
+- [ ] Profile shows certifications and followers
 - [ ] Recommendations appear in Resonance
 
-## 🔄 How to Update
+---
 
-Since this is alpha, updates require manual reinstallation:
-1. Remove old version from chrome://extensions/
-2. Download and install new version
-
-## 🙏 Thank You!
-
-Thanks for helping test Sofia! Your feedback is invaluable.
+**Bug reports**: https://github.com/intuition-box/Sofia/issues
 EOL
 
-echo "✅ Release notes template created: ${RELEASE_NOTES}"
+echo "  Done: ${RELEASE_NOTES}"
 echo ""
 
-# Step 7: Final summary
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ Release package ready!"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+# Summary
+echo "  ======================================"
+echo "  Release v${VERSION} ready!"
+echo "  ======================================"
 echo ""
-echo "📦 Files created:"
-echo "   • ${ZIP_FILE} (${FILE_SIZE})"
-echo "   • ${INSTRUCTIONS_FILE}"
-echo "   • ${RELEASE_NOTES}"
+echo "  Files:"
+echo "    ${ZIP_FILE} (${FILE_SIZE})"
+echo "    ${INSTRUCTIONS_FILE}"
+echo "    ${RELEASE_NOTES}"
 echo ""
-echo "🚀 Next Steps:"
+echo "  Publish on GitHub:"
 echo ""
-echo "1. Review and edit release notes:"
-echo "   ${RELEASE_NOTES}"
+echo "    gh release create v${VERSION} ${ZIP_FILE} ${INSTRUCTIONS_FILE} \\"
+echo "      --title \"Sofia Extension v${VERSION}\" \\"
+echo "      --notes-file ${RELEASE_NOTES} \\"
+echo "      --prerelease"
 echo ""
-echo "2. Create GitHub Release:"
-echo "   • Go to: https://github.com/YOUR_USERNAME/YOUR_REPO/releases/new"
-echo "   • Tag: v${VERSION}"
-echo "   • Title: Sofia Extension v${VERSION}"
-echo "   • Copy release notes from: ${RELEASE_NOTES}"
-echo "   • Upload: ${ZIP_FILE}"
-echo "   • Mark as 'Pre-release'"
-echo "   • Publish!"
-echo ""
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
