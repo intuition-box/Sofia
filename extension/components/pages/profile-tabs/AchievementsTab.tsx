@@ -86,15 +86,15 @@ const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const getWeekDates = (): string[] => {
   const now = new Date()
-  const day = now.getDay()
+  const day = now.getUTCDay()
   const mondayOffset = day === 0 ? -6 : 1 - day
   const monday = new Date(now)
-  monday.setDate(now.getDate() + mondayOffset)
-  monday.setHours(0, 0, 0, 0)
+  monday.setUTCDate(now.getUTCDate() + mondayOffset)
+  monday.setUTCHours(0, 0, 0, 0)
 
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday)
-    d.setDate(monday.getDate() + i)
+    d.setUTCDate(monday.getUTCDate() + i)
     return d.toISOString().split('T')[0]
   })
 }
@@ -213,6 +213,8 @@ const AchievementsTab = ({
   const dailyCertQuest = quests.find(q => q.id === "daily-certification")
   const weekDates = getWeekDates()
 
+  const todayStr = new Date().toISOString().split("T")[0]
+
   const renderWeekRow = (days: Set<string>) => {
     // Group consecutive active days into pill runs
     const runs: { indices: number[]; active: boolean }[] = []
@@ -228,23 +230,41 @@ const AchievementsTab = ({
       }
     })
 
+    const getDayContent = (i: number) => {
+      const date = weekDates[i]
+      const isActive = days.has(date)
+      const isToday = date === todayStr
+      const isPast = date < todayStr
+
+      if (isActive) return { className: "streak-hub-day active", content: "\u2713" }
+      if (isToday) return { className: "streak-hub-day today", content: "!" }
+      if (isPast) return { className: "streak-hub-day missed", content: DAY_LABELS[i] }
+      return { className: "streak-hub-day", content: DAY_LABELS[i] }
+    }
+
     return (
       <div className="streak-hub-week">
         {runs.map((run, ri) =>
           run.active ? (
             <div key={ri} className="streak-hub-pill" style={{ flex: run.indices.length }}>
-              {run.indices.map(i => (
-                <div key={i} className="streak-hub-day active">
-                  {"\u2713"}
-                </div>
-              ))}
+              {run.indices.map(i => {
+                const day = getDayContent(i)
+                return (
+                  <div key={i} className={day.className}>
+                    {day.content}
+                  </div>
+                )
+              })}
             </div>
           ) : (
-            run.indices.map(i => (
-              <div key={i} className="streak-hub-day">
-                {DAY_LABELS[i]}
-              </div>
-            ))
+            run.indices.map(i => {
+              const day = getDayContent(i)
+              return (
+                <div key={i} className={day.className}>
+                  {day.content}
+                </div>
+              )
+            })
           )
         )}
       </div>
