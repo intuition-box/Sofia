@@ -5,7 +5,10 @@
 query AtomIdsByURL($likeStr: String!) {
   atoms(
     where: {
-      label: { _ilike: $likeStr }
+      _or: [
+        { label: { _ilike: $likeStr } }
+        { value: { thing: { url: { _ilike: $likeStr } } } }
+      ]
     }
   ) {
     term_id
@@ -77,7 +80,10 @@ query TrustDistrustByPage($likeStr: String!) {
   trustTriples: triples(
     where: {
       predicate: { label: { _eq: "trusts" } }
-      object: { label: { _ilike: $likeStr } }
+      _or: [
+        { object: { label: { _ilike: $likeStr } } }
+        { object: { value: { thing: { url: { _ilike: $likeStr } } } } }
+      ]
       positions: { shares: { _gt: "0" } }
     }
   ) {
@@ -90,7 +96,10 @@ query TrustDistrustByPage($likeStr: String!) {
   distrustTriples: triples(
     where: {
       predicate: { label: { _ilike: "distrust" } }
-      object: { label: { _ilike: $likeStr } }
+      _or: [
+        { object: { label: { _ilike: $likeStr } } }
+        { object: { value: { thing: { url: { _ilike: $likeStr } } } } }
+      ]
       positions: { shares: { _gt: "0" } }
     }
   ) {

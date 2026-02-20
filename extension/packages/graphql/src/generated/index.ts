@@ -29236,7 +29236,7 @@ useAllIntentionTriplesQuery.fetcher = (
 export const CertificationTriplesDocument = `
     query CertificationTriples($predicateIds: [String!]!, $hostnameLike: String!) {
   triples(
-    where: {predicate_id: {_in: $predicateIds}, object: {label: {_ilike: $hostnameLike}}, positions: {shares: {_gt: "0"}}}
+    where: {predicate_id: {_in: $predicateIds}, _or: [{object: {label: {_ilike: $hostnameLike}}}, {object: {value: {thing: {url: {_ilike: $hostnameLike}}}}}], positions: {shares: {_gt: "0"}}}
     limit: 100
   ) {
     term_id
@@ -29344,7 +29344,7 @@ useCertificationTriplesQuery.fetcher = (
 export const IntentionStatsDocument = `
     query IntentionStats($predicateIds: [String!]!, $hostnameLike: String!) {
   triples(
-    where: {predicate_id: {_in: $predicateIds}, object: {label: {_ilike: $hostnameLike}}}
+    where: {predicate_id: {_in: $predicateIds}, _or: [{object: {label: {_ilike: $hostnameLike}}}, {object: {value: {thing: {url: {_ilike: $hostnameLike}}}}}]}
     limit: 100
   ) {
     term_id
@@ -32792,7 +32792,9 @@ useGetListDetailsSimplifiedQuery.fetcher = (
 
 export const AtomIdsByUrlDocument = `
     query AtomIdsByURL($likeStr: String!) {
-  atoms(where: {label: {_ilike: $likeStr}}) {
+  atoms(
+    where: {_or: [{label: {_ilike: $likeStr}}, {value: {thing: {url: {_ilike: $likeStr}}}}]}
+  ) {
     term_id
   }
 }
@@ -33161,7 +33163,7 @@ useTriplesByAtomIdsQuery.fetcher = (
 export const TrustDistrustByPageDocument = `
     query TrustDistrustByPage($likeStr: String!) {
   trustTriples: triples(
-    where: {predicate: {label: {_eq: "trusts"}}, object: {label: {_ilike: $likeStr}}, positions: {shares: {_gt: "0"}}}
+    where: {predicate: {label: {_eq: "trusts"}}, _or: [{object: {label: {_ilike: $likeStr}}}, {object: {value: {thing: {url: {_ilike: $likeStr}}}}}], positions: {shares: {_gt: "0"}}}
   ) {
     term_id
     positions(where: {shares: {_gt: "0"}}) {
@@ -33170,7 +33172,7 @@ export const TrustDistrustByPageDocument = `
     }
   }
   distrustTriples: triples(
-    where: {predicate: {label: {_ilike: "distrust"}}, object: {label: {_ilike: $likeStr}}, positions: {shares: {_gt: "0"}}}
+    where: {predicate: {label: {_ilike: "distrust"}}, _or: [{object: {label: {_ilike: $likeStr}}}, {object: {value: {thing: {url: {_ilike: $likeStr}}}}}], positions: {shares: {_gt: "0"}}}
   ) {
     term_id
     positions(where: {shares: {_gt: "0"}}) {
@@ -35379,7 +35381,7 @@ export const GetTrendingByPredicateDocument = `
   }
   triples(
     where: {predicate_id: {_eq: $predicateId}}
-    order_by: {created_at: desc}
+    order_by: [{positions_aggregate: {count: desc}}, {created_at: desc}]
     limit: $limit
     offset: $offset
   ) {
@@ -35395,7 +35397,7 @@ export const GetTrendingByPredicateDocument = `
         }
       }
     }
-    positions_aggregate {
+    positions_aggregate(where: {shares: {_gt: "0"}}) {
       aggregate {
         count
       }
@@ -52585,29 +52587,108 @@ export const CertificationTriples = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "object" },
+                      name: { kind: "Name", value: "_or" },
                       value: {
-                        kind: "ObjectValue",
-                        fields: [
+                        kind: "ListValue",
+                        values: [
                           {
-                            kind: "ObjectField",
-                            name: { kind: "Name", value: "label" },
-                            value: {
-                              kind: "ObjectValue",
-                              fields: [
-                                {
-                                  kind: "ObjectField",
-                                  name: { kind: "Name", value: "_ilike" },
-                                  value: {
-                                    kind: "Variable",
-                                    name: {
-                                      kind: "Name",
-                                      value: "hostnameLike"
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "label" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_ilike"
+                                            },
+                                            value: {
+                                              kind: "Variable",
+                                              name: {
+                                                kind: "Name",
+                                                value: "hostnameLike"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
                                     }
-                                  }
+                                  ]
                                 }
-                              ]
-                            }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "value" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "thing"
+                                            },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "url"
+                                                  },
+                                                  value: {
+                                                    kind: "ObjectValue",
+                                                    fields: [
+                                                      {
+                                                        kind: "ObjectField",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "_ilike"
+                                                        },
+                                                        value: {
+                                                          kind: "Variable",
+                                                          name: {
+                                                            kind: "Name",
+                                                            value:
+                                                              "hostnameLike"
+                                                          }
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -52810,29 +52891,108 @@ export const IntentionStats = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "object" },
+                      name: { kind: "Name", value: "_or" },
                       value: {
-                        kind: "ObjectValue",
-                        fields: [
+                        kind: "ListValue",
+                        values: [
                           {
-                            kind: "ObjectField",
-                            name: { kind: "Name", value: "label" },
-                            value: {
-                              kind: "ObjectValue",
-                              fields: [
-                                {
-                                  kind: "ObjectField",
-                                  name: { kind: "Name", value: "_ilike" },
-                                  value: {
-                                    kind: "Variable",
-                                    name: {
-                                      kind: "Name",
-                                      value: "hostnameLike"
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "label" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_ilike"
+                                            },
+                                            value: {
+                                              kind: "Variable",
+                                              name: {
+                                                kind: "Name",
+                                                value: "hostnameLike"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
                                     }
-                                  }
+                                  ]
                                 }
-                              ]
-                            }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "value" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "thing"
+                                            },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "url"
+                                                  },
+                                                  value: {
+                                                    kind: "ObjectValue",
+                                                    fields: [
+                                                      {
+                                                        kind: "ObjectField",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "_ilike"
+                                                        },
+                                                        value: {
+                                                          kind: "Variable",
+                                                          name: {
+                                                            kind: "Name",
+                                                            value:
+                                                              "hostnameLike"
+                                                          }
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -64853,17 +65013,80 @@ export const AtomIdsByUrl = {
                   fields: [
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "label" },
+                      name: { kind: "Name", value: "_or" },
                       value: {
-                        kind: "ObjectValue",
-                        fields: [
+                        kind: "ListValue",
+                        values: [
                           {
-                            kind: "ObjectField",
-                            name: { kind: "Name", value: "_ilike" },
-                            value: {
-                              kind: "Variable",
-                              name: { kind: "Name", value: "likeStr" }
-                            }
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "label" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "_ilike" },
+                                      value: {
+                                        kind: "Variable",
+                                        name: { kind: "Name", value: "likeStr" }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "value" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "thing" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "url"
+                                            },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "_ilike"
+                                                  },
+                                                  value: {
+                                                    kind: "Variable",
+                                                    name: {
+                                                      kind: "Name",
+                                                      value: "likeStr"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -65530,26 +65753,107 @@ export const TrustDistrustByPage = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "object" },
+                      name: { kind: "Name", value: "_or" },
                       value: {
-                        kind: "ObjectValue",
-                        fields: [
+                        kind: "ListValue",
+                        values: [
                           {
-                            kind: "ObjectField",
-                            name: { kind: "Name", value: "label" },
-                            value: {
-                              kind: "ObjectValue",
-                              fields: [
-                                {
-                                  kind: "ObjectField",
-                                  name: { kind: "Name", value: "_ilike" },
-                                  value: {
-                                    kind: "Variable",
-                                    name: { kind: "Name", value: "likeStr" }
-                                  }
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "label" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_ilike"
+                                            },
+                                            value: {
+                                              kind: "Variable",
+                                              name: {
+                                                kind: "Name",
+                                                value: "likeStr"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
-                              ]
-                            }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "value" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "thing"
+                                            },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "url"
+                                                  },
+                                                  value: {
+                                                    kind: "ObjectValue",
+                                                    fields: [
+                                                      {
+                                                        kind: "ObjectField",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "_ilike"
+                                                        },
+                                                        value: {
+                                                          kind: "Variable",
+                                                          name: {
+                                                            kind: "Name",
+                                                            value: "likeStr"
+                                                          }
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -65675,26 +65979,107 @@ export const TrustDistrustByPage = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "object" },
+                      name: { kind: "Name", value: "_or" },
                       value: {
-                        kind: "ObjectValue",
-                        fields: [
+                        kind: "ListValue",
+                        values: [
                           {
-                            kind: "ObjectField",
-                            name: { kind: "Name", value: "label" },
-                            value: {
-                              kind: "ObjectValue",
-                              fields: [
-                                {
-                                  kind: "ObjectField",
-                                  name: { kind: "Name", value: "_ilike" },
-                                  value: {
-                                    kind: "Variable",
-                                    name: { kind: "Name", value: "likeStr" }
-                                  }
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "label" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_ilike"
+                                            },
+                                            value: {
+                                              kind: "Variable",
+                                              name: {
+                                                kind: "Name",
+                                                value: "likeStr"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 }
-                              ]
-                            }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "value" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "thing"
+                                            },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "url"
+                                                  },
+                                                  value: {
+                                                    kind: "ObjectValue",
+                                                    fields: [
+                                                      {
+                                                        kind: "ObjectField",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "_ilike"
+                                                        },
+                                                        value: {
+                                                          kind: "Variable",
+                                                          name: {
+                                                            kind: "Name",
+                                                            value: "likeStr"
+                                                          }
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -74677,12 +75062,36 @@ export const GetTrendingByPredicate = {
                 kind: "Argument",
                 name: { kind: "Name", value: "order_by" },
                 value: {
-                  kind: "ObjectValue",
-                  fields: [
+                  kind: "ListValue",
+                  values: [
                     {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "created_at" },
-                      value: { kind: "EnumValue", value: "desc" }
+                      kind: "ObjectValue",
+                      fields: [
+                        {
+                          kind: "ObjectField",
+                          name: { kind: "Name", value: "positions_aggregate" },
+                          value: {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "count" },
+                                value: { kind: "EnumValue", value: "desc" }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      kind: "ObjectValue",
+                      fields: [
+                        {
+                          kind: "ObjectField",
+                          name: { kind: "Name", value: "created_at" },
+                          value: { kind: "EnumValue", value: "desc" }
+                        }
+                      ]
                     }
                   ]
                 }
@@ -74749,6 +75158,35 @@ export const GetTrendingByPredicate = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "positions_aggregate" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [

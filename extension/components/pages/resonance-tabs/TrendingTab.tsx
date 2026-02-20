@@ -133,7 +133,7 @@ const TrendingTab = () => {
                     <div className="trending-item-title">
                       {item.objectLabel || item.domain}
                     </div>
-                    {item.domain.includes('.') && item.domain !== item.objectLabel && (
+                    {item.domain !== item.objectLabel && (
                       <div className="trending-item-domain">{item.domain}</div>
                     )}
                   </div>
