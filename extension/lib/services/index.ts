@@ -59,5 +59,9 @@ export type { DiscoveryState } from './DiscoveryScoreService'
 export { UserCertificationsServiceClass, userCertificationsService } from './UserCertificationsService'
 export type { TripleDetail, CertificationEntry, CertificationsStoreState } from './UserCertificationsService'
 
+// Global Stake
+export { GlobalStakeServiceClass, globalStakeService } from './GlobalStakeService'
+export type { GlobalStakeState, GlobalStakePosition, GlobalStakeConfig, GlobalVaultStats, SeasonPosition } from '~/types/globalStake'
+
 // AI
 export { RecommendationService } from './ai/RecommendationService'

@@ -127,3 +127,17 @@ export const DAILY_STREAK_STAKE = 1000000000000000000n // 1 TRUST
 // Shared atom vault for daily vote deposits
 export const DAILY_VOTE_ATOM_ID = "0xd33d7e785a7c6c7775947961b20b1c7176a4e764c309c769c85cd5aa8195a3eb" as const
 export const DAILY_VOTE_STAKE = 1000000000000000000n // 1 TRUST
+
+// Global Stake configuration
+export const GLOBAL_STAKE = {
+  ENABLED: false, // Disabled until TERM_ID is set
+  PERCENTAGE: 20000, // 20% (FEE_DENOMINATOR=100000)
+  CURVE_ID: 1n, // Linear
+  TERM_ID: "0x0000000000000000000000000000000000000000000000000000000000000000", // PLACEHOLDER
+  SEASON_NAME: "Beta",
+  MIN_GLOBAL_DEPOSIT: 10000000000000000n // 0.01 TRUST
+} as const
+
+export const SEASON_HISTORY = [
+  { name: "Beta", termId: GLOBAL_STAKE.TERM_ID, startDate: 0, curveId: 1n }
+] as const
