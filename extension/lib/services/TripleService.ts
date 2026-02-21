@@ -310,9 +310,16 @@ class TripleServiceClass {
         const contractAddress = BlockchainService.getContractAddress()
 
         const tripleCost = await BlockchainService.getTripleCost()
-        const depositAmount = customWeight !== undefined ? customWeight : MIN_TRIPLE_DEPOSIT
-        const multiVaultCost = tripleCost + depositAmount
-        const totalCost = await BlockchainService.getTotalCreationCost(1, depositAmount, multiVaultCost)
+        const totalDeposit = customWeight !== undefined ? customWeight : MIN_TRIPLE_DEPOSIT
+
+        // Split deposit: reduce signal amount if GS enabled, GS deposited separately after create
+        const split = globalStakeService.isEnabled()
+          ? globalStakeService.calculateSplit(totalDeposit)
+          : null
+        const signalDeposit = split ? split.mainAmount : totalDeposit
+
+        const multiVaultCost = tripleCost + signalDeposit
+        const totalCost = await BlockchainService.getTotalCreationCost(1, signalDeposit, multiVaultCost)
 
         // Calculate tripleId BEFORE transaction (deterministic hash)
         const tripleVaultId = await publicClient.readContract({
@@ -328,7 +335,8 @@ class TripleServiceClass {
           predicateId,
           objectId,
           tripleVaultId,
-          depositAmount: depositAmount.toString(),
+          signalDeposit: signalDeposit.toString(),
+          gsAmount: split?.globalAmount?.toString() || '0',
           totalCost: totalCost.toString()
         })
 
@@ -337,7 +345,7 @@ class TripleServiceClass {
           address: contractAddress as Address,
           abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
-          args: [address as Address, [subjectId as Address], [predicateId as Address], [objectId as Address], [depositAmount], CREATION_CURVE_ID],
+          args: [address as Address, [subjectId as Address], [predicateId as Address], [objectId as Address], [signalDeposit], CREATION_CURVE_ID],
           value: totalCost,
           account: walletClient.account
         })
@@ -351,7 +359,7 @@ class TripleServiceClass {
             [subjectId as Address],
             [predicateId as Address],
             [objectId as Address],
-            [depositAmount],
+            [signalDeposit],
             CREATION_CURVE_ID
           ],
           value: totalCost,
@@ -368,35 +376,32 @@ class TripleServiceClass {
         }
 
         // Global stake deposit after successful create (separate TX, non-blocking on failure)
-        if (globalStakeService.isEnabled()) {
-          const split = globalStakeService.calculateSplit(depositAmount)
-          if (split) {
-            try {
-              const config = globalStakeService.getConfig()
-              const gsCost = await BlockchainService.getTotalDepositCost(split.globalAmount)
+        if (split) {
+          try {
+            const config = globalStakeService.getConfig()
+            const gsCost = await BlockchainService.getTotalDepositCost(split.globalAmount)
 
-              const gsHash = await walletClient.writeContract({
-                address: contractAddress as Address,
-                abi: SofiaFeeProxyAbi,
-                functionName: 'deposit',
-                args: [
-                  address as Address,
-                  config.termId as Address,
-                  config.curveId,
-                  0n
-                ],
-                value: gsCost,
-                chain: SELECTED_CHAIN,
-                maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-                maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-                account: address as Address
-              })
+            const gsHash = await walletClient.writeContract({
+              address: contractAddress as Address,
+              abi: SofiaFeeProxyAbi,
+              functionName: 'deposit',
+              args: [
+                address as Address,
+                config.termId as Address,
+                config.curveId,
+                0n
+              ],
+              value: gsCost,
+              chain: SELECTED_CHAIN,
+              maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+              maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+              account: address as Address
+            })
 
-              await publicClient.waitForTransactionReceipt({ hash: gsHash })
-              logger.info('Global stake deposit after create succeeded')
-            } catch (gsError) {
-              logger.warn('Global stake deposit failed (non-blocking)', gsError)
-            }
+            await publicClient.waitForTransactionReceipt({ hash: gsHash })
+            logger.info('Global stake deposit after create succeeded')
+          } catch (gsError) {
+            logger.warn('Global stake deposit failed (non-blocking)', gsError)
           }
         }
 
@@ -475,9 +480,20 @@ class TripleServiceClass {
         const predicateIds = triplesToCreate.map(t => t.predicateId as Address)
         const objectIds = triplesToCreate.map(t => t.objectId as Address)
 
-        const depositAmounts = triplesToCreate.map(t =>
+        const originalAmounts = triplesToCreate.map(t =>
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
+
+        // Split: reduce signal amounts if GS enabled, GS deposited separately after create
+        const totalOriginal = originalAmounts.reduce((sum, a) => sum + a, 0n)
+        const batchSplit = globalStakeService.isEnabled()
+          ? globalStakeService.calculateSplit(totalOriginal)
+          : null
+
+        // Scale down each deposit proportionally if GS active
+        const depositAmounts = batchSplit
+          ? originalAmounts.map(a => (a * batchSplit.mainAmount) / totalOriginal)
+          : originalAmounts
 
         const depositCount = depositAmounts.filter(a => a > 0n).length
         const totalDeposit = depositAmounts.reduce((sum, a) => sum + a, 0n)
@@ -527,35 +543,32 @@ class TripleServiceClass {
           }
 
           // Global stake after batch create (separate TX, non-blocking)
-          if (globalStakeService.isEnabled()) {
-            const split = globalStakeService.calculateSplit(totalDeposit)
-            if (split) {
-              try {
-                const config = globalStakeService.getConfig()
-                const gsCost = await BlockchainService.getTotalDepositCost(split.globalAmount)
+          if (batchSplit) {
+            try {
+              const config = globalStakeService.getConfig()
+              const gsCost = await BlockchainService.getTotalDepositCost(batchSplit.globalAmount)
 
-                const gsHash = await walletClient.writeContract({
-                  address: contractAddress,
-                  abi: SofiaFeeProxyAbi,
-                  functionName: 'deposit',
-                  args: [
-                    address as Address,
-                    config.termId as Address,
-                    config.curveId,
-                    0n
-                  ],
-                  value: gsCost,
-                  chain: SELECTED_CHAIN,
-                  maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-                  maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-                  account: address as Address
-                })
+              const gsHash = await walletClient.writeContract({
+                address: contractAddress,
+                abi: SofiaFeeProxyAbi,
+                functionName: 'deposit',
+                args: [
+                  address as Address,
+                  config.termId as Address,
+                  config.curveId,
+                  0n
+                ],
+                value: gsCost,
+                chain: SELECTED_CHAIN,
+                maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+                maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+                account: address as Address
+              })
 
-                await publicClient.waitForTransactionReceipt({ hash: gsHash })
-                logger.info('Global stake deposit after batch create succeeded')
-              } catch (gsError) {
-                logger.warn('Global stake deposit after batch create failed (non-blocking)', gsError)
-              }
+              await publicClient.waitForTransactionReceipt({ hash: gsHash })
+              logger.info('Global stake deposit after batch create succeeded')
+            } catch (gsError) {
+              logger.warn('Global stake deposit after batch create failed (non-blocking)', gsError)
             }
           }
 

@@ -50,6 +50,7 @@ class GlobalStakeServiceClass {
   private fetchInFlight = false
   private currentWallet: string | null = null
   private initialized = false
+  private userPercentageOverride: number | null = null
 
   // ── Store protocol (useSyncExternalStore) ──
 
@@ -66,7 +67,7 @@ class GlobalStakeServiceClass {
     for (const listener of this.listeners) listener()
   }
 
-  // ── Split calculation (PURE — used by TripleService) ──
+  // ── Split calculation (used by TripleService) ──
 
   getConfig(): GlobalStakeConfig {
     return this.state.config
@@ -77,9 +78,24 @@ class GlobalStakeServiceClass {
     return config.enabled && !!config.termId && config.termId !== "0x0000000000000000000000000000000000000000000000000000000000000000"
   }
 
+  /** Returns effective percentage: user override > config default */
+  getUserPercentage(): number {
+    return this.userPercentageOverride ?? this.state.config.percentage
+  }
+
+  /** Set user's preferred GS percentage. Persists to chrome.storage.local. */
+  async setUserPercentage(pct: number): Promise<void> {
+    this.userPercentageOverride = pct
+    if (this.currentWallet) {
+      const key = getWalletKey("gs_user_percentage", this.currentWallet)
+      await chrome.storage.local.set({ [key]: pct }).catch(() => {})
+    }
+  }
+
   /**
    * Calculate how much goes to main vault vs global stake vault.
-   * Returns null if global stake is disabled or amount too small.
+   * Uses user's preferred percentage (override > config default).
+   * Returns null if global stake is disabled, percentage is 0, or amount too small.
    */
   calculateSplit(depositAmount: bigint): {
     mainAmount: bigint
@@ -87,8 +103,11 @@ class GlobalStakeServiceClass {
   } | null {
     if (!this.isEnabled()) return null
 
+    const effectivePercentage = this.getUserPercentage()
+    if (effectivePercentage === 0) return null
+
     const config = this.getConfig()
-    const globalAmount = (depositAmount * BigInt(config.percentage)) / FEE_DENOMINATOR
+    const globalAmount = (depositAmount * BigInt(effectivePercentage)) / FEE_DENOMINATOR
     if (globalAmount < config.minGlobalDeposit) return null
 
     return {
@@ -225,8 +244,19 @@ class GlobalStakeServiceClass {
       return
     }
 
+    this.loadUserPreference(wallet)
     this.loadCachedPosition(wallet)
     this.fetchGlobalStakeData(wallet)
+  }
+
+  private async loadUserPreference(wallet: string) {
+    try {
+      const key = getWalletKey("gs_user_percentage", wallet.toLowerCase())
+      const result = await chrome.storage.local.get([key])
+      this.userPercentageOverride = result[key] ?? null
+    } catch (err) {
+      logger.error("Failed to load GS user preference", err)
+    }
   }
 
   private async loadCachedPosition(wallet: string) {

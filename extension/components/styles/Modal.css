@@ -2077,3 +2077,267 @@
   color: #f0e6d2;
   text-decoration: underline;
 }
+
+/* ========== GLOBAL STAKE SLIDER ========== */
+
+.gs-slider-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gs-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gs-slider-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gs-slider-value {
+  font-family: 'Gotu', cursive;
+  font-size: 15px;
+  color: #ffb659;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Range input — custom track + thumb */
+.gs-slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    #c47d1a 0%,
+    #f0b232 var(--gs-fill-pct, 40%),
+    rgba(255, 255, 255, 0.08) var(--gs-fill-pct, 40%),
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  transition: background 0.1s ease;
+}
+
+.gs-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f0b232 0%, #c47d1a 100%);
+  border: 2px solid rgba(245, 190, 60, 0.5);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(200, 150, 30, 0.4);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.gs-slider-input::-webkit-slider-thumb:hover {
+  box-shadow: 0 2px 12px rgba(200, 150, 30, 0.6),
+              0 0 8px rgba(240, 178, 50, 0.4);
+  transform: scale(1.1);
+}
+
+.gs-slider-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f0b232 0%, #c47d1a 100%);
+  border: 2px solid rgba(245, 190, 60, 0.5);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(200, 150, 30, 0.4);
+}
+
+.gs-slider-input::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gs-slider-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gs-slider-breakdown {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gs-slider-breakdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gs-slider-breakdown-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.gs-slider-breakdown-value {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gs-slider-breakdown-value.pool {
+  color: #ffb659;
+}
+
+.gs-slider-minimum-hint {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  font-style: italic;
+}
+
+/* ========== WEIGHT MODAL FORM REFRESH ========== */
+
+.weight-modal-triplet-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.weight-modal-triplet-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+}
+
+.weight-modal-triplet-text .subject {
+  color: #ffb659;
+  font-weight: 600;
+}
+
+.weight-modal-triplet-text .action {
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.weight-modal-triplet-text .object {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.weight-modal-url-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weight-modal-amount-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weight-modal-amount-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 8px;
+  color: white;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
+  outline: none;
+  transition: all 0.2s ease;
+  flex: 1;
+  max-width: 120px;
+  -moz-appearance: textfield;
+}
+
+.weight-modal-amount-input::-webkit-outer-spin-button,
+.weight-modal-amount-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.weight-modal-amount-input:focus {
+  border-color: rgba(255, 182, 89, 0.4);
+  background: rgba(255, 182, 89, 0.08);
+}
+
+.weight-modal-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.weight-modal-pill {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-width: 44px;
+}
+
+.weight-modal-pill:hover:not(.selected):not(:disabled) {
+  background: rgba(255, 182, 89, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.weight-modal-pill.selected {
+  border-color: rgba(255, 182, 89, 0.5);
+  color: #ffb659;
+  background: rgba(255, 182, 89, 0.12);
+}
+
+.weight-modal-pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.weight-modal-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.weight-modal-balance {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.weight-modal-total-cost {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+}

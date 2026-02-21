@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
 import { useWalletFromStorage, useGoldSystem } from '../../hooks'
+import { globalStakeService } from '../../lib/services'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { createHookLogger } from '../../lib/utils/logger'
 import type { IntentionPurpose } from '../../types/discovery'
@@ -36,10 +37,9 @@ interface WeightModalProps {
   isProcessing: boolean
   transactionSuccess?: boolean
   transactionError?: string
-  transactionHash?: string  // Transaction hash for block explorer link
-  createdCount?: number   // Number of newly created triples
-  depositCount?: number   // Number of deposits on existing triples
-  // Discovery reward props
+  transactionHash?: string
+  createdCount?: number
+  depositCount?: number
   isIntentionCertification?: boolean
   discoveryReward?: DiscoveryReward | null
   onClaimReward?: () => Promise<void>
@@ -62,27 +62,34 @@ const weightOptions: WeightOption[] = [
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
+const FEE_DENOMINATOR = 100000
+
 const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
+  const [gsPercentage, setGsPercentage] = useState<number>(() =>
+    globalStakeService.getUserPercentage()
+  )
 
-  // Get wallet address from storage
   const { walletAddress } = useWalletFromStorage()
-  // Get Gold balance (reacts to chrome.storage changes)
   const { totalGold } = useGoldSystem()
 
-  // Get checksum address for balance
   const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
+  const { data: balanceData } = useBalance({ address: checksumAddress })
 
-  const { data: balanceData } = useBalance({
-    address: checksumAddress,
-  })
-
-  // Parse balance to number (in TRUST)
   const userBalance = balanceData
     ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
     : 0
+
+  const gsEnabled = globalStakeService.isEnabled()
+
+  // Resync GS preference when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setGsPercentage(globalStakeService.getUserPercentage())
+    }
+  }, [isOpen])
 
   // Initialize weights array when triplets change
   useEffect(() => {
@@ -116,13 +123,46 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     }
   }, [isProcessing])
 
+  // Compute real-time breakdown for display
+  const breakdown = useMemo(() => {
+    const minimumValue = weightOptions.find(opt => opt.id === 'minimum')!.value!
+    const defaultValue = weightOptions.find(opt => opt.id === 'default')!.value!
+
+    let totalTrust = 0
+    for (let i = 0; i < selectedWeights.length; i++) {
+      const sel = selectedWeights[i]
+      if (sel === 'custom') {
+        const cv = customValues[i]
+        totalTrust += (cv && cv.trim() !== '') ? parseFloat(cv) || 0 : minimumValue
+      } else {
+        const opt = weightOptions.find(o => o.id === sel)
+        totalTrust += opt?.value ?? defaultValue
+      }
+    }
+
+    if (totalTrust <= 0 || !gsEnabled) {
+      return { totalTrust, signalAmount: totalTrust, poolAmount: 0, belowMinimum: false }
+    }
+
+    const poolAmount = (totalTrust * gsPercentage) / FEE_DENOMINATOR
+    const signalAmount = totalTrust - poolAmount
+    const config = globalStakeService.getConfig()
+    const minDeposit = Number(config.minGlobalDeposit) / 1e18
+    const belowMinimum = poolAmount > 0 && poolAmount < minDeposit
+
+    return { totalTrust, signalAmount, poolAmount, belowMinimum }
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled])
+
   const handleSubmit = async () => {
     try {
-      // Get fallback values from weightOptions (no magic numbers)
+      // Persist GS preference before submitting
+      if (gsEnabled) {
+        globalStakeService.setUserPercentage(gsPercentage)
+      }
+
       const minimumValue = weightOptions.find(opt => opt.id === 'minimum')!.value!
       const defaultValue = weightOptions.find(opt => opt.id === 'default')!.value!
 
-      // Convert selected weights to bigint array
       const weightBigIntArray: (bigint | null)[] = selectedWeights.map((selectedWeight, index) => {
         let trustValue: number
 
@@ -131,7 +171,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
           if (customValue && customValue.trim() !== '') {
             trustValue = parseFloat(customValue)
           } else {
-            // Return minimum weight when custom field is empty
             trustValue = minimumValue
           }
         } else {
@@ -144,10 +183,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
           }
         }
 
-        // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
         return BigInt(Math.floor(trustValue * 1e18))
       })
-      
+
       await onSubmit(weightBigIntArray)
       setSelectedWeights(new Array(triplets.length).fill('default'))
       setCustomValues(new Array(triplets.length).fill(''))
@@ -174,23 +212,24 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     setCustomValues(newCustomValues)
   }
 
-  // Parse error message to show only essential info
   const parseErrorMessage = (error: string): string => {
-    // Show HTTPS-related errors as-is (user-friendly already)
     if (error.includes('Wallet unavailable:') || error.includes('navigate to an HTTPS page')) {
       return error
     }
-
-    // Extract "Shares addition failed:" or "Weight addition failed:"
     const failedMatch = error.match(/(Shares addition failed|Weight addition failed):/i)
     const failedText = failedMatch ? failedMatch[0] : 'Transaction failed:'
-
-    // Extract "Details:" section
     const detailsMatch = error.match(/Details:\s*(.+?)(?:\n|$)/i)
     const detailsText = detailsMatch ? `Details: ${detailsMatch[1]}` : ''
-
     return detailsText ? `${failedText}\n${detailsText}` : failedText
   }
+
+  /** Format number to max 4 decimal places, strip trailing zeros */
+  const formatTrust = (val: number): string => {
+    if (val === 0) return '0'
+    return parseFloat(val.toFixed(4)).toString()
+  }
+
+  const isFormState = !transactionSuccess && !transactionError
 
   if (!isOpen || triplets.length === 0) return null
 
@@ -203,36 +242,34 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         </div>
 
         <div className="modal-body">
-          {!transactionSuccess && !transactionError && (
+          {isFormState && (
             <p className="modal-description">
-              The weight represents the value you assign to this information. Choose how much TRUST to deposit for each signal.
+              Choose how much TRUST to deposit for each signal.
             </p>
           )}
 
-          {/* Triplets List - hidden when success with discovery reward */}
+          {/* Triplets List — form state only (hidden on success with reward) */}
           {!(transactionSuccess && discoveryReward) && (
             <div className="modal-triplets-list">
               {triplets.map((triplet, index) => (
-                <div key={triplet.id} className="modal-triplet-item">
-                  <div className="modal-triplet-info">
-                  <p>
+                <div key={triplet.id} className="weight-modal-triplet-card">
+                  <div className="weight-modal-triplet-text">
                     <span className="subject">I</span>{' '}
                     <span className="action">{triplet.triplet.predicate}</span>{' '}
                     <span className="object">{triplet.triplet.object}</span>
-                  </p>
+                  </div>
                   {triplet.url && (() => {
                     try {
                       const urlObj = new URL(triplet.url)
                       const host = urlObj.hostname.replace(/^www\./, '')
                       const path = urlObj.pathname !== '/' ? urlObj.pathname : ''
-                      return <span className="triplet-url-hint">{host}{path}</span>
+                      return <span className="weight-modal-url-hint">{host}{path}</span>
                     } catch { return null }
                   })()}
-                </div>
 
-                  {/* Amount Section */}
-                  <div className="modal-custom-amount">
-                    <div className="modal-amount-row">
+                  {/* Amount Section — only in form state */}
+                  {isFormState && (
+                    <div className="weight-modal-amount-row">
                       <input
                         type="number"
                         min="0"
@@ -250,16 +287,16 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                           handleWeightSelection(index, 'custom')
                           e.target.select()
                         }}
-                        className="modal-custom-input"
-                        placeholder="Min 0.01 TRUST"
+                        className="weight-modal-amount-input"
+                        placeholder="0.01"
                         disabled={isProcessing}
                       />
-                      <div className="modal-amount-options">
+                      <div className="weight-modal-pills">
                         {weightOptions.filter(opt => opt.id !== 'custom').map((option) => (
                           <button
                             key={option.id}
                             onClick={() => handleWeightSelection(index, option.id)}
-                            className={`modal-amount-option ${selectedWeights[index] === option.id ? 'selected' : ''}`}
+                            className={`weight-modal-pill ${selectedWeights[index] === option.id ? 'selected' : ''}`}
                             disabled={isProcessing}
                           >
                             {option.value}
@@ -267,13 +304,53 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                         ))}
                       </div>
                     </div>
-                    {/* Balance display - only show for first triplet to avoid repetition */}
-                    {index === 0 && (
-                      <div className="stake-balance">Balance: {userBalance} TRUST</div>
-                    )}
-                  </div>
+                  )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Global Stake Slider — form state only, when GS enabled */}
+          {isFormState && gsEnabled && (
+            <div className="gs-slider-section">
+              <div className="gs-slider-header">
+                <span className="gs-slider-label">Global Pool</span>
+                <span className="gs-slider-value">{gsPercentage / 1000}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={50000}
+                step={1000}
+                value={gsPercentage}
+                onChange={(e) => setGsPercentage(Number(e.target.value))}
+                className="gs-slider-input"
+                style={{ '--gs-fill-pct': `${(gsPercentage / 50000) * 100}%` } as React.CSSProperties}
+                disabled={isProcessing}
+              />
+              <div className="gs-slider-breakdown">
+                <div className="gs-slider-breakdown-item">
+                  <span className="gs-slider-breakdown-label">Signal</span>
+                  <span className="gs-slider-breakdown-value">{formatTrust(breakdown.signalAmount)} TRUST</span>
+                </div>
+                <div className="gs-slider-breakdown-item">
+                  <span className="gs-slider-breakdown-label">Global Pool</span>
+                  <span className="gs-slider-breakdown-value pool">{formatTrust(breakdown.poolAmount)} TRUST</span>
+                </div>
+              </div>
+              {breakdown.belowMinimum && (
+                <span className="gs-slider-minimum-hint">Below minimum — pool contribution skipped</span>
+              )}
+            </div>
+          )}
+
+          {/* Balance info row — form state only */}
+          {isFormState && (
+            <div className="weight-modal-info-row">
+              <span className="weight-modal-balance">Balance: {formatTrust(userBalance)} TRUST</span>
+              {gsEnabled && gsPercentage > 0 && !breakdown.belowMinimum && (
+                <span className="weight-modal-total-cost">Total: {formatTrust(breakdown.totalTrust)} TRUST</span>
+              )}
             </div>
           )}
 
@@ -282,7 +359,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
             <div className={`modal-success-card ${discoveryReward ? 'has-reward' : ''}`}>
               <div className="modal-success-card-glow" />
               <div className="modal-success-card-inner">
-                {/* Left Column */}
                 <div className="modal-success-left">
                   <h2 className="modal-success-title">
                     Transaction<br />Validated
@@ -307,7 +383,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   )}
                 </div>
 
-                {/* Right Column - Discovery Reward */}
                 {discoveryReward && !rewardClaimed && (
                   <div className="modal-success-right">
                     <span className="reward-status-badge">{discoveryReward.status}</span>
@@ -383,7 +458,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         </>
         )}
 
-        {/* Reward Claimed Overlay - replaces modal content */}
+        {/* Reward Claimed Overlay */}
         {rewardClaimed && discoveryReward && (
           <div className="reward-claimed-overlay">
             <video
