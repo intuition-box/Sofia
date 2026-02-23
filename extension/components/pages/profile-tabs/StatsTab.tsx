@@ -3,13 +3,30 @@
  * Displays discovery statistics and intention distribution
  */
 
-import { useDiscoveryScore } from '../../../hooks'
-import { DISCOVERY_GOLD_REWARDS } from '../../../types/discovery'
-import { getLevelColor } from '../../../types/interests'
+import { useState, useRef, useEffect } from 'react'
+import { useDiscoveryScore } from "~/hooks"
+import { DISCOVERY_GOLD_REWARDS } from "~/types/discovery"
+import { getLevelColor, TIER_BADGES, getTierIndex } from "~/types/interests"
 import pioneerBadge from '../../ui/img/badges/pioneer.png'
 import explorerBadge from '../../ui/img/badges/explorer.png'
 import contributorBadge from '../../ui/img/badges/contributor.png'
 import trustBadge from '../../ui/img/badges/trust.png'
+
+import tierBadge1 from '../../ui/img/badges/lvlbadges/badge_tier1_slate_whisper.png'
+import tierBadge2 from '../../ui/img/badges/lvlbadges/badge_tier2_emerald_frequency-hunter.png'
+import tierBadge3 from '../../ui/img/badges/lvlbadges/badge_tier3_blue_signal-shaper.png'
+import tierBadge4 from '../../ui/img/badges/lvlbadges/badge_tier4_purple_amplifier.png'
+import tierBadge5 from '../../ui/img/badges/lvlbadges/badge_tier5_red_specialist.png'
+import tierBadge6 from '../../ui/img/badges/lvlbadges/badge_tier6_pink_audio-virtuoso.png'
+import tierBadge7 from '../../ui/img/badges/lvlbadges/badge_tier7_cyan_expert.png'
+import tierBadge8 from '../../ui/img/badges/lvlbadges/badge_tier8_orange_maestro.png'
+import tierBadge9 from '../../ui/img/badges/lvlbadges/badge_tier9_amber_echo-generator.png'
+import tierBadge10 from '../../ui/img/badges/lvlbadges/badge_tier10_gold_symphony.png'
+
+const TIER_BADGE_IMAGES: Record<number, string> = {
+  1: tierBadge1, 2: tierBadge2, 3: tierBadge3, 4: tierBadge4, 5: tierBadge5,
+  6: tierBadge6, 7: tierBadge7, 8: tierBadge8, 9: tierBadge9, 10: tierBadge10,
+}
 
 interface StatsTabProps {
   walletAddress?: string | null;
@@ -29,6 +46,28 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
   const currentColor = getLevelColor(level)
   const nextColor = getLevelColor(level + 1)
   const { stats, loading, error, refetch } = useDiscoveryScore()
+
+  // Tier badges carousel
+  const currentTierIndex = getTierIndex(level)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [activePage, setActivePage] = useState(0)
+  const badgesPerPage = 4
+  const totalPages = Math.ceil(TIER_BADGES.length / badgesPerPage)
+
+  // Auto-scroll to the page containing the current/next tier on mount
+  useEffect(() => {
+    const targetPage = Math.floor(currentTierIndex / badgesPerPage)
+    if (scrollRef.current && targetPage > 0) {
+      const scrollAmount = scrollRef.current.clientWidth * targetPage
+      scrollRef.current.scrollTo({ left: scrollAmount, behavior: 'smooth' })
+    }
+  }, [currentTierIndex])
+
+  const handleBadgeScroll = () => {
+    if (!scrollRef.current) return
+    const { scrollLeft, clientWidth } = scrollRef.current
+    setActivePage(Math.round(scrollLeft / clientWidth))
+  }
 
   if (loading && !stats) {
     return (
@@ -130,6 +169,50 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
           />
         </div>
           <span className="xp-progress-text">{totalXP} XP</span>
+      </div>
+
+      {/* Tier Badges Carousel */}
+      <div className="tier-badges-section">
+        <div
+          className="tier-badges-carousel"
+          ref={scrollRef}
+          onScroll={handleBadgeScroll}
+        >
+          {TIER_BADGES.map((badge) => {
+            const unlocked = level >= badge.minLevel
+            const isNext = !unlocked && (badge.tier === currentTierIndex + 2)
+            return (
+              <div
+                key={badge.tier}
+                className={`tier-badge-item${unlocked ? ' unlocked' : ''}${isNext ? ' next' : ''}`}
+              >
+                <div className="tier-badge-icon">
+                  <img
+                    src={TIER_BADGE_IMAGES[badge.tier]}
+                    alt={badge.name}
+                    className={`tier-badge-img${unlocked ? '' : ' locked'}`}
+                  />
+                </div>
+                <span className="tier-badge-range">LVL {badge.levelRange}</span>
+                <span className="tier-badge-name">{badge.name}</span>
+              </div>
+            )
+          })}
+        </div>
+        <div className="tier-badges-dots">
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <span
+              key={i}
+              className={`tier-dot${activePage === i ? ' active' : ''}`}
+              onClick={() => {
+                scrollRef.current?.scrollTo({
+                  left: scrollRef.current.clientWidth * i,
+                  behavior: 'smooth'
+                })
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Discovery Mechanism Panel */}

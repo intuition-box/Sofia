@@ -145,6 +145,32 @@ export const TIER_COLORS: { base: string; hsl: [number, number, number] }[] = [
   { base: '#FFD700', hsl: [51, 100, 50] },    // Tier 9: Lvl 91-100 — Gold
 ]
 
+// Tier badge metadata — name, level range, and image import path
+export interface TierBadge {
+  tier: number;
+  name: string;
+  levelRange: string;
+  minLevel: number;
+}
+
+export const TIER_BADGES: TierBadge[] = [
+  { tier: 1,  name: 'Whisper',          levelRange: '1-10',   minLevel: 1 },
+  { tier: 2,  name: 'Frequency Hunter', levelRange: '11-20',  minLevel: 11 },
+  { tier: 3,  name: 'Signal Shaper',    levelRange: '21-30',  minLevel: 21 },
+  { tier: 4,  name: 'Amplifier',        levelRange: '31-40',  minLevel: 31 },
+  { tier: 5,  name: 'Specialist',       levelRange: '41-50',  minLevel: 41 },
+  { tier: 6,  name: 'Audio Virtuoso',   levelRange: '51-60',  minLevel: 51 },
+  { tier: 7,  name: 'Expert',           levelRange: '61-70',  minLevel: 61 },
+  { tier: 8,  name: 'Maestro',          levelRange: '71-80',  minLevel: 71 },
+  { tier: 9,  name: 'Echo Generator',   levelRange: '81-90',  minLevel: 81 },
+  { tier: 10, name: 'Symphony',         levelRange: '91-100', minLevel: 91 },
+]
+
+/** Get the current tier index (0-9) from a level */
+export function getTierIndex(level: number): number {
+  return Math.min(Math.floor((level - 1) / 10), TIER_BADGES.length - 1)
+}
+
 /**
  * Get level color with tier-based gradient.
  * Position within the tier (1-10) increases lightness slightly
