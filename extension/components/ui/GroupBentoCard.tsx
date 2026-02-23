@@ -8,6 +8,7 @@ import { useMemo } from 'react'
 import { useGroupOnChainCertifications, type IntentionGroupWithStats } from '../../hooks'
 import type { CertificationType } from '~/lib/services'
 import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration } from '~/lib/utils'
+import { getLevelColor, getLevelColorAlpha } from '~/types/interests'
 
 interface GroupBentoCardProps {
   group: IntentionGroupWithStats
@@ -103,7 +104,10 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
               ×
             </button>
           )}
-          <span className={`level-badge level-${Math.min(displayLevel, 10)}`}>LVL {displayLevel}</span>
+          <span
+            className="level-badge"
+            style={{ color: getLevelColor(displayLevel), background: getLevelColorAlpha(displayLevel) }}
+          >LVL {displayLevel}</span>
         </div>
       </div>
 

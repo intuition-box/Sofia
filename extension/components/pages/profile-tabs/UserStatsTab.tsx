@@ -1,51 +1,65 @@
 /**
- * StatsTab Component
- * Displays discovery statistics and intention distribution
+ * UserStatsTab Component
+ *
+ * Read-only version of StatsTab for viewing other users' profiles.
+ * Takes discovery stats as props instead of using useDiscoveryScore().
  */
 
-import { useState, useRef, useEffect } from 'react'
-import { useDiscoveryScore } from "~/hooks"
+import { useState, useRef, useEffect } from "react"
 import { DISCOVERY_GOLD_REWARDS } from "~/types/discovery"
+import type { UserDiscoveryStats } from "~/types/discovery"
 import { getLevelColor, TIER_BADGES, getTierIndex } from "~/types/interests"
-import pioneerBadge from '../../ui/img/badges/pioneer.png'
-import explorerBadge from '../../ui/img/badges/explorer.png'
-import contributorBadge from '../../ui/img/badges/contributor.png'
-import trustBadge from '../../ui/img/badges/trust.png'
+import pioneerBadge from "../../ui/img/badges/pioneer.png"
+import explorerBadge from "../../ui/img/badges/explorer.png"
+import contributorBadge from "../../ui/img/badges/contributor.png"
+import trustBadge from "../../ui/img/badges/trust.png"
 
-import tierBadge1 from '../../ui/img/badges/lvlbadges/badge_tier1_slate_whisper.png'
-import tierBadge2 from '../../ui/img/badges/lvlbadges/badge_tier2_emerald_frequency-hunter.png'
-import tierBadge3 from '../../ui/img/badges/lvlbadges/badge_tier3_blue_signal-shaper.png'
-import tierBadge4 from '../../ui/img/badges/lvlbadges/badge_tier4_purple_amplifier.png'
-import tierBadge5 from '../../ui/img/badges/lvlbadges/badge_tier5_red_specialist.png'
-import tierBadge6 from '../../ui/img/badges/lvlbadges/badge_tier6_pink_audio-virtuoso.png'
-import tierBadge7 from '../../ui/img/badges/lvlbadges/badge_tier7_cyan_expert.png'
-import tierBadge8 from '../../ui/img/badges/lvlbadges/badge_tier8_orange_maestro.png'
-import tierBadge9 from '../../ui/img/badges/lvlbadges/badge_tier9_amber_echo-generator.png'
-import tierBadge10 from '../../ui/img/badges/lvlbadges/badge_tier10_gold_symphony.png'
+import tierBadge1 from "../../ui/img/badges/lvlbadges/badge_tier1_slate_whisper.png"
+import tierBadge2 from "../../ui/img/badges/lvlbadges/badge_tier2_emerald_frequency-hunter.png"
+import tierBadge3 from "../../ui/img/badges/lvlbadges/badge_tier3_blue_signal-shaper.png"
+import tierBadge4 from "../../ui/img/badges/lvlbadges/badge_tier4_purple_amplifier.png"
+import tierBadge5 from "../../ui/img/badges/lvlbadges/badge_tier5_red_specialist.png"
+import tierBadge6 from "../../ui/img/badges/lvlbadges/badge_tier6_pink_audio-virtuoso.png"
+import tierBadge7 from "../../ui/img/badges/lvlbadges/badge_tier7_cyan_expert.png"
+import tierBadge8 from "../../ui/img/badges/lvlbadges/badge_tier8_orange_maestro.png"
+import tierBadge9 from "../../ui/img/badges/lvlbadges/badge_tier9_amber_echo-generator.png"
+import tierBadge10 from "../../ui/img/badges/lvlbadges/badge_tier10_gold_symphony.png"
 
 const TIER_BADGE_IMAGES: Record<number, string> = {
   1: tierBadge1, 2: tierBadge2, 3: tierBadge3, 4: tierBadge4, 5: tierBadge5,
   6: tierBadge6, 7: tierBadge7, 8: tierBadge8, 9: tierBadge9, 10: tierBadge10,
 }
 
-interface StatsTabProps {
-  walletAddress?: string | null;
-  trustedByCount?: number;
-  level?: number;
-  totalXP?: number;
-  signalsCreated?: number;
+interface UserStatsTabProps {
+  walletAddress?: string | null
+  trustedByCount?: number
+  level?: number
+  totalXP?: number
+  signalsCreated?: number
+  discoveryStats?: UserDiscoveryStats | null
+  discoveryLoading?: boolean
+  discoveryError?: string | null
+  onRetry?: () => void
 }
 
-const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signalsCreated = 0 }: StatsTabProps) => {
+const UserStatsTab = ({
+  walletAddress,
+  trustedByCount,
+  level = 1,
+  totalXP = 0,
+  signalsCreated = 0,
+  discoveryStats,
+  discoveryLoading = false,
+  discoveryError = null,
+  onRetry
+}: UserStatsTabProps) => {
   // XP progress calculation
-  // Cumulative XP to reach current level = 100 * level*(level-1)/2
   const xpAtCurrentLevel = 100 * level * (level - 1) / 2
   const xpNeededForNext = 100 * level
   const currentProgress = totalXP - xpAtCurrentLevel
   const progressPercent = Math.min((currentProgress / xpNeededForNext) * 100, 100)
   const currentColor = getLevelColor(level)
   const nextColor = getLevelColor(level + 1)
-  const { stats, loading, error, refetch } = useDiscoveryScore()
 
   // Tier badges carousel
   const currentTierIndex = getTierIndex(level)
@@ -54,12 +68,11 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
   const badgesPerPage = 4
   const totalPages = Math.ceil(TIER_BADGES.length / badgesPerPage)
 
-  // Auto-scroll to the page containing the current/next tier on mount
   useEffect(() => {
     const targetPage = Math.floor(currentTierIndex / badgesPerPage)
     if (scrollRef.current && targetPage > 0) {
       const scrollAmount = scrollRef.current.clientWidth * targetPage
-      scrollRef.current.scrollTo({ left: scrollAmount, behavior: 'smooth' })
+      scrollRef.current.scrollTo({ left: scrollAmount, behavior: "smooth" })
     }
   }, [currentTierIndex])
 
@@ -69,7 +82,7 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
     setActivePage(Math.round(scrollLeft / clientWidth))
   }
 
-  if (loading && !stats) {
+  if (discoveryLoading && !discoveryStats) {
     return (
       <div className="stats-tab-content">
         <div className="stats-loading">
@@ -80,24 +93,24 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
     )
   }
 
-  if (error) {
+  if (discoveryError) {
     return (
       <div className="stats-tab-content">
         <div className="stats-error">
-          <span>{error}</span>
-          <button onClick={refetch}>Retry</button>
+          <span>{discoveryError}</span>
+          {onRetry && <button onClick={onRetry}>Retry</button>}
         </div>
       </div>
     )
   }
 
-  if (!stats) {
+  if (!discoveryStats) {
     return (
       <div className="stats-tab-content">
         <div className="stats-empty">
           <div className="empty-icon">🔍</div>
           <h3>No discoveries yet</h3>
-          <p>Start exploring and certifying pages to earn discovery Gold!</p>
+          <p>This user hasn't certified any pages yet.</p>
         </div>
       </div>
     )
@@ -117,7 +130,7 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
               <img src={pioneerBadge} alt="Pioneer" className="badge-img" />
             </div>
             <span className="badge-label">Pioneer</span>
-            <span className="badge-count">{stats.pioneerCount}</span>
+            <span className="badge-count">{discoveryStats.pioneerCount}</span>
           </div>
 
           <div className="discovery-badge-item">
@@ -125,7 +138,7 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
               <img src={explorerBadge} alt="Explorer" className="badge-img" />
             </div>
             <span className="badge-label">Explorer</span>
-            <span className="badge-count">{stats.explorerCount}</span>
+            <span className="badge-count">{discoveryStats.explorerCount}</span>
           </div>
 
           <div className="discovery-badge-item">
@@ -133,7 +146,7 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
               <img src={contributorBadge} alt="Contributor" className="badge-img" />
             </div>
             <span className="badge-label">Contributor</span>
-            <span className="badge-count">{stats.contributorCount}</span>
+            <span className="badge-count">{discoveryStats.contributorCount}</span>
           </div>
 
           <div className="discovery-badge-item">
@@ -184,13 +197,13 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
             return (
               <div
                 key={badge.tier}
-                className={`tier-badge-item${unlocked ? ' unlocked' : ''}${isNext ? ' next' : ''}`}
+                className={`tier-badge-item${unlocked ? " unlocked" : ""}${isNext ? " next" : ""}`}
               >
                 <div className="tier-badge-icon">
                   <img
                     src={TIER_BADGE_IMAGES[badge.tier]}
                     alt={badge.name}
-                    className={`tier-badge-img${unlocked ? '' : ' locked'}`}
+                    className={`tier-badge-img${unlocked ? "" : " locked"}`}
                   />
                 </div>
                 <span className="tier-badge-range">LVL {badge.levelRange}</span>
@@ -203,11 +216,11 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
           {Array.from({ length: totalPages }).map((_, i) => (
             <span
               key={i}
-              className={`tier-dot${activePage === i ? ' active' : ''}`}
+              className={`tier-dot${activePage === i ? " active" : ""}`}
               onClick={() => {
                 scrollRef.current?.scrollTo({
                   left: scrollRef.current.clientWidth * i,
-                  behavior: 'smooth'
+                  behavior: "smooth"
                 })
               }}
             />
@@ -228,4 +241,4 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
   )
 }
 
-export default StatsTab
+export default UserStatsTab

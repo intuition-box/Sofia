@@ -286,8 +286,13 @@ const CircleFeedTab = () => {
 
   // Handle member click
   const handleMemberClick = (memberAddress: string, memberLabel: string, memberImage?: string) => {
-    setViewState({ type: 'member-profile', address: memberAddress, label: memberLabel, image: memberImage })
-    memberSelectCategory(null)
+    navigateTo("user-profile", {
+      termId: "",
+      label: memberLabel,
+      image: memberImage,
+      walletAddress: memberAddress,
+      initialTab: "bookmarks"
+    })
   }
 
   // Handle category click in member profile

@@ -1,33 +1,68 @@
-import { useState, useEffect, Suspense, lazy } from 'react'
-import { useRouter } from '../layout/RouterProvider'
-import { useCheckFollowStatus, useUserQuests, useIdentityResolution, useTrustedByCount } from '../../hooks'
-import ProfileHeader from '../ui/ProfileHeader'
-import FollowButton from '../ui/FollowButton'
-import TrustAccountButton from '../ui/TrustAccountButton'
-import leftSideIcon from '../ui/icons/left side.svg'
-import rightSideIcon from '../ui/icons/right side.svg'
-import '../styles/UserProfile.css'
-import '../styles/ProfilePage.css'
+import { useState, useEffect, Suspense, lazy } from "react"
+
+import { useRouter } from "../layout/RouterProvider"
+import {
+  useCheckFollowStatus,
+  useUserQuests,
+  useIdentityResolution,
+  useTrustedByCount,
+  useAccountStats,
+  useUserDiscoveryScore
+} from "../../hooks"
+import ProfileHeader from "../ui/ProfileHeader"
+import FollowButton from "../ui/FollowButton"
+import TrustAccountButton from "../ui/TrustAccountButton"
+import "../styles/UserProfile.css"
+import "../styles/ProfilePage.css"
 
 // Lazy load tabs (same pattern as ProfilePage)
-const UserInterestTab = lazy(() => import('./profile-tabs/UserInterestTab'))
-const AchievementsTab = lazy(() => import('./profile-tabs/AchievementsTab'))
-const CommunityTab = lazy(() => import('./profile-tabs/CommunityTab'))
+const UserStatsTab = lazy(() => import("./profile-tabs/UserStatsTab"))
+const UserInterestTab = lazy(() => import("./profile-tabs/UserInterestTab"))
+const AchievementsTab = lazy(() => import("./profile-tabs/AchievementsTab"))
+const CommunityTab = lazy(() => import("./profile-tabs/CommunityTab"))
+const UserBookmarksTab = lazy(() => import("./profile-tabs/UserBookmarksTab"))
 
-type SubTab = 'interest' | 'achievements' | 'community'
+type SubTab = "stats" | "achievements" | "bookmarks" | "interest" | "community"
+
+const isValidTab = (tab?: string): tab is SubTab =>
+  !!tab && ["stats", "achievements", "bookmarks", "interest", "community"].includes(tab)
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
-  const [activeTab, setActiveTab] = useState<SubTab>('interest')
+  const [activeTab, setActiveTab] = useState<SubTab>(
+    isValidTab(userProfileData?.initialTab) ? userProfileData.initialTab : "stats"
+  )
 
   // Check if we already follow/trust this account
   const followStatus = useCheckFollowStatus(userProfileData?.termId)
 
   // User quests for the profile being viewed (on-chain completed only + signals count)
-  const { completedQuests, totalXP, level, signalsCreated, loading: questsLoading } = useUserQuests(userProfileData?.walletAddress)
+  const {
+    completedQuests,
+    totalXP,
+    level,
+    signalsCreated,
+    loading: questsLoading
+  } = useUserQuests(userProfileData?.walletAddress)
 
   // Trusted-by count (people who trust this account)
-  const { count: trustedByCount, loading: trustedByLoading, refetch: fetchTrustedByCount } = useTrustedByCount(userProfileData?.walletAddress)
+  const {
+    count: trustedByCount,
+    refetch: fetchTrustedByCount
+  } = useTrustedByCount(userProfileData?.walletAddress)
+
+  // Signals created (from on-chain stats)
+  const { signalsCreated: accountSignals } = useAccountStats(
+    userProfileData?.walletAddress
+  )
+
+  // Discovery score for the viewed user
+  const {
+    stats: discoveryStats,
+    loading: discoveryLoading,
+    error: discoveryError,
+    refetch: refetchDiscovery
+  } = useUserDiscoveryScore(userProfileData?.walletAddress)
 
   // Identity resolution for the profile being viewed
   const { displayLabel, displayAvatar } = useIdentityResolution({
@@ -103,10 +138,10 @@ const UserProfilePage = () => {
           id: userProfileData.termId,
           label: userProfileData.label,
           termId: userProfileData.termId,
-          type: 'Account',
+          type: "Account",
           createdAt: new Date().toISOString(),
-          creatorId: '',
-          atomType: 'Account',
+          creatorId: "",
+          atomType: "Account",
           image: displayAvatar,
           data: userProfileData.walletAddress
         }}
@@ -117,6 +152,8 @@ const UserProfilePage = () => {
     )
   }
 
+  const effectiveSignals = accountSignals ?? signalsCreated
+
   return (
     <div className="page profile-page">
     <div className="profile-section account-tab">
@@ -126,6 +163,7 @@ const UserProfilePage = () => {
         avatarUrl={displayAvatar}
         displayName={displayLabel}
         walletAddress={userProfileData.walletAddress}
+        signalsCreated={effectiveSignals}
         actions={renderActions()}
         backButton={
           <button className="user-profile-back-button" onClick={goBack}>
@@ -134,50 +172,35 @@ const UserProfilePage = () => {
         }
       />
 
-      {/* Stats Section - same design as AccountTab */}
-      <div className="stats-section">
-        <div className="stat-item">
-          <div className="stat-icons-with-value">
-            <img src={leftSideIcon} alt="Left" className="stat-icon" />
-            <div className="stat-value">{questsLoading ? '...' : level}</div>
-            <img src={rightSideIcon} alt="Right" className="stat-icon" />
-          </div>
-          <div className="stat-label">Level</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{questsLoading ? '...' : totalXP}</div>
-          <div className="stat-label">Total XP</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{questsLoading ? '...' : signalsCreated}</div>
-          <div className="stat-label">Signals</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{trustedByLoading ? '...' : trustedByCount}</div>
-          <div className="stat-label">Trusted By</div>
-        </div>
-      </div>
-
-      {/* Separator */}
-      <div className="section-separator"></div>
-
       {/* Sub-tabs Navigation */}
       <div className="sub-tabs">
         <button
-          className={`sub-tab ${activeTab === 'interest' ? 'active' : ''}`}
-          onClick={() => setActiveTab('interest')}
+          className={`sub-tab ${activeTab === "stats" ? "active" : ""}`}
+          onClick={() => setActiveTab("stats")}
+        >
+          Stats
+        </button>
+        <button
+          className={`sub-tab ${activeTab === "achievements" ? "active" : ""}`}
+          onClick={() => setActiveTab("achievements")}
+        >
+          Quests
+        </button>
+        <button
+          className={`sub-tab ${activeTab === "bookmarks" ? "active" : ""}`}
+          onClick={() => setActiveTab("bookmarks")}
+        >
+          Bookmarks
+        </button>
+        <button
+          className={`sub-tab ${activeTab === "interest" ? "active" : ""}`}
+          onClick={() => setActiveTab("interest")}
         >
           Interest
         </button>
         <button
-          className={`sub-tab ${activeTab === 'achievements' ? 'active' : ''}`}
-          onClick={() => setActiveTab('achievements')}
-        >
-          Success
-        </button>
-        <button
-          className={`sub-tab ${activeTab === 'community' ? 'active' : ''}`}
-          onClick={() => setActiveTab('community')}
+          className={`sub-tab ${activeTab === "community" ? "active" : ""}`}
+          onClick={() => setActiveTab("community")}
         >
           Community
         </button>
@@ -185,11 +208,21 @@ const UserProfilePage = () => {
 
       {/* Tab Content */}
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
-          {activeTab === 'interest' && (
-            <UserInterestTab walletAddress={userProfileData.walletAddress} />
+          {activeTab === "stats" && (
+            <UserStatsTab
+              walletAddress={userProfileData.walletAddress}
+              trustedByCount={trustedByCount}
+              level={level}
+              totalXP={totalXP}
+              signalsCreated={effectiveSignals}
+              discoveryStats={discoveryStats}
+              discoveryLoading={discoveryLoading}
+              discoveryError={discoveryError}
+              onRetry={refetchDiscovery}
+            />
           )}
 
-          {activeTab === 'achievements' && (
+          {activeTab === "achievements" && (
             <AchievementsTab
               quests={completedQuests}
               loading={questsLoading}
@@ -203,7 +236,15 @@ const UserProfilePage = () => {
             />
           )}
 
-          {activeTab === 'community' && (
+          {activeTab === "bookmarks" && (
+            <UserBookmarksTab walletAddress={userProfileData.walletAddress} />
+          )}
+
+          {activeTab === "interest" && (
+            <UserInterestTab walletAddress={userProfileData.walletAddress} />
+          )}
+
+          {activeTab === "community" && (
             <CommunityTab walletAddress={userProfileData.walletAddress} />
           )}
         </Suspense>

@@ -53,6 +53,7 @@ export { default as useIntentionCategories } from './useIntentionCategories'
 // Certifications & Discovery
 export { useUserCertifications, getCertificationForUrl } from './useUserCertifications'
 export { useDiscoveryScore } from './useDiscoveryScore'
+export { useUserDiscoveryScore } from './useUserDiscoveryScore'
 export { useTrendingCertifications } from './useTrendingCertifications'
 export type { TrendingItem, TrendingCategory } from './useTrendingCertifications'
 export { usePageDiscovery } from './usePageDiscovery'
