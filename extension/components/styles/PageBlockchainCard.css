@@ -80,7 +80,7 @@
   text-overflow: ellipsis;
 }
 
-/* Discovery Badge Compact - SVG Badge */
+/* Discovery Badge Compact - Image Badge */
 .discovery-badge-compact {
   position: relative;
   flex-shrink: 0;
@@ -89,6 +89,9 @@
   height: 70px;
   cursor: pointer;
   transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .discovery-badge-compact:hover {
@@ -99,36 +102,18 @@
   transform: scale(0.98);
 }
 
-.discovery-badge-svg {
+.discovery-badge-img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
-.discovery-badge-text {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.badge-rank {
-  font-size: 20px;
+.discovery-badge-rank {
+  font-size: 11px;
   font-weight: 700;
-  line-height: 1.1;
-}
-
-.badge-status {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 1px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 2px;
+  line-height: 1;
 }
 
 /* Pioneer Badge - Gold */
@@ -136,43 +121,14 @@
   filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.4));
 }
 
-.discovery-badge-compact.badge-pioneer .badge-rank {
-  color: #1a1a1a;
-  text-shadow: 0 1px 2px rgba(245, 200, 66, 0.3);
-}
-
-.discovery-badge-compact.badge-pioneer .badge-status {
-  color: #3d2800;
-}
-
 /* Explorer Badge - Blue */
 .discovery-badge-compact.badge-explorer {
   filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.4));
 }
 
-.discovery-badge-compact.badge-explorer .badge-rank {
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 30, 80, 0.5);
-}
-
-.discovery-badge-compact.badge-explorer .badge-status {
-  color: #e0ecff;
-}
-
 /* Contributor Badge - Purple */
 .discovery-badge-compact.badge-contributor {
   filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.4));
-}
-
-.discovery-badge-compact.badge-contributor .badge-rank {
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(40, 10, 80, 0.5);
-}
-
-.discovery-badge-compact.badge-contributor .badge-status {
-  color: #e8ddff;
-  font-size: 7px;
-  letter-spacing: 0.2px;
 }
 
 /* Legacy Credibility Circle Compact - In Header (kept for backward compatibility) */
@@ -703,7 +659,7 @@
   background: transparent;
   border-radius: 12px;
   color: white;
-  font-family: 'Gotu', cursive;
+  font-family: var(--font-family-primary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -746,7 +702,7 @@
   background-size: 200% 200%;
   animation: orb-gradient 20s ease infinite;
   box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
-  font-family: 'Gotu', cursive;
+  font-family: var(--font-family-primary);
 }
 
 .trust-page-button.salmon-gradient-button::before {
@@ -898,7 +854,9 @@
 .trust-btn:hover:not(:disabled) {
   box-shadow: none;
   transform: translateY(-2px);
-  background-color: rgba(86, 236, 72, 0.15);
+  color: rgb(120, 255, 115);
+  border-color: rgb(120, 255, 115);
+
 }
 
 @keyframes orb-gradient {
@@ -933,8 +891,8 @@
 .distrust-btn:hover:not(:disabled) {
   box-shadow: none;
   transform: translateY(-2px);
-  background-color: rgba(253, 78, 78, 0.15);
-  color: white;
+  color: rgb(255, 113, 113);
+  border-color: rgb(255, 113, 113);
 }
 
 .distrust-btn .trust-button-background {
