@@ -4,9 +4,11 @@
  */
 
 import { useState } from "react"
-import { useStreakLeaderboard } from "../../../hooks/useStreakLeaderboard"
+
+import { useStreakLeaderboard } from "~/hooks"
+import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from "~/lib/config/chainConfig"
+
 import { useRouter } from "../../layout/RouterProvider"
-import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from "../../../lib/config/chainConfig"
 import Avatar from "../../ui/Avatar"
 import "../../styles/LeaderboardTab.css"
 import "../../styles/TrendingTab.css"

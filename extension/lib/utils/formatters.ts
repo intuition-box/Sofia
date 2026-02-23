@@ -7,7 +7,7 @@
  * - components/ui/GroupDetailView.tsx
  * - components/ui/InterestCard.tsx
  * - components/pages/resonance-tabs/CircleFeedTab.tsx
- * - components/pages/core-tabs/HistoryTab.tsx
+ * - components/pages/profile-tabs/HistoryTab.tsx
  * - components/pages/core-tabs/BookmarkTab.tsx
  * - components/pages/OnboardingBookmarkSelectPage.tsx
  */

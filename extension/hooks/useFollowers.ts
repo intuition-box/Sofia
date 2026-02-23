@@ -6,9 +6,9 @@ import { useState, useCallback } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
-import { batchFetchIPFS, batchGetEnsAvatars } from '../lib/utils'
 import { useGetAccountAtomByWalletQuery, useGetMyFollowersQuery, useGetAtomDataByLabelsQuery } from '@0xsofia/graphql'
-import { createHookLogger } from '../lib/utils/logger'
+
+import { batchFetchIPFS, batchResolveEns, createHookLogger } from '../lib/utils'
 
 const logger = createHookLogger('useFollowers')
 
@@ -103,10 +103,15 @@ export function useFollowers(walletAddress: string | undefined): FollowQueryResu
         .map((pos) => pos.account.atom?.data)
         .filter((data): data is string => !!data && data.startsWith('ipfs://'))
 
+      // Collect wallet addresses for ENS resolution
+      const walletAddresses = followAccounts
+        .map((acc) => acc.walletAddress)
+        .filter((addr): addr is string => !!addr)
+
       Promise.all([
         batchFetchIPFS(ipfsUris),
-        batchGetEnsAvatars(followAccounts.map((acc) => ({ label: acc.label, image: acc.image })))
-      ]).then(async ([ipfsMetadataMap, ensAvatars]) => {
+        batchResolveEns(walletAddresses)
+      ]).then(async ([ipfsMetadataMap, ensResults]) => {
         // Fetch atom data for IPFS metadata
         const accountLabels = [...new Set(positions.map((pos) => pos.account.label))]
         const atomDataResponse = await useGetAtomDataByLabelsQuery.fetcher({
@@ -127,13 +132,17 @@ export function useFollowers(walletAddress: string | undefined): FollowQueryResu
           }
         }
 
-        // Update accounts with IPFS metadata and ENS avatars
+        // Update accounts with IPFS metadata and ENS data
         const updatedAccounts = followAccounts.map((acc) => {
           const accountData = atomDataMap.get(acc.label)
+          const ens = acc.walletAddress
+            ? ensResults.get(acc.walletAddress.toLowerCase())
+            : undefined
 
           return {
             ...acc,
-            image: acc.image || ensAvatars.get(acc.label) || undefined,
+            label: acc.label && !acc.label.startsWith("0x") ? acc.label : ens?.name || acc.label,
+            image: acc.image || ens?.avatar || undefined,
             meta: accountData
           }
         })

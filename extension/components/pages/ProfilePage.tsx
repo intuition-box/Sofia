@@ -7,16 +7,18 @@ import '../styles/ProfilePage.css'
 // Lazy load tabs pour optimiser le chargement
 const AccountTab = lazy(() => import('./profile-tabs/AccountTab'))
 const CommunityTab = lazy(() => import('./profile-tabs/CommunityTab'))
-const TrustCircleTab = lazy(() => import('./profile-tabs/FeedTab'))
+const HistoryTab = lazy(() => import('./profile-tabs/HistoryTab'))
 
 const ProfilePage = () => {
   const { goBack, activeProfileTab, setActiveProfileTab } = useRouter()
-  const [activeTab, setActiveTab] = useState<'account' | 'community' | 'trust-circle' | 'bookmarks' | 'signals'>(
-    (activeProfileTab as 'account' | 'community' | 'trust-circle' | 'bookmarks' | 'signals') || 'account'
+  const [activeTab, setActiveTab] = useState<'account' | 'community' | 'history' | 'bookmarks' | 'signals'>(
+    (activeProfileTab as 'account' | 'community' | 'history' | 'bookmarks' | 'signals') || 'account'
   )
 
+  const [expandedHistoryTriplet, setExpandedHistoryTriplet] = useState<{ tripletId: string } | null>(null)
+
   // Sync local tab state with router context
-  const handleTabChange = (tab: 'account' | 'community' | 'trust-circle' | 'bookmarks' | 'signals') => {
+  const handleTabChange = (tab: 'account' | 'community' | 'history' | 'bookmarks' | 'signals') => {
     setActiveTab(tab)
     setActiveProfileTab(tab)
   }
@@ -24,7 +26,7 @@ const ProfilePage = () => {
   // Restore active tab when coming back from user profile
   useEffect(() => {
     if (activeProfileTab) {
-      setActiveTab(activeProfileTab as 'account' | 'community' | 'trust-circle' | 'bookmarks' | 'signals')
+      setActiveTab(activeProfileTab as 'account' | 'community' | 'history' | 'bookmarks' | 'signals')
     }
   }, [activeProfileTab])
 
@@ -42,10 +44,13 @@ const ProfilePage = () => {
             <CommunityTab />
           </Suspense>
         )
-      case 'trust-circle':
+      case 'history':
         return (
           <Suspense fallback={<div className="loading-state">Loading...</div>}>
-            <TrustCircleTab />
+            <HistoryTab
+              expandedTriplet={expandedHistoryTriplet}
+              setExpandedTriplet={setExpandedHistoryTriplet}
+            />
           </Suspense>
         )
       default:
@@ -69,10 +74,10 @@ const ProfilePage = () => {
           Community
         </button>
         <button
-          className={`tab ${activeTab === 'trust-circle' ? 'active' : ''}`}
-          onClick={() => handleTabChange('trust-circle')}
+          className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => handleTabChange('history')}
         >
-          Activity
+          History
         </button>
       </div>
 

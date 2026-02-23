@@ -7,8 +7,6 @@
  */
 
 import { useState, useEffect, useCallback } from "react"
-import { createPublicClient, http } from "viem"
-import { mainnet } from "viem/chains"
 import {
   type GetStreakLeaderboardQuery,
   type GetVerifiedWalletsQuery,
@@ -20,42 +18,9 @@ import {
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { PREDICATE_IDS, SOFIA_PROXY_ADDRESS } from "../lib/config/chainConfig"
-import { createHookLogger } from "../lib/utils/logger"
-import { getEnsAvatar } from "../lib/utils"
-import { calculateStreaks } from "../lib/utils/streakUtils"
+import { createHookLogger, batchResolveEns, calculateStreaks } from "../lib/utils"
 
 const logger = createHookLogger("useStreakLeaderboard")
-
-const ensClient = createPublicClient({ chain: mainnet, transport: http() })
-
-/**
- * Batch-resolve ENS names + avatars for entries whose label looks like a truncated address.
- * Mutates entries in place for performance.
- */
-async function resolveEnsForEntries(entries: LeaderboardEntry[]): Promise<void> {
-  const toResolve = entries.filter(
-    e => !e.label || e.label.startsWith("0x") || e.label.includes("...")
-  )
-  if (toResolve.length === 0) return
-
-  await Promise.allSettled(
-    toResolve.map(async (entry) => {
-      try {
-        const ensName = await ensClient.getEnsName({
-          address: entry.address as `0x${string}`
-        })
-        if (ensName) {
-          entry.label = ensName
-          // Try to resolve ENS avatar too
-          const avatarUrl = await getEnsAvatar(ensName)
-          if (avatarUrl) entry.image = avatarUrl
-        }
-      } catch {
-        // Keep original label on failure
-      }
-    })
-  )
-}
 
 export interface LeaderboardEntry {
   rank: number
@@ -188,10 +153,25 @@ export const useStreakLeaderboard = (
       setEntries([...verified])
       setTotalParticipants(verified.length)
 
-      // Batch resolve ENS names for all entries with truncated labels
-      resolveEnsForEntries(verified).then(() => {
-        setEntries([...verified])
-      })
+      // Batch resolve ENS names + avatars for entries missing label or image
+      const addressesToResolve = verified
+        .filter((e) => !e.image || !e.label || e.label.startsWith("0x") || e.label.includes("..."))
+        .map((e) => e.address)
+
+      if (addressesToResolve.length > 0) {
+        batchResolveEns(addressesToResolve).then((ensResults) => {
+          for (const entry of verified) {
+            const ens = ensResults.get(entry.address.toLowerCase())
+            if (ens?.name && (!entry.label || entry.label.startsWith("0x") || entry.label.includes("..."))) {
+              entry.label = ens.name
+            }
+            if (ens?.avatar && !entry.image) {
+              entry.image = ens.avatar
+            }
+          }
+          setEntries([...verified])
+        })
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to fetch leaderboard"
       logger.error("Leaderboard fetch failed", { error: msg })

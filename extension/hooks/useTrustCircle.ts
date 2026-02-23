@@ -6,9 +6,9 @@ import { useState, useCallback, useEffect } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
-import { batchFetchIPFS, batchGetEnsAvatars } from '../lib/utils'
 import { useGetMyTrustCircleQuery, useGetAtomDataByLabelsQuery } from '@0xsofia/graphql'
-import { createHookLogger } from '../lib/utils/logger'
+
+import { batchFetchIPFS, batchResolveEns, createHookLogger } from '../lib/utils'
 
 const logger = createHookLogger('useTrustCircle')
 
@@ -100,10 +100,15 @@ export function useTrustCircle(walletAddress: string | undefined): FollowQueryRe
         .map((triple) => triple.object?.data)
         .filter((data): data is string => !!data && data.startsWith('ipfs://'))
 
+      // Collect wallet addresses for ENS resolution
+      const walletAddresses = trustAccounts
+        .map((acc) => acc.walletAddress)
+        .filter((addr): addr is string => !!addr)
+
       Promise.all([
         batchFetchIPFS(ipfsUris),
-        batchGetEnsAvatars(trustAccounts.map((acc) => ({ label: acc.label, image: acc.image })))
-      ]).then(async ([ipfsMetadataMap, ensAvatars]) => {
+        batchResolveEns(walletAddresses)
+      ]).then(async ([ipfsMetadataMap, ensResults]) => {
         // Fetch atom data for IPFS metadata
         const accountLabels = [...new Set(triplesWithPositions.map((triple) => triple.object.label))]
         const atomDataResponse = await useGetAtomDataByLabelsQuery.fetcher({
@@ -124,13 +129,17 @@ export function useTrustCircle(walletAddress: string | undefined): FollowQueryRe
           }
         }
 
-        // Update accounts with IPFS metadata and ENS avatars
+        // Update accounts with IPFS metadata and ENS data
         const updatedAccounts = trustAccounts.map((acc) => {
           const accountData = atomDataMap.get(acc.label)
+          const ens = acc.walletAddress
+            ? ensResults.get(acc.walletAddress.toLowerCase())
+            : undefined
 
           return {
             ...acc,
-            image: acc.image || ensAvatars.get(acc.label) || undefined,
+            label: acc.label && !acc.label.startsWith("0x") ? acc.label : ens?.name || acc.label,
+            image: acc.image || ens?.avatar || undefined,
             meta: accountData
           }
         })

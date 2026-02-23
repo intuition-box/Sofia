@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
-import { createHookLogger } from '../../../lib/utils/logger'
-import { useWalletFromStorage } from '../../../hooks'
-import { 
+
+import {
   useGetTrustCirclePositionsQuery,
   useGetSofiaTrustedActivityQuery
 } from '@0xsofia/graphql'
-import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
-import { SOFIA_PROXY_ADDRESS } from '../../../lib/config/chainConfig'
 import { getAddress } from 'viem'
-import { useWeightOnChain } from '../../../hooks'
+
+import { useWalletFromStorage, useWeightOnChain } from '~/hooks'
+import { SUBJECT_IDS, PREDICATE_IDS } from '~/lib/config/constants'
+import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
+import { createHookLogger } from '~/lib/utils'
+
 import StakeModal from '../../modals/StakeModal'
 import Avatar from '../../ui/Avatar'
 import '../../styles/CoreComponents.css'
