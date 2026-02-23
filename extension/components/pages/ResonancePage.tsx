@@ -11,10 +11,10 @@ const FeedTab = lazy(() => import('./resonance-tabs/FeedTab'))
 const TrendingTab = lazy(() => import('./resonance-tabs/TrendingTab'))
 const LeaderboardTab = lazy(() => import('./resonance-tabs/LeaderboardTab'))
 
-type ResonanceTab = 'activity' | 'circle' | 'trending' | 'streak'
+type ResonanceTab = 'circle' | 'activity' | 'trending' | 'streak'
 
 const ResonancePage = () => {
-  const [activeTab, setActiveTab] = useState<ResonanceTab>('activity')
+  const [activeTab, setActiveTab] = useState<ResonanceTab>('circle')
 
   return (
     <div className="page">

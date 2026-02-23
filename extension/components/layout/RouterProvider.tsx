@@ -13,6 +13,7 @@ export interface UserProfileData {
   walletAddress?: string
   url?: string
   description?: string
+  initialTab?: string
 }
 
 interface SearchContext {

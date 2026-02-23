@@ -758,6 +758,7 @@
   backdrop-filter: blur(29px);
   border-radius: 12px;
   padding: 4px;
+  margin-bottom: 5px;
 }
 
 .sub-tab {
