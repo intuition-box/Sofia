@@ -1,24 +1,24 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useRouter } from '../../layout/RouterProvider'
-import { useWalletFromStorage, useIntentionCategories, useVoteOnTriple, useTripleVotes } from '../../../hooks'
+
 import {
   useGetTrustCirclePositionsQuery,
   useGetSofiaTrustedActivityQuery
 } from '@0xsofia/graphql'
-import { SUBJECT_IDS, PREDICATE_IDS } from '../../../lib/config/constants'
-import { SOFIA_PROXY_ADDRESS } from '../../../lib/config/chainConfig'
-import { createPublicClient, http, getAddress } from 'viem'
-import { mainnet } from 'viem/chains'
-import type { IntentionType } from '../../../types/intentionCategories'
-import { INTENTION_CONFIG } from '../../../types/intentionCategories'
+import { getAddress } from 'viem'
+
+import { useRouter } from '../../layout/RouterProvider'
+import { useWalletFromStorage, useIntentionCategories, useVoteOnTriple, useTripleVotes } from '~/hooks'
+import { SUBJECT_IDS, PREDICATE_IDS } from '~/lib/config/constants'
+import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
+import { getFaviconUrl, batchResolveEns } from '~/lib/utils'
+import type { IntentionType } from '~/types/intentionCategories'
+import { INTENTION_CONFIG } from '~/types/intentionCategories'
+
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import Avatar from '../../ui/Avatar'
-import { getFaviconUrl, getEnsAvatar } from '~/lib/utils'
 import '../../styles/CircleFeedTab.css'
 import '../../styles/CategoryStyles.css'
-
-const ensClient = createPublicClient({ chain: mainnet, transport: http() })
 
 // Intention predicate labels from on-chain
 const INTENTION_PREDICATE_LABELS = [
@@ -149,27 +149,17 @@ const CircleFeedTab = () => {
     setWalletToLabel(labelMap)
     setWalletToImage(imageMap)
 
-    // Batch-resolve ENS names for wallets with raw address labels
-    const toResolve = [...labelMap.entries()].filter(
-      ([, label]) => !label || label.startsWith("0x") || label.includes("...")
-    )
-    if (toResolve.length > 0) {
-      Promise.allSettled(
-        toResolve.map(async ([wallet]) => {
-          try {
-            const ensName = await ensClient.getEnsName({
-              address: getAddress(wallet) as `0x${string}`
-            })
-            if (ensName) {
-              labelMap.set(wallet, ensName)
-              const avatarUrl = await getEnsAvatar(ensName)
-              if (avatarUrl) imageMap.set(wallet, avatarUrl)
-            }
-          } catch {
-            // Keep original label on failure
-          }
-        })
-      ).then(() => {
+    // Batch-resolve ENS names + avatars for wallets with raw address labels
+    const addressesToResolve = [...labelMap.entries()]
+      .filter(([, label]) => !label || label.startsWith("0x") || label.includes("..."))
+      .map(([wallet]) => wallet)
+
+    if (addressesToResolve.length > 0) {
+      batchResolveEns(addressesToResolve).then((ensResults) => {
+        for (const [addr, ens] of ensResults) {
+          if (ens.name) labelMap.set(addr, ens.name)
+          if (ens.avatar) imageMap.set(addr, ens.avatar)
+        }
         setWalletToLabel(new Map(labelMap))
         setWalletToImage(new Map(imageMap))
       })

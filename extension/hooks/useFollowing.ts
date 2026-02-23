@@ -6,9 +6,9 @@ import { useState, useCallback } from 'react'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import type { FollowAccountVM, FollowQueryResult, AtomDataResponse } from '../types/follows'
-import { batchFetchIPFS, batchGetEnsAvatars } from '../lib/utils'
 import { useGetFollowingPositionsQuery, GetFollowingPositionsQuery } from '@0xsofia/graphql'
-import { createHookLogger } from '../lib/utils/logger'
+
+import { batchFetchIPFS, batchResolveEns, createHookLogger } from '../lib/utils'
 
 const logger = createHookLogger('useFollowing')
 
@@ -121,11 +121,16 @@ export function useFollowing(walletAddress: string | undefined): FollowQueryResu
         .map((triple) => triple.object?.data)
         .filter((data): data is string => !!data && data.startsWith('ipfs://'))
 
+      // Collect wallet addresses for ENS resolution
+      const walletAddresses = followAccounts
+        .map((acc) => acc.walletAddress)
+        .filter((addr): addr is string => !!addr)
+
       Promise.all([
         batchFetchIPFS(ipfsUris),
-        batchGetEnsAvatars(followAccounts.map((acc) => ({ label: acc.label, image: acc.image })))
-      ]).then(([ipfsMetadataMap, ensAvatars]) => {
-        // Update accounts with IPFS metadata and ENS avatars
+        batchResolveEns(walletAddresses)
+      ]).then(([ipfsMetadataMap, ensResults]) => {
+        // Update accounts with IPFS metadata and ENS data
         const updatedAccounts = followAccounts.map((acc, index) => {
           const triple = triplesWithPositions[index]
           const account = triple.object
@@ -142,9 +147,14 @@ export function useFollowing(walletAddress: string | undefined): FollowQueryResu
             }
           }
 
+          const ens = acc.walletAddress
+            ? ensResults.get(acc.walletAddress.toLowerCase())
+            : undefined
+
           return {
             ...acc,
-            image: acc.image || ensAvatars.get(acc.label) || undefined,
+            label: acc.label && !acc.label.startsWith("0x") ? acc.label : ens?.name || acc.label,
+            image: acc.image || ens?.avatar || undefined,
             meta: accountData
           }
         })

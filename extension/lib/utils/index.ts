@@ -14,7 +14,7 @@ export type { RestrictionInfo } from './pageRestriction'
 export { parseSofiaMessage } from './parseSofiaMessage'
 
 // Web3 & Identity
-export { getEnsAvatar, batchGetEnsAvatars, clearEnsAvatarCache } from './ensUtils'
+export { getEnsAvatar, getEnsName, batchGetEnsAvatars, batchResolveEns, clearEnsAvatarCache } from './ensUtils'
 export { isValidImageUrl, isEthereumAddress, shouldShowDiceBearAvatar, generateDiceBearAvatar, escapeSvgForCss, convertIpfsToHttp, normalizeAvatarUrl, getInitials } from './avatar'
 
 // IPFS

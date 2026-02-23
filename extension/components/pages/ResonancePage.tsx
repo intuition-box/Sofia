@@ -7,13 +7,14 @@ import '../styles/CorePage.css'
 
 // Lazy load tab components (required by Parcel bundler)
 const CircleFeedTab = lazy(() => import('./resonance-tabs/CircleFeedTab'))
+const FeedTab = lazy(() => import('./resonance-tabs/FeedTab'))
 const TrendingTab = lazy(() => import('./resonance-tabs/TrendingTab'))
 const LeaderboardTab = lazy(() => import('./resonance-tabs/LeaderboardTab'))
 
-type ResonanceTab = 'circle' | 'trending' | 'streak'
+type ResonanceTab = 'activity' | 'circle' | 'trending' | 'streak'
 
 const ResonancePage = () => {
-  const [activeTab, setActiveTab] = useState<ResonanceTab>('circle')
+  const [activeTab, setActiveTab] = useState<ResonanceTab>('activity')
 
   return (
     <div className="page">
@@ -36,9 +37,16 @@ const ResonancePage = () => {
         >
           Streak
         </button>
+        <button
+          className={`tab ${activeTab === 'activity' ? 'active' : ''}`}
+          onClick={() => setActiveTab('activity')}
+        >
+          Activity
+        </button>
       </div>
       <div className="page-content">
         <Suspense fallback={<div className="loading-state">Loading...</div>}>
+          {activeTab === 'activity' && <FeedTab />}
           {activeTab === 'circle' && <CircleFeedTab />}
           {activeTab === 'trending' && <TrendingTab />}
           {activeTab === 'streak' && <LeaderboardTab />}

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useIntuitionTriplets, useWeightOnChain, useWalletFromStorage } from '../../../hooks'
+import { useIntuitionTriplets, useWeightOnChain, useWalletFromStorage } from '~/hooks'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import StakeModal from '../../modals/StakeModal'
@@ -12,7 +12,7 @@ import LinkVariantIcon from '../../ui/icons/link-variant.svg'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
-import { createHookLogger } from '../../../lib/utils/logger'
+import { createHookLogger } from '~/lib/utils'
 import { getFaviconUrl } from '~/lib/utils'
 
 const logger = createHookLogger('HistoryTab')
@@ -225,7 +225,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
     return (
       <div className="triples-container">
         <div className="empty-state">
-          <p>🔌 Connect your wallet</p>
+          <p>Connect your wallet</p>
           <p className="empty-subtext">
             Connect your wallet to view your on-chain triplets
           </p>
