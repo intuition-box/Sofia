@@ -17,7 +17,7 @@ const VOTE_DEPOSIT_CURVE_ID = 1n
 export type VoteType = "like" | "dislike"
 
 export interface VoteOnTripleResult {
-  vote: (tripleTermId: string, voteType: VoteType) => Promise<void>
+  vote: (tripleTermId: string, voteType: VoteType, stakeAmount?: bigint) => Promise<void>
   reset: () => void
   loading: boolean
   error: string | null
@@ -49,7 +49,7 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
   const [votingTripleId, setVotingTripleId] = useState<string | null>(null)
 
   const vote = useCallback(
-    async (tripleTermId: string, voteType: VoteType) => {
+    async (tripleTermId: string, voteType: VoteType, stakeAmount?: bigint) => {
       if (!address) {
         setError(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
         return
@@ -98,7 +98,7 @@ export const useVoteOnTriple = (): VoteOnTripleResult => {
           predicateId,
           objectId,
           address,
-          VOTE_STAKE,
+          stakeAmount || VOTE_STAKE,
           VOTE_DEPOSIT_CURVE_ID
         )
 

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useTrustAccount } from '../../hooks'
 import WeightModal from '../modals/WeightModal'
-import type { EchoTriplet } from '../../types/blockchain'
 import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('TrustAccountButton')
@@ -21,7 +20,7 @@ const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess }: TrustAcc
   const [localTransactionHash, setLocalTransactionHash] = useState<string | null>(null)
 
   // Create a fake triplet object for WeightModal display
-  const mockTriplet: EchoTriplet = {
+  const mockTriplet = {
     id: `trust-${accountTermId}`,
     triplet: {
       subject: 'I',
@@ -30,9 +29,7 @@ const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess }: TrustAcc
     },
     url: '',
     description: `Trust relationship with ${accountLabel}`,
-    timestamp: Date.now(),
-    sourceMessageId: '',
-    status: 'available'
+    intention: 'trusted' as const
   }
 
   const handleButtonClick = () => {

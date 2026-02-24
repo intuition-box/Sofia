@@ -57,7 +57,7 @@ interface WeightModalProps {
 }
 
 type WeightOption = {
-  id: 'minimum' | 'default' | 'strong' | 'custom'
+  id: 'minimum' | 'default' | 'strong' | 'high' | 'max' | 'custom'
   label: string
   value: number | null
   description: string
@@ -67,6 +67,8 @@ const weightOptions: WeightOption[] = [
   { id: 'minimum', label: 'Minimum', value: 0.01, description: '0.01 TRUST' },
   { id: 'default', label: 'Default', value: 0.5, description: '0.5 TRUST' },
   { id: 'strong', label: 'Strong', value: 1, description: '1 TRUST' },
+  { id: 'high', label: 'High', value: 5, description: '5 TRUST' },
+  { id: 'max', label: 'Max', value: 10, description: '10 TRUST' },
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
@@ -301,7 +303,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
             <p className="modal-description">
               {fixedDeposit != null
                 ? 'Review the cost breakdown before confirming.'
-                : 'Choose how much TRUST to deposit for each signal.'}
+                : 'Set your deposit, allocate to pools, review fees and confirm.'}
             </p>
           )}
 
@@ -311,33 +313,52 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               {triplets.map((triplet, index) => (
                 <div key={triplet.id} className="weight-modal-triplet-card">
                   <div className="weight-modal-triplet-text">
-                    <span className="subject">I</span>{' '}
-                    <span className="action">{triplet.triplet.predicate}</span>{' '}
-                    <span className="object">{triplet.triplet.object}</span>
                     {(() => {
                       const badge = getIntentionBadge(triplet.intention)
-                      if (!badge) return null
-                      return (
+                      const truncate = (text: string, max: number) =>
+                        text.length > max ? text.slice(0, max) + '...' : text
+                      const isVotePredicate = ['like', 'dislike'].includes(
+                        triplet.triplet.predicate.toLowerCase()
+                      )
+                      if (!badge) {
+                        return (
+                          <>
+                            <span className="subject">I</span>{' '}
+                            <span className="action">{triplet.triplet.predicate}</span>{' '}
+                            <span className="object">{truncate(triplet.triplet.object, 40)}</span>
+                          </>
+                        )
+                      }
+                      const badgeContainer = (
                         <span
-                          className="weight-modal-intention-badge"
+                          className="weight-modal-cert-target"
                           style={{
-                            backgroundColor: `${badge.color}20`,
-                            color: badge.color
+                            borderColor: `${badge.color}40`,
+                            backgroundColor: `${badge.color}0A`
                           }}
                         >
-                          {badge.label}
+                          <span className="object">{truncate(triplet.triplet.object, 40)}</span>
+                          <span className="weight-modal-cert-dot">·</span>
+                          <span
+                            className="weight-modal-intention-badge"
+                            style={{ color: badge.color }}
+                          >
+                            {badge.label}
+                          </span>
                         </span>
                       )
+                      if (isVotePredicate) {
+                        return (
+                          <>
+                            <span className="subject">I</span>{' '}
+                            <span className="action">{triplet.triplet.predicate}</span>{' '}
+                            {badgeContainer}
+                          </>
+                        )
+                      }
+                      return badgeContainer
                     })()}
                   </div>
-                  {triplet.url && (() => {
-                    try {
-                      const urlObj = new URL(triplet.url)
-                      const host = urlObj.hostname.replace(/^www\./, '')
-                      const path = urlObj.pathname !== '/' ? urlObj.pathname : ''
-                      return <span className="weight-modal-url-hint">{host}{path}</span>
-                    } catch { return null }
-                  })()}
 
                   {/* Amount Section — only in form state, hidden when fixedDeposit */}
                   {isFormState && fixedDeposit == null && (
@@ -386,7 +407,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
           {isFormState && gsEnabled && (
             <div className="gs-slider-section">
               <div className="gs-slider-header">
-                <span className="gs-slider-label">Global Pool</span>
+                <span className="gs-slider-label">Beta Season Pool</span>
                 <span className="gs-slider-value">{gsPercentage / 1000}%</span>
               </div>
               <input
@@ -406,7 +427,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   <span className="gs-slider-breakdown-value">{formatTrust(breakdown.signalAmount)} TRUST</span>
                 </div>
                 <div className="gs-slider-breakdown-item">
-                  <span className="gs-slider-breakdown-label">Global Pool</span>
+                  <span className="gs-slider-breakdown-label">Beta Season Pool</span>
                   <span className="gs-slider-breakdown-value pool">{formatTrust(breakdown.poolAmount)} TRUST</span>
                 </div>
               </div>
@@ -430,7 +451,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                     <span>{formatTrust(breakdown.signalAmount)} TRUST</span>
                   </div>
                   <div className="weight-modal-cost-row weight-modal-cost-sub">
-                    <span>Global Pool</span>
+                    <span>Beta Season Pool</span>
                     <span>{formatTrust(breakdown.poolAmount)} TRUST</span>
                   </div>
                 </>
@@ -438,28 +459,22 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               {breakdown.totalFees > 0 && (
                 <>
                   <div className="weight-modal-cost-divider" />
-                  {breakdown.creationCost > 0 && (
-                    <div className="weight-modal-cost-row weight-modal-cost-fee">
-                      <span>Creation cost</span>
-                      <span>{formatTrust(breakdown.creationCost)} TRUST</span>
-                    </div>
-                  )}
-                  {breakdown.sofiaFixedFee > 0 && (
-                    <div className="weight-modal-cost-row weight-modal-cost-fee">
-                      <span>Sofia fee (fixed x{breakdown.depositCount})</span>
-                      <span>{formatTrust(breakdown.sofiaFixedFee)} TRUST</span>
-                    </div>
-                  )}
-                  {breakdown.sofiaPercentFee > 0 && (
-                    <div className="weight-modal-cost-row weight-modal-cost-fee">
-                      <span>Sofia fee (5%)</span>
-                      <span>{formatTrust(breakdown.sofiaPercentFee)} TRUST</span>
-                    </div>
-                  )}
                   <div className="weight-modal-cost-row weight-modal-cost-fees-subtotal">
                     <span>Fees</span>
                     <span>{formatTrust(breakdown.totalFees)} TRUST</span>
                   </div>
+                  {(breakdown.sofiaFixedFee > 0 || breakdown.sofiaPercentFee > 0) && (
+                    <div className="weight-modal-cost-row weight-modal-cost-sub">
+                      <span>Sofia fee</span>
+                      <span>{formatTrust(breakdown.sofiaFixedFee + breakdown.sofiaPercentFee)} TRUST</span>
+                    </div>
+                  )}
+                  {breakdown.creationCost > 0 && (
+                    <div className="weight-modal-cost-row weight-modal-cost-sub">
+                      <span>Intuition fee (creation only)</span>
+                      <span>{formatTrust(breakdown.creationCost)} TRUST</span>
+                    </div>
+                  )}
                   <div className="weight-modal-cost-divider" />
                   <div className="weight-modal-cost-row weight-modal-cost-total">
                     <span>Total</span>

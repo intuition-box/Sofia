@@ -303,9 +303,10 @@ const CircleFeedTab = () => {
     setPendingVote({ tripleTermId, voteType, objectLabel, intentionType })
   }
 
-  const handleVoteSubmit = async () => {
+  const handleVoteSubmit = async (customWeights?: (bigint | null)[]) => {
     if (!pendingVote) return
-    await vote(pendingVote.tripleTermId, pendingVote.voteType)
+    const stakeAmount = customWeights?.[0] ?? undefined
+    await vote(pendingVote.tripleTermId, pendingVote.voteType, stakeAmount)
   }
 
   const handleVoteModalClose = () => {
@@ -584,7 +585,6 @@ const CircleFeedTab = () => {
           isProcessing={voteLoading}
           transactionSuccess={voteTransactionSuccess}
           transactionError={voteTransactionError || undefined}
-          fixedDeposit={1}
           estimateOptions={{ isNewTriple: true, newAtomCount: 0 }}
           submitLabel="Vote"
           onClose={handleVoteModalClose}
