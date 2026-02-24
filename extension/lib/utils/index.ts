@@ -47,3 +47,6 @@ export { buildPagePositionMap, calculateDiscoveryRanking, calculateDiscoveryGold
 
 // Streak Calculations
 export { calculateStreaks, toDateStr } from './streakUtils'
+
+// Fee Calculation
+export { estimateCertificationCost } from './feeCalculation'

@@ -2228,6 +2228,7 @@
   font-size: 14px;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.4;
+  text-align: center;
 }
 
 .weight-modal-triplet-text .subject {
@@ -2243,6 +2244,28 @@
 .weight-modal-triplet-text .object {
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
+}
+
+.weight-modal-cert-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid;
+  border-radius: 8px;
+}
+
+.weight-modal-cert-dot {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 14px;
+  font-style: normal;
+}
+
+.weight-modal-intention-badge {
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  white-space: nowrap;
 }
 
 .weight-modal-url-hint {
@@ -2288,7 +2311,7 @@
 
 .weight-modal-pills {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
@@ -2323,21 +2346,71 @@
   cursor: not-allowed;
 }
 
-.weight-modal-info-row {
+/* ========== COST BREAKDOWN SUMMARY ========== */
+
+.weight-modal-cost-summary {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weight-modal-cost-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.weight-modal-balance {
-  font-family: 'Montserrat', sans-serif;
+.weight-modal-cost-sub {
+  padding-left: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.weight-modal-cost-fee {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.weight-modal-cost-fees-subtotal {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+.weight-modal-cost-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 2px 0;
+}
+
+.weight-modal-cost-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffb659;
+}
+
+.weight-modal-cost-balance {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.35);
 }
 
-.weight-modal-total-cost {
+.weight-modal-insufficient {
+  color: #ff5555;
+}
+
+.weight-modal-cost-note {
   font-family: 'Montserrat', sans-serif;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+  margin: 2px 0 0 0;
+  font-style: italic;
 }

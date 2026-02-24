@@ -10,6 +10,7 @@ import { useIntentionCertify } from "./useIntentionCertify"
 import { normalizeUrl } from "~/lib/utils"
 import { INTENTION_PREDICATES } from "~/types/discovery"
 import type { IntentionPurpose } from "~/types/discovery"
+import type { IntentionType } from "~/types/intentionCategories"
 import { createHookLogger } from "~/lib/utils/logger"
 
 const logger = createHookLogger("useCertificationModal")
@@ -28,7 +29,7 @@ export interface ModalTriplet {
   }
   description: string
   url: string
-  intention?: IntentionPurpose
+  intention?: IntentionPurpose | IntentionType
 }
 
 interface TrustDistrustState {
@@ -160,7 +161,8 @@ export const useCertificationModal = (): CertificationModalResult => {
             object: pageTitle || pageLabel
           },
           description: `Trust ${pageTitle || pageLabel}`,
-          url: currentUrl
+          url: currentUrl,
+          intention: "trusted" as IntentionType
         }
       ])
       setModalType("trust")
@@ -181,7 +183,8 @@ export const useCertificationModal = (): CertificationModalResult => {
             object: pageTitle || pageLabel
           },
           description: `Distrust ${pageTitle || pageLabel}`,
-          url: currentUrl
+          url: currentUrl,
+          intention: "distrusted" as IntentionType
         }
       ])
       setModalType("distrust")

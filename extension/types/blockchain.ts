@@ -100,3 +100,33 @@ export interface EchoTriplet {
   sourceMessageId: string
   status: 'available' | 'published'
 }
+
+// Fee parameters read from SofiaFeeProxy contract
+export interface FeeParams {
+  depositFixed: bigint
+  depositPct: bigint
+  creationFixed: bigint
+  feeDenom: bigint
+}
+
+// Full creation costs read from MultiVault getAtomCost/getTripleCost
+// These are the mandatory amounts required by the contract on CREATE path.
+// Most goes to vault deposits (recoverable), a small part is protocol fee.
+export interface ProtocolCosts {
+  atomCost: bigint       // getAtomCost() — full cost per new atom
+  tripleCost: bigint     // getTripleCost() — full cost per new triple
+}
+
+// Detailed cost estimate for a certification/deposit action
+export interface CostEstimate {
+  depositAmount: number
+  signalAmount: number
+  poolAmount: number
+  creationCost: number        // tripleCost + atomCost×n (mandatory on CREATE, 0 on DEPOSIT)
+  sofiaFixedFee: number
+  sofiaPercentFee: number
+  creationFixedFee: number
+  totalFees: number
+  totalEstimate: number
+  depositCount: number
+}

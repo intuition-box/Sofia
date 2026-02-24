@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
-import { useWalletFromStorage, useGoldSystem } from '../../hooks'
+import { useWalletFromStorage, useGoldSystem, useFeeEstimate } from '../../hooks'
 import { globalStakeService } from '../../lib/services'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { createHookLogger } from '../../lib/utils/logger'
 import type { IntentionPurpose } from '../../types/discovery'
+import type { IntentionType } from '../../types/intentionCategories'
+import { INTENTION_CONFIG } from '../../types/intentionCategories'
 import '../styles/Modal.css'
 
 interface ModalTriplet {
@@ -19,7 +21,7 @@ interface ModalTriplet {
   }
   description: string
   url: string
-  intention?: IntentionPurpose
+  intention?: IntentionPurpose | IntentionType
 }
 
 const logger = createHookLogger('WeightModal')
@@ -44,12 +46,18 @@ interface WeightModalProps {
   discoveryReward?: DiscoveryReward | null
   onClaimReward?: () => Promise<void>
   rewardClaimed?: boolean
+  /** When set, hide weight selection and use this fixed deposit value (in TRUST) */
+  fixedDeposit?: number
+  /** Override creation cost estimation assumptions (default: isNewTriple=true, newAtomCount=1) */
+  estimateOptions?: { isNewTriple?: boolean; newAtomCount?: number }
+  /** Customize submit button text (default: "Amplify") */
+  submitLabel?: string
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
 
 type WeightOption = {
-  id: 'minimum' | 'default' | 'strong' | 'custom'
+  id: 'minimum' | 'default' | 'strong' | 'high' | 'max' | 'custom'
   label: string
   value: number | null
   description: string
@@ -59,12 +67,23 @@ const weightOptions: WeightOption[] = [
   { id: 'minimum', label: 'Minimum', value: 0.01, description: '0.01 TRUST' },
   { id: 'default', label: 'Default', value: 0.5, description: '0.5 TRUST' },
   { id: 'strong', label: 'Strong', value: 1, description: '1 TRUST' },
+  { id: 'high', label: 'High', value: 5, description: '5 TRUST' },
+  { id: 'max', label: 'Max', value: 10, description: '10 TRUST' },
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
 const FEE_DENOMINATOR = 100000
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, onClose, onSubmit }: WeightModalProps) => {
+/** Resolve intention badge display from IntentionType or IntentionPurpose */
+const getIntentionBadge = (intention?: string): { label: string; color: string } | null => {
+  if (!intention) return null
+  if (intention in INTENTION_CONFIG) return INTENTION_CONFIG[intention as IntentionType]
+  const stripped = intention.replace(/^for_/, '')
+  if (stripped in INTENTION_CONFIG) return INTENTION_CONFIG[stripped as IntentionType]
+  return null
+}
+
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -74,6 +93,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
 
   const { walletAddress } = useWalletFromStorage()
   const { totalGold } = useGoldSystem()
+  const { estimate } = useFeeEstimate()
 
   const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
   const { data: balanceData } = useBalance({ address: checksumAddress })
@@ -129,19 +149,42 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const defaultValue = weightOptions.find(opt => opt.id === 'default')!.value!
 
     let totalTrust = 0
-    for (let i = 0; i < selectedWeights.length; i++) {
-      const sel = selectedWeights[i]
-      if (sel === 'custom') {
-        const cv = customValues[i]
-        totalTrust += (cv && cv.trim() !== '') ? parseFloat(cv) || 0 : minimumValue
-      } else {
-        const opt = weightOptions.find(o => o.id === sel)
-        totalTrust += opt?.value ?? defaultValue
+    if (fixedDeposit != null) {
+      totalTrust = fixedDeposit
+    } else {
+      for (let i = 0; i < selectedWeights.length; i++) {
+        const sel = selectedWeights[i]
+        if (sel === 'custom') {
+          const cv = customValues[i]
+          totalTrust += (cv && cv.trim() !== '') ? parseFloat(cv) || 0 : minimumValue
+        } else {
+          const opt = weightOptions.find(o => o.id === sel)
+          totalTrust += opt?.value ?? defaultValue
+        }
       }
     }
 
+    // Default worst-case: new triple + 1 new atom (object URL)
+    // Callers can override via estimateOptions for different flows
+    const createOpts = {
+      isNewTriple: estimateOptions?.isNewTriple ?? true,
+      newAtomCount: estimateOptions?.newAtomCount ?? 1
+    }
+
     if (totalTrust <= 0 || !gsEnabled) {
-      return { totalTrust, signalAmount: totalTrust, poolAmount: 0, belowMinimum: false }
+      const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
+      return {
+        totalTrust,
+        signalAmount: totalTrust,
+        poolAmount: 0,
+        belowMinimum: false,
+        creationCost: costEstimate?.creationCost ?? 0,
+        sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
+        sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+        totalFees: costEstimate?.totalFees ?? 0,
+        totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
+        depositCount: costEstimate?.depositCount ?? 1
+      }
     }
 
     const poolAmount = (totalTrust * gsPercentage) / FEE_DENOMINATOR
@@ -150,8 +193,22 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const minDeposit = Number(config.minGlobalDeposit) / 1e18
     const belowMinimum = poolAmount > 0 && poolAmount < minDeposit
 
-    return { totalTrust, signalAmount, poolAmount, belowMinimum }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled])
+    const effectiveGsPercentage = belowMinimum ? 0 : gsPercentage
+    const costEstimate = estimate?.(totalTrust, effectiveGsPercentage, createOpts) ?? null
+
+    return {
+      totalTrust,
+      signalAmount,
+      poolAmount,
+      belowMinimum,
+      creationCost: costEstimate?.creationCost ?? 0,
+      sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
+      sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+      totalFees: costEstimate?.totalFees ?? 0,
+      totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
+      depositCount: costEstimate?.depositCount ?? 1
+    }
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, estimate, fixedDeposit, estimateOptions])
 
   const handleSubmit = async () => {
     try {
@@ -244,7 +301,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         <div className="modal-body">
           {isFormState && (
             <p className="modal-description">
-              Choose how much TRUST to deposit for each signal.
+              {fixedDeposit != null
+                ? 'Review the cost breakdown before confirming.'
+                : 'Set your deposit, allocate to pools, review fees and confirm.'}
             </p>
           )}
 
@@ -254,21 +313,55 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               {triplets.map((triplet, index) => (
                 <div key={triplet.id} className="weight-modal-triplet-card">
                   <div className="weight-modal-triplet-text">
-                    <span className="subject">I</span>{' '}
-                    <span className="action">{triplet.triplet.predicate}</span>{' '}
-                    <span className="object">{triplet.triplet.object}</span>
+                    {(() => {
+                      const badge = getIntentionBadge(triplet.intention)
+                      const truncate = (text: string, max: number) =>
+                        text.length > max ? text.slice(0, max) + '...' : text
+                      const isVotePredicate = ['like', 'dislike'].includes(
+                        triplet.triplet.predicate.toLowerCase()
+                      )
+                      if (!badge) {
+                        return (
+                          <>
+                            <span className="subject">I</span>{' '}
+                            <span className="action">{triplet.triplet.predicate}</span>{' '}
+                            <span className="object">{truncate(triplet.triplet.object, 40)}</span>
+                          </>
+                        )
+                      }
+                      const badgeContainer = (
+                        <span
+                          className="weight-modal-cert-target"
+                          style={{
+                            borderColor: `${badge.color}40`,
+                            backgroundColor: `${badge.color}0A`
+                          }}
+                        >
+                          <span className="object">{truncate(triplet.triplet.object, 40)}</span>
+                          <span className="weight-modal-cert-dot">·</span>
+                          <span
+                            className="weight-modal-intention-badge"
+                            style={{ color: badge.color }}
+                          >
+                            {badge.label}
+                          </span>
+                        </span>
+                      )
+                      if (isVotePredicate) {
+                        return (
+                          <>
+                            <span className="subject">I</span>{' '}
+                            <span className="action">{triplet.triplet.predicate}</span>{' '}
+                            {badgeContainer}
+                          </>
+                        )
+                      }
+                      return badgeContainer
+                    })()}
                   </div>
-                  {triplet.url && (() => {
-                    try {
-                      const urlObj = new URL(triplet.url)
-                      const host = urlObj.hostname.replace(/^www\./, '')
-                      const path = urlObj.pathname !== '/' ? urlObj.pathname : ''
-                      return <span className="weight-modal-url-hint">{host}{path}</span>
-                    } catch { return null }
-                  })()}
 
-                  {/* Amount Section — only in form state */}
-                  {isFormState && (
+                  {/* Amount Section — only in form state, hidden when fixedDeposit */}
+                  {isFormState && fixedDeposit == null && (
                     <div className="weight-modal-amount-row">
                       <input
                         type="number"
@@ -314,7 +407,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
           {isFormState && gsEnabled && (
             <div className="gs-slider-section">
               <div className="gs-slider-header">
-                <span className="gs-slider-label">Global Pool</span>
+                <span className="gs-slider-label">Beta Season Pool</span>
                 <span className="gs-slider-value">{gsPercentage / 1000}%</span>
               </div>
               <input
@@ -334,7 +427,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   <span className="gs-slider-breakdown-value">{formatTrust(breakdown.signalAmount)} TRUST</span>
                 </div>
                 <div className="gs-slider-breakdown-item">
-                  <span className="gs-slider-breakdown-label">Global Pool</span>
+                  <span className="gs-slider-breakdown-label">Beta Season Pool</span>
                   <span className="gs-slider-breakdown-value pool">{formatTrust(breakdown.poolAmount)} TRUST</span>
                 </div>
               </div>
@@ -344,13 +437,60 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
             </div>
           )}
 
-          {/* Balance info row — form state only */}
+          {/* Cost breakdown — form state only */}
           {isFormState && (
-            <div className="weight-modal-info-row">
-              <span className="weight-modal-balance">Balance: {formatTrust(userBalance)} TRUST</span>
+            <div className="weight-modal-cost-summary">
+              <div className="weight-modal-cost-row">
+                <span>Deposit</span>
+                <span>{formatTrust(breakdown.totalTrust)} TRUST</span>
+              </div>
               {gsEnabled && gsPercentage > 0 && !breakdown.belowMinimum && (
-                <span className="weight-modal-total-cost">Total: {formatTrust(breakdown.totalTrust)} TRUST</span>
+                <>
+                  <div className="weight-modal-cost-row weight-modal-cost-sub">
+                    <span>Signal</span>
+                    <span>{formatTrust(breakdown.signalAmount)} TRUST</span>
+                  </div>
+                  <div className="weight-modal-cost-row weight-modal-cost-sub">
+                    <span>Beta Season Pool</span>
+                    <span>{formatTrust(breakdown.poolAmount)} TRUST</span>
+                  </div>
+                </>
               )}
+              {breakdown.totalFees > 0 && (
+                <>
+                  <div className="weight-modal-cost-divider" />
+                  <div className="weight-modal-cost-row weight-modal-cost-fees-subtotal">
+                    <span>Fees</span>
+                    <span>{formatTrust(breakdown.totalFees)} TRUST</span>
+                  </div>
+                  {(breakdown.sofiaFixedFee > 0 || breakdown.sofiaPercentFee > 0) && (
+                    <div className="weight-modal-cost-row weight-modal-cost-sub">
+                      <span>Sofia fee</span>
+                      <span>{formatTrust(breakdown.sofiaFixedFee + breakdown.sofiaPercentFee)} TRUST</span>
+                    </div>
+                  )}
+                  {breakdown.creationCost > 0 && (
+                    <div className="weight-modal-cost-row weight-modal-cost-sub">
+                      <span>Intuition fee (creation only)</span>
+                      <span>{formatTrust(breakdown.creationCost)} TRUST</span>
+                    </div>
+                  )}
+                  <div className="weight-modal-cost-divider" />
+                  <div className="weight-modal-cost-row weight-modal-cost-total">
+                    <span>Total</span>
+                    <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
+                  </div>
+                </>
+              )}
+              <div className={`weight-modal-cost-row weight-modal-cost-balance ${breakdown.totalEstimate > userBalance ? 'weight-modal-insufficient' : ''}`}>
+                <span>Balance</span>
+                <span>{formatTrust(userBalance)} TRUST</span>
+              </div>
+              <p className="weight-modal-cost-note">
+                {fixedDeposit != null
+                  ? '* Estimated — actual may vary'
+                  : '* May be lower for existing certifications'}
+              </p>
             </div>
           )}
 
@@ -438,9 +578,11 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 <button
                   className="modal-btn primary"
                   onClick={handleSubmit}
-                  disabled={isProcessing}
+                  disabled={isProcessing || breakdown.totalEstimate > userBalance}
                 >
-                  {isProcessing ? 'Amplifying...' : 'Amplify'}
+                  {isProcessing
+                    ? (submitLabel ? 'Processing...' : 'Amplifying...')
+                    : (submitLabel || 'Amplify')}
                 </button>
               )}
               {transactionError && (

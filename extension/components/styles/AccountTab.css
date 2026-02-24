@@ -1955,3 +1955,66 @@
   color: rgba(255, 255, 255, 0.5);
   margin: 0;
 }
+
+/* ========== BETA SEASON POOL CARD ========== */
+
+.season-pool-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.season-pool-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #FBF7F5;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.season-pool-metrics {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.season-pool-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  gap: 4px;
+}
+
+.season-pool-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.season-pool-value {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.season-pool-pct {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.season-pool-positive {
+  color: #4ade80;
+}
+
+.season-pool-negative {
+  color: #f87171;
+}

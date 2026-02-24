@@ -4,7 +4,8 @@
  */
 
 import { useState, useRef, useEffect } from 'react'
-import { useDiscoveryScore } from "~/hooks"
+import { formatUnits } from 'viem'
+import { useDiscoveryScore, useGlobalStake } from "~/hooks"
 import { DISCOVERY_GOLD_REWARDS } from "~/types/discovery"
 import { getLevelColor, TIER_BADGES, getTierIndex } from "~/types/interests"
 import pioneerBadge from '../../ui/img/badges/pioneer.png'
@@ -46,6 +47,7 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
   const currentColor = getLevelColor(level)
   const nextColor = getLevelColor(level + 1)
   const { stats, loading, error, refetch } = useDiscoveryScore()
+  const { config: gsConfig, position: gsPosition, vaultStats: gsVaultStats } = useGlobalStake()
 
   // Tier badges carousel
   const currentTierIndex = getTierIndex(level)
@@ -224,6 +226,44 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
           <p>Be <span className="highlight-contributor">11th+</span> = <strong>Contributor</strong> (+{DISCOVERY_GOLD_REWARDS.CONTRIBUTOR} Gold)</p>
         </div>
       </div>
+
+      {/* Beta Season Pool Card */}
+      {gsConfig.enabled && (
+        <div className="season-pool-card">
+          <h3 className="season-pool-title">Beta Season Pool</h3>
+          <div className="season-pool-metrics">
+            <div className="season-pool-metric">
+              <span className="season-pool-label">My Stake</span>
+              <span className="season-pool-value">
+                {gsPosition
+                  ? `${parseFloat(formatUnits(gsPosition.currentValue, 18)).toFixed(4)} TRUST`
+                  : '—'}
+              </span>
+            </div>
+            <div className="season-pool-metric">
+              <span className="season-pool-label">P&L</span>
+              {gsPosition ? (
+                <>
+                  <span className={`season-pool-value ${gsPosition.profitLoss >= 0n ? 'season-pool-positive' : 'season-pool-negative'}`}>
+                    {gsPosition.profitLoss >= 0n ? '+' : ''}{parseFloat(formatUnits(gsPosition.profitLoss, 18)).toFixed(4)} TRUST
+                  </span>
+                  <span className={`season-pool-pct ${gsPosition.profitLoss >= 0n ? 'season-pool-positive' : 'season-pool-negative'}`}>
+                    ({gsPosition.profitLoss >= 0n ? '+' : ''}{gsPosition.profitPercent.toFixed(1)}%)
+                  </span>
+                </>
+              ) : (
+                <span className="season-pool-value">—</span>
+              )}
+            </div>
+            <div className="season-pool-metric">
+              <span className="season-pool-label">Stakers</span>
+              <span className="season-pool-value">
+                {gsVaultStats ? gsVaultStats.totalStakers : '—'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

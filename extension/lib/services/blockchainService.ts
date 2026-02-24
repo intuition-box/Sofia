@@ -2,7 +2,7 @@ import { getClients } from '../clients/viemClients'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { stringToHex } from 'viem'
-import type { AtomCheckResult, TripleCheckResult } from '../../types/blockchain'
+import type { AtomCheckResult, TripleCheckResult, FeeParams, ProtocolCosts } from '../../types/blockchain'
 import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS, SELECTED_CHAIN } from '../config/chainConfig'
 import { createServiceLogger } from '../utils/logger'
 
@@ -19,6 +19,8 @@ const logger = createServiceLogger('BlockchainService')
 export class BlockchainService {
   private static readonly MULTIVAULT_ADDRESS = MULTIVAULT_CONTRACT_ADDRESS
   private static readonly PROXY_ADDRESS = SOFIA_PROXY_ADDRESS
+  private static feeCache: FeeParams | null = null
+  private static protocolCostsCache: ProtocolCosts | null = null
 
   /**
    * Calculate Sofia fee for deposits
@@ -65,6 +67,72 @@ export class BlockchainService {
       args: [BigInt(depositCount), totalDeposit, multiVaultCost],
       authorizationList: undefined
     }) as bigint
+  }
+
+  /**
+   * Read fee parameters from SofiaFeeProxy contract.
+   * Cached in memory — call clearFeeCache() after admin fee changes.
+   */
+  static async getFeeParams(): Promise<FeeParams> {
+    if (this.feeCache) return this.feeCache
+
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
+    const addr = this.PROXY_ADDRESS as `0x${string}`
+
+    const [depositFixed, depositPct, feeDenom] = await Promise.all([
+      publicClient.readContract({ address: addr, abi: SofiaFeeProxyAbi, functionName: 'depositFixedFee', authorizationList: undefined }) as Promise<bigint>,
+      publicClient.readContract({ address: addr, abi: SofiaFeeProxyAbi, functionName: 'depositPercentageFee', authorizationList: undefined }) as Promise<bigint>,
+      publicClient.readContract({ address: addr, abi: SofiaFeeProxyAbi, functionName: 'FEE_DENOMINATOR', authorizationList: undefined }) as Promise<bigint>
+    ])
+
+    // creationFixedFee may not exist on older contract deployments
+    let creationFixed = 0n
+    try {
+      creationFixed = await publicClient.readContract({ address: addr, abi: SofiaFeeProxyAbi, functionName: 'creationFixedFee', authorizationList: undefined }) as bigint
+    } catch {
+      logger.debug('creationFixedFee not available on contract, defaulting to 0')
+    }
+
+    this.feeCache = { depositFixed, depositPct, creationFixed, feeDenom }
+
+    logger.debug('Fee params loaded', {
+      depositFixed: Number(depositFixed) / 1e18,
+      depositPct: Number(depositPct),
+      creationFixed: Number(creationFixed) / 1e18,
+      feeDenom: Number(feeDenom)
+    })
+
+    return this.feeCache
+  }
+
+  static clearFeeCache() {
+    this.feeCache = null
+    this.protocolCostsCache = null
+  }
+
+  /**
+   * Read full creation costs from MultiVault getAtomCost/getTripleCost.
+   * These are the mandatory amounts required by the contract on CREATE path.
+   * Includes protocol fee + initial vault deposits (both leave the user's wallet).
+   * Cached in memory alongside fee params.
+   */
+  static async getProtocolCosts(): Promise<ProtocolCosts> {
+    if (this.protocolCostsCache) return this.protocolCostsCache
+
+    const [atomCost, tripleCost] = await Promise.all([
+      this.getAtomCost(),
+      this.getTripleCost()
+    ])
+
+    this.protocolCostsCache = { atomCost, tripleCost }
+
+    logger.debug('Protocol costs loaded', {
+      atomCost: Number(atomCost) / 1e18,
+      tripleCost: Number(tripleCost) / 1e18
+    })
+
+    return this.protocolCostsCache
   }
 
   /**
