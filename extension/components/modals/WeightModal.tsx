@@ -74,6 +74,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
 
   const { walletAddress } = useWalletFromStorage()
   const { totalGold } = useGoldSystem()
+  const { estimate } = useFeeEstimate()
 
   const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
   const { data: balanceData } = useBalance({ address: checksumAddress })
@@ -141,7 +142,19 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     }
 
     if (totalTrust <= 0 || !gsEnabled) {
-      return { totalTrust, signalAmount: totalTrust, poolAmount: 0, belowMinimum: false }
+      const costEstimate = estimate?.(totalTrust, 0) ?? null
+      return {
+        totalTrust,
+        signalAmount: totalTrust,
+        poolAmount: 0,
+        belowMinimum: false,
+        protocolFee: costEstimate?.protocolFee ?? 0,
+        sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
+        sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+        totalFees: costEstimate?.totalFees ?? 0,
+        totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
+        depositCount: costEstimate?.depositCount ?? 1
+      }
     }
 
     const poolAmount = (totalTrust * gsPercentage) / FEE_DENOMINATOR
@@ -150,8 +163,22 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const minDeposit = Number(config.minGlobalDeposit) / 1e18
     const belowMinimum = poolAmount > 0 && poolAmount < minDeposit
 
-    return { totalTrust, signalAmount, poolAmount, belowMinimum }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled])
+    const effectiveGsPercentage = belowMinimum ? 0 : gsPercentage
+    const costEstimate = estimate?.(totalTrust, effectiveGsPercentage) ?? null
+
+    return {
+      totalTrust,
+      signalAmount,
+      poolAmount,
+      belowMinimum,
+      protocolFee: costEstimate?.protocolFee ?? 0,
+      sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
+      sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+      totalFees: costEstimate?.totalFees ?? 0,
+      totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
+      depositCount: costEstimate?.depositCount ?? 1
+    }
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, estimate])
 
   const handleSubmit = async () => {
     try {
@@ -344,13 +371,54 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
             </div>
           )}
 
-          {/* Balance info row — form state only */}
+          {/* Cost breakdown — form state only */}
           {isFormState && (
-            <div className="weight-modal-info-row">
-              <span className="weight-modal-balance">Balance: {formatTrust(userBalance)} TRUST</span>
+            <div className="weight-modal-cost-summary">
+              <div className="weight-modal-cost-row">
+                <span>Deposit</span>
+                <span>{formatTrust(breakdown.totalTrust)} TRUST</span>
+              </div>
               {gsEnabled && gsPercentage > 0 && !breakdown.belowMinimum && (
-                <span className="weight-modal-total-cost">Total: {formatTrust(breakdown.totalTrust)} TRUST</span>
+                <>
+                  <div className="weight-modal-cost-row weight-modal-cost-sub">
+                    <span>Signal</span>
+                    <span>{formatTrust(breakdown.signalAmount)} TRUST</span>
+                  </div>
+                  <div className="weight-modal-cost-row weight-modal-cost-sub">
+                    <span>Global Pool</span>
+                    <span>{formatTrust(breakdown.poolAmount)} TRUST</span>
+                  </div>
+                </>
               )}
+              {breakdown.totalFees > 0 && (
+                <>
+                  <div className="weight-modal-cost-divider" />
+                  {breakdown.sofiaFixedFee > 0 && (
+                    <div className="weight-modal-cost-row weight-modal-cost-fee">
+                      <span>Sofia fee (fixed x{breakdown.depositCount})</span>
+                      <span>{formatTrust(breakdown.sofiaFixedFee)} TRUST</span>
+                    </div>
+                  )}
+                  {breakdown.sofiaPercentFee > 0 && (
+                    <div className="weight-modal-cost-row weight-modal-cost-fee">
+                      <span>Sofia fee (5%)</span>
+                      <span>{formatTrust(breakdown.sofiaPercentFee)} TRUST</span>
+                    </div>
+                  )}
+                  <div className="weight-modal-cost-divider" />
+                  <div className="weight-modal-cost-row weight-modal-cost-total">
+                    <span>Total</span>
+                    <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
+                  </div>
+                </>
+              )}
+              <div className={`weight-modal-cost-row weight-modal-cost-balance ${breakdown.totalEstimate > userBalance ? 'weight-modal-insufficient' : ''}`}>
+                <span>Balance</span>
+                <span>{formatTrust(userBalance)} TRUST</span>
+              </div>
+              <p className="weight-modal-cost-note">
+                * Fees may vary for new certifications
+              </p>
             </div>
           )}
 
@@ -438,7 +506,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 <button
                   className="modal-btn primary"
                   onClick={handleSubmit}
-                  disabled={isProcessing}
+                  disabled={isProcessing || breakdown.totalEstimate > userBalance}
                 >
                   {isProcessing ? 'Amplifying...' : 'Amplify'}
                 </button>
