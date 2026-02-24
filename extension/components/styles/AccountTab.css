@@ -248,16 +248,16 @@
   align-self: flex-end;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 20px;
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-xl);
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 var(--spacing-xs);
   line-height: 1;
-  transition: color 0.2s;
+  transition: var(--transition-fast);
 }
 
 .quest-refresh-btn-inline:hover:not(:disabled) {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-primary);
 }
 
 .quest-refresh-btn-inline:disabled {

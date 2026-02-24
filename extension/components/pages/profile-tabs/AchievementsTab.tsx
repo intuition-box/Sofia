@@ -304,6 +304,16 @@ const AchievementsTab = ({
 
   return (
     <div className="achievements-tab-content">
+      {onRefresh && (
+        <button
+          className="quest-refresh-btn-inline"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          title="Refresh quests"
+        >
+          {refreshing ? "..." : "\u21BB"}
+        </button>
+      )}
       {/* Streak Hub Card */}
       <div className="streak-hub-card">
         <div className="streak-hub-left">
