@@ -100,3 +100,31 @@ export interface EchoTriplet {
   sourceMessageId: string
   status: 'available' | 'published'
 }
+
+// Fee parameters read from SofiaFeeProxy contract
+export interface FeeParams {
+  depositFixed: bigint
+  depositPct: bigint
+  creationFixed: bigint
+  feeDenom: bigint
+}
+
+// Protocol costs read from MultiVault contract
+export interface ProtocolCosts {
+  tripleCost: bigint
+  atomCost: bigint
+}
+
+// Detailed cost estimate for a certification/deposit action
+export interface CostEstimate {
+  depositAmount: number
+  signalAmount: number
+  poolAmount: number
+  protocolFee: number
+  sofiaFixedFee: number
+  sofiaPercentFee: number
+  creationFixedFee: number
+  totalFees: number
+  totalEstimate: number
+  depositCount: number
+}
