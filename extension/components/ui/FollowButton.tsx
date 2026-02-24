@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { formatUnits } from 'viem'
 import { useWalletFromStorage, useFollowAccount, type AccountAtom } from '../../hooks'
-import FollowModal from '../modals/FollowModal'
+import WeightModal from '../modals/WeightModal'
 import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/FollowButton.css'
 
@@ -19,6 +21,20 @@ const FollowButton = ({
   const { followAccount, isLoading } = useFollowAccount()
   const [showModal, setShowModal] = useState(false)
   const [shouldRefreshOnClose, setShouldRefreshOnClose] = useState(false)
+  const [transactionSuccess, setTransactionSuccess] = useState(false)
+  const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [transactionHash, setTransactionHash] = useState<string | null>(null)
+
+  const mockTriplet = {
+    id: `follow-${account.termId}`,
+    triplet: {
+      subject: 'I',
+      predicate: 'follow',
+      object: account.label
+    },
+    description: '',
+    url: ''
+  }
 
   const handleFollowClick = () => {
     logger.debug('Follow button clicked', {
@@ -32,10 +48,19 @@ const FollowButton = ({
       return
     }
 
+    setTransactionSuccess(false)
+    setTransactionError(null)
+    setTransactionHash(null)
     setShowModal(true)
   }
 
-  const handleFollow = async (trustAmount: string) => {
+  const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
+    const weightWei = customWeights?.[0]
+    // Convert bigint wei to string TRUST for useFollowAccount
+    const trustAmount = weightWei
+      ? formatUnits(weightWei, 18)
+      : '0.01'
+
     logger.info('Follow initiated', {
       accountId: account.id,
       accountLabel: account.label,
@@ -51,36 +76,27 @@ const FollowButton = ({
           transactionHash: result.transactionHash,
           tripleVaultId: result.tripleVaultId
         })
-
-        // Don't refresh here - will refresh when modal closes to avoid re-render
+        setTransactionSuccess(true)
+        setTransactionError(null)
+        setTransactionHash(result.transactionHash || null)
         setShouldRefreshOnClose(true)
-
-        // Return result to modal in the expected format
-        return {
-          success: true,
-          txHash: result.transactionHash,
-        }
       } else {
         logger.error('Follow transaction failed', result.error)
-        return {
-          success: false,
-          error: result.error
-        }
+        setTransactionError(result.error || 'Transaction failed')
       }
     } catch (error) {
       logger.error('Follow transaction failed', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Transaction failed'
-      }
+      setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
     }
   }
 
   const handleModalClose = () => {
     logger.debug('Modal closed')
     setShowModal(false)
+    setTransactionSuccess(false)
+    setTransactionError(null)
+    setTransactionHash(null)
 
-    // Refresh followers list if transaction was successful
     if (shouldRefreshOnClose) {
       setShouldRefreshOnClose(false)
       onFollowSuccess?.()
@@ -97,12 +113,20 @@ const FollowButton = ({
         {isLoading ? '...' : 'Follow'}
       </button>
 
-      {showModal && (
-        <FollowModal
-          accountLabel={account.label}
-          onFollow={handleFollow}
+      {showModal && createPortal(
+        <WeightModal
+          isOpen={showModal}
+          triplets={[mockTriplet]}
+          isProcessing={isLoading}
+          transactionSuccess={transactionSuccess}
+          transactionError={transactionError || undefined}
+          transactionHash={transactionHash || undefined}
+          estimateOptions={{ isNewTriple: true, newAtomCount: 0 }}
+          submitLabel="Follow"
           onClose={handleModalClose}
-        />
+          onSubmit={handleWeightSubmit}
+        />,
+        document.body
       )}
     </>
   )

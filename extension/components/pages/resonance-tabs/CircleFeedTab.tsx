@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 
 import {
   useGetTrustCirclePositionsQuery,
@@ -13,10 +14,12 @@ import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
 import { getFaviconUrl, batchResolveEns } from '~/lib/utils'
 import type { IntentionType } from '~/types/intentionCategories'
 import { INTENTION_CONFIG } from '~/types/intentionCategories'
+import type { VoteType } from '~/hooks/useVoteOnTriple'
 
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import Avatar from '../../ui/Avatar'
+import WeightModal from '../../modals/WeightModal'
 import '../../styles/CircleFeedTab.css'
 import '../../styles/CategoryStyles.css'
 
@@ -265,13 +268,50 @@ const CircleFeedTab = () => {
     [feedItems]
   )
   const { votesMap, refetch: refetchVotes } = useTripleVotes(tripleTermIds, address || null)
-  const { vote, loading: voteLoading, votingTripleId } = useVoteOnTriple()
+  const { vote, loading: voteLoading, error: voteError, success: voteSuccess, reset: resetVote, votingTripleId } = useVoteOnTriple()
 
-  const handleVote = async (e: React.MouseEvent, tripleTermId: string, voteType: 'like' | 'dislike') => {
+  // Vote confirmation modal state
+  const [pendingVote, setPendingVote] = useState<{
+    tripleTermId: string
+    voteType: VoteType
+    objectLabel: string
+  } | null>(null)
+  const [voteTransactionSuccess, setVoteTransactionSuccess] = useState(false)
+  const [voteTransactionError, setVoteTransactionError] = useState<string | null>(null)
+
+  // Sync vote hook states to modal states
+  useEffect(() => {
+    if (!voteLoading && pendingVote) {
+      if (voteSuccess) {
+        setVoteTransactionSuccess(true)
+        setVoteTransactionError(null)
+        refetchVotes()
+      } else if (voteError) {
+        setVoteTransactionError(voteError)
+        setVoteTransactionSuccess(false)
+      }
+    }
+  }, [voteLoading, voteSuccess, voteError, pendingVote])
+
+  const handleVote = (e: React.MouseEvent, tripleTermId: string, voteType: VoteType, objectLabel: string) => {
     e.stopPropagation()
     if (!address || !tripleTermId) return
-    await vote(tripleTermId, voteType)
-    refetchVotes()
+    setVoteTransactionSuccess(false)
+    setVoteTransactionError(null)
+    resetVote()
+    setPendingVote({ tripleTermId, voteType, objectLabel })
+  }
+
+  const handleVoteSubmit = async () => {
+    if (!pendingVote) return
+    await vote(pendingVote.tripleTermId, pendingVote.voteType)
+  }
+
+  const handleVoteModalClose = () => {
+    setPendingVote(null)
+    setVoteTransactionSuccess(false)
+    setVoteTransactionError(null)
+    resetVote()
   }
 
   const loading = trustCircleLoading || eventsLoading
@@ -495,7 +535,7 @@ const CircleFeedTab = () => {
                   <div className="circle-card-votes">
                     <button
                       className={`circle-vote-btn circle-vote-up ${votesMap.get(item.tripleTermId)?.userVote === 'like' ? 'active' : ''}`}
-                      onClick={(e) => handleVote(e, item.tripleTermId, 'like')}
+                      onClick={(e) => handleVote(e, item.tripleTermId, 'like', item.pageLabel)}
                       disabled={voteLoading && votingTripleId === item.tripleTermId}
                       title="Like this certification"
                     >
@@ -508,7 +548,7 @@ const CircleFeedTab = () => {
                     </span>
                     <button
                       className={`circle-vote-btn circle-vote-down ${votesMap.get(item.tripleTermId)?.userVote === 'dislike' ? 'active' : ''}`}
-                      onClick={(e) => handleVote(e, item.tripleTermId, 'dislike')}
+                      onClick={(e) => handleVote(e, item.tripleTermId, 'dislike', item.pageLabel)}
                       disabled={voteLoading && votingTripleId === item.tripleTermId}
                       title="Dislike this certification"
                     >
@@ -523,6 +563,32 @@ const CircleFeedTab = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Vote confirmation modal */}
+      {pendingVote && createPortal(
+        <WeightModal
+          isOpen={!!pendingVote}
+          triplets={[{
+            id: `vote-${pendingVote.tripleTermId}`,
+            triplet: {
+              subject: 'I',
+              predicate: pendingVote.voteType,
+              object: pendingVote.objectLabel
+            },
+            description: '',
+            url: ''
+          }]}
+          isProcessing={voteLoading}
+          transactionSuccess={voteTransactionSuccess}
+          transactionError={voteTransactionError || undefined}
+          fixedDeposit={1}
+          estimateOptions={{ isNewTriple: true, newAtomCount: 0 }}
+          submitLabel="Vote"
+          onClose={handleVoteModalClose}
+          onSubmit={handleVoteSubmit}
+        />,
+        document.body
       )}
     </div>
   )

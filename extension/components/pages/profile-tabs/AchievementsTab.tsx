@@ -5,9 +5,11 @@
  */
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { getAddress } from 'viem'
 import type { Quest } from '../../../types/questTypes'
 import { createHookLogger } from '../../../lib/utils/logger'
+import WeightModal from '../../modals/WeightModal'
 
 const logger = createHookLogger('AchievementsTab')
 
@@ -137,6 +139,49 @@ const AchievementsTab = ({
   const [refreshing, setRefreshing] = useState(false)
   const [certDays, setCertDays] = useState<Set<string>>(new Set())
   const [voteDays, setVoteDays] = useState<Set<string>>(new Set())
+
+  // Quest claim modal state
+  const [pendingClaim, setPendingClaim] = useState<{
+    questId: string
+    questTitle: string
+    isDailyQuest: boolean
+  } | null>(null)
+  const [claimProcessing, setClaimProcessing] = useState(false)
+  const [claimSuccess, setClaimSuccess] = useState(false)
+  const [claimError, setClaimError] = useState<string | null>(null)
+
+  const openClaimModal = (quest: Quest) => {
+    const isDailyQuest = quest.id === 'daily-certification' || quest.id === 'daily-vote'
+    setPendingClaim({ questId: quest.id, questTitle: quest.title, isDailyQuest })
+    setClaimProcessing(false)
+    setClaimSuccess(false)
+    setClaimError(null)
+  }
+
+  const handleClaimSubmit = async () => {
+    if (!pendingClaim) return
+    setClaimProcessing(true)
+    setClaimError(null)
+    try {
+      const result = await onClaimXP(pendingClaim.questId)
+      if (result.success) {
+        setClaimSuccess(true)
+      } else {
+        setClaimError(result.error || 'Claim failed')
+      }
+    } catch (err) {
+      setClaimError(err instanceof Error ? err.message : 'Claim failed')
+    } finally {
+      setClaimProcessing(false)
+    }
+  }
+
+  const handleClaimModalClose = () => {
+    setPendingClaim(null)
+    setClaimProcessing(false)
+    setClaimSuccess(false)
+    setClaimError(null)
+  }
 
   useEffect(() => {
     if (!walletAddress) return
@@ -284,12 +329,7 @@ const AchievementsTab = ({
         {quest.status === "claimable_xp" ? (
           <button
             className={`streak-hub-claim-btn ${claimingQuestId === quest.id ? "claiming" : ""}`}
-            onClick={async () => {
-              const result = await onClaimXP(quest.id)
-              if (!result.success) {
-                logger.error("Claim failed", result.error)
-              }
-            }}
+            onClick={() => openClaimModal(quest)}
             disabled={claimingQuestId !== null}
           >
             {claimingQuestId === quest.id ? "..." : "CLAIM XP"}
@@ -420,13 +460,7 @@ const AchievementsTab = ({
                 {quest.status === 'claimable_xp' && quest.id !== 'social-linked' && (
                   <button
                     className={`achievement-claim-btn ${claimingQuestId === quest.id ? 'claiming' : ''}`}
-                    onClick={async () => {
-                      const result = await onClaimXP(quest.id)
-                      if (!result.success) {
-                        logger.error('Claim failed', result.error)
-                        alert(`Claim failed: ${result.error}`)
-                      }
-                    }}
+                    onClick={() => openClaimModal(quest)}
                     disabled={claimingQuestId !== null}
                   >
                     {claimingQuestId === quest.id ? '...' : `Claim ${quest.xpReward} XP`}
@@ -489,6 +523,32 @@ const AchievementsTab = ({
           </>
         )
       })()}
+
+      {/* Quest claim confirmation modal */}
+      {pendingClaim && createPortal(
+        <WeightModal
+          isOpen={!!pendingClaim}
+          triplets={[{
+            id: `claim-${pendingClaim.questId}`,
+            triplet: {
+              subject: 'I',
+              predicate: 'has tag',
+              object: pendingClaim.questTitle
+            },
+            description: '',
+            url: ''
+          }]}
+          isProcessing={claimProcessing}
+          transactionSuccess={claimSuccess}
+          transactionError={claimError || undefined}
+          fixedDeposit={pendingClaim.isDailyQuest ? 1.01 : 0.01}
+          estimateOptions={{ isNewTriple: true, newAtomCount: 1 }}
+          submitLabel="Claim"
+          onClose={handleClaimModalClose}
+          onSubmit={handleClaimSubmit}
+        />,
+        document.body
+      )}
     </div>
   )
 }
