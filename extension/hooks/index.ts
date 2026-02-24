@@ -77,6 +77,7 @@ export type { LeaderboardEntry } from './useStreakLeaderboard'
 
 // Global Stake
 export { useGlobalStake } from './useGlobalStake'
+export { useFeeEstimate } from './useFeeEstimate'
 
 // Bookmarks & Lists
 export { useBookmarks } from './useBookmarks'
