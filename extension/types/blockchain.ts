@@ -109,10 +109,12 @@ export interface FeeParams {
   feeDenom: bigint
 }
 
-// Protocol costs read from MultiVault contract
+// Full creation costs read from MultiVault getAtomCost/getTripleCost
+// These are the mandatory amounts required by the contract on CREATE path.
+// Most goes to vault deposits (recoverable), a small part is protocol fee.
 export interface ProtocolCosts {
-  tripleCost: bigint
-  atomCost: bigint
+  atomCost: bigint       // getAtomCost() — full cost per new atom
+  tripleCost: bigint     // getTripleCost() — full cost per new triple
 }
 
 // Detailed cost estimate for a certification/deposit action
@@ -120,7 +122,7 @@ export interface CostEstimate {
   depositAmount: number
   signalAmount: number
   poolAmount: number
-  protocolFee: number
+  creationCost: number        // tripleCost + atomCost×n (mandatory on CREATE, 0 on DEPOSIT)
   sofiaFixedFee: number
   sofiaPercentFee: number
   creationFixedFee: number

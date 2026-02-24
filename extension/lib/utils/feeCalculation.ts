@@ -51,23 +51,23 @@ export function estimateCertificationCost(
     creationFixedFeeTotal = creationFixedPerUnit * (1 + newAtomCount)
   }
 
-  // --- Intuition protocol fees ---
-  // tripleCost is charged per triple on CREATE, atomCost per atom on CREATE
-  let protocolFee = 0
+  // --- Creation costs (full mandatory cost from MultiVault on CREATE path) ---
+  // Includes protocol fee + initial vault deposits — all leave the user's wallet
+  let creationCost = 0
   if (isNewTriple) {
-    protocolFee += Number(tripleCost) / 1e18
-    protocolFee += (Number(atomCost) / 1e18) * newAtomCount
+    creationCost += Number(tripleCost) / 1e18
+    creationCost += (Number(atomCost) / 1e18) * newAtomCount
   }
 
   // --- Totals ---
-  const totalFees = sofiaFixedFee + sofiaPercentFee + creationFixedFeeTotal + protocolFee
+  const totalFees = sofiaFixedFee + sofiaPercentFee + creationFixedFeeTotal + creationCost
   const totalEstimate = depositTrust + totalFees
 
   return {
     depositAmount: depositTrust,
     signalAmount,
     poolAmount,
-    protocolFee,
+    creationCost,
     sofiaFixedFee,
     sofiaPercentFee,
     creationFixedFee: creationFixedFeeTotal,

@@ -141,14 +141,18 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       }
     }
 
+    // Worst-case: new triple + 1 new atom (object URL)
+    // If triple already exists, user pays less than estimated
+    const createOpts = { isNewTriple: true, newAtomCount: 1 }
+
     if (totalTrust <= 0 || !gsEnabled) {
-      const costEstimate = estimate?.(totalTrust, 0) ?? null
+      const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
       return {
         totalTrust,
         signalAmount: totalTrust,
         poolAmount: 0,
         belowMinimum: false,
-        protocolFee: costEstimate?.protocolFee ?? 0,
+        creationCost: costEstimate?.creationCost ?? 0,
         sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
         sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
         totalFees: costEstimate?.totalFees ?? 0,
@@ -164,14 +168,14 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const belowMinimum = poolAmount > 0 && poolAmount < minDeposit
 
     const effectiveGsPercentage = belowMinimum ? 0 : gsPercentage
-    const costEstimate = estimate?.(totalTrust, effectiveGsPercentage) ?? null
+    const costEstimate = estimate?.(totalTrust, effectiveGsPercentage, createOpts) ?? null
 
     return {
       totalTrust,
       signalAmount,
       poolAmount,
       belowMinimum,
-      protocolFee: costEstimate?.protocolFee ?? 0,
+      creationCost: costEstimate?.creationCost ?? 0,
       sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
       sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
       totalFees: costEstimate?.totalFees ?? 0,
@@ -393,6 +397,12 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               {breakdown.totalFees > 0 && (
                 <>
                   <div className="weight-modal-cost-divider" />
+                  {breakdown.creationCost > 0 && (
+                    <div className="weight-modal-cost-row weight-modal-cost-fee">
+                      <span>Creation cost</span>
+                      <span>{formatTrust(breakdown.creationCost)} TRUST</span>
+                    </div>
+                  )}
                   {breakdown.sofiaFixedFee > 0 && (
                     <div className="weight-modal-cost-row weight-modal-cost-fee">
                       <span>Sofia fee (fixed x{breakdown.depositCount})</span>
@@ -405,6 +415,10 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                       <span>{formatTrust(breakdown.sofiaPercentFee)} TRUST</span>
                     </div>
                   )}
+                  <div className="weight-modal-cost-row weight-modal-cost-fees-subtotal">
+                    <span>Fees</span>
+                    <span>{formatTrust(breakdown.totalFees)} TRUST</span>
+                  </div>
                   <div className="weight-modal-cost-divider" />
                   <div className="weight-modal-cost-row weight-modal-cost-total">
                     <span>Total</span>
@@ -417,7 +431,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 <span>{formatTrust(userBalance)} TRUST</span>
               </div>
               <p className="weight-modal-cost-note">
-                * Fees may vary for new certifications
+                * May be lower for existing certifications
               </p>
             </div>
           )}
