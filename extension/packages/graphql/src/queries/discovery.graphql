@@ -69,6 +69,37 @@ query AllIntentionTriples(
   }
 }
 
+# Get positions for specific objects — used by useUserDiscoveryScore
+# to fetch rank data only for pages the target user has certified
+query TriplePositionsByObjects(
+  $predicateLabels: [String!]!
+  $objectTermIds: [String!]!
+  $limit: Int!
+  $offset: Int!
+) {
+  triples(
+    where: {
+      predicate: { label: { _in: $predicateLabels } }
+      object: { term_id: { _in: $objectTermIds } }
+      positions: { shares: { _gt: "0" } }
+    }
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    object {
+      term_id
+    }
+    positions(
+      where: { shares: { _gt: "0" } }
+      order_by: { created_at: asc }
+    ) {
+      account_id
+      created_at
+    }
+  }
+}
+
 # Get certification triples for a page (by hostname)
 query CertificationTriples(
   $predicateIds: [String!]!
