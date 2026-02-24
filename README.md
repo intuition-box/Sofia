@@ -207,7 +207,13 @@ Certify any URL with one of 5 intentions:
 [I] ── visits_for_work ──▶ [Page URL atom]
 ```
 
-**Flow:** User clicks intention → WeightModal (set stake amount) → Atom creation (IPFS pin + hex encode) → Triple creation via SofiaFeeProxy → Transaction confirmed → +10 Gold awarded → On-chain badge appears.
+**Flow:** User clicks intention → WeightModal opens (select deposit amount from 0.01–10 TRUST, allocate to Signal/Beta Season Pool, review fee breakdown) → Atom creation (IPFS pin + hex encode) → Triple creation via SofiaFeeProxy → Transaction confirmed → +10 Gold awarded → On-chain badge appears.
+
+**WeightModal** is the unified transaction confirmation UI across all flows (certify, vote, follow, trust/distrust, quest claim). It displays:
+- Intention badge (colored tag with intention type)
+- Deposit amount selection (0.01, 0.5, 1, 5, 10 TRUST + custom)
+- Beta Season Pool slider (split deposit between signal vault and shared pool)
+- Fee breakdown grouped by source: Sofia fees + Intuition protocol fees
 
 ---
 
@@ -324,6 +330,14 @@ AI analyzes your on-chain certifications to build your interest profile:
 - Curated on-chain lists queryable via `has_tag` predicate
 - Displayed with market cap and position count
 
+#### Beta Season Pool
+A shared staking vault where a percentage of each deposit is automatically allocated:
+- **Default split:** 20% of deposit goes to the Beta Season Pool, 80% to signal vault
+- **Adjustable:** Users can set 0–50% via a slider in WeightModal
+- **Stats card** on the Profile Stats tab shows: My Stake, P&L (profit/loss), total stakers
+- **On-chain vault:** Linear bonding curve (curveId=1), tracked via `GlobalStakeService`
+- **Minimum deposit:** 0.01 TRUST — below this, pool contribution is skipped
+
 ---
 
 ### 9. Authentication & Identity
@@ -403,9 +417,16 @@ User Transaction
 
 **Fee Proxy Contract:** [Sofia-Fee-Proxy-Contract](https://github.com/Wieedze/Sofia-Fee-Proxy-Contract)
 
+#### Fee Transparency
+Before confirming, WeightModal shows a real-time cost breakdown:
+- **Deposit** — user-selected amount, split into Signal + Beta Season Pool
+- **Fees** — total, with sub-items: Sofia fee (fixed + 5%) and Intuition fee (creation only, zero for existing triples)
+- **Total** — deposit + all fees
+- Fee params are read from on-chain contracts via `BlockchainService` and cached in memory
+
 #### Transaction Flow
 1. **Simulation:** `publicClient.simulateContract()` — dry run before paying gas
-2. **Submission:** `walletClient.writeContract()` — actual transaction via wallet
+2. **Submission:** `walletClient.writeContract()` — actual transaction via wallet (2-3 wallet confirmations per certification)
 3. **Confirmation:** `publicClient.waitForTransactionReceipt()` — wait for block inclusion
 4. **Error recovery:** Graceful fallback for existing atoms/triples (deposit instead of create)
 
