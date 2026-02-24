@@ -75,6 +75,9 @@ export type { DailyStreakProfitData } from './useDailyStreakProfit'
 export { useStreakLeaderboard } from './useStreakLeaderboard'
 export type { LeaderboardEntry } from './useStreakLeaderboard'
 
+// Global Stake
+export { useGlobalStake } from './useGlobalStake'
+
 // Bookmarks & Lists
 export { useBookmarks } from './useBookmarks'
 export { useUserLists } from './useUserLists'

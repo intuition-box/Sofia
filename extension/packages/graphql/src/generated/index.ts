@@ -20492,6 +20492,29 @@ export type GetAtomDataByLabelsQuery = {
   }>
 }
 
+export type GetGlobalStakePositionQueryVariables = Exact<{
+  globalTermId: Scalars["String"]["input"]
+  curveId: Scalars["numeric"]["input"]
+  walletAddress: Scalars["String"]["input"]
+}>
+
+export type GetGlobalStakePositionQuery = {
+  __typename?: "query_root"
+  vaults: Array<{
+    __typename?: "vaults"
+    current_share_price: any
+    total_shares: any
+    total_assets: any
+    position_count: number
+    positions: Array<{
+      __typename?: "positions"
+      shares: any
+      total_deposit_assets_after_total_fees: any
+      total_redeem_assets_for_receiver: any
+    }>
+  }>
+}
+
 export type GetTopSofiaAccountsQueryVariables = Exact<{
   proxy: Scalars["String"]["input"]
   since: Scalars["timestamptz"]["input"]
@@ -31415,6 +31438,106 @@ useGetAtomDataByLabelsQuery.fetcher = (
 ) =>
   fetcher<GetAtomDataByLabelsQuery, GetAtomDataByLabelsQueryVariables>(
     GetAtomDataByLabelsDocument,
+    variables,
+    options
+  )
+
+export const GetGlobalStakePositionDocument = `
+    query GetGlobalStakePosition($globalTermId: String!, $curveId: numeric!, $walletAddress: String!) {
+  vaults(where: {term_id: {_eq: $globalTermId}, curve_id: {_eq: $curveId}}) {
+    current_share_price
+    total_shares
+    total_assets
+    position_count
+    positions(where: {account_id: {_ilike: $walletAddress}}) {
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+}
+    `
+
+export const useGetGlobalStakePositionQuery = <
+  TData = GetGlobalStakePositionQuery,
+  TError = unknown
+>(
+  variables: GetGlobalStakePositionQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetGlobalStakePositionQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetGlobalStakePositionQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetGlobalStakePositionQuery, TError, TData>({
+    queryKey: ["GetGlobalStakePosition", variables],
+    queryFn: fetcher<
+      GetGlobalStakePositionQuery,
+      GetGlobalStakePositionQueryVariables
+    >(GetGlobalStakePositionDocument, variables),
+    ...options
+  })
+}
+
+useGetGlobalStakePositionQuery.document = GetGlobalStakePositionDocument
+
+useGetGlobalStakePositionQuery.getKey = (
+  variables: GetGlobalStakePositionQueryVariables
+) => ["GetGlobalStakePosition", variables]
+
+export const useInfiniteGetGlobalStakePositionQuery = <
+  TData = InfiniteData<GetGlobalStakePositionQuery>,
+  TError = unknown
+>(
+  variables: GetGlobalStakePositionQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<GetGlobalStakePositionQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      GetGlobalStakePositionQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<GetGlobalStakePositionQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "GetGlobalStakePosition.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            GetGlobalStakePositionQuery,
+            GetGlobalStakePositionQueryVariables
+          >(GetGlobalStakePositionDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteGetGlobalStakePositionQuery.getKey = (
+  variables: GetGlobalStakePositionQueryVariables
+) => ["GetGlobalStakePosition.infinite", variables]
+
+useGetGlobalStakePositionQuery.fetcher = (
+  variables: GetGlobalStakePositionQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<GetGlobalStakePositionQuery, GetGlobalStakePositionQueryVariables>(
+    GetGlobalStakePositionDocument,
     variables,
     options
   )
@@ -60666,6 +60789,187 @@ export const GetAtomDataByLabels = {
                 { kind: "Field", name: { kind: "Name", value: "label" } },
                 { kind: "Field", name: { kind: "Name", value: "data" } },
                 { kind: "Field", name: { kind: "Name", value: "image" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const GetGlobalStakePosition = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "GetGlobalStakePosition" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "globalTermId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "curveId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "numeric" }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "walletAddress" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "vaults" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "term_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "globalTermId" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "curve_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_eq" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "curveId" }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "current_share_price" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "total_shares" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "total_assets" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "position_count" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "account_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_ilike" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "walletAddress"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_deposit_assets_after_total_fees"
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: {
+                          kind: "Name",
+                          value: "total_redeem_assets_for_receiver"
+                        }
+                      }
+                    ]
+                  }
+                }
               ]
             }
           }

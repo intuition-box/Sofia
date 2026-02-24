@@ -50,7 +50,9 @@ export const {
   DAILY_CERTIFICATION_ATOM_ID,
   DAILY_STREAK_STAKE,
   DAILY_VOTE_ATOM_ID,
-  DAILY_VOTE_STAKE
+  DAILY_VOTE_STAKE,
+  GLOBAL_STAKE,
+  SEASON_HISTORY
 } = config
 
 // Export Sofia proxy address (only available in local config)

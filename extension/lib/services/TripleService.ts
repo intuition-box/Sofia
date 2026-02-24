@@ -4,11 +4,17 @@
  * Handles triple creation and deposits on the Intuition blockchain.
  * Extracted from useCreateTripleOnChain hook to separate blockchain logic from React.
  *
+ * Uses depositBatch() to combine multiple deposits (+ global stake) into a single
+ * MetaMask confirmation when possible.
+ *
  * Related files:
  * - hooks/useCreateTripleOnChain.ts: React hook wrapper (atom resolution)
  * - hooks/useVoteOnTriple.ts: Vote hook (uses createTripleOnChain)
+ * - hooks/useCreateFollowTriples.ts: Follow hook (uses createTripleOnChain)
+ * - hooks/useTrustAccount.ts: Trust hook (uses createTripleOnChain)
  * - AtomService.ts: atom creation
  * - blockchainService.ts: low-level blockchain operations
+ * - GlobalStakeService.ts: split calculation for global stake
  */
 
 import { getClients } from '../clients/viemClients'
@@ -16,10 +22,11 @@ import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../config/chainConfig'
 import { BlockchainService } from './blockchainService'
+import { globalStakeService } from './GlobalStakeService'
 import { createServiceLogger } from '../utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../config/constants'
 import type { TripleOnChainResult, BatchTripleResult } from '../../types/blockchain'
-import type { Address, Hash, ContractWriteParams } from '../../types/viem'
+import type { Address, Hash } from '../../types/viem'
 
 const logger = createServiceLogger('TripleService')
 
@@ -90,20 +97,114 @@ class TripleServiceClass {
     return null
   }
 
-  /** Helper to execute a transaction with the wallet client. */
-  private async executeTransaction(txParams: ContractWriteParams): Promise<Hash> {
-    const viemParams = {
-      ...txParams,
-      address: txParams.address as Address,
-      account: txParams.account as Address
+  /**
+   * Execute a depositBatch with fee calculation.
+   * Combines multiple deposits into a single MetaMask confirmation.
+   */
+  private async executeDepositBatch(
+    address: string,
+    termIds: string[],
+    curveIds: bigint[],
+    assets: bigint[]
+  ): Promise<Hash> {
+    const { walletClient, publicClient } = await getClients()
+    const contractAddress = BlockchainService.getContractAddress()
+
+    const totalDeposit = assets.reduce((sum, a) => sum + a, 0n)
+    const fee = await BlockchainService.calculateDepositFee(assets.length, totalDeposit)
+    const totalValue = totalDeposit + fee
+    const minShares = assets.map(() => 0n)
+
+    logger.debug('depositBatch', {
+      count: termIds.length,
+      totalDeposit: totalDeposit.toString(),
+      fee: fee.toString(),
+      totalValue: totalValue.toString()
+    })
+
+    // Simulate first
+    await publicClient.simulateContract({
+      address: contractAddress as Address,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'depositBatch',
+      args: [
+        address as Address,
+        termIds as Address[],
+        curveIds,
+        assets,
+        minShares
+      ],
+      value: totalValue,
+      account: walletClient.account
+    })
+
+    // Execute
+    const hash = await walletClient.writeContract({
+      address: contractAddress as Address,
+      abi: SofiaFeeProxyAbi,
+      functionName: 'depositBatch',
+      args: [
+        address as Address,
+        termIds as Address[],
+        curveIds,
+        assets,
+        minShares
+      ],
+      value: totalValue,
+      chain: SELECTED_CHAIN,
+      maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+      maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+      account: address as Address
+    })
+
+    return hash
+  }
+
+  /**
+   * Append global stake entry to batch arrays if GS is enabled.
+   * Mutates the arrays in place. Returns true if GS was appended.
+   */
+  private appendGlobalStake(
+    termIds: string[],
+    curveIds: bigint[],
+    assets: bigint[],
+    totalDepositAmount: bigint
+  ): boolean {
+    if (!globalStakeService.isEnabled()) return false
+
+    const split = globalStakeService.calculateSplit(totalDepositAmount)
+    if (!split) return false
+
+    const config = globalStakeService.getConfig()
+
+    // Scale down existing assets proportionally
+    const ratio = split.mainAmount * 100000n / totalDepositAmount
+    for (let i = 0; i < assets.length; i++) {
+      assets[i] = (assets[i] * ratio) / 100000n
     }
 
-    const { walletClient } = await getClients()
-    return await walletClient.writeContract(viemParams)
+    // Append global stake entry
+    termIds.push(config.termId)
+    curveIds.push(config.curveId)
+    assets.push(split.globalAmount)
+
+    logger.debug('Global stake appended', {
+      mainAmount: split.mainAmount.toString(),
+      globalAmount: split.globalAmount.toString(),
+      percentage: config.percentage
+    })
+
+    return true
   }
 
   /**
    * Create or deposit on a triple with already-resolved vault IDs.
+   *
+   * When the triple exists and global stake is enabled, uses depositBatch
+   * to combine main deposit + GS deposit in a single TX.
+   *
+   * When the triple doesn't exist, creates it first, then does a separate
+   * GS deposit (can't mix createTriples + depositBatch).
    *
    * @param depositCurveId - Curve for deposits. Default 2n (progressive).
    *   Votes use 1n (linear) via CREATION_CURVE_ID.
@@ -124,52 +225,68 @@ class TripleServiceClass {
       )
 
       if (tripleCheck.exists) {
-        // Triple exists — deposit on it
-        const { walletClient, publicClient } = await getClients()
-        const contractAddress = BlockchainService.getContractAddress()
+        // Triple exists — deposit on it (+ global stake if enabled)
+        const { publicClient } = await getClients()
 
         const feeCost = await BlockchainService.getTripleCost()
         const depositAmount = customWeight !== undefined ? customWeight : feeCost
 
-        logger.debug('Triple exists, performing deposit instead', {
+        logger.debug('Triple exists, performing deposit', {
           tripleVaultId: tripleCheck.tripleVaultId,
           depositAmount: depositAmount.toString()
         })
 
-        const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
+        // Build batch arrays
+        const termIds = [tripleCheck.tripleVaultId!]
+        const curveIds = [depositCurveId]
+        const assets = [depositAmount]
 
-        // Simulate deposit via Proxy
-        await publicClient.simulateContract({
-          address: contractAddress as Address,
-          abi: SofiaFeeProxyAbi,
-          functionName: 'deposit',
-          args: [
-            address as Address,
-            tripleCheck.tripleVaultId as Address,
-            depositCurveId,
-            0n
-          ],
-          value: totalDepositCost,
-          account: walletClient.account
-        })
+        // Append global stake if enabled
+        const gsAppended = this.appendGlobalStake(termIds, curveIds, assets, depositAmount)
 
-        // Execute deposit via Proxy
-        const hash = await walletClient.writeContract({
-          address: contractAddress as Address,
-          abi: SofiaFeeProxyAbi,
-          functionName: 'deposit',
-          args: [
-            address as Address,
-            tripleCheck.tripleVaultId as Address,
-            depositCurveId,
-            0n
-          ],
-          value: totalDepositCost,
-          chain: SELECTED_CHAIN,
-          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-          account: address as Address
-        })
+        let hash: Hash
+
+        if (gsAppended) {
+          // depositBatch: main + GS in 1 TX
+          hash = await this.executeDepositBatch(address, termIds, curveIds, assets)
+        } else {
+          // Single deposit (GS disabled or amount too small)
+          const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
+
+          const { walletClient } = await getClients()
+          const contractAddress = BlockchainService.getContractAddress()
+
+          await publicClient.simulateContract({
+            address: contractAddress as Address,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'deposit',
+            args: [
+              address as Address,
+              tripleCheck.tripleVaultId as Address,
+              depositCurveId,
+              0n
+            ],
+            value: totalDepositCost,
+            account: walletClient.account
+          })
+
+          hash = await walletClient.writeContract({
+            address: contractAddress as Address,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'deposit',
+            args: [
+              address as Address,
+              tripleCheck.tripleVaultId as Address,
+              depositCurveId,
+              0n
+            ],
+            value: totalDepositCost,
+            chain: SELECTED_CHAIN,
+            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+            account: address as Address
+          })
+        }
 
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
 
@@ -193,69 +310,99 @@ class TripleServiceClass {
         const contractAddress = BlockchainService.getContractAddress()
 
         const tripleCost = await BlockchainService.getTripleCost()
-        const depositAmount = customWeight !== undefined ? customWeight : MIN_TRIPLE_DEPOSIT
-        const multiVaultCost = tripleCost + depositAmount
-        const totalCost = await BlockchainService.getTotalCreationCost(1, depositAmount, multiVaultCost)
+        const totalDeposit = customWeight !== undefined ? customWeight : MIN_TRIPLE_DEPOSIT
+
+        // Split deposit: reduce signal amount if GS enabled, GS deposited separately after create
+        const split = globalStakeService.isEnabled()
+          ? globalStakeService.calculateSplit(totalDeposit)
+          : null
+        const signalDeposit = split ? split.mainAmount : totalDeposit
+
+        const multiVaultCost = tripleCost + signalDeposit
+        const totalCost = await BlockchainService.getTotalCreationCost(1, signalDeposit, multiVaultCost)
 
         // Calculate tripleId BEFORE transaction (deterministic hash)
         const tripleVaultId = await publicClient.readContract({
           address: BLOCKCHAIN_CONFIG.CONTRACT_ADDRESS as Address,
           abi: MultiVaultAbi,
           functionName: 'calculateTripleId',
-          args: [subjectId as Address, predicateId as Address, objectId as Address]
+          args: [subjectId as Address, predicateId as Address, objectId as Address],
+          authorizationList: undefined
         }) as Address
 
-        console.log('🔍 [createTripleOnChain] Creating triple with:', {
+        logger.debug('Creating triple', {
           subjectId,
           predicateId,
           objectId,
           tripleVaultId,
-          depositAmount: depositAmount.toString(),
-          totalCost: totalCost.toString(),
-          receiver: address
+          signalDeposit: signalDeposit.toString(),
+          gsAmount: split?.globalAmount?.toString() || '0',
+          totalCost: totalCost.toString()
         })
 
         // Simulate first
-        try {
-          await publicClient.simulateContract({
-            address: contractAddress as Address,
-            abi: SofiaFeeProxyAbi,
-            functionName: 'createTriples',
-            args: [address as Address, [subjectId as Address], [predicateId as Address], [objectId as Address], [depositAmount], CREATION_CURVE_ID],
-            value: totalCost,
-            account: walletClient.account
-          })
-          console.log('✅ [createTripleOnChain] Simulation passed')
-        } catch (simError) {
-          console.error('❌ [createTripleOnChain] Simulation failed:', simError)
-          throw simError
-        }
+        await publicClient.simulateContract({
+          address: contractAddress as Address,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'createTriples',
+          args: [address as Address, [subjectId as Address], [predicateId as Address], [objectId as Address], [signalDeposit], CREATION_CURVE_ID],
+          value: totalCost,
+          account: walletClient.account
+        })
 
-        const txParams = {
-          address: contractAddress,
+        const hash = await walletClient.writeContract({
+          address: contractAddress as Address,
           abi: SofiaFeeProxyAbi,
           functionName: 'createTriples',
           args: [
-            address,
+            address as Address,
             [subjectId as Address],
             [predicateId as Address],
             [objectId as Address],
-            [depositAmount],
+            [signalDeposit],
             CREATION_CURVE_ID
           ],
           value: totalCost,
           chain: SELECTED_CHAIN,
           maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
           maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-          account: address
-        }
+          account: address as Address
+        })
 
-        const hash = await this.executeTransaction(txParams)
-
-        const receipt = await publicClient.waitForTransactionReceipt({ hash: hash as Address })
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
 
         if (receipt.status !== 'success') {
           throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+        }
+
+        // Global stake deposit after successful create (separate TX, non-blocking on failure)
+        if (split) {
+          try {
+            const config = globalStakeService.getConfig()
+            const gsCost = await BlockchainService.getTotalDepositCost(split.globalAmount)
+
+            const gsHash = await walletClient.writeContract({
+              address: contractAddress as Address,
+              abi: SofiaFeeProxyAbi,
+              functionName: 'deposit',
+              args: [
+                address as Address,
+                config.termId as Address,
+                config.curveId,
+                0n
+              ],
+              value: gsCost,
+              chain: SELECTED_CHAIN,
+              maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+              maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+              account: address as Address
+            })
+
+            await publicClient.waitForTransactionReceipt({ hash: gsHash })
+            logger.info('Global stake deposit after create succeeded')
+          } catch (gsError) {
+            logger.warn('Global stake deposit failed (non-blocking)', gsError)
+          }
         }
 
         return {
@@ -278,7 +425,10 @@ class TripleServiceClass {
 
   /**
    * Create/deposit on multiple triples with already-resolved vault IDs.
-   * Handles deduplication, batch creation, and fallback to deposits.
+   * Handles deduplication, batch creation, and uses depositBatch for existing triples.
+   *
+   * Existing triples are combined into a single depositBatch() call
+   * (+ global stake if enabled) = 1 MetaMask popup instead of N.
    */
   async createTriplesBatch(
     resolvedTriples: ResolvedTriple[],
@@ -330,9 +480,20 @@ class TripleServiceClass {
         const predicateIds = triplesToCreate.map(t => t.predicateId as Address)
         const objectIds = triplesToCreate.map(t => t.objectId as Address)
 
-        const depositAmounts = triplesToCreate.map(t =>
+        const originalAmounts = triplesToCreate.map(t =>
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
+
+        // Split: reduce signal amounts if GS enabled, GS deposited separately after create
+        const totalOriginal = originalAmounts.reduce((sum, a) => sum + a, 0n)
+        const batchSplit = globalStakeService.isEnabled()
+          ? globalStakeService.calculateSplit(totalOriginal)
+          : null
+
+        // Scale down each deposit proportionally if GS active
+        const depositAmounts = batchSplit
+          ? originalAmounts.map(a => (a * batchSplit.mainAmount) / totalOriginal)
+          : originalAmounts
 
         const depositCount = depositAmounts.filter(a => a > 0n).length
         const totalDeposit = depositAmounts.reduce((sum, a) => sum + a, 0n)
@@ -349,19 +510,17 @@ class TripleServiceClass {
             account: walletClient.account
           })
 
-          const batchTxParams = {
+          const hash = await walletClient.writeContract({
             address: contractAddress,
             abi: SofiaFeeProxyAbi,
             functionName: 'createTriples',
-            args: [address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID],
+            args: [address as Address, subjectIds, predicateIds, objectIds, depositAmounts, CREATION_CURVE_ID],
             value: totalValue,
             chain: SELECTED_CHAIN,
             maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
             maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-            account: address
-          }
-
-          const hash = await this.executeTransaction(batchTxParams)
+            account: address as Address
+          })
           const receipt = await publicClient.waitForTransactionReceipt({ hash })
 
           if (receipt.status !== 'success') {
@@ -383,6 +542,36 @@ class TripleServiceClass {
             })
           }
 
+          // Global stake after batch create (separate TX, non-blocking)
+          if (batchSplit) {
+            try {
+              const config = globalStakeService.getConfig()
+              const gsCost = await BlockchainService.getTotalDepositCost(batchSplit.globalAmount)
+
+              const gsHash = await walletClient.writeContract({
+                address: contractAddress,
+                abi: SofiaFeeProxyAbi,
+                functionName: 'deposit',
+                args: [
+                  address as Address,
+                  config.termId as Address,
+                  config.curveId,
+                  0n
+                ],
+                value: gsCost,
+                chain: SELECTED_CHAIN,
+                maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+                maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+                account: address as Address
+              })
+
+              await publicClient.waitForTransactionReceipt({ hash: gsHash })
+              logger.info('Global stake deposit after batch create succeeded')
+            } catch (gsError) {
+              logger.warn('Global stake deposit after batch create failed (non-blocking)', gsError)
+            }
+          }
+
         } catch (createError) {
           const errorMessage = createError instanceof Error ? createError.message : ''
           const isTripleExistsError =
@@ -390,12 +579,16 @@ class TripleServiceClass {
             errorMessage.includes('TripleExists')
 
           if (isTripleExistsError) {
-            logger.debug('createTriples simulation failed - triples may exist, falling back to deposits', {
+            logger.debug('createTriples failed - triples may exist, falling back to depositBatch', {
               error: errorMessage,
               triplesToCreate: triplesToCreate.length
             })
 
-            const curveId = 2n
+            // Fallback: all "to create" triples actually exist → batch deposit them
+            const fallbackTermIds: string[] = []
+            const fallbackCurveIds: bigint[] = []
+            const fallbackAssets: bigint[] = []
+
             for (const triple of triplesToCreate) {
               const tripleId = await publicClient.readContract({
                 address: contractAddress,
@@ -413,44 +606,40 @@ class TripleServiceClass {
                 ? triple.customWeight
                 : MIN_TRIPLE_DEPOSIT
 
-              const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
+              fallbackTermIds.push(tripleId)
+              fallbackCurveIds.push(2n)
+              fallbackAssets.push(depositAmount)
+            }
 
-              await publicClient.simulateContract({
-                address: contractAddress,
-                abi: SofiaFeeProxyAbi,
-                functionName: 'deposit',
-                args: [address as Address, tripleId, curveId, 0n],
-                value: totalDepositCost,
-                account: walletClient.account
-              })
+            // Append global stake
+            const totalFallbackDeposit = fallbackAssets.reduce((sum, a) => sum + a, 0n)
+            this.appendGlobalStake(fallbackTermIds, fallbackCurveIds, fallbackAssets, totalFallbackDeposit)
 
-              const depositHash = await walletClient.writeContract({
-                address: contractAddress,
-                abi: SofiaFeeProxyAbi,
-                functionName: 'deposit',
-                args: [address as Address, tripleId, curveId, 0n],
-                value: totalDepositCost,
-                chain: SELECTED_CHAIN,
-                maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-                maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-                account: address as Address
-              })
+            // Single depositBatch for all fallback deposits
+            const fallbackHash = await this.executeDepositBatch(
+              address,
+              fallbackTermIds,
+              fallbackCurveIds,
+              fallbackAssets
+            )
 
-              const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
+            const fallbackReceipt = await publicClient.waitForTransactionReceipt({ hash: fallbackHash })
 
-              if (depositReceipt.status !== 'success') {
-                throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${depositReceipt.status}`)
-              }
+            if (fallbackReceipt.status !== 'success') {
+              throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${fallbackReceipt.status}`)
+            }
 
+            for (let i = 0; i < triplesToCreate.length; i++) {
+              const triple = triplesToCreate[i]
               results.push({
                 success: true,
-                tripleVaultId: tripleId,
-                txHash: depositHash,
+                tripleVaultId: fallbackTermIds[i],
+                txHash: fallbackHash,
                 subjectVaultId: triple.subjectId,
                 predicateVaultId: triple.predicateId,
                 objectVaultId: triple.objectId,
                 source: 'deposit',
-                tripleHash: tripleId
+                tripleHash: fallbackTermIds[i]
               })
             }
           } else {
@@ -459,58 +648,39 @@ class TripleServiceClass {
         }
       }
 
-      // Process deposits on existing triples
+      // Process deposits on existing triples — single depositBatch
       if (triplesToDeposit.length > 0) {
-        const { walletClient, publicClient } = await getClients()
-        const contractAddress: Address = BlockchainService.getContractAddress() as Address
-        const curveId = 2n
+        const { publicClient } = await getClients()
 
-        logger.debug('Processing deposits on existing triples', { count: triplesToDeposit.length })
+        logger.debug('Processing deposits on existing triples via depositBatch', {
+          count: triplesToDeposit.length
+        })
+
+        const termIds = triplesToDeposit.map(t => t.tripleVaultId)
+        const curveIds = triplesToDeposit.map(() => 2n)
+        const assets = triplesToDeposit.map(t =>
+          t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
+        )
+
+        // Append global stake
+        const totalDeposit = assets.reduce((sum, a) => sum + a, 0n)
+        this.appendGlobalStake(termIds, curveIds, assets, totalDeposit)
+
+        // Single depositBatch for all existing triple deposits + GS
+        const depositHash = await this.executeDepositBatch(
+          address,
+          termIds,
+          curveIds,
+          assets
+        )
+
+        const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
+
+        if (depositReceipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${depositReceipt.status}`)
+        }
 
         for (const tripleToDeposit of triplesToDeposit) {
-          const depositAmount = tripleToDeposit.customWeight !== undefined
-            ? tripleToDeposit.customWeight
-            : MIN_TRIPLE_DEPOSIT
-
-          const totalDepositCost = await BlockchainService.getTotalDepositCost(depositAmount)
-
-          await publicClient.simulateContract({
-            address: contractAddress,
-            abi: SofiaFeeProxyAbi,
-            functionName: 'deposit',
-            args: [
-              address as Address,
-              tripleToDeposit.tripleVaultId as Address,
-              curveId,
-              0n
-            ],
-            value: totalDepositCost,
-            account: walletClient.account
-          })
-
-          const depositHash = await walletClient.writeContract({
-            address: contractAddress,
-            abi: SofiaFeeProxyAbi,
-            functionName: 'deposit',
-            args: [
-              address as Address,
-              tripleToDeposit.tripleVaultId as Address,
-              curveId,
-              0n
-            ],
-            value: totalDepositCost,
-            chain: SELECTED_CHAIN,
-            maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-            maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-            account: address as Address
-          })
-
-          const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
-
-          if (depositReceipt.status !== 'success') {
-            throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${depositReceipt.status}`)
-          }
-
           results.push({
             success: true,
             tripleVaultId: tripleToDeposit.tripleVaultId,
@@ -523,7 +693,7 @@ class TripleServiceClass {
           })
         }
 
-        logger.debug('Deposits on existing triples completed', { count: triplesToDeposit.length })
+        logger.debug('Batch deposits completed', { count: triplesToDeposit.length })
       }
 
       const createdCount = results.filter(r => r.source === 'created').length
