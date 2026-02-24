@@ -4,10 +4,11 @@
  * Shows on-chain certification status and allows creating new certifications
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp, useGoldSystem, useGroupAmplify,
+  useDiscoveryReward, useDiscoveryScore, usePageDiscovery,
   type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
 } from '../../hooks'
 import type { GroupUrlRecord } from '~types/database'
@@ -289,8 +290,17 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     oauthPredicate?: string  // For OAuth URLs, use this predicate directly instead of intention
     title?: string           // Page title for atom name
   } | null>(null)
-  const [intentionRewardClaimed, setIntentionRewardClaimed] = useState(false)
 
+  // Discovery reward hooks (same pattern as PageBlockchainCard)
+  const { claimDiscoveryGold } = useDiscoveryScore()
+  const reward = useDiscoveryReward()
+  const {
+    totalCertifications: pendingUrlCertCount,
+    refetch: refetchPendingDiscovery
+  } = usePageDiscovery(pendingCertification?.url || null)
+
+  // Ref to capture pre-certification count before the transaction
+  const prevDiscoveryTotalRef = useRef<number>(0)
   // On-chain certification hook
   const {
     certifyWithIntention,
@@ -464,6 +474,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     if (!pendingCertification || !customWeights || customWeights.length === 0) return
 
     const { url, intention, oauthPredicate, title } = pendingCertification
+
+    // Capture pre-certification count BEFORE the transaction
+    prevDiscoveryTotalRef.current = pendingUrlCertCount
+
     setProcessingUrls(prev => new Set(prev).add(url))
 
     try {
@@ -490,6 +504,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       // Refetch on-chain data to update stats
       await refetchOnChain()
 
+      // Refetch discovery data and calculate reward based on pre-cert position
+      await refetchPendingDiscovery()
+      reward.calculateAndTriggerReward(prevDiscoveryTotalRef.current)
+
       // Also refresh the parent group to update merged data
       if (onRefresh) {
         await onRefresh()
@@ -511,13 +529,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     setModalTriplets([])
     setPendingCertification(null)
     resetIntention()
-    setIntentionRewardClaimed(false)
-  }
-
-  // Handle claiming Gold reward for URL certification
-  // Gold is already awarded during certification via GoldService, this just updates the UI state
-  const handleClaimIntentionReward = async () => {
-    setIntentionRewardClaimed(true)
+    reward.resetReward()
   }
 
   const handleRemove = async (url: string) => {
@@ -812,9 +824,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           createdCount={intentionOperationType === 'created' ? 1 : 0}
           depositCount={intentionOperationType === 'deposit' ? 1 : 0}
           isIntentionCertification={true}
-          discoveryReward={intentionSuccess ? { status: 'Contributor' as const, gold: 10 } : null}
-          onClaimReward={handleClaimIntentionReward}
-          rewardClaimed={intentionRewardClaimed}
+          discoveryReward={intentionSuccess ? reward.discoveryReward : null}
+          onClaimReward={() => reward.handleClaimReward(claimDiscoveryGold)}
+          rewardClaimed={reward.rewardClaimed}
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
         />,

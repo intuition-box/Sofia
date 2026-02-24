@@ -159,7 +159,7 @@ export const TIER_BADGES: TierBadge[] = [
   { tier: 3,  name: 'Signal Shaper',    levelRange: '21-30',  minLevel: 21 },
   { tier: 4,  name: 'Amplifier',        levelRange: '31-40',  minLevel: 31 },
   { tier: 5,  name: 'Specialist',       levelRange: '41-50',  minLevel: 41 },
-  { tier: 6,  name: 'Audio Virtuoso',   levelRange: '51-60',  minLevel: 51 },
+  { tier: 6,  name: 'Virtuoso',         levelRange: '51-60',  minLevel: 51 },
   { tier: 7,  name: 'Expert',           levelRange: '61-70',  minLevel: 61 },
   { tier: 8,  name: 'Maestro',          levelRange: '71-80',  minLevel: 71 },
   { tier: 9,  name: 'Echo Generator',   levelRange: '81-90',  minLevel: 81 },
