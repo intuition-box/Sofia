@@ -4,18 +4,21 @@
  * Computes discovery stats for any wallet address (read-only).
  * Same logic as DiscoveryScoreService but without singleton lifecycle,
  * Gold syncing, or chrome.storage coupling.
+ *
+ * Strategy: fetch user's certifications first, then fetch positions
+ * only for those specific pages (bounded by user's activity, not network size).
  */
 
 import { useState, useEffect, useRef, useCallback } from "react"
 
 import {
   UserIntentionTriplesDocument,
-  AllIntentionTriplesDocument,
+  TriplePositionsByObjectsDocument,
   type UserIntentionTriplesQuery,
-  type AllIntentionTriplesQuery
+  type TriplePositionsByObjectsQuery
 } from "@0xsofia/graphql"
 
-import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
+import { intuitionGraphqlClient } from "~/lib/clients/graphql-client"
 import { CERTIFICATION_PREDICATE_LABELS } from "~/lib/config/predicateConstants"
 import {
   buildPagePositionMap,
@@ -29,7 +32,8 @@ import type { UserDiscoveryStats } from "~/types/discovery"
 const logger = createHookLogger("useUserDiscoveryScore")
 
 type UserTripleResult = UserIntentionTriplesQuery["triples"][number]
-type AllTripleResult = AllIntentionTriplesQuery["triples"][number]
+type PositionTripleResult =
+  TriplePositionsByObjectsQuery["triples"][number]
 
 export const useUserDiscoveryScore = (walletAddress?: string) => {
   const [stats, setStats] = useState<UserDiscoveryStats | null>(null)
@@ -50,36 +54,88 @@ export const useUserDiscoveryScore = (walletAddress?: string) => {
     try {
       const userAddress = walletAddress.toLowerCase()
 
-      const [userTriples, allTriples] = await Promise.all([
-        intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
+      // Step 1: Fetch user's certifications (small, bounded set)
+      const userTriples =
+        await intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
           UserIntentionTriplesDocument,
-          { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddress },
-          "triples",
-          100,
-          100
-        ),
-        intuitionGraphqlClient.fetchAllPages<AllTripleResult>(
-          AllIntentionTriplesDocument,
-          { predicateLabels: CERTIFICATION_PREDICATE_LABELS },
+          {
+            predicateLabels: CERTIFICATION_PREDICATE_LABELS,
+            userAddress
+          },
           "triples",
           100,
           100
         )
-      ])
 
-      const pagePositionMap = buildPagePositionMap(allTriples)
-      const ranking = calculateDiscoveryRanking(userTriples, pagePositionMap, userAddress)
+      if (userTriples.length === 0) {
+        setStats(
+          buildDiscoveryStats(
+            {
+              pioneerCount: 0,
+              explorerCount: 0,
+              contributorCount: 0,
+              totalCertifications: 0,
+              intentionBreakdown: {
+                for_work: 0,
+                for_learning: 0,
+                for_fun: 0,
+                for_inspiration: 0,
+                for_buying: 0,
+                for_music: 0
+              },
+              trustBreakdown: { trusted: 0, distrusted: 0 }
+            },
+            { fromPioneer: 0, fromExplorer: 0, fromContributor: 0, total: 0 }
+          )
+        )
+        return
+      }
+
+      // Step 2: Extract unique object term_ids from user's triples
+      const objectTermIds = [
+        ...new Set(
+          userTriples
+            .map((t) => t.object?.term_id)
+            .filter((id): id is string => !!id)
+        )
+      ]
+
+      // Step 3: Fetch positions only for those specific pages
+      const positionTriples =
+        await intuitionGraphqlClient.fetchAllPages<PositionTripleResult>(
+          TriplePositionsByObjectsDocument,
+          {
+            predicateLabels: CERTIFICATION_PREDICATE_LABELS,
+            objectTermIds
+          },
+          "triples",
+          100,
+          100
+        )
+
+      // Step 4: Calculate ranking from scoped data
+      const pagePositionMap = buildPagePositionMap(positionTriples)
+      const ranking = calculateDiscoveryRanking(
+        userTriples,
+        pagePositionMap,
+        userAddress
+      )
       const gold = calculateDiscoveryGold(ranking)
       const discoveryStats = buildDiscoveryStats(ranking, gold)
 
       setStats(discoveryStats)
       logger.debug("Discovery score calculated", {
+        userTriples: userTriples.length,
+        scopedPages: objectTermIds.length,
         pioneer: ranking.pioneerCount,
         explorer: ranking.explorerCount,
         contributor: ranking.contributorCount
       })
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to fetch discovery score"
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch discovery score"
       logger.error("Failed to fetch discovery score", err)
       setError(msg)
     } finally {

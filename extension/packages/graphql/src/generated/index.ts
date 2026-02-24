@@ -18516,6 +18516,29 @@ export type AllIntentionTriplesQuery = {
   }>
 }
 
+export type TriplePositionsByObjectsQueryVariables = Exact<{
+  predicateLabels:
+    | Array<Scalars["String"]["input"]>
+    | Scalars["String"]["input"]
+  objectTermIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
+  limit: Scalars["Int"]["input"]
+  offset: Scalars["Int"]["input"]
+}>
+
+export type TriplePositionsByObjectsQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    object?: { __typename?: "atoms"; term_id: string } | null
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      created_at: any
+    }>
+  }>
+}
+
 export type CertificationTriplesQueryVariables = Exact<{
   predicateIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
   hostnameLike: Scalars["String"]["input"]
@@ -29255,6 +29278,108 @@ useAllIntentionTriplesQuery.fetcher = (
     variables,
     options
   )
+
+export const TriplePositionsByObjectsDocument = `
+    query TriplePositionsByObjects($predicateLabels: [String!]!, $objectTermIds: [String!]!, $limit: Int!, $offset: Int!) {
+  triples(
+    where: {predicate: {label: {_in: $predicateLabels}}, object: {term_id: {_in: $objectTermIds}}, positions: {shares: {_gt: "0"}}}
+    limit: $limit
+    offset: $offset
+  ) {
+    term_id
+    object {
+      term_id
+    }
+    positions(where: {shares: {_gt: "0"}}, order_by: {created_at: asc}) {
+      account_id
+      created_at
+    }
+  }
+}
+    `
+
+export const useTriplePositionsByObjectsQuery = <
+  TData = TriplePositionsByObjectsQuery,
+  TError = unknown
+>(
+  variables: TriplePositionsByObjectsQueryVariables,
+  options?: Omit<
+    UseQueryOptions<TriplePositionsByObjectsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      TriplePositionsByObjectsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<TriplePositionsByObjectsQuery, TError, TData>({
+    queryKey: ["TriplePositionsByObjects", variables],
+    queryFn: fetcher<
+      TriplePositionsByObjectsQuery,
+      TriplePositionsByObjectsQueryVariables
+    >(TriplePositionsByObjectsDocument, variables),
+    ...options
+  })
+}
+
+useTriplePositionsByObjectsQuery.document = TriplePositionsByObjectsDocument
+
+useTriplePositionsByObjectsQuery.getKey = (
+  variables: TriplePositionsByObjectsQueryVariables
+) => ["TriplePositionsByObjects", variables]
+
+export const useInfiniteTriplePositionsByObjectsQuery = <
+  TData = InfiniteData<TriplePositionsByObjectsQuery>,
+  TError = unknown
+>(
+  variables: TriplePositionsByObjectsQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<TriplePositionsByObjectsQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      TriplePositionsByObjectsQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<TriplePositionsByObjectsQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "TriplePositionsByObjects.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            TriplePositionsByObjectsQuery,
+            TriplePositionsByObjectsQueryVariables
+          >(TriplePositionsByObjectsDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfiniteTriplePositionsByObjectsQuery.getKey = (
+  variables: TriplePositionsByObjectsQueryVariables
+) => ["TriplePositionsByObjects.infinite", variables]
+
+useTriplePositionsByObjectsQuery.fetcher = (
+  variables: TriplePositionsByObjectsQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<
+    TriplePositionsByObjectsQuery,
+    TriplePositionsByObjectsQueryVariables
+  >(TriplePositionsByObjectsDocument, variables, options)
 
 export const CertificationTriplesDocument = `
     query CertificationTriples($predicateIds: [String!]!, $hostnameLike: String!) {
@@ -52557,6 +52682,280 @@ export const AllIntentionTriples = {
                     ]
                   }
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "order_by" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "created_at" },
+                            value: { kind: "EnumValue", value: "asc" }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "created_at" }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const TriplePositionsByObjects = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "TriplePositionsByObjects" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateLabels" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "objectTermIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "limit" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "offset" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Int" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "label" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "predicateLabels"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "object" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "term_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: {
+                                      kind: "Name",
+                                      value: "objectTermIds"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "limit" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "offset" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "offset" }
+                }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "object" },
