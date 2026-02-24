@@ -411,6 +411,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       const { label: pageLabel } = normalizeUrl(url)
       const displayName = (title ? cleanTitle(title) : null) || pageLabel
 
+      const trustPill = TRUST_PILLS.find(p => p.predicateName === predicateName)
       const triplet = {
         id: `trust-${predicateName}`,
         triplet: {
@@ -420,7 +421,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         },
         description: `I ${predicateName} ${displayName}`,
         url: url,
-        intention: 'for_fun' as IntentionPurpose // Fallback for type compat
+        intention: trustPill?.certType as IntentionPurpose | undefined
       }
 
       setPendingCertification({ url, intention: 'for_fun', oauthPredicate: predicateName, title })
@@ -444,8 +445,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         object: cleanTitle(urlRecord.title)
       },
       description: `I ${urlRecord.oauthPredicate} ${cleanTitle(urlRecord.title)}`,
-      url: urlRecord.url,
-      intention: 'for_fun' as IntentionPurpose // For display only
+      url: urlRecord.url
     }
 
     // Store OAuth predicate to use the correct predicate on-chain

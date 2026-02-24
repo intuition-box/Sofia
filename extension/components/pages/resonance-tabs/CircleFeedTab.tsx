@@ -275,6 +275,7 @@ const CircleFeedTab = () => {
     tripleTermId: string
     voteType: VoteType
     objectLabel: string
+    intentionType: IntentionType
   } | null>(null)
   const [voteTransactionSuccess, setVoteTransactionSuccess] = useState(false)
   const [voteTransactionError, setVoteTransactionError] = useState<string | null>(null)
@@ -293,13 +294,13 @@ const CircleFeedTab = () => {
     }
   }, [voteLoading, voteSuccess, voteError, pendingVote])
 
-  const handleVote = (e: React.MouseEvent, tripleTermId: string, voteType: VoteType, objectLabel: string) => {
+  const handleVote = (e: React.MouseEvent, tripleTermId: string, voteType: VoteType, objectLabel: string, intentionType: IntentionType) => {
     e.stopPropagation()
     if (!address || !tripleTermId) return
     setVoteTransactionSuccess(false)
     setVoteTransactionError(null)
     resetVote()
-    setPendingVote({ tripleTermId, voteType, objectLabel })
+    setPendingVote({ tripleTermId, voteType, objectLabel, intentionType })
   }
 
   const handleVoteSubmit = async () => {
@@ -535,7 +536,7 @@ const CircleFeedTab = () => {
                   <div className="circle-card-votes">
                     <button
                       className={`circle-vote-btn circle-vote-up ${votesMap.get(item.tripleTermId)?.userVote === 'like' ? 'active' : ''}`}
-                      onClick={(e) => handleVote(e, item.tripleTermId, 'like', item.pageLabel)}
+                      onClick={(e) => handleVote(e, item.tripleTermId, 'like', item.pageLabel, item.intentionType)}
                       disabled={voteLoading && votingTripleId === item.tripleTermId}
                       title="Like this certification"
                     >
@@ -548,7 +549,7 @@ const CircleFeedTab = () => {
                     </span>
                     <button
                       className={`circle-vote-btn circle-vote-down ${votesMap.get(item.tripleTermId)?.userVote === 'dislike' ? 'active' : ''}`}
-                      onClick={(e) => handleVote(e, item.tripleTermId, 'dislike', item.pageLabel)}
+                      onClick={(e) => handleVote(e, item.tripleTermId, 'dislike', item.pageLabel, item.intentionType)}
                       disabled={voteLoading && votingTripleId === item.tripleTermId}
                       title="Dislike this certification"
                     >
@@ -577,7 +578,8 @@ const CircleFeedTab = () => {
               object: pendingVote.objectLabel
             },
             description: '',
-            url: ''
+            url: '',
+            intention: pendingVote.intentionType
           }]}
           isProcessing={voteLoading}
           transactionSuccess={voteTransactionSuccess}
