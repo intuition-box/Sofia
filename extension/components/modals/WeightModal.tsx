@@ -44,6 +44,12 @@ interface WeightModalProps {
   discoveryReward?: DiscoveryReward | null
   onClaimReward?: () => Promise<void>
   rewardClaimed?: boolean
+  /** When set, hide weight selection and use this fixed deposit value (in TRUST) */
+  fixedDeposit?: number
+  /** Override creation cost estimation assumptions (default: isNewTriple=true, newAtomCount=1) */
+  estimateOptions?: { isNewTriple?: boolean; newAtomCount?: number }
+  /** Customize submit button text (default: "Amplify") */
+  submitLabel?: string
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
@@ -64,7 +70,7 @@ const weightOptions: WeightOption[] = [
 
 const FEE_DENOMINATOR = 100000
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -130,20 +136,27 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const defaultValue = weightOptions.find(opt => opt.id === 'default')!.value!
 
     let totalTrust = 0
-    for (let i = 0; i < selectedWeights.length; i++) {
-      const sel = selectedWeights[i]
-      if (sel === 'custom') {
-        const cv = customValues[i]
-        totalTrust += (cv && cv.trim() !== '') ? parseFloat(cv) || 0 : minimumValue
-      } else {
-        const opt = weightOptions.find(o => o.id === sel)
-        totalTrust += opt?.value ?? defaultValue
+    if (fixedDeposit != null) {
+      totalTrust = fixedDeposit
+    } else {
+      for (let i = 0; i < selectedWeights.length; i++) {
+        const sel = selectedWeights[i]
+        if (sel === 'custom') {
+          const cv = customValues[i]
+          totalTrust += (cv && cv.trim() !== '') ? parseFloat(cv) || 0 : minimumValue
+        } else {
+          const opt = weightOptions.find(o => o.id === sel)
+          totalTrust += opt?.value ?? defaultValue
+        }
       }
     }
 
-    // Worst-case: new triple + 1 new atom (object URL)
-    // If triple already exists, user pays less than estimated
-    const createOpts = { isNewTriple: true, newAtomCount: 1 }
+    // Default worst-case: new triple + 1 new atom (object URL)
+    // Callers can override via estimateOptions for different flows
+    const createOpts = {
+      isNewTriple: estimateOptions?.isNewTriple ?? true,
+      newAtomCount: estimateOptions?.newAtomCount ?? 1
+    }
 
     if (totalTrust <= 0 || !gsEnabled) {
       const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
@@ -182,7 +195,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled, estimate])
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, estimate, fixedDeposit, estimateOptions])
 
   const handleSubmit = async () => {
     try {
@@ -275,7 +288,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         <div className="modal-body">
           {isFormState && (
             <p className="modal-description">
-              Choose how much TRUST to deposit for each signal.
+              {fixedDeposit != null
+                ? 'Review the cost breakdown before confirming.'
+                : 'Choose how much TRUST to deposit for each signal.'}
             </p>
           )}
 
@@ -298,8 +313,8 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                     } catch { return null }
                   })()}
 
-                  {/* Amount Section — only in form state */}
-                  {isFormState && (
+                  {/* Amount Section — only in form state, hidden when fixedDeposit */}
+                  {isFormState && fixedDeposit == null && (
                     <div className="weight-modal-amount-row">
                       <input
                         type="number"
@@ -431,7 +446,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 <span>{formatTrust(userBalance)} TRUST</span>
               </div>
               <p className="weight-modal-cost-note">
-                * May be lower for existing certifications
+                {fixedDeposit != null
+                  ? '* Estimated — actual may vary'
+                  : '* May be lower for existing certifications'}
               </p>
             </div>
           )}
@@ -522,7 +539,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   onClick={handleSubmit}
                   disabled={isProcessing || breakdown.totalEstimate > userBalance}
                 >
-                  {isProcessing ? 'Amplifying...' : 'Amplify'}
+                  {isProcessing
+                    ? (submitLabel ? 'Processing...' : 'Amplifying...')
+                    : (submitLabel || 'Amplify')}
                 </button>
               )}
               {transactionError && (
