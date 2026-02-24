@@ -70,15 +70,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
           chrome.tabs.get(tabResponse.tabId, (tab) => {
             if (tab?.url) {
               logger.debug('Got URL from tab', { url: tab.url, title: tab.title })
-              // Clean URL using proper URL parsing (remove query params and hash)
-              try {
-                const urlObj = new URL(tab.url)
-                const cleanUrl = `${urlObj.origin}${urlObj.pathname}`
-                resolve({ url: cleanUrl, title: tab.title || null })
-              } catch {
-                // Fallback if URL parsing fails (e.g., chrome:// URLs)
-                resolve({ url: tab.url, title: tab.title || null })
-              }
+              resolve({ url: tab.url, title: tab.title || null })
             } else {
               resolve({ url: null, title: null })
             }
