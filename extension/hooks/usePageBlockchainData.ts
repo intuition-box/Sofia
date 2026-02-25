@@ -134,25 +134,17 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const foundAtomIds = foundAtoms.map((a: any) => a.term_id)
       const totalAtomsCount = foundAtomIds.length
 
-      // Filter to page-specific atoms for trust/distrust (not domain-level)
+      // Filter to page-specific atoms (only atoms with value.thing.url)
       const { label: normalizedPageUrl } = normalizeUrl(url)
       const pageAtomIds = foundAtoms
         .filter((atom: any) => {
           const atomUrl = atom.value?.thing?.url
-          if (atomUrl) {
-            try {
-              return normalizeUrl(atomUrl).label === normalizedPageUrl
-            } catch {
-              return false
-            }
+          if (!atomUrl) return false
+          try {
+            return normalizeUrl(atomUrl).label === normalizedPageUrl
+          } catch {
+            return false
           }
-          // Old atoms: label IS the URL
-          const label = (atom.label || "")
-            .toLowerCase()
-            .replace(/^https?:\/\//, "")
-            .replace(/^www\./, "")
-            .replace(/\/$/, "")
-          return label === normalizedPageUrl
         })
         .map((a: any) => a.term_id)
 
@@ -238,32 +230,32 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
           ? Math.round((domainTrustCount / domainTotalSupport) * 100)
           : 50
 
-      // Page-level: only count triples whose object is a page-specific atom.
+      // Page-level: UNION of unique accounts on page-specific atoms.
       // When pageAtomIds is empty (page never certified), counts stay 0.
       const pageAtomSet = new Set(pageAtomIds)
-      let trustCount = 0
+      const pageTrustAccounts = new Set<string>()
       if (pageAtomSet.size > 0) {
         for (const triple of trustTriples) {
           if (!pageAtomSet.has(triple.object?.term_id)) continue
-          const positions = new Set<string>()
           for (const pos of triple.positions || []) {
-            if (pos.account_id) positions.add(pos.account_id.toLowerCase())
+            if (pos.account_id)
+              pageTrustAccounts.add(pos.account_id.toLowerCase())
           }
-          trustCount = Math.max(trustCount, positions.size)
         }
       }
+      const trustCount = pageTrustAccounts.size
 
-      let distrustCount = 0
+      const pageDistrustAccounts = new Set<string>()
       if (pageAtomSet.size > 0) {
         for (const triple of distrustTriples) {
           if (!pageAtomSet.has(triple.object?.term_id)) continue
-          const positions = new Set<string>()
           for (const pos of triple.positions || []) {
-            if (pos.account_id) positions.add(pos.account_id.toLowerCase())
+            if (pos.account_id)
+              pageDistrustAccounts.add(pos.account_id.toLowerCase())
           }
-          distrustCount = Math.max(distrustCount, positions.size)
         }
       }
+      const distrustCount = pageDistrustAccounts.size
       const totalSupport = trustCount + distrustCount
       const trustRatio =
         totalSupport > 0

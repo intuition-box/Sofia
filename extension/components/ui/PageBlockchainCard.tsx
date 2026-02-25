@@ -42,7 +42,7 @@ const PageBlockchainCard = () => {
     resumeRefresh
   } = usePageBlockchainData()
   const { totalCertifications, refetch: refetchDiscovery } =
-    usePageDiscovery(currentUrl)
+    usePageDiscovery(currentUrl, pageAtomIds)
   const {
     intentions: intentionStats,
     pageIntentions: pageIntentionStats,
