@@ -3,8 +3,6 @@ import { createPortal } from "react-dom"
 import { useRouter } from "../layout/RouterProvider"
 import {
   usePageBlockchainData,
-  usePageDiscovery,
-  usePageIntentionStats,
   useDiscoveryScore,
   useGoldSystem,
   useFavicon,
@@ -36,22 +34,17 @@ const PageBlockchainCard = () => {
     pageTitle,
     isRestricted,
     restrictionMessage,
-    pageAtomIds,
+    totalCertifications,
+    intentionStats,
+    pageIntentionStats,
+    intentionTotal,
+    pageIntentionTotal,
+    maxIntentionCount,
+    pageMaxIntentionCount,
     fetchDataForCurrentPage,
     pauseRefresh,
     resumeRefresh
   } = usePageBlockchainData()
-  const { totalCertifications } = usePageDiscovery(currentUrl, pageAtomIds)
-  const {
-    intentions: intentionStats,
-    pageIntentions: pageIntentionStats,
-    totalCertifications: intentionTotal,
-    pageTotalCertifications: pageIntentionTotal,
-    maxIntentionCount,
-    pageMaxIntentionCount,
-    loading: intentionStatsLoading,
-    refetch: refetchIntentionStats
-  } = usePageIntentionStats(currentUrl, pageAtomIds)
   const { claimDiscoveryGold } = useDiscoveryScore()
   const { totalGold } = useGoldSystem()
 
@@ -227,7 +220,7 @@ const PageBlockchainCard = () => {
                   pageIntentionTotal={pageIntentionTotal}
                   maxIntentionCount={maxIntentionCount}
                   pageMaxIntentionCount={pageMaxIntentionCount}
-                  intentionStatsLoading={intentionStatsLoading}
+                  intentionStatsLoading={false}
                   onAtomClick={handleAtomClick}
                   onTripletClick={handleTripletClick}
                 />
@@ -266,7 +259,6 @@ const PageBlockchainCard = () => {
                 totalCertifications,
                 pauseRefresh,
                 resumeRefresh,
-                refetchIntentionStats,
                 fetchDataForCurrentPage,
                 calculateAndTriggerReward: reward.calculateAndTriggerReward
               })
