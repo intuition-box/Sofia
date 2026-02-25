@@ -126,7 +126,7 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
               {pageTitle || new URL(currentUrl).hostname}
             </span>
             <span className="website-url-full">
-              {new URL(currentUrl).hostname}
+              {currentUrl.replace(/^https?:\/\//, "").replace(/^www\./, "")}
             </span>
           </div>
 

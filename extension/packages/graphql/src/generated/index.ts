@@ -21699,6 +21699,7 @@ export type AtomsByTermIdsQuery = {
       vaults: Array<{
         __typename?: "vaults"
         total_shares: any
+        total_assets: any
         position_count: number
       }>
     } | null
@@ -21752,6 +21753,7 @@ export type TriplesByAtomIdsQuery = {
         curve_id: any
         position_count: number
         total_shares: any
+        total_assets: any
       }>
     } | null
   }>
@@ -33312,6 +33314,7 @@ export const AtomsByTermIdsDocument = `
     term {
       vaults {
         total_shares
+        total_assets
         position_count
       }
     }
@@ -33515,6 +33518,7 @@ export const TriplesByAtomIdsDocument = `
         curve_id
         position_count
         total_shares
+        total_assets
       }
     }
   }
@@ -66494,6 +66498,10 @@ export const AtomsByTermIds = {
                             },
                             {
                               kind: "Field",
+                              name: { kind: "Name", value: "total_assets" }
+                            },
+                            {
+                              kind: "Field",
                               name: { kind: "Name", value: "position_count" }
                             }
                           ]
@@ -67072,6 +67080,10 @@ export const TriplesByAtomIds = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "total_shares" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "total_assets" }
                             }
                           ]
                         }

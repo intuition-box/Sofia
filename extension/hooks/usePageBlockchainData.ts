@@ -304,7 +304,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
           type: atom.type || "unknown",
           created_at: atom.created_at,
           vaults: vaults.map((v: any) => ({
-            total_shares: v.total_shares,
+            total_shares: v.total_assets || v.total_shares,
             position_count: v.position_count
           }))
         })
@@ -315,7 +315,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       for (const triple of triples) {
         const vaults = triple.term?.vaults || []
         for (const vault of vaults) {
-          totalShares += Number(vault.total_shares || 0) / 1e18
+          totalShares += Number(vault.total_assets || 0) / 1e18
           totalPositions += Number(vault.position_count || 0)
         }
 
@@ -327,10 +327,11 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
           created_at: triple.created_at || new Date().toISOString(),
           positions: vaults.map(
             (vault: {
+              total_assets?: string
               total_shares?: string
               position_count?: number
             }) => ({
-              shares: vault.total_shares || "0",
+              shares: vault.total_assets || vault.total_shares || "0",
               position_count: vault.position_count || 0
             })
           )
@@ -505,6 +506,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   // This prevents showing old page's badge/data during the fetch
   const resetForNewPage = useCallback(() => {
     hasDataRef.current = false
+    isFetchingRef.current = false
     setStatus("loading")
     setCounts(DEFAULT_COUNTS)
     setPageAtomIds([])
@@ -593,7 +595,19 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       }
     }
 
+    const handleTabActivated = (activeInfo: chrome.tabs.TabActiveInfo) => {
+      chrome.tabs.get(activeInfo.tabId, (tab) => {
+        if (tab?.url && tab.url !== lastUrl) {
+          lastUrl = tab.url
+          retryCountRef.current = 0
+          resetForNewPage()
+          debouncedFetch()
+        }
+      })
+    }
+
     chrome.tabs.onUpdated.addListener(handleTabUpdate)
+    chrome.tabs.onActivated.addListener(handleTabActivated)
     chrome.runtime.onMessage.addListener(handleMessage)
 
     // Periodic check for URL changes (fallback for SPAs)
@@ -611,6 +625,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
     return () => {
       chrome.tabs.onUpdated.removeListener(handleTabUpdate)
+      chrome.tabs.onActivated.removeListener(handleTabActivated)
       chrome.runtime.onMessage.removeListener(handleMessage)
       clearInterval(intervalId)
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current)

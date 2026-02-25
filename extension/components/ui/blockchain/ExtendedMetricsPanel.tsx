@@ -11,6 +11,9 @@ import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_ITEMS } from "~/types/intentionCategories"
 
+const formatTrust = (value: number): string =>
+  value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+
 type SortMode = "market_cap" | "newest"
 type FilterScope = "domain" | "page"
 type ExpandedSection = "atoms" | "triples" | null
@@ -26,7 +29,7 @@ interface ExtendedMetricsPanelProps {
   maxIntentionCount: number
   pageMaxIntentionCount: number
   intentionStatsLoading: boolean
-  domainAtomId?: string | null
+  currentUrl?: string | null
   onAtomClick: (atomId: string) => void
   onTripletClick: (tripletId: string) => void
 }
@@ -42,7 +45,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
   maxIntentionCount,
   pageMaxIntentionCount,
   intentionStatsLoading,
-  domainAtomId,
+  currentUrl,
   onAtomClick,
   onTripletClick
 }) => {
@@ -55,6 +58,11 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
   const toggleSection = (section: "atoms" | "triples") => {
     setExpandedSection((prev) => (prev === section ? null : section))
   }
+
+  const hostname = useMemo(() => {
+    if (!currentUrl) return null
+    try { return new URL(currentUrl).hostname.replace(/^www\./, "") } catch { return null }
+  }, [currentUrl])
 
   // Select active stats based on scope
   const activeTrust =
@@ -110,18 +118,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
       <div className="intentions-stats-section">
         <div className="section-header">
           <span className="section-title">
-            Intentions on this {filterScope}
-            {filterScope === "domain" && domainAtomId && (
-              <a
-                href={`https://portal.intuition.systems/explore/atom/${domainAtomId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="portal-link"
-                onClick={(e) => e.stopPropagation()}
-              >
-                ↗
-              </a>
-            )}
+            Intentions on {filterScope === "domain" ? (hostname || "domain") : "this page"}
           </span>
           <div className="scope-toggle">
             <button
@@ -199,15 +196,15 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
 
       {/* Related Signals Section */}
       <div className="signals-section">
-        <div className="signals-section-title">Related signals</div>
+        <div className="signals-section-title">Related</div>
 
-        {/* Accordion Toggles */}
+        {/* Accordion Toggles + Sort */}
         <div className="collapsible-lists-section">
           <div
             className={`collapsible-toggle clickable ${expandedSection === "atoms" ? "active" : ""}`}
             onClick={() => toggleSection("atoms")}
           >
-            <span>Domain Atoms ({counts.atomsCount})</span>
+            <span>Identity ({counts.atomsCount})</span>
             <span
               className={`toggle-arrow ${expandedSection === "atoms" ? "expanded" : ""}`}
             >
@@ -218,13 +215,37 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
             className={`collapsible-toggle clickable ${expandedSection === "triples" ? "active" : ""}`}
             onClick={() => toggleSection("triples")}
           >
-            <span>Domain Triples ({counts.triplesCount})</span>
+            <span>Signals ({counts.triplesCount})</span>
             <span
               className={`toggle-arrow ${expandedSection === "triples" ? "expanded" : ""}`}
             >
               ▼
             </span>
           </div>
+          {expandedSection && (
+            <div className="sort-toggle">
+              <button
+                className={`sort-btn ${(expandedSection === "atoms" ? atomsSort : tripletsSort) === "market_cap" ? "active" : ""}`}
+                onClick={() =>
+                  expandedSection === "atoms"
+                    ? setAtomsSort("market_cap")
+                    : setTripletsSort("market_cap")
+                }
+              >
+                Market Cap
+              </button>
+              <button
+                className={`sort-btn ${(expandedSection === "atoms" ? atomsSort : tripletsSort) === "newest" ? "active" : ""}`}
+                onClick={() =>
+                  expandedSection === "atoms"
+                    ? setAtomsSort("newest")
+                    : setTripletsSort("newest")
+                }
+              >
+                Newest
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -234,30 +255,11 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
       >
         {sortedAtoms.length > 0 && (
           <div className="atoms-section">
-            <div className="sort-controls">
-              <button
-                className={`sort-btn ${atomsSort === "market_cap" ? "active" : ""}`}
-                onClick={() => setAtomsSort("market_cap")}
-              >
-                Market Cap
-              </button>
-              <button
-                className={`sort-btn ${atomsSort === "newest" ? "active" : ""}`}
-                onClick={() => setAtomsSort("newest")}
-              >
-                Newest
-              </button>
-            </div>
             <div className="atoms-list">
               {sortedAtoms.map((atom) => {
                 const totalShares = atom.vaults.reduce(
                   (sum, vault) =>
                     sum + Number(vault.total_shares || 0) / 1e18,
-                  0
-                )
-                const positionCount = atom.vaults.reduce(
-                  (sum, vault) =>
-                    sum + Number(vault.position_count || 0),
                   0
                 )
 
@@ -271,18 +273,12 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
                       <span className="atom-label">
                         {atom.label}
                       </span>
-                      <span className="atom-type">{atom.type}</span>
+                      {totalShares > 0 && (
+                        <span className="tvl-badge">
+                          {formatTrust(totalShares)} TRUST
+                        </span>
+                      )}
                     </div>
-                    {positionCount > 0 && (
-                      <div className="atom-stats">
-                        <span className="stat-value">
-                          {positionCount} stakers
-                        </span>
-                        <span className="stat-value">
-                          {totalShares.toFixed(3)} TVL
-                        </span>
-                      </div>
-                    )}
                   </div>
                 )
               })}
@@ -297,25 +293,9 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
       >
         {sortedTriplets.length > 0 && (
           <div className="triplets-section">
-            <div className="sort-controls">
-              <button
-                className={`sort-btn ${tripletsSort === "market_cap" ? "active" : ""}`}
-                onClick={() => setTripletsSort("market_cap")}
-              >
-                Market Cap
-              </button>
-              <button
-                className={`sort-btn ${tripletsSort === "newest" ? "active" : ""}`}
-                onClick={() => setTripletsSort("newest")}
-              >
-                Newest
-              </button>
-            </div>
             <div className="triplets-list">
               {sortedTriplets.map((triplet: PageBlockchainTriplet) => {
                 const shares = getTotalShares(triplet)
-                const positionCount =
-                  triplet.positions?.length || 0
 
                 return (
                   <div
@@ -335,17 +315,12 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
                       <span className="object">
                         {triplet.object.label}
                       </span>
+                      {shares > 0 && (
+                        <span className="tvl-badge">
+                          {formatTrust(shares)} TRUST
+                        </span>
+                      )}
                     </div>
-                    {positionCount > 0 && (
-                      <div className="triplet-stats">
-                        <span className="stat-value">
-                          {positionCount} stakers
-                        </span>
-                        <span className="stat-value">
-                          {shares.toFixed(3)} TVL
-                        </span>
-                      </div>
-                    )}
                   </div>
                 )
               })}

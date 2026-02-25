@@ -21,8 +21,7 @@ import { createHookLogger } from "~/lib/utils/logger"
 const logger = createHookLogger("useCertificationModal")
 
 const DELAYS = {
-  REFRESH_AFTER_TX: 1000,
-  DISCOVERY_SCORE_REFRESH: 5000
+  REFRESH_AFTER_TX: 3000
 } as const
 
 // Type for triplets shown in the WeightModal
@@ -240,17 +239,12 @@ export const useCertificationModal = (): CertificationModalResult => {
         logger.info("Certification completed")
         ctx.resumeRefresh()
         ctx.calculateAndTriggerReward(prevTotal)
-        // Wave 1: optimistic (indexer might not have caught up yet)
-        setTimeout(
-          () => ctx.fetchDataForCurrentPage(),
-          DELAYS.REFRESH_AFTER_TX
-        )
-        // Wave 2: after cache clear (indexer should be synced)
+        // Single refresh: clear cache, wait for indexer sync, then fetch fresh data
         setTimeout(() => {
           intuitionGraphqlClient.clearCache()
           ctx.fetchDataForCurrentPage()
           discoveryScoreService.refetch()
-        }, DELAYS.DISCOVERY_SCORE_REFRESH)
+        }, DELAYS.REFRESH_AFTER_TX)
       } catch (error) {
         logger.error("Certification error", error)
         ctx.resumeRefresh()
