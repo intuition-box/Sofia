@@ -5,12 +5,12 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { GetTrendingByPredicateDocument } from '@0xsofia/graphql'
-import { PREDICATE_IDS } from '../lib/config/chainConfig'
-import { createHookLogger } from '../lib/utils/logger'
-import { extractDomain } from '../lib/utils/domainUtils'
-import type { IntentionType } from '../types/intentionCategories'
+import { GetTrendingByPredicateDocument } from "@0xsofia/graphql"
+
+import { intuitionGraphqlClient } from "~/lib/clients/graphql-client"
+import { PREDICATE_IDS } from "~/lib/config/chainConfig"
+import { createHookLogger, extractDomain } from "~/lib/utils"
+import type { IntentionType } from "~/types/intentionCategories"
 
 const logger = createHookLogger('useTrendingCertifications')
 
@@ -26,6 +26,12 @@ const TRENDING_CATEGORIES = ([
   { type: 'music', predicateId: PREDICATE_IDS.VISITS_FOR_MUSIC },
 ] as { type: IntentionType; predicateId: string }[]).filter(c => !!c.predicateId)
 
+export interface TrendingCertifier {
+  id: string
+  label: string
+  image: string | null
+}
+
 export interface TrendingItem {
   termId: string
   objectTermId: string
@@ -35,6 +41,7 @@ export interface TrendingItem {
   positionCount: number
   totalShares: string
   createdAt: string
+  topCertifiers: TrendingCertifier[]
 }
 
 export interface TrendingCategory {
@@ -117,6 +124,15 @@ export function useTrendingCertifications(): UseTrendingResult {
               const domain = extractDomain(objectUrl) || objectUrl
               const positionCount = Number(triple.positions_aggregate?.aggregate?.count || 0)
 
+              const topCertifiers = (triple.positions || [])
+                .filter((p: any) => p.account)
+                .map((p: any) => ({
+                  id: p.account.id,
+                  label: p.account.label,
+                  image: p.account.image || null
+                }))
+
+
               return {
                 termId: triple.term_id,
                 objectTermId: triple.object?.term_id || '',
@@ -125,7 +141,8 @@ export function useTrendingCertifications(): UseTrendingResult {
                 domain,
                 positionCount,
                 totalShares: String(triple.triple_vault?.total_shares || '0'),
-                createdAt: triple.created_at
+                createdAt: triple.created_at,
+                topCertifiers
               }
             })
             .sort((a, b) => b.positionCount - a.positionCount)
