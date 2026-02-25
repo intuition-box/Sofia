@@ -145,6 +145,7 @@ query IntentionStats(
         { object: { label: { _ilike: $hostnameLike } } }
         { object: { value: { thing: { url: { _ilike: $hostnameLike } } } } }
       ]
+      positions: { shares: { _gt: "0" } }
     }
     limit: 100
   ) {
