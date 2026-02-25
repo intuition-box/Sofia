@@ -40,6 +40,7 @@ export interface PageAtomInfo {
   id: string
   label: string
   type: string
+  created_at?: string
   vaults: Array<{
     total_shares?: string
     position_count?: number

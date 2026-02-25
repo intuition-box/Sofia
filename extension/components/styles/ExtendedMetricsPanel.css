@@ -121,6 +121,14 @@
   background: linear-gradient(90deg, #FF5722 0%, #FF8A65 100%);
 }
 
+.progress-fill.trusted {
+  background: linear-gradient(90deg, #22C55E 0%, #4ADE80 100%);
+}
+
+.progress-fill.distrusted {
+  background: linear-gradient(90deg, #EF4444 0%, #F87171 100%);
+}
+
 .intention-count {
   min-width: 24px;
   text-align: right;

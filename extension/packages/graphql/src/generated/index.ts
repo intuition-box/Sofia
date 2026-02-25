@@ -21636,7 +21636,15 @@ export type AtomIdsByUrlQueryVariables = Exact<{
 
 export type AtomIdsByUrlQuery = {
   __typename?: "query_root"
-  atoms: Array<{ __typename?: "atoms"; term_id: string }>
+  atoms: Array<{
+    __typename?: "atoms"
+    term_id: string
+    label?: string | null
+    value?: {
+      __typename?: "atom_values"
+      thing?: { __typename?: "things"; url?: string | null } | null
+    } | null
+  }>
 }
 
 export type AtomsByTermIdsQueryVariables = Exact<{
@@ -21650,6 +21658,7 @@ export type AtomsByTermIdsQuery = {
     term_id: string
     label?: string | null
     type: any
+    created_at: any
   }>
 }
 
@@ -21677,6 +21686,7 @@ export type TriplesByAtomIdsQuery = {
   triples: Array<{
     __typename?: "triples"
     term_id: string
+    created_at: any
     subject?: {
       __typename?: "atoms"
       term_id: string
@@ -21705,7 +21715,7 @@ export type TriplesByAtomIdsQuery = {
 }
 
 export type TrustDistrustByPageQueryVariables = Exact<{
-  likeStr: Scalars["String"]["input"]
+  atomIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
 }>
 
 export type TrustDistrustByPageQuery = {
@@ -33044,6 +33054,12 @@ export const AtomIdsByUrlDocument = `
     where: {_or: [{label: {_ilike: $likeStr}}, {value: {thing: {url: {_ilike: $likeStr}}}}]}
   ) {
     term_id
+    label
+    value {
+      thing {
+        url
+      }
+    }
   }
 }
     `
@@ -33129,6 +33145,7 @@ export const AtomsByTermIdsDocument = `
     term_id
     label
     type
+    created_at
   }
 }
     `
@@ -33311,6 +33328,7 @@ export const TriplesByAtomIdsDocument = `
     where: {_and: [{_or: [{subject: {term_id: {_in: $atomIds}}}, {predicate: {term_id: {_in: $atomIds}}}, {object: {term_id: {_in: $atomIds}}}]}]}
   ) {
     term_id
+    created_at
     subject {
       term_id
       label
@@ -33409,9 +33427,9 @@ useTriplesByAtomIdsQuery.fetcher = (
   )
 
 export const TrustDistrustByPageDocument = `
-    query TrustDistrustByPage($likeStr: String!) {
+    query TrustDistrustByPage($atomIds: [String!]!) {
   trustTriples: triples(
-    where: {predicate: {label: {_eq: "trusts"}}, _or: [{object: {label: {_ilike: $likeStr}}}, {object: {value: {thing: {url: {_ilike: $likeStr}}}}}], positions: {shares: {_gt: "0"}}}
+    where: {predicate: {label: {_eq: "trusts"}}, object: {term_id: {_in: $atomIds}}, positions: {shares: {_gt: "0"}}}
   ) {
     term_id
     positions(where: {shares: {_gt: "0"}}) {
@@ -33420,7 +33438,7 @@ export const TrustDistrustByPageDocument = `
     }
   }
   distrustTriples: triples(
-    where: {predicate: {label: {_ilike: "distrust"}}, _or: [{object: {label: {_ilike: $likeStr}}}, {object: {value: {thing: {url: {_ilike: $likeStr}}}}}], positions: {shares: {_gt: "0"}}}
+    where: {predicate: {label: {_ilike: "distrust"}}, object: {term_id: {_in: $atomIds}}, positions: {shares: {_gt: "0"}}}
   ) {
     term_id
     positions(where: {shares: {_gt: "0"}}) {
@@ -65833,7 +65851,30 @@ export const AtomIdsByUrl = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "term_id" } }
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                { kind: "Field", name: { kind: "Name", value: "label" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "value" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "thing" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "url" }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
               ]
             }
           }
@@ -65910,7 +65951,8 @@ export const AtomsByTermIds = {
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "term_id" } },
                 { kind: "Field", name: { kind: "Name", value: "label" } },
-                { kind: "Field", name: { kind: "Name", value: "type" } }
+                { kind: "Field", name: { kind: "Name", value: "type" } },
+                { kind: "Field", name: { kind: "Name", value: "created_at" } }
               ]
             }
           }
@@ -66345,6 +66387,7 @@ export const TriplesByAtomIds = {
               kind: "SelectionSet",
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                { kind: "Field", name: { kind: "Name", value: "created_at" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "subject" },
@@ -66437,11 +66480,20 @@ export const TrustDistrustByPage = {
           kind: "VariableDefinition",
           variable: {
             kind: "Variable",
-            name: { kind: "Name", value: "likeStr" }
+            name: { kind: "Name", value: "atomIds" }
           },
           type: {
             kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
           }
         }
       ],
@@ -66488,107 +66540,26 @@ export const TrustDistrustByPage = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "_or" },
+                      name: { kind: "Name", value: "object" },
                       value: {
-                        kind: "ListValue",
-                        values: [
+                        kind: "ObjectValue",
+                        fields: [
                           {
-                            kind: "ObjectValue",
-                            fields: [
-                              {
-                                kind: "ObjectField",
-                                name: { kind: "Name", value: "object" },
-                                value: {
-                                  kind: "ObjectValue",
-                                  fields: [
-                                    {
-                                      kind: "ObjectField",
-                                      name: { kind: "Name", value: "label" },
-                                      value: {
-                                        kind: "ObjectValue",
-                                        fields: [
-                                          {
-                                            kind: "ObjectField",
-                                            name: {
-                                              kind: "Name",
-                                              value: "_ilike"
-                                            },
-                                            value: {
-                                              kind: "Variable",
-                                              name: {
-                                                kind: "Name",
-                                                value: "likeStr"
-                                              }
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "term_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "atomIds" }
+                                  }
                                 }
-                              }
-                            ]
-                          },
-                          {
-                            kind: "ObjectValue",
-                            fields: [
-                              {
-                                kind: "ObjectField",
-                                name: { kind: "Name", value: "object" },
-                                value: {
-                                  kind: "ObjectValue",
-                                  fields: [
-                                    {
-                                      kind: "ObjectField",
-                                      name: { kind: "Name", value: "value" },
-                                      value: {
-                                        kind: "ObjectValue",
-                                        fields: [
-                                          {
-                                            kind: "ObjectField",
-                                            name: {
-                                              kind: "Name",
-                                              value: "thing"
-                                            },
-                                            value: {
-                                              kind: "ObjectValue",
-                                              fields: [
-                                                {
-                                                  kind: "ObjectField",
-                                                  name: {
-                                                    kind: "Name",
-                                                    value: "url"
-                                                  },
-                                                  value: {
-                                                    kind: "ObjectValue",
-                                                    fields: [
-                                                      {
-                                                        kind: "ObjectField",
-                                                        name: {
-                                                          kind: "Name",
-                                                          value: "_ilike"
-                                                        },
-                                                        value: {
-                                                          kind: "Variable",
-                                                          name: {
-                                                            kind: "Name",
-                                                            value: "likeStr"
-                                                          }
-                                                        }
-                                                      }
-                                                    ]
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
+                              ]
+                            }
                           }
                         ]
                       }
@@ -66714,107 +66685,26 @@ export const TrustDistrustByPage = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "_or" },
+                      name: { kind: "Name", value: "object" },
                       value: {
-                        kind: "ListValue",
-                        values: [
+                        kind: "ObjectValue",
+                        fields: [
                           {
-                            kind: "ObjectValue",
-                            fields: [
-                              {
-                                kind: "ObjectField",
-                                name: { kind: "Name", value: "object" },
-                                value: {
-                                  kind: "ObjectValue",
-                                  fields: [
-                                    {
-                                      kind: "ObjectField",
-                                      name: { kind: "Name", value: "label" },
-                                      value: {
-                                        kind: "ObjectValue",
-                                        fields: [
-                                          {
-                                            kind: "ObjectField",
-                                            name: {
-                                              kind: "Name",
-                                              value: "_ilike"
-                                            },
-                                            value: {
-                                              kind: "Variable",
-                                              name: {
-                                                kind: "Name",
-                                                value: "likeStr"
-                                              }
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "term_id" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_in" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "atomIds" }
+                                  }
                                 }
-                              }
-                            ]
-                          },
-                          {
-                            kind: "ObjectValue",
-                            fields: [
-                              {
-                                kind: "ObjectField",
-                                name: { kind: "Name", value: "object" },
-                                value: {
-                                  kind: "ObjectValue",
-                                  fields: [
-                                    {
-                                      kind: "ObjectField",
-                                      name: { kind: "Name", value: "value" },
-                                      value: {
-                                        kind: "ObjectValue",
-                                        fields: [
-                                          {
-                                            kind: "ObjectField",
-                                            name: {
-                                              kind: "Name",
-                                              value: "thing"
-                                            },
-                                            value: {
-                                              kind: "ObjectValue",
-                                              fields: [
-                                                {
-                                                  kind: "ObjectField",
-                                                  name: {
-                                                    kind: "Name",
-                                                    value: "url"
-                                                  },
-                                                  value: {
-                                                    kind: "ObjectValue",
-                                                    fields: [
-                                                      {
-                                                        kind: "ObjectField",
-                                                        name: {
-                                                          kind: "Name",
-                                                          value: "_ilike"
-                                                        },
-                                                        value: {
-                                                          kind: "Variable",
-                                                          name: {
-                                                            kind: "Name",
-                                                            value: "likeStr"
-                                                          }
-                                                        }
-                                                      }
-                                                    ]
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
+                              ]
+                            }
                           }
                         ]
                       }

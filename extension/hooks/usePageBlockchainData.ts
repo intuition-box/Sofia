@@ -142,10 +142,12 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         distrustTriples: any[]
       } = { trustTriples: [], distrustTriples: [] }
 
-      const trustDistrustPromise = intuitionGraphqlClient.request(
-        TrustDistrustByPageDocument,
-        { likeStr: `%${hostname}%` }
-      )
+      const trustDistrustPromise = foundAtomIds.length > 0
+        ? intuitionGraphqlClient.request(
+            TrustDistrustByPageDocument,
+            { atomIds: foundAtomIds }
+          )
+        : Promise.resolve({ trustTriples: [], distrustTriples: [] })
 
       if (atomIds.length > 0) {
         const [triplesCountResponse, triplesDataResponse, trustDistrustResponse] =

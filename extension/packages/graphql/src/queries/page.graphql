@@ -1,7 +1,7 @@
 # Page Blockchain Data Queries
 # Used by: usePageBlockchainData
 
-# Get atom IDs by URL hostname
+# Get atom IDs by URL hostname (with label + url for page-level filtering)
 query AtomIdsByURL($likeStr: String!) {
   atoms(
     where: {
@@ -12,6 +12,12 @@ query AtomIdsByURL($likeStr: String!) {
     }
   ) {
     term_id
+    label
+    value {
+      thing {
+        url
+      }
+    }
   }
 }
 
@@ -25,6 +31,7 @@ query AtomsByTermIds($atomIds: [String!]!) {
     term_id
     label
     type
+    created_at
   }
 }
 
@@ -62,6 +69,7 @@ query TriplesByAtomIds($atomIds: [String!]!) {
     }
   ) {
     term_id
+    created_at
     subject { term_id label }
     predicate { term_id label }
     object { term_id label }
@@ -75,15 +83,12 @@ query TriplesByAtomIds($atomIds: [String!]!) {
   }
 }
 
-# Get trust/distrust positions for a page
-query TrustDistrustByPage($likeStr: String!) {
+# Get trust/distrust positions for a page (filtered by specific atom IDs)
+query TrustDistrustByPage($atomIds: [String!]!) {
   trustTriples: triples(
     where: {
       predicate: { label: { _eq: "trusts" } }
-      _or: [
-        { object: { label: { _ilike: $likeStr } } }
-        { object: { value: { thing: { url: { _ilike: $likeStr } } } } }
-      ]
+      object: { term_id: { _in: $atomIds } }
       positions: { shares: { _gt: "0" } }
     }
   ) {
@@ -96,10 +101,7 @@ query TrustDistrustByPage($likeStr: String!) {
   distrustTriples: triples(
     where: {
       predicate: { label: { _ilike: "distrust" } }
-      _or: [
-        { object: { label: { _ilike: $likeStr } } }
-        { object: { value: { thing: { url: { _ilike: $likeStr } } } } }
-      ]
+      object: { term_id: { _in: $atomIds } }
       positions: { shares: { _gt: "0" } }
     }
   ) {

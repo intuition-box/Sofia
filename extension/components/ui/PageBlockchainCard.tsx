@@ -20,7 +20,6 @@ import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
 import { PageBlockchainSkeleton } from "./Skeleton"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
-import CommunityTrustBar from "./blockchain/CommunityTrustBar"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import "../styles/PageBlockchainCard.css"
 
@@ -209,7 +208,6 @@ const PageBlockchainCard = () => {
           <div className="credibility-analysis">
             {showExtendedMetrics && (
               <>
-                <CommunityTrustBar analysis={analysis} />
                 <ExtendedMetricsPanel
                   analysis={analysis}
                   counts={counts}

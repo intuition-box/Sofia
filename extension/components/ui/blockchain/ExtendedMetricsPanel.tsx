@@ -46,13 +46,20 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
   const [showAtomsList, setShowAtomsList] = useState(false)
   const [showTripletsList, setShowTripletsList] = useState(false)
 
+  // Include trust/distrust in max for proportional progress bars
+  const effectiveMax = Math.max(
+    maxIntentionCount,
+    analysis.trustCount,
+    analysis.distrustCount
+  )
+
   return (
     <div className="extended-metrics-panel">
       {/* Intentions Section */}
       <div className="intentions-stats-section">
         <div className="section-header">
           <span className="section-title">Intentions on this page</span>
-          <span className="intentions-total">{intentionTotal} total</span>
+          <span className="intentions-total">{intentionTotal + analysis.trustCount + analysis.distrustCount} total</span>
         </div>
 
         {intentionStatsLoading ? (
@@ -61,6 +68,32 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
           </div>
         ) : (
           <div className="intentions-progress-list">
+            {/* Trust / Distrust rows first */}
+            <div className="intention-progress-item">
+              <span className="intention-label">trusted</span>
+              <div className="progress-track">
+                <div
+                  className="progress-fill trusted"
+                  style={{
+                    width: `${effectiveMax > 0 ? (analysis.trustCount / effectiveMax) * 100 : 0}%`
+                  }}
+                />
+              </div>
+              <span className="intention-count">{analysis.trustCount}</span>
+            </div>
+            <div className="intention-progress-item">
+              <span className="intention-label">distrusted</span>
+              <div className="progress-track">
+                <div
+                  className="progress-fill distrusted"
+                  style={{
+                    width: `${effectiveMax > 0 ? (analysis.distrustCount / effectiveMax) * 100 : 0}%`
+                  }}
+                />
+              </div>
+              <span className="intention-count">{analysis.distrustCount}</span>
+            </div>
+            {/* 6 intention types */}
             {INTENTION_ITEMS.map(({ key, label }) => (
               <div key={key} className="intention-progress-item">
                 <span className="intention-label">{label}</span>
@@ -68,7 +101,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
                   <div
                     className={`progress-fill ${label}`}
                     style={{
-                      width: `${maxIntentionCount > 0 ? (intentionStats[key] / maxIntentionCount) * 100 : 0}%`
+                      width: `${effectiveMax > 0 ? (intentionStats[key] / effectiveMax) * 100 : 0}%`
                     }}
                   />
                 </div>
