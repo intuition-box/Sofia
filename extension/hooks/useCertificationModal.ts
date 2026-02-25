@@ -1,11 +1,14 @@
 /**
  * useCertificationModal Hook
  * Manages the WeightModal lifecycle for trust/distrust/intention certifications.
- * Encapsulates modal state, local trust/distrust syncing, and submit/close handlers.
+ * Encapsulates modal state and submit/close handlers.
+ *
+ * Unified approach: all certifications (trust, distrust, intentions) go through
+ * useIntentionCertify (certifyWithIntention or certifyWithCustomPredicate),
+ * mirroring the GroupDetailView pattern for a single source of state.
  */
 
-import { useState, useCallback, useEffect } from "react"
-import { useTrustPage } from "./useTrustPage"
+import { useState, useCallback } from "react"
 import { useIntentionCertify } from "./useIntentionCertify"
 import { normalizeUrl } from "~/lib/utils"
 import { discoveryScoreService } from "~/lib/services"
@@ -43,14 +46,6 @@ interface TrustDistrustState {
   transactionHash: string | null
 }
 
-const initialTrustState: TrustDistrustState = {
-  loading: false,
-  success: false,
-  error: null,
-  operationType: null,
-  transactionHash: null
-}
-
 export interface CertificationModalResult {
   // Modal state
   showWeightModal: boolean
@@ -78,7 +73,7 @@ export interface CertificationModalResult {
     }
   ) => Promise<void>
   handleModalClose: () => void
-  // State exposed for WeightModal props
+  // State exposed for WeightModal props and trust/distrust buttons
   trustState: TrustDistrustState
   distrustState: TrustDistrustState
   intentionState: {
@@ -93,16 +88,8 @@ export interface CertificationModalResult {
 
 export const useCertificationModal = (): CertificationModalResult => {
   const {
-    trustPage,
-    loading: trustLoading,
-    success: trustSuccess,
-    error: trustError,
-    operationType,
-    transactionHash: trustTxHash
-  } = useTrustPage()
-
-  const {
     certifyWithIntention,
+    certifyWithCustomPredicate,
     reset: resetIntention,
     loading: intentionLoading,
     success: intentionSuccess,
@@ -116,41 +103,6 @@ export const useCertificationModal = (): CertificationModalResult => {
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [modalTriplets, setModalTriplets] = useState<ModalTriplet[]>([])
   const [modalType, setModalType] = useState<"trust" | "distrust">("trust")
-
-  // Local trust button state (synced from useTrustPage hook)
-  const [localTrust, setLocalTrust] = useState<TrustDistrustState>(initialTrustState)
-  const [localDistrust, setLocalDistrust] = useState<TrustDistrustState>(initialTrustState)
-
-  // Sync hook states to local trust state
-  useEffect(() => {
-    if (!trustLoading) {
-      if (trustSuccess && trustTxHash) {
-        setLocalTrust({
-          loading: false,
-          success: true,
-          error: null,
-          operationType: operationType || null,
-          transactionHash: trustTxHash
-        })
-      } else if (trustSuccess && !trustTxHash) {
-        setLocalTrust({
-          loading: false,
-          success: true,
-          error: null,
-          operationType: operationType || null,
-          transactionHash: null
-        })
-      } else if (trustError) {
-        setLocalTrust({
-          loading: false,
-          success: false,
-          error: trustError,
-          operationType: null,
-          transactionHash: null
-        })
-      }
-    }
-  }, [trustLoading, trustSuccess, trustError, trustTxHash, operationType])
 
   const openTrustModal = useCallback(
     (currentUrl: string, pageTitle: string | null) => {
@@ -242,65 +194,48 @@ export const useCertificationModal = (): CertificationModalResult => {
 
       ctx.pauseRefresh()
 
-      const intentionFromTriplet = modalTriplets[0]?.intention as
-        | IntentionPurpose
-        | undefined
       const prevTotal = ctx.totalCertifications
       const weight = customWeights[0] || undefined
 
-      if (intentionFromTriplet) {
-        // Intention certification path
-        try {
-          logger.info("Starting intention certification", {
-            intention: intentionFromTriplet
-          })
-          await certifyWithIntention(
+      try {
+        // Unified routing: trust/distrust via certifyWithCustomPredicate,
+        // intentions via certifyWithIntention (same pattern as GroupDetailView)
+        if (modalType === "trust") {
+          logger.info("Starting trust certification via certifyWithCustomPredicate")
+          await certifyWithCustomPredicate(
             ctx.currentUrl,
-            intentionFromTriplet,
+            "trusts",
+            undefined,
             ctx.pageTitle || undefined,
             weight as bigint | undefined
           )
-          logger.info("Intention certification completed")
-
-          ctx.resumeRefresh()
-          await ctx.refetchDiscovery()
-          ctx.calculateAndTriggerReward(prevTotal)
-          setTimeout(
-            () => ctx.fetchDataForCurrentPage(),
-            DELAYS.REFRESH_AFTER_TX
+        } else if (modalType === "distrust") {
+          logger.info("Starting distrust certification via certifyWithCustomPredicate")
+          await certifyWithCustomPredicate(
+            ctx.currentUrl,
+            "distrust",
+            undefined,
+            ctx.pageTitle || undefined,
+            weight as bigint | undefined
           )
-          // Delayed refetch: wait for indexer to process the transaction
-          setTimeout(() => {
-            intuitionGraphqlClient.clearCache()
-            discoveryScoreService.refetch()
-          }, DELAYS.DISCOVERY_SCORE_REFRESH)
-        } catch (error) {
-          logger.error("Intention certification error", error)
-          ctx.resumeRefresh()
+        } else {
+          const intentionFromTriplet = modalTriplets[0]?.intention as
+            | IntentionPurpose
+            | undefined
+          if (intentionFromTriplet) {
+            logger.info("Starting intention certification", {
+              intention: intentionFromTriplet
+            })
+            await certifyWithIntention(
+              ctx.currentUrl,
+              intentionFromTriplet,
+              ctx.pageTitle || undefined,
+              weight as bigint | undefined
+            )
+          }
         }
-        return
-      }
 
-      // Trust/distrust path
-      const isTrust = modalType === "trust"
-      const setLocalState = isTrust ? setLocalTrust : setLocalDistrust
-
-      setLocalState({
-        loading: true,
-        success: false,
-        error: null,
-        operationType: null,
-        transactionHash: null
-      })
-
-      try {
-        logger.info("Starting trustPage call")
-        await trustPage(
-          ctx.currentUrl,
-          weight as bigint | undefined,
-          modalType === "trust" ? "trusts" : "distrust"
-        )
-
+        logger.info("Certification completed")
         ctx.resumeRefresh()
         await ctx.refetchDiscovery()
         ctx.calculateAndTriggerReward(prevTotal)
@@ -308,31 +243,21 @@ export const useCertificationModal = (): CertificationModalResult => {
           () => ctx.fetchDataForCurrentPage(),
           DELAYS.REFRESH_AFTER_TX
         )
-        // Delayed refetch: wait for indexer to process the transaction
         setTimeout(() => {
           intuitionGraphqlClient.clearCache()
           discoveryScoreService.refetch()
         }, DELAYS.DISCOVERY_SCORE_REFRESH)
       } catch (error) {
-        logger.error("trustPage error", error)
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : `Failed to create ${modalType}`
-        setLocalState((prev) => ({ ...prev, error: errorMessage }))
+        logger.error("Certification error", error)
         ctx.resumeRefresh()
-      } finally {
-        setLocalState((prev) => ({ ...prev, loading: false }))
       }
     },
-    [modalTriplets, modalType, certifyWithIntention, trustPage]
+    [modalTriplets, modalType, certifyWithIntention, certifyWithCustomPredicate]
   )
 
   const handleModalClose = useCallback(() => {
     setShowWeightModal(false)
     setModalTriplets([])
-    setLocalTrust(initialTrustState)
-    setLocalDistrust(initialTrustState)
     resetIntention()
   }, [resetIntention])
 
@@ -345,8 +270,22 @@ export const useCertificationModal = (): CertificationModalResult => {
     openIntentionModal,
     handleModalSubmit,
     handleModalClose,
-    trustState: localTrust,
-    distrustState: localDistrust,
+    // Derived trust/distrust state from intentionState + modalType
+    // (for trust/distrust button loading/success display)
+    trustState: {
+      loading: modalType === "trust" && intentionLoading,
+      success: modalType === "trust" && intentionSuccess,
+      error: modalType === "trust" ? intentionError : null,
+      operationType: modalType === "trust" ? intentionOperationType : null,
+      transactionHash: modalType === "trust" ? intentionTxHash : null
+    },
+    distrustState: {
+      loading: modalType === "distrust" && intentionLoading,
+      success: modalType === "distrust" && intentionSuccess,
+      error: modalType === "distrust" ? intentionError : null,
+      operationType: modalType === "distrust" ? intentionOperationType : null,
+      transactionHash: modalType === "distrust" ? intentionTxHash : null
+    },
     intentionState: {
       loading: intentionLoading,
       success: intentionSuccess,

@@ -237,54 +237,12 @@ const PageBlockchainCard = () => {
           <WeightModal
             isOpen={modal.showWeightModal}
             triplets={modal.modalTriplets}
-            isProcessing={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.loading
-                : modal.modalType === "trust"
-                  ? modal.trustState.loading
-                  : modal.distrustState.loading
-            }
-            transactionSuccess={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.success
-                : modal.modalType === "trust"
-                  ? modal.trustState.success
-                  : modal.distrustState.success
-            }
-            transactionError={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.error || undefined
-                : (modal.modalType === "trust"
-                    ? modal.trustState.error
-                    : modal.distrustState.error) || undefined
-            }
-            transactionHash={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.transactionHash || undefined
-                : modal.trustState.transactionHash || undefined
-            }
-            createdCount={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.operationType === "created"
-                  ? 1
-                  : 0
-                : (modal.modalType === "trust"
-                      ? modal.trustState.operationType
-                      : modal.distrustState.operationType) === "created"
-                  ? 1
-                  : 0
-            }
-            depositCount={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.operationType === "deposit"
-                  ? 1
-                  : 0
-                : (modal.modalType === "trust"
-                      ? modal.trustState.operationType
-                      : modal.distrustState.operationType) === "deposit"
-                  ? 1
-                  : 0
-            }
+            isProcessing={modal.intentionState.loading}
+            transactionSuccess={modal.intentionState.success}
+            transactionError={modal.intentionState.error || undefined}
+            transactionHash={modal.intentionState.transactionHash || undefined}
+            createdCount={modal.intentionState.operationType === "created" ? 1 : 0}
+            depositCount={modal.intentionState.operationType === "deposit" ? 1 : 0}
             isIntentionCertification={!!modal.modalTriplets[0]?.intention}
             discoveryReward={reward.discoveryReward}
             onClaimReward={() =>
