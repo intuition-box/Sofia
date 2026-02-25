@@ -183,9 +183,9 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const foundAtoms = atomIdsResponse?.atoms || []
       const foundAtomIds = foundAtoms.map((a: any) => a.term_id)
 
-      // Filter to page-specific atoms
+      // Filter to page-specific atoms (from AtomIdsByURL query)
       const { label: normalizedPageUrl } = normalizeUrl(url)
-      const pageAtomIds = foundAtoms
+      const pageAtomIdsFromAtoms = foundAtoms
         .filter((atom: any) => {
           const atomUrl = atom.value?.thing?.url
           if (atomUrl) {
@@ -254,6 +254,33 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         var certTriples: CertTriple[] =
           (certResponse as any)?.triples || []
       }
+
+      // Fallback: derive page atom IDs from cert triples whose object URL matches
+      const pageAtomIdsFromCerts = certTriples
+        .filter((t) => {
+          const objUrl = t.object?.value?.thing?.url
+          if (objUrl) {
+            try {
+              return normalizeUrl(objUrl).label === normalizedPageUrl
+            } catch {
+              return false
+            }
+          }
+          // Old atoms: URL stored in label directly
+          const label = t.object?.label || ""
+          const normalized = label
+            .replace(/^https?:\/\//, "")
+            .replace(/^www\./, "")
+            .replace(/\/$/, "")
+            .toLowerCase()
+          return normalized === normalizedPageUrl
+        })
+        .map((t) => t.object.term_id)
+
+      // Merge both sources (deduplicate)
+      const pageAtomIds = [
+        ...new Set([...pageAtomIdsFromAtoms, ...pageAtomIdsFromCerts])
+      ]
 
       // Phase 3: Pure computations (synchronous)
       const trustData = computeTrustCounts(certTriples, pageAtomIds)

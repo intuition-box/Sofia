@@ -16,7 +16,10 @@ function sanitizeUrl(url: string): string {
     // Remove common tracking parameters
     const trackingParams = [
       'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
-      'fbclid', 'gclid', 'mc_eid', 'mc_cid', '_ga', 'ref', 'source'
+      'fbclid', 'gclid', 'mc_eid', 'mc_cid', '_ga', 'ref', 'source',
+      // Auth / extension session params
+      'extensionId', 'autoLogin', 'state', 'code', 'nonce',
+      'redirect', 'redirectUrl', 'redirect_uri', 'returnUrl', 'return_url',
     ]
     
     trackingParams.forEach(param => urlObj.searchParams.delete(param))

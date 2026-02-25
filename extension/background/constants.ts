@@ -90,6 +90,9 @@ export const TRACKING_URL_PARAMS = new Set([
   '_hsenc', '_hsmi',          // HubSpot
   'oly_anon_id', 'oly_enc_id',
   'vero_id', 'wickedid',
+  // Auth / extension session params (should not differentiate page identity)
+  'extensionId', 'autoLogin', 'state', 'code', 'nonce',
+  'redirect', 'redirectUrl', 'redirect_uri', 'returnUrl', 'return_url',
 ])
 
 // Protocols where content scripts cannot run (wallet unavailable)

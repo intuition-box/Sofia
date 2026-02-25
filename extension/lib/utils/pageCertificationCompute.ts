@@ -20,7 +20,7 @@ export interface CertTriple {
   term_id: string
   predicate_id: string
   predicate: { term_id: string; label: string }
-  object: { term_id: string; label: string }
+  object: { term_id: string; label: string; value?: { thing?: { url?: string } } }
   positions: Array<{
     account_id: string
     shares: string

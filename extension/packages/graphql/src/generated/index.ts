@@ -18647,6 +18647,10 @@ export type PageCertificationDataQuery = {
       __typename?: "atoms"
       term_id: string
       label?: string | null
+      value?: {
+        __typename?: "atom_values"
+        thing?: { __typename?: "things"; url?: string | null } | null
+      } | null
     } | null
     positions: Array<{
       __typename?: "positions"
@@ -29770,6 +29774,11 @@ export const PageCertificationDataDocument = `
     object {
       term_id
       label
+      value {
+        thing {
+          url
+        }
+      }
     }
     positions(where: {shares: {_gt: "0"}}) {
       account_id
@@ -33204,6 +33213,7 @@ useGetListDetailsSimplifiedQuery.fetcher = (
 export const AtomIdsByUrlDocument = `
     query AtomIdsByURL($likeStr: String!) {
   atoms(
+    limit: 2000
     where: {_or: [{label: {_ilike: $likeStr}}, {value: {thing: {url: {_ilike: $likeStr}}}}]}
   ) {
     term_id
@@ -54352,7 +54362,29 @@ export const PageCertificationData = {
                         kind: "Field",
                         name: { kind: "Name", value: "term_id" }
                       },
-                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                      { kind: "Field", name: { kind: "Name", value: "label" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "value" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "thing" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "url" }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
                     ]
                   }
                 },
@@ -66244,6 +66276,11 @@ export const AtomIdsByUrl = {
             kind: "Field",
             name: { kind: "Name", value: "atoms" },
             arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "2000" }
+              },
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "where" },

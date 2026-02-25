@@ -4,6 +4,7 @@
 # Get atom IDs by URL hostname (with label + url for page-level filtering)
 query AtomIdsByURL($likeStr: String!) {
   atoms(
+    limit: 2000
     where: {
       _or: [
         { label: { _ilike: $likeStr } }

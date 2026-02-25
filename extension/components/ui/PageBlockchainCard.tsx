@@ -35,8 +35,6 @@ const PageBlockchainCard = () => {
     isRestricted,
     restrictionMessage,
     totalCertifications,
-    discoveryStatus,
-    certificationRank,
     userHasCertified,
     intentionStats,
     pageIntentionStats,
@@ -126,9 +124,6 @@ const PageBlockchainCard = () => {
             faviconUrl={faviconUrl}
             faviconError={faviconError}
             totalCertifications={totalCertifications}
-            discoveryStatus={discoveryStatus}
-            certificationRank={certificationRank}
-            userHasCertified={effectiveUserHasCertified}
             isRestricted={isRestricted}
             restrictionMessage={restrictionMessage}
             onToggleMetrics={() =>

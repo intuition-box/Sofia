@@ -10,7 +10,6 @@ import "../../styles/PageBlockchainHeader.css"
 import pioneerBadge from "../img/badges/pioneer.png"
 import explorerBadge from "../img/badges/explorer.png"
 import contributorBadge from "../img/badges/contributor.png"
-import type { DiscoveryStatus } from "~/types/discovery"
 
 const badgeImages: Record<string, string> = {
   pioneer: pioneerBadge,
@@ -24,9 +23,6 @@ interface PageBlockchainHeaderProps {
   faviconUrl: string | null
   faviconError: boolean
   totalCertifications: number
-  discoveryStatus: DiscoveryStatus
-  certificationRank: number | null
-  userHasCertified: boolean
   isRestricted: boolean
   restrictionMessage: string | null
   onToggleMetrics: () => void
@@ -50,18 +46,13 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
   pageTitle,
   faviconUrl,
   totalCertifications,
-  discoveryStatus,
-  certificationRank,
-  userHasCertified,
   isRestricted,
   restrictionMessage,
   onToggleMetrics,
   onNavigateDiscovery
 }) => {
-  // Si l'user a certifié → utiliser son statut réel, sinon → statut potentiel
-  const badgeType = userHasCertified && discoveryStatus
-    ? discoveryStatus.toLowerCase()
-    : getPotentialBadgeType(totalCertifications)
+  // Toujours afficher le rang potentiel (ce que le prochain certifiant obtiendrait)
+  const badgeType = getPotentialBadgeType(totalCertifications)
 
   return (
     <>
@@ -150,11 +141,7 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
               alt={badgeType}
               className="discovery-badge-img"
             />
-            {userHasCertified && certificationRank != null ? (
-              <span className="discovery-badge-rank">
-                #{certificationRank}
-              </span>
-            ) : totalCertifications > 0 ? (
+            {totalCertifications > 0 ? (
               <span className="discovery-badge-rank">
                 #{totalCertifications + 1}
               </span>

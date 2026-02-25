@@ -237,6 +237,11 @@ query PageCertificationData(
     object {
       term_id
       label
+      value {
+        thing {
+          url
+        }
+      }
     }
     positions(where: { shares: { _gt: "0" } }) {
       account_id
