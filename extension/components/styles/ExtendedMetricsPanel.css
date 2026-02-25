@@ -1,0 +1,294 @@
+/* ExtendedMetricsPanel — Intentions, atoms list, triplets list */
+
+.extended-metrics-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 16px);
+  padding: var(--spacing-lg, 16px);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: var(--backdrop-blur-heavy, blur(20px));
+  -webkit-backdrop-filter: var(--backdrop-blur-heavy, blur(20px));
+  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: var(--spacing-lg, 16px);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Intentions Stats ─── */
+.intentions-stats-section {
+  margin-bottom: var(--spacing-lg, 16px);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.section-title {
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 600;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  margin-bottom: var(--spacing-md, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.intentions-total {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--color-text-placeholder, rgba(255, 255, 255, 0.5));
+}
+
+.intentions-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl, 20px);
+}
+
+.loading-spinner.small {
+  width: var(--size-icon-sm, 16px);
+  height: var(--size-icon-sm, 16px);
+}
+
+.intentions-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.intention-progress-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.intention-label {
+  width: 90px;
+  font-size: var(--font-size-xs, 10px);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
+  flex-shrink: 0;
+}
+
+.progress-track {
+  flex: 1;
+  height: 6px;
+  background: var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+/* Intention progress colors — semantic brand colors per intention type */
+.progress-fill.work {
+  background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
+}
+
+.progress-fill.learning {
+  background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+}
+
+.progress-fill.fun {
+  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
+}
+
+.progress-fill.inspiration {
+  background: linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%);
+}
+
+.progress-fill.buying {
+  background: linear-gradient(90deg, #EF4444 0%, #F87171 100%);
+}
+
+.progress-fill.music {
+  background: linear-gradient(90deg, #EC4899 0%, #F472B6 100%);
+}
+
+.intention-count {
+  min-width: 24px;
+  text-align: right;
+  font-size: var(--font-size-xs, 10px);
+  font-weight: 600;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+}
+
+/* ─── Collapsible Lists ─── */
+.collapsible-lists-section {
+  display: flex;
+  gap: var(--spacing-sm, 8px);
+  padding-top: var(--spacing-md, 12px);
+  border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+}
+
+.collapsible-toggle {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-xs, 10px);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
+  cursor: pointer;
+  transition: var(--transition-fast, all 0.2s ease);
+}
+
+.collapsible-toggle:hover {
+  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
+  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
+}
+
+.collapsible-toggle .toggle-arrow {
+  font-size: 8px;
+  transition: transform 0.2s ease;
+}
+
+.collapsible-toggle .toggle-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+/* ─── Atoms Section ─── */
+.atoms-section {
+  padding-top: var(--spacing-md, 12px);
+  border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  margin-bottom: var(--spacing-md, 12px);
+}
+
+.atoms-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.atom-item {
+  background: var(--color-bg-dark, rgba(14, 14, 14, 0.15));
+  padding: var(--spacing-md, 12px);
+  border-radius: var(--radius-md, 8px);
+  border-left: 3px solid var(--color-warning, #F59E0B);
+  transition: var(--transition-fast, all 0.2s ease);
+}
+
+.atom-item.clickable:hover {
+  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.06));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-light, 0 2px 6px rgba(0, 0, 0, 0.2));
+}
+
+.atom-text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+  align-items: center;
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.atom-label {
+  color: var(--color-text-secondary, #FBF7F5);
+  font-weight: 600;
+  font-size: var(--font-size-sm, 12px);
+}
+
+.atom-type {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--color-warning, #F59E0B);
+  padding: 2px var(--spacing-sm, 8px);
+  border-radius: var(--radius-sm, 4px);
+  font-size: var(--font-size-xs, 10px);
+  text-transform: uppercase;
+}
+
+.atom-stats {
+  display: flex;
+  gap: var(--spacing-md, 12px);
+  font-size: var(--font-size-xs, 10px);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
+}
+
+/* ─── Triplets Section ─── */
+.triplets-section {
+  padding-top: var(--spacing-md, 12px);
+  border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+}
+
+.triplets-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.triplet-item {
+  padding: var(--spacing-md, 12px);
+  border-radius: var(--radius-md, 8px);
+  transition: var(--transition-fast, all 0.2s ease);
+}
+
+.triplet-item.clickable:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-light, 0 2px 6px rgba(0, 0, 0, 0.2));
+}
+
+.triplet-text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 4px);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+/* Triplet role colors — semantic Intuition protocol colors */
+.subject,
+.predicate,
+.object {
+  color: var(--color-text-secondary, #FBF7F5);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm, 4px);
+  font-size: var(--font-size-xs, 10px);
+}
+
+.subject {
+  color: #feffdc;
+}
+
+.predicate {
+  color: #e7ce4c;
+}
+
+.object {
+  color: #f1a20d;
+}
+
+.triplet-stats {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--spacing-md, 12px);
+  font-size: var(--font-size-xs, 10px);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
+}
+
+.positions,
+.shares {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}

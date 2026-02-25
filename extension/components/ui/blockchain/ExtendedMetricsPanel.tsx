@@ -5,6 +5,7 @@
 
 import React, { useState } from "react"
 import type { CredibilityAnalysis } from "~/hooks/useCredibilityAnalysis"
+import "../../styles/ExtendedMetricsPanel.css"
 import { getTotalShares } from "~/hooks/useCredibilityAnalysis"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
