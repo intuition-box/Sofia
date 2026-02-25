@@ -10,6 +10,7 @@ import "../../styles/PageBlockchainHeader.css"
 import pioneerBadge from "../img/badges/pioneer.png"
 import explorerBadge from "../img/badges/explorer.png"
 import contributorBadge from "../img/badges/contributor.png"
+import type { DiscoveryStatus } from "~/types/discovery"
 
 const badgeImages: Record<string, string> = {
   pioneer: pioneerBadge,
@@ -23,22 +24,25 @@ interface PageBlockchainHeaderProps {
   faviconUrl: string | null
   faviconError: boolean
   totalCertifications: number
+  discoveryStatus: DiscoveryStatus
+  certificationRank: number | null
+  userHasCertified: boolean
   isRestricted: boolean
   restrictionMessage: string | null
   onToggleMetrics: () => void
   onNavigateDiscovery: () => void
 }
 
-const getBadgeType = (total: number) => {
+const getPotentialBadgeType = (total: number) => {
   if (total === 0) return "pioneer"
   if (total < 10) return "explorer"
   return "contributor"
 }
 
-const getBadgeColor = (total: number) => {
-  if (total === 0) return "#FFD700"
-  if (total < 10) return "#3B82F6"
-  return "#8B5CF6"
+const BADGE_COLORS: Record<string, string> = {
+  pioneer: "#FFD700",
+  explorer: "#3B82F6",
+  contributor: "#8B5CF6"
 }
 
 const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
@@ -46,18 +50,24 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
   pageTitle,
   faviconUrl,
   totalCertifications,
+  discoveryStatus,
+  certificationRank,
+  userHasCertified,
   isRestricted,
   restrictionMessage,
   onToggleMetrics,
   onNavigateDiscovery
 }) => {
-  const badgeType = getBadgeType(totalCertifications)
+  // Si l'user a certifié → utiliser son statut réel, sinon → statut potentiel
+  const badgeType = userHasCertified && discoveryStatus
+    ? discoveryStatus.toLowerCase()
+    : getPotentialBadgeType(totalCertifications)
 
   return (
     <>
       <StarBorder
         as="div"
-        color={getBadgeColor(totalCertifications)}
+        color={BADGE_COLORS[badgeType] ?? "#FFD700"}
         speed="10s"
         thickness={5}
       >
@@ -140,11 +150,15 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
               alt={badgeType}
               className="discovery-badge-img"
             />
-            {totalCertifications > 0 && (
+            {userHasCertified && certificationRank != null ? (
+              <span className="discovery-badge-rank">
+                #{certificationRank}
+              </span>
+            ) : totalCertifications > 0 ? (
               <span className="discovery-badge-rank">
                 #{totalCertifications + 1}
               </span>
-            )}
+            ) : null}
           </div>
         </div>
       </StarBorder>

@@ -35,6 +35,9 @@ const PageBlockchainCard = () => {
     isRestricted,
     restrictionMessage,
     totalCertifications,
+    discoveryStatus,
+    certificationRank,
+    userHasCertified,
     intentionStats,
     pageIntentionStats,
     intentionTotal,
@@ -57,16 +60,20 @@ const PageBlockchainCard = () => {
   const { certifications, refetch: refetchCertifications } =
     useUserCertifications(walletAddress)
 
-  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted } = useMemo(() => {
+  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted, certEntry } = useMemo(() => {
     if (!currentUrl || certifications.size === 0)
-      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false }
+      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false, certEntry: null }
     const entry = getCertificationForUrl(certifications, currentUrl)
     return {
       certifiedIntentions: entry?.intentions ?? [],
       alreadyTrusted: entry?.trustPredicates?.includes("trusts") ?? false,
-      alreadyDistrusted: entry?.trustPredicates?.includes("distrust") ?? false
+      alreadyDistrusted: entry?.trustPredicates?.includes("distrust") ?? false,
+      certEntry: entry
     }
   }, [currentUrl, certifications])
+
+  // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
+  const effectiveUserHasCertified = userHasCertified || !!certEntry
 
   // UI toggle
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
@@ -119,6 +126,9 @@ const PageBlockchainCard = () => {
             faviconUrl={faviconUrl}
             faviconError={faviconError}
             totalCertifications={totalCertifications}
+            discoveryStatus={discoveryStatus}
+            certificationRank={certificationRank}
+            userHasCertified={effectiveUserHasCertified}
             isRestricted={isRestricted}
             restrictionMessage={restrictionMessage}
             onToggleMetrics={() =>
@@ -257,6 +267,7 @@ const PageBlockchainCard = () => {
                 currentUrl,
                 pageTitle,
                 totalCertifications,
+                userHasCertified: effectiveUserHasCertified,
                 pauseRefresh,
                 resumeRefresh,
                 fetchDataForCurrentPage,

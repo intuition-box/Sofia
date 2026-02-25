@@ -50,7 +50,7 @@ export interface CertificationModalResult {
   // Modal state
   showWeightModal: boolean
   modalTriplets: ModalTriplet[]
-  modalType: "trust" | "distrust"
+  modalType: "trust" | "distrust" | "intention"
   // Actions
   openTrustModal: (currentUrl: string, pageTitle: string | null) => void
   openDistrustModal: (currentUrl: string, pageTitle: string | null) => void
@@ -65,6 +65,7 @@ export interface CertificationModalResult {
       currentUrl: string | null
       pageTitle: string | null
       totalCertifications: number
+      userHasCertified: boolean
       pauseRefresh: () => void
       resumeRefresh: () => void
       fetchDataForCurrentPage: () => void
@@ -101,7 +102,7 @@ export const useCertificationModal = (): CertificationModalResult => {
   // Modal visibility
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [modalTriplets, setModalTriplets] = useState<ModalTriplet[]>([])
-  const [modalType, setModalType] = useState<"trust" | "distrust">("trust")
+  const [modalType, setModalType] = useState<"trust" | "distrust" | "intention">("trust")
 
   const openTrustModal = useCallback(
     (currentUrl: string, pageTitle: string | null) => {
@@ -168,7 +169,7 @@ export const useCertificationModal = (): CertificationModalResult => {
           intention
         }
       ])
-      setModalType("trust")
+      setModalType("intention")
       setShowWeightModal(true)
     },
     []
@@ -181,6 +182,7 @@ export const useCertificationModal = (): CertificationModalResult => {
         currentUrl: string | null
         pageTitle: string | null
         totalCertifications: number
+        userHasCertified: boolean
         pauseRefresh: () => void
         resumeRefresh: () => void
         fetchDataForCurrentPage: () => void
@@ -192,7 +194,9 @@ export const useCertificationModal = (): CertificationModalResult => {
 
       ctx.pauseRefresh()
 
-      const prevTotal = ctx.totalCertifications
+      // Pioneer uniquement si 1ère position sur cette URL.
+      // Si l'user a déjà une position → forcer prevTotal=1 (minimum Explorer)
+      const prevTotal = ctx.userHasCertified ? 1 : ctx.totalCertifications
       const weight = customWeights[0] || undefined
 
       try {

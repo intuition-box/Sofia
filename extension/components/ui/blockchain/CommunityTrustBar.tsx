@@ -4,7 +4,7 @@
  */
 
 import React from "react"
-import type { CredibilityAnalysis } from "~/hooks/useCredibilityAnalysis"
+import type { CredibilityAnalysis } from "~/hooks"
 import "../../styles/CommunityTrustBar.css"
 
 interface CommunityTrustBarProps {

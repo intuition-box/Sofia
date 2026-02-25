@@ -14,7 +14,7 @@ import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
 import { getFaviconUrl, batchResolveEns } from '~/lib/utils'
 import type { IntentionType } from '~/types/intentionCategories'
 import { INTENTION_CONFIG, predicateLabelToIntentionType } from '~/types/intentionCategories'
-import type { VoteType } from '~/hooks/useVoteOnTriple'
+import type { VoteType } from '~/hooks'
 
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
