@@ -21660,6 +21660,14 @@ export type AtomsByTermIdsQuery = {
     label?: string | null
     type: any
     created_at: any
+    term?: {
+      __typename?: "terms"
+      vaults: Array<{
+        __typename?: "vaults"
+        total_shares: any
+        position_count: number
+      }>
+    } | null
   }>
 }
 
@@ -33152,6 +33160,12 @@ export const AtomsByTermIdsDocument = `
     label
     type
     created_at
+    term {
+      vaults {
+        total_shares
+        position_count
+      }
+    }
   }
 }
     `
@@ -33234,7 +33248,7 @@ useAtomsByTermIdsQuery.fetcher = (
 export const TriplesCountByAtomIdsDocument = `
     query TriplesCountByAtomIds($atomIds: [String!]!) {
   triples_aggregate(
-    where: {_and: [{_or: [{subject: {term_id: {_in: $atomIds}}}, {predicate: {term_id: {_in: $atomIds}}}, {object: {term_id: {_in: $atomIds}}}]}]}
+    where: {_and: [{_or: [{subject: {term_id: {_in: $atomIds}}}, {predicate: {term_id: {_in: $atomIds}}}, {object: {term_id: {_in: $atomIds}}}]}, {positions: {shares: {_gt: "0"}}}]}
   ) {
     aggregate {
       count
@@ -33331,7 +33345,7 @@ export const TriplesByAtomIdsDocument = `
     query TriplesByAtomIds($atomIds: [String!]!) {
   triples(
     limit: 100
-    where: {_and: [{_or: [{subject: {term_id: {_in: $atomIds}}}, {predicate: {term_id: {_in: $atomIds}}}, {object: {term_id: {_in: $atomIds}}}]}]}
+    where: {_and: [{_or: [{subject: {term_id: {_in: $atomIds}}}, {predicate: {term_id: {_in: $atomIds}}}, {object: {term_id: {_in: $atomIds}}}]}, {positions: {shares: {_gt: "0"}}}]}
   ) {
     term_id
     created_at
@@ -65977,7 +65991,33 @@ export const AtomsByTermIds = {
                 { kind: "Field", name: { kind: "Name", value: "term_id" } },
                 { kind: "Field", name: { kind: "Name", value: "label" } },
                 { kind: "Field", name: { kind: "Name", value: "type" } },
-                { kind: "Field", name: { kind: "Name", value: "created_at" } }
+                { kind: "Field", name: { kind: "Name", value: "created_at" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "term" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "vaults" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "total_shares" }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "position_count" }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
               ]
             }
           }
@@ -66171,6 +66211,41 @@ export const TriplesCountByAtomIds = {
                                           }
                                         }
                                       ]
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "positions" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "shares" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_gt"
+                                            },
+                                            value: {
+                                              kind: "StringValue",
+                                              value: "0",
+                                              block: false
+                                            }
+                                          }
+                                        ]
+                                      }
                                     }
                                   ]
                                 }
@@ -66395,6 +66470,41 @@ export const TriplesByAtomIds = {
                                           }
                                         }
                                       ]
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "positions" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "shares" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_gt"
+                                            },
+                                            value: {
+                                              kind: "StringValue",
+                                              value: "0",
+                                              block: false
+                                            }
+                                          }
+                                        ]
+                                      }
                                     }
                                   ]
                                 }

@@ -210,43 +210,60 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       }
 
       // Count trust/distrust at both domain and page levels
-      // Uses max-single-triple (canonical) approach per level
-      const countTrustForAtoms = (
-        triples: any[],
-        atomIds: string[]
-      ): number => {
-        const atomSet = new Set(atomIds)
-        let count = 0
-        for (const triple of triples) {
-          if (atomSet.size > 0 && !atomSet.has(triple.object?.term_id))
-            continue
-          const positions = new Set<string>()
-          for (const pos of triple.positions || []) {
-            if (pos.account_id) positions.add(pos.account_id.toLowerCase())
-          }
-          count = Math.max(count, positions.size)
-        }
-        return count
-      }
-
       const trustTriples = trustDistrustData.trustTriples || []
       const distrustTriples = trustDistrustData.distrustTriples || []
 
-      // Domain-level (all atoms on hostname)
-      const domainTrustCount = countTrustForAtoms(trustTriples, foundAtomIds)
-      const domainDistrustCount = countTrustForAtoms(
-        distrustTriples,
-        foundAtomIds
-      )
+      // Domain-level: union of ALL unique accounts across all trust triples
+      const domainTrustAccounts = new Set<string>()
+      for (const triple of trustTriples) {
+        for (const pos of triple.positions || []) {
+          if (pos.account_id)
+            domainTrustAccounts.add(pos.account_id.toLowerCase())
+        }
+      }
+      const domainTrustCount = domainTrustAccounts.size
+
+      const domainDistrustAccounts = new Set<string>()
+      for (const triple of distrustTriples) {
+        for (const pos of triple.positions || []) {
+          if (pos.account_id)
+            domainDistrustAccounts.add(pos.account_id.toLowerCase())
+        }
+      }
+      const domainDistrustCount = domainDistrustAccounts.size
+
       const domainTotalSupport = domainTrustCount + domainDistrustCount
       const domainTrustRatio =
         domainTotalSupport > 0
           ? Math.round((domainTrustCount / domainTotalSupport) * 100)
           : 50
 
-      // Page-level (only atoms matching the exact URL)
-      const trustCount = countTrustForAtoms(trustTriples, pageAtomIds)
-      const distrustCount = countTrustForAtoms(distrustTriples, pageAtomIds)
+      // Page-level: only count triples whose object is a page-specific atom.
+      // When pageAtomIds is empty (page never certified), counts stay 0.
+      const pageAtomSet = new Set(pageAtomIds)
+      let trustCount = 0
+      if (pageAtomSet.size > 0) {
+        for (const triple of trustTriples) {
+          if (!pageAtomSet.has(triple.object?.term_id)) continue
+          const positions = new Set<string>()
+          for (const pos of triple.positions || []) {
+            if (pos.account_id) positions.add(pos.account_id.toLowerCase())
+          }
+          trustCount = Math.max(trustCount, positions.size)
+        }
+      }
+
+      let distrustCount = 0
+      if (pageAtomSet.size > 0) {
+        for (const triple of distrustTriples) {
+          if (!pageAtomSet.has(triple.object?.term_id)) continue
+          const positions = new Set<string>()
+          for (const pos of triple.positions || []) {
+            if (pos.account_id) positions.add(pos.account_id.toLowerCase())
+          }
+          distrustCount = Math.max(distrustCount, positions.size)
+        }
+      }
       const totalSupport = trustCount + distrustCount
       const trustRatio =
         totalSupport > 0
@@ -258,13 +275,23 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       let totalShares = 0
       let totalPositions = 0
 
+      // Map atoms with vault data, filter out atoms with 0 positions
       for (const atom of atoms) {
+        const vaults = atom.term?.vaults || []
+        const posCount = vaults.reduce(
+          (sum: number, v: any) => sum + Number(v.position_count || 0),
+          0
+        )
+        if (posCount <= 0) continue
         resultAtomsList.push({
           id: atom.term_id,
           label: atom.label || "Unknown",
           type: atom.type || "unknown",
           created_at: atom.created_at,
-          vaults: []
+          vaults: vaults.map((v: any) => ({
+            total_shares: v.total_shares,
+            position_count: v.position_count
+          }))
         })
       }
 
@@ -296,13 +323,13 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       }
 
       const resultCounts: PageBlockchainCounts = {
-        atomsCount: totalAtomsCount,
+        atomsCount: resultAtomsList.length,
         triplesCount: totalTriplesCount,
-        displayedAtomsCount: atoms.length,
+        displayedAtomsCount: resultAtomsList.length,
         displayedTriplesCount: triples.length,
         totalShares,
         totalPositions,
-        attestationsCount: totalAtomsCount + totalTriplesCount,
+        attestationsCount: resultAtomsList.length + totalTriplesCount,
         trustCount,
         distrustCount,
         totalSupport,

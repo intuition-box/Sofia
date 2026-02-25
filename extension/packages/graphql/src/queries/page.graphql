@@ -21,7 +21,7 @@ query AtomIdsByURL($likeStr: String!) {
   }
 }
 
-# Get atom details by term IDs
+# Get atom details by term IDs (with vault data for position filtering)
 query AtomsByTermIds($atomIds: [String!]!) {
   atoms(
     where: {
@@ -32,10 +32,16 @@ query AtomsByTermIds($atomIds: [String!]!) {
     label
     type
     created_at
+    term {
+      vaults {
+        total_shares
+        position_count
+      }
+    }
   }
 }
 
-# Get total count of triplets for given atom IDs
+# Get total count of triplets for given atom IDs (only with positions > 0)
 query TriplesCountByAtomIds($atomIds: [String!]!) {
   triples_aggregate(
     where: {
@@ -45,6 +51,7 @@ query TriplesCountByAtomIds($atomIds: [String!]!) {
           { predicate: { term_id: { _in: $atomIds } } },
           { object: { term_id: { _in: $atomIds } } }
         ]}
+        { positions: { shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -54,7 +61,7 @@ query TriplesCountByAtomIds($atomIds: [String!]!) {
   }
 }
 
-# Get triplets containing any of the given atoms
+# Get triplets containing any of the given atoms (only with positions > 0)
 query TriplesByAtomIds($atomIds: [String!]!) {
   triples(
     limit: 100
@@ -65,6 +72,7 @@ query TriplesByAtomIds($atomIds: [String!]!) {
           { predicate: { term_id: { _in: $atomIds } } },
           { object: { term_id: { _in: $atomIds } } }
         ]}
+        { positions: { shares: { _gt: "0" } } }
       ]
     }
   ) {
