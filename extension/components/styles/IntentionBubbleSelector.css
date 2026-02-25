@@ -54,6 +54,10 @@
   color: #FCD34D;
 }
 
+.intention-pill.certified {
+  font-weight: 600;
+}
+
 .intention-pill:disabled {
   cursor: not-allowed;
   opacity: 0.5;

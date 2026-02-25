@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "../layout/RouterProvider"
 import {
@@ -10,7 +10,10 @@ import {
   useFavicon,
   useDiscoveryReward,
   useCredibilityAnalysis,
-  useCertificationModal
+  useCertificationModal,
+  useUserCertifications,
+  getCertificationForUrl,
+  useWalletFromStorage
 } from "~/hooks"
 import type { IntentionPurpose } from "~/types/discovery"
 import WeightModal from "../modals/WeightModal"
@@ -54,6 +57,15 @@ const PageBlockchainCard = () => {
   const analysis = useCredibilityAnalysis(counts, atomsList)
   const reward = useDiscoveryReward()
   const modal = useCertificationModal()
+  const { walletAddress } = useWalletFromStorage()
+  const { certifications, refetch: refetchCertifications } =
+    useUserCertifications(walletAddress)
+
+  const certifiedIntentions = useMemo(() => {
+    if (!currentUrl || certifications.size === 0) return []
+    const entry = getCertificationForUrl(certifications, currentUrl)
+    return entry?.intentions ?? []
+  }, [currentUrl, certifications])
 
   // UI toggle
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
@@ -184,6 +196,7 @@ const PageBlockchainCard = () => {
                 disabled={modal.intentionState.loading}
                 isEligible={true}
                 selectedIntention={modal.intentionState.currentIntention}
+                certifiedIntentions={certifiedIntentions}
               />
             </div>
           )}
@@ -276,6 +289,7 @@ const PageBlockchainCard = () => {
             onClose={() => {
               modal.handleModalClose()
               reward.resetReward()
+              refetchCertifications()
             }}
             onSubmit={(customWeights) =>
               modal.handleModalSubmit(customWeights, {
