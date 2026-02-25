@@ -73,6 +73,21 @@ const PageBlockchainCard = () => {
   // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
   const effectiveUserHasCertified = userHasCertified || !!certEntry
 
+  // Compute domain atom ID for portal link
+  const domainAtomId = useMemo(() => {
+    if (!currentUrl || !atomsList?.length) return null
+    try {
+      const hostname = new URL(currentUrl).hostname.replace(/^www\./, "")
+      const domainAtom = atomsList.find((a) => {
+        const label = a.label?.toLowerCase()
+        return label === hostname || label === `www.${hostname}`
+      })
+      return domainAtom?.id ?? null
+    } catch {
+      return null
+    }
+  }, [currentUrl, atomsList])
+
   // UI toggle
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
 
@@ -226,6 +241,7 @@ const PageBlockchainCard = () => {
                   maxIntentionCount={maxIntentionCount}
                   pageMaxIntentionCount={pageMaxIntentionCount}
                   intentionStatsLoading={false}
+                  domainAtomId={domainAtomId}
                   onAtomClick={handleAtomClick}
                   onTripletClick={handleTripletClick}
                 />

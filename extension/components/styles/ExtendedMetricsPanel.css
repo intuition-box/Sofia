@@ -1,4 +1,4 @@
-/* ExtendedMetricsPanel — Intentions, atoms list, triplets list */
+/* ExtendedMetricsPanel — Intentions, accordion atoms/triples lists */
 
 .extended-metrics-panel {
   display: flex;
@@ -38,11 +38,27 @@
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: var(--font-size-sm, 12px);
   font-weight: 600;
   color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* ─── Portal Link ─── */
+.portal-link {
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.4));
+  text-decoration: none;
+  font-size: var(--font-size-xs, 10px);
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.portal-link:hover {
+  color: var(--color-text-secondary, #FBF7F5);
 }
 
 .section-subheader {
@@ -184,7 +200,7 @@
   letter-spacing: 0.5px;
 }
 
-/* ─── Collapsible Lists ─── */
+/* ─── Accordion Toggles ─── */
 .collapsible-lists-section {
   display: flex;
   gap: var(--spacing-sm, 8px);
@@ -210,6 +226,12 @@
   border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
 }
 
+.collapsible-toggle.active {
+  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.08));
+  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
+  color: var(--color-text-secondary, #FBF7F5);
+}
+
 .collapsible-toggle .toggle-arrow {
   font-size: 8px;
   transition: transform 0.2s ease;
@@ -219,33 +241,44 @@
   transform: rotate(180deg);
 }
 
+/* ─── Accordion Content ─── */
+.accordion-content {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.accordion-content.expanded {
+  max-height: 400px;
+  opacity: 1;
+  overflow-y: auto;
+}
+
 /* ─── Atoms Section ─── */
 .atoms-section {
-  padding-top: var(--spacing-md, 12px);
-  border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
-  margin-bottom: var(--spacing-md, 12px);
+  padding-top: var(--spacing-sm, 8px);
 }
 
 .atoms-list {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm, 8px);
-  max-height: 200px;
-  overflow-y: auto;
 }
 
 .atom-item {
-  background: var(--color-bg-dark, rgba(14, 14, 14, 0.15));
-  padding: var(--spacing-md, 12px);
+  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   border-radius: var(--radius-md, 8px);
-  border-left: 3px solid var(--color-warning, #F59E0B);
+  cursor: pointer;
   transition: var(--transition-fast, all 0.2s ease);
 }
 
 .atom-item.clickable:hover {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.06));
+  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
   transform: translateY(-1px);
-  box-shadow: var(--shadow-light, 0 2px 6px rgba(0, 0, 0, 0.2));
 }
 
 .atom-text {
@@ -253,7 +286,7 @@
   flex-wrap: wrap;
   gap: var(--spacing-sm, 8px);
   align-items: center;
-  margin-bottom: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-xs, 4px);
 }
 
 .atom-label {
@@ -263,8 +296,8 @@
 }
 
 .atom-type {
-  background: rgba(245, 158, 11, 0.2);
-  color: var(--color-warning, #F59E0B);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
   padding: 2px var(--spacing-sm, 8px);
   border-radius: var(--radius-sm, 4px);
   font-size: var(--font-size-xs, 10px);
@@ -274,14 +307,11 @@
 .atom-stats {
   display: flex;
   gap: var(--spacing-md, 12px);
-  font-size: var(--font-size-xs, 10px);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
 }
 
 /* ─── Triplets Section ─── */
 .triplets-section {
-  padding-top: var(--spacing-md, 12px);
-  border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  padding-top: var(--spacing-sm, 8px);
 }
 
 .triplets-list {
@@ -291,32 +321,35 @@
 }
 
 .triplet-item {
-  padding: var(--spacing-md, 12px);
+  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   border-radius: var(--radius-md, 8px);
+  cursor: pointer;
   transition: var(--transition-fast, all 0.2s ease);
 }
 
 .triplet-item.clickable:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.06));
+  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
   transform: translateY(-1px);
-  box-shadow: var(--shadow-light, 0 2px 6px rgba(0, 0, 0, 0.2));
 }
 
 .triplet-text {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-xs, 4px);
-  margin-bottom: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-xs, 4px);
 }
 
-/* Triplet role colors — semantic Intuition protocol colors */
+/* Triplet role chips — glass background with semantic colors */
 .subject,
 .predicate,
 .object {
-  color: var(--color-text-secondary, #FBF7F5);
   padding: 2px 6px;
   border-radius: var(--radius-sm, 4px);
   font-size: var(--font-size-xs, 10px);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .subject {
@@ -335,15 +368,12 @@
   display: flex;
   justify-content: flex-start;
   gap: var(--spacing-md, 12px);
-  font-size: var(--font-size-xs, 10px);
-  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.6));
 }
 
-.positions,
-.shares {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs, 4px);
+/* ─── Shared Stats ─── */
+.stat-value {
+  font-size: var(--font-size-xs, 10px);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
 }
 
 /* ─── Sort Controls ─── */
