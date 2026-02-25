@@ -22,7 +22,7 @@ import { getWalletKey } from '../utils/storageKeyUtils'
 
 const logger = createServiceLogger('GoldService')
 
-// Gold earned per group URL certification
+/** @deprecated Discovery Gold now covers all certification rewards. Only vote Gold uses certification_gold bucket. */
 const GOLD_PER_CERTIFICATION = 10
 
 // Gold earned per vote (capped at VOTE_GOLD_DAILY_CAP votes/day)
@@ -73,7 +73,8 @@ class GoldServiceClass {
   }
 
   /**
-   * Add Gold from a group URL certification.
+   * @deprecated No longer called — Discovery Gold covers certification rewards.
+   * Kept for backward compatibility. Only vote Gold uses certification_gold bucket.
    * @returns The new certification Gold total.
    */
   async addCertificationGold(walletAddress: string, amount: number = GOLD_PER_CERTIFICATION): Promise<number> {

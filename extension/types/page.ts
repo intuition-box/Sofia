@@ -31,6 +31,11 @@ export interface PageBlockchainCounts {
   distrustCount: number
   totalSupport: number
   trustRatio: number
+  // Domain-level trust (all atoms on the hostname)
+  domainTrustCount: number
+  domainDistrustCount: number
+  domainTotalSupport: number
+  domainTrustRatio: number
 }
 
 /**
@@ -40,6 +45,7 @@ export interface PageAtomInfo {
   id: string
   label: string
   type: string
+  created_at?: string
   vaults: Array<{
     total_shares?: string
     position_count?: number
@@ -59,6 +65,20 @@ export interface UsePageBlockchainDataResult {
   pageTitle: string | null
   isRestricted: boolean
   restrictionMessage: string | null
+  pageAtomIds: string[]
+  // Discovery data (from unified PageCertificationData query)
+  totalCertifications: number
+  discoveryStatus: import("./discovery").DiscoveryStatus
+  certificationRank: number | null
+  userHasCertified: boolean
+  // Intention stats (domain + page)
+  intentionStats: Record<import("./intentionCategories").IntentionPurpose, number>
+  pageIntentionStats: Record<import("./intentionCategories").IntentionPurpose, number>
+  intentionTotal: number
+  pageIntentionTotal: number
+  maxIntentionCount: number
+  pageMaxIntentionCount: number
+  // Methods
   fetchDataForCurrentPage: () => Promise<void>
   pauseRefresh: () => void
   resumeRefresh: () => void

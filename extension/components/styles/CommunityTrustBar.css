@@ -1,28 +1,7 @@
 /* CommunityTrustBar — Trust/distrust ratio bar and counts */
 
 .trust-support-section {
-  margin-bottom: var(--spacing-xl, 20px);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-sm, 8px);
-}
-
-.section-header .section-title {
-  font-size: var(--font-size-xs, 10px);
-  font-weight: 600;
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0;
-}
-
-.support-ratio {
-  font-size: var(--font-size-base, 14px);
-  font-weight: 700;
+  margin-bottom: var(--spacing-md, 12px);
 }
 
 /* Trust/Distrust Bar */

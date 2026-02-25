@@ -90,6 +90,9 @@ export const TRACKING_URL_PARAMS = new Set([
   '_hsenc', '_hsmi',          // HubSpot
   'oly_anon_id', 'oly_enc_id',
   'vero_id', 'wickedid',
+  // Auth / extension session params (should not differentiate page identity)
+  'extensionId', 'autoLogin', 'state', 'code', 'nonce',
+  'redirect', 'redirectUrl', 'redirect_uri', 'returnUrl', 'return_url',
 ])
 
 // Protocols where content scripts cannot run (wallet unavailable)
@@ -98,11 +101,13 @@ export const RESTRICTED_PROTOCOLS = [
   'devtools:', 'edge:', 'about:', 'brave:', 'opera:', 'vivaldi:', 'file:',
 ]
 
-// Restricted domains (extension stores + ads/tracking)
+// Restricted domains (extension stores + ads/tracking + Sofia infrastructure)
 export const RESTRICTED_DOMAINS = [
   // Browser extension stores
   'chrome.google.com', 'chromewebstore.google.com',
   'microsoftedge.microsoft.com', 'addons.mozilla.org',
+  // Sofia/Intuition infrastructure (not certifiable content)
+  'privy.intuition.systems',
   // Ad/tracking domains (not certifiable)
   's0.2mdn.net', 'ssp.disqus.com', 'ad5.ad-srv.net',
   'ads.servenobid.com', 'cs.ns1p.net', '2mdn.net',

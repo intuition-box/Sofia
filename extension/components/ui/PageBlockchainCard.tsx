@@ -1,23 +1,23 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "../layout/RouterProvider"
 import {
   usePageBlockchainData,
-  usePageDiscovery,
-  usePageIntentionStats,
   useDiscoveryScore,
   useGoldSystem,
   useFavicon,
   useDiscoveryReward,
   useCredibilityAnalysis,
-  useCertificationModal
+  useCertificationModal,
+  useUserCertifications,
+  getCertificationForUrl,
+  useWalletFromStorage
 } from "~/hooks"
 import type { IntentionPurpose } from "~/types/discovery"
 import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
 import { PageBlockchainSkeleton } from "./Skeleton"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
-import CommunityTrustBar from "./blockchain/CommunityTrustBar"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import "../styles/PageBlockchainCard.css"
 
@@ -34,18 +34,18 @@ const PageBlockchainCard = () => {
     pageTitle,
     isRestricted,
     restrictionMessage,
+    totalCertifications,
+    userHasCertified,
+    intentionStats,
+    pageIntentionStats,
+    intentionTotal,
+    pageIntentionTotal,
+    maxIntentionCount,
+    pageMaxIntentionCount,
     fetchDataForCurrentPage,
     pauseRefresh,
     resumeRefresh
   } = usePageBlockchainData()
-  const { totalCertifications, refetch: refetchDiscovery } =
-    usePageDiscovery(currentUrl)
-  const {
-    intentions: intentionStats,
-    totalCertifications: intentionTotal,
-    maxIntentionCount,
-    loading: intentionStatsLoading
-  } = usePageIntentionStats(currentUrl)
   const { claimDiscoveryGold } = useDiscoveryScore()
   const { totalGold } = useGoldSystem()
 
@@ -54,6 +54,24 @@ const PageBlockchainCard = () => {
   const analysis = useCredibilityAnalysis(counts, atomsList)
   const reward = useDiscoveryReward()
   const modal = useCertificationModal()
+  const { walletAddress } = useWalletFromStorage()
+  const { certifications, refetch: refetchCertifications } =
+    useUserCertifications(walletAddress)
+
+  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted, certEntry } = useMemo(() => {
+    if (!currentUrl || certifications.size === 0)
+      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false, certEntry: null }
+    const entry = getCertificationForUrl(certifications, currentUrl)
+    return {
+      certifiedIntentions: entry?.intentions ?? [],
+      alreadyTrusted: entry?.trustPredicates?.includes("trusts") ?? false,
+      alreadyDistrusted: entry?.trustPredicates?.includes("distrust") ?? false,
+      certEntry: entry
+    }
+  }, [currentUrl, certifications])
+
+  // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
+  const effectiveUserHasCertified = userHasCertified || !!certEntry
 
   // UI toggle
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
@@ -62,17 +80,17 @@ const PageBlockchainCard = () => {
   const isRefreshing = status === "refreshing"
 
   const handleAtomClick = (atomId: string) => {
-    window.open(
-      `https://portal.intuition.systems/explore/atom/${atomId}`,
-      "_blank"
-    )
+    chrome.tabs.create({
+      url: `https://portal.intuition.systems/explore/atom/${atomId}`,
+      active: false
+    })
   }
 
   const handleTripletClick = (tripletId: string) => {
-    window.open(
-      `https://portal.intuition.systems/explore/triple/${tripletId}?tab=positions`,
-      "_blank"
-    )
+    chrome.tabs.create({
+      url: `https://portal.intuition.systems/explore/triple/${tripletId}?tab=positions`,
+      active: false
+    })
   }
 
   return (
@@ -118,7 +136,7 @@ const PageBlockchainCard = () => {
           {!isRestricted && (
             <div className="trust-buttons-row">
               <button
-                className={`trust-page-button trust-btn ${modal.trustState.success ? "success" : ""} ${modal.trustState.loading ? "loading" : ""}`}
+                className={`trust-page-button trust-btn ${alreadyTrusted || modal.trustState.success ? "success" : ""} ${modal.trustState.loading ? "loading" : ""}`}
                 onClick={() => modal.openTrustModal(currentUrl, pageTitle)}
                 disabled={
                   modal.trustState.loading ||
@@ -131,15 +149,15 @@ const PageBlockchainCard = () => {
                     <div className="button-spinner"></div>
                     Creating...
                   </>
-                ) : modal.trustState.success ? (
-                  <>&#10003; Trusted!</>
+                ) : alreadyTrusted || modal.trustState.success ? (
+                  "Trusted"
                 ) : (
-                  <>TRUST</>
+                  "TRUST"
                 )}
               </button>
 
               <button
-                className={`trust-page-button distrust-btn ${modal.distrustState.success ? "success" : ""} ${modal.distrustState.loading ? "loading" : ""}`}
+                className={`trust-page-button distrust-btn ${alreadyDistrusted || modal.distrustState.success ? "success" : ""} ${modal.distrustState.loading ? "loading" : ""}`}
                 onClick={() =>
                   modal.openDistrustModal(currentUrl, pageTitle)
                 }
@@ -154,10 +172,10 @@ const PageBlockchainCard = () => {
                     <div className="button-spinner"></div>
                     Creating...
                   </>
-                ) : modal.distrustState.success ? (
-                  <>&#10003; Distrusted!</>
+                ) : alreadyDistrusted || modal.distrustState.success ? (
+                  "Distrusted"
                 ) : (
-                  <>DISTRUST</>
+                  "DISTRUST"
                 )}
               </button>
             </div>
@@ -184,6 +202,7 @@ const PageBlockchainCard = () => {
                 disabled={modal.intentionState.loading}
                 isEligible={true}
                 selectedIntention={modal.intentionState.currentIntention}
+                certifiedIntentions={certifiedIntentions}
               />
             </div>
           )}
@@ -196,15 +215,18 @@ const PageBlockchainCard = () => {
           <div className="credibility-analysis">
             {showExtendedMetrics && (
               <>
-                <CommunityTrustBar analysis={analysis} />
                 <ExtendedMetricsPanel
                   analysis={analysis}
                   counts={counts}
                   triplets={triplets}
                   intentionStats={intentionStats}
+                  pageIntentionStats={pageIntentionStats}
                   intentionTotal={intentionTotal}
+                  pageIntentionTotal={pageIntentionTotal}
                   maxIntentionCount={maxIntentionCount}
-                  intentionStatsLoading={intentionStatsLoading}
+                  pageMaxIntentionCount={pageMaxIntentionCount}
+                  intentionStatsLoading={false}
+                  currentUrl={currentUrl}
                   onAtomClick={handleAtomClick}
                   onTripletClick={handleTripletClick}
                 />
@@ -219,54 +241,12 @@ const PageBlockchainCard = () => {
           <WeightModal
             isOpen={modal.showWeightModal}
             triplets={modal.modalTriplets}
-            isProcessing={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.loading
-                : modal.modalType === "trust"
-                  ? modal.trustState.loading
-                  : modal.distrustState.loading
-            }
-            transactionSuccess={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.success
-                : modal.modalType === "trust"
-                  ? modal.trustState.success
-                  : modal.distrustState.success
-            }
-            transactionError={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.error || undefined
-                : (modal.modalType === "trust"
-                    ? modal.trustState.error
-                    : modal.distrustState.error) || undefined
-            }
-            transactionHash={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.transactionHash || undefined
-                : modal.trustState.transactionHash || undefined
-            }
-            createdCount={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.operationType === "created"
-                  ? 1
-                  : 0
-                : (modal.modalType === "trust"
-                      ? modal.trustState.operationType
-                      : modal.distrustState.operationType) === "created"
-                  ? 1
-                  : 0
-            }
-            depositCount={
-              modal.modalTriplets[0]?.intention
-                ? modal.intentionState.operationType === "deposit"
-                  ? 1
-                  : 0
-                : (modal.modalType === "trust"
-                      ? modal.trustState.operationType
-                      : modal.distrustState.operationType) === "deposit"
-                  ? 1
-                  : 0
-            }
+            isProcessing={modal.intentionState.loading}
+            transactionSuccess={modal.intentionState.success}
+            transactionError={modal.intentionState.error || undefined}
+            transactionHash={modal.intentionState.transactionHash || undefined}
+            createdCount={modal.intentionState.operationType === "created" ? 1 : 0}
+            depositCount={modal.intentionState.operationType === "deposit" ? 1 : 0}
             isIntentionCertification={!!modal.modalTriplets[0]?.intention}
             discoveryReward={reward.discoveryReward}
             onClaimReward={() =>
@@ -276,15 +256,16 @@ const PageBlockchainCard = () => {
             onClose={() => {
               modal.handleModalClose()
               reward.resetReward()
+              refetchCertifications()
             }}
             onSubmit={(customWeights) =>
               modal.handleModalSubmit(customWeights, {
                 currentUrl,
                 pageTitle,
                 totalCertifications,
+                userHasCertified: effectiveUserHasCertified,
                 pauseRefresh,
                 resumeRefresh,
-                refetchDiscovery,
                 fetchDataForCurrentPage,
                 calculateAndTriggerReward: reward.calculateAndTriggerReward
               })

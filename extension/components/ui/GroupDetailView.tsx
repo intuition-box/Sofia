@@ -745,7 +745,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       {/* XP Hint */}
       {uncertifiedCount > 0 && (
         <div className="xp-hint">
-          Certify URLs to earn +10 Gold each!
+          Certify URLs to earn Discovery Gold!
         </div>
       )}
 

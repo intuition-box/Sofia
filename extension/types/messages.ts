@@ -183,6 +183,7 @@ export interface MessageResponse {
   themes?: any[]
   message?: string
   url?: string
+  title?: string
   tabId?: number
   recommendations?: any[]
 }

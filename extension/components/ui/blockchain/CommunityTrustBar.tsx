@@ -4,7 +4,7 @@
  */
 
 import React from "react"
-import type { CredibilityAnalysis } from "~/hooks/useCredibilityAnalysis"
+import type { CredibilityAnalysis } from "~/hooks"
 import "../../styles/CommunityTrustBar.css"
 
 interface CommunityTrustBarProps {
@@ -14,18 +14,6 @@ interface CommunityTrustBarProps {
 const CommunityTrustBar: React.FC<CommunityTrustBarProps> = ({ analysis }) => {
   return (
     <div className="trust-support-section">
-      <div className="section-header">
-        <span className="section-title">Community Support</span>
-        <span
-          className="support-ratio"
-          style={{ color: analysis.barColor }}
-        >
-          {analysis.totalSupport > 0
-            ? `${analysis.trustRatio}% Trust`
-            : "No votes yet"}
-        </span>
-      </div>
-
       <div className="trust-distrust-bar">
         <div
           className="trust-fill"
