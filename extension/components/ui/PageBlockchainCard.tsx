@@ -41,8 +41,7 @@ const PageBlockchainCard = () => {
     pauseRefresh,
     resumeRefresh
   } = usePageBlockchainData()
-  const { totalCertifications, refetch: refetchDiscovery } =
-    usePageDiscovery(currentUrl, pageAtomIds)
+  const { totalCertifications } = usePageDiscovery(currentUrl, pageAtomIds)
   const {
     intentions: intentionStats,
     pageIntentions: pageIntentionStats,
@@ -152,12 +151,10 @@ const PageBlockchainCard = () => {
                     <div className="button-spinner"></div>
                     Creating...
                   </>
-                ) : alreadyTrusted ? (
-                  <>&#10003; Trusted</>
-                ) : modal.trustState.success ? (
-                  <>&#10003; Trusted!</>
+                ) : alreadyTrusted || modal.trustState.success ? (
+                  "Trusted"
                 ) : (
-                  <>TRUST</>
+                  "TRUST"
                 )}
               </button>
 
@@ -177,12 +174,10 @@ const PageBlockchainCard = () => {
                     <div className="button-spinner"></div>
                     Creating...
                   </>
-                ) : alreadyDistrusted ? (
-                  <>&#10003; Distrusted</>
-                ) : modal.distrustState.success ? (
-                  <>&#10003; Distrusted!</>
+                ) : alreadyDistrusted || modal.distrustState.success ? (
+                  "Distrusted"
                 ) : (
-                  <>DISTRUST</>
+                  "DISTRUST"
                 )}
               </button>
             </div>
@@ -271,7 +266,6 @@ const PageBlockchainCard = () => {
                 totalCertifications,
                 pauseRefresh,
                 resumeRefresh,
-                refetchDiscovery,
                 refetchIntentionStats,
                 fetchDataForCurrentPage,
                 calculateAndTriggerReward: reward.calculateAndTriggerReward

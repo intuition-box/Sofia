@@ -67,7 +67,6 @@ export interface CertificationModalResult {
       totalCertifications: number
       pauseRefresh: () => void
       resumeRefresh: () => void
-      refetchDiscovery: () => Promise<void>
       refetchIntentionStats: () => void
       fetchDataForCurrentPage: () => void
       calculateAndTriggerReward: (prevTotal: number) => void
@@ -185,7 +184,6 @@ export const useCertificationModal = (): CertificationModalResult => {
         totalCertifications: number
         pauseRefresh: () => void
         resumeRefresh: () => void
-        refetchDiscovery: () => Promise<void>
         refetchIntentionStats: () => void
         fetchDataForCurrentPage: () => void
         calculateAndTriggerReward: (prevTotal: number) => void
@@ -239,15 +237,18 @@ export const useCertificationModal = (): CertificationModalResult => {
 
         logger.info("Certification completed")
         ctx.resumeRefresh()
-        await ctx.refetchDiscovery()
         ctx.calculateAndTriggerReward(prevTotal)
         ctx.refetchIntentionStats()
+        // Wave 1: optimistic (indexer might not have caught up yet)
         setTimeout(
           () => ctx.fetchDataForCurrentPage(),
           DELAYS.REFRESH_AFTER_TX
         )
+        // Wave 2: after cache clear (indexer should be synced)
+        // fetchDataForCurrentPage updates pageAtomIds → usePageDiscovery auto-refetches
         setTimeout(() => {
           intuitionGraphqlClient.clearCache()
+          ctx.fetchDataForCurrentPage()
           discoveryScoreService.refetch()
         }, DELAYS.DISCOVERY_SCORE_REFRESH)
       } catch (error) {

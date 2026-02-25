@@ -47,7 +47,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
   const [showTripletsList, setShowTripletsList] = useState(false)
   const [atomsSort, setAtomsSort] = useState<SortMode>("market_cap")
   const [tripletsSort, setTripletsSort] = useState<SortMode>("market_cap")
-  const [filterScope, setFilterScope] = useState<FilterScope>("domain")
+  const [filterScope, setFilterScope] = useState<FilterScope>("page")
 
   // Select active stats based on scope
   const activeTrust =

@@ -134,17 +134,28 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const foundAtomIds = foundAtoms.map((a: any) => a.term_id)
       const totalAtomsCount = foundAtomIds.length
 
-      // Filter to page-specific atoms (only atoms with value.thing.url)
+      // Filter to page-specific atoms
+      // Match by value.thing.url (new atoms) OR by normalized label (old atoms)
+      // Aligns with UserCertificationsService matching logic
       const { label: normalizedPageUrl } = normalizeUrl(url)
       const pageAtomIds = foundAtoms
         .filter((atom: any) => {
           const atomUrl = atom.value?.thing?.url
-          if (!atomUrl) return false
-          try {
-            return normalizeUrl(atomUrl).label === normalizedPageUrl
-          } catch {
-            return false
+          if (atomUrl) {
+            try {
+              return normalizeUrl(atomUrl).label === normalizedPageUrl
+            } catch {
+              return false
+            }
           }
+          // Fallback: match old atoms by normalized label
+          const label = atom.label || ""
+          const normalizedLabel = label
+            .replace(/^https?:\/\//, "")
+            .replace(/^www\./, "")
+            .replace(/\/$/, "")
+            .toLowerCase()
+          return normalizedLabel === normalizedPageUrl
         })
         .map((a: any) => a.term_id)
 
@@ -457,9 +468,20 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     scheduleSilentRetry
   ])
 
+  // Reset stale data immediately when navigating to a new page
+  // This prevents showing old page's badge/data during the fetch
+  const resetForNewPage = useCallback(() => {
+    hasDataRef.current = false
+    setStatus("loading")
+    setCounts(DEFAULT_COUNTS)
+    setPageAtomIds([])
+    setTriplets([])
+    setAtomsList([])
+  }, [])
+
   // Debounced version for URL change listeners
   const debouncedFetch = useMemo(
-    () => debounce(() => fetchDataForCurrentPage(), 800),
+    () => debounce(() => fetchDataForCurrentPage(), 150),
     [fetchDataForCurrentPage]
   )
 
@@ -478,13 +500,23 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
     const handleTabUpdate = (
       _tabId: number,
-      changeInfo: chrome.tabs.TabChangeInfo
+      changeInfo: chrome.tabs.TabChangeInfo,
+      tab: chrome.tabs.Tab
     ) => {
+      // Only react to active tab updates
+      if (!tab.active) return
+
+      // SPA title update (e.g. YouTube video navigation): update title without refetch
+      if (changeInfo.title && !changeInfo.url) {
+        setPageTitle(changeInfo.title)
+      }
+
       if (changeInfo.url || changeInfo.status === "complete") {
         const newUrl = changeInfo.url || ""
         if (newUrl && newUrl !== lastUrl) {
           lastUrl = newUrl
           retryCountRef.current = 0
+          resetForNewPage()
           debouncedFetch()
         } else if (changeInfo.status === "complete" && !changeInfo.url) {
           debouncedFetch()
@@ -498,6 +530,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         message.type === "URL_CHANGED"
       ) {
         retryCountRef.current = 0
+        resetForNewPage()
         debouncedFetch()
       }
     }
@@ -512,6 +545,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         if (currentTab?.url && currentTab.url !== lastUrl) {
           lastUrl = currentTab.url
           retryCountRef.current = 0
+          resetForNewPage()
           debouncedFetch()
         }
       })
@@ -523,7 +557,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       clearInterval(intervalId)
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
     }
-  }, [account, debouncedFetch])
+  }, [account, debouncedFetch, resetForNewPage])
 
   // Cleanup retry timer on unmount
   useEffect(() => {
