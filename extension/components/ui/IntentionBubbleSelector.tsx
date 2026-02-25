@@ -1,4 +1,5 @@
 import type { IntentionPurpose } from '../../types/discovery'
+import { INTENTION_ITEMS } from '~/types/intentionCategories'
 import '../styles/IntentionBubbleSelector.css'
 
 interface IntentionBubbleSelectorProps {
@@ -7,15 +8,6 @@ interface IntentionBubbleSelectorProps {
   isEligible?: boolean
   selectedIntention?: IntentionPurpose | null
 }
-
-const INTENTIONS: { key: IntentionPurpose; label: string }[] = [
-  { key: 'for_work', label: 'work' },
-  { key: 'for_learning', label: 'learning' },
-  { key: 'for_fun', label: 'fun' },
-  { key: 'for_inspiration', label: 'inspiration' },
-  { key: 'for_buying', label: 'buying' },
-  { key: 'for_music', label: 'music' }
-]
 
 export const IntentionBubbleSelector = ({
   onBubbleClick,
@@ -31,7 +23,7 @@ export const IntentionBubbleSelector = ({
   return (
     <div className={`intention-selector ${!isEligible ? 'not-eligible' : ''}`}>
       <div className="intention-pills">
-        {INTENTIONS.map(({ key, label }) => (
+        {INTENTION_ITEMS.map(({ key, label }) => (
           <button
             key={key}
             className={`intention-pill ${selectedIntention === key ? 'active' : ''}`}

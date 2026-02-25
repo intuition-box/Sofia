@@ -13,7 +13,7 @@ import { SUBJECT_IDS, PREDICATE_IDS } from '~/lib/config/constants'
 import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
 import { getFaviconUrl, batchResolveEns } from '~/lib/utils'
 import type { IntentionType } from '~/types/intentionCategories'
-import { INTENTION_CONFIG } from '~/types/intentionCategories'
+import { INTENTION_CONFIG, predicateLabelToIntentionType } from '~/types/intentionCategories'
 import type { VoteType } from '~/hooks/useVoteOnTriple'
 
 import CategoryCard from '../../ui/CategoryCard'
@@ -22,32 +22,6 @@ import Avatar from '../../ui/Avatar'
 import WeightModal from '../../modals/WeightModal'
 import '../../styles/CircleFeedTab.css'
 import '../../styles/CategoryStyles.css'
-
-// Intention predicate labels from on-chain
-const INTENTION_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning',
-  'visits for learning ', // legacy trailing space
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying', 
-  'visits for music'
-]
-
-// Map predicate label to IntentionType
-const predicateLabelToType = (label: string): IntentionType | null => {
-  const trimmed = label.trim().toLowerCase()
-  if (trimmed === 'visits for work') return 'work'
-  if (trimmed === 'visits for learning') return 'learning'
-  if (trimmed === 'visits for fun') return 'fun'
-  if (trimmed === 'visits for inspiration') return 'inspiration'
-  if (trimmed === 'visits for buying') return 'buying'
-  if (trimmed === 'visits for music') return 'music'
-  if (trimmed === 'trusts') return 'trusted'
-  if (trimmed === 'distrust') return 'distrusted'
-  return null
-}
-
 
 // Extract domain from URL
 const getDomain = (url: string): string => {
@@ -194,7 +168,7 @@ const CircleFeedTab = () => {
       const predicateLabel = event.triple?.predicate?.label
       if (!predicateLabel) continue
 
-      const intentionType = predicateLabelToType(predicateLabel)
+      const intentionType = predicateLabelToIntentionType(predicateLabel)
       if (!intentionType) continue
 
       // Get member info

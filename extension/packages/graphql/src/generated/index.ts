@@ -29492,7 +29492,7 @@ useCertificationTriplesQuery.fetcher = (
 export const IntentionStatsDocument = `
     query IntentionStats($predicateIds: [String!]!, $hostnameLike: String!) {
   triples(
-    where: {predicate_id: {_in: $predicateIds}, _or: [{object: {label: {_ilike: $hostnameLike}}}, {object: {value: {thing: {url: {_ilike: $hostnameLike}}}}}]}
+    where: {predicate_id: {_in: $predicateIds}, _or: [{object: {label: {_ilike: $hostnameLike}}}, {object: {value: {thing: {url: {_ilike: $hostnameLike}}}}}], positions: {shares: {_gt: "0"}}}
     limit: 100
   ) {
     term_id
@@ -53520,6 +53520,33 @@ export const IntentionStats = {
                                 }
                               }
                             ]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
                           }
                         ]
                       }

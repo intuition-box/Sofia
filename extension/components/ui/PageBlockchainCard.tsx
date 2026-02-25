@@ -15,6 +15,7 @@ import {
 import type { IntentionPurpose } from "~/types/discovery"
 import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
+import { PageBlockchainSkeleton } from "./Skeleton"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
 import CommunityTrustBar from "./blockchain/CommunityTrustBar"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
@@ -28,8 +29,7 @@ const PageBlockchainCard = () => {
     triplets,
     counts,
     atomsList,
-    loading,
-    error,
+    status,
     currentUrl,
     pageTitle,
     isRestricted,
@@ -58,6 +58,9 @@ const PageBlockchainCard = () => {
   // UI toggle
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
 
+  const isReady = status === "ready" || status === "refreshing"
+  const isRefreshing = status === "refreshing"
+
   const handleAtomClick = (atomId: string) => {
     window.open(
       `https://portal.intuition.systems/explore/atom/${atomId}`,
@@ -73,9 +76,29 @@ const PageBlockchainCard = () => {
   }
 
   return (
-    <div className="blockchain-card">
-      {/* Website Header Section */}
-      {currentUrl && (
+    <div
+      className={`blockchain-card ${isRefreshing ? "blockchain-card--refreshing" : ""}`}
+    >
+      {/* Skeleton: first load or retrying */}
+      {status === "loading" && <PageBlockchainSkeleton />}
+
+      {/* Persistent error after retries */}
+      {status === "error" && (
+        <div className="blockchain-card__notice">
+          <span className="blockchain-card__notice-text">
+            Data unavailable for this page
+          </span>
+          <button
+            className="blockchain-card__notice-retry"
+            onClick={fetchDataForCurrentPage}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Main content: ready or refreshing (stale data visible) */}
+      {isReady && currentUrl && (
         <div className="website-header-section">
           <PageBlockchainHeader
             currentUrl={currentUrl}
@@ -109,7 +132,7 @@ const PageBlockchainCard = () => {
                     Creating...
                   </>
                 ) : modal.trustState.success ? (
-                  <>✓ Trusted!</>
+                  <>&#10003; Trusted!</>
                 ) : (
                   <>TRUST</>
                 )}
@@ -132,7 +155,7 @@ const PageBlockchainCard = () => {
                     Creating...
                   </>
                 ) : modal.distrustState.success ? (
-                  <>✓ Distrusted!</>
+                  <>&#10003; Distrusted!</>
                 ) : (
                   <>DISTRUST</>
                 )}
@@ -140,7 +163,7 @@ const PageBlockchainCard = () => {
             </div>
           )}
 
-          {/* Error Display */}
+          {/* Trust/Distrust Error Display */}
           {!isRestricted &&
             (modal.trustState.error || modal.distrustState.error) && (
               <div className="trust-error">
@@ -167,21 +190,8 @@ const PageBlockchainCard = () => {
         </div>
       )}
 
-      {loading && (
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-        </div>
-      )}
-
-      {error && !loading && (
-        <div className="error-state">
-          <div className="error-icon">⚠️</div>
-          <span>Error: {error}</span>
-        </div>
-      )}
-
       {/* Extended Panel */}
-      {!loading && !error && analysis && (
+      {isReady && analysis && (
         <div className="credibility-content">
           <div className="credibility-analysis">
             {showExtendedMetrics && (

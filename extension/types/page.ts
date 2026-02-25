@@ -46,11 +46,14 @@ export interface PageAtomInfo {
   }>
 }
 
+export type PageDataStatus = "loading" | "refreshing" | "ready" | "error"
+
 export interface UsePageBlockchainDataResult {
   triplets: PageBlockchainTriplet[]
   counts: PageBlockchainCounts
   atomsList: PageAtomInfo[]
   loading: boolean
+  status: PageDataStatus
   error: string | null
   currentUrl: string | null
   pageTitle: string | null

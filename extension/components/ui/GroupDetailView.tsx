@@ -15,7 +15,8 @@ import type { GroupUrlRecord } from '~types/database'
 import type { CertificationType } from '~/lib/services'
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_PREDICATES } from '../../types/discovery'
-import { PREDICATE_NAMES, EXPLORER_URLS } from '../../lib/config/chainConfig'
+import { CERTIFICATION_LIST, INTENTION_ITEMS, TRUST_ITEMS } from '~/types/intentionCategories'
+import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
 import WeightModal from '../modals/WeightModal'
 import { normalizeUrl, calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
@@ -34,33 +35,6 @@ interface GroupDetailViewProps {
   onRefresh?: () => Promise<void>
 }
 
-// Certification options (for display/filtering) — colors match INTENTION_CONFIG
-const CERTIFICATIONS: { type: CertificationType; label: string; color: string }[] = [
-  { type: 'trusted', label: 'Trusted', color: '#22C55E' },
-  { type: 'distrusted', label: 'Distrusted', color: '#EF4444' },
-  { type: 'work', label: 'Work', color: '#3B82F6' },
-  { type: 'learning', label: 'Learning', color: '#06B6D4' },
-  { type: 'fun', label: 'Fun', color: '#F59E0B' },
-  { type: 'inspiration', label: 'Inspiration', color: '#8B5CF6' },
-  { type: 'buying', label: 'Buying', color: '#EC4899' },
-  { type: 'music', label: 'Music', color: '#FF5722' }
-]
-
-// Intention options for inline rendering in UrlRow
-const INTENTIONS_LIST: { key: IntentionPurpose; label: string }[] = [
-  { key: 'for_work', label: 'work' },
-  { key: 'for_learning', label: 'learning' },
-  { key: 'for_fun', label: 'fun' },
-  { key: 'for_inspiration', label: 'inspiration' },
-  { key: 'for_buying', label: 'buying' },
-  { key: 'for_music', label: 'music' }
-]
-
-// Trust/distrust pills for inline rendering in UrlRow
-const TRUST_PILLS: { predicateName: string; certType: CertificationType; label: string }[] = [
-  { predicateName: PREDICATE_NAMES.TRUSTS, certType: 'trusted', label: 'trust' },
-  { predicateName: PREDICATE_NAMES.DISTRUST, certType: 'distrusted', label: 'distrust' }
-]
 
 // URL Row Component
 const UrlRow = ({
@@ -87,8 +61,8 @@ const UrlRow = ({
     getEffectiveCertStatus(urlRecord, onChainStatus)
 
   const allCertInfos = allCertLabels
-    .map(label => CERTIFICATIONS.find(c => c.type === label))
-    .filter(Boolean) as typeof CERTIFICATIONS
+    .map(label => CERTIFICATION_LIST.find(c => c.type === label))
+    .filter(Boolean) as typeof CERTIFICATION_LIST
 
   return (
     <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''} ${isCertifiedOnChain ? 'on-chain' : ''}`}>
@@ -185,15 +159,15 @@ const UrlRow = ({
                 {urlRecord.oauthPredicate}
               </button>
             )}
-            {TRUST_PILLS.map(({ predicateName, certType, label }) => {
-              const isAlreadyCertified = allCertLabels.includes(certType)
-              const certInfo = CERTIFICATIONS.find(c => c.type === certType)
+            {TRUST_ITEMS.map(({ predicateLabel, type, label }) => {
+              const isAlreadyCertified = allCertLabels.includes(type)
+              const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
               return (
                 <button
-                  key={certType}
+                  key={type}
                   className={`intention-pill ${isAlreadyCertified ? 'certified' : ''}`}
                   onClick={() => {
-                    onTrustSelect(predicateName, urlRecord.title)
+                    onTrustSelect(predicateLabel, urlRecord.title)
                     setIsExpanded(false)
                   }}
                   disabled={isProcessing}
@@ -207,10 +181,9 @@ const UrlRow = ({
                 </button>
               )
             })}
-            {INTENTIONS_LIST.map(({ key, label }) => {
-              const certType = intentionToCertification[key]
-              const isAlreadyCertified = allCertLabels.includes(certType)
-              const certInfo = CERTIFICATIONS.find(c => c.type === certType)
+            {INTENTION_ITEMS.map(({ key, label, type }) => {
+              const isAlreadyCertified = allCertLabels.includes(type)
+              const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
               return (
                 <button
                   key={key}
@@ -421,7 +394,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       const { label: pageLabel } = normalizeUrl(url)
       const displayName = (title ? cleanTitle(title) : null) || pageLabel
 
-      const trustPill = TRUST_PILLS.find(p => p.predicateName === predicateName)
+      const trustItem = TRUST_ITEMS.find(p => p.predicateLabel === predicateName)
       const triplet = {
         id: `trust-${predicateName}`,
         triplet: {
@@ -431,7 +404,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         },
         description: `I ${predicateName} ${displayName}`,
         url: url,
-        intention: trustPill?.certType as IntentionPurpose | undefined
+        intention: trustItem?.type as IntentionPurpose | undefined
       }
 
       setPendingCertification({ url, intention: 'for_fun', oauthPredicate: predicateName, title })
@@ -722,7 +695,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         >
           Uncertified ({uncertifiedCount})
         </button>
-        {CERTIFICATIONS.map(cert => {
+        {CERTIFICATION_LIST.map(cert => {
           // Count from Pipeline 2 + Pipeline 1 fallback
           let count = 0
           for (const u of group.urls) {

@@ -10,11 +10,12 @@ import { goldService } from './GoldService'
 import type { DomainCluster, TrackedUrl } from './SessionTracker'
 import { createServiceLogger } from '../utils/logger'
 import { calculateDominantCertification } from '../utils/certificationHelpers'
+import type { IntentionType } from '~types/intentionCategories'
 
 const logger = createServiceLogger('GroupManager')
 
-// Certification types
-export type CertificationType = 'work' | 'learning' | 'fun' | 'inspiration' | 'buying' | 'music' | 'trusted' | 'distrusted'
+// Certification types — alias to the single source of truth
+export type CertificationType = IntentionType
 
 export interface CertifyResult {
   success: boolean

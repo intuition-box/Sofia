@@ -1,22 +1,29 @@
 /**
  * usePageBlockchainData Hook
  * Fetches blockchain data specific to the current page URL
+ * Features: silent retry, debounced URL detection, skeleton-first loading
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react'
-import { useWalletFromStorage } from './useWalletFromStorage'
-import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import { messageBus } from '../lib/services'
-import { isRestrictedUrl } from '../lib/utils'
-import { createHookLogger } from '../lib/utils/logger'
-import type { PageBlockchainTriplet, PageBlockchainCounts, PageAtomInfo, UsePageBlockchainDataResult } from '../types/page'
+import { useState, useCallback, useEffect, useRef, useMemo } from "react"
+import { useWalletFromStorage } from "./useWalletFromStorage"
+import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
+import { messageBus } from "../lib/services"
+import { isRestrictedUrl, debounce } from "../lib/utils"
+import { createHookLogger } from "../lib/utils/logger"
+import type {
+  PageBlockchainTriplet,
+  PageBlockchainCounts,
+  PageAtomInfo,
+  PageDataStatus,
+  UsePageBlockchainDataResult
+} from "../types/page"
 import {
   AtomIdsByUrlDocument,
   AtomsByTermIdsDocument,
   TriplesCountByAtomIdsDocument,
   TriplesByAtomIdsDocument,
   TrustDistrustByPageDocument
-} from '@0xsofia/graphql'
+} from "@0xsofia/graphql"
 
 // Default counts when no data is available
 const DEFAULT_COUNTS: PageBlockchainCounts = {
@@ -33,58 +40,67 @@ const DEFAULT_COUNTS: PageBlockchainCounts = {
   trustRatio: 50
 }
 
-const logger = createHookLogger('usePageBlockchainData')
+const logger = createHookLogger("usePageBlockchainData")
+
+/** Max silent retries before showing error */
+const MAX_SILENT_RETRIES = 3
+/** Delay between silent retries (ms) */
+const RETRY_DELAY = 2000
 
 export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [triplets, setTriplets] = useState<PageBlockchainTriplet[]>([])
   const [counts, setCounts] = useState<PageBlockchainCounts>(DEFAULT_COUNTS)
   const [atomsList, setAtomsList] = useState<PageAtomInfo[]>([])
-  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<PageDataStatus>("loading")
   const [error, setError] = useState<string | null>(null)
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
   const [pageTitle, setPageTitle] = useState<string | null>(null)
   const [isRestricted, setIsRestricted] = useState(false)
-  const [restrictionMessage, setRestrictionMessage] = useState<string | null>(null)
+  const [restrictionMessage, setRestrictionMessage] = useState<string | null>(
+    null
+  )
   const { walletAddress: account } = useWalletFromStorage()
 
-  // Pause flag to prevent refreshes during transactions
+  // Refs for control flow
   const pauseRefreshRef = useRef(false)
+  const isFetchingRef = useRef(false)
+  const retryCountRef = useRef(0)
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasDataRef = useRef(false)
 
-  // Get current page URL and title - fallback to direct access if content script fails
-  const getCurrentPageUrl = useCallback(async (): Promise<{ url: string | null, title: string | null }> => {
-    try {
-      logger.debug('Attempting to get clean URL from content script...')
-      const response = await messageBus.getCleanUrl()
-      logger.debug('Response from content script', response)
+  // Derived loading boolean for backward compatibility
+  const loading = status === "loading"
 
-      if (response?.success && response.url) {
-        logger.debug('Got clean URL', { url: response.url, title: response.title })
-        return { url: response.url, title: response.title || null }
-      }
-      
-      // Fallback: get URL from active tab
-      logger.debug('Content script failed, trying tab query...')
-      const tabResponse = await messageBus.getTabId()
-      if (tabResponse?.tabId) {
-        return new Promise((resolve) => {
-          chrome.tabs.get(tabResponse.tabId, (tab) => {
-            if (tab?.url) {
-              logger.debug('Got URL from tab', { url: tab.url, title: tab.title })
-              resolve({ url: tab.url, title: tab.title || null })
-            } else {
-              resolve({ url: null, title: null })
-            }
+  // Get current page URL and title
+  const getCurrentPageUrl = useCallback(
+    async (): Promise<{ url: string | null; title: string | null }> => {
+      try {
+        const response = await messageBus.getCleanUrl()
+        if (response?.success && response.url) {
+          return { url: response.url, title: response.title || null }
+        }
+
+        // Fallback: get URL from active tab
+        const tabResponse = await messageBus.getTabId()
+        if (tabResponse?.tabId) {
+          return new Promise((resolve) => {
+            chrome.tabs.get(tabResponse.tabId, (tab) => {
+              if (tab?.url) {
+                resolve({ url: tab.url, title: tab.title || null })
+              } else {
+                resolve({ url: null, title: null })
+              }
+            })
           })
-        })
-      }
+        }
 
-      logger.warn('All methods failed to get page URL')
-      return { url: null, title: null }
-    } catch (error) {
-      logger.error('Failed to get current page URL', error)
-      return { url: null, title: null }
-    }
-  }, [])
+        return { url: null, title: null }
+      } catch {
+        return { url: null, title: null }
+      }
+    },
+    []
+  )
 
   // Return type for internal fetch function
   interface FetchResult {
@@ -93,134 +109,115 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     atomsList: PageAtomInfo[]
   }
 
-  const fetchPageBlockchainData = useCallback(async (url: string): Promise<FetchResult> => {
-    try {
-      logger.info('Fetching blockchain data for URL', url)
+  const fetchPageBlockchainData = useCallback(
+    async (url: string): Promise<FetchResult> => {
+      const hostname = new URL(url).hostname
+        .toLowerCase()
+        .replace(/^www\./, "")
 
-      // Extract hostname from URL for label search
-      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '')
+      const atomIdsResponse = await intuitionGraphqlClient.request(
+        AtomIdsByUrlDocument,
+        { likeStr: `%${hostname}%` }
+      )
 
-      // First, get atom term_ids from the atoms table (using document from @0xsofia/graphql)
-      const atomIdsResponse = await intuitionGraphqlClient.request(AtomIdsByUrlDocument, {
-        likeStr: `%${hostname}%`
-      })
-
-      const foundAtomIds = atomIdsResponse?.atoms?.map((a: any) => a.term_id) || []
-      logger.debug('Found atom term_ids from atoms table', foundAtomIds.length)
-
-      // Now get atom details from atoms table
-      // Note: Atoms don't have vaults - only triples have vaults
+      const foundAtomIds =
+        atomIdsResponse?.atoms?.map((a: any) => a.term_id) || []
       const totalAtomsCount = foundAtomIds.length
 
-      // Fetch atoms data (only if we found atoms) - using document from @0xsofia/graphql
       let atomsResponse: any = { atoms: [] }
-
       if (foundAtomIds.length > 0) {
-        atomsResponse = await intuitionGraphqlClient.request(AtomsByTermIdsDocument, { atomIds: foundAtomIds })
+        atomsResponse = await intuitionGraphqlClient.request(
+          AtomsByTermIdsDocument,
+          { atomIds: foundAtomIds }
+        )
       }
-
-      logger.debug('Total atoms count', totalAtomsCount)
-      logger.debug('Atoms response (first 100)', atomsResponse)
 
       const atoms = atomsResponse?.atoms || []
       const atomIds = atoms.map((atom: any) => atom.term_id)
 
-      logger.debug('Found atom IDs (displaying first 100)', atomIds.length)
-
-      // Queries now use documents from @0xsofia/graphql:
-      // - TriplesCountByAtomIdsDocument
-      // - TriplesByAtomIdsDocument
-      // - TrustDistrustByPageDocument
-
       let triplesResponse
       let totalTriplesCount = 0
-      let trustDistrustData: { trustTriples: any[], distrustTriples: any[] } = { trustTriples: [], distrustTriples: [] }
+      let trustDistrustData: {
+        trustTriples: any[]
+        distrustTriples: any[]
+      } = { trustTriples: [], distrustTriples: [] }
 
-      // Always fetch trust/distrust data (doesn't depend on atomIds)
-      const trustDistrustPromise = intuitionGraphqlClient.request(TrustDistrustByPageDocument, { likeStr: `%${hostname}%` })
+      const trustDistrustPromise = intuitionGraphqlClient.request(
+        TrustDistrustByPageDocument,
+        { likeStr: `%${hostname}%` }
+      )
 
       if (atomIds.length > 0) {
-        // Fetch count, data and trust/distrust in parallel
-        const [triplesCountResponse, triplesDataResponse, trustDistrustResponse] = await Promise.all([
-          intuitionGraphqlClient.request(TriplesCountByAtomIdsDocument, { atomIds }),
-          intuitionGraphqlClient.request(TriplesByAtomIdsDocument, { atomIds }),
-          trustDistrustPromise
-        ])
+        const [triplesCountResponse, triplesDataResponse, trustDistrustResponse] =
+          await Promise.all([
+            intuitionGraphqlClient.request(TriplesCountByAtomIdsDocument, {
+              atomIds
+            }),
+            intuitionGraphqlClient.request(TriplesByAtomIdsDocument, {
+              atomIds
+            }),
+            trustDistrustPromise
+          ])
 
-        totalTriplesCount = triplesCountResponse?.triples_aggregate?.aggregate?.count || 0
+        totalTriplesCount =
+          triplesCountResponse?.triples_aggregate?.aggregate?.count || 0
         triplesResponse = triplesDataResponse
-        trustDistrustData = trustDistrustResponse || { trustTriples: [], distrustTriples: [] }
-
-        logger.debug('Total triples count', totalTriplesCount)
-        logger.debug('Triples response (first 100)', triplesResponse)
-        logger.debug('Trust/Distrust data', trustDistrustData)
+        trustDistrustData = trustDistrustResponse || {
+          trustTriples: [],
+          distrustTriples: []
+        }
       } else {
-        logger.debug('No atoms found, skipping triplets query but fetching trust/distrust')
         triplesResponse = { triples: [] }
-        // Still fetch trust/distrust even without atoms
-        trustDistrustData = await trustDistrustPromise || { trustTriples: [], distrustTriples: [] }
-        logger.debug('Trust/Distrust data', trustDistrustData)
+        trustDistrustData = (await trustDistrustPromise) || {
+          trustTriples: [],
+          distrustTriples: []
+        }
       }
 
       // Calculate trust/distrust support counts
-      // Count unique position holders (accounts) for trust and distrust
       const trustPositions = new Set<string>()
       const distrustPositions = new Set<string>()
 
       for (const triple of trustDistrustData.trustTriples || []) {
         for (const pos of triple.positions || []) {
-          if (pos.account_id) trustPositions.add(pos.account_id.toLowerCase())
+          if (pos.account_id)
+            trustPositions.add(pos.account_id.toLowerCase())
         }
       }
 
       for (const triple of trustDistrustData.distrustTriples || []) {
         for (const pos of triple.positions || []) {
-          if (pos.account_id) distrustPositions.add(pos.account_id.toLowerCase())
+          if (pos.account_id)
+            distrustPositions.add(pos.account_id.toLowerCase())
         }
       }
 
       const trustCount = trustPositions.size
       const distrustCount = distrustPositions.size
       const totalSupport = trustCount + distrustCount
-      const trustRatio = totalSupport > 0 ? Math.round((trustCount / totalSupport) * 100) : 50
-
-      logger.debug('Trust/Distrust stats', { trustCount, distrustCount, trustRatio })
-      logger.debug('Trust positions (unique accounts)', Array.from(trustPositions))
-      logger.debug('Distrust positions (unique accounts)', Array.from(distrustPositions))
-      logger.debug('Trust triples found', trustDistrustData.trustTriples?.length || 0)
-      logger.debug('Distrust triples found', trustDistrustData.distrustTriples?.length || 0)
+      const trustRatio =
+        totalSupport > 0
+          ? Math.round((trustCount / totalSupport) * 100)
+          : 50
 
       const resultTriplets: PageBlockchainTriplet[] = []
       const resultAtomsList: PageAtomInfo[] = []
       let totalShares = 0
       let totalPositions = 0
 
-      // Use real total counts (not just displayed ones)
-      logger.debug('Total atoms (real count)', totalAtomsCount)
-      logger.debug('Atoms displayed', atoms.length)
-
-      // Store atoms for display
-      // Note: Atoms don't have vaults - market cap comes from triples only
       for (const atom of atoms) {
         resultAtomsList.push({
           id: atom.term_id,
-          label: atom.label || 'Unknown',
-          type: atom.type || 'unknown',
-          vaults: [] // Atoms don't have vaults
+          label: atom.label || "Unknown",
+          type: atom.type || "unknown",
+          vaults: []
         })
       }
 
-      // Display ONLY real triplets in the list (first 100)
       const triples = triplesResponse?.triples || []
-      logger.debug('Total triples (real count)', totalTriplesCount)
-      logger.debug('Triples displayed', triples.length)
 
       for (const triple of triples) {
-        // Access vaults through triple.term.vaults
         const vaults = triple.term?.vaults || []
-        logger.debug('Triple vaults', vaults)
-
-        // Add triple shares to total
         for (const vault of vaults) {
           totalShares += Number(vault.total_shares || 0) / 1e18
           totalPositions += Number(vault.position_count || 0)
@@ -228,18 +225,22 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
         resultTriplets.push({
           term_id: triple.term_id,
-          subject: triple.subject || { label: 'Unknown' },
-          predicate: triple.predicate || { label: 'Unknown' },
-          object: triple.object || { label: 'Unknown' },
+          subject: triple.subject || { label: "Unknown" },
+          predicate: triple.predicate || { label: "Unknown" },
+          object: triple.object || { label: "Unknown" },
           created_at: new Date().toISOString(),
-          positions: vaults.map((vault: { total_shares?: string; position_count?: number }) => ({
-            shares: vault.total_shares || '0',
-            position_count: vault.position_count || 0
-          }))
+          positions: vaults.map(
+            (vault: {
+              total_shares?: string
+              position_count?: number
+            }) => ({
+              shares: vault.total_shares || "0",
+              position_count: vault.position_count || 0
+            })
+          )
         })
       }
 
-      // Build properly typed counts object
       const resultCounts: PageBlockchainCounts = {
         atomsCount: totalAtomsCount,
         triplesCount: totalTriplesCount,
@@ -259,136 +260,170 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         counts: resultCounts,
         atomsList: resultAtomsList
       }
+    },
+    []
+  )
 
-    } catch (error) {
-      logger.error('Error fetching page blockchain data', error)
-      throw error
-    }
-  }, [])
+  /** Schedule a silent retry */
+  const scheduleSilentRetry = useCallback(
+    (fetchFn: () => Promise<void>) => {
+      if (retryCountRef.current >= MAX_SILENT_RETRIES) {
+        // All retries exhausted — show error
+        setStatus("error")
+        return
+      }
 
-  // Function to pause/resume refreshes (exposed for external use)
+      retryCountRef.current += 1
+      const delay = RETRY_DELAY * retryCountRef.current
+      logger.debug(
+        `Silent retry ${retryCountRef.current}/${MAX_SILENT_RETRIES} in ${delay}ms`
+      )
+
+      retryTimerRef.current = setTimeout(() => {
+        fetchFn()
+      }, delay)
+    },
+    []
+  )
+
+  // Pause/resume refreshes (exposed for transactions)
   const pauseRefresh = useCallback(() => {
     pauseRefreshRef.current = true
-    logger.info('Refreshes PAUSED')
   }, [])
 
   const resumeRefresh = useCallback(() => {
     pauseRefreshRef.current = false
-    logger.info('Refreshes RESUMED')
   }, [])
 
-  // Manual fetch function
+  // Main fetch function
   const fetchDataForCurrentPage = useCallback(async () => {
-    // Skip if paused (during transactions)
-    if (pauseRefreshRef.current) {
-      logger.debug('Refresh skipped - paused')
-      return
-    }
+    if (pauseRefreshRef.current || isFetchingRef.current) return
 
     if (!account) {
       setTriplets([])
-      setError('No account connected')
+      setStatus("ready")
       return
     }
 
-    setLoading(true)
+    isFetchingRef.current = true
+
+    // If we already have data, show "refreshing" instead of full skeleton
+    if (hasDataRef.current) {
+      setStatus("refreshing")
+    } else {
+      setStatus("loading")
+    }
     setError(null)
 
+    // Clear any pending retry
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current)
+      retryTimerRef.current = null
+    }
+
     try {
-      // Get current page URL and title
       const { url, title } = await getCurrentPageUrl()
+
       if (!url) {
-        setError('Unable to get current page URL')
-        setCurrentUrl(null)
-        setPageTitle(null)
-        setTriplets([])
+        // Content script not ready — retry silently, don't show error
+        isFetchingRef.current = false
+        if (!hasDataRef.current) {
+          scheduleSilentRetry(fetchDataForCurrentPage)
+        }
         return
       }
 
       setCurrentUrl(url)
       setPageTitle(title)
 
-      // Check if page is restricted (wallet/certification unavailable)
       const restriction = isRestrictedUrl(url)
       setIsRestricted(restriction.restricted)
       setRestrictionMessage(restriction.message || null)
 
       if (restriction.restricted) {
-        logger.info('Page is restricted', restriction.message)
         setTriplets([])
-        setLoading(false)
+        setStatus("ready")
+        isFetchingRef.current = false
         return
       }
 
-      // Fetch blockchain data for this URL
       const result = await fetchPageBlockchainData(url)
       setTriplets(result.triplets)
       setCounts(result.counts)
       setAtomsList(result.atomsList)
+      setStatus("ready")
+      setError(null)
+      hasDataRef.current = true
+      retryCountRef.current = 0
+    } catch (err) {
+      logger.error("Fetch failed", err)
+      const msg = err instanceof Error ? err.message : "Unknown error"
+      setError(msg)
 
-    } catch (error) {
-      logger.error('Error fetching page blockchain data', error)
-      setError(error instanceof Error ? error.message : 'Unknown error')
-      setTriplets([])
-      setCounts(DEFAULT_COUNTS)
-      setAtomsList([])
+      // If we have no data yet, retry silently (skeleton stays)
+      // If we have stale data, keep showing it and retry
+      if (!hasDataRef.current) {
+        scheduleSilentRetry(fetchDataForCurrentPage)
+      } else {
+        // Keep stale data visible, just mark as ready with error
+        setStatus("ready")
+      }
     } finally {
-      setLoading(false)
+      isFetchingRef.current = false
     }
-  }, [account, getCurrentPageUrl, fetchPageBlockchainData])
+  }, [
+    account,
+    getCurrentPageUrl,
+    fetchPageBlockchainData,
+    scheduleSilentRetry
+  ])
+
+  // Debounced version for URL change listeners
+  const debouncedFetch = useMemo(
+    () => debounce(() => fetchDataForCurrentPage(), 800),
+    [fetchDataForCurrentPage]
+  )
 
   // Initial load when account changes
   useEffect(() => {
     if (account) {
+      hasDataRef.current = false
+      retryCountRef.current = 0
       fetchDataForCurrentPage()
     }
-  }, [account]) // Only depend on account, not the function
+  }, [account]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh when URL changes (SPAs + traditional navigation)
   useEffect(() => {
-    let lastUrl = ''
+    let lastUrl = ""
 
-    const handleTabUpdate = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
-      // Refresh on any URL change (SPAs) or when page loading completes
-      if (changeInfo.url || changeInfo.status === 'complete') {
-        const newUrl = changeInfo.url || ''
+    const handleTabUpdate = (
+      _tabId: number,
+      changeInfo: chrome.tabs.TabChangeInfo
+    ) => {
+      if (changeInfo.url || changeInfo.status === "complete") {
+        const newUrl = changeInfo.url || ""
         if (newUrl && newUrl !== lastUrl) {
           lastUrl = newUrl
-          logger.debug('Tab URL changed, refreshing data...')
-          setTimeout(() => {
-            fetchDataForCurrentPage()
-          }, 1000)
-        } else if (changeInfo.status === 'complete' && !changeInfo.url) {
-          // Page completed loading but no URL change - might be SPA navigation
-          logger.debug('Page load complete, checking for URL changes...')
-          setTimeout(() => {
-            fetchDataForCurrentPage()
-          }, 500)
+          retryCountRef.current = 0
+          debouncedFetch()
+        } else if (changeInfo.status === "complete" && !changeInfo.url) {
+          debouncedFetch()
         }
       }
     }
 
-    // Also listen for history changes (SPAs using pushState/replaceState)
-    const handleHistoryChange = () => {
-      logger.debug('History change detected, refreshing data...')
-      setTimeout(() => {
-        fetchDataForCurrentPage()
-      }, 500)
-    }
-
-    // Listen for tab updates
-    chrome.tabs.onUpdated.addListener(handleTabUpdate)
-
-    // Listen for navigation events via content script
     const handleMessage = (message: any) => {
-      if (message.type === 'PAGE_ANALYSIS' || message.type === 'URL_CHANGED') {
-        logger.debug('Content script reported navigation, refreshing data...')
-        setTimeout(() => {
-          fetchDataForCurrentPage()
-        }, 500)
+      if (
+        message.type === "PAGE_ANALYSIS" ||
+        message.type === "URL_CHANGED"
+      ) {
+        retryCountRef.current = 0
+        debouncedFetch()
       }
     }
 
+    chrome.tabs.onUpdated.addListener(handleTabUpdate)
     chrome.runtime.onMessage.addListener(handleMessage)
 
     // Periodic check for URL changes (fallback for SPAs)
@@ -397,24 +432,33 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         const currentTab = tabs[0]
         if (currentTab?.url && currentTab.url !== lastUrl) {
           lastUrl = currentTab.url
-          logger.debug('URL change detected via polling, refreshing data...')
-          fetchDataForCurrentPage()
+          retryCountRef.current = 0
+          debouncedFetch()
         }
       })
-    }, 3000) // Check every 3 seconds
+    }, 3000)
 
     return () => {
       chrome.tabs.onUpdated.removeListener(handleTabUpdate)
       chrome.runtime.onMessage.removeListener(handleMessage)
       clearInterval(intervalId)
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
     }
-  }, [account]) // Only re-register when account changes
+  }, [account, debouncedFetch])
+
+  // Cleanup retry timer on unmount
+  useEffect(() => {
+    return () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+    }
+  }, [])
 
   return {
     triplets,
     counts,
     atomsList,
     loading,
+    status,
     error,
     currentUrl,
     pageTitle,

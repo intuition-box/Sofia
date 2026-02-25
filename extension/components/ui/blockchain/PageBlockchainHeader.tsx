@@ -6,6 +6,7 @@
 
 import React from "react"
 import StarBorder from "../StarBorder"
+import "../../styles/PageBlockchainHeader.css"
 import pioneerBadge from "../img/badges/pioneer.png"
 import explorerBadge from "../img/badges/explorer.png"
 import contributorBadge from "../img/badges/contributor.png"
