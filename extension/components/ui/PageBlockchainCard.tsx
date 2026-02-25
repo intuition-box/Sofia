@@ -36,6 +36,7 @@ const PageBlockchainCard = () => {
     pageTitle,
     isRestricted,
     restrictionMessage,
+    pageAtomIds,
     fetchDataForCurrentPage,
     pauseRefresh,
     resumeRefresh
@@ -44,10 +45,13 @@ const PageBlockchainCard = () => {
     usePageDiscovery(currentUrl)
   const {
     intentions: intentionStats,
+    pageIntentions: pageIntentionStats,
     totalCertifications: intentionTotal,
+    pageTotalCertifications: pageIntentionTotal,
     maxIntentionCount,
+    pageMaxIntentionCount,
     loading: intentionStatsLoading
-  } = usePageIntentionStats(currentUrl)
+  } = usePageIntentionStats(currentUrl, pageAtomIds)
   const { claimDiscoveryGold } = useDiscoveryScore()
   const { totalGold } = useGoldSystem()
 
@@ -213,8 +217,11 @@ const PageBlockchainCard = () => {
                   counts={counts}
                   triplets={triplets}
                   intentionStats={intentionStats}
+                  pageIntentionStats={pageIntentionStats}
                   intentionTotal={intentionTotal}
+                  pageIntentionTotal={pageIntentionTotal}
                   maxIntentionCount={maxIntentionCount}
+                  pageMaxIntentionCount={pageMaxIntentionCount}
                   intentionStatsLoading={intentionStatsLoading}
                   onAtomClick={handleAtomClick}
                   onTripletClick={handleTripletClick}

@@ -31,6 +31,11 @@ export interface PageBlockchainCounts {
   distrustCount: number
   totalSupport: number
   trustRatio: number
+  // Domain-level trust (all atoms on the hostname)
+  domainTrustCount: number
+  domainDistrustCount: number
+  domainTotalSupport: number
+  domainTrustRatio: number
 }
 
 /**
@@ -60,6 +65,7 @@ export interface UsePageBlockchainDataResult {
   pageTitle: string | null
   isRestricted: boolean
   restrictionMessage: string | null
+  pageAtomIds: string[]
   fetchDataForCurrentPage: () => Promise<void>
   pauseRefresh: () => void
   resumeRefresh: () => void

@@ -41,14 +41,46 @@
   font-size: var(--font-size-sm, 12px);
   font-weight: 600;
   color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
-  margin-bottom: var(--spacing-md, 12px);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.section-subheader {
+  margin-bottom: var(--spacing-sm, 8px);
 }
 
 .intentions-total {
   font-size: var(--font-size-sm, 12px);
   color: var(--color-text-placeholder, rgba(255, 255, 255, 0.5));
+}
+
+/* ─── Scope Toggle (Domain / Page) ─── */
+.scope-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
+  border-radius: var(--radius-sm, 4px);
+  padding: 2px;
+}
+
+.scope-btn {
+  padding: 2px var(--spacing-sm, 8px);
+  border-radius: var(--radius-sm, 4px);
+  font-size: var(--font-size-xs, 10px);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-fast, all 0.2s ease);
+}
+
+.scope-btn:hover {
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+}
+
+.scope-btn.active {
+  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
+  color: var(--color-text-secondary, #FBF7F5);
 }
 
 .intentions-loading {

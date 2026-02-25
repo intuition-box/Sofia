@@ -5,18 +5,22 @@
  */
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react"
-import { useWalletFromStorage } from "./useWalletFromStorage"
-import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
-import { messageBus } from "../lib/services"
-import { isRestrictedUrl, debounce, normalizeUrl } from "../lib/utils"
-import { createHookLogger } from "../lib/utils/logger"
+import { useWalletFromStorage } from "~/hooks"
+import { intuitionGraphqlClient } from "~/lib/clients/graphql-client"
+import { messageBus } from "~/lib/services"
+import {
+  isRestrictedUrl,
+  debounce,
+  normalizeUrl,
+  createHookLogger
+} from "~/lib/utils"
 import type {
   PageBlockchainTriplet,
   PageBlockchainCounts,
   PageAtomInfo,
   PageDataStatus,
   UsePageBlockchainDataResult
-} from "../types/page"
+} from "~/types/page"
 import {
   AtomIdsByUrlDocument,
   AtomsByTermIdsDocument,
@@ -37,7 +41,11 @@ const DEFAULT_COUNTS: PageBlockchainCounts = {
   trustCount: 0,
   distrustCount: 0,
   totalSupport: 0,
-  trustRatio: 50
+  trustRatio: 50,
+  domainTrustCount: 0,
+  domainDistrustCount: 0,
+  domainTotalSupport: 0,
+  domainTrustRatio: 50
 }
 
 const logger = createHookLogger("usePageBlockchainData")
@@ -59,6 +67,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const [restrictionMessage, setRestrictionMessage] = useState<string | null>(
     null
   )
+  const [pageAtomIds, setPageAtomIds] = useState<string[]>([])
   const { walletAddress: account } = useWalletFromStorage()
 
   // Refs for control flow
@@ -107,6 +116,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     triplets: PageBlockchainTriplet[]
     counts: PageBlockchainCounts
     atomsList: PageAtomInfo[]
+    pageAtomIds: string[]
   }
 
   const fetchPageBlockchainData = useCallback(
@@ -164,11 +174,11 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         distrustTriples: any[]
       } = { trustTriples: [], distrustTriples: [] }
 
-      // Use page-specific atoms for trust/distrust (no domain fallback)
-      const trustDistrustPromise = pageAtomIds.length > 0
+      // Query trust/distrust at domain level (all atoms), filter client-side for page
+      const trustDistrustPromise = foundAtomIds.length > 0
         ? intuitionGraphqlClient.request(
             TrustDistrustByPageDocument,
-            { atomIds: pageAtomIds }
+            { atomIds: foundAtomIds }
           )
         : Promise.resolve({ trustTriples: [], distrustTriples: [] })
 
@@ -199,26 +209,44 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         }
       }
 
-      // Calculate trust/distrust support counts
-      const trustPositions = new Set<string>()
-      const distrustPositions = new Set<string>()
-
-      for (const triple of trustDistrustData.trustTriples || []) {
-        for (const pos of triple.positions || []) {
-          if (pos.account_id)
-            trustPositions.add(pos.account_id.toLowerCase())
+      // Count trust/distrust at both domain and page levels
+      // Uses max-single-triple (canonical) approach per level
+      const countTrustForAtoms = (
+        triples: any[],
+        atomIds: string[]
+      ): number => {
+        const atomSet = new Set(atomIds)
+        let count = 0
+        for (const triple of triples) {
+          if (atomSet.size > 0 && !atomSet.has(triple.object?.term_id))
+            continue
+          const positions = new Set<string>()
+          for (const pos of triple.positions || []) {
+            if (pos.account_id) positions.add(pos.account_id.toLowerCase())
+          }
+          count = Math.max(count, positions.size)
         }
+        return count
       }
 
-      for (const triple of trustDistrustData.distrustTriples || []) {
-        for (const pos of triple.positions || []) {
-          if (pos.account_id)
-            distrustPositions.add(pos.account_id.toLowerCase())
-        }
-      }
+      const trustTriples = trustDistrustData.trustTriples || []
+      const distrustTriples = trustDistrustData.distrustTriples || []
 
-      const trustCount = trustPositions.size
-      const distrustCount = distrustPositions.size
+      // Domain-level (all atoms on hostname)
+      const domainTrustCount = countTrustForAtoms(trustTriples, foundAtomIds)
+      const domainDistrustCount = countTrustForAtoms(
+        distrustTriples,
+        foundAtomIds
+      )
+      const domainTotalSupport = domainTrustCount + domainDistrustCount
+      const domainTrustRatio =
+        domainTotalSupport > 0
+          ? Math.round((domainTrustCount / domainTotalSupport) * 100)
+          : 50
+
+      // Page-level (only atoms matching the exact URL)
+      const trustCount = countTrustForAtoms(trustTriples, pageAtomIds)
+      const distrustCount = countTrustForAtoms(distrustTriples, pageAtomIds)
       const totalSupport = trustCount + distrustCount
       const trustRatio =
         totalSupport > 0
@@ -278,12 +306,17 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         trustCount,
         distrustCount,
         totalSupport,
-        trustRatio
+        trustRatio,
+        domainTrustCount,
+        domainDistrustCount,
+        domainTotalSupport,
+        domainTrustRatio
       }
 
       return {
         triplets: resultTriplets,
         counts: resultCounts,
+        pageAtomIds,
         atomsList: resultAtomsList
       }
     },
@@ -377,6 +410,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       setTriplets(result.triplets)
       setCounts(result.counts)
       setAtomsList(result.atomsList)
+      setPageAtomIds(result.pageAtomIds)
       setStatus("ready")
       setError(null)
       hasDataRef.current = true
@@ -490,6 +524,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     pageTitle,
     isRestricted,
     restrictionMessage,
+    pageAtomIds,
     fetchDataForCurrentPage,
     pauseRefresh,
     resumeRefresh

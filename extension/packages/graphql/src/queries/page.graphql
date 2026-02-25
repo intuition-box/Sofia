@@ -93,6 +93,7 @@ query TrustDistrustByPage($atomIds: [String!]!) {
     }
   ) {
     term_id
+    object { term_id }
     positions(where: { shares: { _gt: "0" } }) {
       account_id
       shares
@@ -106,6 +107,7 @@ query TrustDistrustByPage($atomIds: [String!]!) {
     }
   ) {
     term_id
+    object { term_id }
     positions(where: { shares: { _gt: "0" } }) {
       account_id
       shares

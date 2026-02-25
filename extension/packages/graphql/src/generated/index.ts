@@ -18580,6 +18580,7 @@ export type IntentionStatsQuery = {
     term_id: string
     predicate_id: string
     predicate?: { __typename?: "atoms"; label?: string | null } | null
+    object?: { __typename?: "atoms"; term_id: string } | null
     positions: Array<{ __typename?: "positions"; account_id: string }>
   }>
 }
@@ -21723,6 +21724,7 @@ export type TrustDistrustByPageQuery = {
   trustTriples: Array<{
     __typename?: "triples"
     term_id: string
+    object?: { __typename?: "atoms"; term_id: string } | null
     positions: Array<{
       __typename?: "positions"
       account_id: string
@@ -21732,6 +21734,7 @@ export type TrustDistrustByPageQuery = {
   distrustTriples: Array<{
     __typename?: "triples"
     term_id: string
+    object?: { __typename?: "atoms"; term_id: string } | null
     positions: Array<{
       __typename?: "positions"
       account_id: string
@@ -29510,6 +29513,9 @@ export const IntentionStatsDocument = `
     predicate {
       label
     }
+    object {
+      term_id
+    }
     positions(where: {shares: {_gt: "0"}}) {
       account_id
     }
@@ -33432,6 +33438,9 @@ export const TrustDistrustByPageDocument = `
     where: {predicate: {label: {_eq: "trusts"}}, object: {term_id: {_in: $atomIds}}, positions: {shares: {_gt: "0"}}}
   ) {
     term_id
+    object {
+      term_id
+    }
     positions(where: {shares: {_gt: "0"}}) {
       account_id
       shares
@@ -33441,6 +33450,9 @@ export const TrustDistrustByPageDocument = `
     where: {predicate: {label: {_ilike: "distrust"}}, object: {term_id: {_in: $atomIds}}, positions: {shares: {_gt: "0"}}}
   ) {
     term_id
+    object {
+      term_id
+    }
     positions(where: {shares: {_gt: "0"}}) {
       account_id
       shares
@@ -53598,6 +53610,19 @@ export const IntentionStats = {
                 },
                 {
                   kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
                   name: { kind: "Name", value: "positions" },
                   arguments: [
                     {
@@ -66601,6 +66626,19 @@ export const TrustDistrustByPage = {
                 { kind: "Field", name: { kind: "Name", value: "term_id" } },
                 {
                   kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
                   name: { kind: "Name", value: "positions" },
                   arguments: [
                     {
@@ -66744,6 +66782,19 @@ export const TrustDistrustByPage = {
               kind: "SelectionSet",
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      }
+                    ]
+                  }
+                },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "positions" },

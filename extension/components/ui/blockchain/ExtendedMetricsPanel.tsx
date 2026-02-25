@@ -1,32 +1,29 @@
 /**
  * ExtendedMetricsPanel
- * Shows intentions stats, collapsible atoms list, and collapsible triplets list
+ * Shows intentions stats with Domain/Page toggle,
+ * collapsible atoms list, and collapsible triplets list
  */
 
 import React, { useState, useMemo } from "react"
 import { getTotalShares, type CredibilityAnalysis } from "~/hooks"
 import "../../styles/ExtendedMetricsPanel.css"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
+import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_ITEMS } from "~/types/intentionCategories"
 
-interface IntentionStats {
-  for_work: number
-  for_learning: number
-  for_fun: number
-  for_inspiration: number
-  for_buying: number
-  for_music: number
-}
-
 type SortMode = "market_cap" | "newest"
+type FilterScope = "domain" | "page"
 
 interface ExtendedMetricsPanelProps {
   analysis: CredibilityAnalysis
   counts: PageBlockchainCounts
   triplets: PageBlockchainTriplet[]
-  intentionStats: IntentionStats
+  intentionStats: Record<IntentionPurpose, number>
+  pageIntentionStats: Record<IntentionPurpose, number>
   intentionTotal: number
+  pageIntentionTotal: number
   maxIntentionCount: number
+  pageMaxIntentionCount: number
   intentionStatsLoading: boolean
   onAtomClick: (atomId: string) => void
   onTripletClick: (tripletId: string) => void
@@ -37,8 +34,11 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
   counts,
   triplets,
   intentionStats,
+  pageIntentionStats,
   intentionTotal,
+  pageIntentionTotal,
   maxIntentionCount,
+  pageMaxIntentionCount,
   intentionStatsLoading,
   onAtomClick,
   onTripletClick
@@ -47,13 +47,26 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
   const [showTripletsList, setShowTripletsList] = useState(false)
   const [atomsSort, setAtomsSort] = useState<SortMode>("market_cap")
   const [tripletsSort, setTripletsSort] = useState<SortMode>("market_cap")
+  const [filterScope, setFilterScope] = useState<FilterScope>("domain")
+
+  // Select active stats based on scope
+  const activeTrust =
+    filterScope === "domain"
+      ? counts.domainTrustCount
+      : counts.trustCount
+  const activeDistrust =
+    filterScope === "domain"
+      ? counts.domainDistrustCount
+      : counts.distrustCount
+  const activeIntentions =
+    filterScope === "domain" ? intentionStats : pageIntentionStats
+  const activeTotal =
+    filterScope === "domain" ? intentionTotal : pageIntentionTotal
+  const activeMax =
+    filterScope === "domain" ? maxIntentionCount : pageMaxIntentionCount
 
   // Include trust/distrust in max for proportional progress bars
-  const effectiveMax = Math.max(
-    maxIntentionCount,
-    analysis.trustCount,
-    analysis.distrustCount
-  )
+  const effectiveMax = Math.max(activeMax, activeTrust, activeDistrust)
 
   // Sorted atoms list
   const sortedAtoms = useMemo(() => {
@@ -89,8 +102,29 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
       {/* Intentions Section */}
       <div className="intentions-stats-section">
         <div className="section-header">
-          <span className="section-title">Intentions on this page</span>
-          <span className="intentions-total">{intentionTotal + analysis.trustCount + analysis.distrustCount} total</span>
+          <span className="section-title">
+            Intentions on this {filterScope}
+          </span>
+          <div className="scope-toggle">
+            <button
+              className={`scope-btn ${filterScope === "domain" ? "active" : ""}`}
+              onClick={() => setFilterScope("domain")}
+            >
+              Domain
+            </button>
+            <button
+              className={`scope-btn ${filterScope === "page" ? "active" : ""}`}
+              onClick={() => setFilterScope("page")}
+            >
+              Page
+            </button>
+          </div>
+        </div>
+
+        <div className="section-subheader">
+          <span className="intentions-total">
+            {activeTotal + activeTrust + activeDistrust} total
+          </span>
         </div>
 
         {intentionStatsLoading ? (
@@ -106,11 +140,11 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
                 <div
                   className="progress-fill trusted"
                   style={{
-                    width: `${effectiveMax > 0 ? (analysis.trustCount / effectiveMax) * 100 : 0}%`
+                    width: `${effectiveMax > 0 ? (activeTrust / effectiveMax) * 100 : 0}%`
                   }}
                 />
               </div>
-              <span className="intention-count">{analysis.trustCount}</span>
+              <span className="intention-count">{activeTrust}</span>
             </div>
             <div className="intention-progress-item">
               <span className="intention-label">distrusted</span>
@@ -118,11 +152,11 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
                 <div
                   className="progress-fill distrusted"
                   style={{
-                    width: `${effectiveMax > 0 ? (analysis.distrustCount / effectiveMax) * 100 : 0}%`
+                    width: `${effectiveMax > 0 ? (activeDistrust / effectiveMax) * 100 : 0}%`
                   }}
                 />
               </div>
-              <span className="intention-count">{analysis.distrustCount}</span>
+              <span className="intention-count">{activeDistrust}</span>
             </div>
             {/* 6 intention types */}
             {INTENTION_ITEMS.map(({ key, label }) => (
@@ -132,11 +166,13 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
                   <div
                     className={`progress-fill ${label}`}
                     style={{
-                      width: `${effectiveMax > 0 ? (intentionStats[key] / effectiveMax) * 100 : 0}%`
+                      width: `${effectiveMax > 0 ? (activeIntentions[key] / effectiveMax) * 100 : 0}%`
                     }}
                   />
                 </div>
-                <span className="intention-count">{intentionStats[key]}</span>
+                <span className="intention-count">
+                  {activeIntentions[key]}
+                </span>
               </div>
             ))}
           </div>
