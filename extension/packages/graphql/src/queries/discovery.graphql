@@ -91,6 +91,7 @@ query TriplePositionsByObjects(
       term_id
     }
     positions(
+      limit: 1000
       where: { shares: { _gt: "0" } }
       order_by: { created_at: asc }
     ) {

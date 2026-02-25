@@ -8,6 +8,8 @@ import { useState, useCallback, useEffect } from "react"
 import { useTrustPage } from "./useTrustPage"
 import { useIntentionCertify } from "./useIntentionCertify"
 import { normalizeUrl } from "~/lib/utils"
+import { discoveryScoreService } from "~/lib/services"
+import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { INTENTION_PREDICATES } from "~/types/discovery"
 import type { IntentionPurpose } from "~/types/discovery"
 import { createHookLogger } from "~/lib/utils/logger"
@@ -15,7 +17,8 @@ import { createHookLogger } from "~/lib/utils/logger"
 const logger = createHookLogger("useCertificationModal")
 
 const DELAYS = {
-  REFRESH_AFTER_TX: 1000
+  REFRESH_AFTER_TX: 1000,
+  DISCOVERY_SCORE_REFRESH: 5000
 } as const
 
 // Type for triplets shown in the WeightModal
@@ -263,6 +266,11 @@ export const useCertificationModal = (): CertificationModalResult => {
             () => ctx.fetchDataForCurrentPage(),
             DELAYS.REFRESH_AFTER_TX
           )
+          // Delayed refetch: wait for indexer to process the transaction
+          setTimeout(() => {
+            intuitionGraphqlClient.clearCache()
+            discoveryScoreService.refetch()
+          }, DELAYS.DISCOVERY_SCORE_REFRESH)
         } catch (error) {
           logger.error("Intention certification error", error)
           ctx.resumeRefresh()
@@ -297,6 +305,11 @@ export const useCertificationModal = (): CertificationModalResult => {
           () => ctx.fetchDataForCurrentPage(),
           DELAYS.REFRESH_AFTER_TX
         )
+        // Delayed refetch: wait for indexer to process the transaction
+        setTimeout(() => {
+          intuitionGraphqlClient.clearCache()
+          discoveryScoreService.refetch()
+        }, DELAYS.DISCOVERY_SCORE_REFRESH)
       } catch (error) {
         logger.error("trustPage error", error)
         const errorMessage =

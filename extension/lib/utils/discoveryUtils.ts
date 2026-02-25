@@ -47,35 +47,40 @@ export interface DiscoveryGold {
 export function buildPagePositionMap(
   allTriples: TripleWithPositions[]
 ): Map<string, { accountId: string; createdAt: string }[]> {
-  const pagePositionMap = new Map<string, { accountId: string; createdAt: string }[]>()
+  // Collect earliest createdAt per account per object
+  const raw = new Map<string, Map<string, string>>()
 
   for (const triple of allTriples) {
     const objectId = triple.object?.term_id
-    const positions = triple.positions || []
-
     if (!objectId) continue
 
-    if (!pagePositionMap.has(objectId)) {
-      pagePositionMap.set(objectId, [])
-    }
+    if (!raw.has(objectId)) raw.set(objectId, new Map())
+    const accounts = raw.get(objectId)!
 
-    const pagePositions = pagePositionMap.get(objectId)!
-
-    for (const pos of positions) {
+    for (const pos of triple.positions || []) {
       const accountId = pos.account_id?.toLowerCase()
       const createdAt = pos.created_at
-      if (accountId && createdAt && !pagePositions.some(p => p.accountId === accountId)) {
-        pagePositions.push({ accountId, createdAt })
+      if (!accountId || !createdAt) continue
+
+      const existing = accounts.get(accountId)
+      if (!existing || createdAt < existing) {
+        accounts.set(accountId, createdAt)
       }
     }
   }
 
-  // Positions are already sorted by created_at from GraphQL, but ensure sort
-  for (const [, positions] of pagePositionMap) {
-    positions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  // Sort by createdAt → index + 1 = rank
+  const result = new Map<string, { accountId: string; createdAt: string }[]>()
+  for (const [objectId, accounts] of raw) {
+    result.set(
+      objectId,
+      [...accounts.entries()]
+        .map(([accountId, createdAt]) => ({ accountId, createdAt }))
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    )
   }
 
-  return pagePositionMap
+  return result
 }
 
 /**
@@ -84,8 +89,7 @@ export function buildPagePositionMap(
  */
 export function calculateDiscoveryRanking(
   userTriples: TripleWithPredicate[],
-  pagePositionMap: Map<string, { accountId: string; createdAt: string }[]>,
-  userAddress: string
+  pagePositionMap: Map<string, { accountId: string; createdAt: string }[]>
 ): DiscoveryRanking {
   let pioneerCount = 0
   let explorerCount = 0
@@ -123,13 +127,13 @@ export function calculateDiscoveryRanking(
     processedPages.add(objectId)
 
     const pagePositions = pagePositionMap.get(objectId) || []
-    const userRank = pagePositions.findIndex(p => p.accountId === userAddress) + 1
+    const totalCertifiers = pagePositions.length
 
-    if (userRank === 1) {
+    if (totalCertifiers <= 1) {
       pioneerCount++
-    } else if (userRank <= 10) {
+    } else if (totalCertifiers <= 10) {
       explorerCount++
-    } else if (userRank > 0) {
+    } else {
       contributorCount++
     }
   }

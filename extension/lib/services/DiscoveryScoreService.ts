@@ -24,16 +24,16 @@ import {
 } from "../utils/discoveryUtils"
 import {
   UserIntentionTriplesDocument,
-  AllIntentionTriplesDocument,
+  TriplePositionsByObjectsDocument,
   type UserIntentionTriplesQuery,
-  type AllIntentionTriplesQuery
+  type TriplePositionsByObjectsQuery
 } from "@0xsofia/graphql"
 
 const logger = createServiceLogger("DiscoveryScoreService")
 
 // Types extracted from generated query results
 type UserTripleResult = UserIntentionTriplesQuery["triples"][number]
-type AllTripleResult = AllIntentionTriplesQuery["triples"][number]
+type PositionTripleResult = TriplePositionsByObjectsQuery["triples"][number]
 
 export interface DiscoveryState {
   stats: UserDiscoveryStats | null
@@ -88,60 +88,49 @@ class DiscoveryScoreServiceClass {
 
       logger.debug("Fetching discovery score", { userAddress })
 
-      const [userTriples, allTriples] = await Promise.all([
-        intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
-          UserIntentionTriplesDocument,
-          { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddress },
-          "triples",
-          100,
-          100
-        ),
-        intuitionGraphqlClient.fetchAllPages<AllTripleResult>(
-          AllIntentionTriplesDocument,
-          { predicateLabels: CERTIFICATION_PREDICATE_LABELS },
-          "triples",
-          100,
-          100
-        )
-      ])
+      // Step 1: Fetch user's certifications
+      const userTriples = await intuitionGraphqlClient.fetchAllPages<UserTripleResult>(
+        UserIntentionTriplesDocument,
+        { predicateLabels: CERTIFICATION_PREDICATE_LABELS, userAddress },
+        "triples",
+        100,
+        100
+      )
 
-      console.log("🔍 [DiscoveryScore] Paginated results:", {
-        userTriples: userTriples.length,
-        allTriples: allTriples.length
-      })
-
-      // Debug: show all predicate labels found vs what we're looking for
-      const foundPredicateLabels = new Set<string>()
-      for (const triple of allTriples) {
-        if (triple.predicate?.label) foundPredicateLabels.add(triple.predicate.label)
+      if (userTriples.length === 0) {
+        logger.debug("No user triples found")
+        this.updateState({ stats: buildDiscoveryStats(
+          { pioneerCount: 0, explorerCount: 0, contributorCount: 0, totalCertifications: 0,
+            intentionBreakdown: { for_work: 0, for_learning: 0, for_fun: 0, for_inspiration: 0, for_buying: 0, for_music: 0 },
+            trustBreakdown: { trusted: 0, distrusted: 0 } },
+          { fromPioneer: 0, fromExplorer: 0, fromContributor: 0, total: 0 }
+        ), loading: false })
+        return
       }
-      console.log("🔍 [DiscoveryScore] Predicate labels we search for:", CERTIFICATION_PREDICATE_LABELS)
-      console.log("🔍 [DiscoveryScore] Predicate labels found in results:", Array.from(foundPredicateLabels))
 
-      // Debug: show all account_ids in positions to compare with userAddress
-      const allAccountIds = new Set<string>()
-      for (const triple of allTriples) {
-        for (const pos of triple.positions || []) {
-          if (pos.account_id) allAccountIds.add(pos.account_id)
-        }
-      }
-      console.log("🔍 [DiscoveryScore] All position account_ids:", Array.from(allAccountIds))
-      console.log("🔍 [DiscoveryScore] Looking for userAddress:", userAddress)
+      // Step 2: Extract unique object term_ids
+      const objectTermIds = [...new Set(
+        userTriples.map(t => t.object?.term_id).filter((id): id is string => !!id)
+      )]
 
-      console.log("🔍 [DiscoveryScore] Found triples:", {
-        userTriples: userTriples.length,
-        allTriples: allTriples.length,
-        userTriplesData: userTriples
-      })
+      // Step 3: Fetch positions only for user's certified pages
+      const positionTriples = await intuitionGraphqlClient.fetchAllPages<PositionTripleResult>(
+        TriplePositionsByObjectsDocument,
+        { predicateLabels: CERTIFICATION_PREDICATE_LABELS, objectTermIds },
+        "triples",
+        100,
+        100
+      )
 
       logger.debug("Found triples", {
         userTriples: userTriples.length,
-        allTriples: allTriples.length
+        scopedPages: objectTermIds.length,
+        positionTriples: positionTriples.length
       })
 
-      // Calculate discovery ranking using extracted utils
-      const pagePositionMap = buildPagePositionMap(allTriples)
-      const ranking = calculateDiscoveryRanking(userTriples, pagePositionMap, userAddress)
+      // Step 4: Calculate ranking from scoped data
+      const pagePositionMap = buildPagePositionMap(positionTriples)
+      const ranking = calculateDiscoveryRanking(userTriples, pagePositionMap)
       const gold = calculateDiscoveryGold(ranking)
       const discoveryStats = buildDiscoveryStats(ranking, gold)
 

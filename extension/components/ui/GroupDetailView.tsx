@@ -292,7 +292,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   } | null>(null)
 
   // Discovery reward hooks (same pattern as PageBlockchainCard)
-  const { claimDiscoveryGold } = useDiscoveryScore()
+  const { claimDiscoveryGold, refetch: refetchDiscoveryScore } = useDiscoveryScore()
   const reward = useDiscoveryReward()
   const {
     totalCertifications: pendingUrlCertCount,
@@ -507,6 +507,9 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
       // Refetch discovery data and calculate reward based on pre-cert position
       await refetchPendingDiscovery()
       reward.calculateAndTriggerReward(prevDiscoveryTotalRef.current)
+
+      // Refetch global discovery score so StatsTab updates
+      refetchDiscoveryScore()
 
       // Also refresh the parent group to update merged data
       if (onRefresh) {
