@@ -18627,6 +18627,36 @@ export type GetUserIntentionPositionsQuery = {
   }>
 }
 
+export type PageCertificationDataQueryVariables = Exact<{
+  predicateIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
+  hostnameLike: Scalars["String"]["input"]
+}>
+
+export type PageCertificationDataQuery = {
+  __typename?: "query_root"
+  triples: Array<{
+    __typename?: "triples"
+    term_id: string
+    predicate_id: string
+    predicate?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    object?: {
+      __typename?: "atoms"
+      term_id: string
+      label?: string | null
+    } | null
+    positions: Array<{
+      __typename?: "positions"
+      account_id: string
+      shares: any
+      created_at: any
+    }>
+  }>
+}
+
 export type UserAllCertificationsQueryVariables = Exact<{
   predicateIds: Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
   predicateLabels:
@@ -29724,6 +29754,115 @@ useGetUserIntentionPositionsQuery.fetcher = (
     GetUserIntentionPositionsQuery,
     GetUserIntentionPositionsQueryVariables
   >(GetUserIntentionPositionsDocument, variables, options)
+
+export const PageCertificationDataDocument = `
+    query PageCertificationData($predicateIds: [String!]!, $hostnameLike: String!) {
+  triples(
+    where: {predicate_id: {_in: $predicateIds}, _or: [{object: {label: {_ilike: $hostnameLike}}}, {object: {value: {thing: {url: {_ilike: $hostnameLike}}}}}], positions: {shares: {_gt: "0"}}}
+    limit: 200
+  ) {
+    term_id
+    predicate_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+    }
+    positions(where: {shares: {_gt: "0"}}) {
+      account_id
+      shares
+      created_at
+    }
+  }
+}
+    `
+
+export const usePageCertificationDataQuery = <
+  TData = PageCertificationDataQuery,
+  TError = unknown
+>(
+  variables: PageCertificationDataQueryVariables,
+  options?: Omit<
+    UseQueryOptions<PageCertificationDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      PageCertificationDataQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<PageCertificationDataQuery, TError, TData>({
+    queryKey: ["PageCertificationData", variables],
+    queryFn: fetcher<
+      PageCertificationDataQuery,
+      PageCertificationDataQueryVariables
+    >(PageCertificationDataDocument, variables),
+    ...options
+  })
+}
+
+usePageCertificationDataQuery.document = PageCertificationDataDocument
+
+usePageCertificationDataQuery.getKey = (
+  variables: PageCertificationDataQueryVariables
+) => ["PageCertificationData", variables]
+
+export const useInfinitePageCertificationDataQuery = <
+  TData = InfiniteData<PageCertificationDataQuery>,
+  TError = unknown
+>(
+  variables: PageCertificationDataQueryVariables,
+  options: Omit<
+    UseInfiniteQueryOptions<PageCertificationDataQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseInfiniteQueryOptions<
+      PageCertificationDataQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useInfiniteQuery<PageCertificationDataQuery, TError, TData>(
+    (() => {
+      const { queryKey: optionsQueryKey, ...restOptions } = options
+      return {
+        queryKey: optionsQueryKey ?? [
+          "PageCertificationData.infinite",
+          variables
+        ],
+        queryFn: (metaData) =>
+          fetcher<
+            PageCertificationDataQuery,
+            PageCertificationDataQueryVariables
+          >(PageCertificationDataDocument, {
+            ...variables,
+            ...(metaData.pageParam ?? {})
+          })(),
+        ...restOptions
+      }
+    })()
+  )
+}
+
+useInfinitePageCertificationDataQuery.getKey = (
+  variables: PageCertificationDataQueryVariables
+) => ["PageCertificationData.infinite", variables]
+
+usePageCertificationDataQuery.fetcher = (
+  variables: PageCertificationDataQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  fetcher<PageCertificationDataQuery, PageCertificationDataQueryVariables>(
+    PageCertificationDataDocument,
+    variables,
+    options
+  )
 
 export const UserAllCertificationsDocument = `
     query UserAllCertifications($predicateIds: [String!]!, $predicateLabels: [String!]!, $userAddress: String!, $limit: Int!, $offset: Int!) {
@@ -53955,6 +54094,314 @@ export const GetUserIntentionPositions = {
                             }
                           ]
                         }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+} as unknown as DocumentNode
+export const PageCertificationData = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "PageCertificationData" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "predicateIds" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" }
+                }
+              }
+            }
+          }
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "hostnameLike" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          }
+        }
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "triples" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "predicate_id" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "_in" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "predicateIds" }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "_or" },
+                      value: {
+                        kind: "ListValue",
+                        values: [
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "label" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "_ilike"
+                                            },
+                                            value: {
+                                              kind: "Variable",
+                                              name: {
+                                                kind: "Name",
+                                                value: "hostnameLike"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            kind: "ObjectValue",
+                            fields: [
+                              {
+                                kind: "ObjectField",
+                                name: { kind: "Name", value: "object" },
+                                value: {
+                                  kind: "ObjectValue",
+                                  fields: [
+                                    {
+                                      kind: "ObjectField",
+                                      name: { kind: "Name", value: "value" },
+                                      value: {
+                                        kind: "ObjectValue",
+                                        fields: [
+                                          {
+                                            kind: "ObjectField",
+                                            name: {
+                                              kind: "Name",
+                                              value: "thing"
+                                            },
+                                            value: {
+                                              kind: "ObjectValue",
+                                              fields: [
+                                                {
+                                                  kind: "ObjectField",
+                                                  name: {
+                                                    kind: "Name",
+                                                    value: "url"
+                                                  },
+                                                  value: {
+                                                    kind: "ObjectValue",
+                                                    fields: [
+                                                      {
+                                                        kind: "ObjectField",
+                                                        name: {
+                                                          kind: "Name",
+                                                          value: "_ilike"
+                                                        },
+                                                        value: {
+                                                          kind: "Variable",
+                                                          name: {
+                                                            kind: "Name",
+                                                            value:
+                                                              "hostnameLike"
+                                                          }
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "positions" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "limit" },
+                value: { kind: "IntValue", value: "200" }
+              }
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "term_id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate_id" }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "predicate" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "object" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "term_id" }
+                      },
+                      { kind: "Field", name: { kind: "Name", value: "label" } }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "shares" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "created_at" }
                       }
                     ]
                   }
