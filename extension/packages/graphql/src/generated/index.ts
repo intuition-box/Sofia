@@ -29290,7 +29290,7 @@ export const TriplePositionsByObjectsDocument = `
     object {
       term_id
     }
-    positions(where: {shares: {_gt: "0"}}, order_by: {created_at: asc}) {
+    positions(limit: 1000, where: {shares: {_gt: "0"}}, order_by: {created_at: asc}) {
       account_id
       created_at
     }
@@ -52973,6 +52973,11 @@ export const TriplePositionsByObjects = {
                   kind: "Field",
                   name: { kind: "Name", value: "positions" },
                   arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "limit" },
+                      value: { kind: "IntValue", value: "1000" }
+                    },
                     {
                       kind: "Argument",
                       name: { kind: "Name", value: "where" },

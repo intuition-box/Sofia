@@ -117,8 +117,7 @@ export const useUserDiscoveryScore = (walletAddress?: string) => {
       const pagePositionMap = buildPagePositionMap(positionTriples)
       const ranking = calculateDiscoveryRanking(
         userTriples,
-        pagePositionMap,
-        userAddress
+        pagePositionMap
       )
       const gold = calculateDiscoveryGold(ranking)
       const discoveryStats = buildDiscoveryStats(ranking, gold)
