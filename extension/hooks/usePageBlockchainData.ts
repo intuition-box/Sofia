@@ -12,8 +12,12 @@ import {
   isRestrictedUrl,
   debounce,
   normalizeUrl,
-  createHookLogger
+  createHookLogger,
+  computeDiscoveryData,
+  computeIntentionStats,
+  computeTrustCounts
 } from "~/lib/utils"
+import type { CertTriple } from "~/lib/utils"
 import type {
   PageBlockchainTriplet,
   PageBlockchainCounts,
@@ -21,12 +25,18 @@ import type {
   PageDataStatus,
   UsePageBlockchainDataResult
 } from "~/types/page"
+import type { DiscoveryStatus } from "~/types/discovery"
+import type { IntentionPurpose } from "~/types/intentionCategories"
+import {
+  INTENTION_PREDICATE_IDS,
+  TRUST_PREDICATE_IDS
+} from "~/lib/config/predicateConstants"
 import {
   AtomIdsByUrlDocument,
   AtomsByTermIdsDocument,
   TriplesCountByAtomIdsDocument,
   TriplesByAtomIdsDocument,
-  TrustDistrustByPageDocument
+  PageCertificationDataDocument
 } from "@0xsofia/graphql"
 
 // Default counts when no data is available
@@ -68,6 +78,38 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     null
   )
   const [pageAtomIds, setPageAtomIds] = useState<string[]>([])
+  // Discovery + intention + trust state (from unified PageCertificationData)
+  const [totalCertifications, setTotalCertifications] = useState(0)
+  const [discoveryStatus, setDiscoveryStatus] =
+    useState<DiscoveryStatus>(null)
+  const [certificationRank, setCertificationRank] = useState<number | null>(
+    null
+  )
+  const [userHasCertified, setUserHasCertified] = useState(false)
+  const [intentionStats, setIntentionStats] = useState<
+    Record<IntentionPurpose, number>
+  >({
+    for_work: 0,
+    for_learning: 0,
+    for_fun: 0,
+    for_inspiration: 0,
+    for_buying: 0,
+    for_music: 0
+  })
+  const [pageIntentionStats, setPageIntentionStats] = useState<
+    Record<IntentionPurpose, number>
+  >({
+    for_work: 0,
+    for_learning: 0,
+    for_fun: 0,
+    for_inspiration: 0,
+    for_buying: 0,
+    for_music: 0
+  })
+  const [intentionTotal, setIntentionTotal] = useState(0)
+  const [pageIntentionTotal, setPageIntentionTotal] = useState(0)
+  const [maxIntentionCount, setMaxIntentionCount] = useState(1)
+  const [pageMaxIntentionCount, setPageMaxIntentionCount] = useState(1)
   const { walletAddress: account } = useWalletFromStorage()
 
   // Refs for control flow
@@ -111,12 +153,19 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     []
   )
 
+  // Combined predicate IDs for PageCertificationData (intentions + trust/distrust)
+  const certPredicateIds = useMemo(
+    () => [...INTENTION_PREDICATE_IDS, ...TRUST_PREDICATE_IDS],
+    []
+  )
+
   // Return type for internal fetch function
   interface FetchResult {
     triplets: PageBlockchainTriplet[]
     counts: PageBlockchainCounts
     atomsList: PageAtomInfo[]
     pageAtomIds: string[]
+    certTriples: CertTriple[]
   }
 
   const fetchPageBlockchainData = useCallback(
@@ -125,6 +174,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         .toLowerCase()
         .replace(/^www\./, "")
 
+      // Phase 1: Get atom IDs for hostname
       const atomIdsResponse = await intuitionGraphqlClient.request(
         AtomIdsByUrlDocument,
         { likeStr: `%${hostname}%` }
@@ -132,11 +182,8 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
       const foundAtoms = atomIdsResponse?.atoms || []
       const foundAtomIds = foundAtoms.map((a: any) => a.term_id)
-      const totalAtomsCount = foundAtomIds.length
 
       // Filter to page-specific atoms
-      // Match by value.thing.url (new atoms) OR by normalized label (old atoms)
-      // Aligns with UserCertificationsService matching logic
       const { label: normalizedPageUrl } = normalizeUrl(url)
       const pageAtomIds = foundAtoms
         .filter((atom: any) => {
@@ -148,7 +195,6 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
               return false
             }
           }
-          // Fallback: match old atoms by normalized label
           const label = atom.label || ""
           const normalizedLabel = label
             .replace(/^https?:\/\//, "")
@@ -170,23 +216,23 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       const atoms = atomsResponse?.atoms || []
       const atomIds = atoms.map((atom: any) => atom.term_id)
 
+      // Phase 2: Parallel queries
+      // PageCertificationData uses hostname (not atomIds) → runs in parallel
+      const certPromise = certPredicateIds.length > 0
+        ? intuitionGraphqlClient.request(
+            PageCertificationDataDocument,
+            {
+              predicateIds: certPredicateIds,
+              hostnameLike: `%${hostname}%`
+            }
+          )
+        : Promise.resolve({ triples: [] })
+
       let triplesResponse
       let totalTriplesCount = 0
-      let trustDistrustData: {
-        trustTriples: any[]
-        distrustTriples: any[]
-      } = { trustTriples: [], distrustTriples: [] }
-
-      // Query trust/distrust at domain level (all atoms), filter client-side for page
-      const trustDistrustPromise = foundAtomIds.length > 0
-        ? intuitionGraphqlClient.request(
-            TrustDistrustByPageDocument,
-            { atomIds: foundAtomIds }
-          )
-        : Promise.resolve({ trustTriples: [], distrustTriples: [] })
 
       if (atomIds.length > 0) {
-        const [triplesCountResponse, triplesDataResponse, trustDistrustResponse] =
+        const [triplesCountResponse, triplesDataResponse, certResponse] =
           await Promise.all([
             intuitionGraphqlClient.request(TriplesCountByAtomIdsDocument, {
               atomIds
@@ -194,91 +240,30 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
             intuitionGraphqlClient.request(TriplesByAtomIdsDocument, {
               atomIds
             }),
-            trustDistrustPromise
+            certPromise
           ])
 
         totalTriplesCount =
           triplesCountResponse?.triples_aggregate?.aggregate?.count || 0
         triplesResponse = triplesDataResponse
-        trustDistrustData = trustDistrustResponse || {
-          trustTriples: [],
-          distrustTriples: []
-        }
+        var certTriples: CertTriple[] =
+          (certResponse as any)?.triples || []
       } else {
         triplesResponse = { triples: [] }
-        trustDistrustData = (await trustDistrustPromise) || {
-          trustTriples: [],
-          distrustTriples: []
-        }
+        const certResponse = await certPromise
+        var certTriples: CertTriple[] =
+          (certResponse as any)?.triples || []
       }
 
-      // Count trust/distrust at both domain and page levels
-      const trustTriples = trustDistrustData.trustTriples || []
-      const distrustTriples = trustDistrustData.distrustTriples || []
+      // Phase 3: Pure computations (synchronous)
+      const trustData = computeTrustCounts(certTriples, pageAtomIds)
 
-      // Domain-level: union of ALL unique accounts across all trust triples
-      const domainTrustAccounts = new Set<string>()
-      for (const triple of trustTriples) {
-        for (const pos of triple.positions || []) {
-          if (pos.account_id)
-            domainTrustAccounts.add(pos.account_id.toLowerCase())
-        }
-      }
-      const domainTrustCount = domainTrustAccounts.size
-
-      const domainDistrustAccounts = new Set<string>()
-      for (const triple of distrustTriples) {
-        for (const pos of triple.positions || []) {
-          if (pos.account_id)
-            domainDistrustAccounts.add(pos.account_id.toLowerCase())
-        }
-      }
-      const domainDistrustCount = domainDistrustAccounts.size
-
-      const domainTotalSupport = domainTrustCount + domainDistrustCount
-      const domainTrustRatio =
-        domainTotalSupport > 0
-          ? Math.round((domainTrustCount / domainTotalSupport) * 100)
-          : 50
-
-      // Page-level: UNION of unique accounts on page-specific atoms.
-      // When pageAtomIds is empty (page never certified), counts stay 0.
-      const pageAtomSet = new Set(pageAtomIds)
-      const pageTrustAccounts = new Set<string>()
-      if (pageAtomSet.size > 0) {
-        for (const triple of trustTriples) {
-          if (!pageAtomSet.has(triple.object?.term_id)) continue
-          for (const pos of triple.positions || []) {
-            if (pos.account_id)
-              pageTrustAccounts.add(pos.account_id.toLowerCase())
-          }
-        }
-      }
-      const trustCount = pageTrustAccounts.size
-
-      const pageDistrustAccounts = new Set<string>()
-      if (pageAtomSet.size > 0) {
-        for (const triple of distrustTriples) {
-          if (!pageAtomSet.has(triple.object?.term_id)) continue
-          for (const pos of triple.positions || []) {
-            if (pos.account_id)
-              pageDistrustAccounts.add(pos.account_id.toLowerCase())
-          }
-        }
-      }
-      const distrustCount = pageDistrustAccounts.size
-      const totalSupport = trustCount + distrustCount
-      const trustRatio =
-        totalSupport > 0
-          ? Math.round((trustCount / totalSupport) * 100)
-          : 50
-
+      // Build result triplets + atoms
       const resultTriplets: PageBlockchainTriplet[] = []
       const resultAtomsList: PageAtomInfo[] = []
       let totalShares = 0
       let totalPositions = 0
 
-      // Map atoms with vault data, filter out atoms with 0 positions
       for (const atom of atoms) {
         const vaults = atom.term?.vaults || []
         const posCount = vaults.reduce(
@@ -333,24 +318,18 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         totalShares,
         totalPositions,
         attestationsCount: resultAtomsList.length + totalTriplesCount,
-        trustCount,
-        distrustCount,
-        totalSupport,
-        trustRatio,
-        domainTrustCount,
-        domainDistrustCount,
-        domainTotalSupport,
-        domainTrustRatio
+        ...trustData
       }
 
       return {
         triplets: resultTriplets,
         counts: resultCounts,
         pageAtomIds,
-        atomsList: resultAtomsList
+        atomsList: resultAtomsList,
+        certTriples
       }
     },
-    []
+    [certPredicateIds]
   )
 
   /** Schedule a silent retry */
@@ -437,10 +416,37 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
       }
 
       const result = await fetchPageBlockchainData(url)
+
+      // Atomic state update: all derived data computed from one fetch
+      const discovery = computeDiscoveryData(
+        result.certTriples,
+        result.pageAtomIds,
+        account
+      )
+      const intentions = computeIntentionStats(
+        result.certTriples,
+        result.pageAtomIds
+      )
+
       setTriplets(result.triplets)
       setCounts(result.counts)
       setAtomsList(result.atomsList)
       setPageAtomIds(result.pageAtomIds)
+
+      // Discovery
+      setTotalCertifications(discovery.totalCertifications)
+      setDiscoveryStatus(discovery.discoveryStatus)
+      setCertificationRank(discovery.certificationRank)
+      setUserHasCertified(discovery.userHasCertified)
+
+      // Intentions
+      setIntentionStats(intentions.intentions)
+      setPageIntentionStats(intentions.pageIntentions)
+      setIntentionTotal(intentions.totalCertifications)
+      setPageIntentionTotal(intentions.pageTotalCertifications)
+      setMaxIntentionCount(intentions.maxIntentionCount)
+      setPageMaxIntentionCount(intentions.pageMaxIntentionCount)
+
       setStatus("ready")
       setError(null)
       hasDataRef.current = true
@@ -477,6 +483,31 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     setPageAtomIds([])
     setTriplets([])
     setAtomsList([])
+    // Reset discovery + intention state
+    setTotalCertifications(0)
+    setDiscoveryStatus(null)
+    setCertificationRank(null)
+    setUserHasCertified(false)
+    setIntentionStats({
+      for_work: 0,
+      for_learning: 0,
+      for_fun: 0,
+      for_inspiration: 0,
+      for_buying: 0,
+      for_music: 0
+    })
+    setPageIntentionStats({
+      for_work: 0,
+      for_learning: 0,
+      for_fun: 0,
+      for_inspiration: 0,
+      for_buying: 0,
+      for_music: 0
+    })
+    setIntentionTotal(0)
+    setPageIntentionTotal(0)
+    setMaxIntentionCount(1)
+    setPageMaxIntentionCount(1)
   }, [])
 
   // Debounced version for URL change listeners
@@ -578,6 +609,19 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     isRestricted,
     restrictionMessage,
     pageAtomIds,
+    // Discovery
+    totalCertifications,
+    discoveryStatus,
+    certificationRank,
+    userHasCertified,
+    // Intentions
+    intentionStats,
+    pageIntentionStats,
+    intentionTotal,
+    pageIntentionTotal,
+    maxIntentionCount,
+    pageMaxIntentionCount,
+    // Methods
     fetchDataForCurrentPage,
     pauseRefresh,
     resumeRefresh

@@ -50,3 +50,7 @@ export { calculateStreaks, toDateStr } from './streakUtils'
 
 // Fee Calculation
 export { estimateCertificationCost } from './feeCalculation'
+
+// Page Certification Compute (pure functions)
+export { computeDiscoveryData, computeIntentionStats, computeTrustCounts } from './pageCertificationCompute'
+export type { CertTriple, DiscoveryResult, IntentionStatsResult, TrustCountsResult } from './pageCertificationCompute'

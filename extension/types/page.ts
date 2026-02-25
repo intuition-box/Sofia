@@ -66,6 +66,19 @@ export interface UsePageBlockchainDataResult {
   isRestricted: boolean
   restrictionMessage: string | null
   pageAtomIds: string[]
+  // Discovery data (from unified PageCertificationData query)
+  totalCertifications: number
+  discoveryStatus: import("./discovery").DiscoveryStatus
+  certificationRank: number | null
+  userHasCertified: boolean
+  // Intention stats (domain + page)
+  intentionStats: Record<import("./intentionCategories").IntentionPurpose, number>
+  pageIntentionStats: Record<import("./intentionCategories").IntentionPurpose, number>
+  intentionTotal: number
+  pageIntentionTotal: number
+  maxIntentionCount: number
+  pageMaxIntentionCount: number
+  // Methods
   fetchDataForCurrentPage: () => Promise<void>
   pauseRefresh: () => void
   resumeRefresh: () => void
