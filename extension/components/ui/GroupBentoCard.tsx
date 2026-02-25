@@ -6,27 +6,15 @@
 
 import { useMemo } from 'react'
 import { useGroupOnChainCertifications, type IntentionGroupWithStats } from '../../hooks'
-import type { CertificationType } from '~/lib/services'
 import { calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration } from '~/lib/utils'
 import { getLevelColor, getLevelColorAlpha } from '~/types/interests'
+import { CERTIFICATION_COLORS, type IntentionType } from '~/types/intentionCategories'
 
 interface GroupBentoCardProps {
   group: IntentionGroupWithStats
   onClick: () => void
   onDelete?: (groupId: string) => void
   size?: 'small' | 'tall'
-}
-
-// Certification colors
-const CERTIFICATION_COLORS: Record<CertificationType, string> = {
-  trusted: '#22C55E',     // green
-  distrusted: '#EF4444',  // red
-  work: '#3B82F6',        // blue
-  learning: '#06B6D4',    // cyan
-  fun: '#F59E0B',         // yellow/orange
-  inspiration: '#8B5CF6', // purple
-  buying: '#EC4899',       // rose
-  music: '#FF5722'        // deep orange
 }
 
 const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBentoCardProps) => {
@@ -58,7 +46,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
     .filter(([_, count]) => count > 0)
     .sort(([, a], [, b]) => b - a)[0]
 
-  const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as CertificationType] : '#C7866C'
+  const dominantColor = dominantCert ? CERTIFICATION_COLORS[dominantCert[0] as IntentionType] : '#C7866C'
 
   // Level Up available when on-chain level exceeds highest predicate level (same as DetailView)
   const highestPredicateLevel = group.predicateHistory?.length > 0
@@ -167,7 +155,7 @@ const GroupBentoCard = ({ group, onClick, onDelete, size = 'small' }: GroupBento
                 <div
                   key={cert}
                   className="cert-dot"
-                  style={{ backgroundColor: CERTIFICATION_COLORS[cert as CertificationType] }}
+                  style={{ backgroundColor: CERTIFICATION_COLORS[cert as IntentionType] }}
                   title={`${cert}: ${count}`}
                 />
               ))

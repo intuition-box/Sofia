@@ -3,38 +3,30 @@
  * Types for the intention-based page certification system
  */
 
-// Intention purposes for page certification
-export type IntentionPurpose =
-  | 'for_work'
-  | 'for_learning'
-  | 'for_fun'
-  | 'for_inspiration'
-  | 'for_buying'
-  | 'for_music'
+import { INTENTION_CONFIG, type IntentionConfigEntry, type IntentionType } from "./intentionCategories"
+
+// Re-export IntentionPurpose from the single source of truth
+export type { IntentionPurpose } from "./intentionCategories"
+import type { IntentionPurpose } from "./intentionCategories"
 
 // Discovery status based on certification order
 export type DiscoveryStatus = 'Pioneer' | 'Explorer' | 'Contributor' | null
 
-// Predicate names for intention triples
-// All predicates use clean labels WITHOUT trailing spaces
-export const INTENTION_PREDICATES: Record<IntentionPurpose, string> = {
-  for_work: 'visits for work',
-  for_learning: 'visits for learning',
-  for_fun: 'visits for fun',
-  for_inspiration: 'visits for inspiration',
-  for_buying: 'visits for buying',
-  for_music: 'visits for music'
-} as const
+// Predicate names for intention triples (derived from INTENTION_CONFIG)
+export const INTENTION_PREDICATES: Record<IntentionPurpose, string> =
+  Object.fromEntries(
+    (Object.entries(INTENTION_CONFIG) as [IntentionType, IntentionConfigEntry][])
+      .filter(([, v]) => v.intentionPurpose !== null)
+      .map(([, v]) => [v.intentionPurpose!, v.predicateLabel!])
+  ) as Record<IntentionPurpose, string>
 
-// Display labels for UI
-export const INTENTION_LABELS: Record<IntentionPurpose, string> = {
-  for_work: 'work',
-  for_learning: 'learning',
-  for_fun: 'fun',
-  for_inspiration: 'inspiration',
-  for_buying: 'buying',
-  for_music: 'music'
-} as const
+// Display labels for UI (derived from INTENTION_CONFIG)
+export const INTENTION_LABELS: Record<IntentionPurpose, string> =
+  Object.fromEntries(
+    (Object.entries(INTENTION_CONFIG) as [IntentionType, IntentionConfigEntry][])
+      .filter(([, v]) => v.intentionPurpose !== null)
+      .map(([, v]) => [v.intentionPurpose!, v.label.toLowerCase()])
+  ) as Record<IntentionPurpose, string>
 
 // Discovery record for a specific page
 export interface PageDiscoveryRecord {

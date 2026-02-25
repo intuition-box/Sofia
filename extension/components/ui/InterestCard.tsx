@@ -7,20 +7,12 @@
 import type { Interest } from '../../types/interests';
 import { getXpProgressPercent, getLevelColor } from '../../types/interests';
 import { getFaviconUrl } from '~/lib/utils';
+import { getIntentionColor } from '~/types/intentionCategories';
 
 interface InterestCardProps {
   interest: Interest;
   onClick?: () => void;
 }
-
-// Certification type colors
-const CERT_COLORS: Record<string, string> = {
-  work: '#3B82F6',
-  learning: '#10B981',
-  fun: '#F59E0B',
-  inspiration: '#8B5CF6',
-  buying: '#EF4444',
-};
 
 // Semi-circular gauge SVG component
 const LevelGauge = ({ progressPercent, levelColor }: { progressPercent: number; levelColor: string }) => {
@@ -98,7 +90,7 @@ const InterestCard = ({ interest, onClick }: InterestCardProps) => {
   const dominantCert = Object.entries(certifications)
     .filter(([_, count]) => count > 0)
     .sort(([, a], [, b]) => b - a)[0];
-  const accentColor = dominantCert ? CERT_COLORS[dominantCert[0]] : levelColor;
+  const accentColor = dominantCert ? getIntentionColor(dominantCert[0]) : levelColor;
 
 
   return (

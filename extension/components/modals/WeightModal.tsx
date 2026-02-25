@@ -9,7 +9,7 @@ import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { createHookLogger } from '../../lib/utils/logger'
 import type { IntentionPurpose } from '../../types/discovery'
 import type { IntentionType } from '../../types/intentionCategories'
-import { INTENTION_CONFIG } from '../../types/intentionCategories'
+import { getIntentionBadge } from '../../types/intentionCategories'
 import '../styles/Modal.css'
 
 interface ModalTriplet {
@@ -73,15 +73,6 @@ const weightOptions: WeightOption[] = [
 ]
 
 const FEE_DENOMINATOR = 100000
-
-/** Resolve intention badge display from IntentionType or IntentionPurpose */
-const getIntentionBadge = (intention?: string): { label: string; color: string } | null => {
-  if (!intention) return null
-  if (intention in INTENTION_CONFIG) return INTENTION_CONFIG[intention as IntentionType]
-  const stripped = intention.replace(/^for_/, '')
-  if (stripped in INTENTION_CONFIG) return INTENTION_CONFIG[stripped as IntentionType]
-  return null
-}
 
 const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])

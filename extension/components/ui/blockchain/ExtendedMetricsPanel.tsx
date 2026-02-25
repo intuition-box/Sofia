@@ -9,6 +9,7 @@ import "../../styles/ExtendedMetricsPanel.css"
 import { getTotalShares } from "~/hooks/useCredibilityAnalysis"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
 import type { IntentionPurpose } from "~/types/discovery"
+import { INTENTION_ITEMS } from "~/types/intentionCategories"
 
 interface IntentionStats {
   for_work: number
@@ -30,15 +31,6 @@ interface ExtendedMetricsPanelProps {
   onAtomClick: (atomId: string) => void
   onTripletClick: (tripletId: string) => void
 }
-
-const INTENTION_ITEMS: { key: IntentionPurpose; label: string }[] = [
-  { key: "for_work", label: "work" },
-  { key: "for_learning", label: "learning" },
-  { key: "for_fun", label: "fun" },
-  { key: "for_inspiration", label: "inspiration" },
-  { key: "for_buying", label: "buying" },
-  { key: "for_music", label: "music" }
-]
 
 const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
   analysis,
