@@ -50,7 +50,8 @@ const PageBlockchainCard = () => {
     pageTotalCertifications: pageIntentionTotal,
     maxIntentionCount,
     pageMaxIntentionCount,
-    loading: intentionStatsLoading
+    loading: intentionStatsLoading,
+    refetch: refetchIntentionStats
   } = usePageIntentionStats(currentUrl, pageAtomIds)
   const { claimDiscoveryGold } = useDiscoveryScore()
   const { totalGold } = useGoldSystem()
@@ -64,10 +65,15 @@ const PageBlockchainCard = () => {
   const { certifications, refetch: refetchCertifications } =
     useUserCertifications(walletAddress)
 
-  const certifiedIntentions = useMemo(() => {
-    if (!currentUrl || certifications.size === 0) return []
+  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted } = useMemo(() => {
+    if (!currentUrl || certifications.size === 0)
+      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false }
     const entry = getCertificationForUrl(certifications, currentUrl)
-    return entry?.intentions ?? []
+    return {
+      certifiedIntentions: entry?.intentions ?? [],
+      alreadyTrusted: entry?.trustPredicates?.includes("trusts") ?? false,
+      alreadyDistrusted: entry?.trustPredicates?.includes("distrust") ?? false
+    }
   }, [currentUrl, certifications])
 
   // UI toggle
@@ -133,7 +139,7 @@ const PageBlockchainCard = () => {
           {!isRestricted && (
             <div className="trust-buttons-row">
               <button
-                className={`trust-page-button trust-btn ${modal.trustState.success ? "success" : ""} ${modal.trustState.loading ? "loading" : ""}`}
+                className={`trust-page-button trust-btn ${alreadyTrusted || modal.trustState.success ? "success" : ""} ${modal.trustState.loading ? "loading" : ""}`}
                 onClick={() => modal.openTrustModal(currentUrl, pageTitle)}
                 disabled={
                   modal.trustState.loading ||
@@ -146,6 +152,8 @@ const PageBlockchainCard = () => {
                     <div className="button-spinner"></div>
                     Creating...
                   </>
+                ) : alreadyTrusted ? (
+                  <>&#10003; Trusted</>
                 ) : modal.trustState.success ? (
                   <>&#10003; Trusted!</>
                 ) : (
@@ -154,7 +162,7 @@ const PageBlockchainCard = () => {
               </button>
 
               <button
-                className={`trust-page-button distrust-btn ${modal.distrustState.success ? "success" : ""} ${modal.distrustState.loading ? "loading" : ""}`}
+                className={`trust-page-button distrust-btn ${alreadyDistrusted || modal.distrustState.success ? "success" : ""} ${modal.distrustState.loading ? "loading" : ""}`}
                 onClick={() =>
                   modal.openDistrustModal(currentUrl, pageTitle)
                 }
@@ -169,6 +177,8 @@ const PageBlockchainCard = () => {
                     <div className="button-spinner"></div>
                     Creating...
                   </>
+                ) : alreadyDistrusted ? (
+                  <>&#10003; Distrusted</>
                 ) : modal.distrustState.success ? (
                   <>&#10003; Distrusted!</>
                 ) : (
@@ -262,6 +272,7 @@ const PageBlockchainCard = () => {
                 pauseRefresh,
                 resumeRefresh,
                 refetchDiscovery,
+                refetchIntentionStats,
                 fetchDataForCurrentPage,
                 calculateAndTriggerReward: reward.calculateAndTriggerReward
               })

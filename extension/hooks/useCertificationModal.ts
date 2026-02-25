@@ -68,6 +68,7 @@ export interface CertificationModalResult {
       pauseRefresh: () => void
       resumeRefresh: () => void
       refetchDiscovery: () => Promise<void>
+      refetchIntentionStats: () => void
       fetchDataForCurrentPage: () => void
       calculateAndTriggerReward: (prevTotal: number) => void
     }
@@ -185,6 +186,7 @@ export const useCertificationModal = (): CertificationModalResult => {
         pauseRefresh: () => void
         resumeRefresh: () => void
         refetchDiscovery: () => Promise<void>
+        refetchIntentionStats: () => void
         fetchDataForCurrentPage: () => void
         calculateAndTriggerReward: (prevTotal: number) => void
       }
@@ -239,6 +241,7 @@ export const useCertificationModal = (): CertificationModalResult => {
         ctx.resumeRefresh()
         await ctx.refetchDiscovery()
         ctx.calculateAndTriggerReward(prevTotal)
+        ctx.refetchIntentionStats()
         setTimeout(
           () => ctx.fetchDataForCurrentPage(),
           DELAYS.REFRESH_AFTER_TX

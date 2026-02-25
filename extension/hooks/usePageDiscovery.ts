@@ -76,9 +76,13 @@ export const usePageDiscovery = (
       const allTriples = response?.triples || []
 
       // Filter to page-specific atoms if provided
+      // pageAtomIds !== undefined → page scope (empty = 0 certifs, non-empty = filtered)
+      // pageAtomIds === undefined → no page scope, use all domain triples
       const pageAtomSet = new Set(pageAtomIds || [])
-      const triples = pageAtomSet.size > 0
-        ? allTriples.filter((t: any) => pageAtomSet.has(t.object?.term_id))
+      const triples = pageAtomIds !== undefined
+        ? (pageAtomSet.size > 0
+            ? allTriples.filter((t: any) => pageAtomSet.has(t.object?.term_id))
+            : [])
         : allTriples
 
       logger.debug('Found certification triples', {
