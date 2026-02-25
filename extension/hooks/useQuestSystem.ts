@@ -133,6 +133,31 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     loadAndSync()
   }, [walletAddress, onChainSyncDone, isReadOnlyMode])
 
+  // ─── Sync quest state across hook instances via storage changes ───
+  useEffect(() => {
+    if (isReadOnlyMode || !walletAddress) return
+
+    const claimedKey = getWalletKey('claimed_quests', walletAddress.toLowerCase())
+    const completedKey = getWalletKey('completed_quests', walletAddress.toLowerCase())
+    const progressKey = getWalletKey('quest_progress_cache', walletAddress.toLowerCase())
+
+    const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+      if (area !== 'local') return
+      if (changes[claimedKey]?.newValue) {
+        setClaimedQuestIds(new Set(changes[claimedKey].newValue))
+      }
+      if (changes[completedKey]?.newValue) {
+        setCompletedQuestIds(new Set(changes[completedKey].newValue))
+      }
+      if (changes[progressKey]?.newValue) {
+        setUserProgress(changes[progressKey].newValue)
+      }
+    }
+
+    chrome.storage.onChanged.addListener(handleStorageChange)
+    return () => chrome.storage.onChanged.removeListener(handleStorageChange)
+  }, [walletAddress, isReadOnlyMode])
+
   // ─── Refresh progress data + on-chain sync ───
   const refreshQuests = async () => {
     if (!walletAddress) {
