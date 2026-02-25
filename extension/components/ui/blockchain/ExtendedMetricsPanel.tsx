@@ -3,12 +3,10 @@
  * Shows intentions stats, collapsible atoms list, and collapsible triplets list
  */
 
-import React, { useState } from "react"
-import type { CredibilityAnalysis } from "~/hooks/useCredibilityAnalysis"
+import React, { useState, useMemo } from "react"
+import { getTotalShares, type CredibilityAnalysis } from "~/hooks"
 import "../../styles/ExtendedMetricsPanel.css"
-import { getTotalShares } from "~/hooks/useCredibilityAnalysis"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
-import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_ITEMS } from "~/types/intentionCategories"
 
 interface IntentionStats {
@@ -19,6 +17,8 @@ interface IntentionStats {
   for_buying: number
   for_music: number
 }
+
+type SortMode = "market_cap" | "newest"
 
 interface ExtendedMetricsPanelProps {
   analysis: CredibilityAnalysis
@@ -45,6 +45,8 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
 }) => {
   const [showAtomsList, setShowAtomsList] = useState(false)
   const [showTripletsList, setShowTripletsList] = useState(false)
+  const [atomsSort, setAtomsSort] = useState<SortMode>("market_cap")
+  const [tripletsSort, setTripletsSort] = useState<SortMode>("market_cap")
 
   // Include trust/distrust in max for proportional progress bars
   const effectiveMax = Math.max(
@@ -52,6 +54,35 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
     analysis.trustCount,
     analysis.distrustCount
   )
+
+  // Sorted atoms list
+  const sortedAtoms = useMemo(() => {
+    if (!analysis.atomsList) return []
+    return [...analysis.atomsList].sort((a, b) => {
+      if (atomsSort === "newest") {
+        return (b.created_at || "").localeCompare(a.created_at || "")
+      }
+      const aShares = a.vaults.reduce(
+        (sum, v) => sum + Number(v.total_shares || 0) / 1e18,
+        0
+      )
+      const bShares = b.vaults.reduce(
+        (sum, v) => sum + Number(v.total_shares || 0) / 1e18,
+        0
+      )
+      return bShares - aShares
+    })
+  }, [analysis.atomsList, atomsSort])
+
+  // Sorted triplets list
+  const sortedTriplets = useMemo(() => {
+    return [...triplets].sort((a, b) => {
+      if (tripletsSort === "newest") {
+        return (b.created_at || "").localeCompare(a.created_at || "")
+      }
+      return getTotalShares(b) - getTotalShares(a)
+    })
+  }, [triplets, tripletsSort])
 
   return (
     <div className="extended-metrics-panel">
@@ -112,40 +143,57 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
         )}
       </div>
 
-      {/* Collapsible Toggles */}
-      <div className="collapsible-lists-section">
-        <div
-          className="collapsible-toggle clickable"
-          onClick={() => setShowAtomsList(!showAtomsList)}
-        >
-          <span>Atoms ({counts.atomsCount})</span>
-          <span
-            className={`toggle-arrow ${showAtomsList ? "expanded" : ""}`}
+      {/* Related Signals Section */}
+      <div className="signals-section">
+        <div className="signals-section-title">Related signals</div>
+
+        {/* Collapsible Toggles */}
+        <div className="collapsible-lists-section">
+          <div
+            className="collapsible-toggle clickable"
+            onClick={() => setShowAtomsList(!showAtomsList)}
           >
-            ▼
-          </span>
-        </div>
-        <div
-          className="collapsible-toggle clickable"
-          onClick={() => setShowTripletsList(!showTripletsList)}
-        >
-          <span>Triples ({counts.triplesCount})</span>
-          <span
-            className={`toggle-arrow ${showTripletsList ? "expanded" : ""}`}
+            <span>Domain Atoms ({counts.atomsCount})</span>
+            <span
+              className={`toggle-arrow ${showAtomsList ? "expanded" : ""}`}
+            >
+              ▼
+            </span>
+          </div>
+          <div
+            className="collapsible-toggle clickable"
+            onClick={() => setShowTripletsList(!showTripletsList)}
           >
-            ▼
-          </span>
+            <span>Domain Triples ({counts.triplesCount})</span>
+            <span
+              className={`toggle-arrow ${showTripletsList ? "expanded" : ""}`}
+            >
+              ▼
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Atoms List */}
       {showAtomsList &&
-        analysis.atomsList &&
-        analysis.atomsList.length > 0 && (
+        sortedAtoms.length > 0 && (
           <div className="atoms-section">
-            <div className="section-title">Atoms on this page</div>
+            <div className="sort-controls">
+              <button
+                className={`sort-btn ${atomsSort === "market_cap" ? "active" : ""}`}
+                onClick={() => setAtomsSort("market_cap")}
+              >
+                Market Cap
+              </button>
+              <button
+                className={`sort-btn ${atomsSort === "newest" ? "active" : ""}`}
+                onClick={() => setAtomsSort("newest")}
+              >
+                Newest
+              </button>
+            </div>
             <div className="atoms-list">
-              {analysis.atomsList.map((atom) => {
+              {sortedAtoms.map((atom) => {
                 const totalShares = atom.vaults.reduce(
                   (sum, vault) =>
                     sum + Number(vault.total_shares || 0) / 1e18,
@@ -185,11 +233,24 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
         )}
 
       {/* Triplets List */}
-      {showTripletsList && triplets.length > 0 && (
+      {showTripletsList && sortedTriplets.length > 0 && (
         <div className="triplets-section">
-          <div className="section-title">Signals on this page</div>
+          <div className="sort-controls">
+            <button
+              className={`sort-btn ${tripletsSort === "market_cap" ? "active" : ""}`}
+              onClick={() => setTripletsSort("market_cap")}
+            >
+              Market Cap
+            </button>
+            <button
+              className={`sort-btn ${tripletsSort === "newest" ? "active" : ""}`}
+              onClick={() => setTripletsSort("newest")}
+            >
+              Newest
+            </button>
+          </div>
           <div className="triplets-list">
-            {triplets.map((triplet: PageBlockchainTriplet) => {
+            {sortedTriplets.map((triplet: PageBlockchainTriplet) => {
               const shares = getTotalShares(triplet)
               const positionCount = triplet.positions?.length || 0
 

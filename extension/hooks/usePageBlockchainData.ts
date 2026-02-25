@@ -8,7 +8,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
 import { messageBus } from "../lib/services"
-import { isRestrictedUrl, debounce } from "../lib/utils"
+import { isRestrictedUrl, debounce, normalizeUrl } from "../lib/utils"
 import { createHookLogger } from "../lib/utils/logger"
 import type {
   PageBlockchainTriplet,
@@ -120,9 +120,31 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         { likeStr: `%${hostname}%` }
       )
 
-      const foundAtomIds =
-        atomIdsResponse?.atoms?.map((a: any) => a.term_id) || []
+      const foundAtoms = atomIdsResponse?.atoms || []
+      const foundAtomIds = foundAtoms.map((a: any) => a.term_id)
       const totalAtomsCount = foundAtomIds.length
+
+      // Filter to page-specific atoms for trust/distrust (not domain-level)
+      const { label: normalizedPageUrl } = normalizeUrl(url)
+      const pageAtomIds = foundAtoms
+        .filter((atom: any) => {
+          const atomUrl = atom.value?.thing?.url
+          if (atomUrl) {
+            try {
+              return normalizeUrl(atomUrl).label === normalizedPageUrl
+            } catch {
+              return false
+            }
+          }
+          // Old atoms: label IS the URL
+          const label = (atom.label || "")
+            .toLowerCase()
+            .replace(/^https?:\/\//, "")
+            .replace(/^www\./, "")
+            .replace(/\/$/, "")
+          return label === normalizedPageUrl
+        })
+        .map((a: any) => a.term_id)
 
       let atomsResponse: any = { atoms: [] }
       if (foundAtomIds.length > 0) {
@@ -142,10 +164,11 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         distrustTriples: any[]
       } = { trustTriples: [], distrustTriples: [] }
 
-      const trustDistrustPromise = foundAtomIds.length > 0
+      // Use page-specific atoms for trust/distrust (no domain fallback)
+      const trustDistrustPromise = pageAtomIds.length > 0
         ? intuitionGraphqlClient.request(
             TrustDistrustByPageDocument,
-            { atomIds: foundAtomIds }
+            { atomIds: pageAtomIds }
           )
         : Promise.resolve({ trustTriples: [], distrustTriples: [] })
 
@@ -212,6 +235,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
           id: atom.term_id,
           label: atom.label || "Unknown",
           type: atom.type || "unknown",
+          created_at: atom.created_at,
           vaults: []
         })
       }
@@ -230,7 +254,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
           subject: triple.subject || { label: "Unknown" },
           predicate: triple.predicate || { label: "Unknown" },
           object: triple.object || { label: "Unknown" },
-          created_at: new Date().toISOString(),
+          created_at: triple.created_at || new Date().toISOString(),
           positions: vaults.map(
             (vault: {
               total_shares?: string

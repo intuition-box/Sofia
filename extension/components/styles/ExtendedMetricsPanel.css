@@ -137,12 +137,25 @@
   color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
 }
 
+/* ─── Related Signals Section ─── */
+.signals-section {
+  border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  padding-top: var(--spacing-md, 12px);
+}
+
+.signals-section-title {
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 600;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  margin-bottom: var(--spacing-sm, 8px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* ─── Collapsible Lists ─── */
 .collapsible-lists-section {
   display: flex;
   gap: var(--spacing-sm, 8px);
-  padding-top: var(--spacing-md, 12px);
-  border-top: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
 }
 
 .collapsible-toggle {
@@ -299,4 +312,33 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs, 4px);
+}
+
+/* ─── Sort Controls ─── */
+.sort-controls {
+  display: flex;
+  gap: var(--spacing-xs, 4px);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.sort-btn {
+  padding: 2px var(--spacing-sm, 8px);
+  border-radius: var(--radius-sm, 4px);
+  font-size: var(--font-size-xs, 10px);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
+  background: transparent;
+  border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
+  cursor: pointer;
+  transition: var(--transition-fast, all 0.2s ease);
+}
+
+.sort-btn:hover {
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
+  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.15));
+}
+
+.sort-btn.active {
+  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
+  color: var(--color-text-secondary, #FBF7F5);
+  border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.15));
 }
