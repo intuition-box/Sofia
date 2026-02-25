@@ -351,26 +351,24 @@
   margin-bottom: var(--spacing-xs, 4px);
 }
 
-/* Triplet role chips — glass background with semantic colors */
-.triplets-section .subject,
-.triplets-section .predicate,
-.triplets-section .object {
-  padding: 2px 6px;
-  border-radius: var(--radius-sm, 4px);
+/* Triplet role chips — uniform pill style */
+.triplets-section .triplet-text .subject,
+.triplets-section .triplet-text .predicate,
+.triplets-section .triplet-text .object {
+  padding: 4px 8px;
+  border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-xs, 10px);
-  background: rgba(255, 255, 255, 0.06);
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.triplets-section .subject {
-  color: #feffdc;
+.triplets-section .triplet-text .subject,
+.triplets-section .triplet-text .object {
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.triplets-section .predicate {
-  color: #e7ce4c;
-}
-
-.triplets-section .object {
-  color: #f1a20d;
+.triplets-section .triplet-text .predicate {
+  color: #FBF7F5;
 }
 
 .sort-toggle {
