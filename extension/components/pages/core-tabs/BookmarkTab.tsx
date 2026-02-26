@@ -8,10 +8,20 @@ import '../../styles/Modal.css'
 import '../../styles/BookmarkStyles.css'
 import '../../styles/CategoryStyles.css'
 import '../../styles/InterestTab.css'
+import '../../styles/CircleFeedTab.css'
 import { createHookLogger } from '../../../lib/utils/logger'
 import { getFaviconUrl } from '~/lib/utils'
 
 const logger = createHookLogger('BookmarkTab')
+
+type BookmarkSortBy = "date-desc" | "date-asc" | "name" | "domain"
+
+const bookmarkSortOptions: { value: BookmarkSortBy; label: string }[] = [
+  { value: "date-desc", label: "Newest" },
+  { value: "date-asc", label: "Oldest" },
+  { value: "name", label: "Name" },
+  { value: "domain", label: "Domain" }
+]
 
 // Helper to extract domain from URL
 const getDomain = (url: string): string => {
@@ -53,13 +63,21 @@ const BookmarkTab = () => {
   const [newListDescription, setNewListDescription] = useState('')
   const [isAddingSignal, setIsAddingSignal] = useState(false)
   const [signalSearchQuery, setSignalSearchQuery] = useState('')
+  const [bookmarkSearchQuery, setBookmarkSearchQuery] = useState('')
+  const [bookmarkSortBy, setBookmarkSortBy] = useState<BookmarkSortBy>("date-desc")
+
+  const selectList = (listId: string | null) => {
+    setSelectedListId(listId)
+    setBookmarkSearchQuery('')
+    setBookmarkSortBy("date-desc")
+  }
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return
 
     try {
       await createList(newListName.trim(), newListDescription.trim() || undefined)
-      setSelectedListId(null)
+      selectList(null)
       setIsCreatingList(false)
       setNewListName('')
       setNewListDescription('')
@@ -92,7 +110,7 @@ const BookmarkTab = () => {
     try {
       await deleteList(listId)
       if (selectedListId === listId) {
-        setSelectedListId(null)
+        selectList(null)
       }
     } catch (err) {
       logger.error('Failed to delete list', err)
@@ -139,6 +157,42 @@ const BookmarkTab = () => {
       (signal.url && signal.url.toLowerCase().includes(query))
     )
   }, [userSignals, signalSearchQuery])
+
+  // Filter + sort bookmarks in the selected list
+  const sortedBookmarks = useMemo(() => {
+    let filtered = displayedTriplets
+
+    if (bookmarkSearchQuery.trim()) {
+      const q = bookmarkSearchQuery.toLowerCase()
+      filtered = filtered.filter(bt =>
+        bt.triplet.object.toLowerCase().includes(q) ||
+        (bt.url && bt.url.toLowerCase().includes(q)) ||
+        (bt.description && bt.description.toLowerCase().includes(q))
+      )
+    }
+
+    const sorted = [...filtered]
+    switch (bookmarkSortBy) {
+      case "date-desc":
+        sorted.sort((a, b) => b.addedAt - a.addedAt)
+        break
+      case "date-asc":
+        sorted.sort((a, b) => a.addedAt - b.addedAt)
+        break
+      case "name":
+        sorted.sort((a, b) => a.triplet.object.localeCompare(b.triplet.object))
+        break
+      case "domain":
+        sorted.sort((a, b) => {
+          const domA = a.url ? getDomain(a.url) : ""
+          const domB = b.url ? getDomain(b.url) : ""
+          return domA.localeCompare(domB)
+        })
+        break
+    }
+
+    return sorted
+  }, [displayedTriplets, bookmarkSearchQuery, bookmarkSortBy])
 
   // Handle adding a signal to the current bookmark list
   const handleAddSignalToBookmark = async (signal: typeof userSignals[0]) => {
@@ -220,7 +274,7 @@ const BookmarkTab = () => {
             {/* All bookmarks card */}
             <div
               onClick={() => {
-                setSelectedListId(null)
+                selectList(null)
                 setIsAddingSignal(false)
                 selectCategory(null)
               }}
@@ -337,7 +391,7 @@ const BookmarkTab = () => {
           <div className="bookmark-nav-wrapper">
             <div
               onClick={() => {
-                setSelectedListId(null)
+                selectList(null)
                 setIsAddingSignal(false)
                 selectCategory(null)
               }}
@@ -511,7 +565,7 @@ const BookmarkTab = () => {
                   <div
                     key={list.id}
                     className="bookmark-card"
-                    onClick={() => setSelectedListId(list.id)}
+                    onClick={() => selectList(list.id)}
                     style={{ cursor: 'pointer' }}
                   >
                     <div className="bookmark-item">
@@ -575,42 +629,89 @@ const BookmarkTab = () => {
               </p>
             </div>
           ) : (
-            <div className="bookmark-triplets-list">
-              {displayedTriplets.map((bookmarkedTriplet) => (
-                <div key={bookmarkedTriplet.id} className="bookmark-card">
-                  <div className="bookmark-item">
-                    <div className="bookmark-header-content">
-                      <p className="bookmark-text">
-                        <span className="object">{bookmarkedTriplet.triplet.object}</span>
-                      </p>
-                    </div>
-                    {bookmarkedTriplet.url && (
-                      <div className="bookmark-favicon-grid">
-                        <img
-                          src={getFaviconUrl(bookmarkedTriplet.url, 64)}
-                          alt={getDomain(bookmarkedTriplet.url)}
-                          className="bookmark-favicon-icon"
-                          onClick={() => window.open(bookmarkedTriplet.url, '_blank', 'noopener,noreferrer')}
-                          style={{ cursor: 'pointer' }}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div className="signal-actions">
-                      <button
-                        onClick={() => handleRemoveTripletFromList(selectedListId, bookmarkedTriplet.id)}
-                        className="batch-btn delete-selected btn-small-custom"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
+            <>
+              {/* Search + Sort toolbar */}
+              <div className="category-toolbar">
+                <div className="category-search-container">
+                  <input
+                    type="text"
+                    placeholder="Search bookmarks..."
+                    value={bookmarkSearchQuery}
+                    onChange={(e) => setBookmarkSearchQuery(e.target.value)}
+                    className="category-search-input"
+                  />
+                  {bookmarkSearchQuery && (
+                    <button
+                      className="category-search-clear"
+                      onClick={() => setBookmarkSearchQuery('')}
+                    >
+                      x
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
+                <div className="sort-buttons">
+                  {bookmarkSortOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      className={`sort-btn ${bookmarkSortBy === option.value ? 'active' : ''}`}
+                      onClick={() => setBookmarkSortBy(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Result count when searching */}
+              {bookmarkSearchQuery && (
+                <span className="category-result-count">
+                  {sortedBookmarks.length} of {displayedTriplets.length} bookmarks
+                </span>
+              )}
+
+              {sortedBookmarks.length === 0 ? (
+                <div className="bookmark-empty-state">
+                  <p>No bookmarks match your search</p>
+                </div>
+              ) : (
+                <div className="bookmark-triplets-list">
+                  {sortedBookmarks.map((bookmarkedTriplet) => (
+                    <div key={bookmarkedTriplet.id} className="bookmark-card">
+                      <div className="bookmark-item">
+                        <div className="bookmark-header-content">
+                          <p className="bookmark-text">
+                            <span className="object">{bookmarkedTriplet.triplet.object}</span>
+                          </p>
+                        </div>
+                        {bookmarkedTriplet.url && (
+                          <div className="bookmark-favicon-grid">
+                            <img
+                              src={getFaviconUrl(bookmarkedTriplet.url, 64)}
+                              alt={getDomain(bookmarkedTriplet.url)}
+                              className="bookmark-favicon-icon"
+                              onClick={() => window.open(bookmarkedTriplet.url, '_blank', 'noopener,noreferrer')}
+                              style={{ cursor: 'pointer' }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div className="signal-actions">
+                          <button
+                            onClick={() => handleRemoveTripletFromList(selectedListId, bookmarkedTriplet.id)}
+                            className="batch-btn delete-selected btn-small-custom"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )
         )}
       </div>
