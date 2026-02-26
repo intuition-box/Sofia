@@ -13,10 +13,12 @@ import SofiaLoader from '../../ui/SofiaLoader'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
+import '../../styles/CategoryStyles.css'
 import '../../styles/CircleFeedTab.css'
 
 const EchoesTab = () => {
   const [certFilter, setCertFilter] = useState<IntentionType | 'all'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const {
     groups,
     selectedGroup,
@@ -56,9 +58,14 @@ const EchoesTab = () => {
   )
 
   // Filter by certification type
-  const filteredGroups = certFilter === 'all'
+  const certFilteredGroups = certFilter === 'all'
     ? baseGroups
     : baseGroups.filter(g => (g.certificationBreakdown[certFilter] || 0) > 0)
+
+  // Filter by search query
+  const filteredGroups = searchQuery.trim()
+    ? certFilteredGroups.filter(g => g.domain.toLowerCase().includes(searchQuery.toLowerCase()))
+    : certFilteredGroups
 
   const handleDeleteGroup = async (groupId: string) => {
     const group = groups.find(g => g.id === groupId)
@@ -132,7 +139,24 @@ const EchoesTab = () => {
   return (
     <div className="triples-container">
       <div className="groups-section">
-        <div className="groups-header">
+        <div className="category-toolbar">
+          <div className="category-search-container">
+            <input
+              type="text"
+              placeholder="Search groups..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="category-search-input"
+            />
+            {searchQuery && (
+              <button
+                className="category-search-clear"
+                onClick={() => setSearchQuery('')}
+              >
+                x
+              </button>
+            )}
+          </div>
           <div className="sort-buttons">
             {sortOptions.map(option => (
               <button
