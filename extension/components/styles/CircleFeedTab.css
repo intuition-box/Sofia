@@ -184,67 +184,49 @@
   max-height: 2.8em;
 }
 
-/* Vote Buttons */
-.circle-card-votes {
+/* Support/Oppose Buttons */
+.circle-card-actions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 4px;
   margin-left: auto;
 }
 
-.circle-vote-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
+.circle-action-btn {
+  padding: 3px 8px;
   border-radius: 6px;
-  border: 1px solid var(--color-border-light);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
   transition: var(--transition-fast);
-  padding: 0;
-  flex-shrink: 0;
+  border: 1px solid;
+  background: transparent;
+  white-space: nowrap;
 }
 
-.circle-vote-btn:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.3);
-  color: var(--color-text-muted);
-  background: var(--color-bg-glass-light);
-}
-
-.circle-vote-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.circle-vote-up.active {
+.circle-support-btn {
   color: var(--color-success);
-  border-color: rgba(34, 197, 94, 0.4);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.circle-support-btn:hover {
   background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.5);
 }
 
-.circle-vote-up:hover:not(:disabled) {
-  color: var(--color-success);
-}
-
-.circle-vote-down.active {
+.circle-oppose-btn {
   color: var(--color-error);
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.circle-oppose-btn:hover:not(:disabled) {
   background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
-.circle-vote-down:hover:not(:disabled) {
-  color: var(--color-error);
-}
-
-.circle-vote-count {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-text-very-muted);
-  min-width: var(--spacing-lg);
-  text-align: center;
+.circle-action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 /* Card Footer */
