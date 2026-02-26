@@ -567,7 +567,8 @@ const CircleFeedTab = () => {
             object: selectedItem.tripleObject
           },
           description: '',
-          url: selectedItem.pageUrl
+          url: selectedItem.pageUrl,
+          intention: predicateLabelToIntentionType(selectedItem.triplePredicate) || undefined
         }] : []}
         isProcessing={isProcessing}
         transactionSuccess={transactionSuccess}
