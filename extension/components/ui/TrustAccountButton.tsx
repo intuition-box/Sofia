@@ -92,7 +92,7 @@ const TrustAccountButton = ({ accountTermId, accountLabel, onSuccess }: TrustAcc
   return (
     <>
       <button
-        className={`trust-page-button salmon-gradient-button ${loading ? 'loading' : ''} ${transactionSuccess ? 'success' : ''}`}
+        className={`follow-button trust-page-button salmon-gradient-button ${loading ? 'loading' : ''} ${transactionSuccess ? 'success' : ''}`}
         onClick={handleButtonClick}
         disabled={loading}
       >
