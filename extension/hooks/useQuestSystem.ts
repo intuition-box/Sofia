@@ -238,7 +238,10 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
 
   // ─── Filtered quest lists ───
   const activeQuests = useMemo(() => quests.filter(q => q.status === 'active'), [quests])
-  const claimableQuests = useMemo(() => quests.filter(q => q.status === 'claimable_xp'), [quests])
+  const claimableQuests = useMemo(() => {
+    if (!onChainSyncDone) return []
+    return quests.filter(q => q.status === 'claimable_xp')
+  }, [quests, onChainSyncDone])
   const completedQuests = useMemo(() => quests.filter(q => q.status === 'completed'), [quests])
 
   // ─── XP and level calculation (quest-only, no Gold) ───
