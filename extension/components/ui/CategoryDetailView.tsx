@@ -1,11 +1,11 @@
 /**
  * CategoryDetailView Component
  * Displays the detail view of an intention category with list of certified URLs
- * Read-only view - URLs are already certified on-chain
- * Supports search, sort (date/domain/stake), and domain filtering
+ * Supports search, sort (date/domain/stake), domain filtering, and redeem
  */
 
 import { useState, useMemo } from "react"
+import { useRedeemTriple } from "../../hooks"
 import type { IntentionCategory, CategoryUrl } from "../../types/intentionCategories"
 
 type SortBy = "date-desc" | "date-asc" | "domain" | "shares"
@@ -20,6 +20,7 @@ const sortOptions: { value: SortBy; label: string }[] = [
 interface CategoryDetailViewProps {
   category: IntentionCategory
   onBack: () => void
+  onRedeem?: () => void
 }
 
 // Format date for display
@@ -35,7 +36,15 @@ const formatDate = (dateStr: string): string => {
 }
 
 // URL Row Component
-const CategoryUrlRow = ({ url }: { url: CategoryUrl }) => {
+const CategoryUrlRow = ({
+  url,
+  isRedeeming,
+  onRedeem
+}: {
+  url: CategoryUrl
+  isRedeeming: boolean
+  onRedeem: (termId: string, urlStr: string) => void
+}) => {
   const handleClick = () => {
     window.open(url.url, "_blank", "noopener,noreferrer")
   }
@@ -56,23 +65,62 @@ const CategoryUrlRow = ({ url }: { url: CategoryUrl }) => {
         <span className="category-url-domain">{url.domain}</span>
       </div>
       <span className="category-url-date">{formatDate(url.certifiedAt)}</span>
+      {url.termId && (
+        <button
+          className="remove-btn"
+          onClick={(e) => {
+            e.stopPropagation()
+            onRedeem(url.termId, url.url)
+          }}
+          disabled={isRedeeming}
+          title="Redeem position"
+        >
+          {isRedeeming ? "..." : "×"}
+        </button>
+      )}
     </div>
   )
 }
 
-const CategoryDetailView = ({ category, onBack }: CategoryDetailViewProps) => {
+const CategoryDetailView = ({ category, onBack, onRedeem }: CategoryDetailViewProps) => {
   const { label, color, urls, urlCount } = category
+  const { redeemPosition } = useRedeemTriple()
 
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<SortBy>("date-desc")
   const [domainFilter, setDomainFilter] = useState<string | null>(null)
+  const [redeemingUrls, setRedeemingUrls] = useState<Set<string>>(() => new Set())
+  const [redeemedUrls, setRedeemedUrls] = useState<Set<string>>(() => new Set())
+
+  const handleRedeem = async (termId: string, urlStr: string) => {
+    setRedeemingUrls(prev => new Set(prev).add(urlStr))
+    try {
+      const result = await redeemPosition(termId)
+      if (!result.success) {
+        alert(`Redeem failed: ${result.error}`)
+        return
+      }
+      // Optimistic removal — hide immediately, refetch in background
+      setRedeemedUrls(prev => new Set(prev).add(urlStr))
+      onRedeem?.()
+    } finally {
+      setRedeemingUrls(prev => {
+        const next = new Set(prev)
+        next.delete(urlStr)
+        return next
+      })
+    }
+  }
 
   const uniqueDomains = useMemo(() => {
     return [...new Set(urls.map((u) => u.domain))].sort()
   }, [urls])
 
   const displayedUrls = useMemo(() => {
-    let filtered = urls
+    // Exclude optimistically removed (redeemed) URLs
+    let filtered = redeemedUrls.size > 0
+      ? urls.filter(u => !redeemedUrls.has(u.url))
+      : urls
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
@@ -121,7 +169,7 @@ const CategoryDetailView = ({ category, onBack }: CategoryDetailViewProps) => {
     }
 
     return sorted
-  }, [urls, searchQuery, domainFilter, sortBy])
+  }, [urls, searchQuery, domainFilter, sortBy, redeemedUrls])
 
   const isFiltered = searchQuery || domainFilter
 
@@ -226,7 +274,12 @@ const CategoryDetailView = ({ category, onBack }: CategoryDetailViewProps) => {
           </div>
         ) : (
           displayedUrls.map((url, index) => (
-            <CategoryUrlRow key={`${url.url}-${index}`} url={url} />
+            <CategoryUrlRow
+              key={`${url.url}-${index}`}
+              url={url}
+              isRedeeming={redeemingUrls.has(url.url)}
+              onRedeem={handleRedeem}
+            />
           ))
         )}
       </div>

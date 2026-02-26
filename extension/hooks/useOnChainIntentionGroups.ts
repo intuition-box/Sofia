@@ -24,6 +24,7 @@ export interface OnChainUrl {
   predicateId: string
   shares: string
   certifiedAt: string
+  termId: string
 }
 
 export interface OnChainGroup {
@@ -114,7 +115,8 @@ export const useOnChainIntentionGroups = (externalWalletAddress?: string): UseOn
           certification,
           predicateId,
           shares: position?.shares || '0',
-          certifiedAt: position?.created_at || ''
+          certifiedAt: position?.created_at || '',
+          termId: triple.term_id || ''
         }
 
         if (!domainMap.has(domain)) {
