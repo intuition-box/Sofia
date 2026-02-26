@@ -100,6 +100,7 @@ export interface CategoryUrl {
   favicon: string
   certifiedAt: string
   shares: string
+  termId: string
 }
 
 export interface IntentionCategory {

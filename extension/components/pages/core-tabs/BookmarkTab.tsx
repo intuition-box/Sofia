@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react'
 import { useBookmarks, useIntentionCategories, useIntuitionTriplets } from '../../../hooks'
-import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
+import type { IntentionCategory, IntentionType } from '../../../types/intentionCategories'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/Modal.css'
 import '../../styles/BookmarkStyles.css'
 import '../../styles/CategoryStyles.css'
 import '../../styles/InterestTab.css'
+import '../../styles/CircleFeedTab.css'
 import { createHookLogger } from '../../../lib/utils/logger'
 import { getFaviconUrl } from '~/lib/utils'
 
@@ -30,7 +31,6 @@ const BookmarkTab = () => {
     deleteList,
     updateList,
     addTripletToList,
-    removeTripletFromList,
     getTripletsByList,
     refreshFromLocal
   } = useBookmarks()
@@ -40,7 +40,8 @@ const BookmarkTab = () => {
     categories,
     selectedCategory,
     loading: categoriesLoading,
-    selectCategory
+    selectCategory,
+    refetch: refetchCategories
   } = useIntentionCategories()
 
   // User's on-chain signals for adding to bookmarks
@@ -53,13 +54,32 @@ const BookmarkTab = () => {
   const [newListDescription, setNewListDescription] = useState('')
   const [isAddingSignal, setIsAddingSignal] = useState(false)
   const [signalSearchQuery, setSignalSearchQuery] = useState('')
+  const [showAllBookmarks, setShowAllBookmarks] = useState(false)
+
+  // Virtual "All Bookmarks" category — aggregates all on-chain URLs
+  const allBookmarksCategory: IntentionCategory | null = useMemo(() => {
+    if (!showAllBookmarks) return null
+    const allUrls = categories.flatMap(cat => cat.urls)
+    return {
+      id: 'trusted' as IntentionType,
+      label: 'All Bookmarks',
+      color: '#FFFFFF',
+      urls: allUrls,
+      urlCount: allUrls.length
+    }
+  }, [showAllBookmarks, categories])
+
+  const selectList = (listId: string | null) => {
+    setSelectedListId(listId)
+    setShowAllBookmarks(false)
+  }
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return
 
     try {
       await createList(newListName.trim(), newListDescription.trim() || undefined)
-      setSelectedListId(null)
+      selectList(null)
       setIsCreatingList(false)
       setNewListName('')
       setNewListDescription('')
@@ -92,7 +112,7 @@ const BookmarkTab = () => {
     try {
       await deleteList(listId)
       if (selectedListId === listId) {
-        setSelectedListId(null)
+        selectList(null)
       }
     } catch (err) {
       logger.error('Failed to delete list', err)
@@ -116,18 +136,15 @@ const BookmarkTab = () => {
   }
 
   const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp)
-    return date.toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
+    try {
+      return new Date(timestamp).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      })
+    } catch {
+      return ''
+    }
   }
-
-  // Get triplets for selected list or all if no list selected
-  const displayedTriplets = selectedListId
-    ? getTripletsByList(selectedListId)
-    : triplets
 
   // Filter user signals based on search query for adding to bookmark
   const filteredSignals = useMemo(() => {
@@ -169,22 +186,19 @@ const BookmarkTab = () => {
   }
 
 
-  const handleRemoveTripletFromList = async (listId: string, tripletId: string) => {
-    try {
-      await removeTripletFromList(listId, tripletId)
-    } catch (err) {
-      logger.error('Failed to remove triplet from list', err)
-    }
-  }
 
 
-  // If a category is selected, show the detail view
-  if (selectedCategory) {
+  // If a category or "All Bookmarks" is selected, show the detail view
+  if (selectedCategory || allBookmarksCategory) {
     return (
       <div className="bookmarks-container">
         <CategoryDetailView
-          category={selectedCategory}
-          onBack={() => selectCategory(null)}
+          category={(selectedCategory || allBookmarksCategory)!}
+          onBack={() => {
+            selectCategory(null)
+            setShowAllBookmarks(false)
+          }}
+          onRedeem={refetchCategories}
         />
       </div>
     )
@@ -203,7 +217,7 @@ const BookmarkTab = () => {
             >
               {isAddingSignal ? 'Cancel' : '+ Add'}
             </button>
-          ) : (
+          ) : !showAllBookmarks ? (
             <button
               onClick={() => setIsCreatingList(true)}
               className="btn iridescence-btn"
@@ -211,20 +225,20 @@ const BookmarkTab = () => {
             >
               + New List
             </button>
-          )}
+          ) : null}
         </div>
 
-        {/* Categories as bookmark cards - Only show when no list is selected */}
-        {!selectedListId && (
+        {/* Categories as bookmark cards - Only show when no list is selected and not viewing all */}
+        {!selectedListId && !showAllBookmarks && (
           <div className="lists-grid">
             {/* All bookmarks card */}
             <div
               onClick={() => {
-                setSelectedListId(null)
+                setShowAllBookmarks(true)
                 setIsAddingSignal(false)
                 selectCategory(null)
               }}
-              className={`bookmark-card ${selectedListId === null && !selectedCategory ? 'active' : ''}`}
+              className="bookmark-card"
               style={{ cursor: 'pointer' }}
             >
               <div className="bookmark-item">
@@ -237,9 +251,9 @@ const BookmarkTab = () => {
                   </div>
                 </div>
                 {(() => {
-                  const allDomains = [...new Set(
-                    triplets.filter(t => t.url).map(t => getDomain(t.url!))
-                  )]
+                  const manualDomains = triplets.filter(t => t.url).map(t => getDomain(t.url!))
+                  const categoryDomains = categories.flatMap(c => c.urls.map(u => u.domain))
+                  const allDomains = [...new Set([...manualDomains, ...categoryDomains])]
                   return allDomains.length > 0 ? (
                     <div className="bookmark-favicon-grid">
                       {allDomains.slice(0, 8).map((domain) => (
@@ -332,34 +346,24 @@ const BookmarkTab = () => {
           </div>
         )}
 
-        {/* All Bookmarks button when list is selected */}
+        {/* Header for manual list view */}
         {selectedListId && (
-          <div className="bookmark-nav-wrapper">
-            <div
+          <div className="category-detail-header">
+            <button
+              className="category-back-btn"
               onClick={() => {
-                setSelectedListId(null)
+                selectList(null)
                 setIsAddingSignal(false)
-                selectCategory(null)
               }}
-              className="bookmark-card"
-              style={{ cursor: 'pointer', width: 'fit-content' }}
             >
-              <div className="bookmark-item">
-                <div className="bookmark-header-content">
-                  <div className="bookmark-list-info">
-                    <h4 style={{ margin: 0 }}>All Bookmarks</h4>
-                  </div>
-                </div>
-              </div>
+              Back
+            </button>
+            <div className="category-detail-info">
+              <h3 className="category-detail-name">
+                {lists.find(l => l.id === selectedListId)?.name}
+              </h3>
             </div>
           </div>
-        )}
-
-        {/* Selected list title */}
-        {selectedListId && (
-          <h2 className="bookmark-list-title">
-            {lists.find(l => l.id === selectedListId)?.name}
-          </h2>
         )}
       </div>
 
@@ -486,7 +490,7 @@ const BookmarkTab = () => {
           </div>
         )}
 
-        {selectedListId === null ? (
+        {!selectedListId ? (
           /* Show all lists as cards */
           lists.length === 0 ? (
             categories.some(c => c.urlCount > 0) ? null : (
@@ -511,7 +515,7 @@ const BookmarkTab = () => {
                   <div
                     key={list.id}
                     className="bookmark-card"
-                    onClick={() => setSelectedListId(list.id)}
+                    onClick={() => selectList(list.id)}
                     style={{ cursor: 'pointer' }}
                   >
                     <div className="bookmark-item">
@@ -566,52 +570,13 @@ const BookmarkTab = () => {
             </div>
           )
         ) : !isAddingSignal && (
-          /* Show triplets in selected list */
-          displayedTriplets.length === 0 ? (
-            <div className="bookmark-empty-state">
-              <p>No signals in this list yet!</p>
-              <p className="bookmark-empty-subtext">
-                Click "Add" to add signals from your on-chain signals.
-              </p>
-            </div>
-          ) : (
-            <div className="bookmark-triplets-list">
-              {displayedTriplets.map((bookmarkedTriplet) => (
-                <div key={bookmarkedTriplet.id} className="bookmark-card">
-                  <div className="bookmark-item">
-                    <div className="bookmark-header-content">
-                      <p className="bookmark-text">
-                        <span className="object">{bookmarkedTriplet.triplet.object}</span>
-                      </p>
-                    </div>
-                    {bookmarkedTriplet.url && (
-                      <div className="bookmark-favicon-grid">
-                        <img
-                          src={getFaviconUrl(bookmarkedTriplet.url, 64)}
-                          alt={getDomain(bookmarkedTriplet.url)}
-                          className="bookmark-favicon-icon"
-                          onClick={() => window.open(bookmarkedTriplet.url, '_blank', 'noopener,noreferrer')}
-                          style={{ cursor: 'pointer' }}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div className="signal-actions">
-                      <button
-                        onClick={() => handleRemoveTripletFromList(selectedListId, bookmarkedTriplet.id)}
-                        className="batch-btn delete-selected btn-small-custom"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
+          /* Show triplets in selected manual list */
+          <div className="bookmark-empty-state">
+            <p>No signals in this list yet!</p>
+            <p className="bookmark-empty-subtext">
+              Click "Add" to add signals from your on-chain signals.
+            </p>
+          </div>
         )}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useIntuitionTriplets, useWeightOnChain, useWalletFromStorage } from '~/hooks'
+import { useIntuitionTriplets, useWeightOnChain, useWalletFromStorage, useRedeemTriple } from '~/hooks'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
 import StakeModal from '../../modals/StakeModal'
@@ -28,6 +28,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
   const { triplets, isLoading, refreshFromAPI } = useIntuitionTriplets()
   const { addWeight, addShares} = useWeightOnChain()
   const { walletAddress: address } = useWalletFromStorage()
+  const { redeemPosition } = useRedeemTriple()
 
   // Stake modal state (unified)
   const [selectedStakeTriplet, setSelectedStakeTriplet] = useState<typeof triplets[0] | null>(null)
@@ -44,6 +45,29 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Redeem state
+  const [redeemingIds, setRedeemingIds] = useState<Set<string>>(() => new Set())
+  const [redeemedIds, setRedeemedIds] = useState<Set<string>>(() => new Set())
+
+  const handleRedeem = async (termId: string) => {
+    setRedeemingIds(prev => new Set(prev).add(termId))
+    try {
+      const result = await redeemPosition(termId)
+      if (!result.success) {
+        alert(`Redeem failed: ${result.error}`)
+        return
+      }
+      setRedeemedIds(prev => new Set(prev).add(termId))
+      refreshFromAPI()
+    } finally {
+      setRedeemingIds(prev => {
+        const next = new Set(prev)
+        next.delete(termId)
+        return next
+      })
+    }
+  }
 
   logger.debug('Render', { address, tripletsCount: triplets.length, triplets })
 
@@ -63,7 +87,10 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
 
   // Filter and sort triplets based on search query and sort option
   const filteredAndSortedTriplets = useMemo(() => {
-    let filtered = [...publishedTriplets]
+    // Exclude optimistically removed (redeemed) triples
+    let filtered = redeemedIds.size > 0
+      ? publishedTriplets.filter(t => !redeemedIds.has(t.id))
+      : [...publishedTriplets]
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -102,7 +129,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
       default:
         return filtered
     }
-  }, [publishedTriplets, sortBy, getPlatformFromUrl, searchQuery])
+  }, [publishedTriplets, sortBy, getPlatformFromUrl, searchQuery, redeemedIds])
 
   // Sort options configuration
   const sortOptions = [
@@ -293,7 +320,7 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
                     </p>
                   </div>
 
-                  {/* Favicon et Badges alignés avec le texte */}
+                  {/* Favicon */}
                   <div className="triplet-actions-container">
                     {tripletItem.url && (
                       <img
@@ -307,6 +334,19 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
                       />
                     )}
                   </div>
+                  {/* Redeem button — pushed to right */}
+                  <button
+                    className="remove-btn"
+                    style={{ marginLeft: 'auto' }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleRedeem(tripletItem.id)
+                    }}
+                    disabled={redeemingIds.has(tripletItem.id)}
+                    title="Redeem position"
+                  >
+                    {redeemingIds.has(tripletItem.id) ? '...' : '×'}
+                  </button>
                 </div>
                 {isExpanded && (() => {
                   logger.debug('Expanded triplet detail', { url: tripletItem.url, tripletItem })
