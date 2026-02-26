@@ -50,3 +50,10 @@ export { calculateStreaks, toDateStr } from './streakUtils'
 
 // Fee Calculation
 export { estimateCertificationCost } from './feeCalculation'
+
+// Page Certification Compute (pure functions)
+export { computeDiscoveryData, computeIntentionStats, computeTrustCounts } from './pageCertificationCompute'
+export type { CertTriple, DiscoveryResult, IntentionStatsResult, TrustCountsResult } from './pageCertificationCompute'
+
+// Page Blockchain Reducer (pure function)
+export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE, DEFAULT_COUNTS, EMPTY_INTENTIONS } from './pageBlockchainReducer'

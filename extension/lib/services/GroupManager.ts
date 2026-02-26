@@ -6,7 +6,6 @@
 
 import { IntentionGroupsService } from '../database/indexedDB-methods'
 import type { IntentionGroupRecord, GroupUrlRecord, PredicateChangeRecord } from '~types/database'
-import { goldService } from './GoldService'
 import type { DomainCluster, TrackedUrl } from './SessionTracker'
 import { createServiceLogger } from '../utils/logger'
 import { calculateDominantCertification } from '../utils/certificationHelpers'
@@ -35,14 +34,6 @@ export interface GroupStats {
  */
 class GroupManagerService {
   private initialized = false
-
-  /**
-   * Get the active wallet address from storage
-   */
-  private async getActiveWallet(): Promise<string> {
-    const result = await chrome.storage.local.get(['lastActiveWallet'])
-    return result.lastActiveWallet || ''
-  }
 
   /**
    * Initialize the service (load groups from IndexedDB)
@@ -147,7 +138,6 @@ class GroupManagerService {
 
   /**
    * Certify a URL in a group.
-   * User gains +10 Gold per certification.
    */
   async certifyUrl(groupId: string, url: string, certification: CertificationType): Promise<CertifyResult> {
     const group = await IntentionGroupsService.getGroup(groupId)
@@ -183,13 +173,9 @@ class GroupManagerService {
 
     await IntentionGroupsService.saveGroup(group)
 
-    // Add Gold
-    const wallet = await this.getActiveWallet()
-    const goldGained = await goldService.addCertificationGold(wallet)
+    logger.info('Certified URL', { certification, groupId })
 
-    logger.info('Certified URL', { certification, groupId, goldGained })
-
-    return { success: true, goldGained }
+    return { success: true, goldGained: 0 }
   }
 
   /**

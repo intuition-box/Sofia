@@ -173,6 +173,12 @@
   border-color: var(--color-success, #22c55e);
 }
 
+.trust-btn.success {
+  color: var(--color-success, #22c55e);
+  border-color: var(--color-success, #22c55e);
+  background: rgba(34, 197, 94, 0.12);
+}
+
 /* Distrust button — outline with red hover */
 .distrust-btn {
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -204,7 +210,9 @@
 }
 
 .distrust-btn.success {
-  background: rgba(239, 68, 68, 0.15) !important;
+  color: var(--color-error, #ef4444);
+  border-color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.12);
 }
 
 .distrust-btn .button-spinner {

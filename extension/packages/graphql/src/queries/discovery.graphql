@@ -155,6 +155,9 @@ query IntentionStats(
     predicate {
       label
     }
+    object {
+      term_id
+    }
     positions(where: { shares: { _gt: "0" } }) {
       account_id
     }
@@ -204,6 +207,46 @@ query GetUserIntentionPositions(
         total_shares
         position_count
       }
+    }
+  }
+}
+
+# Unified certification data for a page (replaces CertificationTriples + IntentionStats + TrustDistrustByPage)
+# Used by: usePageBlockchainData — fetches ALL certification types for a hostname in one shot
+query PageCertificationData(
+  $predicateIds: [String!]!
+  $hostnameLike: String!
+) {
+  triples(
+    where: {
+      predicate_id: { _in: $predicateIds }
+      _or: [
+        { object: { label: { _ilike: $hostnameLike } } }
+        { object: { value: { thing: { url: { _ilike: $hostnameLike } } } } }
+      ]
+      positions: { shares: { _gt: "0" } }
+    }
+    limit: 200
+  ) {
+    term_id
+    predicate_id
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+      value {
+        thing {
+          url
+        }
+      }
+    }
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
+      shares
+      created_at
     }
   }
 }

@@ -20,7 +20,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.pulse-animation-section > * {
+  pointer-events: auto;
 }
 
 .level-progress-section {

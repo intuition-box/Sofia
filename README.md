@@ -207,7 +207,7 @@ Certify any URL with one of 5 intentions:
 [I] ── visits_for_work ──▶ [Page URL atom]
 ```
 
-**Flow:** User clicks intention → WeightModal opens (select deposit amount from 0.01–10 TRUST, allocate to Signal/Beta Season Pool, review fee breakdown) → Atom creation (IPFS pin + hex encode) → Triple creation via SofiaFeeProxy → Transaction confirmed → +10 Gold awarded → On-chain badge appears.
+**Flow:** User clicks intention → WeightModal opens (select deposit amount from 0.01–10 TRUST, allocate to Signal/Beta Season Pool, review fee breakdown) → Atom creation (IPFS pin + hex encode) → Triple creation via SofiaFeeProxy → Transaction confirmed → Discovery Gold awarded based on ranking (Pioneer/Explorer/Contributor) → On-chain badge appears.
 
 **WeightModal** is the unified transaction confirmation UI across all flows (certify, vote, follow, trust/distrust, quest claim). It displays:
 - Intention badge (colored tag with intention type)
@@ -250,7 +250,7 @@ Sofia uses two separate currencies:
 |--------|-----|------|
 | **Visibility** | On-chain, public | Off-chain, private |
 | **Storage** | Blockchain (badge triples) + chrome.storage | chrome.storage.local only |
-| **Earning** | Claim quest badges | Discovery rewards + URL certifications |
+| **Earning** | Claim quest badges | Discovery rewards + vote rewards |
 | **Spending** | None (read-only) | Group level-ups |
 | **Purpose** | Determines user level | Fuel for domain progression |
 
@@ -261,9 +261,9 @@ Sofia uses two separate currencies:
 - Managed by `XPService` + `useQuestSystem` hook
 
 #### Gold
-- **3 components:** `totalGold = discoveryGold + certificationGold - spentGold`
-- **Discovery Gold:** Earned from being early to certify pages (Pioneer +50, Explorer +20, Contributor +5)
-- **Certification Gold:** +10 per URL certified in a group
+- **3 components:** `totalGold = discoveryGold + voteGold - spentGold`
+- **Discovery Gold:** Earned from being early to certify pages (Pioneer +50, Explorer +20, Contributor +10)
+- **Vote Gold:** +5 per vote, capped at 10 Gold/day
 - **Spent Gold:** Deducted when leveling up domains
 - Managed by `GoldService` + `useGoldSystem` hook
 - Real-time updates via `chrome.storage.onChanged` listener
@@ -583,12 +583,12 @@ MCP_SERVER_URL=http://127.0.0.1:3001/sse
 
 | Layer | Key Files | Count |
 |-------|-----------|-------|
-| Custom Hooks | `hooks/` | 47+ |
-| Components | `components/` | 70+ |
+| Custom Hooks | `hooks/` | 58 |
+| Components | `components/` | 73 |
 | Pages | `components/pages/` | 11 |
-| Stylesheets | `components/styles/` | 32 |
-| Services | `lib/services/` | 15+ |
-| Chrome Message Types | `types/messages.ts` | 40+ |
+| Stylesheets | `components/styles/` | 39 |
+| Services | `lib/services/` | 23 |
+| Chrome Message Types | `types/messages.ts` | 43 |
 | Content Scripts | `contents/` | 7 |
 
 ### Storage Layers
@@ -617,4 +617,4 @@ MIT
 
 ---
 
-**Sofia v0.2.21 BETA** - Built with Mastra, GaiaNet & Intuition
+**Sofia v0.2.4 BETA** - Built with Mastra, GaiaNet & Intuition

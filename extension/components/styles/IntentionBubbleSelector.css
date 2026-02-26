@@ -30,13 +30,13 @@
 
 .intention-pill {
   padding: 6px 16px;
-  border-radius: 20px;
+  border-radius: 15px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.75);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'Gotu', cursive;
+  font-size: 14px;
+  font-weight: 200;
+  font-family: 'Montserrat', cursive;
   cursor: pointer;
   transition: all 0.15s ease;
   text-transform: lowercase;
@@ -52,6 +52,10 @@
   background: rgba(245, 158, 11, 0.15);
   border-color: rgba(245, 158, 11, 0.5);
   color: #FCD34D;
+}
+
+.intention-pill.certified {
+  font-weight: 600;
 }
 
 .intention-pill:disabled {

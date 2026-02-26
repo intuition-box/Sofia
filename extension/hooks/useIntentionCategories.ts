@@ -49,7 +49,8 @@ export function useIntentionCategories(walletAddress?: string): UseIntentionCate
             domain: group.domain,
             favicon: `https://www.google.com/s2/favicons?domain=${group.domain}&sz=32`,
             certifiedAt: url.certifiedAt,
-            shares: url.shares
+            shares: url.shares,
+            termId: url.termId
           })
         }
       }

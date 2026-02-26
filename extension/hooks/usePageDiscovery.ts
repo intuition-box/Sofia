@@ -36,7 +36,10 @@ export interface PageDiscoveryResult {
   refetch: () => Promise<void>
 }
 
-export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult => {
+export const usePageDiscovery = (
+  pageUrl: string | null,
+  pageAtomIds?: string[]
+): PageDiscoveryResult => {
   const { walletAddress } = useWalletFromStorage()
   const [discoveryStatus, setDiscoveryStatus] = useState<DiscoveryStatus>(null)
   const [certificationRank, setCertificationRank] = useState<number | null>(null)
@@ -62,11 +65,6 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
       const hostname = new URL(pageUrl).hostname.toLowerCase().replace(/^www\./, '')
 
       logger.debug('Fetching discovery status', { pageUrl, hostname, walletAddress })
-      console.log('🔍 [usePageDiscovery] Query params:', {
-        predicateIds: CERTIFICATION_PREDICATE_IDS,
-        hostnameLike: `%${hostname}%`,
-        predicateCount: CERTIFICATION_PREDICATE_IDS.length
-      })
 
       // Query to find all certification triples for this page via POSITIONS
       // Using document from @0xsofia/graphql
@@ -75,10 +73,22 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
         hostnameLike: `%${hostname}%`
       })
 
-      const triples = response?.triples || []
+      const allTriples = response?.triples || []
 
-      console.log('🔍 [usePageDiscovery] Found triples:', triples.length, triples)
-      logger.debug('Found certification triples', { count: triples.length })
+      // Filter to page-specific atoms if provided
+      // pageAtomIds !== undefined → page scope (empty = 0 certifs, non-empty = filtered)
+      // pageAtomIds === undefined → no page scope, use all domain triples
+      const pageAtomSet = new Set(pageAtomIds || [])
+      const triples = pageAtomIds !== undefined
+        ? (pageAtomSet.size > 0
+            ? allTriples.filter((t: any) => pageAtomSet.has(t.object?.term_id))
+            : [])
+        : allTriples
+
+      logger.debug('Found certification triples', {
+        domain: allTriples.length,
+        page: triples.length
+      })
 
       // Count unique position holders (each person counts once, even if they certified multiple types)
       // Use created_at to determine order (who arrived first = Pioneer)
@@ -103,7 +113,6 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
         .map(([accountId]) => accountId)
 
       const total = sortedHolders.length
-      console.log('🔍 [usePageDiscovery] Unique holders:', total, 'sortedHolders:', sortedHolders)
       setTotalCertifications(total)
 
       // Check if current user has certified (use _ilike matching for checksummed addresses)
@@ -141,13 +150,11 @@ export const usePageDiscovery = (pageUrl: string | null): PageDiscoveryResult =>
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch discovery status'
       logger.error('Failed to fetch discovery status', err)
-      console.error('❌ [usePageDiscovery] Full error:', err)
-      console.error('❌ [usePageDiscovery] CERTIFICATION_PREDICATE_IDS:', CERTIFICATION_PREDICATE_IDS)
       setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }, [pageUrl, walletAddress])
+  }, [pageUrl, walletAddress, pageAtomIds])
 
   // Fetch on mount and when URL/wallet changes
   useEffect(() => {

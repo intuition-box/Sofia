@@ -882,29 +882,31 @@
 
 .sort-buttons {
   display: flex;
-  gap: 4px;
+  width: fit-content;
+  gap: 2px;
+  background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
+  border-radius: var(--radius-sm, 4px);
+  padding: 2px;
 }
 
 .sort-btn {
-  padding: 4px 8px;
-  font-size: 11px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  color: rgba(255, 255, 255, 0.5);
+  padding: 2px var(--spacing-sm, 8px);
+  font-size: var(--font-size-xs, 10px);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm, 4px);
+  color: var(--color-text-very-muted, rgba(255, 255, 255, 0.5));
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast, all 0.2s ease);
 }
 
 .sort-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.8));
 }
 
 .sort-btn.active {
-  background: rgba(199, 134, 108, 0.2);
-  border-color: rgba(199, 134, 108, 0.4);
-  color: #c7866c;
+  background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.1));
+  color: var(--color-text-secondary, #FBF7F5);
 }
 
 .groups-loading,

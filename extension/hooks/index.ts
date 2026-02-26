@@ -61,7 +61,7 @@ export { useDiscoveryReward } from './useDiscoveryReward'
 
 // UI Hooks
 export { useFavicon } from './useFavicon'
-export { useCredibilityAnalysis, getTotalShares } from './useCredibilityAnalysis'
+export { useCredibilityAnalysis, getTotalShares, type CredibilityAnalysis } from './useCredibilityAnalysis'
 export { useCertificationModal } from './useCertificationModal'
 export type { ModalTriplet } from './useCertificationModal'
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy } from 'react'
+import { useState, useEffect, useTransition, Suspense, lazy } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
@@ -16,11 +16,14 @@ const ProfilePage = () => {
   )
 
   const [expandedHistoryTriplet, setExpandedHistoryTriplet] = useState<{ tripletId: string } | null>(null)
+  const [, startTransition] = useTransition()
 
   // Sync local tab state with router context
   const handleTabChange = (tab: 'account' | 'community' | 'history' | 'bookmarks' | 'signals') => {
-    setActiveTab(tab)
-    setActiveProfileTab(tab)
+    startTransition(() => {
+      setActiveTab(tab)
+      setActiveProfileTab(tab)
+    })
   }
 
   // Restore active tab when coming back from user profile

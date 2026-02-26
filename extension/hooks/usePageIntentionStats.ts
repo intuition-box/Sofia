@@ -2,55 +2,65 @@
  * usePageIntentionStats Hook
  * Fetches intention statistics for a specific page from Intuition
  * Shows breakdown of intentions (work, learning, fun, inspiration, buying)
+ * Computes both domain-level and page-level stats for toggle filtering
  */
 
-import { useState, useCallback, useEffect } from 'react'
-import { intuitionGraphqlClient } from '../lib/clients/graphql-client'
-import type { IntentionPurpose } from '../types/discovery'
+import { useState, useCallback, useEffect } from "react"
+import { intuitionGraphqlClient } from "~/lib/clients/graphql-client"
+import type { IntentionPurpose } from "~/types/discovery"
 import {
   INTENTION_PREDICATE_IDS,
   PREDICATE_ID_TO_INTENTION
-} from '../lib/config/predicateConstants'
-import { createHookLogger } from '../lib/utils/logger'
-import { IntentionStatsDocument } from '@0xsofia/graphql'
+} from "~/lib/config/predicateConstants"
+import { createHookLogger } from "~/lib/utils"
+import { IntentionStatsDocument } from "@0xsofia/graphql"
 
-const logger = createHookLogger('usePageIntentionStats')
+const logger = createHookLogger("usePageIntentionStats")
+
+const EMPTY_INTENTIONS: Record<IntentionPurpose, number> = {
+  for_work: 0,
+  for_learning: 0,
+  for_fun: 0,
+  for_inspiration: 0,
+  for_buying: 0,
+  for_music: 0
+}
 
 export interface PageIntentionStats {
   intentions: Record<IntentionPurpose, number>
+  pageIntentions: Record<IntentionPurpose, number>
   totalCertifications: number
-  maxIntentionCount: number // For progress bar scaling
+  pageTotalCertifications: number
+  maxIntentionCount: number
+  pageMaxIntentionCount: number
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
 }
 
-export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStats => {
-  const [intentions, setIntentions] = useState<Record<IntentionPurpose, number>>({
-    for_work: 0,
-    for_learning: 0,
-    for_fun: 0,
-    for_inspiration: 0,
-    for_buying: 0,
-    for_music: 0
-  })
+export const usePageIntentionStats = (
+  pageUrl: string | null,
+  pageAtomIds?: string[]
+): PageIntentionStats => {
+  const [intentions, setIntentions] =
+    useState<Record<IntentionPurpose, number>>(EMPTY_INTENTIONS)
+  const [pageIntentions, setPageIntentions] =
+    useState<Record<IntentionPurpose, number>>(EMPTY_INTENTIONS)
   const [totalCertifications, setTotalCertifications] = useState(0)
+  const [pageTotalCertifications, setPageTotalCertifications] = useState(0)
   const [maxIntentionCount, setMaxIntentionCount] = useState(0)
+  const [pageMaxIntentionCount, setPageMaxIntentionCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchIntentionStats = useCallback(async () => {
     if (!pageUrl || INTENTION_PREDICATE_IDS.length === 0) {
-      setIntentions({
-        for_work: 0,
-        for_learning: 0,
-        for_fun: 0,
-        for_inspiration: 0,
-        for_buying: 0,
-        for_music: 0
-      })
+      setIntentions(EMPTY_INTENTIONS)
+      setPageIntentions(EMPTY_INTENTIONS)
       setTotalCertifications(0)
+      setPageTotalCertifications(0)
       setMaxIntentionCount(0)
+      setPageMaxIntentionCount(0)
       return
     }
 
@@ -58,24 +68,37 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
     setError(null)
 
     try {
-      // Extract hostname for matching
       const hostname = new URL(pageUrl).hostname
 
-      logger.debug('Fetching intention stats', { pageUrl, hostname })
+      logger.debug("Fetching intention stats", { pageUrl, hostname })
 
-      // Query to find all intention triples for this page
-      // Using document from @0xsofia/graphql
-      const response = await intuitionGraphqlClient.request(IntentionStatsDocument, {
-        predicateIds: INTENTION_PREDICATE_IDS,
-        hostnameLike: `%${hostname}%`
-      })
+      const response = await intuitionGraphqlClient.request(
+        IntentionStatsDocument,
+        {
+          predicateIds: INTENTION_PREDICATE_IDS,
+          hostnameLike: `%${hostname}%`
+        }
+      )
 
       const triples = response?.triples || []
 
-      logger.debug('Found intention triples for stats', { count: triples.length })
+      logger.debug("Found intention triples for stats", {
+        count: triples.length
+      })
 
-      // Count intentions by type (unique position holders per intention)
-      const intentionCounts: Record<IntentionPurpose, Set<string>> = {
+      // Two sets of counters: domain (all triples) and page (filtered by atom)
+      const pageAtomSet = new Set(pageAtomIds || [])
+
+      const domainCounts: Record<IntentionPurpose, Set<string>> = {
+        for_work: new Set(),
+        for_learning: new Set(),
+        for_fun: new Set(),
+        for_inspiration: new Set(),
+        for_buying: new Set(),
+        for_music: new Set()
+      }
+
+      const pageCounts: Record<IntentionPurpose, Set<string>> = {
         for_work: new Set(),
         for_learning: new Set(),
         for_fun: new Set(),
@@ -89,54 +112,85 @@ export const usePageIntentionStats = (pageUrl: string | null): PageIntentionStat
         const intentionPurpose = PREDICATE_ID_TO_INTENTION[predicateId]
 
         if (intentionPurpose && triple.positions) {
-          // Count unique position holders
+          const isPageTriple =
+            pageAtomSet.size > 0 &&
+            pageAtomSet.has(triple.object?.term_id)
+
           for (const position of triple.positions) {
             const accountId = position.account_id?.toLowerCase()
-            if (accountId) {
-              intentionCounts[intentionPurpose].add(accountId)
+            if (!accountId) continue
+
+            domainCounts[intentionPurpose].add(accountId)
+            if (isPageTriple) {
+              pageCounts[intentionPurpose].add(accountId)
             }
           }
         }
       }
 
       // Convert sets to counts
-      const counts: Record<IntentionPurpose, number> = {
-        for_work: intentionCounts.for_work.size,
-        for_learning: intentionCounts.for_learning.size,
-        for_fun: intentionCounts.for_fun.size,
-        for_inspiration: intentionCounts.for_inspiration.size,
-        for_buying: intentionCounts.for_buying.size,
-        for_music: intentionCounts.for_music.size
+      const domainResult: Record<IntentionPurpose, number> = {
+        for_work: domainCounts.for_work.size,
+        for_learning: domainCounts.for_learning.size,
+        for_fun: domainCounts.for_fun.size,
+        for_inspiration: domainCounts.for_inspiration.size,
+        for_buying: domainCounts.for_buying.size,
+        for_music: domainCounts.for_music.size
       }
 
-      // Calculate totals
-      const total = Object.values(counts).reduce((sum, count) => sum + count, 0)
-      const max = Math.max(...Object.values(counts), 1) // At least 1 for progress bar scaling
+      const pageResult: Record<IntentionPurpose, number> = {
+        for_work: pageCounts.for_work.size,
+        for_learning: pageCounts.for_learning.size,
+        for_fun: pageCounts.for_fun.size,
+        for_inspiration: pageCounts.for_inspiration.size,
+        for_buying: pageCounts.for_buying.size,
+        for_music: pageCounts.for_music.size
+      }
 
-      setIntentions(counts)
-      setTotalCertifications(total)
-      setMaxIntentionCount(max)
+      const domainTotal = Object.values(domainResult).reduce(
+        (sum, count) => sum + count,
+        0
+      )
+      const domainMax = Math.max(...Object.values(domainResult), 1)
 
-      logger.info('Intention stats calculated', { counts, total })
+      const pageTotal = Object.values(pageResult).reduce(
+        (sum, count) => sum + count,
+        0
+      )
+      const pageMax = Math.max(...Object.values(pageResult), 1)
 
+      setIntentions(domainResult)
+      setPageIntentions(pageResult)
+      setTotalCertifications(domainTotal)
+      setPageTotalCertifications(pageTotal)
+      setMaxIntentionCount(domainMax)
+      setPageMaxIntentionCount(pageMax)
+
+      logger.info("Intention stats calculated", {
+        domain: domainTotal,
+        page: pageTotal
+      })
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch intention stats'
-      logger.error('Failed to fetch intention stats', err)
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch intention stats"
+      logger.error("Failed to fetch intention stats", err)
       setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }, [pageUrl])
+  }, [pageUrl, pageAtomIds])
 
-  // Fetch on mount and when URL changes
   useEffect(() => {
     fetchIntentionStats()
   }, [fetchIntentionStats])
 
   return {
     intentions,
+    pageIntentions,
     totalCertifications,
+    pageTotalCertifications,
     maxIntentionCount,
+    pageMaxIntentionCount,
     loading,
     error,
     refetch: fetchIntentionStats

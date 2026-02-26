@@ -4,7 +4,7 @@
  * and discovery badge. Also shows restricted page warning.
  */
 
-import React from "react"
+import React, { memo } from "react"
 import StarBorder from "../StarBorder"
 import "../../styles/PageBlockchainHeader.css"
 import pioneerBadge from "../img/badges/pioneer.png"
@@ -29,19 +29,19 @@ interface PageBlockchainHeaderProps {
   onNavigateDiscovery: () => void
 }
 
-const getBadgeType = (total: number) => {
+const getPotentialBadgeType = (total: number) => {
   if (total === 0) return "pioneer"
   if (total < 10) return "explorer"
   return "contributor"
 }
 
-const getBadgeColor = (total: number) => {
-  if (total === 0) return "#FFD700"
-  if (total < 10) return "#3B82F6"
-  return "#8B5CF6"
+const BADGE_COLORS: Record<string, string> = {
+  pioneer: "#FFD700",
+  explorer: "#3B82F6",
+  contributor: "#8B5CF6"
 }
 
-const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
+const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
   currentUrl,
   pageTitle,
   faviconUrl,
@@ -51,13 +51,14 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
   onToggleMetrics,
   onNavigateDiscovery
 }) => {
-  const badgeType = getBadgeType(totalCertifications)
+  // Toujours afficher le rang potentiel (ce que le prochain certifiant obtiendrait)
+  const badgeType = getPotentialBadgeType(totalCertifications)
 
   return (
     <>
       <StarBorder
         as="div"
-        color={getBadgeColor(totalCertifications)}
+        color={BADGE_COLORS[badgeType] ?? "#FFD700"}
         speed="10s"
         thickness={5}
       >
@@ -125,7 +126,7 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
               {pageTitle || new URL(currentUrl).hostname}
             </span>
             <span className="website-url-full">
-              {new URL(currentUrl).hostname}
+              {currentUrl.replace(/^https?:\/\//, "").replace(/^www\./, "")}
             </span>
           </div>
 
@@ -140,11 +141,11 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
               alt={badgeType}
               className="discovery-badge-img"
             />
-            {totalCertifications > 0 && (
+            {totalCertifications > 0 ? (
               <span className="discovery-badge-rank">
                 #{totalCertifications + 1}
               </span>
-            )}
+            ) : null}
           </div>
         </div>
       </StarBorder>
@@ -170,6 +171,6 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
       )}
     </>
   )
-}
+})
 
 export default PageBlockchainHeader
