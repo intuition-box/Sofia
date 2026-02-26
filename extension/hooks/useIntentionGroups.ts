@@ -224,17 +224,11 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
           }
         }
         existing.certificationBreakdown = breakdown
-        // Fix group.level to reflect actual predicate level (not auto-bumped value)
-        // group.level = last level with a generated predicate, capped by on-chain level
-        const highestPredicateLevel = existing.predicateHistory?.length > 0
-          ? Math.max(...existing.predicateHistory.map(h => h.toLevel))
-          : 0
-        const correctLevel = Math.min(
-          Math.max(highestPredicateLevel, 1),  // at least 1, at most highest predicate
-          onChain.level                         // capped by on-chain (redeem scenario)
-        )
+        // On-chain level is the source of truth (based on certifiedCount)
+        // predicateHistory only determines if level-up (predicate generation) is available
+        const correctLevel = onChain.level
         if (existing.level !== correctLevel) {
-          logger.info(`Fixing group.level for ${existing.domain}: ${existing.level} -> ${correctLevel} (predicate: ${highestPredicateLevel}, on-chain: ${onChain.level})`)
+          logger.info(`Syncing group.level for ${existing.domain}: ${existing.level} -> ${correctLevel} (on-chain: ${onChain.level})`)
           existing.level = correctLevel
           pendingLevelUpdatesRef.current.push({
             groupId: existing.id,
@@ -340,15 +334,16 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
    */
   const refreshGroup = useCallback(async (groupId: string) => {
     try {
-      // Always refresh on-chain data to get latest certifications
-      await refetchOnChain()
-
-      // For virtual (on-chain only) groups, just reload local groups too
+      // For virtual (on-chain only) groups, just reload both sources
       if (groupId.startsWith('onchain-')) {
         await loadGroups()
+        await refetchOnChain()
         return
       }
 
+      // Fetch fresh local data FIRST (includes new predicate after level-up)
+      // This must happen before refetchOnChain() to avoid mergedGroups
+      // overwriting selectedGroup with stale local data
       const response = await chrome.runtime.sendMessage({
         type: 'GET_GROUP_DETAILS',
         groupId
@@ -357,7 +352,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       if (response.success && response.group) {
         const groupWithStats = calculateGroupStats(response.group)
 
-        // Update in local groups array
+        // Update local groups so mergedGroups uses fresh data
         setLocalGroups(prev => prev.map(g =>
           g.id === groupId ? groupWithStats : g
         ))
@@ -367,6 +362,9 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
           setSelectedGroup(groupWithStats)
         }
       }
+
+      // Refresh on-chain AFTER local state is updated
+      await refetchOnChain()
     } catch (err) {
       logger.error('Error refreshing group', err)
     }
