@@ -3,8 +3,7 @@ import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
-import { useDepositPreview, useWalletFromStorage } from '../../hooks'
-import type { CurveType } from '../../types/bonding-curve'
+import { useWalletFromStorage } from '../../hooks'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Modal.css'
@@ -36,7 +35,6 @@ const StakeModal = ({
 }: StakeModalProps) => {
   const [selectedCurve, setSelectedCurve] = useState<1 | 2>(defaultCurve)
   const [amount, setAmount] = useState('10')
-  const [debouncedAmount, setDebouncedAmount] = useState('10')
   const [transactionHash, setTransactionHash] = useState<string | null>(null)
   const [transactionError, setTransactionError] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -73,22 +71,9 @@ const StakeModal = ({
     { label: 'MAX', value: userBalance.toFixed(2) }
   ]
 
-  // Deposit preview hook with debounced amount
-  const preview = useDepositPreview(tripleId, selectedCurve as CurveType, debouncedAmount)
-
-  // Debounce effect for amount input (500ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedAmount(amount)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [amount])
-
   useEffect(() => {
     if (isOpen) {
       setAmount('10')
-      setDebouncedAmount('10')
       setSelectedCurve(defaultCurve)
       setTransactionHash(null)
       setTransactionError(null)
@@ -250,24 +235,6 @@ const StakeModal = ({
               ))}
             </div>
           </div>
-
-          {/* Preview Section */}
-          {preview.sharesOut && parseFloat(preview.sharesOut) > 0 && (
-            <div className="stake-preview-section">
-              <div className="stake-preview-row">
-                <span className="stake-preview-label">You will receive</span>
-                <span className="stake-preview-value">~{parseFloat(preview.sharesOut).toFixed(2)} shares</span>
-              </div>
-              <div className="stake-preview-row">
-                <span className="stake-preview-label">Effective price</span>
-                <span className="stake-preview-value">{parseFloat(preview.effectivePrice).toFixed(6)} TRUST/share</span>
-              </div>
-              <div className="stake-preview-row">
-                <span className="stake-preview-label">Fees</span>
-                <span className="stake-preview-value">{parseFloat(preview.fees).toFixed(4)} TRUST</span>
-              </div>
-            </div>
-          )}
 
           {/* Success State */}
           {isSuccess && transactionHash && (

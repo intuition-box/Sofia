@@ -9,7 +9,6 @@
  *
  * Related files:
  * - hooks/useCreateTripleOnChain.ts: React hook wrapper (atom resolution)
- * - hooks/useVoteOnTriple.ts: Vote hook (uses createTripleOnChain)
  * - hooks/useCreateFollowTriples.ts: Follow hook (uses createTripleOnChain)
  * - hooks/useTrustAccount.ts: Trust hook (uses createTripleOnChain)
  * - AtomService.ts: atom creation

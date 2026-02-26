@@ -61,6 +61,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     pioneerCount: 0, explorerCount: 0, contributorCount: 0,
     totalDiscoveries: 0, uniqueIntentionTypes: 0,
     goldAccumulated: 0,
+    totalVotes: 0, hasVotedToday: false, currentVoteStreak: 0,
   })
 
   const [loading, setLoading] = useState(true)
