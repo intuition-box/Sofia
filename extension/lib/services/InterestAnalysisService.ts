@@ -26,6 +26,7 @@ import { createServiceLogger } from '../utils/logger'
 const logger = createServiceLogger('InterestAnalysisService')
 
 const CACHE_KEY_PREFIX = 'sofia_interest_'
+const CACHE_VERSION = 1
 
 export interface CachedInterestData {
   interests: Interest[]
@@ -46,6 +47,11 @@ class InterestAnalysisServiceClass {
       const cached = localStorage.getItem(this.getCacheKey(accountId))
       if (!cached) return null
       const data = JSON.parse(cached)
+      if (data.version !== CACHE_VERSION) {
+        logger.info('Cache version mismatch, invalidating', { accountId, found: data.version, expected: CACHE_VERSION })
+        localStorage.removeItem(this.getCacheKey(accountId))
+        return null
+      }
       logger.info('Loaded cached interest', { accountId, count: data.interests?.length })
       return data
     } catch (e) {
@@ -57,7 +63,7 @@ class InterestAnalysisServiceClass {
   /** Save interest data to localStorage cache. */
   saveCachedInterest(accountId: string, data: CachedInterestData): void {
     try {
-      localStorage.setItem(this.getCacheKey(accountId), JSON.stringify(data))
+      localStorage.setItem(this.getCacheKey(accountId), JSON.stringify({ ...data, version: CACHE_VERSION }))
       logger.info('Saved interest to cache', { accountId, count: data.interests.length })
     } catch (e) {
       logger.warn('Failed to cache interest', e)

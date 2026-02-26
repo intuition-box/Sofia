@@ -3,8 +3,9 @@
  */
 
 import { useEffect } from 'react'
-import { useFollowers } from '../../../../hooks'
+import { useFollowers, useCheckFollowStatus } from '../../../../hooks'
 import { useRouter } from '../../../layout/RouterProvider'
+import TrustAccountButton from '../../../ui/TrustAccountButton'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
 import '../../../styles/CoreComponents.css'
@@ -12,6 +13,26 @@ import '../../../styles/FollowTab.css'
 
 interface FollowersPanelProps {
   walletAddress: string | undefined
+}
+
+function FollowerActionButton({ account }: { account: { termId: string; label: string } }) {
+  const followStatus = useCheckFollowStatus(account.termId)
+
+  if (account.termId.length !== 66) return null
+  if (followStatus.loading) {
+    return <button className="follow-button salmon-gradient-button" disabled>Loading...</button>
+  }
+  if (followStatus.isTrusting) {
+    return <button className="follow-button salmon-gradient-button" disabled>Trusted</button>
+  }
+
+  return (
+    <TrustAccountButton
+      accountTermId={account.termId}
+      accountLabel={account.label}
+      onSuccess={() => followStatus.refetch()}
+    />
+  )
 }
 
 export function FollowersPanel({ walletAddress }: FollowersPanelProps) {
@@ -89,6 +110,9 @@ export function FollowersPanel({ walletAddress }: FollowersPanelProps) {
                     <UserAtomStats termId={account.termId} accountAddress={account.walletAddress} compact={true} />
                     <span className="trust-amount">{account.trustAmount.toFixed(8)} TRUST</span>
                   </div>
+                </div>
+                <div className="account-right" onClick={(e) => e.stopPropagation()}>
+                  <FollowerActionButton account={account} />
                 </div>
               </div>
             ))

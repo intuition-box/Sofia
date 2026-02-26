@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useState, useTransition } from 'react'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/CorePage.css'
@@ -15,31 +15,32 @@ type ResonanceTab = 'circle' | 'activity' | 'trending' | 'streak'
 
 const ResonancePage = () => {
   const [activeTab, setActiveTab] = useState<ResonanceTab>('circle')
+  const [, startTransition] = useTransition()
 
   return (
     <div className="page">
       <div className="tabs">
         <button
           className={`tab ${activeTab === 'circle' ? 'active' : ''}`}
-          onClick={() => setActiveTab('circle')}
+          onClick={() => startTransition(() => setActiveTab('circle'))}
         >
           Circle
         </button>
         <button
           className={`tab ${activeTab === 'trending' ? 'active' : ''}`}
-          onClick={() => setActiveTab('trending')}
+          onClick={() => startTransition(() => setActiveTab('trending'))}
         >
           Trending
         </button>
         <button
           className={`tab ${activeTab === 'streak' ? 'active' : ''}`}
-          onClick={() => setActiveTab('streak')}
+          onClick={() => startTransition(() => setActiveTab('streak'))}
         >
           Streak
         </button>
         <button
           className={`tab ${activeTab === 'activity' ? 'active' : ''}`}
-          onClick={() => setActiveTab('activity')}
+          onClick={() => startTransition(() => setActiveTab('activity'))}
         >
           Activity
         </button>

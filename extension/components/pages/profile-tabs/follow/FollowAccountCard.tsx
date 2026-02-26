@@ -2,6 +2,7 @@
  * FollowAccountCard - Reusable card component for displaying follow/trust accounts
  */
 
+import { memo } from "react"
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
 import type { FollowAccountVM } from '../../../../types/follows'
@@ -14,8 +15,7 @@ interface FollowAccountCardProps {
   actions?: React.ReactNode
 }
 
-export function FollowAccountCard({ account, onClick, actions }: FollowAccountCardProps) {
-
+export const FollowAccountCard = memo(function FollowAccountCard({ account, onClick, actions }: FollowAccountCardProps) {
   return (
     <div
       className="followed-account-card"
@@ -59,4 +59,4 @@ export function FollowAccountCard({ account, onClick, actions }: FollowAccountCa
       </div>
     </div>
   )
-}
+})
