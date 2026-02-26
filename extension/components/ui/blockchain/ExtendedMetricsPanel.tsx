@@ -4,7 +4,7 @@
  * accordion atoms/triples lists (mutually exclusive)
  */
 
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, memo } from "react"
 import { getTotalShares, type CredibilityAnalysis } from "~/hooks"
 import "../../styles/ExtendedMetricsPanel.css"
 import type { PageBlockchainTriplet, PageBlockchainCounts } from "~/types/page"
@@ -34,7 +34,7 @@ interface ExtendedMetricsPanelProps {
   onTripletClick: (tripletId: string) => void
 }
 
-const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
+const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(({
   analysis,
   counts,
   triplets,
@@ -330,6 +330,6 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = ({
       </div>
     </div>
   )
-}
+})
 
 export default ExtendedMetricsPanel

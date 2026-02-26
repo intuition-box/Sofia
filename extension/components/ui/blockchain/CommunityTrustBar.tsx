@@ -3,7 +3,7 @@
  * Displays trust/distrust bar with counts and ratio
  */
 
-import React from "react"
+import React, { memo } from "react"
 import type { CredibilityAnalysis } from "~/hooks"
 import "../../styles/CommunityTrustBar.css"
 
@@ -11,7 +11,7 @@ interface CommunityTrustBarProps {
   analysis: CredibilityAnalysis
 }
 
-const CommunityTrustBar: React.FC<CommunityTrustBarProps> = ({ analysis }) => {
+const CommunityTrustBar: React.FC<CommunityTrustBarProps> = memo(({ analysis }) => {
   return (
     <div className="trust-support-section">
       <div className="trust-distrust-bar">
@@ -69,6 +69,6 @@ const CommunityTrustBar: React.FC<CommunityTrustBarProps> = ({ analysis }) => {
       </div>
     </div>
   )
-}
+})
 
 export default CommunityTrustBar

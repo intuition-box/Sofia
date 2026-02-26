@@ -1,3 +1,4 @@
+import { memo } from "react"
 import type { IntentionPurpose } from '../../types/discovery'
 import { INTENTION_ITEMS, getIntentionColor } from '~/types/intentionCategories'
 import '../styles/IntentionBubbleSelector.css'
@@ -10,7 +11,7 @@ interface IntentionBubbleSelectorProps {
   certifiedIntentions?: IntentionPurpose[]
 }
 
-export const IntentionBubbleSelector = ({
+export const IntentionBubbleSelector = memo(({
   onBubbleClick,
   disabled = false,
   isEligible = true,
@@ -51,6 +52,6 @@ export const IntentionBubbleSelector = ({
       )}
     </div>
   )
-}
+})
 
 export default IntentionBubbleSelector

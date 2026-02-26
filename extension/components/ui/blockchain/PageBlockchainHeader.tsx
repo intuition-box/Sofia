@@ -4,7 +4,7 @@
  * and discovery badge. Also shows restricted page warning.
  */
 
-import React from "react"
+import React, { memo } from "react"
 import StarBorder from "../StarBorder"
 import "../../styles/PageBlockchainHeader.css"
 import pioneerBadge from "../img/badges/pioneer.png"
@@ -41,7 +41,7 @@ const BADGE_COLORS: Record<string, string> = {
   contributor: "#8B5CF6"
 }
 
-const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
+const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = memo(({
   currentUrl,
   pageTitle,
   faviconUrl,
@@ -171,6 +171,6 @@ const PageBlockchainHeader: React.FC<PageBlockchainHeaderProps> = ({
       )}
     </>
   )
-}
+})
 
 export default PageBlockchainHeader

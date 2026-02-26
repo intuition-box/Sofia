@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils'
 import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Avatar.css'
@@ -13,7 +13,7 @@ interface AvatarProps {
   size?: 'small' | 'medium' | 'large'
 }
 
-const Avatar = ({
+const Avatar = memo(({
   imgSrc,
   name,
   avatarClassName = '',
@@ -71,6 +71,6 @@ const Avatar = ({
       <span className="avatar-initials">{initials}</span>
     </div>
   )
-}
+})
 
 export default Avatar
