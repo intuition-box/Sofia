@@ -10,6 +10,7 @@ import type { IntentionGroupRecord, GroupUrlRecord } from '~types/database'
 import type { IntentionGroupWithStats, SortOption } from '~types/groups'
 import type { CertificationType } from '~lib/services'
 import { useOnChainIntentionGroups, type OnChainUrl } from './useOnChainIntentionGroups'
+import { messageBus } from '~/lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import { normalizeDomain, shouldExcludeDomain } from '../lib/utils/domainUtils'
 
@@ -115,7 +116,7 @@ export const useIntentionGroups = (): UseIntentionGroupsResult => {
       setIsLoading(true)
       setError(null)
 
-      const response = await chrome.runtime.sendMessage({ type: 'GET_INTENTION_GROUPS' })
+      const response = await messageBus.sendMessageWithRetry({ type: 'GET_INTENTION_GROUPS' })
 
       if (response.success && response.groups) {
         // Filter out excluded domains (auth pages, system pages, etc.)

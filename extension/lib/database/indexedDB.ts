@@ -65,6 +65,7 @@ export class SofiaIndexedDB {
 
       request.onerror = () => {
         logger.error('Error opening IndexedDB', request.error)
+        this.dbPromise = null // Reset to allow retry on next call
         reject(request.error)
       }
 
