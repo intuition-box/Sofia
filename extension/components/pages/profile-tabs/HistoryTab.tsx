@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useIntuitionTriplets, useWeightOnChain, useWalletFromStorage, useRedeemTriple } from '~/hooks'
 import QuickActionButton from '../../ui/QuickActionButton'
 import BookmarkButton from '../../ui/BookmarkButton'
-import StakeModal from '../../modals/StakeModal'
+import WeightModal from '../../modals/WeightModal'
 import SofiaLoader from '../../ui/SofiaLoader'
 import { BondingCurveChart } from '../../charts/BondingCurveChart'
 import { getAddress } from 'viem'
@@ -26,7 +26,7 @@ type SortOption = 'highest-shares' | 'lowest-shares' | 'highest-support' | 'lowe
 
 const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) => {
   const { triplets, isLoading, refreshFromAPI } = useIntuitionTriplets()
-  const { addWeight, addShares} = useWeightOnChain()
+  const { depositWithPool } = useWeightOnChain()
   const { walletAddress: address } = useWalletFromStorage()
   const { redeemPosition } = useRedeemTriple()
 
@@ -34,6 +34,9 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
   const [selectedStakeTriplet, setSelectedStakeTriplet] = useState<typeof triplets[0] | null>(null)
   const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
   const [isProcessingStake, setIsProcessingStake] = useState(false)
+  const [transactionSuccess, setTransactionSuccess] = useState(false)
+  const [transactionError, setTransactionError] = useState<string | undefined>()
+  const [transactionHash, setTransactionHash] = useState<string | undefined>()
   const [defaultCurve, setDefaultCurve] = useState<1 | 2>(2) // Offset Progressive par défaut
 
   // Chart curve selection state (per triplet)
@@ -203,47 +206,36 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
     setIsStakeModalOpen(false)
     setSelectedStakeTriplet(null)
     setIsProcessingStake(false)
+    setTransactionSuccess(false)
+    setTransactionError(undefined)
+    setTransactionHash(undefined)
   }
 
-  const handleStakeSubmit = async (amount: bigint, curveId: 1 | 2): Promise<{ success: boolean, txHash?: string, error?: string }> => {
-    if (!selectedStakeTriplet || !address) {
-      return { success: false, error: 'No wallet connected' }
-    }
+  const handleStakeSubmit = async (customWeights?: (bigint | null)[]): Promise<void> => {
+    if (!selectedStakeTriplet || !address) return
+    const weight = customWeights?.[0] || BigInt(Math.floor(0.5 * 1e18))
 
     try {
       setIsProcessingStake(true)
+      setTransactionError(undefined)
 
-      logger.info('Staking', { amount: amount.toString(), tripleId: selectedStakeTriplet.id, curveId })
+      logger.info('Staking', { amount: weight.toString(), tripleId: selectedStakeTriplet.id, curveId: defaultCurve })
 
-      let result
-      if (curveId === 1) {
-        // Linear curve (Support)
-        result = await addWeight(selectedStakeTriplet.id, amount)
-      } else {
-        // Offset Progressive curve (Shares)
-        result = await addShares(selectedStakeTriplet.id, amount)
-      }
+      const result = await depositWithPool(selectedStakeTriplet.id, weight, BigInt(defaultCurve))
 
       if (result.success) {
         logger.info('Stake successful', { txHash: result.txHash })
-
-        // Refresh the data after successful transaction
+        setTransactionHash(result.txHash)
+        setTransactionSuccess(true)
         await refreshFromAPI()
-
-        // Return success result - modal will auto-close after showing success message
-        setIsProcessingStake(false)
-        return { success: true, txHash: result.txHash }
       } else {
-        setIsProcessingStake(false)
-        return { success: false, error: result.error || 'Transaction failed' }
+        setTransactionError(result.error || 'Transaction failed')
       }
     } catch (error) {
       logger.error('Failed to stake', error)
+      setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
+    } finally {
       setIsProcessingStake(false)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Transaction failed'
-      }
     }
   }
 
@@ -455,19 +447,27 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
       )}
 
       {/* Stake Modal (Unified) */}
-      {selectedStakeTriplet && (
-        <StakeModal
-          isOpen={isStakeModalOpen}
-          subjectName={selectedStakeTriplet.triplet.subject}
-          predicateName={selectedStakeTriplet.triplet.predicate}
-          objectName={selectedStakeTriplet.triplet.object}
-          tripleId={selectedStakeTriplet.id}
-          defaultCurve={defaultCurve}
-          onClose={handleCloseStakeModal}
-          onSubmit={handleStakeSubmit}
-          isProcessing={isProcessingStake}
-        />
-      )}
+      <WeightModal
+        isOpen={isStakeModalOpen}
+        triplets={selectedStakeTriplet ? [{
+          id: selectedStakeTriplet.id,
+          triplet: {
+            subject: selectedStakeTriplet.triplet.subject,
+            predicate: selectedStakeTriplet.triplet.predicate,
+            object: selectedStakeTriplet.triplet.object
+          },
+          description: '',
+          url: selectedStakeTriplet.url || ''
+        }] : []}
+        isProcessing={isProcessingStake}
+        transactionSuccess={transactionSuccess}
+        transactionError={transactionError}
+        transactionHash={transactionHash}
+        estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
+        submitLabel="Stake"
+        onClose={handleCloseStakeModal}
+        onSubmit={handleStakeSubmit}
+      />
     </div>
   )
 }
