@@ -252,12 +252,14 @@ const CircleFeedTab = () => {
   const [transactionHash, setTransactionHash] = useState<string | undefined>()
   const [selectedItem, setSelectedItem] = useState<CircleFeedItem | null>(null)
   const [selectedVaultId, setSelectedVaultId] = useState<string>('')
+  const [selectedAction, setSelectedAction] = useState<'Support' | 'Oppose'>('Support')
 
   const handleSupport = (e: React.MouseEvent, item: CircleFeedItem) => {
     e.stopPropagation()
     if (!address || !item.tripleTermId) return
     setSelectedItem(item)
     setSelectedVaultId(item.tripleTermId)
+    setSelectedAction('Support')
     setIsStakeModalOpen(true)
   }
 
@@ -266,6 +268,7 @@ const CircleFeedTab = () => {
     if (!address || !item.counterTermId) return
     setSelectedItem(item)
     setSelectedVaultId(item.counterTermId)
+    setSelectedAction('Oppose')
     setIsStakeModalOpen(true)
   }
 
@@ -575,7 +578,7 @@ const CircleFeedTab = () => {
         transactionError={transactionError}
         transactionHash={transactionHash}
         estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
-        submitLabel="Stake"
+        submitLabel={selectedAction}
         onClose={handleStakeModalClose}
         onSubmit={handleStakeSubmit}
       />
