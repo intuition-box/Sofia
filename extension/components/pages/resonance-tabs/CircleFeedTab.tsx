@@ -73,8 +73,8 @@ const CircleFeedTab = () => {
   const [viewState, setViewState] = useState<ViewState>({ type: 'feed' })
   const [feedItems, setFeedItems] = useState<CircleFeedItem[]>([])
   const [trustedWallets, setTrustedWallets] = useState<string[]>([])
-  const [walletToLabel, setWalletToLabel] = useState<Map<string, string>>(new Map())
-  const [walletToImage, setWalletToImage] = useState<Map<string, string>>(new Map())
+  const [walletToLabel, setWalletToLabel] = useState(() => new Map<string, string>())
+  const [walletToImage, setWalletToImage] = useState(() => new Map<string, string>())
 
   const checksumAddress = address ? getAddress(address) : ''
 

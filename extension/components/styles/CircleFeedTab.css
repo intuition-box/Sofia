@@ -11,28 +11,28 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-bottom: 8px;
+  padding-bottom: var(--spacing-sm);
 }
 
 /* Go to Circle button */
 .circle-go-btn {
   flex-shrink: 0;
   padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
   border: 1px solid rgba(199, 134, 108, 0.4);
   background: rgba(199, 134, 108, 0.1);
-  color: #C7866C;
+  color: var(--color-primary);
   white-space: nowrap;
 }
 
 .circle-go-btn:hover:not(:disabled) {
   background: rgba(199, 134, 108, 0.2);
   border-color: rgba(199, 134, 108, 0.6);
-  color: #F2DED6;
+  color: var(--color-text-primary);
 }
 
 .circle-go-btn:disabled {
@@ -45,7 +45,7 @@
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
   scrollbar-width: none;
   flex: 1;
   min-width: 0;
@@ -58,14 +58,14 @@
 .circle-chip {
   flex-shrink: 0;
   padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-very-muted);
 }
 
 .circle-chip:hover {
@@ -76,7 +76,7 @@
 .circle-chip.active {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
+  color: var(--color-text-secondary);
 }
 
 /* Colored chips when they have --chip-color */
@@ -95,17 +95,19 @@
 .circle-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 /* Card */
 .circle-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
   background: #1a1f2e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-border-glass);
   border-radius: 14px;
   padding: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -125,7 +127,7 @@
 .circle-card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   min-width: 0;
 }
 
@@ -134,13 +136,13 @@
   height: 44px;
   border-radius: 10px;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-border-glass);
   object-fit: cover;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .circle-card-member-name {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
   cursor: pointer;
@@ -152,7 +154,7 @@
 }
 
 .circle-card-member-name:hover {
-  color: #fff;
+  color: var(--color-text-secondary);
   text-decoration: underline;
 }
 
@@ -160,18 +162,18 @@
 .circle-intention-badge {
   margin-left: auto;
   flex-shrink: 0;
-  padding: 2px 8px;
+  padding: 2px var(--spacing-sm);
   border-radius: 10px;
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   white-space: nowrap;
 }
 
 /* Card Title */
 .circle-card-title {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-secondary);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -186,7 +188,7 @@
 .circle-card-votes {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   margin-left: auto;
 }
 
@@ -197,19 +199,19 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border-light);
   background: transparent;
   color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
   padding: 0;
   flex-shrink: 0;
 }
 
 .circle-vote-btn:hover:not(:disabled) {
   border-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-muted);
+  background: var(--color-bg-glass-light);
 }
 
 .circle-vote-btn:disabled {
@@ -218,30 +220,30 @@
 }
 
 .circle-vote-up.active {
-  color: #10B981;
-  border-color: rgba(16, 185, 129, 0.4);
-  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.1);
 }
 
 .circle-vote-up:hover:not(:disabled) {
-  color: #10B981;
+  color: var(--color-success);
 }
 
 .circle-vote-down.active {
-  color: #EF4444;
+  color: var(--color-error);
   border-color: rgba(239, 68, 68, 0.4);
   background: rgba(239, 68, 68, 0.1);
 }
 
 .circle-vote-down:hover:not(:disabled) {
-  color: #EF4444;
+  color: var(--color-error);
 }
 
 .circle-vote-count {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
-  min-width: 16px;
+  color: var(--color-text-very-muted);
+  min-width: var(--spacing-lg);
   text-align: center;
 }
 
@@ -263,37 +265,37 @@
 .circle-member-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 0 20px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0 var(--spacing-xl);
 }
 
 .circle-back-btn {
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.7);
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 6px var(--spacing-md);
+  border-radius: var(--radius-md);
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .circle-back-btn:hover {
   border-color: rgba(255, 255, 255, 0.4);
-  color: #fff;
+  color: var(--color-text-secondary);
 }
 
 .circle-member-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   overflow: hidden;
   flex-shrink: 0;
 }
 
 .circle-member-name {
-  color: #fff;
-  font-size: 18px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xl);
   font-weight: 600;
   margin: 0;
 }
@@ -301,33 +303,33 @@
 .circle-categories-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 /* Empty / Loading States */
 .circle-empty {
   text-align: center;
-  padding: 48px 20px;
+  padding: 48px var(--spacing-xl);
 }
 
 .circle-empty h3 {
-  color: #fff;
-  font-size: 16px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
 }
 
 .circle-empty p {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-base);
   line-height: 1.5;
 }
 
 .circle-loading {
   text-align: center;
-  padding: 48px 20px;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  padding: 48px var(--spacing-xl);
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-base);
 }
 
 /* Responsive */

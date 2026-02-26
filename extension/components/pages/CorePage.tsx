@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy, useEffect } from 'react'
+import { useState, useTransition, Suspense, lazy, useEffect } from 'react'
 import '../styles/Global.css'
 import '../styles/CorePage.css'
 
@@ -10,6 +10,7 @@ const BookmarkTab = lazy(() => import('./core-tabs/BookmarkTab'))
 
 const CorePage = () => {
   const [activeGraphTab, setActiveGraphTab] = useState<'Echoes' | 'Pulse' | 'Bookmarks'>('Echoes')
+  const [, startTransition] = useTransition()
 
   useEffect(() => {
     const targetTab = localStorage.getItem('targetTab')
@@ -25,7 +26,7 @@ const CorePage = () => {
         {['Echoes', 'Pulse', 'Bookmarks'].map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveGraphTab(tab as typeof activeGraphTab)}
+            onClick={() => startTransition(() => setActiveGraphTab(tab as typeof activeGraphTab))}
             className={`tab ${activeGraphTab === tab ? 'active' : ''}`}
           >
             {tab}

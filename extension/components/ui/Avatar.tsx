@@ -1,6 +1,5 @@
 import { useState, useEffect, memo } from 'react'
-import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils'
-import { createHookLogger } from '../../lib/utils/logger'
+import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl, createHookLogger } from '~/lib/utils'
 import '../styles/Avatar.css'
 
 const logger = createHookLogger('Avatar')

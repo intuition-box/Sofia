@@ -19,14 +19,14 @@ const CommunityTrustBar: React.FC<CommunityTrustBarProps> = memo(({ analysis }) 
           className="trust-fill"
           style={{
             width: `${analysis.trustRatio}%`,
-            background: "linear-gradient(90deg, #22c55e 0%, #84cc16 100%)"
+            background: "linear-gradient(90deg, var(--color-success) 0%, #84cc16 100%)"
           }}
         />
         <div
           className="distrust-fill"
           style={{
             width: `${100 - analysis.trustRatio}%`,
-            background: "linear-gradient(90deg, #f97316 0%, #ef4444 100%)"
+            background: "linear-gradient(90deg, #f97316 0%, var(--color-error) 100%)"
           }}
         />
       </div>
