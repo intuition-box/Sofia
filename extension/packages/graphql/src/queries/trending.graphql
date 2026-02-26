@@ -43,6 +43,13 @@ query GetTrendingByPredicate(
         count
       }
     }
+    positions(where: { shares: { _gt: "0" } }, order_by: { shares: desc }, limit: 3) {
+      account {
+        id
+        label
+        image
+      }
+    }
     triple_vault {
       total_shares
     }

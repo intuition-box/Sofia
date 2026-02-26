@@ -82,7 +82,168 @@
   cursor: not-allowed;
 }
 
-/* List */
+/* ========== PODIUM (Top 3) ========== */
+
+.leaderboard-podium {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+/* BG layer — IN FLOW, determines podium height. Content can never move it. */
+.podium-bg-layer {
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+  user-select: none;
+}
+
+.podium-bg-slot {
+  flex: 1;
+}
+
+.podium-bg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Content layer — ABSOLUTE overlay, completely decoupled from bg */
+.podium-content-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Each podium column */
+.podium-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+/* Staircase: padding-bottom pushes content UP from pedestal surface.
+   Gold highest (tallest pedestal), bronze lowest (shortest pedestal). */
+.podium-gold {
+  padding-bottom: 11%;
+}
+
+.podium-silver {
+  padding-bottom: 4%;
+}
+
+.podium-bronze {
+  padding-bottom: 3%;
+}
+
+.podium-column:hover {
+  opacity: 0.85;
+}
+
+/* Current user highlight */
+.podium-column.current-user {
+  background: rgba(106, 204, 147, 0.06);
+  border-radius: 12px;
+}
+
+/* Medal (hexagon badge) — above the ring */
+.podium-medal {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  width: 21%;
+  margin-bottom: 7px;
+}
+
+/* Ring zone: square ring SVG + avatar centered */
+.podium-ring-zone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Ring sizing: all rings are 965x965 (square) */
+.podium-gold .podium-ring-zone {
+  width: 60%;
+}
+
+.podium-silver .podium-ring-zone,
+.podium-bronze .podium-ring-zone {
+  width: 45%;
+}
+
+.podium-ring {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Avatar centered in the ring — sized relative to ring zone */
+.podium-avatar-wrapper {
+  position: absolute;
+  top: 44%;
+  left: 44%;
+  transform: translate(-50%, -50%);
+  width: 65%;
+  height: 65%;
+  border-radius: 50%;
+}
+
+.podium-avatar-wrapper .podium-avatar {
+  border-radius: 50%;
+  width: 118% !important;
+  height: 118% !important;
+  object-fit: cover;
+}
+
+/* User info — sits on the pedestal */
+.podium-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  z-index: 1;
+  padding: 4px 0 0;
+  margin-top: 21px;
+}
+
+/* Podium text styles */
+.podium-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  word-break: break-word;
+}
+
+.podium-gold .podium-name {
+  font-size: 13px;
+}
+
+.podium-streak {
+  font-size: 17px;
+  font-weight: 600;
+  color: #eab67a;
+  background: #eab67a1f;
+  padding: 1px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ========== LIST (Ranks 4+) ========== */
+
 .leaderboard-list {
   display: flex;
   flex-direction: column;
@@ -115,27 +276,14 @@
   border: 1px solid rgba(106, 204, 147, 0.2);
 }
 
-.leaderboard-row.top-3 {
-  background: rgba(234, 182, 122, 0.06);
-}
-
-.leaderboard-row.top-3.current-user {
-  background: rgba(106, 204, 147, 0.12);
-  border: 1px solid rgba(106, 204, 147, 0.25);
-}
-
 /* Rank */
 .leaderboard-rank {
   width: 32px;
   text-align: center;
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--color-text-placeholder);
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
   flex-shrink: 0;
-}
-
-.top-3 .leaderboard-rank {
-  font-size: var(--font-size-xl);
 }
 
 /* Avatar */
@@ -171,7 +319,7 @@
 .leaderboard-streak {
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: #EAB67A;
+  color: #eab67a;
   background: rgba(234, 182, 122, 0.1);
   padding: 2px var(--spacing-sm);
   border-radius: 10px;
@@ -189,17 +337,20 @@
 }
 
 .leaderboard-shares {
-  font-size: 13px;
-  font-weight: 600;
-  color: #EAB67A;
+  font-size: 14px;
+  font-weight: 700;
+  color: #eab67a;
 }
 
 .leaderboard-value {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-/* States */
+/* ========== STATES ========== */
+
 .leaderboard-loading,
 .leaderboard-empty {
   text-align: center;
@@ -219,8 +370,8 @@
   padding: var(--spacing-sm) var(--spacing-xl);
   background: rgba(106, 204, 147, 0.15);
   border: 1px solid rgba(106, 204, 147, 0.3);
-  border-radius: var(--radius-md);
-  color: #6ACC93;
+  border-radius: 8px;
+  color: #6acc93;
   font-size: 13px;
   cursor: pointer;
   transition: var(--transition-fast);
@@ -228,4 +379,16 @@
 
 .leaderboard-retry-btn:hover {
   background: rgba(106, 204, 147, 0.25);
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 360px) {
+  .podium-name {
+    font-size: 9px;
+  }
+
+  .podium-gold .podium-name {
+    font-size: 11px;
+  }
 }

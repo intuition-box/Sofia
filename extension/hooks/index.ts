@@ -55,7 +55,7 @@ export { useUserCertifications, getCertificationForUrl } from './useUserCertific
 export { useDiscoveryScore } from './useDiscoveryScore'
 export { useUserDiscoveryScore } from './useUserDiscoveryScore'
 export { useTrendingCertifications } from './useTrendingCertifications'
-export type { TrendingItem, TrendingCategory } from './useTrendingCertifications'
+export type { TrendingItem, TrendingCategory, TrendingCertifier } from './useTrendingCertifications'
 export { usePageDiscovery } from './usePageDiscovery'
 export { useDiscoveryReward } from './useDiscoveryReward'
 
