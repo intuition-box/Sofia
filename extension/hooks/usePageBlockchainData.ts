@@ -4,7 +4,7 @@
  * Features: silent retry, debounced URL detection, skeleton-first loading
  */
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react"
+import { useReducer, useCallback, useEffect, useRef, useMemo } from "react"
 import { useWalletFromStorage } from "~/hooks"
 import { intuitionGraphqlClient } from "~/lib/clients/graphql-client"
 import { messageBus } from "~/lib/services"
@@ -15,18 +15,17 @@ import {
   createHookLogger,
   computeDiscoveryData,
   computeIntentionStats,
-  computeTrustCounts
+  computeTrustCounts,
+  pageBlockchainReducer,
+  PAGE_BLOCKCHAIN_INITIAL_STATE
 } from "~/lib/utils"
 import type { CertTriple } from "~/lib/utils"
 import type {
   PageBlockchainTriplet,
   PageBlockchainCounts,
   PageAtomInfo,
-  PageDataStatus,
   UsePageBlockchainDataResult
 } from "~/types/page"
-import type { DiscoveryStatus } from "~/types/discovery"
-import type { IntentionPurpose } from "~/types/intentionCategories"
 import {
   INTENTION_PREDICATE_IDS,
   TRUST_PREDICATE_IDS
@@ -39,25 +38,6 @@ import {
   PageCertificationDataDocument
 } from "@0xsofia/graphql"
 
-// Default counts when no data is available
-const DEFAULT_COUNTS: PageBlockchainCounts = {
-  atomsCount: 0,
-  triplesCount: 0,
-  displayedAtomsCount: 0,
-  displayedTriplesCount: 0,
-  totalShares: 0,
-  totalPositions: 0,
-  attestationsCount: 0,
-  trustCount: 0,
-  distrustCount: 0,
-  totalSupport: 0,
-  trustRatio: 50,
-  domainTrustCount: 0,
-  domainDistrustCount: 0,
-  domainTotalSupport: 0,
-  domainTrustRatio: 50
-}
-
 const logger = createHookLogger("usePageBlockchainData")
 
 /** Max silent retries before showing error */
@@ -66,50 +46,10 @@ const MAX_SILENT_RETRIES = 3
 const RETRY_DELAY = 2000
 
 export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
-  const [triplets, setTriplets] = useState<PageBlockchainTriplet[]>([])
-  const [counts, setCounts] = useState<PageBlockchainCounts>(DEFAULT_COUNTS)
-  const [atomsList, setAtomsList] = useState<PageAtomInfo[]>([])
-  const [status, setStatus] = useState<PageDataStatus>("loading")
-  const [error, setError] = useState<string | null>(null)
-  const [currentUrl, setCurrentUrl] = useState<string | null>(null)
-  const [pageTitle, setPageTitle] = useState<string | null>(null)
-  const [isRestricted, setIsRestricted] = useState(false)
-  const [restrictionMessage, setRestrictionMessage] = useState<string | null>(
-    null
+  const [state, dispatch] = useReducer(
+    pageBlockchainReducer,
+    PAGE_BLOCKCHAIN_INITIAL_STATE
   )
-  const [pageAtomIds, setPageAtomIds] = useState<string[]>([])
-  // Discovery + intention + trust state (from unified PageCertificationData)
-  const [totalCertifications, setTotalCertifications] = useState(0)
-  const [discoveryStatus, setDiscoveryStatus] =
-    useState<DiscoveryStatus>(null)
-  const [certificationRank, setCertificationRank] = useState<number | null>(
-    null
-  )
-  const [userHasCertified, setUserHasCertified] = useState(false)
-  const [intentionStats, setIntentionStats] = useState<
-    Record<IntentionPurpose, number>
-  >({
-    for_work: 0,
-    for_learning: 0,
-    for_fun: 0,
-    for_inspiration: 0,
-    for_buying: 0,
-    for_music: 0
-  })
-  const [pageIntentionStats, setPageIntentionStats] = useState<
-    Record<IntentionPurpose, number>
-  >({
-    for_work: 0,
-    for_learning: 0,
-    for_fun: 0,
-    for_inspiration: 0,
-    for_buying: 0,
-    for_music: 0
-  })
-  const [intentionTotal, setIntentionTotal] = useState(0)
-  const [pageIntentionTotal, setPageIntentionTotal] = useState(0)
-  const [maxIntentionCount, setMaxIntentionCount] = useState(1)
-  const [pageMaxIntentionCount, setPageMaxIntentionCount] = useState(1)
   const { walletAddress: account } = useWalletFromStorage()
 
   // Refs for control flow
@@ -120,7 +60,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   const hasDataRef = useRef(false)
 
   // Derived loading boolean for backward compatibility
-  const loading = status === "loading"
+  const loading = state.status === "loading"
 
   // Get current page URL and title
   const getCurrentPageUrl = useCallback(
@@ -365,7 +305,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     (fetchFn: () => Promise<void>) => {
       if (retryCountRef.current >= MAX_SILENT_RETRIES) {
         // All retries exhausted — show error
-        setStatus("error")
+        dispatch({ type: "SET_STATUS", status: "error" })
         return
       }
 
@@ -396,8 +336,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     if (pauseRefreshRef.current || isFetchingRef.current) return
 
     if (!account) {
-      setTriplets([])
-      setStatus("ready")
+      dispatch({ type: "SET_NO_ACCOUNT" })
       return
     }
 
@@ -405,11 +344,11 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
     // If we already have data, show "refreshing" instead of full skeleton
     if (hasDataRef.current) {
-      setStatus("refreshing")
+      dispatch({ type: "SET_STATUS", status: "refreshing" })
     } else {
-      setStatus("loading")
+      dispatch({ type: "SET_STATUS", status: "loading" })
     }
-    setError(null)
+    dispatch({ type: "SET_ERROR", error: null })
 
     // Clear any pending retry
     if (retryTimerRef.current) {
@@ -429,23 +368,24 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         return
       }
 
-      setCurrentUrl(url)
-      setPageTitle(title)
+      dispatch({ type: "SET_PAGE_META", url, title })
 
       const restriction = isRestrictedUrl(url)
-      setIsRestricted(restriction.restricted)
-      setRestrictionMessage(restriction.message || null)
+      dispatch({
+        type: "SET_RESTRICTION",
+        restricted: restriction.restricted,
+        message: restriction.message || null
+      })
 
       if (restriction.restricted) {
-        setTriplets([])
-        setStatus("ready")
+        dispatch({ type: "SET_RESTRICTED_READY" })
         isFetchingRef.current = false
         return
       }
 
       const result = await fetchPageBlockchainData(url)
 
-      // Atomic state update: all derived data computed from one fetch
+      // Pure compute from one fetch
       const discovery = computeDiscoveryData(
         result.certTriples,
         result.pageAtomIds,
@@ -456,33 +396,31 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         result.pageAtomIds
       )
 
-      setTriplets(result.triplets)
-      setCounts(result.counts)
-      setAtomsList(result.atomsList)
-      setPageAtomIds(result.pageAtomIds)
+      // Single atomic state update
+      dispatch({
+        type: "SET_DATA",
+        triplets: result.triplets,
+        counts: result.counts,
+        atomsList: result.atomsList,
+        pageAtomIds: result.pageAtomIds,
+        totalCertifications: discovery.totalCertifications,
+        discoveryStatus: discovery.discoveryStatus,
+        certificationRank: discovery.certificationRank,
+        userHasCertified: discovery.userHasCertified,
+        intentionStats: intentions.intentions,
+        pageIntentionStats: intentions.pageIntentions,
+        intentionTotal: intentions.totalCertifications,
+        pageIntentionTotal: intentions.pageTotalCertifications,
+        maxIntentionCount: intentions.maxIntentionCount,
+        pageMaxIntentionCount: intentions.pageMaxIntentionCount
+      })
 
-      // Discovery
-      setTotalCertifications(discovery.totalCertifications)
-      setDiscoveryStatus(discovery.discoveryStatus)
-      setCertificationRank(discovery.certificationRank)
-      setUserHasCertified(discovery.userHasCertified)
-
-      // Intentions
-      setIntentionStats(intentions.intentions)
-      setPageIntentionStats(intentions.pageIntentions)
-      setIntentionTotal(intentions.totalCertifications)
-      setPageIntentionTotal(intentions.pageTotalCertifications)
-      setMaxIntentionCount(intentions.maxIntentionCount)
-      setPageMaxIntentionCount(intentions.pageMaxIntentionCount)
-
-      setStatus("ready")
-      setError(null)
       hasDataRef.current = true
       retryCountRef.current = 0
     } catch (err) {
       logger.error("Fetch failed", err)
       const msg = err instanceof Error ? err.message : "Unknown error"
-      setError(msg)
+      dispatch({ type: "SET_ERROR", error: msg })
 
       // If we have no data yet, retry silently (skeleton stays)
       // If we have stale data, keep showing it and retry
@@ -490,7 +428,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         scheduleSilentRetry(fetchDataForCurrentPage)
       } else {
         // Keep stale data visible, just mark as ready with error
-        setStatus("ready")
+        dispatch({ type: "SET_STATUS", status: "ready" })
       }
     } finally {
       isFetchingRef.current = false
@@ -503,40 +441,10 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   ])
 
   // Reset stale data immediately when navigating to a new page
-  // This prevents showing old page's badge/data during the fetch
   const resetForNewPage = useCallback(() => {
     hasDataRef.current = false
     isFetchingRef.current = false
-    setStatus("loading")
-    setCounts(DEFAULT_COUNTS)
-    setPageAtomIds([])
-    setTriplets([])
-    setAtomsList([])
-    // Reset discovery + intention state
-    setTotalCertifications(0)
-    setDiscoveryStatus(null)
-    setCertificationRank(null)
-    setUserHasCertified(false)
-    setIntentionStats({
-      for_work: 0,
-      for_learning: 0,
-      for_fun: 0,
-      for_inspiration: 0,
-      for_buying: 0,
-      for_music: 0
-    })
-    setPageIntentionStats({
-      for_work: 0,
-      for_learning: 0,
-      for_fun: 0,
-      for_inspiration: 0,
-      for_buying: 0,
-      for_music: 0
-    })
-    setIntentionTotal(0)
-    setPageIntentionTotal(0)
-    setMaxIntentionCount(1)
-    setPageMaxIntentionCount(1)
+    dispatch({ type: "RESET" })
   }, [])
 
   // Debounced version for URL change listeners
@@ -568,7 +476,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
 
       // SPA title update (e.g. YouTube video navigation): update title without refetch
       if (changeInfo.title && !changeInfo.url) {
-        setPageTitle(changeInfo.title)
+        dispatch({ type: "SET_TITLE", title: changeInfo.title })
       }
 
       if (changeInfo.url || changeInfo.status === "complete") {
@@ -640,29 +548,29 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
   }, [])
 
   return {
-    triplets,
-    counts,
-    atomsList,
+    triplets: state.triplets,
+    counts: state.counts,
+    atomsList: state.atomsList,
     loading,
-    status,
-    error,
-    currentUrl,
-    pageTitle,
-    isRestricted,
-    restrictionMessage,
-    pageAtomIds,
+    status: state.status,
+    error: state.error,
+    currentUrl: state.currentUrl,
+    pageTitle: state.pageTitle,
+    isRestricted: state.isRestricted,
+    restrictionMessage: state.restrictionMessage,
+    pageAtomIds: state.pageAtomIds,
     // Discovery
-    totalCertifications,
-    discoveryStatus,
-    certificationRank,
-    userHasCertified,
+    totalCertifications: state.totalCertifications,
+    discoveryStatus: state.discoveryStatus,
+    certificationRank: state.certificationRank,
+    userHasCertified: state.userHasCertified,
     // Intentions
-    intentionStats,
-    pageIntentionStats,
-    intentionTotal,
-    pageIntentionTotal,
-    maxIntentionCount,
-    pageMaxIntentionCount,
+    intentionStats: state.intentionStats,
+    pageIntentionStats: state.pageIntentionStats,
+    intentionTotal: state.intentionTotal,
+    pageIntentionTotal: state.pageIntentionTotal,
+    maxIntentionCount: state.maxIntentionCount,
+    pageMaxIntentionCount: state.pageMaxIntentionCount,
     // Methods
     fetchDataForCurrentPage,
     pauseRefresh,

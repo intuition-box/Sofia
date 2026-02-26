@@ -157,17 +157,16 @@ export const useRedeemTriple = () => {
 
       const contractAddress = BlockchainService.getMultiVaultAddress()
 
-      // 1. Read all shares using public client (no wallet interaction)
-      const sharesPerTriple: bigint[] = []
-      const validTermIds: string[] = []
-
-      for (const termId of tripleVaultIds) {
-        const userShares = await getUserShares(termId)
-        if (userShares > 0n) {
-          validTermIds.push(termId)
-          sharesPerTriple.push(userShares)
-        }
-      }
+      // 1. Read all shares in parallel (no wallet interaction, public RPC)
+      const sharesResults = await Promise.all(
+        tripleVaultIds.map(async (termId) => ({
+          termId,
+          shares: await getUserShares(termId)
+        }))
+      )
+      const validEntries = sharesResults.filter((r) => r.shares > 0n)
+      const validTermIds = validEntries.map((r) => r.termId)
+      const sharesPerTriple = validEntries.map((r) => r.shares)
 
       if (validTermIds.length === 0) {
         logger.debug('No shares to redeem in any triple')
