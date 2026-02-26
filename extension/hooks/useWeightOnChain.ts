@@ -3,7 +3,7 @@ import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { BlockchainService } from '../lib/services'
+import { BlockchainService, globalStakeService } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
 import type { Address, Hash } from '../types/viem'
@@ -249,9 +249,130 @@ export const useWeightOnChain = () => {
     }
   }
 
+  /**
+   * Deposit with automatic Global Stake pool split.
+   * If GS is enabled and split is valid, uses depositBatch (1 TX for signal + pool).
+   * Otherwise falls back to a single deposit.
+   */
+  const depositWithPool = async (
+    tripleVaultId: string,
+    depositAmount: bigint,
+    curveId: bigint = 1n
+  ): Promise<WeightResult> => {
+    try {
+      if (!address) {
+        throw new Error('No wallet connected')
+      }
+
+      const split = globalStakeService.isEnabled()
+        ? globalStakeService.calculateSplit(depositAmount)
+        : null
+
+      const { walletClient, publicClient } = await getClients()
+      const contractAddress = BlockchainService.getContractAddress()
+
+      if (split) {
+        // depositBatch: signal vault + GS pool vault = 1 MetaMask popup
+        const config = globalStakeService.getConfig()
+        const termIds = [tripleVaultId as Address, config.termId as Address]
+        const curveIds = [curveId, config.curveId]
+        const assets = [split.mainAmount, split.globalAmount]
+        const minShares = [0n, 0n]
+        const totalDeposit = split.mainAmount + split.globalAmount
+        const fee = await BlockchainService.calculateDepositFee(2, totalDeposit)
+        const totalValue = totalDeposit + fee
+
+        logger.debug('depositWithPool batch', {
+          signalAmount: split.mainAmount.toString(),
+          globalAmount: split.globalAmount.toString(),
+          fee: fee.toString(),
+          totalValue: totalValue.toString()
+        })
+
+        // Simulate first
+        await publicClient.simulateContract({
+          address: contractAddress,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'depositBatch',
+          args: [address as Address, termIds, curveIds, assets, minShares],
+          value: totalValue,
+          account: address as Address
+        })
+
+        // Execute
+        const hash = await walletClient.writeContract({
+          address: contractAddress,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'depositBatch',
+          args: [address as Address, termIds, curveIds, assets, minShares],
+          value: totalValue,
+          chain: SELECTED_CHAIN,
+          account: address as Address
+        })
+
+        logger.debug('depositBatch transaction sent', { hash })
+
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+        if (receipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+        }
+
+        logger.debug('depositWithPool successful', { hash })
+        return { success: true, txHash: hash }
+      } else {
+        // Single deposit (GS disabled or amount too small)
+        const totalCost = await BlockchainService.getTotalDepositCost(depositAmount)
+
+        logger.debug('depositWithPool single', {
+          depositAmount: depositAmount.toString(),
+          totalCost: totalCost.toString(),
+          curveId: curveId.toString()
+        })
+
+        const hash = await walletClient.writeContract({
+          address: contractAddress,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'deposit' as const,
+          args: [
+            address as Address,
+            tripleVaultId as `0x${string}`,
+            curveId,
+            0n
+          ],
+          value: totalCost,
+          chain: SELECTED_CHAIN,
+          gas: BLOCKCHAIN_CONFIG.DEFAULT_GAS,
+          maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
+          maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
+          account: address as Address
+        })
+
+        logger.debug('Deposit transaction sent', { hash })
+
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+        if (receipt.status !== 'success') {
+          throw new Error(`${ERROR_MESSAGES.TRANSACTION_FAILED}: ${receipt.status}`)
+        }
+
+        logger.debug('depositWithPool single successful', { hash })
+        return { success: true, txHash: hash }
+      }
+    } catch (error) {
+      logger.error('depositWithPool failed', error)
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR
+      return {
+        success: false,
+        error: `Deposit failed: ${errorMessage}`
+      }
+    }
+  }
+
   return {
     addWeight,
     addShares,
-    removeWeight
+    removeWeight,
+    depositWithPool
   }
 }

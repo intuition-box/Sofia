@@ -18,7 +18,7 @@ import { INTENTION_CONFIG, predicateLabelToIntentionType } from '~/types/intenti
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import Avatar from '../../ui/Avatar'
-import StakeModal from '../../modals/StakeModal'
+import WeightModal from '../../modals/WeightModal'
 import '../../styles/CircleFeedTab.css'
 import '../../styles/CategoryStyles.css'
 
@@ -52,6 +52,9 @@ interface CircleFeedItem {
   tripleTermId: string
   counterTermId: string
   intentionType: IntentionType
+  tripleSubject: string
+  triplePredicate: string
+  tripleObject: string
   pageLabel: string
   pageUrl: string
   domain: string
@@ -207,6 +210,9 @@ const CircleFeedTab = () => {
         tripleTermId: event.triple?.term_id || '',
         counterTermId: event.triple?.counter_term_id || '',
         intentionType,
+        tripleSubject: event.triple?.subject?.label || 'I',
+        triplePredicate: event.triple?.predicate?.label || '',
+        tripleObject: event.triple?.object?.label || '',
         pageLabel: pageLabel || domain,
         pageUrl,
         domain,
@@ -238,9 +244,12 @@ const CircleFeedTab = () => {
   } = useIntentionCategories(memberWallet)
 
   // Support/Oppose deposit system
-  const { addWeight } = useWeightOnChain()
+  const { depositWithPool } = useWeightOnChain()
   const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [transactionSuccess, setTransactionSuccess] = useState(false)
+  const [transactionError, setTransactionError] = useState<string | undefined>()
+  const [transactionHash, setTransactionHash] = useState<string | undefined>()
   const [selectedItem, setSelectedItem] = useState<CircleFeedItem | null>(null)
   const [selectedVaultId, setSelectedVaultId] = useState<string>('')
 
@@ -265,20 +274,23 @@ const CircleFeedTab = () => {
     setSelectedItem(null)
     setSelectedVaultId('')
     setIsProcessing(false)
+    setTransactionSuccess(false)
+    setTransactionError(undefined)
+    setTransactionHash(undefined)
   }
 
-  const handleStakeSubmit = async (
-    amount: bigint,
-    curveId: 1 | 2
-  ): Promise<{ success: boolean; txHash?: string; error?: string }> => {
-    if (!selectedItem || !selectedVaultId) {
-      return { success: false, error: "No item selected" }
-    }
+  const handleStakeSubmit = async (customWeights?: (bigint | null)[]): Promise<void> => {
+    if (!selectedItem || !selectedVaultId) return
+    const weight = customWeights?.[0] || BigInt(Math.floor(0.5 * 1e18))
+
     try {
       setIsProcessing(true)
-      const result = await addWeight(selectedVaultId, amount, BigInt(curveId))
-      setIsProcessing(false)
+      setTransactionError(undefined)
+      const result = await depositWithPool(selectedVaultId, weight, 1n)
+
       if (result.success) {
+        setTransactionHash(result.txHash)
+        setTransactionSuccess(true)
         try {
           await questTrackingService.recordVoteActivity()
           const dailyCount = await questTrackingService.getDailyVoteCount()
@@ -288,15 +300,13 @@ const CircleFeedTab = () => {
         } catch {
           // Non-critical, swallow error
         }
-        return { success: true, txHash: result.txHash }
+      } else {
+        setTransactionError(result.error || 'Transaction failed')
       }
-      return { success: false, error: result.error || "Transaction failed" }
     } catch (error) {
+      setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
+    } finally {
       setIsProcessing(false)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Transaction failed"
-      }
     }
   }
 
@@ -523,7 +533,9 @@ const CircleFeedTab = () => {
                       onClick={(e) => handleSupport(e, item)}
                       title="Support this certification"
                     >
-                      Support
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4l-8 8h5v8h6v-8h5z" />
+                      </svg>
                     </button>
                     <button
                       className="circle-action-btn circle-oppose-btn"
@@ -531,7 +543,9 @@ const CircleFeedTab = () => {
                       disabled={!item.counterTermId}
                       title="Oppose this certification"
                     >
-                      Oppose
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 20l8-8h-5V4H9v8H4z" />
+                      </svg>
                     </button>
                   </div>
                 )}
@@ -542,21 +556,27 @@ const CircleFeedTab = () => {
         </div>
       )}
 
-      {/* Support/Oppose stake modal */}
-      <StakeModal
+      {/* Support/Oppose weight modal with fee breakdown + GS slider */}
+      <WeightModal
         isOpen={isStakeModalOpen}
+        triplets={selectedItem ? [{
+          id: selectedVaultId,
+          triplet: {
+            subject: selectedItem.tripleSubject,
+            predicate: selectedItem.triplePredicate,
+            object: selectedItem.tripleObject
+          },
+          description: '',
+          url: selectedItem.pageUrl
+        }] : []}
+        isProcessing={isProcessing}
+        transactionSuccess={transactionSuccess}
+        transactionError={transactionError}
+        transactionHash={transactionHash}
+        estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
+        submitLabel="Stake"
         onClose={handleStakeModalClose}
         onSubmit={handleStakeSubmit}
-        subjectName={selectedItem?.memberLabel || ''}
-        predicateName={
-          selectedItem
-            ? INTENTION_CONFIG[selectedItem.intentionType].label
-            : ''
-        }
-        objectName={selectedItem?.pageLabel || ''}
-        tripleId={selectedVaultId}
-        defaultCurve={1}
-        isProcessing={isProcessing}
       />
     </div>
   )

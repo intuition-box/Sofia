@@ -188,40 +188,36 @@
 .circle-card-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   margin-left: auto;
 }
 
 .circle-action-btn {
-  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
+  border: 1px solid var(--color-border-light);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: var(--transition-fast);
-  border: 1px solid;
-  background: transparent;
-  white-space: nowrap;
-}
-
-.circle-support-btn {
-  color: var(--color-success);
-  border-color: rgba(34, 197, 94, 0.3);
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .circle-support-btn:hover {
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.4);
   background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.5);
-}
-
-.circle-oppose-btn {
-  color: var(--color-error);
-  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .circle-oppose-btn:hover:not(:disabled) {
+  color: var(--color-error);
+  border-color: rgba(239, 68, 68, 0.4);
   background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.5);
 }
 
 .circle-action-btn:disabled {
