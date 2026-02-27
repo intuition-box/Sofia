@@ -220,6 +220,18 @@
   background: rgba(239, 68, 68, 0.1);
 }
 
+.circle-support-btn.voted {
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+}
+
+.circle-oppose-btn.voted {
+  color: var(--color-error);
+  border-color: color-mix(in srgb, var(--color-error) 50%, transparent);
+  background: color-mix(in srgb, var(--color-error) 15%, transparent);
+}
+
 .circle-action-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;

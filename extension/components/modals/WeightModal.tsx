@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
+import XpAnimation from '../ui/XpAnimation'
 import { useWalletFromStorage, useGoldSystem, useFeeEstimate } from '../../hooks'
 import { globalStakeService } from '../../lib/services'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
@@ -52,6 +53,8 @@ interface WeightModalProps {
   estimateOptions?: { isNewTriple?: boolean; newAtomCount?: number }
   /** Customize submit button text (default: "Amplify") */
   submitLabel?: string
+  /** Show XP cube animation on success (for quest/XP claim flows) */
+  showXpAnimation?: boolean
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
@@ -74,7 +77,7 @@ const weightOptions: WeightOption[] = [
 
 const FEE_DENOMINATOR = 100000
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -489,6 +492,11 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
           {transactionSuccess && (
             <div className={`modal-success-card ${discoveryReward ? 'has-reward' : ''}`}>
               <div className="modal-success-card-glow" />
+              {showXpAnimation && (
+                <div className="modal-success-xp-animation">
+                  <XpAnimation size={140} />
+                </div>
+              )}
               <div className="modal-success-card-inner">
                 <div className="modal-success-left">
                   <h2 className="modal-success-title">
