@@ -23972,6 +23972,10 @@ export type GetTrendingByPredicateQuery = {
         image?: string | null
       } | null
     }>
+    all_positions: Array<{
+      __typename?: "positions"
+      account?: { __typename?: "accounts"; id: string } | null
+    }>
     triple_vault?: { __typename?: "triple_vault"; total_shares: any } | null
   }>
 }
@@ -35988,6 +35992,11 @@ export const GetTrendingByPredicateDocument = `
         id
         label
         image
+      }
+    }
+    all_positions: positions(where: {shares: {_gt: "0"}}) {
+      account {
+        id
       }
     }
     triple_vault {
@@ -76948,6 +76957,58 @@ export const GetTrendingByPredicate = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "image" }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  alias: { kind: "Name", value: "all_positions" },
+                  name: { kind: "Name", value: "positions" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "where" },
+                      value: {
+                        kind: "ObjectValue",
+                        fields: [
+                          {
+                            kind: "ObjectField",
+                            name: { kind: "Name", value: "shares" },
+                            value: {
+                              kind: "ObjectValue",
+                              fields: [
+                                {
+                                  kind: "ObjectField",
+                                  name: { kind: "Name", value: "_gt" },
+                                  value: {
+                                    kind: "StringValue",
+                                    value: "0",
+                                    block: false
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "account" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" }
                             }
                           ]
                         }

@@ -109,13 +109,18 @@ export function useTrendingCertifications(): UseTrendingResult {
           const WALLET_RE = /^0x[0-9a-f]{4,}$/i
 
           // Map triples to items, then group by domain
-          const rawItems: TrendingItem[] = triples
+          // _allPositionIds carries all account IDs for accurate unique counting
+          type RawItem = TrendingItem & { _allPositionIds: string[] }
+          const rawItems: RawItem[] = triples
             .filter((triple: any) => {
               const label = (triple.object?.label || '').toLowerCase()
               if (ENS_SUFFIXES.some(suffix => label.endsWith(suffix))) return false
               if (WALLET_RE.test(label.replace(/[\u2026.]+/g, ''))) return false
               const thingUrl = triple.object?.value?.thing?.url
               if (!thingUrl && !label.startsWith('http') && !/[\w-]+\.[\w.-]+/.test(label)) return false
+              // Skip triples where all positions have been redeemed (shares = 0)
+              const hasActivePositions = (triple.all_positions || []).length > 0
+              if (!hasActivePositions) return false
               return true
             })
             .map((triple: any) => {
@@ -123,8 +128,14 @@ export function useTrendingCertifications(): UseTrendingResult {
               const thingUrl = triple.object?.value?.thing?.url
               const objectUrl = thingUrl || (label.startsWith('http') ? label : `https://${label}`)
               const domain = extractDomain(objectUrl) || objectUrl
-              const positionCount = Number(triple.positions_aggregate?.aggregate?.count || 0)
 
+              // All position account IDs (for accurate unique counting)
+              const allPositionIds: string[] = (triple.all_positions || [])
+                .map((p: any) => p.account?.id)
+                .filter(Boolean)
+              const positionCount = allPositionIds.length
+
+              // Top 3 certifiers (for avatar display)
               const topCertifiers = (triple.positions || [])
                 .filter((p: any) => p.account)
                 .map((p: any) => ({
@@ -142,27 +153,31 @@ export function useTrendingCertifications(): UseTrendingResult {
                 positionCount,
                 totalShares: String(triple.triple_vault?.total_shares || '0'),
                 createdAt: triple.created_at,
-                topCertifiers
+                topCertifiers,
+                _allPositionIds: allPositionIds
               }
             })
 
           // Group by domain: aggregate unique certifiers across pages
-          const domainMap = new Map<string, TrendingItem & { _seenCertifierIds: Set<string>; _pageCount: number }>()
+          const domainMap = new Map<string, RawItem & { _seenCertifierIds: Set<string>; _pageCount: number }>()
           for (const item of rawItems) {
             const existing = domainMap.get(item.domain)
             if (!existing) {
-              const seenIds = new Set(item.topCertifiers.map(c => c.id))
+              const seenIds = new Set(item._allPositionIds)
               domainMap.set(item.domain, { ...item, _seenCertifierIds: seenIds, _pageCount: 1 })
             } else {
               existing._pageCount++
-              // Merge unique certifiers (dedupe by id)
+              // Merge unique certifiers from all positions (accurate count)
+              for (const id of item._allPositionIds) {
+                existing._seenCertifierIds.add(id)
+              }
+              // Merge top certifiers for avatar display (dedupe by id)
               for (const c of item.topCertifiers) {
-                if (!existing._seenCertifierIds.has(c.id)) {
+                if (!existing.topCertifiers.some(tc => tc.id === c.id)) {
                   existing.topCertifiers.push(c)
-                  existing._seenCertifierIds.add(c.id)
                 }
               }
-              // Use unique certifier count (not sum of per-page counts)
+              // Use unique certifier count from all positions
               existing.positionCount = existing._seenCertifierIds.size
               // Keep earliest created_at
               if (item.createdAt < existing.createdAt) {
@@ -184,7 +199,7 @@ export function useTrendingCertifications(): UseTrendingResult {
           }
 
           const items = [...domainMap.values()]
-            .map(({ _seenCertifierIds, _pageCount, ...item }) => item)
+            .map(({ _seenCertifierIds, _pageCount, _allPositionIds, ...item }) => item)
             .sort((a, b) => b.positionCount - a.positionCount)
             .slice(0, DISPLAY_LIMIT)
 
