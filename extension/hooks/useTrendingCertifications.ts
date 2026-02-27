@@ -108,7 +108,8 @@ export function useTrendingCertifications(): UseTrendingResult {
           const ENS_SUFFIXES = ['.eth', '.box']
           const WALLET_RE = /^0x[0-9a-f]{4,}$/i
 
-          const items: TrendingItem[] = triples
+          // Map triples to items, then group by domain
+          const rawItems: TrendingItem[] = triples
             .filter((triple: any) => {
               const label = (triple.object?.label || '').toLowerCase()
               if (ENS_SUFFIXES.some(suffix => label.endsWith(suffix))) return false
@@ -132,7 +133,6 @@ export function useTrendingCertifications(): UseTrendingResult {
                   image: p.account.image || null
                 }))
 
-
               return {
                 termId: triple.term_id,
                 objectTermId: triple.object?.term_id || '',
@@ -145,6 +145,46 @@ export function useTrendingCertifications(): UseTrendingResult {
                 topCertifiers
               }
             })
+
+          // Group by domain: aggregate unique certifiers across pages
+          const domainMap = new Map<string, TrendingItem & { _seenCertifierIds: Set<string>; _pageCount: number }>()
+          for (const item of rawItems) {
+            const existing = domainMap.get(item.domain)
+            if (!existing) {
+              const seenIds = new Set(item.topCertifiers.map(c => c.id))
+              domainMap.set(item.domain, { ...item, _seenCertifierIds: seenIds, _pageCount: 1 })
+            } else {
+              existing._pageCount++
+              // Merge unique certifiers (dedupe by id)
+              for (const c of item.topCertifiers) {
+                if (!existing._seenCertifierIds.has(c.id)) {
+                  existing.topCertifiers.push(c)
+                  existing._seenCertifierIds.add(c.id)
+                }
+              }
+              // Use unique certifier count (not sum of per-page counts)
+              existing.positionCount = existing._seenCertifierIds.size
+              // Keep earliest created_at
+              if (item.createdAt < existing.createdAt) {
+                existing.createdAt = item.createdAt
+              }
+              // Sum total shares
+              existing.totalShares = String(
+                BigInt(existing.totalShares) + BigInt(item.totalShares || '0')
+              )
+            }
+          }
+
+          // When multiple pages merged, show domain as label
+          for (const entry of domainMap.values()) {
+            if (entry._pageCount > 1) {
+              entry.objectLabel = entry.domain
+              entry.objectUrl = `https://${entry.domain}`
+            }
+          }
+
+          const items = [...domainMap.values()]
+            .map(({ _seenCertifierIds, _pageCount, ...item }) => item)
             .sort((a, b) => b.positionCount - a.positionCount)
             .slice(0, DISPLAY_LIMIT)
 
