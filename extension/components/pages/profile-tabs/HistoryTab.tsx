@@ -14,6 +14,7 @@ import '../../styles/CorePage.css'
 import '../../styles/BookmarkStyles.css'
 import { createHookLogger } from '~/lib/utils'
 import { getFaviconUrl } from '~/lib/utils'
+import { predicateLabelToIntentionType } from '~/types/intentionCategories'
 
 const logger = createHookLogger('HistoryTab')
 
@@ -457,7 +458,8 @@ const HistoryTab = ({ expandedTriplet, setExpandedTriplet }: HistoryTabProps) =>
             object: selectedStakeTriplet.triplet.object
           },
           description: '',
-          url: selectedStakeTriplet.url || ''
+          url: selectedStakeTriplet.url || '',
+          intention: predicateLabelToIntentionType(selectedStakeTriplet.triplet.predicate) || undefined
         }] : []}
         isProcessing={isProcessingStake}
         transactionSuccess={transactionSuccess}

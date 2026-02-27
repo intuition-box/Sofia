@@ -306,12 +306,14 @@ const CircleFeedTab = () => {
   const [transactionHash, setTransactionHash] = useState<string | undefined>()
   const [selectedItem, setSelectedItem] = useState<CircleFeedItem | null>(null)
   const [selectedVaultId, setSelectedVaultId] = useState<string>('')
+  const [selectedAction, setSelectedAction] = useState<'Support' | 'Oppose'>('Support')
 
   const handleSupport = (e: React.MouseEvent, item: CircleFeedItem) => {
     e.stopPropagation()
     if (!address || !item.tripleTermId) return
     setSelectedItem(item)
     setSelectedVaultId(item.tripleTermId)
+    setSelectedAction('Support')
     setIsStakeModalOpen(true)
   }
 
@@ -320,6 +322,7 @@ const CircleFeedTab = () => {
     if (!address || !item.counterTermId) return
     setSelectedItem(item)
     setSelectedVaultId(item.counterTermId)
+    setSelectedAction('Oppose')
     setIsStakeModalOpen(true)
   }
 
@@ -624,13 +627,15 @@ const CircleFeedTab = () => {
             object: selectedItem.tripleObject
           },
           description: '',
-          url: selectedItem.pageUrl
+          url: selectedItem.pageUrl,
+          intention: predicateLabelToIntentionType(selectedItem.triplePredicate) || undefined
         }] : []}
         isProcessing={isProcessing}
         transactionSuccess={transactionSuccess}
         transactionError={transactionError}
         transactionHash={transactionHash}
         estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
+        submitLabel={selectedAction}
         submitLabel="Stake"
         showXpAnimation={true}
         onClose={handleStakeModalClose}

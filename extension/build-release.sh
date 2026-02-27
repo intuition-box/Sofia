@@ -109,77 +109,88 @@ EOL
 echo "  Done: ${INSTRUCTIONS_FILE}"
 echo ""
 
-# Step 5: Generate release notes
+# Step 5: Generate release notes (dynamic from git history)
 echo "[5/5] Generating release notes..."
 RELEASE_NOTES="${RELEASE_DIR}/RELEASE_NOTES_${VERSION}.md"
 
-cat > "$RELEASE_NOTES" << EOL
-# Sofia Extension v${VERSION} — Alpha Release
+# Find previous tag to diff against
+PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
 
-**Date:** $(date +%Y-%m-%d)
-**Type:** Alpha (Private Testing)
+if [ -n "$PREV_TAG" ]; then
+  COMMIT_RANGE="${PREV_TAG}..HEAD"
+  COMPARE_TEXT="**Previous version:** ${PREV_TAG}"
+else
+  COMMIT_RANGE="HEAD"
+  COMPARE_TEXT="**First release**"
+fi
 
-> This is an alpha version for private testers. Expect bugs, incomplete features, and possible data resets between versions.
+# Collect commits by category (based on conventional commit prefixes)
+FEATURES=""
+FIXES=""
+PERFORMANCE=""
+REFACTORS=""
+OTHER=""
 
-## What's in this release
+while IFS= read -r line; do
+  msg="${line#* }"  # Remove commit hash prefix
 
-### Echoes (Browsing Intentions)
-- Automatic URL grouping by domain
-- Certify URLs on-chain with intentions: work, learning, fun, inspiration, buying, music
-- Level up groups using Gold currency
-- Publish identity predicates to the blockchain (Amplify)
+  if echo "$msg" | grep -qiE "^feat[\(:]|^feat "; then
+    FEATURES="${FEATURES}\n- ${msg}"
+  elif echo "$msg" | grep -qiE "^fix[\(:]|^fix |^hot ?fix"; then
+    FIXES="${FIXES}\n- ${msg}"
+  elif echo "$msg" | grep -qiE "^perf[\(:]|^perf "; then
+    PERFORMANCE="${PERFORMANCE}\n- ${msg}"
+  elif echo "$msg" | grep -qiE "^refactor[\(:]|^refactor "; then
+    REFACTORS="${REFACTORS}\n- ${msg}"
+  else
+    OTHER="${OTHER}\n- ${msg}"
+  fi
+done < <(git log --oneline --no-merges ${COMMIT_RANGE})
 
-### Resonance (Community)
-- **Circle Feed**: See community certifications, vote like/dislike
-- **Trending**: Discover popular pages and intentions
-- **Streak Leaderboard**: Track activity streaks across the community
+# Build release notes
+{
+  echo "# Sofia Extension v${VERSION}"
+  echo ""
+  echo "**Date:** $(date +%Y-%m-%d)"
+  echo "**Type:** Alpha (Private Testing)"
+  echo "${COMPARE_TEXT}"
+  echo ""
 
-### Pulse (AI Analysis)
-- Analyze your current browsing session with AI
-- Extract themes from visited pages
-- Import and analyze bookmarks
+  if [ -n "$FEATURES" ]; then
+    echo "## Features"
+    echo -e "$FEATURES"
+    echo ""
+  fi
 
-### Chat
-- Talk to SofIA, your AI browsing assistant
-- Get insights about your browsing patterns
+  if [ -n "$FIXES" ]; then
+    echo "## Bug Fixes"
+    echo -e "$FIXES"
+    echo ""
+  fi
 
-### Gold & XP
-- Earn Gold from certifications and discovery
-- Pioneer/Explorer/Contributor discovery rankings
-- Spend Gold to level up intention groups
-- Earn XP from quest badges
+  if [ -n "$PERFORMANCE" ]; then
+    echo "## Performance"
+    echo -e "$PERFORMANCE"
+    echo ""
+  fi
 
-### Community
-- Follow other users
-- View other users' profiles and certifications
-- Vote on community certifications (like/dislike)
+  if [ -n "$REFACTORS" ]; then
+    echo "## Refactoring"
+    echo -e "$REFACTORS"
+    echo ""
+  fi
 
-### OAuth Integrations
-- Import activity from Spotify, GitHub, and more
+  if [ -n "$OTHER" ]; then
+    echo "## Other Changes"
+    echo -e "$OTHER"
+    echo ""
+  fi
 
----
-
-## Testing Checklist
-
-- [ ] Extension loads without console errors
-- [ ] Wallet connects via Privy login
-- [ ] Browsing URLs appear in Echoes groups
-- [ ] Certifying a URL creates an on-chain triple
-- [ ] Gold is earned after certification
-- [ ] Group level-up works (spend Gold)
-- [ ] Circle feed shows community certifications
-- [ ] Voting (like/dislike) works on circle feed items
-- [ ] Trending tab displays popular pages
-- [ ] Streak leaderboard loads and ranks users
-- [ ] Pulse analysis runs on current session
-- [ ] Chat responds to messages
-- [ ] Profile shows certifications and followers
-- [ ] Recommendations appear in Resonance
-
----
-
-**Bug reports**: https://github.com/intuition-box/Sofia/issues
-EOL
+  echo "---"
+  echo ""
+  echo "**Full changelog:** https://github.com/intuition-box/Sofia/compare/${PREV_TAG}...v${VERSION}"
+  echo "**Bug reports:** https://github.com/intuition-box/Sofia/issues"
+} > "$RELEASE_NOTES"
 
 echo "  Done: ${RELEASE_NOTES}"
 echo ""
