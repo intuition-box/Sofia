@@ -50,6 +50,11 @@ query GetTrendingByPredicate(
         image
       }
     }
+    all_positions: positions(where: { shares: { _gt: "0" } }) {
+      account {
+        id
+      }
+    }
     triple_vault {
       total_shares
     }
