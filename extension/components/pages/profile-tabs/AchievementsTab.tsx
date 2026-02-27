@@ -554,6 +554,7 @@ const AchievementsTab = ({
           fixedDeposit={pendingClaim.isDailyQuest ? 1.01 : 0.01}
           estimateOptions={{ isNewTriple: true, newAtomCount: 1 }}
           submitLabel="Claim"
+          showXpAnimation={true}
           onClose={handleClaimModalClose}
           onSubmit={handleClaimSubmit}
         />,

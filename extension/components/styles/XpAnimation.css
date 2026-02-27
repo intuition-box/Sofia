@@ -1,0 +1,229 @@
+/* ========== XP Animation (Sofia cube with S-ribbon draw + burst) ========== */
+
+.xp-animation-container {
+  position: relative;
+  cursor: pointer;
+  animation:
+    xp-microShake 0.25s ease 1.15s both,
+    xp-idleBreathe 4s ease-in-out 2.0s infinite;
+}
+
+/* ---- Background flash on impact (1.15s) ---- */
+.xp-animation-container::after {
+  content: '';
+  position: absolute;
+  inset: -100%;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 215, 80, 0.2), transparent 55%);
+  opacity: 0;
+  pointer-events: none;
+  animation: xp-bgFlash 0.5s ease-out 1.15s forwards;
+}
+
+@keyframes xp-bgFlash {
+  0%   { opacity: 0; transform: scale(0.3); }
+  25%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(3); }
+}
+
+@keyframes xp-microShake {
+  0%, 100% { transform: translate(0, 0); }
+  15%  { transform: translate(-3px, 1px); }
+  30%  { transform: translate(3px, -2px); }
+  50%  { transform: translate(-2px, -1px); }
+  70%  { transform: translate(2px, 1px); }
+  85%  { transform: translate(-1px, 0); }
+}
+
+@keyframes xp-idleBreathe {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(2px, -5px) scale(1.008); }
+}
+
+/* ---- Surface shadow ---- */
+.xp-surface-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 28%;
+  width: 90px;
+  height: 20px;
+  transform: translateX(-50%) rotateX(60deg);
+  background: radial-gradient(ellipse, rgba(255, 215, 80, 0.12), transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: xp-shadowAppear 0.4s ease 1.6s forwards, xp-shadowPulse 3s ease-in-out 2.0s infinite;
+}
+
+@keyframes xp-shadowAppear { to { opacity: 1; } }
+
+@keyframes xp-shadowPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+  50%      { transform: translateX(-50%) scale(1.15); opacity: 1; }
+}
+
+.xp-animation-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ---- S Ribbons ---- */
+.xp-s-ribbon {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform-origin: 249px 243px;
+}
+
+.xp-s-head {
+  transform-origin: 249px 243px;
+}
+
+/* ---- Shockwave ring ---- */
+.xp-shockwave {
+  fill: none;
+  stroke: rgba(255, 215, 80, 0.85);
+  stroke-width: 4;
+  transform-origin: 249px 243px;
+  opacity: 0;
+  animation: xp-shockwaveExpand 1s cubic-bezier(0.16, 1, 0.3, 1) 1.15s forwards;
+}
+
+@keyframes xp-shockwaveExpand {
+  0%   { transform: scale(0.3); opacity: 1; stroke-width: 5; }
+  40%  { opacity: 0.7; stroke-width: 3; }
+  100% { transform: scale(3.5); opacity: 0; stroke-width: 0.3; }
+}
+
+.xp-shockwave-soft {
+  fill: none;
+  stroke: rgba(255, 200, 60, 0.4);
+  stroke-width: 3;
+  transform-origin: 249px 243px;
+  opacity: 0;
+  animation: xp-shockwaveExpand 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.25s forwards;
+}
+
+/* ---- Cube ---- */
+.xp-cube {
+  opacity: 1;
+  transform-origin: 249px 243px;
+  animation:
+    xp-cubeImpact 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.15s both,
+    xp-cubeWarmLight 1.2s ease 1.45s forwards;
+}
+
+.xp-cube-dark {
+  opacity: 0.76;
+  transform-origin: 249px 243px;
+  animation:
+    xp-cubeImpact 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.15s both,
+    xp-cubeWarmDark 1.2s ease 1.45s forwards;
+}
+
+@keyframes xp-cubeImpact {
+  0%   { transform: scale(1); filter: brightness(1); }
+  10%  { filter: brightness(3) saturate(1.5); }
+  30%  { transform: scale(1.35); filter: brightness(1.8); }
+  55%  { transform: scale(1.12); }
+  75%  { transform: scale(1.22); }
+  100% { transform: scale(1.2); filter: brightness(1); }
+}
+
+@keyframes xp-cubeWarmLight {
+  from { fill: #FFF8EE; }
+  to   { fill: #f0d4a0; }
+}
+
+@keyframes xp-cubeWarmDark {
+  from { fill: #525252; }
+  to   { fill: #5c4a38; }
+}
+
+/* ---- Glow ---- */
+.xp-animation-svg {
+  filter: drop-shadow(0 0 0px transparent);
+  animation: xp-glowIn 0.4s ease 1.15s forwards,
+             xp-afterglow 1.2s ease 1.3s forwards,
+             xp-glowPulse 3s ease-in-out 2.8s infinite;
+}
+
+@keyframes xp-glowIn {
+  to {
+    filter: drop-shadow(0 0 25px rgba(255, 215, 80, 0.7))
+           drop-shadow(0 0 60px rgba(255, 180, 50, 0.3));
+  }
+}
+
+@keyframes xp-afterglow {
+  0% {
+    filter: drop-shadow(0 0 25px rgba(255, 215, 80, 0.7))
+           drop-shadow(0 0 60px rgba(255, 180, 50, 0.3));
+  }
+  35% {
+    filter: drop-shadow(0 0 35px rgba(255, 215, 80, 0.8))
+           drop-shadow(0 0 80px rgba(255, 180, 50, 0.35))
+           drop-shadow(0 0 120px rgba(255, 160, 40, 0.12));
+  }
+  70% {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 80, 0.3))
+           drop-shadow(0 0 25px rgba(255, 180, 50, 0.1));
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(255, 215, 80, 0.35))
+           drop-shadow(0 0 35px rgba(255, 180, 50, 0.12));
+  }
+}
+
+@keyframes xp-glowPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 12px rgba(255, 215, 80, 0.25))
+           drop-shadow(0 0 30px rgba(255, 180, 50, 0.1));
+  }
+  50% {
+    filter: drop-shadow(0 0 22px rgba(255, 215, 80, 0.5))
+           drop-shadow(0 0 50px rgba(255, 180, 50, 0.2));
+  }
+}
+
+/* ---- Light beam ---- */
+.xp-light-beam {
+  opacity: 0;
+  animation: xp-beamShoot 0.35s cubic-bezier(0.16, 1, 0.3, 1) 1.55s forwards,
+             xp-beamFade 0.8s ease 1.9s forwards;
+}
+
+@keyframes xp-beamShoot {
+  0%   { opacity: 0; transform: scaleY(0); }
+  30%  { opacity: 1; }
+  100% { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes xp-beamFade {
+  to { opacity: 0; }
+}
+
+/* ---- Mini cubes ---- */
+.xp-mini-cube {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.xp-mini-cube svg { width: 100%; height: 100%; }
+
+.xp-mini-cube:nth-child(2) { width: 12px; height: 12px; left: 43%; animation: xp-floatCube 4s ease-in-out 1.55s infinite; --xp-y: 70px; --xp-drift: -6px; }
+.xp-mini-cube:nth-child(3) { width: 8px;  height: 8px;  left: 54%; animation: xp-floatCube 4.5s ease-in-out 1.75s infinite; --xp-y: 90px; --xp-drift: 5px; filter: blur(0.5px); }
+.xp-mini-cube:nth-child(4) { width: 6px;  height: 6px;  left: 48%; animation: xp-floatCube 5s ease-in-out 1.95s infinite; --xp-y: 110px; --xp-drift: -3px; filter: blur(1px); }
+.xp-mini-cube:nth-child(5) { width: 9px;  height: 9px;  left: 51%; animation: xp-floatCube 4.2s ease-in-out 2.05s infinite; --xp-y: 60px; --xp-drift: 8px; }
+.xp-mini-cube:nth-child(6) { width: 5px;  height: 5px;  left: 45%; animation: xp-floatCube 5.5s ease-in-out 2.25s infinite; --xp-y: 130px; --xp-drift: -10px; filter: blur(1.5px); }
+
+@keyframes xp-floatCube {
+  0%   { opacity: 0; bottom: 52%; transform: translateX(0) scale(0.6); }
+  12%  { opacity: 0.8; transform: translateX(calc(var(--xp-drift) * 0.3)) scale(1); }
+  50%  { opacity: 0.5; transform: translateX(var(--xp-drift)) scale(0.9); }
+  88%  { opacity: 0.15; transform: translateX(calc(var(--xp-drift) * 0.5)) scale(0.7); }
+  100% { opacity: 0; bottom: calc(52% + var(--xp-y)); transform: translateX(0) scale(0.5); }
+}
