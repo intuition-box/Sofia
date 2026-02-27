@@ -575,6 +575,7 @@ const CircleFeedTab = () => {
         transactionHash={transactionHash}
         estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
         submitLabel="Stake"
+        showXpAnimation={true}
         onClose={handleStakeModalClose}
         onSubmit={handleStakeSubmit}
       />
