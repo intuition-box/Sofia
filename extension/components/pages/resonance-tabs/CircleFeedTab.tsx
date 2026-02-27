@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 
 import {
   useGetTrustCirclePositionsQuery,
-  useGetSofiaTrustedActivityQuery
+  useGetSofiaTrustedActivityQuery,
+  useFindTriplesQuery
 } from '@0xsofia/graphql'
 import { getAddress } from 'viem'
 
@@ -232,6 +233,59 @@ const CircleFeedTab = () => {
     return feedItems.filter(item => item.intentionType === activeFilter)
   }, [feedItems, activeFilter])
 
+  // Step 4: Check user's existing positions on feed triples (support/oppose state)
+  const allVaultIds = useMemo(() => {
+    const ids: string[] = []
+    for (const item of feedItems) {
+      if (item.tripleTermId) ids.push(item.tripleTermId)
+      if (item.counterTermId) ids.push(item.counterTermId)
+    }
+    return [...new Set(ids)]
+  }, [feedItems])
+
+  const { data: userPositionsData } = useFindTriplesQuery(
+    {
+      where: { term_id: { _in: allVaultIds } },
+      address: checksumAddress,
+      limit: 500
+    },
+    {
+      enabled: allVaultIds.length > 0 && !!checksumAddress,
+      refetchOnWindowFocus: false
+    }
+  )
+
+  // Build map: itemId → 'support' | 'oppose' (from on-chain + local votes)
+  const [localVotes, setLocalVotes] = useState(() => new Map<string, 'support' | 'oppose'>())
+
+  const votedItems = useMemo(() => {
+    const map = new Map<string, 'support' | 'oppose'>()
+
+    // On-chain positions
+    if (userPositionsData?.triples) {
+      const positionTermIds = new Set(
+        userPositionsData.triples
+          .filter(t => t.positions?.some(p => p.shares && BigInt(p.shares) > 0n))
+          .map(t => t.term_id)
+      )
+
+      for (const item of feedItems) {
+        if (item.tripleTermId && positionTermIds.has(item.tripleTermId)) {
+          map.set(item.id, 'support')
+        } else if (item.counterTermId && positionTermIds.has(item.counterTermId)) {
+          map.set(item.id, 'oppose')
+        }
+      }
+    }
+
+    // Merge local votes (override on-chain if just voted)
+    for (const [id, vote] of localVotes) {
+      map.set(id, vote)
+    }
+
+    return map
+  }, [userPositionsData, feedItems, localVotes])
+
   // Member profile: use useIntentionCategories with member's wallet
   const memberWallet = viewState.type === 'member-profile' || viewState.type === 'member-category'
     ? viewState.address
@@ -291,6 +345,9 @@ const CircleFeedTab = () => {
       if (result.success) {
         setTransactionHash(result.txHash)
         setTransactionSuccess(true)
+        // Track local vote state
+        const voteType = selectedVaultId === selectedItem.tripleTermId ? 'support' : 'oppose'
+        setLocalVotes(prev => new Map(prev).set(selectedItem.id, voteType as 'support' | 'oppose'))
         try {
           await questTrackingService.recordVoteActivity()
           const dailyCount = await questTrackingService.getDailyVoteCount()
@@ -529,7 +586,7 @@ const CircleFeedTab = () => {
                 {item.tripleTermId && (
                   <div className="circle-card-actions">
                     <button
-                      className="circle-action-btn circle-support-btn"
+                      className={`circle-action-btn circle-support-btn ${votedItems.get(item.id) === 'support' ? 'voted' : ''}`}
                       onClick={(e) => handleSupport(e, item)}
                       title="Support this certification"
                     >
@@ -538,7 +595,7 @@ const CircleFeedTab = () => {
                       </svg>
                     </button>
                     <button
-                      className="circle-action-btn circle-oppose-btn"
+                      className={`circle-action-btn circle-oppose-btn ${votedItems.get(item.id) === 'oppose' ? 'voted' : ''}`}
                       onClick={(e) => handleOppose(e, item)}
                       disabled={!item.counterTermId}
                       title="Oppose this certification"
