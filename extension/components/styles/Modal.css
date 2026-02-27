@@ -564,6 +564,13 @@
   box-shadow: 0 0 15px rgba(212, 175, 55, 0.4), 0 0 30px rgba(212, 175, 55, 0.15);
 }
 
+.modal-success-xp-animation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0 0;
+}
+
 .modal-success-card-inner {
   display: flex;
   padding: 28px 24px;

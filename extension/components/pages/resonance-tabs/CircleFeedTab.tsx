@@ -561,6 +561,7 @@ const CircleFeedTab = () => {
           transactionError={voteTransactionError || undefined}
           estimateOptions={{ isNewTriple: true, newAtomCount: 0 }}
           submitLabel="Vote"
+          showXpAnimation={true}
           onClose={handleVoteModalClose}
           onSubmit={handleVoteSubmit}
         />,
