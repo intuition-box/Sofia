@@ -199,13 +199,34 @@ query GetSofiaTrustedActivity(
       creator { id label image }
       subject { label term_id }
       predicate { label term_id }
-      object { 
+      object {
         label
         term_id
         value {
           thing {
               url
           }
+        }
+      }
+    }
+  }
+}
+
+query FindUserPositionsOnTriples(
+  $termIds: [String!]!
+  $address: String!
+  $limit: Int = 500
+) {
+  triples(where: { term_id: { _in: $termIds } }, limit: $limit) {
+    term_id
+    counter_term_id
+    positions(where: { account_id: { _eq: $address } }) {
+      shares
+    }
+    counter_term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        positions(where: { account_id: { _eq: $address } }) {
+          shares
         }
       }
     }

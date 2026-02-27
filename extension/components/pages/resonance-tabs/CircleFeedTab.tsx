@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import {
   useGetTrustCirclePositionsQuery,
   useGetSofiaTrustedActivityQuery,
-  useFindTriplesQuery
+  useFindUserPositionsOnTriplesQuery
 } from '@0xsofia/graphql'
 import { getAddress } from 'viem'
 
@@ -234,23 +234,18 @@ const CircleFeedTab = () => {
   }, [feedItems, activeFilter])
 
   // Step 4: Check user's existing positions on feed triples (support/oppose state)
-  const allVaultIds = useMemo(() => {
-    const ids: string[] = []
-    for (const item of feedItems) {
-      if (item.tripleTermId) ids.push(item.tripleTermId)
-      if (item.counterTermId) ids.push(item.counterTermId)
-    }
-    return [...new Set(ids)]
+  const allTripleIds = useMemo(() => {
+    return [...new Set(feedItems.map(item => item.tripleTermId).filter(Boolean))]
   }, [feedItems])
 
-  const { data: userPositionsData } = useFindTriplesQuery(
+  const { data: userPositionsData } = useFindUserPositionsOnTriplesQuery(
     {
-      where: { term_id: { _in: allVaultIds } },
+      termIds: allTripleIds,
       address: checksumAddress,
       limit: 500
     },
     {
-      enabled: allVaultIds.length > 0 && !!checksumAddress,
+      enabled: allTripleIds.length > 0 && !!checksumAddress,
       refetchOnWindowFocus: false
     }
   )
@@ -261,19 +256,22 @@ const CircleFeedTab = () => {
   const votedItems = useMemo(() => {
     const map = new Map<string, 'support' | 'oppose'>()
 
-    // On-chain positions
+    // On-chain positions (support on term vault, oppose on counter_term vault)
     if (userPositionsData?.triples) {
-      const positionTermIds = new Set(
-        userPositionsData.triples
-          .filter(t => t.positions?.some(p => p.shares && BigInt(p.shares) > 0n))
-          .map(t => t.term_id)
-      )
+      for (const triple of userPositionsData.triples) {
+        const hasSupport = triple.positions?.some(
+          (p) => p.shares && BigInt(p.shares) > 0n
+        )
+        const hasOppose = triple.counter_term?.vaults?.some((v) =>
+          v.positions?.some((p) => p.shares && BigInt(p.shares) > 0n)
+        )
 
-      for (const item of feedItems) {
-        if (item.tripleTermId && positionTermIds.has(item.tripleTermId)) {
-          map.set(item.id, 'support')
-        } else if (item.counterTermId && positionTermIds.has(item.counterTermId)) {
-          map.set(item.id, 'oppose')
+        const feedItem = feedItems.find(
+          (item) => item.tripleTermId === triple.term_id
+        )
+        if (feedItem) {
+          if (hasSupport) map.set(feedItem.id, "support")
+          else if (hasOppose) map.set(feedItem.id, "oppose")
         }
       }
     }
@@ -636,7 +634,6 @@ const CircleFeedTab = () => {
         transactionHash={transactionHash}
         estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
         submitLabel={selectedAction}
-        submitLabel="Stake"
         showXpAnimation={true}
         onClose={handleStakeModalClose}
         onSubmit={handleStakeSubmit}
