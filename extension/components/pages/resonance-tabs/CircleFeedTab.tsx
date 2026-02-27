@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react'
-import { createPortal } from 'react-dom'
 
 import {
   useGetTrustCirclePositionsQuery,
@@ -8,13 +7,13 @@ import {
 import { getAddress } from 'viem'
 
 import { useRouter } from '../../layout/RouterProvider'
-import { useWalletFromStorage, useIntentionCategories, useVoteOnTriple, useTripleVotes } from '~/hooks'
+import { useWalletFromStorage, useIntentionCategories, useWeightOnChain } from '~/hooks'
 import { SUBJECT_IDS, PREDICATE_IDS } from '~/lib/config/constants'
 import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
 import { getFaviconUrl, batchResolveEns } from '~/lib/utils'
+import { questTrackingService, goldService } from '~/lib/services'
 import type { IntentionType } from '~/types/intentionCategories'
 import { INTENTION_CONFIG, predicateLabelToIntentionType } from '~/types/intentionCategories'
-import type { VoteType } from '~/hooks'
 
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
@@ -51,7 +50,11 @@ const formatTimestamp = (timestamp: string) => {
 interface CircleFeedItem {
   id: string
   tripleTermId: string
+  counterTermId: string
   intentionType: IntentionType
+  tripleSubject: string
+  triplePredicate: string
+  tripleObject: string
   pageLabel: string
   pageUrl: string
   domain: string
@@ -205,7 +208,11 @@ const CircleFeedTab = () => {
       items.push({
         id: event.id,
         tripleTermId: event.triple?.term_id || '',
+        counterTermId: event.triple?.counter_term_id || '',
         intentionType,
+        tripleSubject: event.triple?.subject?.label || 'I',
+        triplePredicate: event.triple?.predicate?.label || '',
+        tripleObject: event.triple?.object?.label || '',
         pageLabel: pageLabel || domain,
         pageUrl,
         domain,
@@ -236,58 +243,71 @@ const CircleFeedTab = () => {
     selectCategory: memberSelectCategory
   } = useIntentionCategories(memberWallet)
 
-  // Vote system
-  const tripleTermIds = useMemo(
-    () => feedItems.map(item => item.tripleTermId).filter(Boolean),
-    [feedItems]
-  )
-  const { votesMap, refetch: refetchVotes } = useTripleVotes(tripleTermIds, address || null)
-  const { vote, loading: voteLoading, error: voteError, success: voteSuccess, reset: resetVote, votingTripleId } = useVoteOnTriple()
+  // Support/Oppose deposit system
+  const { depositWithPool } = useWeightOnChain()
+  const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [transactionSuccess, setTransactionSuccess] = useState(false)
+  const [transactionError, setTransactionError] = useState<string | undefined>()
+  const [transactionHash, setTransactionHash] = useState<string | undefined>()
+  const [selectedItem, setSelectedItem] = useState<CircleFeedItem | null>(null)
+  const [selectedVaultId, setSelectedVaultId] = useState<string>('')
 
-  // Vote confirmation modal state
-  const [pendingVote, setPendingVote] = useState<{
-    tripleTermId: string
-    voteType: VoteType
-    objectLabel: string
-    intentionType: IntentionType
-  } | null>(null)
-  const [voteTransactionSuccess, setVoteTransactionSuccess] = useState(false)
-  const [voteTransactionError, setVoteTransactionError] = useState<string | null>(null)
-
-  // Sync vote hook states to modal states
-  useEffect(() => {
-    if (!voteLoading && pendingVote) {
-      if (voteSuccess) {
-        setVoteTransactionSuccess(true)
-        setVoteTransactionError(null)
-        refetchVotes()
-      } else if (voteError) {
-        setVoteTransactionError(voteError)
-        setVoteTransactionSuccess(false)
-      }
-    }
-  }, [voteLoading, voteSuccess, voteError, pendingVote])
-
-  const handleVote = (e: React.MouseEvent, tripleTermId: string, voteType: VoteType, objectLabel: string, intentionType: IntentionType) => {
+  const handleSupport = (e: React.MouseEvent, item: CircleFeedItem) => {
     e.stopPropagation()
-    if (!address || !tripleTermId) return
-    setVoteTransactionSuccess(false)
-    setVoteTransactionError(null)
-    resetVote()
-    setPendingVote({ tripleTermId, voteType, objectLabel, intentionType })
+    if (!address || !item.tripleTermId) return
+    setSelectedItem(item)
+    setSelectedVaultId(item.tripleTermId)
+    setIsStakeModalOpen(true)
   }
 
-  const handleVoteSubmit = async (customWeights?: (bigint | null)[]) => {
-    if (!pendingVote) return
-    const stakeAmount = customWeights?.[0] ?? undefined
-    await vote(pendingVote.tripleTermId, pendingVote.voteType, stakeAmount)
+  const handleOppose = (e: React.MouseEvent, item: CircleFeedItem) => {
+    e.stopPropagation()
+    if (!address || !item.counterTermId) return
+    setSelectedItem(item)
+    setSelectedVaultId(item.counterTermId)
+    setIsStakeModalOpen(true)
   }
 
-  const handleVoteModalClose = () => {
-    setPendingVote(null)
-    setVoteTransactionSuccess(false)
-    setVoteTransactionError(null)
-    resetVote()
+  const handleStakeModalClose = () => {
+    setIsStakeModalOpen(false)
+    setSelectedItem(null)
+    setSelectedVaultId('')
+    setIsProcessing(false)
+    setTransactionSuccess(false)
+    setTransactionError(undefined)
+    setTransactionHash(undefined)
+  }
+
+  const handleStakeSubmit = async (customWeights?: (bigint | null)[]): Promise<void> => {
+    if (!selectedItem || !selectedVaultId) return
+    const weight = customWeights?.[0] || BigInt(Math.floor(0.5 * 1e18))
+
+    try {
+      setIsProcessing(true)
+      setTransactionError(undefined)
+      const result = await depositWithPool(selectedVaultId, weight, 1n)
+
+      if (result.success) {
+        setTransactionHash(result.txHash)
+        setTransactionSuccess(true)
+        try {
+          await questTrackingService.recordVoteActivity()
+          const dailyCount = await questTrackingService.getDailyVoteCount()
+          if (address) {
+            await goldService.addVoteGold(address, dailyCount)
+          }
+        } catch {
+          // Non-critical, swallow error
+        }
+      } else {
+        setTransactionError(result.error || 'Transaction failed')
+      }
+    } catch (error) {
+      setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const loading = trustCircleLoading || eventsLoading
@@ -297,7 +317,6 @@ const CircleFeedTab = () => {
   const handleRefresh = () => {
     refetchTrustCircle()
     refetchEvents()
-    refetchVotes()
   }
 
   // Handle member click
@@ -508,25 +527,21 @@ const CircleFeedTab = () => {
                   {item.memberLabel}
                 </span>
                 {item.tripleTermId && (
-                  <div className="circle-card-votes">
+                  <div className="circle-card-actions">
                     <button
-                      className={`circle-vote-btn circle-vote-up ${votesMap.get(item.tripleTermId)?.userVote === 'like' ? 'active' : ''}`}
-                      onClick={(e) => handleVote(e, item.tripleTermId, 'like', item.pageLabel, item.intentionType)}
-                      disabled={voteLoading && votingTripleId === item.tripleTermId}
-                      title="Like this certification"
+                      className="circle-action-btn circle-support-btn"
+                      onClick={(e) => handleSupport(e, item)}
+                      title="Support this certification"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 4l-8 8h5v8h6v-8h5z" />
                       </svg>
                     </button>
-                    <span className="circle-vote-count">
-                      {(votesMap.get(item.tripleTermId)?.likeCount || 0) - (votesMap.get(item.tripleTermId)?.dislikeCount || 0)}
-                    </span>
                     <button
-                      className={`circle-vote-btn circle-vote-down ${votesMap.get(item.tripleTermId)?.userVote === 'dislike' ? 'active' : ''}`}
-                      onClick={(e) => handleVote(e, item.tripleTermId, 'dislike', item.pageLabel, item.intentionType)}
-                      disabled={voteLoading && votingTripleId === item.tripleTermId}
-                      title="Dislike this certification"
+                      className="circle-action-btn circle-oppose-btn"
+                      onClick={(e) => handleOppose(e, item)}
+                      disabled={!item.counterTermId}
+                      title="Oppose this certification"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 20l8-8h-5V4H9v8H4z" />
@@ -541,32 +556,28 @@ const CircleFeedTab = () => {
         </div>
       )}
 
-      {/* Vote confirmation modal */}
-      {pendingVote && createPortal(
-        <WeightModal
-          isOpen={!!pendingVote}
-          triplets={[{
-            id: `vote-${pendingVote.tripleTermId}`,
-            triplet: {
-              subject: 'I',
-              predicate: pendingVote.voteType,
-              object: pendingVote.objectLabel
-            },
-            description: '',
-            url: '',
-            intention: pendingVote.intentionType
-          }]}
-          isProcessing={voteLoading}
-          transactionSuccess={voteTransactionSuccess}
-          transactionError={voteTransactionError || undefined}
-          estimateOptions={{ isNewTriple: true, newAtomCount: 0 }}
-          submitLabel="Vote"
-          showXpAnimation={true}
-          onClose={handleVoteModalClose}
-          onSubmit={handleVoteSubmit}
-        />,
-        document.body
-      )}
+      {/* Support/Oppose weight modal with fee breakdown + GS slider */}
+      <WeightModal
+        isOpen={isStakeModalOpen}
+        triplets={selectedItem ? [{
+          id: selectedVaultId,
+          triplet: {
+            subject: selectedItem.tripleSubject,
+            predicate: selectedItem.triplePredicate,
+            object: selectedItem.tripleObject
+          },
+          description: '',
+          url: selectedItem.pageUrl
+        }] : []}
+        isProcessing={isProcessing}
+        transactionSuccess={transactionSuccess}
+        transactionError={transactionError}
+        transactionHash={transactionHash}
+        estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
+        submitLabel="Stake"
+        onClose={handleStakeModalClose}
+        onSubmit={handleStakeSubmit}
+      />
     </div>
   )
 }

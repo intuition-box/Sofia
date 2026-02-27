@@ -92,7 +92,7 @@ const HomeConnectedPage = () => {
             background: 'radial-gradient(circle at center, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.05) 100%)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            zIndex: 999,
+            zIndex: 50,
             cursor: 'pointer'
           }}
         />
@@ -101,7 +101,7 @@ const HomeConnectedPage = () => {
       <PageBlockchainCard />
 
 
-      <div className="pulse-animation-section">
+      <div className={`pulse-animation-section ${showMenu ? "menu-open" : ""}`}>
         <div
           className="pulse-with-menu"
           style={{

@@ -24,6 +24,10 @@
   pointer-events: none;
 }
 
+.pulse-animation-section.menu-open {
+  z-index: 500;
+}
+
 .pulse-animation-section > * {
   pointer-events: auto;
 }

@@ -11,7 +11,7 @@ import { SUBJECT_IDS, PREDICATE_IDS } from '~/lib/config/constants'
 import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
 import { createHookLogger } from '~/lib/utils'
 
-import StakeModal from '../../modals/StakeModal'
+import WeightModal from '../../modals/WeightModal'
 import Avatar from '../../ui/Avatar'
 import '../../styles/CoreComponents.css'
 import '../../styles/PageBlockchainCard.css'
@@ -41,11 +41,13 @@ const FeedTab = () => {
   const [selectedVaultId, setSelectedVaultId] = useState<string>('')
   const [isUpvoteModalOpen, setIsUpvoteModalOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [shouldRefreshOnClose, setShouldRefreshOnClose] = useState(false)
+  const [transactionSuccess, setTransactionSuccess] = useState(false)
+  const [transactionError, setTransactionError] = useState<string | undefined>()
+  const [transactionHash, setTransactionHash] = useState<string | undefined>()
   const [declinedEvents, setDeclinedEvents] = useState<string[]>([])
   const [trustedWallets, setTrustedWallets] = useState<string[]>([])
   const [walletToLabel, setWalletToLabel] = useState<Map<string, string>>(new Map())
-  const { addWeight } = useWeightOnChain()
+  const { depositWithPool } = useWeightOnChain()
 
   const checksumAddress = address ? getAddress(address) : ''
 
@@ -286,7 +288,40 @@ const FeedTab = () => {
     setSelectedEvent(null)
     setSelectedVaultId('')
     setIsProcessing(false)
-    setShouldRefreshOnClose(false)
+    setTransactionSuccess(false)
+    setTransactionError(undefined)
+    setTransactionHash(undefined)
+  }
+
+  const handleStakeSubmit = async (customWeights?: (bigint | null)[]): Promise<void> => {
+    if (!selectedEvent || !selectedVaultId) return
+    const weight = customWeights?.[0] || BigInt(Math.floor(0.5 * 1e18))
+
+    try {
+      setIsProcessing(true)
+      setTransactionError(undefined)
+
+      logger.info('Deposit calculation', {
+        amount: weight.toString(),
+        depositInTRUST: (Number(weight) / 1e18).toFixed(4)
+      })
+
+      const result = await depositWithPool(selectedVaultId, weight, 1n)
+      logger.debug('depositWithPool result', result)
+
+      if (result.success) {
+        logger.info('Transaction successful', { txHash: result.txHash })
+        setTransactionHash(result.txHash)
+        setTransactionSuccess(true)
+      } else {
+        setTransactionError(result.error || 'Transaction failed')
+      }
+    } catch (error) {
+      logger.error('Transaction error', error)
+      setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   if (!address) {
@@ -437,56 +472,26 @@ const FeedTab = () => {
         </div>
       )}
 
-      <StakeModal
+      <WeightModal
         isOpen={isUpvoteModalOpen}
-        onClose={handleCloseModal}
-        onSubmit={async (amount: bigint, curveId: 1 | 2) => {
-          if (!selectedEvent) {
-            return { success: false, error: 'No event selected' }
-          }
-
-          if (!selectedVaultId) {
-            return { success: false, error: 'No vault ID found for this event' }
-          }
-
-          try {
-            setIsProcessing(true)
-
-            logger.info('Deposit calculation', {
-              amount: amount.toString(),
-              depositInTRUST: (Number(amount) / 1e18).toFixed(4),
-              curveId
-            })
-
-            const result = await addWeight(selectedVaultId, amount, BigInt(curveId))
-            logger.debug('addWeight result', result)
-
-            if (result.success) {
-              logger.info('Transaction successful', { txHash: result.txHash })
-              // Don't refresh here - will refresh when modal closes to avoid re-render
-              setShouldRefreshOnClose(true)
-
-              setIsProcessing(false)
-              return { success: true, txHash: result.txHash }
-            } else {
-              setIsProcessing(false)
-              return { success: false, error: result.error || 'Transaction failed' }
-            }
-          } catch (error) {
-            logger.error('Transaction error', error)
-            setIsProcessing(false)
-            return {
-              success: false,
-              error: error instanceof Error ? error.message : 'Transaction failed'
-            }
-          }
-        }}
-        subjectName="Feed"
-        predicateName={selectedEvent?.type === 'AtomCreated' ? 'created' : 'supports'}
-        objectName={selectedEvent ? selectedEvent.details : ''}
-        tripleId={selectedVaultId}
-        defaultCurve={1}
+        triplets={selectedEvent ? [{
+          id: selectedVaultId,
+          triplet: {
+            subject: 'Feed',
+            predicate: selectedEvent.type === 'AtomCreated' ? 'created' : 'supports',
+            object: selectedEvent.details
+          },
+          description: '',
+          url: selectedEvent.objectUrl || ''
+        }] : []}
         isProcessing={isProcessing}
+        transactionSuccess={transactionSuccess}
+        transactionError={transactionError}
+        transactionHash={transactionHash}
+        estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
+        submitLabel="Join"
+        onClose={handleCloseModal}
+        onSubmit={handleStakeSubmit}
       />
     </div>
   )

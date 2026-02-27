@@ -1823,37 +1823,6 @@
   cursor: not-allowed;
 }
 
-/* Preview Section */
-.stake-preview-section {
-  margin: 16px 0;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.stake-preview-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.stake-preview-row + .stake-preview-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.stake-preview-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.stake-preview-value {
-  font-size: 14px;
-  color: white;
-  font-weight: 500;
-}
-
 /* New Buttons - Screenshot Style */
 .stake-btn {
   border-radius: 24px;

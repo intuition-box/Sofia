@@ -18435,6 +18435,7 @@ export type GetSofiaTrustedActivityQuery = {
     triple?: {
       __typename?: "triples"
       term_id: string
+      counter_term_id: string
       creator?: {
         __typename?: "accounts"
         id: string
@@ -29023,6 +29024,7 @@ export const GetSofiaTrustedActivityDocument = `
     }
     triple {
       term_id
+      counter_term_id
       creator {
         id
         label
@@ -52367,6 +52369,10 @@ export const GetSofiaTrustedActivity = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "term_id" }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "counter_term_id" }
                       },
                       {
                         kind: "Field",

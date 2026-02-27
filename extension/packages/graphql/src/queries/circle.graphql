@@ -195,6 +195,7 @@ query GetSofiaTrustedActivity(
 
     triple {
       term_id
+      counter_term_id
       creator { id label image }
       subject { label term_id }
       predicate { label term_id }
