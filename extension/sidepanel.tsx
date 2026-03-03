@@ -22,6 +22,7 @@ import UserProfilePage from "./components/pages/UserProfilePage"
 import OnboardingImportPage from "./components/pages/OnboardingImportPage"
 import OnboardingTutorialPage from "./components/pages/OnboardingTutorialPage"
 import OnboardingBookmarkSelectPage from "./components/pages/OnboardingBookmarkSelectPage"
+import OnboardingClaimModal from "./components/modals/OnboardingClaimModal"
 import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
 
 // Configure GraphQL client BEFORE creating QueryClient
@@ -40,7 +41,7 @@ const queryClient = new QueryClient({
 
 
 const SidePanelContent = () => {
-  const { currentPage, navigateTo } = useRouter()
+  const { currentPage, navigateTo, firstClaimData, setFirstClaimData } = useRouter()
 
   // Read wallet from chrome.storage.session (set by tabs/auth.tsx via Privy)
   const { walletAddress, authenticated } = useWalletFromStorage()
@@ -100,6 +101,17 @@ const SidePanelContent = () => {
     <AppLayout>
       {renderCurrentPage()}
       <BottomNavigation />
+      {firstClaimData && (
+        <OnboardingClaimModal
+          isOpen={!!firstClaimData}
+          url={firstClaimData.url}
+          onClose={() => setFirstClaimData(null)}
+          onComplete={() => {
+            setFirstClaimData(null)
+            navigateTo("onboarding-tutorial")
+          }}
+        />
+      )}
     </AppLayout>
   )
 }

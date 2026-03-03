@@ -54,6 +54,10 @@ export type { TrendingItem, TrendingCategory, TrendingCertifier } from './useTre
 export { usePageDiscovery } from './usePageDiscovery'
 export { useDiscoveryReward } from './useDiscoveryReward'
 
+// Onboarding
+export { useOnboardingClaim } from './useOnboardingClaim'
+export type { UseOnboardingClaimResult } from './useOnboardingClaim'
+
 // UI Hooks
 export { useFavicon } from './useFavicon'
 export { useCredibilityAnalysis, getTotalShares, type CredibilityAnalysis } from './useCredibilityAnalysis'

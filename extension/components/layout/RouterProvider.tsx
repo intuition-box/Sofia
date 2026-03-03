@@ -21,6 +21,10 @@ interface SearchContext {
   showResults: boolean
 }
 
+export interface FirstClaimData {
+  url: string
+}
+
 interface RouterContextType {
   currentPage: Page
   navigateTo: (page: Page, data?: any) => void
@@ -34,6 +38,8 @@ interface RouterContextType {
   setActiveProfileTab: (tab: string | null) => void
   onboardingBookmarks: BookmarkData[]
   setOnboardingBookmarks: (bookmarks: BookmarkData[]) => void
+  firstClaimData: FirstClaimData | null
+  setFirstClaimData: (data: FirstClaimData | null) => void
 }
 
 const RouterContext = createContext<RouterContextType | undefined>(undefined)
@@ -53,6 +59,7 @@ export const RouterProvider = ({
   const [searchContext, setSearchContext] = useState<SearchContext | null>(null)
   const [activeProfileTab, setActiveProfileTab] = useState<string | null>(null)
   const [onboardingBookmarks, setOnboardingBookmarks] = useState<BookmarkData[]>([])
+  const [firstClaimData, setFirstClaimData] = useState<FirstClaimData | null>(null)
 
   const navigateTo = (page: Page, data?: any) => {
     setCurrentPage(page)
@@ -100,15 +107,37 @@ export const RouterProvider = ({
     }
   }, [])
 
+  // Check for pending first claim from landing page
+  const handlePendingFirstClaim = useCallback(async () => {
+    try {
+      const result = await chrome.storage.session.get('pending_first_claim')
+      const pending = result.pending_first_claim
+      if (pending?.url) {
+        await chrome.storage.session.remove('pending_first_claim')
+        setFirstClaimData({ url: pending.url })
+      }
+    } catch (err) {
+      logger.error('Failed to check pending first claim', err)
+    }
+  }, [])
+
   // Check on mount (delayed to let sidepanel init complete) + listen for storage changes
   useEffect(() => {
     // Delay initial check so sidepanel onboarding/home redirect settles first
-    const timeout = setTimeout(handlePendingProfile, 500)
+    const timeout = setTimeout(() => {
+      handlePendingProfile()
+      handlePendingFirstClaim()
+    }, 500)
 
     // Instant check when side panel is already open and a new deep link arrives
     const listener = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
-      if (area === 'session' && changes.pending_profile_view?.newValue) {
-        handlePendingProfile()
+      if (area === 'session') {
+        if (changes.pending_profile_view?.newValue) {
+          handlePendingProfile()
+        }
+        if (changes.pending_first_claim?.newValue) {
+          handlePendingFirstClaim()
+        }
       }
     }
     chrome.storage.onChanged.addListener(listener)
@@ -116,7 +145,7 @@ export const RouterProvider = ({
       clearTimeout(timeout)
       chrome.storage.onChanged.removeListener(listener)
     }
-  }, [handlePendingProfile])
+  }, [handlePendingProfile, handlePendingFirstClaim])
 
   const value: RouterContextType = {
     currentPage,
@@ -130,7 +159,9 @@ export const RouterProvider = ({
     activeProfileTab,
     setActiveProfileTab,
     onboardingBookmarks,
-    setOnboardingBookmarks
+    setOnboardingBookmarks,
+    firstClaimData,
+    setFirstClaimData
   }
 
   return (

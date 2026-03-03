@@ -55,6 +55,8 @@ export type MessageType =
   | 'FORCE_FLUSH_TRACKER'
   // Deep link from share page
   | 'DEEP_LINK_PROFILE'
+  // Onboarding first claim from landing page
+  | 'FIRST_CLAIM'
   // Wallet bridge messages
   | 'WALLET_REQUEST'
   | 'WALLET_EVENT'
