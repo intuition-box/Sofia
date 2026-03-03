@@ -128,7 +128,7 @@ const SettingsPage = () => {
         <div className="settings-item">
           <span>Status</span>
           <a
-            href="https://stats.intuition.sh/"
+            href="https://status.intuition.sh/"
             target="_blank"
             rel="noopener noreferrer"
             className="available-for-btn"
