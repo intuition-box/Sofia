@@ -128,7 +128,7 @@ export function setupMessageHandlers(): void {
             }
             // Update lastActiveWallet
             await chrome.storage.local.set({ lastActiveWallet: walletAddress })
-            await chrome.storage.session.set({ walletAddress, walletType })
+            await chrome.storage.session.set({ walletAddress, walletType, pending_external_auth: true })
             // Migrate XP from non-prefixed keys to wallet-prefixed keys (one-time)
             await XPServiceClass.migrateToWalletKeys(walletAddress)
             // Migrate unified XP to dual currency (XP + Gold) — one-time, idempotent

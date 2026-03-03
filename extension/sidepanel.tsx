@@ -50,17 +50,27 @@ const SidePanelContent = () => {
   // Automatic page management based on connection state
   useEffect(() => {
     if (authenticated && walletAddress && currentPage === 'home') {
-      // Check if user has local groups — if not, show onboarding
-      IntentionGroupsService.getAllGroups().then(groups => {
-        if (groups.length === 0) {
-          navigateTo('onboarding-import')
-        } else {
+      // Check if connected from external auth page (landing page)
+      // If so, skip onboarding-import and go to home-connected — wait for FIRST_CLAIM
+      chrome.storage.session.get('pending_external_auth').then(result => {
+        if (result.pending_external_auth) {
+          chrome.storage.session.remove('pending_external_auth')
           navigateTo('home-connected')
+          setOnboardingChecked(true)
+          return
         }
-        setOnboardingChecked(true)
-      }).catch(() => {
-        navigateTo('home-connected')
-        setOnboardingChecked(true)
+        // Internal connection — check if user has local groups
+        IntentionGroupsService.getAllGroups().then(groups => {
+          if (groups.length === 0) {
+            navigateTo('onboarding-import')
+          } else {
+            navigateTo('home-connected')
+          }
+          setOnboardingChecked(true)
+        }).catch(() => {
+          navigateTo('home-connected')
+          setOnboardingChecked(true)
+        })
       })
     } else if (!authenticated && currentPage !== 'home') {
       navigateTo('home')
