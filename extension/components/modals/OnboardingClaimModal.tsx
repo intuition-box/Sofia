@@ -290,9 +290,6 @@ const OnboardingClaimModal = ({
   return createPortal(
     <div
       className={`modal-overlay onboarding-claim-overlay ${txLoading ? "processing" : ""}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !txLoading) handleClose()
-      }}
     >
       <div className="modal-content onboarding-claim-modal">
         <div className="modal-body">
@@ -590,13 +587,21 @@ const OnboardingClaimModal = ({
         {/* Actions */}
         {!txSuccess && (
           <div className="modal-actions">
-            {(step === 5 || txError) && (
+            {step === 5 && !txError && (
+              <button
+                className="stake-btn stake-btn-cancel"
+                onClick={() => { reset(); onComplete() }}
+                disabled={txLoading}
+              >
+                Skip
+              </button>
+            )}
+            {txError && (
               <button
                 className="stake-btn stake-btn-cancel"
                 onClick={handleClose}
-                disabled={txLoading}
               >
-                {txError ? "Close" : "Skip"}
+                Close
               </button>
             )}
             {!txError && isFormState && (
