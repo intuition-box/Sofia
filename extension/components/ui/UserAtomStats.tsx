@@ -1,5 +1,6 @@
 import { useUserAtomStats } from '../../hooks'
 import { createHookLogger } from '../../lib/utils/logger'
+import SofiaLoader from './SofiaLoader'
 import '../styles/AccountStats.css'
 
 const logger = createHookLogger('UserAtomStats')
@@ -43,7 +44,7 @@ const UserAtomStats = ({ termId, accountAddress, compact = false, signalsCount: 
   if (isLoading) {
     return (
       <div className={`account-stats-container ${compact ? 'account-stats-compact' : ''}`}>
-        <span className="account-stats-loading-text">Loading...</span>
+        <SofiaLoader size={24} />
       </div>
     )
   }

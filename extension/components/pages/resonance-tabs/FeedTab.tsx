@@ -7,6 +7,7 @@ import {
 import { getAddress } from 'viem'
 
 import { useWalletFromStorage, useWeightOnChain } from '~/hooks'
+import SofiaLoader from '../../ui/SofiaLoader'
 import { SUBJECT_IDS, PREDICATE_IDS } from '~/lib/config/constants'
 import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
 import { createHookLogger } from '~/lib/utils'
@@ -339,7 +340,7 @@ const FeedTab = () => {
     return (
       <div className="feed-tab">
         <div className="loading-state">
-          <p>Loading feed...</p>
+          <SofiaLoader size={40} />
         </div>
       </div>
     )

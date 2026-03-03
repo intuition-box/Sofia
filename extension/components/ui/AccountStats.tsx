@@ -1,4 +1,5 @@
 import { useAccountStats } from '../../hooks'
+import SofiaLoader from './SofiaLoader'
 import '../styles/AccountStats.css'
 
 interface AccountStatsProps {
@@ -20,7 +21,7 @@ const AccountStats = ({ accountAddress, compact = false }: AccountStatsProps) =>
   if (loading) {
     return (
       <div className={`account-stats-container ${compact ? 'account-stats-compact' : ''}`}>
-        <span className="account-stats-loading-text">Loading stats...</span>
+        <SofiaLoader size={24} />
       </div>
     )
   }

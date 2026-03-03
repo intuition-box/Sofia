@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState, useTransition } from 'react'
+import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/CorePage.css'
@@ -46,7 +47,7 @@ const ResonancePage = () => {
         </button>
       </div>
       <div className="page-content">
-        <Suspense fallback={<div className="loading-state">Loading...</div>}>
+        <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
           {activeTab === 'activity' && <FeedTab />}
           {activeTab === 'circle' && <CircleFeedTab />}
           {activeTab === 'trending' && <TrendingTab />}

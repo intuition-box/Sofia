@@ -8,6 +8,7 @@ import {
 import { getAddress } from 'viem'
 
 import { useRouter } from '../../layout/RouterProvider'
+import SofiaLoader from '../../ui/SofiaLoader'
 import { useWalletFromStorage, useIntentionCategories, useWeightOnChain } from '~/hooks'
 import { SUBJECT_IDS, PREDICATE_IDS } from '~/lib/config/constants'
 import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
@@ -451,7 +452,7 @@ const CircleFeedTab = () => {
         </div>
 
         {memberCategoriesLoading ? (
-          <div className="circle-loading">Loading certifications...</div>
+          <div className="circle-loading"><SofiaLoader size={150} /></div>
         ) : (
           <div className="circle-categories-grid">
             {memberCategories.map(category => (
@@ -514,7 +515,7 @@ const CircleFeedTab = () => {
 
       {/* Loading */}
       {loading && feedItems.length === 0 && (
-        <div className="circle-loading">Loading Trust Circle activity...</div>
+        <div className="circle-loading"><SofiaLoader size={150} /></div>
       )}
 
       {/* Empty: no trust circle */}

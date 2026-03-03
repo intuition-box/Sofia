@@ -283,8 +283,10 @@
 
 /* Loading State */
 .loading-state {
-  text-align: center;
-  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }
 
 .loading-state p {

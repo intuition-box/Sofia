@@ -5,6 +5,7 @@
 import { useEffect } from 'react'
 import { useFollowers, useCheckFollowStatus } from '../../../../hooks'
 import { useRouter } from '../../../layout/RouterProvider'
+import SofiaLoader from '../../../ui/SofiaLoader'
 import TrustAccountButton from '../../../ui/TrustAccountButton'
 import Avatar from '../../../ui/Avatar'
 import UserAtomStats from '../../../ui/UserAtomStats'
@@ -69,7 +70,7 @@ export function FollowersPanel({ walletAddress }: FollowersPanelProps) {
     <div className="follow-panel">
       {loading && (
         <div className="loading-state">
-          <p>Loading followers...</p>
+          <SofiaLoader size={40} />
         </div>
       )}
 

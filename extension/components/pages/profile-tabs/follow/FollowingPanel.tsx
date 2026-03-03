@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { useFollowing, useCheckFollowStatus, useRedeemTriple } from '../../../../hooks'
 import { useRouter } from '../../../layout/RouterProvider'
+import SofiaLoader from '../../../ui/SofiaLoader'
 import type { FollowAccountVM } from '../../../../types/follows'
 import { refetchWithBackoff } from '../../../../lib/utils'
 import { intuitionGraphqlClient } from '../../../../lib/clients/graphql-client'
@@ -134,7 +135,7 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
     <div className="follow-panel">
       {loading && (
         <div className="loading-state">
-          <p>Loading following...</p>
+          <SofiaLoader size={40} />
         </div>
       )}
 

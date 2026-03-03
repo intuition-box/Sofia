@@ -405,7 +405,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 60px 0;
+  min-height: 400px;
 }
 
 @media (max-width: 480px) {

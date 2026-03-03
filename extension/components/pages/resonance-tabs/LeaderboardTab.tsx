@@ -7,6 +7,7 @@
 import { useState } from "react"
 
 import { useStreakLeaderboard } from "~/hooks"
+import SofiaLoader from "../../ui/SofiaLoader"
 import {
   DAILY_CERTIFICATION_ATOM_ID,
   DAILY_VOTE_ATOM_ID
@@ -112,7 +113,7 @@ const LeaderboardTab = () => {
       </div>
 
       {loading && entries.length === 0 ? (
-        <div className="leaderboard-loading">Loading leaderboard...</div>
+        <div className="leaderboard-loading"><SofiaLoader size={40} /></div>
       ) : error ? (
         <div className="leaderboard-error">
           <p>Failed to load leaderboard</p>

@@ -1,4 +1,5 @@
 import { useState, useCallback, Suspense, lazy } from 'react'
+import SofiaLoader from '../../ui/SofiaLoader'
 import {
   useWalletFromStorage,
   useQuestSystem,
@@ -201,7 +202,7 @@ const AccountTab = () => {
       )}
 
       {activeTab === 'interest' && (
-        <Suspense fallback={<div className="loading-state">Loading...</div>}>
+        <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
           <InterestTab />
         </Suspense>
       )}

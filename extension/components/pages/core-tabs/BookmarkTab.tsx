@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useBookmarks, useIntentionCategories, useIntuitionTriplets } from '../../../hooks'
+import SofiaLoader from '../../ui/SofiaLoader'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import type { IntentionCategory, IntentionType } from '../../../types/intentionCategories'
 import '../../styles/CoreComponents.css'
@@ -285,7 +286,7 @@ const BookmarkTab = () => {
                     <div className="bookmark-item">
                       <div className="bookmark-header-content">
                         <div className="bookmark-list-info">
-                          <h4>Loading...</h4>
+                          <h4><SofiaLoader size={20} /></h4>
                         </div>
                       </div>
                     </div>

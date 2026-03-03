@@ -316,10 +316,10 @@
 }
 
 .circle-loading {
-  text-align: center;
-  padding: 48px var(--spacing-xl);
-  color: var(--color-text-placeholder);
-  font-size: var(--font-size-base);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }
 
 /* Responsive */

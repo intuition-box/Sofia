@@ -804,7 +804,13 @@
   padding: 16px 16px 80px;
 }
 
-.stats-loading,
+.stats-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
 .stats-error,
 .stats-empty {
   display: flex;
@@ -1932,7 +1938,13 @@
   padding: 12px 16px 80px;
 }
 
-.achievements-loading,
+.achievements-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
 .achievements-empty {
   display: flex;
   flex-direction: column;

@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { formatUnits } from 'viem'
 import { useDiscoveryScore, useGlobalStake } from "~/hooks"
+import SofiaLoader from '../../ui/SofiaLoader'
 import { DISCOVERY_GOLD_REWARDS } from "~/types/discovery"
 import { getLevelColor, TIER_BADGES, getTierIndex } from "~/types/interests"
 import pioneerBadge from '../../ui/img/badges/pioneer.png'
@@ -75,8 +76,7 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
     return (
       <div className="stats-tab-content">
         <div className="stats-loading">
-          <div className="loading-spinner"></div>
-          <span>Loading stats...</span>
+          <SofiaLoader size={40} />
         </div>
       </div>
     )

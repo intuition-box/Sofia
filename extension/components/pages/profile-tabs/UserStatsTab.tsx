@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect } from "react"
 import { DISCOVERY_GOLD_REWARDS } from "~/types/discovery"
 import type { UserDiscoveryStats } from "~/types/discovery"
+import SofiaLoader from "../../ui/SofiaLoader"
 import { getLevelColor, TIER_BADGES, getTierIndex } from "~/types/interests"
 import pioneerBadge from "../../ui/img/badges/pioneer.png"
 import explorerBadge from "../../ui/img/badges/explorer.png"
@@ -86,8 +87,7 @@ const UserStatsTab = ({
     return (
       <div className="stats-tab-content">
         <div className="stats-loading">
-          <div className="loading-spinner"></div>
-          <span>Loading stats...</span>
+          <SofiaLoader size={40} />
         </div>
       </div>
     )
