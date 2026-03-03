@@ -1,0 +1,108 @@
+/* OnboardingClaimModal — Step-by-step onboarding modal */
+
+/* Modal body override — tighten spacing */
+.onboarding-claim-modal .modal-body {
+  padding: var(--spacing-md) var(--spacing-lg);
+  gap: 0;
+}
+
+/* Step indicators */
+.onboarding-step-indicators {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0 0;
+}
+
+.onboarding-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-bg-glass-lighter);
+  transition: var(--transition-normal);
+}
+
+.onboarding-step-dot.active {
+  background: #ffb659;
+  box-shadow: 0 0 8px rgba(255, 182, 89, 0.4);
+  transform: scale(1.25);
+}
+
+.onboarding-step-dot.completed {
+  background: rgba(255, 182, 89, 0.5);
+}
+
+/* Step hint text */
+.onboarding-step-hint {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-text-secondary);
+  margin: var(--spacing-sm) 0 0;
+  min-height: 22px;
+}
+
+/* Bottom margin for modal actions inside onboarding modal */
+.onboarding-claim-modal .modal-actions {
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
+}
+
+/* Weight amount row spacing inside onboarding */
+.onboarding-claim-modal .weight-modal-amount-row {
+  margin: var(--spacing-md) 0;
+}
+
+/* Section progressive reveal */
+.onboarding-section {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s ease,
+    max-height 0.4s ease,
+    transform 0.4s ease;
+  pointer-events: none;
+}
+
+.onboarding-section.visible {
+  opacity: 1;
+  max-height: 500px;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Highlighted step glow */
+.onboarding-section.highlighted {
+  position: relative;
+}
+
+.onboarding-section.highlighted::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 182, 89, 0.2);
+  pointer-events: none;
+  animation: onboarding-pulse 2s ease-in-out infinite;
+}
+
+@keyframes onboarding-pulse {
+  0%,
+  100% {
+    border-color: rgba(255, 182, 89, 0.15);
+  }
+  50% {
+    border-color: rgba(255, 182, 89, 0.35);
+  }
+}
+
+/* Redirect hint on success */
+.onboarding-redirect-hint {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-placeholder);
+  margin-top: var(--spacing-sm);
+  font-style: italic;
+}

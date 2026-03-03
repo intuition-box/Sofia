@@ -189,6 +189,27 @@ export function setupMessageHandlers(): void {
       return true
     }
 
+    if (message.type === 'FIRST_CLAIM') {
+      const url = message.data?.url || 'https://sofia.intuition.box'
+      ;(async () => {
+        try {
+          await chrome.storage.session.set({
+            pending_first_claim: { url }
+          })
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+          if (tab?.id) {
+            await chrome.sidePanel.open({ tabId: tab.id })
+          }
+          logger.info('First claim intent stored', { url })
+          sendResponse({ success: true })
+        } catch (error) {
+          logger.error('Failed to handle FIRST_CLAIM', error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+      })()
+      return true
+    }
+
     sendResponse({ success: false, error: 'Unknown message type' })
     return true
   })
