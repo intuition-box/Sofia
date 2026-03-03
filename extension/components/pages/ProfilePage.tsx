@@ -1,5 +1,6 @@
 import { useState, useEffect, useTransition, Suspense, lazy } from 'react'
 import { useRouter } from '../layout/RouterProvider'
+import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/ProfilePage.css'
@@ -37,19 +38,19 @@ const ProfilePage = () => {
     switch (activeTab) {
       case 'account':
         return (
-          <Suspense fallback={<div className="loading-state">Loading...</div>}>
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
             <AccountTab />
           </Suspense>
         )
       case 'community':
         return (
-          <Suspense fallback={<div className="loading-state">Loading...</div>}>
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
             <CommunityTab />
           </Suspense>
         )
       case 'history':
         return (
-          <Suspense fallback={<div className="loading-state">Loading...</div>}>
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
             <HistoryTab
               expandedTriplet={expandedHistoryTriplet}
               setExpandedTriplet={setExpandedHistoryTriplet}

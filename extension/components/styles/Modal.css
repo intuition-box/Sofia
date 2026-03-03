@@ -1574,7 +1574,13 @@
   margin: 16px 0;
 }
 
-.stake-chart-loading,
+.stake-chart-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
 .stake-chart-error,
 .stake-chart-no-data {
   text-align: center;

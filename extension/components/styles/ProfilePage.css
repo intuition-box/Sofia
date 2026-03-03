@@ -76,14 +76,7 @@
 
 .loading-state {
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: var(--spacing-4xl);
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-lg);
-  color: var(--color-primary);
-  background-color: var(--color-bg-glass-light);
-  border-radius: var(--radius-lg);
-  backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
-  -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
+  align-items: center;
+  min-height: 400px;
 }

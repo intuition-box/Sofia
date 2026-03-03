@@ -134,7 +134,7 @@ const TrendingTab = () => {
     return (
       <div className="trending-tab">
         <div className="trending-loading">
-          <SofiaLoader size={60} />
+          <SofiaLoader size={150} />
         </div>
       </div>
     )

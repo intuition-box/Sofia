@@ -1,6 +1,7 @@
 import { useState, useEffect, Suspense, lazy } from "react"
 
 import { useRouter } from "../layout/RouterProvider"
+import SofiaLoader from "../ui/SofiaLoader"
 import {
   useCheckFollowStatus,
   useUserQuests,
@@ -207,7 +208,7 @@ const UserProfilePage = () => {
       </div>
 
       {/* Tab Content */}
-        <Suspense fallback={<div className="loading-state">Loading...</div>}>
+        <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
           {activeTab === "stats" && (
             <UserStatsTab
               walletAddress={userProfileData.walletAddress}

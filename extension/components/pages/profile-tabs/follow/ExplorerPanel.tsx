@@ -5,6 +5,7 @@
 
 import { useMemo } from 'react'
 import { useRouter } from '../../../layout/RouterProvider'
+import SofiaLoader from '../../../ui/SofiaLoader'
 import type { AccountAtom } from '../../../../hooks'
 import { useGetTopSofiaAccountsQuery } from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '../../../../lib/config/chainConfig'
@@ -116,7 +117,7 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
 
         {isLoading && (
           <div className="loading-state">
-            <p>Loading top accounts...</p>
+            <SofiaLoader size={40} />
           </div>
         )}
 

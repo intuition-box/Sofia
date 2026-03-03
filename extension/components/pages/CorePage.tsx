@@ -1,4 +1,5 @@
 import { useState, useTransition, Suspense, lazy, useEffect } from 'react'
+import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Global.css'
 import '../styles/CorePage.css'
 
@@ -35,7 +36,7 @@ const CorePage = () => {
       </div>
 
       <div className="page-content">
-        <Suspense fallback={<div className="loading-state">Loading...</div>}>
+        <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
           {activeGraphTab === 'Echoes' && <EchoesTab />}
           {activeGraphTab === 'Pulse' && <PulseTab />}
           {activeGraphTab === 'Bookmarks' && <BookmarkTab />}

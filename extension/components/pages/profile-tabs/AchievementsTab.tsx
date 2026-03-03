@@ -10,6 +10,7 @@ import { getAddress } from 'viem'
 import type { Quest } from '../../../types/questTypes'
 import { createHookLogger } from '../../../lib/utils/logger'
 import WeightModal from '../../modals/WeightModal'
+import SofiaLoader from '../../ui/SofiaLoader'
 
 const logger = createHookLogger('AchievementsTab')
 
@@ -217,7 +218,7 @@ const AchievementsTab = ({
   if (loading) {
     return (
       <div className="achievements-tab-content">
-        <div className="achievements-loading">Loading...</div>
+        <div className="achievements-loading"><SofiaLoader size={40} /></div>
       </div>
     )
   }

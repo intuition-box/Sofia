@@ -1,5 +1,6 @@
 import { useBondingCurveData } from '../../hooks'
 import type { CurveType, TimeRange } from '../../types/bonding-curve'
+import SofiaLoader from '../ui/SofiaLoader'
 
 interface BondingCurveChartProps {
   tripleId: string
@@ -36,7 +37,7 @@ export function BondingCurveChart({
   if (isLoading) {
     return (
       <div className={`stake-chart-section ${className}`}>
-        <div className="stake-chart-loading">Loading data...</div>
+        <div className="stake-chart-loading"><SofiaLoader size={40} /></div>
       </div>
     )
   }
