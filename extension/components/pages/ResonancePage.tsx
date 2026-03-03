@@ -3,15 +3,15 @@ import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/CorePage.css'
 import '../styles/CoreComponents.css'
-import '../styles/CorePage.css'
 
 // Lazy load tab components (required by Parcel bundler)
 const CircleFeedTab = lazy(() => import('./resonance-tabs/CircleFeedTab'))
 const FeedTab = lazy(() => import('./resonance-tabs/FeedTab'))
 const TrendingTab = lazy(() => import('./resonance-tabs/TrendingTab'))
 const LeaderboardTab = lazy(() => import('./resonance-tabs/LeaderboardTab'))
+const DebateTab = lazy(() => import('./resonance-tabs/DebateTab'))
 
-type ResonanceTab = 'circle' | 'activity' | 'trending' | 'streak'
+type ResonanceTab = 'circle' | 'activity' | 'trending' | 'debate' | 'streak'
 
 const ResonancePage = () => {
   const [activeTab, setActiveTab] = useState<ResonanceTab>('circle')
@@ -33,6 +33,12 @@ const ResonancePage = () => {
           Trending
         </button>
         <button
+          className={`tab ${activeTab === 'debate' ? 'active' : ''}`}
+          onClick={() => startTransition(() => setActiveTab('debate'))}
+        >
+          Debate
+        </button>
+        <button
           className={`tab ${activeTab === 'streak' ? 'active' : ''}`}
           onClick={() => startTransition(() => setActiveTab('streak'))}
         >
@@ -50,6 +56,7 @@ const ResonancePage = () => {
           {activeTab === 'activity' && <FeedTab />}
           {activeTab === 'circle' && <CircleFeedTab />}
           {activeTab === 'trending' && <TrendingTab />}
+          {activeTab === 'debate' && <DebateTab />}
           {activeTab === 'streak' && <LeaderboardTab />}
         </Suspense>
       </div>
