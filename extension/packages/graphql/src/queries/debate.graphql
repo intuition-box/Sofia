@@ -20,7 +20,8 @@ query GetClaimsByTermIds($termIds: [String!]!, $address: String) {
       image
     }
     term {
-      vaults(where: { curve_id: { _eq: "1" } }) {
+      vaults {
+        market_cap
         total_shares
         position_count
         current_share_price
@@ -33,7 +34,8 @@ query GetClaimsByTermIds($termIds: [String!]!, $address: String) {
       }
     }
     counter_term {
-      vaults(where: { curve_id: { _eq: "1" } }) {
+      vaults {
+        market_cap
         total_shares
         position_count
         current_share_price

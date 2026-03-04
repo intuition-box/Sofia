@@ -28,12 +28,10 @@ export interface DebateClaim {
   subject: { label: string; image?: string | null }
   predicate: { label: string }
   object: { label: string; image?: string | null }
-  supportShares: string
-  opposeShares: string
+  supportMarketCap: string
+  opposeMarketCap: string
   supportCount: number
   opposeCount: number
-  supportSharePrice: string
-  opposeSharePrice: string
   source: "sofia" | "intuition"
 }
 
@@ -56,6 +54,8 @@ export interface UseDebateClaimsResult {
   votedItems: Map<string, "support" | "oppose">
   selectedClaim: DebateClaim | null
   selectedAction: "Support" | "Oppose"
+  selectedCurve: "linear" | "progressive"
+  setSelectedCurve: (curve: "linear" | "progressive") => void
   isStakeModalOpen: boolean
   isProcessing: boolean
   transactionSuccess: boolean
@@ -71,19 +71,33 @@ export interface UseDebateClaimsResult {
 // ── Helper: extract vault data from query result ────────────────────
 
 function extractVaultData(vaults: Array<{
+  market_cap: any
   total_shares: any
   position_count: number
   current_share_price: any
   positions: Array<{ shares: any }>
 }> | undefined) {
-  const vault = vaults?.[0]
+  if (!vaults?.length) {
+    return { marketCap: "0", positionCount: 0, hasPosition: false }
+  }
+
+  // Aggregate across all vaults (curve_id=1 linear + curve_id=2 progressive)
+  let totalMarketCap = 0n
+  let totalPositionCount = 0
+  let hasPosition = false
+
+  for (const vault of vaults) {
+    totalMarketCap += BigInt(vault.market_cap || "0")
+    totalPositionCount += vault.position_count || 0
+    if (vault.positions?.some((p) => p.shares && BigInt(p.shares) > 0n)) {
+      hasPosition = true
+    }
+  }
+
   return {
-    totalShares: String(vault?.total_shares || "0"),
-    positionCount: vault?.position_count || 0,
-    sharePrice: String(vault?.current_share_price || "0"),
-    hasPosition: vault?.positions?.some(
-      (p) => p.shares && BigInt(p.shares) > 0n
-    ) || false
+    marketCap: String(totalMarketCap),
+    positionCount: totalPositionCount,
+    hasPosition
   }
 }
 
@@ -176,12 +190,10 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
           label: triple.object?.label || config?.object || "",
           image: triple.object?.image
         },
-        supportShares: support.totalShares,
-        opposeShares: oppose.totalShares,
+        supportMarketCap: support.marketCap,
+        opposeMarketCap: oppose.marketCap,
         supportCount: support.positionCount,
         opposeCount: oppose.positionCount,
-        supportSharePrice: support.sharePrice,
-        opposeSharePrice: oppose.sharePrice,
         source: sofiaTermIdSet.has(triple.term_id) ? "sofia" : "intuition"
       }
     })
@@ -260,6 +272,9 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
   const [selectedAction, setSelectedAction] = useState<"Support" | "Oppose">(
     "Support"
   )
+  const [selectedCurve, setSelectedCurve] = useState<
+    "linear" | "progressive"
+  >("linear")
 
   const handleSupport = useCallback(
     (e: React.MouseEvent, claim: DebateClaim) => {
@@ -289,6 +304,7 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
     setIsStakeModalOpen(false)
     setSelectedClaim(null)
     setSelectedVaultId("")
+    setSelectedCurve("linear")
     setIsProcessing(false)
     setTransactionSuccess(false)
     setTransactionError(undefined)
@@ -303,7 +319,8 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
       try {
         setIsProcessing(true)
         setTransactionError(undefined)
-        const result = await depositWithPool(selectedVaultId, weight, 1n)
+        const curveId = selectedCurve === "progressive" ? 2n : 1n
+        const result = await depositWithPool(selectedVaultId, weight, curveId)
 
         if (result.success) {
           setTransactionHash(result.txHash)
@@ -340,7 +357,7 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
         setIsProcessing(false)
       }
     },
-    [selectedClaim, selectedVaultId, depositWithPool, address]
+    [selectedClaim, selectedVaultId, selectedCurve, depositWithPool, address]
   )
 
   const refetch = useCallback(() => {
@@ -374,6 +391,8 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
     votedItems,
     selectedClaim,
     selectedAction,
+    selectedCurve,
+    setSelectedCurve,
     isStakeModalOpen,
     isProcessing,
     transactionSuccess,

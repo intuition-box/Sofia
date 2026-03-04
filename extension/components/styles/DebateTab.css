@@ -1,6 +1,10 @@
 /* DebateTab - Claims & Featured Lists */
 
 .debate-tab {
+  /* Debate-specific support/oppose colors (Sofia brand) */
+  --debate-support: #8276ED;
+  --debate-oppose: #FFBF33;
+
   padding: 0;
   max-width: 100%;
   background: transparent;
@@ -103,11 +107,11 @@
 }
 
 .claim-stat-label.support {
-  color: var(--color-success);
+  color: var(--debate-support);
 }
 
 .claim-stat-label.oppose {
-  color: var(--color-error);
+  color: var(--debate-oppose);
 }
 
 .claim-stat-amount {
@@ -138,14 +142,14 @@
 }
 
 .claim-bar-support {
-  background: var(--color-success);
+  background: var(--debate-support);
   border-radius: 3px 0 0 3px;
   transition: width 0.3s ease;
   position: relative;
 }
 
 .claim-bar-oppose {
-  background: var(--color-error);
+  background: var(--debate-oppose);
   border-radius: 0 3px 3px 0;
   transition: width 0.3s ease;
 }
@@ -162,11 +166,11 @@
 }
 
 .claim-bar-pct.support {
-  color: var(--color-success);
+  color: var(--debate-support);
 }
 
 .claim-bar-pct.oppose {
-  color: var(--color-error);
+  color: var(--debate-oppose);
 }
 
 /* ── Bottom row (MCap + Actions) ───────────────────────────────── */
@@ -205,27 +209,27 @@
 }
 
 .claim-action-btn.support-btn:hover {
-  color: var(--color-success);
-  border-color: rgba(34, 197, 94, 0.4);
-  background: rgba(34, 197, 94, 0.1);
+  color: var(--debate-support);
+  border-color: rgba(130, 118, 237, 0.4);
+  background: rgba(130, 118, 237, 0.1);
 }
 
 .claim-action-btn.oppose-btn:hover:not(:disabled) {
-  color: var(--color-error);
-  border-color: rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.1);
+  color: var(--debate-oppose);
+  border-color: rgba(255, 191, 51, 0.4);
+  background: rgba(255, 191, 51, 0.1);
 }
 
 .claim-action-btn.support-btn.voted {
-  color: var(--color-success);
-  border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
-  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--debate-support);
+  border-color: color-mix(in srgb, var(--debate-support) 50%, transparent);
+  background: color-mix(in srgb, var(--debate-support) 15%, transparent);
 }
 
 .claim-action-btn.oppose-btn.voted {
-  color: var(--color-error);
-  border-color: color-mix(in srgb, var(--color-error) 50%, transparent);
-  background: color-mix(in srgb, var(--color-error) 15%, transparent);
+  color: var(--debate-oppose);
+  border-color: color-mix(in srgb, var(--debate-oppose) 50%, transparent);
+  background: color-mix(in srgb, var(--debate-oppose) 15%, transparent);
 }
 
 .claim-action-btn:disabled {
@@ -316,6 +320,56 @@
   height: 14px;
   border-radius: 3px;
   object-fit: cover;
+}
+
+/* ── Curve Selector Toggle ────────────────────────────────────── */
+
+.curve-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.curve-selector-label {
+  font-size: 11px;
+  color: var(--color-text-very-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.curve-toggle {
+  display: flex;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.curve-toggle-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.curve-toggle-btn:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.curve-toggle-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.curve-toggle-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* ── Empty / Connect states ────────────────────────────────────── */

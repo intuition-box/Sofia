@@ -23,12 +23,12 @@ function formatTrust(shares: string): string {
 }
 
 function calcPercentage(
-  supportShares: string,
-  opposeShares: string
+  supportMarketCap: string,
+  opposeMarketCap: string
 ): { supportPct: number; opposePct: number } {
   try {
-    const s = BigInt(supportShares || "0")
-    const o = BigInt(opposeShares || "0")
+    const s = BigInt(supportMarketCap || "0")
+    const o = BigInt(opposeMarketCap || "0")
     const total = s + o
     if (total === 0n) return { supportPct: 50, opposePct: 50 }
     const pct = Number((s * 100n) / total)
@@ -56,19 +56,19 @@ const ClaimCard = ({
   hasWallet
 }: ClaimCardProps) => {
   const { supportPct, opposePct } = useMemo(
-    () => calcPercentage(claim.supportShares, claim.opposeShares),
-    [claim.supportShares, claim.opposeShares]
+    () => calcPercentage(claim.supportMarketCap, claim.opposeMarketCap),
+    [claim.supportMarketCap, claim.opposeMarketCap]
   )
 
   const totalMarketCap = useMemo(() => {
     try {
-      const s = BigInt(claim.supportShares || "0")
-      const o = BigInt(claim.opposeShares || "0")
+      const s = BigInt(claim.supportMarketCap || "0")
+      const o = BigInt(claim.opposeMarketCap || "0")
       return formatTrust(String(s + o))
     } catch {
       return "0"
     }
-  }, [claim.supportShares, claim.opposeShares])
+  }, [claim.supportMarketCap, claim.opposeMarketCap])
 
   return (
     <div className="claim-card">
@@ -102,7 +102,7 @@ const ClaimCard = ({
         <div className="claim-stat">
           <span className="claim-stat-label support">Support</span>
           <span className="claim-stat-amount">
-            {formatTrust(claim.supportShares)} TRUST
+            {formatTrust(claim.supportMarketCap)} TRUST
           </span>
           <span className="claim-stat-count">
             {claim.supportCount} position{claim.supportCount !== 1 ? "s" : ""}
@@ -111,7 +111,7 @@ const ClaimCard = ({
         <div className="claim-stat" style={{ textAlign: "right" }}>
           <span className="claim-stat-label oppose">Oppose</span>
           <span className="claim-stat-amount">
-            {formatTrust(claim.opposeShares)} TRUST
+            {formatTrust(claim.opposeMarketCap)} TRUST
           </span>
           <span className="claim-stat-count">
             {claim.opposeCount} position{claim.opposeCount !== 1 ? "s" : ""}
@@ -218,6 +218,8 @@ const DebateTab = () => {
     votedItems,
     selectedClaim,
     selectedAction,
+    selectedCurve,
+    setSelectedCurve,
     isStakeModalOpen,
     isProcessing,
     transactionSuccess,
@@ -341,6 +343,10 @@ const DebateTab = () => {
         transactionHash={transactionHash}
         estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
         submitLabel={selectedAction}
+        curveSelector={{
+          selected: selectedCurve,
+          onChange: setSelectedCurve
+        }}
         onClose={handleStakeModalClose}
         onSubmit={handleStakeSubmit}
       />

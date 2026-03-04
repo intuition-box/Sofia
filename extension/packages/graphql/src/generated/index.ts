@@ -18521,6 +18521,7 @@ export type GetClaimsByTermIdsQuery = {
       __typename?: "terms"
       vaults: Array<{
         __typename?: "vaults"
+        market_cap: any
         total_shares: any
         position_count: number
         current_share_price: any
@@ -18535,6 +18536,7 @@ export type GetClaimsByTermIdsQuery = {
       __typename?: "terms"
       vaults: Array<{
         __typename?: "vaults"
+        market_cap: any
         total_shares: any
         position_count: number
         current_share_price: any
@@ -29375,7 +29377,8 @@ export const GetClaimsByTermIdsDocument = `
       image
     }
     term {
-      vaults(where: {curve_id: {_eq: "1"}}) {
+      vaults {
+        market_cap
         total_shares
         position_count
         current_share_price
@@ -29388,7 +29391,8 @@ export const GetClaimsByTermIdsDocument = `
       }
     }
     counter_term {
-      vaults(where: {curve_id: {_eq: "1"}}) {
+      vaults {
+        market_cap
         total_shares
         position_count
         current_share_price
@@ -53314,38 +53318,13 @@ export const GetClaimsByTermIds = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "vaults" },
-                        arguments: [
-                          {
-                            kind: "Argument",
-                            name: { kind: "Name", value: "where" },
-                            value: {
-                              kind: "ObjectValue",
-                              fields: [
-                                {
-                                  kind: "ObjectField",
-                                  name: { kind: "Name", value: "curve_id" },
-                                  value: {
-                                    kind: "ObjectValue",
-                                    fields: [
-                                      {
-                                        kind: "ObjectField",
-                                        name: { kind: "Name", value: "_eq" },
-                                        value: {
-                                          kind: "StringValue",
-                                          value: "1",
-                                          block: false
-                                        }
-                                      }
-                                    ]
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        ],
                         selectionSet: {
                           kind: "SelectionSet",
                           selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "market_cap" }
+                            },
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "total_shares" }
@@ -53439,38 +53418,13 @@ export const GetClaimsByTermIds = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "vaults" },
-                        arguments: [
-                          {
-                            kind: "Argument",
-                            name: { kind: "Name", value: "where" },
-                            value: {
-                              kind: "ObjectValue",
-                              fields: [
-                                {
-                                  kind: "ObjectField",
-                                  name: { kind: "Name", value: "curve_id" },
-                                  value: {
-                                    kind: "ObjectValue",
-                                    fields: [
-                                      {
-                                        kind: "ObjectField",
-                                        name: { kind: "Name", value: "_eq" },
-                                        value: {
-                                          kind: "StringValue",
-                                          value: "1",
-                                          block: false
-                                        }
-                                      }
-                                    ]
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        ],
                         selectionSet: {
                           kind: "SelectionSet",
                           selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "market_cap" }
+                            },
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "total_shares" }

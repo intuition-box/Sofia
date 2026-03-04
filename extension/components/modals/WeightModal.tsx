@@ -55,6 +55,11 @@ interface WeightModalProps {
   submitLabel?: string
   /** Show XP cube animation on success (for quest/XP claim flows) */
   showXpAnimation?: boolean
+  /** Optional curve selector for debate claims (linear=1 / progressive=2) */
+  curveSelector?: {
+    selected: "linear" | "progressive"
+    onChange: (curve: "linear" | "progressive") => void
+  }
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
@@ -77,7 +82,7 @@ const weightOptions: WeightOption[] = [
 
 const FEE_DENOMINATOR = 100000
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -317,7 +322,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                       if (!badge) {
                         return (
                           <>
-                            <span className="subject">I</span>{' '}
+                            <span className="subject">{triplet.triplet.subject || 'I'}</span>{' '}
                             <span className="action">{triplet.triplet.predicate}</span>{' '}
                             <span className="object">{truncate(triplet.triplet.object, 40)}</span>
                           </>
@@ -394,6 +399,29 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Curve Selector — debate claims only */}
+          {isFormState && curveSelector && (
+            <div className="curve-selector">
+              <span className="curve-selector-label">Bonding curve:</span>
+              <div className="curve-toggle">
+                <button
+                  className={`curve-toggle-btn ${curveSelector.selected === 'linear' ? 'active' : ''}`}
+                  onClick={() => curveSelector.onChange('linear')}
+                  disabled={isProcessing}
+                >
+                  Linear
+                </button>
+                <button
+                  className={`curve-toggle-btn ${curveSelector.selected === 'progressive' ? 'active' : ''}`}
+                  onClick={() => curveSelector.onChange('progressive')}
+                  disabled={isProcessing}
+                >
+                  Progressive
+                </button>
+              </div>
             </div>
           )}
 
