@@ -370,9 +370,9 @@
 
 .curve-selector {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   margin-top: var(--spacing-sm);
   margin-bottom: var(--spacing-xs);
 }
@@ -392,7 +392,7 @@
 }
 
 .curve-toggle-btn {
-  padding: 5px 12px;
+  padding: 4px 10px;
   font-size: 11px;
   font-weight: 500;
   background: transparent;
