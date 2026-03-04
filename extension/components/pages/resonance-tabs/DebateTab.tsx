@@ -143,7 +143,7 @@ const ClaimCard = ({
           <button
             className={`claim-action-btn support-btn ${voteStatus === "support" ? "voted" : ""}`}
             onClick={(e) => onSupport(e, claim)}
-            disabled={!hasWallet}
+            disabled={!hasWallet || voteStatus === "oppose"}
             title="Support this claim"
           >
             {voteStatus === "support" ? "Supported" : "Support"}
@@ -151,7 +151,7 @@ const ClaimCard = ({
           <button
             className={`claim-action-btn oppose-btn ${voteStatus === "oppose" ? "voted" : ""}`}
             onClick={(e) => onOppose(e, claim)}
-            disabled={!hasWallet || !claim.counterTermId}
+            disabled={!hasWallet || !claim.counterTermId || voteStatus === "support"}
             title="Oppose this claim"
           >
             {voteStatus === "oppose" ? "Opposed" : "Oppose"}
@@ -404,6 +404,7 @@ const DebateTab = () => {
         transactionError={transactionError}
         transactionHash={transactionHash}
         estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
+        showXpAnimation={true}
         submitLabel={selectedAction}
         curveSelector={{
           selected: selectedCurve,

@@ -7,12 +7,11 @@ import '../styles/CoreComponents.css'
 
 // Lazy load tab components (required by Parcel bundler)
 const CircleFeedTab = lazy(() => import('./resonance-tabs/CircleFeedTab'))
-const FeedTab = lazy(() => import('./resonance-tabs/FeedTab'))
 const TrendingTab = lazy(() => import('./resonance-tabs/TrendingTab'))
 const LeaderboardTab = lazy(() => import('./resonance-tabs/LeaderboardTab'))
 const DebateTab = lazy(() => import('./resonance-tabs/DebateTab'))
 
-type ResonanceTab = 'circle' | 'activity' | 'trending' | 'debate' | 'streak'
+type ResonanceTab = 'circle' | 'trending' | 'debate' | 'streak'
 
 const ResonancePage = () => {
   const [activeTab, setActiveTab] = useState<ResonanceTab>('circle')
@@ -37,7 +36,7 @@ const ResonancePage = () => {
           className={`tab ${activeTab === 'debate' ? 'active' : ''}`}
           onClick={() => startTransition(() => setActiveTab('debate'))}
         >
-          Debate
+          Vote
         </button>
         <button
           className={`tab ${activeTab === 'streak' ? 'active' : ''}`}
@@ -45,16 +44,9 @@ const ResonancePage = () => {
         >
           Streak
         </button>
-        <button
-          className={`tab ${activeTab === 'activity' ? 'active' : ''}`}
-          onClick={() => startTransition(() => setActiveTab('activity'))}
-        >
-          Activity
-        </button>
       </div>
       <div className="page-content">
         <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
-          {activeTab === 'activity' && <FeedTab />}
           {activeTab === 'circle' && <CircleFeedTab />}
           {activeTab === 'trending' && <TrendingTab />}
           {activeTab === 'debate' && <DebateTab />}
