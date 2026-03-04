@@ -166,15 +166,41 @@ const ClaimCard = ({
 
 interface ListCardProps {
   list: FeaturedList
+  isExpanded: boolean
+  onToggle: (objectTermId: string) => void
+  entries: DebateClaim[]
+  entriesLoading: boolean
+  onSupport: (e: React.MouseEvent, claim: DebateClaim) => void
+  onOppose: (e: React.MouseEvent, claim: DebateClaim) => void
+  hasWallet: boolean
+  votedItems: Map<string, "support" | "oppose">
 }
 
-const ListCard = ({ list }: ListCardProps) => (
-  <div className="list-card">
-    <div className="list-card-header">
-      {list.image && (
-        <img src={list.image} alt="" className="list-card-image" />
-      )}
-      <span className="list-card-title">{list.label}</span>
+const ListCard = ({
+  list,
+  isExpanded,
+  onToggle,
+  entries,
+  entriesLoading,
+  onSupport,
+  onOppose,
+  hasWallet,
+  votedItems
+}: ListCardProps) => (
+  <div className={`list-card ${isExpanded ? "expanded" : ""}`}>
+    <div
+      className="list-card-header"
+      onClick={() => onToggle(list.objectTermId)}
+    >
+      <div className="list-card-header-left">
+        {list.image && (
+          <img src={list.image} alt="" className="list-card-image" />
+        )}
+        <span className="list-card-title">{list.label}</span>
+      </div>
+      <span className={`list-card-arrow ${isExpanded ? "expanded" : ""}`}>
+        ▾
+      </span>
     </div>
     <div className="list-card-meta">
       <span className="list-card-badge">
@@ -187,7 +213,7 @@ const ListCard = ({ list }: ListCardProps) => (
         {formatTrust(list.totalMarketCap)} TRUST TVL
       </span>
     </div>
-    {list.topSubjects.length > 0 && (
+    {!isExpanded && list.topSubjects.length > 0 && (
       <div className="list-card-subjects">
         {list.topSubjects.map((subject, i) => (
           <span key={i} className="list-card-subject">
@@ -203,6 +229,24 @@ const ListCard = ({ list }: ListCardProps) => (
         ))}
       </div>
     )}
+    <div className={`list-card-entries ${isExpanded ? "expanded" : ""}`}>
+      {entriesLoading ? (
+        <div className="list-card-entries-loader">
+          <SofiaLoader />
+        </div>
+      ) : (
+        entries.map((entry) => (
+          <ClaimCard
+            key={entry.id}
+            claim={entry}
+            voteStatus={votedItems.get(entry.id)}
+            onSupport={onSupport}
+            onOppose={onOppose}
+            hasWallet={hasWallet}
+          />
+        ))
+      )}
+    </div>
   </div>
 )
 
@@ -228,7 +272,11 @@ const DebateTab = () => {
     handleSupport,
     handleOppose,
     handleStakeSubmit,
-    handleStakeModalClose
+    handleStakeModalClose,
+    expandedListId,
+    listEntries,
+    listEntriesLoading,
+    handleToggleList
   } = useDebateClaims()
 
   const hasWallet = !!walletAddress
@@ -313,7 +361,21 @@ const DebateTab = () => {
             </p>
           </div>
           {featuredLists.map((list) => (
-            <ListCard key={list.objectTermId} list={list} />
+            <ListCard
+              key={list.objectTermId}
+              list={list}
+              isExpanded={expandedListId === list.objectTermId}
+              onToggle={handleToggleList}
+              entries={listEntries.get(list.objectTermId) || []}
+              entriesLoading={
+                listEntriesLoading &&
+                expandedListId === list.objectTermId
+              }
+              onSupport={handleSupport}
+              onOppose={handleOppose}
+              hasWallet={hasWallet}
+              votedItems={votedItems}
+            />
           ))}
         </div>
       )}

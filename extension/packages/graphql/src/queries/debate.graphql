@@ -75,3 +75,58 @@ query GetFeaturedListsByObjectIds($objectIds: [String!]!) {
     }
   }
 }
+
+query GetListEntries($predicateId: String!, $objectId: String!, $address: String) {
+  triples(
+    where: {
+      predicate_id: { _eq: $predicateId }
+      object_id: { _eq: $objectId }
+    }
+    order_by: [{ triple_term: { total_market_cap: desc } }]
+  ) {
+    term_id
+    counter_term_id
+    subject {
+      term_id
+      label
+      image
+    }
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+      image
+    }
+    term {
+      vaults {
+        market_cap
+        total_shares
+        position_count
+        current_share_price
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+          account {
+            id
+          }
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        market_cap
+        total_shares
+        position_count
+        current_share_price
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+          account {
+            id
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback } from "react"
 
 import {
   useGetClaimsByTermIdsQuery,
-  useGetFeaturedListsByObjectIdsQuery
+  useGetFeaturedListsByObjectIdsQuery,
+  useGetListEntriesQuery
 } from "@0xsofia/graphql"
 
 import { useWalletFromStorage } from "./useWalletFromStorage"
@@ -37,6 +38,7 @@ export interface DebateClaim {
 
 export interface FeaturedList {
   objectTermId: string
+  predicateId: string
   label: string
   image?: string | null
   tripleCount: number
@@ -65,6 +67,10 @@ export interface UseDebateClaimsResult {
   handleOppose: (e: React.MouseEvent, claim: DebateClaim) => void
   handleStakeSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
   handleStakeModalClose: () => void
+  expandedListId: string | null
+  listEntries: Map<string, DebateClaim[]>
+  listEntriesLoading: boolean
+  handleToggleList: (objectTermId: string) => void
   refetch: () => void
 }
 
@@ -137,6 +143,15 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
     const map = new Map<string, ClaimConfig>()
     for (const c of [...SOFIA_CLAIMS, ...INTUITION_FEATURED_CLAIMS]) {
       if (c.tripleTermId) map.set(c.tripleTermId, c)
+    }
+    return map
+  }, [])
+
+  // Config lookup for lists: objectId → predicateId
+  const listConfigByObjectId = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const l of INTUITION_FEATURED_LISTS) {
+      map.set(l.objectId, l.predicateId)
     }
     return map
   }, [])
@@ -215,6 +230,7 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
 
     return listsData.predicate_objects.map((po) => ({
       objectTermId: po.object?.term_id || "",
+      predicateId: listConfigByObjectId.get(po.object?.term_id || "") || "",
       label: po.object?.label || "",
       image: po.object?.image,
       tripleCount: po.triple_count,
@@ -225,7 +241,7 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
         image: t.subject?.image
       }))
     }))
-  }, [listsData])
+  }, [listsData, listConfigByObjectId])
 
   // ── Vote state (on-chain + local optimistic) ─────────────────────
 
@@ -360,6 +376,78 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
     [selectedClaim, selectedVaultId, selectedCurve, depositWithPool, address]
   )
 
+  // ── List expand/collapse + lazy fetch entries ───────────────────
+
+  const [expandedListId, setExpandedListId] = useState<string | null>(null)
+  const [listEntries, setListEntries] = useState(
+    () => new Map<string, DebateClaim[]>()
+  )
+  const [listEntriesLoading, setListEntriesLoading] = useState(false)
+
+  const handleToggleList = useCallback(
+    async (objectTermId: string) => {
+      // Collapse if already expanded
+      if (expandedListId === objectTermId) {
+        setExpandedListId(null)
+        return
+      }
+
+      setExpandedListId(objectTermId)
+
+      // Already cached — skip fetch
+      if (listEntries.has(objectTermId)) return
+
+      // Find predicateId from config
+      const list = featuredLists.find(
+        (l) => l.objectTermId === objectTermId
+      )
+      if (!list?.predicateId) return
+
+      setListEntriesLoading(true)
+      try {
+        const result = await useGetListEntriesQuery.fetcher({
+          predicateId: list.predicateId,
+          objectId: objectTermId,
+          address: address || ""
+        })()
+
+        if (result?.triples) {
+          const entries: DebateClaim[] = result.triples.map((triple) => {
+            const support = extractVaultData(triple.term?.vaults)
+            const oppose = extractVaultData(triple.counter_term?.vaults)
+            return {
+              id: triple.term_id,
+              termId: triple.term_id,
+              counterTermId: triple.counter_term_id,
+              subject: {
+                label: triple.subject?.label || "",
+                image: triple.subject?.image
+              },
+              predicate: {
+                label: triple.predicate?.label || ""
+              },
+              object: {
+                label: triple.object?.label || "",
+                image: triple.object?.image
+              },
+              supportMarketCap: support.marketCap,
+              opposeMarketCap: oppose.marketCap,
+              supportCount: support.positionCount,
+              opposeCount: oppose.positionCount,
+              source: "intuition" as const
+            }
+          })
+          setListEntries((prev) => new Map(prev).set(objectTermId, entries))
+        }
+      } catch (err) {
+        logger.error("Failed to fetch list entries", err)
+      } finally {
+        setListEntriesLoading(false)
+      }
+    },
+    [expandedListId, listEntries, featuredLists, address]
+  )
+
   const refetch = useCallback(() => {
     refetchClaims()
     refetchLists()
@@ -402,6 +490,10 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
     handleOppose,
     handleStakeSubmit,
     handleStakeModalClose,
+    expandedListId,
+    listEntries,
+    listEntriesLoading,
+    handleToggleList,
     refetch
   }
 }

@@ -253,11 +253,33 @@
   background: rgba(255, 255, 255, 0.07);
 }
 
+.list-card.expanded {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
 .list-card-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.list-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.list-card-arrow {
+  font-size: 14px;
+  color: var(--color-text-very-muted);
+  transition: transform 0.2s ease;
+}
+
+.list-card-arrow.expanded {
+  transform: rotate(180deg);
 }
 
 .list-card-image {
@@ -320,6 +342,28 @@
   height: 14px;
   border-radius: 3px;
   object-fit: cover;
+}
+
+/* ── List Card Entries (Accordion) ────────────────────────────── */
+
+.list-card-entries {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.list-card-entries.expanded {
+  max-height: 2000px;
+  opacity: 1;
+  overflow-y: auto;
+  margin-top: var(--spacing-sm);
+}
+
+.list-card-entries-loader {
+  padding: var(--spacing-md) 0;
+  display: flex;
+  justify-content: center;
 }
 
 /* ── Curve Selector Toggle ────────────────────────────────────── */
