@@ -88,6 +88,10 @@ export { useRecommendations } from './useRecommendations'
 export { default as useInterestAnalysis } from './useInterestAnalysis'
 export { useInterestAttention } from './useInterestAttention'
 
+// Debate
+export { useDebateClaims } from './useDebateClaims'
+export type { DebateClaim, FeaturedList, UseDebateClaimsResult } from './useDebateClaims'
+
 
 // Tracking
 export { useTracking } from './useTracking'

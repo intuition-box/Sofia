@@ -65,7 +65,7 @@
 .tabs {
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 20px;
   margin-bottom: 32px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 8px;

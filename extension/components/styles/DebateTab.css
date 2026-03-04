@@ -1,0 +1,433 @@
+/* DebateTab - Claims & Featured Lists */
+
+.debate-tab {
+  /* Debate-specific support/oppose colors (Sofia brand) */
+  --debate-support: #8276ED;
+  --debate-oppose: #FFBF33;
+
+  padding: 0;
+  max-width: 100%;
+  background: transparent;
+}
+
+/* ── Sections ──────────────────────────────────────────────────── */
+
+.debate-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.debate-section-header {
+  margin-bottom: var(--spacing-md);
+}
+
+.debate-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.debate-section-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-very-muted);
+  margin: 0;
+}
+
+/* ── Claim Card ────────────────────────────────────────────────── */
+
+.claim-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  transition: var(--transition-fast);
+}
+
+.claim-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Subject | Predicate | Object labels */
+.claim-labels {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.claim-atom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.claim-atom-image {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.claim-predicate {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Stats (Support vs Oppose) ─────────────────────────────────── */
+
+.claim-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.claim-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.claim-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.claim-stat-label.support {
+  color: var(--debate-support);
+}
+
+.claim-stat-label.oppose {
+  color: var(--debate-oppose);
+}
+
+.claim-stat-amount {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.claim-stat-count {
+  font-size: 11px;
+  color: var(--color-text-very-muted);
+}
+
+.claim-stat-price {
+  font-size: 11px;
+  color: var(--color-text-very-muted);
+}
+
+/* ── Proportional Bar ──────────────────────────────────────────── */
+
+.claim-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-sm);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.claim-bar-support {
+  background: var(--debate-support);
+  border-radius: 3px 0 0 3px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.claim-bar-oppose {
+  background: var(--debate-oppose);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.3s ease;
+}
+
+.claim-bar-percentages {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.claim-bar-pct {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.claim-bar-pct.support {
+  color: var(--debate-support);
+}
+
+.claim-bar-pct.oppose {
+  color: var(--debate-oppose);
+}
+
+/* ── Bottom row (MCap + Actions) ───────────────────────────────── */
+
+.claim-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.claim-mcap {
+  font-size: 11px;
+  color: var(--color-text-very-muted);
+}
+
+.claim-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Support/Oppose buttons — larger than CircleFeedTab, with labels */
+.claim-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.claim-action-btn.support-btn:hover {
+  color: var(--debate-support);
+  border-color: rgba(130, 118, 237, 0.4);
+  background: rgba(130, 118, 237, 0.1);
+}
+
+.claim-action-btn.oppose-btn:hover:not(:disabled) {
+  color: var(--debate-oppose);
+  border-color: rgba(255, 191, 51, 0.4);
+  background: rgba(255, 191, 51, 0.1);
+}
+
+.claim-action-btn.support-btn.voted {
+  color: var(--debate-support);
+  border-color: color-mix(in srgb, var(--debate-support) 50%, transparent);
+  background: color-mix(in srgb, var(--debate-support) 15%, transparent);
+}
+
+.claim-action-btn.oppose-btn.voted {
+  color: var(--debate-oppose);
+  border-color: color-mix(in srgb, var(--debate-oppose) 50%, transparent);
+  background: color-mix(in srgb, var(--debate-oppose) 15%, transparent);
+}
+
+.claim-action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── List Card ─────────────────────────────────────────────────── */
+
+.list-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  transition: var(--transition-fast);
+}
+
+.list-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.list-card.expanded {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.list-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.list-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.list-card-arrow {
+  font-size: 14px;
+  color: var(--color-text-very-muted);
+  transition: transform 0.2s ease;
+}
+
+.list-card-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.list-card-image {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.list-card-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.list-card-meta {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.list-card-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.list-card-badge.trust {
+  color: var(--color-primary);
+  background: rgba(199, 134, 108, 0.1);
+  border-color: rgba(199, 134, 108, 0.2);
+}
+
+.list-card-subjects {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.list-card-subject {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.list-card-subject-image {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+/* ── List Card Entries (Accordion) ────────────────────────────── */
+
+.list-card-entries {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.list-card-entries.expanded {
+  max-height: 2000px;
+  opacity: 1;
+  overflow-y: auto;
+  margin-top: var(--spacing-sm);
+}
+
+.list-card-entries-loader {
+  padding: var(--spacing-md) 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Curve Selector Toggle ────────────────────────────────────── */
+
+.curve-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.curve-selector-label {
+  font-size: 11px;
+  color: var(--color-text-very-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.curve-toggle {
+  display: flex;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.curve-toggle-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.curve-toggle-btn:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.curve-toggle-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.curve-toggle-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Empty / Connect states ────────────────────────────────────── */
+
+.debate-empty {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  color: var(--color-text-very-muted);
+  font-size: var(--font-size-sm);
+}
+
+.debate-connect {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+}
