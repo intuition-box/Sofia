@@ -35220,7 +35220,7 @@ export const GetQuestBadgesAndSocialLinksDocument = `
     }
   }
   socialLinks: triples(
-    where: {subject_id: {_eq: $subjectId}, creator_id: {_eq: $botVerifierId}, predicate: {label: {_in: ["has verified discord id", "has verified youtube id", "has verified spotify id", "has verified twitch id", "has verified twitter id"]}}}
+    where: {subject_id: {_eq: $subjectId}, creator_id: {_ilike: $botVerifierId}, predicate: {label: {_in: ["has verified discord id", "has verified youtube id", "has verified spotify id", "has verified twitch id", "has verified twitter id"]}}}
     limit: 100
   ) {
     term_id
@@ -35322,7 +35322,7 @@ useGetQuestBadgesAndSocialLinksQuery.fetcher = (
 export const CheckSocialLinkDocument = `
     query CheckSocialLink($subjectId: String!, $botVerifierId: String!, $predicateLabel: String!) {
   triples(
-    where: {subject_id: {_eq: $subjectId}, creator_id: {_eq: $botVerifierId}, predicate: {label: {_eq: $predicateLabel}}}
+    where: {subject_id: {_eq: $subjectId}, creator_id: {_ilike: $botVerifierId}, predicate: {label: {_eq: $predicateLabel}}}
     limit: 1
   ) {
     term_id
@@ -35408,7 +35408,7 @@ useCheckSocialLinkQuery.fetcher = (
 export const CheckSocialLinksDocument = `
     query CheckSocialLinks($subjectId: String!, $botVerifierId: String!) {
   triples(
-    where: {subject_id: {_eq: $subjectId}, creator_id: {_eq: $botVerifierId}, predicate: {label: {_in: ["has verified discord id", "has verified youtube id", "has verified spotify id", "has verified twitch id", "has verified twitter id"]}}}
+    where: {subject_id: {_eq: $subjectId}, creator_id: {_ilike: $botVerifierId}, predicate: {label: {_in: ["has verified discord id", "has verified youtube id", "has verified spotify id", "has verified twitch id", "has verified twitter id"]}}}
     limit: 100
   ) {
     term_id
@@ -72891,7 +72891,7 @@ export const GetQuestBadgesAndSocialLinks = {
                         fields: [
                           {
                             kind: "ObjectField",
-                            name: { kind: "Name", value: "_eq" },
+                            name: { kind: "Name", value: "_ilike" },
                             value: {
                               kind: "Variable",
                               name: { kind: "Name", value: "botVerifierId" }
@@ -73074,7 +73074,7 @@ export const CheckSocialLink = {
                         fields: [
                           {
                             kind: "ObjectField",
-                            name: { kind: "Name", value: "_eq" },
+                            name: { kind: "Name", value: "_ilike" },
                             value: {
                               kind: "Variable",
                               name: { kind: "Name", value: "botVerifierId" }
@@ -73202,7 +73202,7 @@ export const CheckSocialLinks = {
                         fields: [
                           {
                             kind: "ObjectField",
-                            name: { kind: "Name", value: "_eq" },
+                            name: { kind: "Name", value: "_ilike" },
                             value: {
                               kind: "Variable",
                               name: { kind: "Name", value: "botVerifierId" }

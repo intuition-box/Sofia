@@ -22,7 +22,7 @@ query GetQuestBadgesAndSocialLinks(
   socialLinks: triples(
     where: {
       subject_id: { _eq: $subjectId },
-      creator_id: { _eq: $botVerifierId },
+      creator_id: { _ilike: $botVerifierId },
       predicate: {
         label: { _in: [
           "has verified discord id",
@@ -55,7 +55,7 @@ query CheckSocialLink(
   triples(
     where: {
       subject_id: { _eq: $subjectId }
-      creator_id: { _eq: $botVerifierId }
+      creator_id: { _ilike: $botVerifierId }
       predicate: { label: { _eq: $predicateLabel } }
     }
     limit: 1
@@ -72,7 +72,7 @@ query CheckSocialLinks(
   triples(
     where: {
       subject_id: { _eq: $subjectId }
-      creator_id: { _eq: $botVerifierId }
+      creator_id: { _ilike: $botVerifierId }
       predicate: {
         label: { _in: [
           "has verified discord id",
