@@ -45,8 +45,9 @@ async function isActiveTabHttps(): Promise<boolean> {
 }
 
 // Send a request to the wallet via the content script bridge
-async function sendWalletRequest(method: string, params?: any[]): Promise<any> {
-  const tabId = await getActiveTabId()
+// tabId is optional — if provided, skips getActiveTabId() to avoid race conditions
+async function sendWalletRequest(method: string, params?: any[], tabId?: number): Promise<any> {
+  const resolvedTabId = tabId ?? await getActiveTabId()
   const requestId = generateRequestId()
 
   return new Promise((resolve, reject) => {
@@ -55,7 +56,7 @@ async function sendWalletRequest(method: string, params?: any[]): Promise<any> {
     }, 60000) // 60s timeout for user interactions (signing, etc.)
 
     chrome.tabs.sendMessage(
-      tabId,
+      resolvedTabId,
       {
         type: "WALLET_REQUEST",
         requestId,
@@ -165,15 +166,6 @@ let cachedProvider: typeof walletProvider | null = null
 
 export const getWalletProvider = async () => {
   if (!cachedProvider) {
-    // Verify we can communicate with the bridge
-    try {
-      // Try to get chainId as a connectivity test
-      await walletProvider.request({ method: "eth_chainId" })
-      logger.info('Bridge connection verified')
-    } catch (error) {
-      logger.warn('Bridge test failed, wallet may not be installed', error)
-      // Don't throw here - let the actual request handle the error
-    }
     cachedProvider = walletProvider
   }
   return cachedProvider
@@ -191,10 +183,24 @@ export const cleanupProvider = () => {
   }
 }
 
+// Create a provider bound to a specific tabId (closure, no shared state)
+// Used by getClients() to pin all requests to the same tab during a flow
+export const createBoundProvider = (tabId: number) => ({
+  ...walletProvider,
+  request: async ({ method, params }: { method: string; params?: any[] }) => {
+    logger.debug('Request (bound)', { method, tabId })
+    return sendWalletRequest(method, params, tabId)
+  },
+  on: walletProvider.on,
+  removeListener: walletProvider.removeListener,
+  removeAllListeners: walletProvider.removeAllListeners,
+  isSofiaBridge: true as const,
+})
+
 // Utility to list available wallet providers
-export const listWalletProviders = async (): Promise<Array<{ name: string; rdns: string; uuid: string }>> => {
+export const listWalletProviders = async (tabId?: number): Promise<Array<{ name: string; rdns: string; uuid: string }>> => {
   try {
-    return await sendWalletRequest("wallet_listProviders")
+    return await sendWalletRequest("wallet_listProviders", undefined, tabId)
   } catch (error) {
     logger.error('Failed to list wallet providers', error)
     return []
@@ -203,10 +209,10 @@ export const listWalletProviders = async (): Promise<Array<{ name: string; rdns:
 
 // Select the wallet provider by name/type (the proper way)
 // walletType can be: 'metamask', 'rabby', 'coinbase', etc.
-export const selectProviderByName = async (walletType: string): Promise<{ found: boolean; selectedProvider: string }> => {
+export const selectProviderByName = async (walletType: string, tabId?: number): Promise<{ found: boolean; selectedProvider: string }> => {
   try {
     logger.debug('Selecting provider by name', { walletType })
-    const result = await sendWalletRequest("wallet_selectProviderByName", [walletType])
+    const result = await sendWalletRequest("wallet_selectProviderByName", [walletType], tabId)
     logger.info('Provider selected', result)
     return result
   } catch (error) {
@@ -219,10 +225,10 @@ export const selectProviderByName = async (walletType: string): Promise<{ found:
  * @deprecated Use selectProviderByName() instead. This queries all wallets
  * and may trigger unwanted connection popups. walletType should be provided at connection time.
  */
-export const selectProviderByAddress = async (address: string): Promise<{ found: boolean; selectedProvider: string }> => {
+export const selectProviderByAddress = async (address: string, tabId?: number): Promise<{ found: boolean; selectedProvider: string }> => {
   try {
     logger.debug('Selecting provider for address', { address })
-    const result = await sendWalletRequest("wallet_selectProviderByAddress", [address])
+    const result = await sendWalletRequest("wallet_selectProviderByAddress", [address], tabId)
     logger.info('Provider selected', result)
     return result
   } catch (error) {
@@ -233,10 +239,10 @@ export const selectProviderByAddress = async (address: string): Promise<{ found:
 
 // Clear the provider selection (call on disconnect)
 // This ensures a fresh wallet selection on next connection
-export const clearProviderSelection = async (): Promise<void> => {
+export const clearProviderSelection = async (tabId?: number): Promise<void> => {
   try {
     logger.info('Clearing provider selection')
-    await sendWalletRequest("wallet_clearProviderSelection", [])
+    await sendWalletRequest("wallet_clearProviderSelection", [], tabId)
   } catch (error) {
     // May fail on restricted pages, that's OK
     logger.warn('Could not clear provider selection', error)

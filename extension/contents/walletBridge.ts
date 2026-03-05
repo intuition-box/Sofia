@@ -130,6 +130,7 @@ function selectProviderByName(walletType: string): boolean {
       selectedProvider = providerDetail.provider
       selectedProviderName = providerDetail.info.name
       logger.info("Selected provider by name", { selectedProviderName })
+      setupProviderListeners()
       return true
     }
   }
@@ -318,25 +319,52 @@ async function handleWalletRequest(event: MessageEvent) {
   }
 }
 
+// Forward wallet events to the extension
+const forwardEvent = (eventName: string) => (data: any) => {
+  logger.debug(`Event: ${eventName}`, data)
+  window.postMessage({
+    type: "SOFIA_WALLET_EVENT",
+    event: eventName,
+    data
+  }, window.location.origin)
+}
+
+// Track active listeners for cleanup on provider switch
+let activeListenerCleanup: (() => void) | null = null
+
 // Listen for wallet events and forward them
 function setupProviderListeners() {
+  // Cleanup previous listeners first (prevents duplicates on provider switch)
+  if (activeListenerCleanup) {
+    activeListenerCleanup()
+    activeListenerCleanup = null
+  }
+
   const provider = getProvider()
   if (!provider) return
 
-  const forwardEvent = (eventName: string) => (data: any) => {
-    logger.debug(`Event: ${eventName}`, data)
-    window.postMessage({
-      type: "SOFIA_WALLET_EVENT",
-      event: eventName,
-      data
-    }, window.location.origin)
+  const handlers: Record<string, (data: any) => void> = {
+    accountsChanged: forwardEvent("accountsChanged"),
+    chainChanged: forwardEvent("chainChanged"),
+    connect: forwardEvent("connect"),
+    disconnect: forwardEvent("disconnect"),
   }
 
   try {
-    provider.on?.("accountsChanged", forwardEvent("accountsChanged"))
-    provider.on?.("chainChanged", forwardEvent("chainChanged"))
-    provider.on?.("connect", forwardEvent("connect"))
-    provider.on?.("disconnect", forwardEvent("disconnect"))
+    for (const [event, handler] of Object.entries(handlers)) {
+      provider.on?.(event, handler)
+    }
+
+    activeListenerCleanup = () => {
+      for (const [event, handler] of Object.entries(handlers)) {
+        try {
+          provider.removeListener?.(event, handler)
+        } catch {
+          // Provider may not support removeListener
+        }
+      }
+    }
+
     logger.debug("Provider listeners set up")
   } catch (error) {
     logger.warn("Could not set up provider listeners", error)
@@ -353,8 +381,7 @@ function init() {
   // Listen for messages from extension
   window.addEventListener("message", handleWalletRequest)
 
-  // Set up provider event listeners after a short delay (wait for providers)
-  setTimeout(setupProviderListeners, 500)
+  // Provider listeners are set up when a provider is selected (selectProviderByName)
 
   logger.info("Wallet bridge ready")
 }
