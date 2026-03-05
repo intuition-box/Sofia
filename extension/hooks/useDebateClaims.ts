@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useRef } from "react"
 
 import {
   useGetClaimsByTermIdsQuery,
@@ -9,16 +9,65 @@ import {
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { useWeightOnChain } from "./useWeightOnChain"
 
-import { createHookLogger } from "~/lib/utils"
+import {
+  createHookLogger,
+  convertIpfsToHttp,
+  getFaviconUrl,
+  extractDomain
+} from "~/lib/utils"
 import { questTrackingService, goldService } from "~/lib/services"
 import {
   SOFIA_CLAIMS,
   INTUITION_FEATURED_CLAIMS,
   INTUITION_FEATURED_LISTS
 } from "~/lib/config/debateConfig"
-import type { ClaimConfig } from "~/lib/config/debateConfig"
+import type { ClaimConfig, FeaturedListConfig } from "~/lib/config/debateConfig"
 
 const logger = createHookLogger("useDebateClaims")
+
+interface AtomValueImages {
+  thing?: { image?: string | null; url?: string | null } | null
+  person?: { image?: string | null } | null
+  organization?: { image?: string | null } | null
+}
+
+/** Pick the best displayable image URL from atom fields.
+ *  Fallback chain: image → value.thing/person/org image → cached_image → favicon */
+function resolveAtomImage(
+  image?: string | null,
+  cachedUrl?: string | null,
+  value?: AtomValueImages | null,
+  label?: string | null
+): string | undefined {
+  // 1. Top-level image (validated by image-guard service)
+  if (image) return image
+
+  // 2. Nested value images (thing > person > organization)
+  const valueImage =
+    value?.thing?.image ||
+    value?.person?.image ||
+    value?.organization?.image
+  if (valueImage) {
+    return valueImage.startsWith("ipfs://")
+      ? convertIpfsToHttp(valueImage)
+      : valueImage
+  }
+
+  // 3. cached_image.url (may be HTTP or IPFS)
+  if (cachedUrl) {
+    if (cachedUrl.startsWith("http")) return cachedUrl
+    if (cachedUrl.startsWith("ipfs://")) return convertIpfsToHttp(cachedUrl)
+  }
+
+  // 4. Favicon fallback from value.thing.url or label (if it looks like a URL)
+  const url = value?.thing?.url || label
+  if (url) {
+    const domain = extractDomain(url)
+    if (domain) return getFaviconUrl(domain)
+  }
+
+  return undefined
+}
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -40,6 +89,7 @@ export interface FeaturedList {
   objectTermId: string
   predicateId: string
   label: string
+  description?: string
   image?: string | null
   tripleCount: number
   totalMarketCap: string
@@ -147,11 +197,11 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
     return map
   }, [])
 
-  // Config lookup for lists: objectId → predicateId
+  // Config lookup for lists: objectId → full config
   const listConfigByObjectId = useMemo(() => {
-    const map = new Map<string, string>()
+    const map = new Map<string, FeaturedListConfig>()
     for (const l of INTUITION_FEATURED_LISTS) {
-      map.set(l.objectId, l.predicateId)
+      map.set(l.objectId, l)
     }
     return map
   }, [])
@@ -196,14 +246,24 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
         counterTermId: triple.counter_term_id,
         subject: {
           label: triple.subject?.label || config?.subject || "",
-          image: triple.subject?.image
+          image: resolveAtomImage(
+            triple.subject?.image,
+            triple.subject?.cached_image?.url,
+            triple.subject?.value,
+            triple.subject?.label
+          )
         },
         predicate: {
           label: triple.predicate?.label || config?.predicate || ""
         },
         object: {
           label: triple.object?.label || config?.object || "",
-          image: triple.object?.image
+          image: resolveAtomImage(
+            triple.object?.image,
+            triple.object?.cached_image?.url,
+            triple.object?.value,
+            triple.object?.label
+          )
         },
         supportMarketCap: support.marketCap,
         opposeMarketCap: oppose.marketCap,
@@ -228,19 +288,33 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
   const featuredLists = useMemo((): FeaturedList[] => {
     if (!listsData?.predicate_objects) return []
 
-    return listsData.predicate_objects.map((po) => ({
+    return listsData.predicate_objects.map((po) => {
+      const config = listConfigByObjectId.get(po.object?.term_id || "")
+      return {
       objectTermId: po.object?.term_id || "",
-      predicateId: listConfigByObjectId.get(po.object?.term_id || "") || "",
+      predicateId: config?.predicateId || "",
       label: po.object?.label || "",
-      image: po.object?.image,
+      description: config?.description,
+      image: resolveAtomImage(
+        po.object?.image,
+        po.object?.cached_image?.url,
+        po.object?.value,
+        po.object?.label
+      ),
       tripleCount: po.triple_count,
       totalMarketCap: String(po.total_market_cap || "0"),
       totalPositionCount: po.total_position_count,
       topSubjects: (po.triples || []).map((t) => ({
         label: t.subject?.label || "",
-        image: t.subject?.image
+        image: resolveAtomImage(
+          t.subject?.image,
+          t.subject?.cached_image?.url,
+          t.subject?.value,
+          t.subject?.label
+        )
       }))
-    }))
+    }
+    })
   }, [listsData, listConfigByObjectId])
 
   // ── Vote state (on-chain + local optimistic) ─────────────────────
@@ -383,6 +457,7 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
     () => new Map<string, DebateClaim[]>()
   )
   const [listEntriesLoading, setListEntriesLoading] = useState(false)
+  const isFetchingListRef = useRef(false)
 
   const handleToggleList = useCallback(
     async (objectTermId: string) => {
@@ -397,11 +472,18 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
       // Already cached — skip fetch
       if (listEntries.has(objectTermId)) return
 
+      // Guard against concurrent fetches
+      if (isFetchingListRef.current) return
+      isFetchingListRef.current = true
+
       // Find predicateId from config
       const list = featuredLists.find(
         (l) => l.objectTermId === objectTermId
       )
-      if (!list?.predicateId) return
+      if (!list?.predicateId) {
+        isFetchingListRef.current = false
+        return
+      }
 
       setListEntriesLoading(true)
       try {
@@ -421,14 +503,24 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
               counterTermId: triple.counter_term_id,
               subject: {
                 label: triple.subject?.label || "",
-                image: triple.subject?.image
+                image: resolveAtomImage(
+                  triple.subject?.image,
+                  triple.subject?.cached_image?.url,
+                  triple.subject?.value,
+                  triple.subject?.label
+                )
               },
               predicate: {
                 label: triple.predicate?.label || ""
               },
               object: {
                 label: triple.object?.label || "",
-                image: triple.object?.image
+                image: resolveAtomImage(
+                  triple.object?.image,
+                  triple.object?.cached_image?.url,
+                  triple.object?.value,
+                  triple.object?.label
+                )
               },
               supportMarketCap: support.marketCap,
               opposeMarketCap: oppose.marketCap,
@@ -443,6 +535,7 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
         logger.error("Failed to fetch list entries", err)
       } finally {
         setListEntriesLoading(false)
+        isFetchingListRef.current = false
       }
     },
     [expandedListId, listEntries, featuredLists, address]

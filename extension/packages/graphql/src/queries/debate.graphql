@@ -9,6 +9,14 @@ query GetClaimsByTermIds($termIds: [String!]!, $address: String) {
       term_id
       label
       image
+      cached_image {
+        url
+      }
+      value {
+        thing { image url }
+        person { image }
+        organization { image }
+      }
     }
     predicate {
       term_id
@@ -18,6 +26,14 @@ query GetClaimsByTermIds($termIds: [String!]!, $address: String) {
       term_id
       label
       image
+      cached_image {
+        url
+      }
+      value {
+        thing { image url }
+        person { image }
+        organization { image }
+      }
     }
     term {
       vaults {
@@ -62,6 +78,14 @@ query GetFeaturedListsByObjectIds($objectIds: [String!]!) {
       term_id
       label
       image
+      cached_image {
+        url
+      }
+      value {
+        thing { image url }
+        person { image }
+        organization { image }
+      }
     }
     triples(
       limit: 5
@@ -71,6 +95,14 @@ query GetFeaturedListsByObjectIds($objectIds: [String!]!) {
         term_id
         label
         image
+        cached_image {
+          url
+        }
+        value {
+          thing { image url }
+          person { image }
+          organization { image }
+        }
       }
     }
   }
@@ -90,6 +122,14 @@ query GetListEntries($predicateId: String!, $objectId: String!, $address: String
       term_id
       label
       image
+      cached_image {
+        url
+      }
+      value {
+        thing { image url }
+        person { image }
+        organization { image }
+      }
     }
     predicate {
       term_id
@@ -99,6 +139,14 @@ query GetListEntries($predicateId: String!, $objectId: String!, $address: String
       term_id
       label
       image
+      cached_image {
+        url
+      }
+      value {
+        thing { image url }
+        person { image }
+        organization { image }
+      }
     }
     term {
       vaults {

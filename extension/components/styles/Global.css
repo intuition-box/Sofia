@@ -1,7 +1,7 @@
 /* Styles globaux et communs à toute l'application */
 
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&family=Gotu:wght@400;600&family=Montserrat:wght@400;500;600&display=block');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&family=Gotu:wght@400;600&family=Montserrat:wght@400;500;600&family=Rubik+Mono+One&display=block');
 
 /* Reset CSS global */
 * {
@@ -34,6 +34,10 @@ body {
 }
 
 :root {
+  /* Claims (Debate) — global pour portals */
+  --claims-support: var(--color-hover-light);
+  --claims-oppose: var(--color-hover);
+
   /* Couleurs principales */
   --color-primary: #C7866C;
   --color-primary-dark: #372118;

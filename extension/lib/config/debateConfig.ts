@@ -20,6 +20,7 @@ export interface FeaturedListConfig {
   predicateId: string
   objectId: string
   label: string
+  description?: string
 }
 
 // ── Sofia Claims (triples to create on-chain — term_ids TBD) ────────
@@ -85,13 +86,17 @@ export const INTUITION_FEATURED_LISTS: FeaturedListConfig[] = [
       "0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5",
     objectId:
       "0xa8a4563563d323653974b17a19e919b3307dfff1b3ecb3226121953d5f70beab",
-    label: "Top Agent Skills"
+    label: "Top Agent Skills",
+    description:
+      "The top 50 most installed agent skills from skills.sh - The Open Agent Skills Ecosystem. Reusable capabilities for AI agents including Claude Code, Cursor, GitHub Copilot, and more."
   },
   {
     predicateId:
       "0x7ec36d201c842dc787b45cb5bb753bea4cf849be3908fb1b0a7d067c3c3cc1f5",
     objectId:
       "0x7b0507311976b16426473825f361987d12ee53e62f28f2502d8e9607ea801a2a",
-    label: "Best AI Code Editors & IDEs"
+    label: "Best AI Code Editors & IDEs",
+    description:
+      "Curated list of the best AI-powered code editors and IDEs in 2025. From VS Code with Copilot to purpose-built AI editors like Cursor and Windsurf — which tools are developers actually using to ship faster?"
   }
 ]
