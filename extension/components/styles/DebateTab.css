@@ -670,6 +670,20 @@
   color: #1a0010;
 }
 
+.td-actions .claim-pill.support-pill.voted {
+  background: transparent;
+  color: var(--claims-support);
+  border: 1px solid var(--claims-support);
+  box-shadow: none;
+}
+
+.td-actions .claim-pill.oppose-pill.voted {
+  background: transparent;
+  color: var(--claims-oppose);
+  border: 1px solid var(--claims-oppose);
+  box-shadow: none;
+}
+
 .td-actions .claim-pill.support-pill:hover:not(:disabled) {
   box-shadow: 0 0 12px rgba(255, 224, 120, 0.4);
   background: var(--claims-support);
@@ -680,6 +694,20 @@
   box-shadow: 0 0 12px rgba(255, 179, 196, 0.4);
   background: var(--claims-oppose);
   border-color: transparent;
+}
+
+.td-actions .claim-pill.support-pill.voted:hover:not(:disabled) {
+  background: transparent;
+  color: var(--claims-support);
+  border-color: var(--claims-support);
+  box-shadow: 0 0 12px rgba(255, 224, 120, 0.25);
+}
+
+.td-actions .claim-pill.oppose-pill.voted:hover:not(:disabled) {
+  background: transparent;
+  color: var(--claims-oppose);
+  border-color: var(--claims-oppose);
+  box-shadow: 0 0 12px rgba(255, 179, 196, 0.25);
 }
 
 /* ── Loading state in modal ──────────────────────────────────── */

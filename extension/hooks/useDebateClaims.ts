@@ -530,6 +530,27 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
             }
           })
           setListEntries((prev) => new Map(prev).set(objectTermId, entries))
+
+          // Detect user positions on list entries
+          const newVotes = new Map<string, "support" | "oppose">()
+          for (const triple of result.triples) {
+            const support = extractVaultData(triple.term?.vaults)
+            const oppose = extractVaultData(triple.counter_term?.vaults)
+            if (support.hasPosition) {
+              newVotes.set(triple.term_id, "support")
+            } else if (oppose.hasPosition) {
+              newVotes.set(triple.term_id, "oppose")
+            }
+          }
+          if (newVotes.size > 0) {
+            setLocalVotes((prev) => {
+              const merged = new Map(prev)
+              for (const [id, vote] of newVotes) {
+                if (!merged.has(id)) merged.set(id, vote)
+              }
+              return merged
+            })
+          }
         }
       } catch (err) {
         logger.error("Failed to fetch list entries", err)
