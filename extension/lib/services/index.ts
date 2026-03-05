@@ -11,7 +11,7 @@ export { TripleServiceClass, tripleService } from './TripleService'
 export type { ResolvedTriple } from './TripleService'
 
 // Wallet
-export { getWalletProvider, cleanupProvider, listWalletProviders, selectProviderByName, selectProviderByAddress, clearProviderSelection } from './walletProvider'
+export { getWalletProvider, cleanupProvider, listWalletProviders, selectProviderByName, selectProviderByAddress, clearProviderSelection, createBoundProvider } from './walletProvider'
 
 // Currency & Economy
 export { GoldServiceClass, goldService, getLevelUpCost, GOLD_PER_CERTIFICATION, LEVEL_UP_COSTS, MAX_LEVEL_UP_COST } from './GoldService'

@@ -1,37 +1,63 @@
 import { createWalletClient, custom, createPublicClient, http } from 'viem'
 import { SELECTED_CHAIN } from '../config/chainConfig'
-import { getWalletProvider, selectProviderByName } from '../services/walletProvider'
+import { createBoundProvider, selectProviderByName } from '../services/walletProvider'
 import { createServiceLogger } from '../utils/logger'
 
 const logger = createServiceLogger('ViemClients')
 
 /**
- * Ensure there's an HTTPS tab available for wallet transactions
- * Content scripts can only inject on HTTPS pages
+ * Wait for a tab to finish loading (content scripts inject on "complete")
  */
-async function ensureHttpsTabForWallet(): Promise<void> {
-    try {
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-        const activeTab = tabs[0]
+function waitForTabReady(tabId: number, timeout: number): Promise<void> {
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => {
+            chrome.tabs.onUpdated.removeListener(listener)
+            logger.warn('Tab load timeout, proceeding anyway', { tabId })
+            resolve() // resolve, not reject — let wallet request surface errors
+        }, timeout)
 
-        // Check if current tab is HTTPS
-        if (activeTab?.url && activeTab.url.startsWith('https://')) {
-            return // Already on HTTPS, we're good
+        const listener = (
+            updatedTabId: number,
+            changeInfo: chrome.tabs.TabChangeInfo
+        ) => {
+            if (updatedTabId === tabId && changeInfo.status === "complete") {
+                clearTimeout(timer)
+                chrome.tabs.onUpdated.removeListener(listener)
+                // Small delay for content script init after page complete
+                setTimeout(resolve, 300)
+            }
         }
+        chrome.tabs.onUpdated.addListener(listener)
+    })
+}
 
-        // No HTTPS tab available - open one
-        logger.warn('No HTTPS tab available, opening sofia.intuition.box/values')
-        await chrome.tabs.create({
-            url: 'https://sofia.intuition.box/values',
-            active: true
-        })
+/**
+ * Ensure there's an HTTPS tab available for wallet transactions.
+ * Returns the tabId to pin all subsequent wallet requests to.
+ */
+async function ensureHttpsTabForWallet(): Promise<number> {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+    const activeTab = tabs[0]
 
-        // Wait a bit for the tab to load and content script to inject
-        await new Promise(resolve => setTimeout(resolve, 1500))
-    } catch (error) {
-        logger.error('Failed to ensure HTTPS tab', error)
-        // Don't throw - let the wallet request handle the error
+    // Check if current tab is HTTPS
+    if (activeTab?.url?.startsWith('https://') && activeTab.id) {
+        return activeTab.id
     }
+
+    // No HTTPS tab available - open one
+    logger.warn('No HTTPS tab available, opening sofia.intuition.box/values')
+    const newTab = await chrome.tabs.create({
+        url: 'https://sofia.intuition.box/values',
+        active: true
+    })
+
+    if (!newTab.id) {
+        throw new Error("Failed to create HTTPS tab for wallet")
+    }
+
+    // Wait for tab to finish loading (content scripts inject on "complete")
+    await waitForTabReady(newTab.id, 10000)
+    return newTab.id
 }
 
 /**
@@ -46,18 +72,20 @@ export const getPublicClient = () => {
 }
 
 export const getClients = async () => {
-    // Ensure we have an HTTPS tab for wallet operations
-    await ensureHttpsTabForWallet()
+    // Capture tabId once — all wallet requests in this flow use this tab
+    // Prevents race conditions when user switches tabs during multi-step flows
+    const tabId = await ensureHttpsTabForWallet()
 
     // Always re-select the provider on the current tab's content script.
     // Content scripts lose their selectedProvider state on page navigation
     // or service worker restart, causing "No wallet found" errors.
     const storage = await chrome.storage.session.get(['walletType'])
     if (storage.walletType) {
-        await selectProviderByName(storage.walletType)
+        await selectProviderByName(storage.walletType, tabId)
     }
 
-    const provider = await getWalletProvider()
+    // Create a provider bound to this specific tabId (closure, no shared state)
+    const provider = createBoundProvider(tabId)
 
     const accounts = await provider.request({
         method: 'eth_requestAccounts',
@@ -86,6 +114,6 @@ export const getClients = async () => {
         transport: http(SELECTED_CHAIN.rpcUrls.default.http[0]),
     })
 
-    logger.debug('Clients ready')
+    logger.debug('Clients ready', { tabId })
     return { walletClient, publicClient }
 }
