@@ -329,16 +329,17 @@
   gap: var(--spacing-sm, 8px);
 }
 
-.triplet-item {
+.triplets-section .triplet-item {
   background: var(--color-bg-glass-light, rgba(255, 255, 255, 0.03));
   border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.08));
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   border-radius: var(--radius-md, 8px);
   cursor: pointer;
   transition: var(--transition-fast, all 0.2s ease);
+  margin-bottom: 0px;
 }
 
-.triplet-item.clickable:hover {
+.triplets-section .triplet-item.clickable:hover {
   background: var(--color-bg-glass-lighter, rgba(255, 255, 255, 0.06));
   border-color: var(--color-border-lighter, rgba(255, 255, 255, 0.12));
   transform: translateY(-1px);
