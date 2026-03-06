@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
 import SofiaLoader from '../ui/SofiaLoader'
+import XpAnimation from '../ui/XpAnimation'
 import { useWalletFromStorage } from '../../hooks'
 import { EXPLORER_URLS } from '../../lib/config/chainConfig'
 import { createHookLogger } from '../../lib/utils/logger'
@@ -239,6 +240,7 @@ const StakeModal = ({
           {/* Success State */}
           {isSuccess && transactionHash && (
             <div className="modal-processing-section modal-success-section">
+              <XpAnimation size={120} />
               <div className="modal-success-text">
                 <p className="modal-success-title">Transaction Validated</p>
                 <a

@@ -253,6 +253,7 @@ const PageBlockchainCard = () => {
               reward.handleClaimReward(claimDiscoveryGold)
             }
             rewardClaimed={reward.rewardClaimed}
+            showXpAnimation={true}
             onClose={() => {
               modal.handleModalClose()
               reward.resetReward()
