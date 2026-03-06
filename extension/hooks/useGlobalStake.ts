@@ -14,6 +14,11 @@ export const useGlobalStake = () => {
     globalStakeService.getSnapshot
   )
 
+  const getUserPercentage = useCallback(
+    () => globalStakeService.getUserPercentage(),
+    []
+  )
+
   const setUserPercentage = useCallback(
     (pct: number) => globalStakeService.setUserPercentage(pct),
     []
@@ -23,7 +28,7 @@ export const useGlobalStake = () => {
     ...state,
     gsEnabled: globalStakeService.isEnabled(),
     gsConfig: globalStakeService.getConfig(),
-    getUserPercentage: globalStakeService.getUserPercentage.bind(globalStakeService),
+    getUserPercentage,
     setUserPercentage,
     refetch: () => globalStakeService.refetch()
   }
