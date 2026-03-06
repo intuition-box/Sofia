@@ -86,21 +86,25 @@ const ClaimCard = ({
         {/* Metrics: TRUST amounts + staker counts */}
         <div className="claim-metrics">
           <div className="claim-metrics-col support">
-            <span className="claim-metrics-label">Support</span>
+            <span className="claim-metrics-label">
+              Support
+              <span className="claim-metrics-count">
+                {claim.supportCount}
+              </span>
+            </span>
             <span className="claim-metrics-value">
               {formatTrust(claim.supportMarketCap)} TRUST
             </span>
-            <span className="claim-metrics-count">
-              {claim.supportCount}
-            </span>
           </div>
           <div className="claim-metrics-col oppose">
-            <span className="claim-metrics-label">Oppose</span>
+            <span className="claim-metrics-label">
+              <span className="claim-metrics-count">
+                {claim.opposeCount}
+              </span>
+              Oppose
+            </span>
             <span className="claim-metrics-value">
               {formatTrust(claim.opposeMarketCap)} TRUST
-            </span>
-            <span className="claim-metrics-count">
-              {claim.opposeCount}
             </span>
           </div>
         </div>

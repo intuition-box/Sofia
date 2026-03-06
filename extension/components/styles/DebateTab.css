@@ -199,6 +199,7 @@
 .claim-metrics-col {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 2px;
 }
 
@@ -208,6 +209,9 @@
 }
 
 .claim-metrics-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
