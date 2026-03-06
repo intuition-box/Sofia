@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 
-import { calcPercentage } from "~/lib/utils"
+import { calcPercentage, formatTrust } from "~/lib/utils"
 
 import type { DebateClaim } from "~/hooks"
 
@@ -29,6 +29,17 @@ const ClaimCard = ({
     () => calcPercentage(claim.supportMarketCap, claim.opposeMarketCap),
     [claim.supportMarketCap, claim.opposeMarketCap]
   )
+
+  const totalMcap = useMemo(() => {
+    const total = String(
+      BigInt(claim.supportMarketCap || "0") +
+        BigInt(claim.opposeMarketCap || "0")
+    )
+    return formatTrust(total)
+  }, [claim.supportMarketCap, claim.opposeMarketCap])
+
+  const userPnl =
+    claim.userSupportPnlPct ?? claim.userOpposePnlPct ?? null
 
   return (
     <div
@@ -72,23 +83,29 @@ const ClaimCard = ({
 
       {/* Body — always rendered, hidden via CSS when pos !== 0 */}
       <div className="claim-content-visible">
-        {/* Hero percentages */}
-        <div
-          className="claim-hero-pct"
-          style={
-            {
-              "--support-font-size":
-                supportPct >= opposePct ? "40px" : "var(--font-size-3xl)",
-              "--oppose-font-size":
-                opposePct > supportPct ? "40px" : "var(--font-size-3xl)"
-            } as React.CSSProperties
-          }
-        >
-          <span className="claim-hero-value support">+{supportPct}%</span>
-          <span className="claim-hero-value oppose">+{opposePct}%</span>
+        {/* Metrics: TRUST amounts + staker counts */}
+        <div className="claim-metrics">
+          <div className="claim-metrics-col support">
+            <span className="claim-metrics-label">Support</span>
+            <span className="claim-metrics-value">
+              {formatTrust(claim.supportMarketCap)} TRUST
+            </span>
+            <span className="claim-metrics-count">
+              {claim.supportCount}
+            </span>
+          </div>
+          <div className="claim-metrics-col oppose">
+            <span className="claim-metrics-label">Oppose</span>
+            <span className="claim-metrics-value">
+              {formatTrust(claim.opposeMarketCap)} TRUST
+            </span>
+            <span className="claim-metrics-count">
+              {claim.opposeCount}
+            </span>
+          </div>
         </div>
 
-        {/* Battle bar — oppose left, support right */}
+        {/* Battle bar */}
         <div
           className="claim-bar"
           style={
@@ -98,6 +115,20 @@ const ClaimCard = ({
             } as React.CSSProperties
           }
         />
+
+        {/* Meta row: MCap + P&L */}
+        <div className="claim-meta">
+          <span className="claim-meta-mcap">
+            MCap: {totalMcap} TRUST
+          </span>
+          {userPnl !== null && (
+            <span
+              className={`claim-meta-pnl ${userPnl >= 0 ? "positive" : "negative"}`}
+            >
+              P&L: {userPnl >= 0 ? "+" : ""}{userPnl}%
+            </span>
+          )}
+        </div>
 
         {/* Pill actions */}
         <div className="claim-bottom">

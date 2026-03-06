@@ -187,32 +187,83 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Hero Percentages ─────────────────────────────────────────── */
+/* ── Metrics Row (Support / Oppose columns) ──────────────────── */
 
-.claim-hero-pct {
+.claim-metrics {
   display: flex;
-  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.claim-metrics-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.claim-metrics-col.oppose {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.claim-metrics-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-text-very-muted);
+}
+
+.claim-metrics-value {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.claim-metrics-col.support .claim-metrics-value {
+  color: var(--claims-support);
+}
+
+.claim-metrics-col.oppose .claim-metrics-value {
+  color: var(--claims-oppose);
+}
+
+.claim-metrics-count {
+  font-size: 11px;
+  color: var(--color-text-very-muted);
+}
+
+.claim-metrics-count::before {
+  content: '\1F464\00A0';
+  font-size: 10px;
+}
+
+/* ── Meta Row (MCap + P&L) ───────────────────────────────────── */
+
+.claim-meta {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: var(--spacing-sm);
 }
 
-.claim-hero-value {
-  font-family: 'Rubik Mono One', sans-serif;
-  font-weight: 400;
-  letter-spacing: -1px;
+.claim-meta-mcap {
+  font-size: 11px;
+  color: var(--color-text-very-muted);
 }
 
-.claim-hero-value.support {
-  font-size: var(--support-font-size, 40px);
+.claim-meta-pnl {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.claim-meta-pnl.positive {
   color: var(--claims-support);
-  text-shadow: 0 0 24px rgba(245, 158, 11, 0.5);
 }
 
-.claim-hero-value.oppose {
-  font-size: var(--oppose-font-size, var(--font-size-3xl));
-  color: var(--claims-oppose);
-  letter-spacing: -0.5px;
-  text-shadow: 0 0 18px rgba(206, 162, 253, 0.45);
+.claim-meta-pnl.negative {
+  color: #ef4444;
 }
 
 /* ── Battle Bar — support left, oppose right ─────────────────── */
@@ -730,14 +781,6 @@
 /* ── Responsive ────────────────────────────────────────────────── */
 
 @media (max-width: 480px) {
-  .claim-hero-value.support {
-    font-size: var(--support-font-size, var(--font-size-3xl));
-  }
-
-  .claim-hero-value.oppose {
-    font-size: var(--oppose-font-size, var(--font-size-2xl));
-  }
-
   .claim-pill {
     padding: 6px 16px;
     font-size: 13px;
