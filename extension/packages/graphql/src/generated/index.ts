@@ -22239,6 +22239,7 @@ export type GetClaimsByTermIdsQuery = {
         positions: Array<{
           __typename?: "positions"
           shares: any
+          total_deposit_assets_after_total_fees: any
           account?: { __typename?: "accounts"; id: string } | null
         }>
       }>
@@ -22254,6 +22255,7 @@ export type GetClaimsByTermIdsQuery = {
         positions: Array<{
           __typename?: "positions"
           shares: any
+          total_deposit_assets_after_total_fees: any
           account?: { __typename?: "accounts"; id: string } | null
         }>
       }>
@@ -22398,6 +22400,7 @@ export type GetListEntriesQuery = {
         positions: Array<{
           __typename?: "positions"
           shares: any
+          total_deposit_assets_after_total_fees: any
           account?: { __typename?: "accounts"; id: string } | null
         }>
       }>
@@ -22413,6 +22416,7 @@ export type GetListEntriesQuery = {
         positions: Array<{
           __typename?: "positions"
           shares: any
+          total_deposit_assets_after_total_fees: any
           account?: { __typename?: "accounts"; id: string } | null
         }>
       }>
@@ -33255,6 +33259,7 @@ export const GetClaimsByTermIdsDocument = `
         current_share_price
         positions(where: {account_id: {_ilike: $address}}) {
           shares
+          total_deposit_assets_after_total_fees
           account {
             id
           }
@@ -33269,6 +33274,7 @@ export const GetClaimsByTermIdsDocument = `
         current_share_price
         positions(where: {account_id: {_ilike: $address}}) {
           shares
+          total_deposit_assets_after_total_fees
           account {
             id
           }
@@ -33556,6 +33562,7 @@ export const GetListEntriesDocument = `
         current_share_price
         positions(where: {account_id: {_ilike: $address}}) {
           shares
+          total_deposit_assets_after_total_fees
           account {
             id
           }
@@ -33570,6 +33577,7 @@ export const GetListEntriesDocument = `
         current_share_price
         positions(where: {account_id: {_ilike: $address}}) {
           shares
+          total_deposit_assets_after_total_fees
           account {
             id
           }
@@ -57579,6 +57587,14 @@ export const GetClaimsByTermIds = {
                                   },
                                   {
                                     kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value:
+                                        "total_deposit_assets_after_total_fees"
+                                    }
+                                  },
+                                  {
+                                    kind: "Field",
                                     name: { kind: "Name", value: "account" },
                                     selectionSet: {
                                       kind: "SelectionSet",
@@ -57676,6 +57692,14 @@ export const GetClaimsByTermIds = {
                                   {
                                     kind: "Field",
                                     name: { kind: "Name", value: "shares" }
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value:
+                                        "total_deposit_assets_after_total_fees"
+                                    }
                                   },
                                   {
                                     kind: "Field",
@@ -58423,6 +58447,14 @@ export const GetListEntries = {
                                   },
                                   {
                                     kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value:
+                                        "total_deposit_assets_after_total_fees"
+                                    }
+                                  },
+                                  {
+                                    kind: "Field",
                                     name: { kind: "Name", value: "account" },
                                     selectionSet: {
                                       kind: "SelectionSet",
@@ -58520,6 +58552,14 @@ export const GetListEntries = {
                                   {
                                     kind: "Field",
                                     name: { kind: "Name", value: "shares" }
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value:
+                                        "total_deposit_assets_after_total_fees"
+                                    }
                                   },
                                   {
                                     kind: "Field",

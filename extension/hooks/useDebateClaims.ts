@@ -82,6 +82,8 @@ export interface DebateClaim {
   opposeMarketCap: string
   supportCount: number
   opposeCount: number
+  userSupportPnlPct: number | null
+  userOpposePnlPct: number | null
   source: "sofia" | "intuition"
 }
 
@@ -131,29 +133,59 @@ function extractVaultData(vaults: Array<{
   total_shares: any
   position_count: number
   current_share_price: any
-  positions: Array<{ shares: any }>
+  positions: Array<{
+    shares: any
+    total_deposit_assets_after_total_fees?: any
+  }>
 }> | undefined) {
   if (!vaults?.length) {
-    return { marketCap: "0", positionCount: 0, hasPosition: false }
+    return {
+      marketCap: "0",
+      positionCount: 0,
+      hasPosition: false,
+      userPnlPct: null as number | null
+    }
   }
 
   // Aggregate across all vaults (curve_id=1 linear + curve_id=2 progressive)
   let totalMarketCap = 0n
   let totalPositionCount = 0
   let hasPosition = false
+  let userShares = 0n
+  let userCostBasis = 0n
+  let weightedSharePrice = 0n
 
   for (const vault of vaults) {
     totalMarketCap += BigInt(vault.market_cap || "0")
     totalPositionCount += vault.position_count || 0
-    if (vault.positions?.some((p) => p.shares && BigInt(p.shares) > 0n)) {
-      hasPosition = true
+    const sharePrice = BigInt(vault.current_share_price || "0")
+    for (const p of vault.positions || []) {
+      if (p.shares && BigInt(p.shares) > 0n) {
+        hasPosition = true
+        const pShares = BigInt(p.shares)
+        userShares += pShares
+        userCostBasis += BigInt(
+          p.total_deposit_assets_after_total_fees || "0"
+        )
+        weightedSharePrice += pShares * sharePrice
+      }
     }
+  }
+
+  // P&L % = ((currentValue - costBasis) / costBasis) * 100
+  let userPnlPct: number | null = null
+  if (hasPosition && userCostBasis > 0n) {
+    // currentValue = sum(shares * sharePrice) / 1e18
+    const currentValue = weightedSharePrice / (10n ** 18n)
+    const pnl = Number(currentValue - userCostBasis) / Number(userCostBasis)
+    userPnlPct = Math.round(pnl * 1000) / 10 // 1 decimal
   }
 
   return {
     marketCap: String(totalMarketCap),
     positionCount: totalPositionCount,
-    hasPosition
+    hasPosition,
+    userPnlPct
   }
 }
 
@@ -269,6 +301,8 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
         opposeMarketCap: oppose.marketCap,
         supportCount: support.positionCount,
         opposeCount: oppose.positionCount,
+        userSupportPnlPct: support.userPnlPct,
+        userOpposePnlPct: oppose.userPnlPct,
         source: sofiaTermIdSet.has(triple.term_id) ? "sofia" : "intuition"
       }
     })
