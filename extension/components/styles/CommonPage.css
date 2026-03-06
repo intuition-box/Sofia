@@ -54,7 +54,7 @@
 }
 
 .search-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #FFB3C4 0%, #FFE078 100%) !important;
+  background: linear-gradient(135deg, #cea2fd 0%, #F59E0B 100%) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 16px rgba(212, 165, 116, 0.4) !important;
   color: #2D1B0E !important;

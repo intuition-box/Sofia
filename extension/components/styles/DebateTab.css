@@ -1,8 +1,8 @@
 /* DebateTab — Featured Claims & Lists */
 
 .debate-tab {
-  --claims-glow-s: rgba(255, 224, 120, 0.22);
-  --claims-glow-o: rgba(255, 179, 196, 0.18);
+  --claims-glow-s: rgba(245, 158, 11, 0.22);
+  --claims-glow-o: rgba(206, 162, 253, 0.18);
   --claims-peek: 52px;
 
   --lists-accent: var(--color-text-primary);
@@ -100,7 +100,7 @@
 
 .claim-card[data-pos="0"] {
   box-shadow:
-    0 0 0 1px rgba(255, 224, 120, 0.14),
+    0 0 0 1px rgba(245, 158, 11, 0.14),
     0 0 28px var(--claims-glow-s),
     0 0 52px var(--claims-glow-o);
   cursor: default;
@@ -205,14 +205,14 @@
 .claim-hero-value.support {
   font-size: var(--support-font-size, 40px);
   color: var(--claims-support);
-  text-shadow: 0 0 24px rgba(255, 224, 120, 0.5);
+  text-shadow: 0 0 24px rgba(245, 158, 11, 0.5);
 }
 
 .claim-hero-value.oppose {
   font-size: var(--oppose-font-size, var(--font-size-3xl));
   color: var(--claims-oppose);
   letter-spacing: -0.5px;
-  text-shadow: 0 0 18px rgba(255, 179, 196, 0.45);
+  text-shadow: 0 0 18px rgba(206, 162, 253, 0.45);
 }
 
 /* ── Battle Bar — support left, oppose right ─────────────────── */
@@ -235,7 +235,7 @@
   height: 100%;
   width: var(--support-pct);
   background: var(--claims-support);
-  box-shadow: 0 0 10px rgba(255, 224, 120, 0.5);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
   border-radius: 99px 0 0 99px;
   transition: width 0.3s ease;
 }
@@ -249,7 +249,7 @@
   height: 100%;
   width: var(--oppose-pct);
   background: var(--claims-oppose);
-  box-shadow: 0 0 10px rgba(255, 179, 196, 0.5);
+  box-shadow: 0 0 10px rgba(206, 162, 253, 0.5);
   border-radius: 0 99px 99px 0;
   transition: width 0.3s ease;
 }
@@ -299,28 +299,28 @@
   background: var(--claims-support);
   color: var(--color-text-dark);
   border-color: var(--claims-support);
-  box-shadow: 0 0 18px rgba(255, 224, 120, 0.5);
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.5);
 }
 
 .claim-pill.oppose-pill:hover:not(:disabled) {
   background: var(--claims-oppose);
   color: var(--color-text-dark);
   border-color: var(--claims-oppose);
-  box-shadow: 0 0 18px rgba(255, 179, 196, 0.5);
+  box-shadow: 0 0 18px rgba(206, 162, 253, 0.5);
 }
 
 .claim-pill.support-pill.voted {
   background: var(--claims-support);
   color: var(--color-text-dark);
   border-color: var(--claims-support);
-  box-shadow: 0 0 16px rgba(255, 224, 120, 0.3);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
 }
 
 .claim-pill.oppose-pill.voted {
   background: var(--claims-oppose);
   color: var(--color-text-dark);
   border-color: var(--claims-oppose);
-  box-shadow: 0 0 16px rgba(255, 179, 196, 0.3);
+  box-shadow: 0 0 16px rgba(206, 162, 253, 0.3);
 }
 
 .claim-pill:disabled {
@@ -662,12 +662,12 @@
 
 .td-actions .claim-pill.support-pill {
   background: var(--claims-support);
-  color: #1a1400;
+  color: #1a0f00;
 }
 
 .td-actions .claim-pill.oppose-pill {
   background: var(--claims-oppose);
-  color: #1a0010;
+  color: #1a0028;
 }
 
 .td-actions .claim-pill.support-pill.voted {
@@ -685,13 +685,13 @@
 }
 
 .td-actions .claim-pill.support-pill:hover:not(:disabled) {
-  box-shadow: 0 0 12px rgba(255, 224, 120, 0.4);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
   background: var(--claims-support);
   border-color: transparent;
 }
 
 .td-actions .claim-pill.oppose-pill:hover:not(:disabled) {
-  box-shadow: 0 0 12px rgba(255, 179, 196, 0.4);
+  box-shadow: 0 0 12px rgba(206, 162, 253, 0.4);
   background: var(--claims-oppose);
   border-color: transparent;
 }
@@ -700,14 +700,14 @@
   background: transparent;
   color: var(--claims-support);
   border-color: var(--claims-support);
-  box-shadow: 0 0 12px rgba(255, 224, 120, 0.25);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
 }
 
 .td-actions .claim-pill.oppose-pill.voted:hover:not(:disabled) {
   background: transparent;
   color: var(--claims-oppose);
   border-color: var(--claims-oppose);
-  box-shadow: 0 0 12px rgba(255, 179, 196, 0.25);
+  box-shadow: 0 0 12px rgba(206, 162, 253, 0.25);
 }
 
 /* ── Loading state in modal ──────────────────────────────────── */

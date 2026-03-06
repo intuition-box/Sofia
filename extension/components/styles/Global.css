@@ -44,8 +44,8 @@ body {
   --color-primary-light: #F2DED6;
   --color-secondary: #945941;
   --color-accent: #A6AF6B;
-  --color-hover: #FFB3C4;
-  --color-hover-light: #FFE078;
+  --color-hover: #cea2fd;
+  --color-hover-light: #F59E0B;
   --color-gradient-button: linear-gradient(135deg, #D790C7 0%, #d37cbf 20%, #ffc6b0 50%, #ffa7b1 80%, #cea2fd 100%);
   
 
