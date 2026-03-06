@@ -15,6 +15,8 @@ import "../../styles/DebateTab.css"
 
 import type { DebateClaim, FeaturedList } from "~/hooks"
 
+const DEBATE_ESTIMATE_OPTIONS = { isNewTriple: false, newAtomCount: 0 } as const
+
 // ── Helpers ─────────────────────────────────────────────────────────
 
 function formatTrust(shares: string): string {
@@ -514,6 +516,33 @@ const DebateTab = () => {
     setModalListId(null)
   }, [])
 
+  // Memoize WeightModal props to avoid unstable references
+  const weightModalTriplets = useMemo(
+    () =>
+      selectedClaim
+        ? [
+            {
+              id: selectedClaim.termId,
+              triplet: {
+                subject: selectedClaim.subject.label,
+                predicate: selectedClaim.predicate.label,
+                object: selectedClaim.object.label
+              },
+              description: "",
+              url: ""
+            }
+          ]
+        : [],
+    [selectedClaim]
+  )
+  const curveSelectorProps = useMemo(
+    () => ({
+      selected: selectedCurve,
+      onChange: setSelectedCurve
+    }),
+    [selectedCurve, setSelectedCurve]
+  )
+
   // Loading
   if (loading) {
     return (
@@ -663,33 +692,15 @@ const DebateTab = () => {
       {/* Weight Modal for Support/Oppose */}
       <WeightModal
         isOpen={isStakeModalOpen}
-        triplets={
-          selectedClaim
-            ? [
-                {
-                  id: selectedClaim.termId,
-                  triplet: {
-                    subject: selectedClaim.subject.label,
-                    predicate: selectedClaim.predicate.label,
-                    object: selectedClaim.object.label
-                  },
-                  description: "",
-                  url: ""
-                }
-              ]
-            : []
-        }
+        triplets={weightModalTriplets}
         isProcessing={isProcessing}
         transactionSuccess={transactionSuccess}
         transactionError={transactionError}
         transactionHash={transactionHash}
-        estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
+        estimateOptions={DEBATE_ESTIMATE_OPTIONS}
         showXpAnimation={true}
         submitLabel={selectedAction}
-        curveSelector={{
-          selected: selectedCurve,
-          onChange: setSelectedCurve
-        }}
+        curveSelector={curveSelectorProps}
         onClose={handleStakeModalClose}
         onSubmit={handleStakeSubmit}
       />

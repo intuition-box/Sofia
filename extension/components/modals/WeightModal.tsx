@@ -110,13 +110,14 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     }
   }, [isOpen])
 
-  // Initialize weights array when triplets change
+  // Initialize weights array when the actual triplets change (not just reference)
+  const tripletKey = triplets.map(t => t.id).join(',')
   useEffect(() => {
     if (triplets.length > 0) {
       setSelectedWeights(new Array(triplets.length).fill('default'))
       setCustomValues(new Array(triplets.length).fill(''))
     }
-  }, [triplets])
+  }, [tripletKey])
 
   // Processing animation steps
   useEffect(() => {
@@ -243,8 +244,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       })
 
       await onSubmit(weightBigIntArray)
-      setSelectedWeights(new Array(triplets.length).fill('default'))
-      setCustomValues(new Array(triplets.length).fill(''))
     } catch (error) {
       logger.error('Failed to submit weights', error)
     }
