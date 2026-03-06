@@ -5,9 +5,8 @@ import { formatUnits, getAddress } from 'viem'
 
 import SofiaLoader from '../ui/SofiaLoader'
 import XpAnimation from '../ui/XpAnimation'
-import { useWalletFromStorage, useGoldSystem, useFeeEstimate } from "~/hooks"
+import { useWalletFromStorage, useGoldSystem, useFeeEstimate, useGlobalStake, GS_FEE_DENOMINATOR } from "~/hooks"
 import type { ModalTriplet } from "~/hooks"
-import { globalStakeService } from "~/lib/services"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
 import { createHookLogger } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
@@ -70,14 +69,14 @@ const weightOptions: WeightOption[] = [
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
-const FEE_DENOMINATOR = 100000
-
 const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
+
+  const { gsEnabled, gsConfig, getUserPercentage, setUserPercentage } = useGlobalStake()
   const [gsPercentage, setGsPercentage] = useState<number>(() =>
-    globalStakeService.getUserPercentage()
+    getUserPercentage()
   )
 
   const { walletAddress } = useWalletFromStorage()
@@ -91,14 +90,12 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
     : 0
 
-  const gsEnabled = globalStakeService.isEnabled()
-
   // Resync GS preference when modal opens
   useEffect(() => {
     if (isOpen) {
-      setGsPercentage(globalStakeService.getUserPercentage())
+      setGsPercentage(getUserPercentage())
     }
-  }, [isOpen])
+  }, [isOpen, getUserPercentage])
 
   // Initialize weights array when the actual triplets change (not just reference)
   const tripletKey = triplets.map(t => t.id).join(',')
@@ -176,10 +173,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       }
     }
 
-    const poolAmount = (totalTrust * gsPercentage) / FEE_DENOMINATOR
+    const poolAmount = (totalTrust * gsPercentage) / GS_FEE_DENOMINATOR
     const signalAmount = totalTrust - poolAmount
-    const config = globalStakeService.getConfig()
-    const minDeposit = Number(config.minGlobalDeposit) / 1e18
+    const minDeposit = Number(gsConfig.minGlobalDeposit) / 1e18
     const belowMinimum = poolAmount > 0 && poolAmount < minDeposit
 
     const effectiveGsPercentage = belowMinimum ? 0 : gsPercentage
@@ -197,13 +193,13 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled, estimate, fixedDeposit, isNewTriple, newAtomCount])
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount])
 
   const handleSubmit = async () => {
     try {
       // Persist GS preference before submitting
       if (gsEnabled) {
-        globalStakeService.setUserPercentage(gsPercentage)
+        setUserPercentage(gsPercentage)
       }
 
       const minimumValue = weightOptions.find(opt => opt.id === 'minimum')!.value!

@@ -1,5 +1,7 @@
-import { useSyncExternalStore } from "react"
+import { useCallback, useSyncExternalStore } from "react"
 import { globalStakeService } from "~/lib/services"
+
+export const GS_FEE_DENOMINATOR = 100000
 
 /**
  * Hook for global stake state (position, P&L, vault stats).
@@ -12,8 +14,17 @@ export const useGlobalStake = () => {
     globalStakeService.getSnapshot
   )
 
+  const setUserPercentage = useCallback(
+    (pct: number) => globalStakeService.setUserPercentage(pct),
+    []
+  )
+
   return {
     ...state,
+    gsEnabled: globalStakeService.isEnabled(),
+    gsConfig: globalStakeService.getConfig(),
+    getUserPercentage: globalStakeService.getUserPercentage.bind(globalStakeService),
+    setUserPercentage,
     refetch: () => globalStakeService.refetch()
   }
 }

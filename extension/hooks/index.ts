@@ -75,7 +75,7 @@ export { useStreakLeaderboard } from './useStreakLeaderboard'
 export type { LeaderboardEntry } from './useStreakLeaderboard'
 
 // Global Stake
-export { useGlobalStake } from './useGlobalStake'
+export { useGlobalStake, GS_FEE_DENOMINATOR } from './useGlobalStake'
 export { useFeeEstimate } from './useFeeEstimate'
 
 // Bookmarks & Lists
