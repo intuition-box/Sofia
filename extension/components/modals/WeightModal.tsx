@@ -2,28 +2,18 @@ import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
+
 import SofiaLoader from '../ui/SofiaLoader'
 import XpAnimation from '../ui/XpAnimation'
-import { useWalletFromStorage, useGoldSystem, useFeeEstimate } from '../../hooks'
-import { globalStakeService } from '../../lib/services'
-import { EXPLORER_URLS } from '../../lib/config/chainConfig'
-import { createHookLogger } from '../../lib/utils/logger'
-import type { IntentionPurpose } from '../../types/discovery'
-import type { IntentionType } from '../../types/intentionCategories'
-import { getIntentionBadge } from '../../types/intentionCategories'
+import { useWalletFromStorage, useGoldSystem, useFeeEstimate } from "~/hooks"
+import type { ModalTriplet } from "~/hooks"
+import { globalStakeService } from "~/lib/services"
+import { EXPLORER_URLS } from "~/lib/config/chainConfig"
+import { createHookLogger } from "~/lib/utils"
+import type { IntentionPurpose } from "~/types/discovery"
+import type { IntentionType } from "~/types/intentionCategories"
+import { getIntentionBadge } from "~/types/intentionCategories"
 import '../styles/Modal.css'
-
-interface ModalTriplet {
-  id: string
-  triplet: {
-    subject: string
-    predicate: string
-    object: string
-  }
-  description: string
-  url: string
-  intention?: IntentionPurpose | IntentionType
-}
 
 const logger = createHookLogger('WeightModal')
 const goldRewardVideoUrl = chrome.runtime.getURL('assets/bggoldreward.mp4')
@@ -143,6 +133,10 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     }
   }, [isProcessing])
 
+  // Destructure estimateOptions for stable useMemo deps
+  const isNewTriple = estimateOptions?.isNewTriple ?? true
+  const newAtomCount = estimateOptions?.newAtomCount ?? 1
+
   // Compute real-time breakdown for display
   const breakdown = useMemo(() => {
     const minimumValue = weightOptions.find(opt => opt.id === 'minimum')!.value!
@@ -164,12 +158,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       }
     }
 
-    // Default worst-case: new triple + 1 new atom (object URL)
-    // Callers can override via estimateOptions for different flows
-    const createOpts = {
-      isNewTriple: estimateOptions?.isNewTriple ?? true,
-      newAtomCount: estimateOptions?.newAtomCount ?? 1
-    }
+    const createOpts = { isNewTriple, newAtomCount }
 
     if (totalTrust <= 0 || !gsEnabled) {
       const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
@@ -208,7 +197,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled, estimate, fixedDeposit, estimateOptions])
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, estimate, fixedDeposit, isNewTriple, newAtomCount])
 
   const handleSubmit = async () => {
     try {
@@ -293,9 +282,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       <div className="modal-content">
         {!(rewardClaimed && discoveryReward) && (
         <>
-        <div className="modal-header">
-        </div>
-
         <div className="modal-body">
           {isFormState && (
             <p className="modal-description">
