@@ -6,9 +6,9 @@ import {
   useState
 } from "react"
 import { createPortal } from "react-dom"
-import { formatUnits } from "viem"
 
 import { useDebateClaims, useWalletFromStorage } from "~/hooks"
+import { formatTrust, calcPercentage } from "~/lib/utils"
 import WeightModal from "../../modals/WeightModal"
 import { SofiaLoader } from "../../ui"
 import "../../styles/DebateTab.css"
@@ -16,35 +16,6 @@ import "../../styles/DebateTab.css"
 import type { DebateClaim, FeaturedList } from "~/hooks"
 
 const DEBATE_ESTIMATE_OPTIONS = { isNewTriple: false, newAtomCount: 0 } as const
-
-// ── Helpers ─────────────────────────────────────────────────────────
-
-function formatTrust(shares: string): string {
-  try {
-    const val = parseFloat(formatUnits(BigInt(shares || "0"), 18))
-    if (val >= 1000) return `${(val / 1000).toFixed(1)}K`
-    if (val >= 1) return val.toFixed(2)
-    return val.toFixed(4)
-  } catch {
-    return "0"
-  }
-}
-
-function calcPercentage(
-  supportMarketCap: string,
-  opposeMarketCap: string
-): { supportPct: number; opposePct: number } {
-  try {
-    const s = BigInt(supportMarketCap || "0")
-    const o = BigInt(opposeMarketCap || "0")
-    const total = s + o
-    if (total === 0n) return { supportPct: 50, opposePct: 50 }
-    const pct = Number((s * 100n) / total)
-    return { supportPct: pct, opposePct: 100 - pct }
-  } catch {
-    return { supportPct: 50, opposePct: 50 }
-  }
-}
 
 // ── useCardStack ────────────────────────────────────────────────────
 // Declarative card deck — transforms computed during render (no DOM

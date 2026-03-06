@@ -57,3 +57,7 @@ export type { CertTriple, DiscoveryResult, IntentionStatsResult, TrustCountsResu
 
 // Page Blockchain Reducer (pure function)
 export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE, DEFAULT_COUNTS, EMPTY_INTENTIONS } from './pageBlockchainReducer'
+
+// Debate / Claim Helpers
+export { formatTrust } from './formatTrust'
+export { calcPercentage } from './calcPercentage'
