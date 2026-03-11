@@ -17,7 +17,7 @@
 }
 
 .modal-overlay.processing {
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .modal-content {
