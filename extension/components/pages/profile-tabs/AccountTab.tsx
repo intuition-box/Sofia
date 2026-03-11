@@ -204,7 +204,7 @@ const AccountTab = () => {
       )}
 
       {activeTab === 'interest' && (
-        <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
+        <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
           <InterestTab />
         </Suspense>
       )}

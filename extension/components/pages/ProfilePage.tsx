@@ -38,19 +38,19 @@ const ProfilePage = () => {
     switch (activeTab) {
       case 'account':
         return (
-          <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
             <AccountTab />
           </Suspense>
         )
       case 'community':
         return (
-          <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
             <CommunityTab />
           </Suspense>
         )
       case 'history':
         return (
-          <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
             <HistoryTab
               expandedTriplet={expandedHistoryTriplet}
               setExpandedTriplet={setExpandedHistoryTriplet}

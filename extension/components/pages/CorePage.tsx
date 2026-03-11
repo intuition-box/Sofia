@@ -36,7 +36,7 @@ const CorePage = () => {
       </div>
 
       <div className="page-content">
-        <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
+        <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
           {activeGraphTab === 'Echoes' && <EchoesTab />}
           {activeGraphTab === 'Pulse' && <PulseTab />}
           {activeGraphTab === 'Bookmarks' && <BookmarkTab />}

@@ -46,7 +46,7 @@ const ResonancePage = () => {
         </button>
       </div>
       <div className="page-content">
-        <Suspense fallback={<div className="loading-state"><SofiaLoader size={40} /></div>}>
+        <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
           {activeTab === 'circle' && <CircleFeedTab />}
           {activeTab === 'trending' && <TrendingTab />}
           {activeTab === 'debate' && <DebateTab />}

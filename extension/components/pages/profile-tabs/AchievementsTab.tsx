@@ -209,7 +209,7 @@ const AchievementsTab = ({
   if (loading) {
     return (
       <div className="achievements-tab-content">
-        <div className="achievements-loading"><SofiaLoader size={40} /></div>
+        <div className="achievements-loading"><SofiaLoader size={150} /></div>
       </div>
     )
   }

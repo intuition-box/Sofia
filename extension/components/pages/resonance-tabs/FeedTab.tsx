@@ -340,7 +340,7 @@ const FeedTab = () => {
     return (
       <div className="feed-tab">
         <div className="loading-state">
-          <SofiaLoader size={40} />
+          <SofiaLoader size={150} />
         </div>
       </div>
     )

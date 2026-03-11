@@ -113,7 +113,7 @@ const LeaderboardTab = () => {
       </div>
 
       {loading && entries.length === 0 ? (
-        <div className="leaderboard-loading"><SofiaLoader size={40} /></div>
+        <div className="leaderboard-loading"><SofiaLoader size={150} /></div>
       ) : error ? (
         <div className="leaderboard-error">
           <p>Failed to load leaderboard</p>

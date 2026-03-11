@@ -135,7 +135,7 @@ export function FollowingPanel({ walletAddress }: FollowingPanelProps) {
     <div className="follow-panel">
       {loading && (
         <div className="loading-state">
-          <SofiaLoader size={40} />
+          <SofiaLoader size={150} />
         </div>
       )}
 

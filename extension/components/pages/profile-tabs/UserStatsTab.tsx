@@ -87,7 +87,7 @@ const UserStatsTab = ({
     return (
       <div className="stats-tab-content">
         <div className="stats-loading">
-          <SofiaLoader size={40} />
+          <SofiaLoader size={150} />
         </div>
       </div>
     )

@@ -117,7 +117,7 @@ export function ExplorerPanel({ walletAddress }: ExplorerPanelProps) {
 
         {isLoading && (
           <div className="loading-state">
-            <SofiaLoader size={40} />
+            <SofiaLoader size={150} />
           </div>
         )}
 

@@ -37,7 +37,7 @@ export function BondingCurveChart({
   if (isLoading) {
     return (
       <div className={`stake-chart-section ${className}`}>
-        <div className="stake-chart-loading"><SofiaLoader size={40} /></div>
+        <div className="stake-chart-loading"><SofiaLoader size={150} /></div>
       </div>
     )
   }
