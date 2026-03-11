@@ -198,6 +198,8 @@ const AccountTab = () => {
           voteProfit={voteProfitData}
           currentStreak={userProgress.currentStreak}
           currentVoteStreak={userProgress.currentVoteStreak}
+          certActivityDates={userProgress.certActivityDates}
+          voteActivityDates={userProgress.voteActivityDates}
         />
       )}
 

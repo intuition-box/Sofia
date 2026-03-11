@@ -116,39 +116,6 @@ export class QuestTrackingService {
     return certification_activity_dates.includes(this.getToday())
   }
 
-  async getCurrentStreak(): Promise<number> {
-    const walletAddress = await this.getWalletAddress()
-    if (!walletAddress) return 0
-
-    const key = this.getStorageKey('certification_activity_dates', walletAddress)
-    const result = await chrome.storage.local.get(key)
-    const certification_activity_dates = result[key] || []
-
-    if (certification_activity_dates.length === 0) return 0
-
-    const sorted = [...certification_activity_dates].sort().reverse()
-    const today = this.getToday()
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-
-    // Streak is broken if no activity today or yesterday
-    if (sorted[0] !== today && sorted[0] !== yesterday) return 0
-
-    let streak = 0
-    let expected = sorted[0] === today ? today : yesterday
-
-    for (const date of sorted) {
-      if (date === expected) {
-        streak++
-        const d = new Date(expected + 'T00:00:00Z')
-        d.setUTCDate(d.getUTCDate() - 1)
-        expected = d.toISOString().split('T')[0]
-      } else if (date < expected) {
-        break
-      }
-    }
-    return streak
-  }
-
   // ── Vote tracking ──
 
   async recordVoteActivity(): Promise<void> {
@@ -220,38 +187,6 @@ export class QuestTrackingService {
 
     if (result[dailyDateKey] !== this.getToday()) return 0
     return result[dailyCountKey] || 0
-  }
-
-  async getCurrentVoteStreak(): Promise<number> {
-    const walletAddress = await this.getWalletAddress()
-    if (!walletAddress) return 0
-
-    const key = this.getStorageKey('vote_activity_dates', walletAddress)
-    const result = await chrome.storage.local.get(key)
-    const vote_activity_dates = result[key] || []
-
-    if (vote_activity_dates.length === 0) return 0
-
-    const sorted = [...vote_activity_dates].sort().reverse()
-    const today = this.getToday()
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-
-    if (sorted[0] !== today && sorted[0] !== yesterday) return 0
-
-    let streak = 0
-    let expected = sorted[0] === today ? today : yesterday
-
-    for (const date of sorted) {
-      if (date === expected) {
-        streak++
-        const d = new Date(expected + 'T00:00:00Z')
-        d.setUTCDate(d.getUTCDate() - 1)
-        expected = d.toISOString().split('T')[0]
-      } else if (date < expected) {
-        break
-      }
-    }
-    return streak
   }
 
   // ── Pulse tracking ──

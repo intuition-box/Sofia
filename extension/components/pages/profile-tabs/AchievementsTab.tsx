@@ -4,9 +4,8 @@
  * Merges quest actions into the achievement grid layout
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { getAddress } from 'viem'
 import type { Quest } from '../../../types/questTypes'
 import { createHookLogger } from '../../../lib/utils/logger'
 import WeightModal from '../../modals/WeightModal'
@@ -118,6 +117,8 @@ interface AchievementsTabProps {
   voteProfit?: VaultProfitData | null
   currentStreak?: number
   currentVoteStreak?: number
+  certActivityDates?: string[]
+  voteActivityDates?: string[]
 }
 
 const STREAK_MILESTONES = [7, 30, 100]
@@ -135,11 +136,22 @@ const AchievementsTab = ({
   onRefresh,
   walletAddress,
   currentStreak,
-  currentVoteStreak
+  currentVoteStreak,
+  certActivityDates = [],
+  voteActivityDates = [],
 }: AchievementsTabProps) => {
   const [refreshing, setRefreshing] = useState(false)
-  const [certDays, setCertDays] = useState<Set<string>>(new Set())
-  const [voteDays, setVoteDays] = useState<Set<string>>(new Set())
+
+  // Derive week-filtered activity days from on-chain props
+  const weekDatesRef = useMemo(() => getWeekDates(), [])
+  const certDays = useMemo(
+    () => new Set(certActivityDates.filter(d => weekDatesRef.includes(d))),
+    [certActivityDates, weekDatesRef]
+  )
+  const voteDays = useMemo(
+    () => new Set(voteActivityDates.filter(d => weekDatesRef.includes(d))),
+    [voteActivityDates, weekDatesRef]
+  )
 
   // Quest claim modal state
   const [pendingClaim, setPendingClaim] = useState<{
@@ -183,27 +195,6 @@ const AchievementsTab = ({
     setClaimSuccess(false)
     setClaimError(null)
   }
-
-  useEffect(() => {
-    if (!walletAddress) return
-    try {
-      const checksummed = getAddress(walletAddress)
-      const certKey = `certification_activity_dates_${checksummed}`
-      const voteKey = `vote_activity_dates_${checksummed}`
-      const weekDates = getWeekDates()
-
-      chrome.storage.local.get([certKey, voteKey]).then(result => {
-        setCertDays(new Set<string>(
-          ((result[certKey] || []) as string[]).filter(d => weekDates.includes(d))
-        ))
-        setVoteDays(new Set<string>(
-          ((result[voteKey] || []) as string[]).filter(d => weekDates.includes(d))
-        ))
-      })
-    } catch {
-      // invalid address
-    }
-  }, [walletAddress])
 
   const handleRefresh = async () => {
     if (!onRefresh || refreshing) return
