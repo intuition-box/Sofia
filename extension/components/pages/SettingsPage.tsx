@@ -176,7 +176,7 @@ const SettingsPage = () => {
       <p className="description-paragraph terms-text" style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', opacity: 0.6 }}>
         <a href="https://sofia.intuition.box/privacy" target="_blank" rel="noopener noreferrer"><strong>Privacy Policy</strong></a> · <a href="https://sofia.intuition.box/terms" target="_blank" rel="noopener noreferrer"><strong>Terms & Conditions</strong></a>
       </p>
-      <p style={{ textAlign: 'center', marginTop: '8px', fontSize: '10px', opacity: 0.4 }}>
+      <p className="description-paragraph terms-text" style={{ textAlign: 'center', marginTop: '8px' }}>
         v{packageJson.version}
       </p>
     </div>
