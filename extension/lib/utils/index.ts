@@ -46,7 +46,7 @@ export { intentionToCertification, trustToCertification, getEffectiveCertStatus,
 export { buildPagePositionMap, calculateDiscoveryRanking, calculateDiscoveryGold, buildDiscoveryStats } from './discoveryUtils'
 
 // Streak Calculations
-export { calculateStreaks, toDateStr } from './streakUtils'
+export { calculateStreaks, toDateStr, extractUserActivityDates } from './streakUtils'
 
 // Fee Calculation
 export { estimateCertificationCost } from './feeCalculation'

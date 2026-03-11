@@ -58,3 +58,20 @@ export function calculateStreaks(
 
   return result
 }
+
+/**
+ * Extract unique activity dates (YYYY-MM-DD) for a single user from deposit records.
+ */
+export function extractUserActivityDates(
+  deposits: { receiver_id: string; created_at: string }[],
+  userAddress: string
+): Set<string> {
+  const addr = userAddress.toLowerCase()
+  const dates = new Set<string>()
+  for (const d of deposits) {
+    if (d.receiver_id.toLowerCase() === addr) {
+      dates.add(d.created_at.slice(0, 10))
+    }
+  }
+  return dates
+}

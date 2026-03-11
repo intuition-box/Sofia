@@ -73,6 +73,8 @@ export { useDailyStreakProfit } from './useDailyStreakProfit'
 export type { DailyStreakProfitData } from './useDailyStreakProfit'
 export { useStreakLeaderboard } from './useStreakLeaderboard'
 export type { LeaderboardEntry } from './useStreakLeaderboard'
+export { useOnChainStreak } from './useOnChainStreak'
+export type { OnChainStreakResult } from './useOnChainStreak'
 
 // Global Stake
 export { useGlobalStake, GS_FEE_DENOMINATOR } from './useGlobalStake'

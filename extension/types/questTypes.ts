@@ -53,6 +53,8 @@ export interface UserProgress {
   totalVotes: number
   hasVotedToday: boolean
   currentVoteStreak: number
+  certActivityDates: string[]   // YYYY-MM-DD from on-chain deposits
+  voteActivityDates: string[]   // YYYY-MM-DD from on-chain deposits
 }
 
 // Quest system result (hook return type)
