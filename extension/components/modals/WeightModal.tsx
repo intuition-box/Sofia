@@ -578,7 +578,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               <button
                 className="stake-btn stake-btn-cancel"
                 onClick={handleClose}
-                disabled={isProcessing}
               >
                 {(transactionSuccess || transactionError) ? 'Close' : 'Cancel'}
               </button>

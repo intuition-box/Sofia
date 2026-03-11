@@ -10,16 +10,16 @@
 .circle-top-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   padding-bottom: var(--spacing-sm);
 }
 
 /* Go to Circle button */
 .circle-go-btn {
   flex-shrink: 0;
-  padding: 6px 14px;
+  padding: 5px 10px;
   border-radius: var(--radius-xl);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition-fast);
@@ -57,7 +57,7 @@
 
 .circle-chip {
   flex-shrink: 0;
-  padding: 5px 10px;
+  padding: 4px 8px;
   border-radius: var(--radius-xl);
   font-size: var(--font-size-sm);
   font-weight: 500;
