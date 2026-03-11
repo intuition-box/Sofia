@@ -17,7 +17,9 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { useBookmarks } from './useBookmarks'
 import { useDiscoveryScore } from './useDiscoveryScore'
 import { useCreateAtom } from './useCreateAtom'
+import { useOnChainStreak } from './useOnChainStreak'
 import { QuestBadgeService, QuestProgressService } from '../lib/services'
+import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from '../lib/config/chainConfig'
 import { computeQuestStatuses, calculateLevelFromXP, calculateXPForNextLevel, getClaimId, getWalletKey } from '../lib/utils'
 import { createHookLogger } from '../lib/utils/logger'
 import { QUEST_DEFINITIONS } from '../types/questTypes'
@@ -50,6 +52,10 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     ? { stats: undefined }
     : discoveryData
 
+  // On-chain streak data (same source as LeaderboardTab)
+  const certStreak = useOnChainStreak(DAILY_CERTIFICATION_ATOM_ID, walletAddress)
+  const voteStreak = useOnChainStreak(DAILY_VOTE_ATOM_ID, walletAddress)
+
   // React state
   const [userProgress, setUserProgress] = useState<UserProgress>({
     signalsCreated: 0, bookmarkListsCreated: 0, bookmarkedSignals: 0,
@@ -62,6 +68,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     totalDiscoveries: 0, uniqueIntentionTypes: 0,
     goldAccumulated: 0,
     totalVotes: 0, hasVotedToday: false, currentVoteStreak: 0,
+    certActivityDates: [], voteActivityDates: [],
   })
 
   const [loading, setLoading] = useState(true)
@@ -174,6 +181,10 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
         bookmarkListsCount: lists.length,
         bookmarkedSignalsCount: triplets.length,
         discoveryStats,
+        onChainCertStreak: certStreak.streak,
+        onChainVoteStreak: voteStreak.streak,
+        certActivityDates: certStreak.activityDates,
+        voteActivityDates: voteStreak.activityDates,
       })
 
       setUserProgress(newProgress)
@@ -209,7 +220,7 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     }
 
     checkAndRefresh()
-  }, [walletAddress, cacheLoaded, lists.length, triplets.length, discoveryStats, isReadOnlyMode])
+  }, [walletAddress, cacheLoaded, lists.length, triplets.length, discoveryStats, isReadOnlyMode, certStreak.streak, voteStreak.streak])
 
   // ─── Compute quest statuses (pure function, no side effects) ───
   const { quests, newlyCompleted } = useMemo(() => {

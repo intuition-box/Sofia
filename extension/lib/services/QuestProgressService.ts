@@ -32,6 +32,11 @@ export interface LocalProgressData {
     totalCertifications?: number
     intentionBreakdown?: Record<string, number>
   } | null
+  // On-chain streak data (from useOnChainStreak hook)
+  onChainCertStreak?: number
+  onChainVoteStreak?: number
+  certActivityDates?: string[]
+  voteActivityDates?: string[]
 }
 
 export class QuestProgressService {
@@ -159,16 +164,18 @@ export class QuestProgressService {
       ? Object.values(localData.discoveryStats.intentionBreakdown).filter(count => count > 0).length
       : 0
 
-    // Get streak and pulse data from QuestTrackingService
-    const currentStreak = await questTrackingService.getCurrentStreak()
+    // Streak data from on-chain (passed from useOnChainStreak hook)
+    const currentStreak = localData.onChainCertStreak ?? 0
+    const currentVoteStreak = localData.onChainVoteStreak ?? 0
+
+    // Daily flags + pulse from QuestTrackingService (still local)
     const hasSignalToday = await questTrackingService.hasSignalToday()
     const hasCertificationToday = await questTrackingService.hasCertificationToday()
     const pulseStats = await questTrackingService.getPulseStats()
 
-    // Get vote data from QuestTrackingService
+    // Vote counts from QuestTrackingService (still local)
     const totalVotes = await questTrackingService.getTotalVotes()
     const hasVotedToday = await questTrackingService.hasVotedToday()
-    const currentVoteStreak = await questTrackingService.getCurrentVoteStreak()
 
     // Load Gold accumulation data for Gold quests (lifetime earned, not current balance)
     const goldData = await this.loadGoldData(walletAddress)
@@ -200,6 +207,8 @@ export class QuestProgressService {
       totalVotes,
       hasVotedToday,
       currentVoteStreak,
+      certActivityDates: localData.certActivityDates || [],
+      voteActivityDates: localData.voteActivityDates || [],
     }
 
     // Save to cache
