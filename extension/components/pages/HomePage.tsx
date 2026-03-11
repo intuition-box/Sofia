@@ -1,5 +1,6 @@
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import welcomeLogo from '../ui/icons/welcomeLogo.png'
+import packageJson from '~/package.json'
 import '../styles/HomePage.css'
 
 const HomePage = () => {
@@ -8,6 +9,9 @@ const HomePage = () => {
     <div className="home-page">
       <div className="welcome-header">
         <img src={welcomeLogo} alt="Welcome on SofIA" className="welcome-image" />
+        <p className="description-paragraph" style={{ textAlign: 'center', marginTop: '4px' }}>
+          v{packageJson.version}
+        </p>
       </div>
 
       <div className="description-sections">
@@ -30,6 +34,7 @@ const HomePage = () => {
       <div className="connect-section">
         <WalletConnectionButton />
       </div>
+
     </div>
   )
 }
