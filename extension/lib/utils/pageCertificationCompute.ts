@@ -59,6 +59,7 @@ export interface RankedPosition {
   rank: number
   accountId: string
   displayLabel: string
+  avatar: string | null
   status: "Pioneer" | "Explorer" | "Contributor"
   shares: string
   createdAt: string
@@ -344,7 +345,8 @@ export function computePagePositions(
       return {
         rank,
         accountId,
-        displayLabel: isCurrentUser ? "You" : truncateAddr(accountId),
+        displayLabel: truncateAddr(accountId),
+        avatar: null,
         status:
           rank === 1
             ? "Pioneer"

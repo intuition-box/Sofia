@@ -82,6 +82,22 @@
   color: #D4A843;
 }
 
+/* ── Avatar ── */
+
+.position-board__avatar {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px;
+  font-size: 9px !important;
+}
+
+.position-board--compact .position-board__avatar {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  font-size: 8px !important;
+}
+
 /* ── Label ── */
 
 .position-board__label {
@@ -127,6 +143,17 @@
   color: var(--color-text-very-muted);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── You Tag ── */
+
+.position-board__you-tag {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  opacity: 0.8;
 }
 
 /* ── Circle Tag ── */

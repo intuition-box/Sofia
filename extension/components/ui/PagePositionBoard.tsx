@@ -1,4 +1,5 @@
 import type { RankedPosition } from "~/lib/utils"
+import Avatar from "./Avatar"
 import "../styles/PagePositionBoard.css"
 
 interface PagePositionBoardProps {
@@ -45,9 +46,20 @@ const PagePositionBoard = ({
             <span className="position-board__rank">
               #{pos.rank}
             </span>
+            <Avatar
+              imgSrc={pos.avatar ?? undefined}
+              name={pos.accountId}
+              size="small"
+              avatarClassName="position-board__avatar"
+            />
             <span className="position-board__label">
               {pos.displayLabel}
             </span>
+            {pos.isCurrentUser && (
+              <span className="position-board__you-tag">
+                You
+              </span>
+            )}
             {pos.isInTrustCircle && !pos.isCurrentUser && (
               <span className="position-board__circle-tag">
                 Circle
@@ -65,8 +77,17 @@ const PagePositionBoard = ({
             <span className="position-board__rank">
               #{userPosition.rank}
             </span>
+            <Avatar
+              imgSrc={userPosition.avatar ?? undefined}
+              name={userPosition.accountId}
+              size="small"
+              avatarClassName="position-board__avatar"
+            />
             <span className="position-board__label">
               {userPosition.displayLabel}
+            </span>
+            <span className="position-board__you-tag">
+              You
             </span>
             <span
               className={`position-board__badge position-board__badge--${userPosition.status.toLowerCase()}`}>

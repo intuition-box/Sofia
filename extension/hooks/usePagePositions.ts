@@ -34,10 +34,7 @@ export function usePagePositions(
       return
     }
 
-    // Only resolve non-current-user addresses
-    const addresses = base.positions
-      .filter((p) => !p.isCurrentUser)
-      .map((p) => p.accountId)
+    const addresses = base.positions.map((p) => p.accountId)
 
     if (addresses.length === 0) return
 
@@ -47,10 +44,13 @@ export function usePagePositions(
       if (cancelled) return
 
       const updated = base.positions.map((p) => {
-        if (p.isCurrentUser) return p
         const ens = ensMap.get(p.accountId.toLowerCase())
-        if (ens?.name) {
-          return { ...p, displayLabel: ens.name }
+        if (ens?.name || ens?.avatar) {
+          return {
+            ...p,
+            displayLabel: ens.name ?? p.displayLabel,
+            avatar: ens.avatar ?? p.avatar
+          }
         }
         return p
       })
