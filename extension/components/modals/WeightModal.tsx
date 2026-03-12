@@ -533,6 +533,13 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   )}
                 </div>
 
+                {/* Position Board — between explorer link and reward */}
+                {positionBoard && (
+                  <div className="modal-position-board">
+                    {positionBoard}
+                  </div>
+                )}
+
                 {discoveryReward && !rewardClaimed && (
                   <div className="modal-success-right">
                     <span className="reward-status-badge">{discoveryReward.status}</span>
@@ -550,13 +557,6 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 )}
 
               </div>
-            </div>
-          )}
-
-          {/* Position Board — success state only */}
-          {transactionSuccess && positionBoard && (
-            <div className="modal-position-board">
-              {positionBoard}
             </div>
           )}
 
