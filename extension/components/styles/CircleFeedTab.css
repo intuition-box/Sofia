@@ -158,9 +158,15 @@
   text-decoration: underline;
 }
 
-/* Intention Badge */
-.circle-intention-badge {
+/* Intention Badges */
+.circle-intention-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   margin-left: auto;
+}
+
+.circle-intention-badge {
   flex-shrink: 0;
   padding: 2px var(--spacing-sm);
   border-radius: 10px;
@@ -320,6 +326,83 @@
   justify-content: center;
   align-items: center;
   min-height: 400px;
+}
+
+/* Intention Picker Overlay */
+.circle-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-picker-modal {
+  background: linear-gradient(to bottom, #060504, #101010);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  min-width: 260px;
+  max-width: 320px;
+  box-shadow: var(--shadow-heavy);
+  animation: modalAppear 0.2s ease-out;
+}
+
+@keyframes modalAppear {
+  from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.circle-picker-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.circle-picker-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.circle-picker-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-glass-light);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: left;
+}
+
+.circle-picker-option:hover:not(:disabled) {
+  border-color: var(--picker-color);
+  background: color-mix(in srgb, var(--picker-color) 10%, transparent);
+  transform: translateY(-1px);
+}
+
+.circle-picker-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.circle-picker-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 /* Responsive */
