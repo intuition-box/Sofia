@@ -198,3 +198,40 @@
 .position-board {
   animation: positionBoardAppear 0.3s ease-out;
 }
+
+/* ── ShareCertificationButton ── */
+
+.share-certification-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-family: var(--font-family-primary);
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.share-certification-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.share-certification-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.share-certification-btn__icon {
+  width: 14px;
+  height: 14px;
+  filter: invert(1);
+}

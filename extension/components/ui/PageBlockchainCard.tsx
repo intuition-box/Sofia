@@ -19,6 +19,7 @@ import type { IntentionPurpose } from "~/types/discovery"
 import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
 import PagePositionBoard from "./PagePositionBoard"
+import ShareCertificationButton from "./ShareCertificationButton"
 import { PageBlockchainSkeleton } from "./Skeleton"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
@@ -231,12 +232,21 @@ const PageBlockchainCard = () => {
 
           {/* Position Board — certifiers leaderboard */}
           {!isRestricted && totalPositions > 0 && (
-            <PagePositionBoard
-              positions={positions}
-              userPosition={userPosition}
-              totalPositions={totalPositions}
-              variant="expanded"
-            />
+            <>
+              <PagePositionBoard
+                positions={positions}
+                userPosition={userPosition}
+                totalPositions={totalPositions}
+                variant="expanded"
+              />
+              <ShareCertificationButton
+                pageUrl={currentUrl}
+                pageTitle={pageTitle}
+                userStatus={userPosition?.status ?? null}
+                userRank={userPosition?.rank ?? null}
+                totalPositions={totalPositions}
+              />
+            </>
           )}
         </div>
       )}
@@ -288,12 +298,21 @@ const PageBlockchainCard = () => {
             showXpAnimation={true}
             positionBoard={
               totalPositions > 0 ? (
-                <PagePositionBoard
-                  positions={positions}
-                  userPosition={userPosition}
-                  totalPositions={totalPositions}
-                  variant="compact"
-                />
+                <>
+                  <PagePositionBoard
+                    positions={positions}
+                    userPosition={userPosition}
+                    totalPositions={totalPositions}
+                    variant="compact"
+                  />
+                  <ShareCertificationButton
+                    pageUrl={currentUrl}
+                    pageTitle={pageTitle}
+                    userStatus={userPosition?.status ?? null}
+                    userRank={userPosition?.rank ?? null}
+                    totalPositions={totalPositions}
+                  />
+                </>
               ) : undefined
             }
             onClose={() => {
