@@ -49,31 +49,157 @@ export const SOFIA_CLAIMS: ClaimConfig[] = [
 export const INTUITION_FEATURED_CLAIMS: ClaimConfig[] = [
   {
     tripleTermId:
-      "0x2af3e7ce733d60c2b1b600eaf853c11f2b255c8e48c6ca04303b929a9ea4bfaf",
-    subject: "Claude",
+      "0xea977b59434a8ce095928c41063e0d891254aa69ecb6187461df5e2966d1104c",
+    subject: "TikTok",
     predicate: "is better than",
-    object: "ChatGPT"
+    object: "Instagram"
   },
   {
     tripleTermId:
-      "0x5017baa08fb90afeb8b9f7b3b965bc68d9cd6ec1aa830d611d2ab4b6d2076798",
-    subject: "Perplexity",
-    predicate: "is better than",
-    object: "Google"
+      "0x4df4347905a58880b5f2def324d5fc755441d297c1857bd4b1a09ac0912c6a4d",
+    subject: "Privacy",
+    predicate: "is more important than",
+    object: "safety"
   },
   {
     tripleTermId:
-      "0x9e8c586c15f0e2ba8b1ca772bdb2acde2fb1558c456aa52833f81ddfdc84c72a",
-    subject: "Pineapple",
-    predicate: "belongs on",
-    object: "Pizza"
+      "0x8065d622d20acd7dc0f83ec6e3af39032c9b2aa8f2bb4092ea7324fc3a42d9bd",
+    subject: "AI",
+    predicate: "harms",
+    object: "human cognition"
   },
   {
     tripleTermId:
-      "0xeeba0e2d6de30006cb4a5ddb1e95748c1f65d2c7f59a2d8cf1832e043f53314c",
-    subject: "Spotify",
-    predicate: "is better than",
-    object: "Apple Music"
+      "0x2b33fbc2778c2ec35c5f5b43c86ac2ccb6e2a6d394749297232cff88c8acbcec",
+    subject: "College",
+    predicate: "is essential for",
+    object: "career success"
+  },
+  {
+    tripleTermId:
+      "0xfb16f96b190c4808b441a7263e25371978256a027ba0108334be2e57059c0986",
+    subject: "Unchecked AI development",
+    predicate: "threatens",
+    object: "public safety"
+  },
+  {
+    tripleTermId:
+      "0xdcc0f0ea076e4d7ac81d768c591434d5c7b6faaefc19ed723467155126ec7b83",
+    subject: "AI-generated content",
+    predicate: "requires",
+    object: "mandatory disclosure"
+  },
+  {
+    tripleTermId:
+      "0x937974c72204675d26b790696fc87448d79506dc7409d3cf916ed8749167d296",
+    subject: "AI-generated music",
+    predicate: "should be excluded from",
+    object: "streaming platforms"
+  },
+  {
+    tripleTermId:
+      "0xfdeef36c2e763016e49394087ecc931472ff3decdd4384c2e073bf46b86966d3",
+    subject: "Self-driving cars",
+    predicate: "are more dangerous than",
+    object: "human drivers"
+  },
+  {
+    tripleTermId:
+      "0xa67fdbdc8bef000273a9436e2fd2fb8a4b1f8a152734e5c6fc38a8e42ca92188",
+    subject: "TradFi adoption",
+    predicate: "benefits",
+    object: "the crypto ecosystem"
+  },
+  {
+    tripleTermId:
+      "0xba4a755d736eac310aa2ea046b77213f3309487a863f5e3b6c0cdfc0d24a505e",
+    subject: "Memecoins",
+    predicate: "benefits",
+    object: "the crypto ecosystem"
+  },
+  {
+    tripleTermId:
+      "0x1048d893a4ad421fda6e0404a994d405e063797ccb3b950d6b2efb74945a6eca",
+    subject: "China",
+    predicate: "leads in",
+    object: "the space race"
+  },
+  {
+    tripleTermId:
+      "0x4297365d40f284f0fb65633d61caa65e6a1f7ec07d3747444ad7fb18a108a59e",
+    subject: "The US",
+    predicate: "leads in",
+    object: "the space race"
+  },
+  {
+    tripleTermId:
+      "0x8c91a05ec714b13098c5719a0a1e697434823ab50d134aaf66133e1de79031fc",
+    subject: "The US",
+    predicate: "should go to war with",
+    object: "Iran"
+  },
+  {
+    tripleTermId:
+      "0x80c046c2db63c6eb3ce6e800f1da0556574c69656bef8c084b3145628fe154d0",
+    subject: "The Iranian regime",
+    predicate: "threatens",
+    object: "global stability"
+  },
+  {
+    tripleTermId:
+      "0x751b783abd233d6879a84824d2259968ab85e2148005eb3bcbd4f325c5f2fa22",
+    subject: "Oil",
+    predicate: "is more important than",
+    object: "all other natural resources"
+  },
+  {
+    tripleTermId:
+      "0x62b5baa5d59b7b39f3a3a5efde57233e8155c4294d7b5815b49f8c7e44935a7b",
+    subject: "Nuclear energy",
+    predicate: "solves",
+    object: "the energy crisis"
+  },
+  {
+    tripleTermId:
+      "0x28b8b4480dea9326c88b3cedb694ce6bd6881376320d12fe32fdff0232859b09",
+    subject: "Fossil fuel dependence",
+    predicate: "threatens",
+    object: "the planet"
+  },
+  {
+    tripleTermId:
+      "0xd44532d46796c847beea77dcbf339bb0894d0e90cd94ef89cea6d9a8754cfd82",
+    subject: "Bitcoin",
+    predicate: "hedges against",
+    object: "geopolitical risk"
+  },
+  {
+    tripleTermId:
+      "0x392159a5f5c4dc5b82decf8dcdc4437e36da26a8e86bdc03ea0d7fc54fe50262",
+    subject: "Sinners",
+    predicate: "deserves",
+    object: "Best Picture"
+  },
+  {
+    tripleTermId:
+      "0x6ab7ad5804e4aee49f6c779b979e312159ff57a1315b2bcda6d18260d19d0efa",
+    subject: "The Oscars",
+    predicate: "remain",
+    object: "culturally relevant"
+  },
+  {
+    tripleTermId:
+      "0xfd363d369f98be03013b4f4dbae3b2dc84fe9cf9c8512178319edb776f7f8ac6",
+    subject: "Crypto",
+    predicate: "will replace",
+    object: "traditional banks"
+  },
+  {
+    tripleTermId:
+      "0xbc6ffffabb93295ee32bf6805ad858b9b5e13db4528fe3cf760ca29a5b2197cf",
+    subject: "Robots",
+    predicate: "will replace",
+    object: "surgeons"
   }
 ]
 

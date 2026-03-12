@@ -10,7 +10,7 @@ import {
  * Declarative card stack — transforms computed during render (no DOM
  * manipulation). Returns style getters and interaction handlers.
  */
-export function useCardStack(count: number, peekPx: number, scaleFactor: number) {
+export function useCardStack(count: number, peekPx: number, scaleFactor: number, maxVisible?: number) {
   const [userPositions, setUserPositions] = useState<number[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
   const [noAnim, setNoAnim] = useState(true)
@@ -20,20 +20,24 @@ export function useCardStack(count: number, peekPx: number, scaleFactor: number)
     return Array.from({ length: count }, (_, i) => i)
   }, [userPositions, count])
 
-  const backCount = Math.max(0, count - 1)
+  // Cap visual depth so transforms stay bounded regardless of count
+  const visualDepth = maxVisible
+    ? Math.min(count - 1, maxVisible)
+    : Math.max(0, count - 1)
 
   // Pure style computation — called during render, always in sync
   const getStyle = useCallback(
     (index: number): React.CSSProperties => {
       const pos = positions[index] ?? index
-      const ty = (backCount - pos) * peekPx
-      const sc = 1 - pos * scaleFactor
+      const clamped = Math.min(pos, visualDepth)
+      const ty = (visualDepth - clamped) * peekPx
+      const sc = 1 - clamped * scaleFactor
       return { transform: `translateY(${ty}px) scale(${sc})` }
     },
-    [positions, backCount, peekPx, scaleFactor]
+    [positions, visualDepth, peekPx, scaleFactor]
   )
 
-  const stackPadding = backCount * peekPx
+  const stackPadding = visualDepth * peekPx
 
   // Enable CSS transitions after first paint
   useEffect(() => {
