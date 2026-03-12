@@ -49,6 +49,8 @@ interface WeightModalProps {
     selected: "linear" | "progressive"
     onChange: (curve: "linear" | "progressive") => void
   }
+  /** Rendered below the success card (e.g. PagePositionBoard) */
+  positionBoard?: React.ReactNode
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
@@ -69,7 +71,7 @@ const weightOptions: WeightOption[] = [
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, positionBoard, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -530,6 +532,13 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                     </a>
                   )}
                 </div>
+
+                {/* Position Board — between explorer link and reward */}
+                {positionBoard && (
+                  <div className="modal-position-board">
+                    {positionBoard}
+                  </div>
+                )}
 
                 {discoveryReward && !rewardClaimed && (
                   <div className="modal-success-right">

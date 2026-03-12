@@ -55,6 +55,24 @@ export interface TrustCountsResult {
   domainTrustRatio: number
 }
 
+export interface RankedPosition {
+  rank: number
+  accountId: string
+  displayLabel: string
+  avatar: string | null
+  status: "Pioneer" | "Explorer" | "Contributor"
+  shares: string
+  createdAt: string
+  isCurrentUser: boolean
+  isInTrustCircle: boolean
+}
+
+export interface PagePositionsResult {
+  positions: RankedPosition[]
+  userPosition: RankedPosition | null
+  totalPositions: number
+}
+
 // ── Helpers ──
 
 const EMPTY_INTENTIONS: Record<IntentionPurpose, number> = {
@@ -261,5 +279,94 @@ export function computeTrustCounts(
       domainTotalSupport > 0
         ? Math.round((domainTrust.size / domainTotalSupport) * 100)
         : 50
+  }
+}
+
+/**
+ * Compute ranked position list from certification triples.
+ * Rank is purely chronological — first certifier = Pioneer.
+ * Shares are aggregated per account but kept for future use only.
+ */
+export function computePagePositions(
+  certTriples: CertTriple[],
+  pageAtomIds: string[],
+  walletAddress: string | null,
+  trustCircleAddresses: string[]
+): PagePositionsResult {
+  const pageAtomSet = new Set(pageAtomIds)
+  const triples =
+    pageAtomSet.size > 0
+      ? certTriples.filter((t) => pageAtomSet.has(t.object?.term_id))
+      : []
+
+  // Collect unique holders: earliest created_at + aggregate shares
+  const holdersMap = new Map<
+    string,
+    { createdAt: string; totalShares: bigint }
+  >()
+  for (const triple of triples) {
+    for (const pos of triple.positions || []) {
+      const accountId = pos.account_id?.toLowerCase()
+      const createdAt = pos.created_at
+      if (!accountId || !createdAt) continue
+
+      const existing = holdersMap.get(accountId)
+      const shares = BigInt(pos.shares || "0")
+      if (!existing) {
+        holdersMap.set(accountId, { createdAt, totalShares: shares })
+      } else {
+        if (createdAt < existing.createdAt) {
+          existing.createdAt = createdAt
+        }
+        existing.totalShares += shares
+      }
+    }
+  }
+
+  // Sort by created_at (chronological rank)
+  const sorted = Array.from(holdersMap.entries()).sort(
+    (a, b) =>
+      new Date(a[1].createdAt).getTime() -
+      new Date(b[1].createdAt).getTime()
+  )
+
+  const userAddr = walletAddress?.toLowerCase()
+  const circleSet = new Set(
+    trustCircleAddresses.map((a) => a.toLowerCase())
+  )
+
+  const truncateAddr = (addr: string): string =>
+    `${addr.slice(0, 6)}...${addr.slice(-4)}`
+
+  const positions: RankedPosition[] = sorted.map(
+    ([accountId, data], index) => {
+      const rank = index + 1
+      const isCurrentUser = accountId === userAddr
+      return {
+        rank,
+        accountId,
+        displayLabel: truncateAddr(accountId),
+        avatar: null,
+        status:
+          rank === 1
+            ? "Pioneer"
+            : rank <= 10
+              ? "Explorer"
+              : "Contributor",
+        shares: data.totalShares.toString(),
+        createdAt: data.createdAt,
+        isCurrentUser,
+        isInTrustCircle: circleSet.has(accountId)
+      }
+    }
+  )
+
+  const userPosition =
+    positions.find((p) => p.isCurrentUser) ?? null
+
+  return {
+    positions,
+    userPosition,
+    totalPositions: positions.length
   }
 }
