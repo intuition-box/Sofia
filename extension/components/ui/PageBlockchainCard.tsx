@@ -231,13 +231,14 @@ const PageBlockchainCard = () => {
           )}
 
           {/* Position Board — certifiers leaderboard */}
-          {!isRestricted && totalPositions > 0 && (
+          {!isRestricted && (totalPositions > 0 || isRefreshing) && (
             <>
               <PagePositionBoard
                 positions={positions}
                 userPosition={userPosition}
                 totalPositions={totalPositions}
                 variant="expanded"
+                loading={isRefreshing && totalPositions === 0}
               />
               <ShareCertificationButton
                 pageUrl={currentUrl}
@@ -297,23 +298,22 @@ const PageBlockchainCard = () => {
             rewardClaimed={reward.rewardClaimed}
             showXpAnimation={true}
             positionBoard={
-              totalPositions > 0 ? (
-                <>
-                  <PagePositionBoard
-                    positions={positions}
-                    userPosition={userPosition}
-                    totalPositions={totalPositions}
-                    variant="compact"
-                  />
-                  <ShareCertificationButton
-                    pageUrl={currentUrl}
-                    pageTitle={pageTitle}
-                    userStatus={userPosition?.status ?? null}
-                    userRank={userPosition?.rank ?? null}
-                    totalPositions={totalPositions}
-                  />
-                </>
-              ) : undefined
+              <>
+                <PagePositionBoard
+                  positions={positions}
+                  userPosition={userPosition}
+                  totalPositions={totalPositions}
+                  variant="compact"
+                  loading={totalPositions === 0}
+                />
+                <ShareCertificationButton
+                  pageUrl={currentUrl}
+                  pageTitle={pageTitle}
+                  userStatus={userPosition?.status ?? null}
+                  userRank={userPosition?.rank ?? null}
+                  totalPositions={totalPositions}
+                />
+              </>
             }
             onClose={() => {
               modal.handleModalClose()

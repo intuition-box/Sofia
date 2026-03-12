@@ -7,6 +7,7 @@ interface PagePositionBoardProps {
   userPosition: RankedPosition | null
   totalPositions: number
   variant: "compact" | "expanded"
+  loading?: boolean
   maxDisplay?: number
 }
 
@@ -15,9 +16,10 @@ const PagePositionBoard = ({
   userPosition,
   totalPositions,
   variant,
+  loading = false,
   maxDisplay = 5
 }: PagePositionBoardProps) => {
-  if (totalPositions === 0) return null
+  if (totalPositions === 0 && !loading) return null
 
   const displayed = positions.slice(0, maxDisplay)
   const remaining = totalPositions - displayed.length
@@ -37,6 +39,12 @@ const PagePositionBoard = ({
           {totalPositions}
         </span>
       </div>
+
+      {loading && totalPositions === 0 && (
+        <div className="position-board__loading">
+          Loading certifiers...
+        </div>
+      )}
 
       <ul className="position-board__list">
         {displayed.map((pos) => (

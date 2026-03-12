@@ -51,7 +51,7 @@ const ShareCertificationButton = ({
       const title = pageTitle || pageUrl
       const tweetText =
         `I just certified "${title}" as ${userStatus}` +
-        ` #${userRank} on @sofiaprotocol`
+        ` #${userRank} on @0xSofia`
 
       const intentUrl =
         `https://twitter.com/intent/tweet?text=` +
@@ -79,13 +79,11 @@ const ShareCertificationButton = ({
     totalPositions
   ])
 
-  if (!userStatus) return null
-
   return (
     <button
       className="share-certification-btn"
       onClick={handleShare}
-      disabled={disabled || isSharing}
+      disabled={disabled || isSharing || !userStatus}
     >
       <img
         src={xIcon}

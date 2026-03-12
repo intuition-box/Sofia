@@ -200,6 +200,21 @@
   padding: var(--spacing-sm) var(--spacing-md);
 }
 
+/* ── Loading state ── */
+
+.position-board__loading {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-very-muted);
+  text-align: center;
+  animation: positionBoardPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes positionBoardPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 /* ── Empty state ── */
 
 .position-board__empty {
