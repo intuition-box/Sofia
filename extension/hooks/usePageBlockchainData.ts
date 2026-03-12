@@ -403,6 +403,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         counts: result.counts,
         atomsList: result.atomsList,
         pageAtomIds: result.pageAtomIds,
+        certTriples: result.certTriples,
         totalCertifications: discovery.totalCertifications,
         discoveryStatus: discovery.discoveryStatus,
         certificationRank: discovery.certificationRank,
@@ -559,6 +560,7 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
     isRestricted: state.isRestricted,
     restrictionMessage: state.restrictionMessage,
     pageAtomIds: state.pageAtomIds,
+    certTriples: state.certTriples,
     // Discovery
     totalCertifications: state.totalCertifications,
     discoveryStatus: state.discoveryStatus,

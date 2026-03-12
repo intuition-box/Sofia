@@ -2,6 +2,8 @@
  * Page-related types for blockchain data and analysis
  */
 
+import type { CertTriple } from "~/lib/utils/pageCertificationCompute"
+
 export interface PageBlockchainTriplet {
   term_id: string
   subject: { label: string }
@@ -66,6 +68,7 @@ export interface PageBlockchainState {
   counts: PageBlockchainCounts
   atomsList: PageAtomInfo[]
   pageAtomIds: string[]
+  certTriples: CertTriple[]
   totalCertifications: number
   discoveryStatus: import("./discovery").DiscoveryStatus
   certificationRank: number | null
@@ -92,6 +95,7 @@ export type PageBlockchainAction =
       counts: PageBlockchainCounts
       atomsList: PageAtomInfo[]
       pageAtomIds: string[]
+      certTriples: CertTriple[]
       totalCertifications: number
       discoveryStatus: import("./discovery").DiscoveryStatus
       certificationRank: number | null
@@ -122,6 +126,7 @@ export interface UsePageBlockchainDataResult {
   isRestricted: boolean
   restrictionMessage: string | null
   pageAtomIds: string[]
+  certTriples: CertTriple[]
   // Discovery data (from unified PageCertificationData query)
   totalCertifications: number
   discoveryStatus: import("./discovery").DiscoveryStatus

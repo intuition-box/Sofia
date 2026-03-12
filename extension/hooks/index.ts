@@ -53,6 +53,7 @@ export { useTrendingCertifications } from './useTrendingCertifications'
 export type { TrendingItem, TrendingCategory, TrendingCertifier } from './useTrendingCertifications'
 export { usePageDiscovery } from './usePageDiscovery'
 export { useDiscoveryReward } from './useDiscoveryReward'
+export { usePagePositions } from './usePagePositions'
 
 // Onboarding
 export { useOnboardingClaim } from './useOnboardingClaim'
