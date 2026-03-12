@@ -306,7 +306,13 @@ async function handleWalletRequest(event: MessageEvent) {
     logger.error("Request failed", { method, error })
 
     const errCode = error instanceof Object && 'code' in error ? (error as { code: number }).code : -32603
-    const errMessage = error instanceof Error ? error.message : "Unknown error"
+    const errMessage = error instanceof Error
+      ? error.message
+      : error instanceof Object && 'message' in error
+        ? String((error as { message: unknown }).message)
+        : typeof error === 'string'
+          ? error
+          : "Unknown error"
 
     window.postMessage({
       type: "SOFIA_WALLET_RESPONSE",
@@ -352,13 +358,13 @@ function setupProviderListeners() {
 
   try {
     for (const [event, handler] of Object.entries(handlers)) {
-      provider.on?.(event, handler)
+      ;(provider as any).on?.(event, handler)
     }
 
     activeListenerCleanup = () => {
       for (const [event, handler] of Object.entries(handlers)) {
         try {
-          provider.removeListener?.(event, handler)
+          ;(provider as any).removeListener?.(event, handler)
         } catch {
           // Provider may not support removeListener
         }

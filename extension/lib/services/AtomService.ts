@@ -83,7 +83,13 @@ class AtomServiceClass {
 
       logger.info('Proxy approval confirmed')
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorMessage = error instanceof Error
+        ? error.message
+        : error instanceof Object && 'message' in error
+          ? String((error as { message: unknown }).message)
+          : typeof error === 'string'
+            ? error
+            : 'Unknown error'
       if (errorMessage.includes('rejected') || errorMessage.includes('denied')) {
         throw new Error('Proxy approval rejected by user. This is required for your first transaction.')
       }
