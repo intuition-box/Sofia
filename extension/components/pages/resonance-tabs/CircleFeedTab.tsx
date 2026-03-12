@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 
 import {
   useGetTrustCirclePositionsQuery,
@@ -66,6 +67,18 @@ interface CircleFeedItem {
   createdAt: string
 }
 
+interface GroupedFeedItem {
+  groupKey: string
+  pageLabel: string
+  pageUrl: string
+  domain: string
+  memberAddress: string
+  memberLabel: string
+  memberImage: string
+  createdAt: string
+  intentions: CircleFeedItem[]
+}
+
 type ViewState =
   | { type: 'feed' }
   | { type: 'member-profile'; address: string; label: string; image?: string }
@@ -107,6 +120,12 @@ const CircleFeedTab = () => {
     const imageMap = new Map<string, string>()
 
     for (const triple of trustCircleData.triples) {
+      // Only include if user has positive shares (not untrusted)
+      const hasPositiveShares = triple.term?.vaults?.some(v =>
+        v.positions?.some(p => p.shares && BigInt(p.shares) > 0n)
+      )
+      if (!hasPositiveShares) continue
+
       const accounts = triple.object?.accounts || []
       const label = triple.object?.label || ''
 
@@ -228,15 +247,53 @@ const CircleFeedTab = () => {
     setFeedItems(items)
   }, [eventsData, walletToLabel, walletToImage])
 
-  // Filter items by active category
+  // Group feed items by pageUrl + memberAddress to avoid duplicate cards
+  const groupedItems = useMemo(() => {
+    const groups = new Map<string, GroupedFeedItem>()
+
+    for (const item of feedItems) {
+      const key = `${item.pageUrl}::${item.memberAddress.toLowerCase()}`
+      const existing = groups.get(key)
+
+      if (existing) {
+        // Only add if this intention type isn't already present
+        if (!existing.intentions.some(i => i.intentionType === item.intentionType)) {
+          existing.intentions.push(item)
+        }
+        // Keep the most recent createdAt
+        if (item.createdAt > existing.createdAt) {
+          existing.createdAt = item.createdAt
+        }
+      } else {
+        groups.set(key, {
+          groupKey: key,
+          pageLabel: item.pageLabel,
+          pageUrl: item.pageUrl,
+          domain: item.domain,
+          memberAddress: item.memberAddress,
+          memberLabel: item.memberLabel,
+          memberImage: item.memberImage,
+          createdAt: item.createdAt,
+          intentions: [item]
+        })
+      }
+    }
+
+    return [...groups.values()]
+  }, [feedItems])
+
+  // Filter grouped items by active category
   const filteredItems = useMemo(() => {
-    if (activeFilter === 'all') return feedItems
-    return feedItems.filter(item => item.intentionType === activeFilter)
-  }, [feedItems, activeFilter])
+    if (activeFilter === 'all') return groupedItems
+    return groupedItems.filter(group =>
+      group.intentions.some(i => i.intentionType === activeFilter)
+    )
+  }, [groupedItems, activeFilter])
 
   // Step 4: Check user's existing positions on feed triples (support/oppose state)
   const allTripleIds = useMemo(() => {
-    return [...new Set(feedItems.map(item => item.tripleTermId).filter(Boolean))]
+    const ids = feedItems.map(item => item.tripleTermId).filter(Boolean)
+    return [...new Set(ids)]
   }, [feedItems])
 
   const { data: userPositionsData } = useFindUserPositionsOnTriplesQuery(
@@ -307,22 +364,44 @@ const CircleFeedTab = () => {
   const [selectedVaultId, setSelectedVaultId] = useState<string>('')
   const [selectedAction, setSelectedAction] = useState<'Support' | 'Oppose'>('Support')
 
-  const handleSupport = (e: React.MouseEvent, item: CircleFeedItem) => {
-    e.stopPropagation()
-    if (!address || !item.tripleTermId) return
+  // Intention picker state (shown when a grouped card has multiple intentions)
+  const [intentionPickerGroup, setIntentionPickerGroup] = useState<GroupedFeedItem | null>(null)
+  const [intentionPickerAction, setIntentionPickerAction] = useState<'Support' | 'Oppose'>('Support')
+
+  const openVoteFlow = (item: CircleFeedItem, action: 'Support' | 'Oppose') => {
+    const vaultId = action === 'Support' ? item.tripleTermId : item.counterTermId
+    if (!vaultId) return
     setSelectedItem(item)
-    setSelectedVaultId(item.tripleTermId)
-    setSelectedAction('Support')
+    setSelectedVaultId(vaultId)
+    setSelectedAction(action)
     setIsStakeModalOpen(true)
   }
 
-  const handleOppose = (e: React.MouseEvent, item: CircleFeedItem) => {
+  const handleSupport = (e: React.MouseEvent, group: GroupedFeedItem) => {
     e.stopPropagation()
-    if (!address || !item.counterTermId) return
-    setSelectedItem(item)
-    setSelectedVaultId(item.counterTermId)
-    setSelectedAction('Oppose')
-    setIsStakeModalOpen(true)
+    if (!address) return
+    if (group.intentions.length === 1) {
+      openVoteFlow(group.intentions[0], 'Support')
+    } else {
+      setIntentionPickerGroup(group)
+      setIntentionPickerAction('Support')
+    }
+  }
+
+  const handleOppose = (e: React.MouseEvent, group: GroupedFeedItem) => {
+    e.stopPropagation()
+    if (!address) return
+    if (group.intentions.length === 1) {
+      openVoteFlow(group.intentions[0], 'Oppose')
+    } else {
+      setIntentionPickerGroup(group)
+      setIntentionPickerAction('Oppose')
+    }
+  }
+
+  const handleIntentionPick = (item: CircleFeedItem) => {
+    openVoteFlow(item, intentionPickerAction)
+    setIntentionPickerGroup(null)
   }
 
   const handleStakeModalClose = () => {
@@ -544,75 +623,123 @@ const CircleFeedTab = () => {
       {/* Feed grid */}
       {filteredItems.length > 0 && (
         <div className="circle-grid">
-          {filteredItems.map(item => (
-            <div
-              key={item.id}
-              className="circle-card"
-              onClick={() => window.open(item.pageUrl, '_blank', 'noopener,noreferrer')}
-            >
-              {/* Header: favicon + badge */}
-              <div className="circle-card-header">
-                <img
-                  src={getFaviconUrl(item.domain, 64)}
-                  alt=""
-                  className="circle-card-favicon"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none'
-                  }}
-                />
-                <span
-                  className="circle-intention-badge"
-                  style={{
-                    backgroundColor: `${INTENTION_CONFIG[item.intentionType].color}20`,
-                    color: INTENTION_CONFIG[item.intentionType].color
-                  }}
-                >
-                  {INTENTION_CONFIG[item.intentionType].label}
-                </span>
-              </div>
-
-              {/* Page title */}
-              <div className="circle-card-title">{item.pageLabel}</div>
-
-              {/* Footer: member + votes + time */}
-              <div className="circle-card-footer">
-                <span
-                  className="circle-card-member-name"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleMemberClick(item.memberAddress, item.memberLabel, item.memberImage)
-                  }}
-                >
-                  {item.memberLabel}
-                </span>
-                {item.tripleTermId && (
-                  <div className="circle-card-actions">
-                    <button
-                      className={`circle-action-btn circle-support-btn ${votedItems.get(item.id) === 'support' ? 'voted' : ''}`}
-                      onClick={(e) => handleSupport(e, item)}
-                      title="Support this certification"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                      </svg>
-                    </button>
-                    <button
-                      className={`circle-action-btn circle-oppose-btn ${votedItems.get(item.id) === 'oppose' ? 'voted' : ''}`}
-                      onClick={(e) => handleOppose(e, item)}
-                      disabled={!item.counterTermId}
-                      title="Oppose this certification"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 20l8-8h-5V4H9v8H4z" />
-                      </svg>
-                    </button>
+          {filteredItems.map(group => {
+            const primaryItem = group.intentions[0]
+            return (
+              <div
+                key={group.groupKey}
+                className="circle-card"
+                onClick={() => window.open(group.pageUrl, '_blank', 'noopener,noreferrer')}
+              >
+                {/* Header: favicon + badges */}
+                <div className="circle-card-header">
+                  <img
+                    src={getFaviconUrl(group.domain, 64)}
+                    alt=""
+                    className="circle-card-favicon"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none'
+                    }}
+                  />
+                  <div className="circle-intention-badges">
+                    {group.intentions.map(intention => (
+                      <span
+                        key={intention.intentionType}
+                        className="circle-intention-badge"
+                        style={{
+                          backgroundColor: `${INTENTION_CONFIG[intention.intentionType].color}20`,
+                          color: INTENTION_CONFIG[intention.intentionType].color
+                        }}
+                      >
+                        {INTENTION_CONFIG[intention.intentionType].label}
+                      </span>
+                    ))}
                   </div>
-                )}
-                <span className="circle-card-time">{formatTimestamp(item.createdAt)}</span>
+                </div>
+
+                {/* Page title */}
+                <div className="circle-card-title">{group.pageLabel}</div>
+
+                {/* Footer: member + votes + time */}
+                <div className="circle-card-footer">
+                  <span
+                    className="circle-card-member-name"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleMemberClick(group.memberAddress, group.memberLabel, group.memberImage)
+                    }}
+                  >
+                    {group.memberLabel}
+                  </span>
+                  {group.intentions.some(i => i.tripleTermId) && (
+                    <div className="circle-card-actions">
+                      <button
+                        className={`circle-action-btn circle-support-btn ${group.intentions.some(i => votedItems.get(i.id) === 'support') ? 'voted' : ''}`}
+                        onClick={(e) => handleSupport(e, group)}
+                        title="Support this certification"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 4l-8 8h5v8h6v-8h5z" />
+                        </svg>
+                      </button>
+                      <button
+                        className={`circle-action-btn circle-oppose-btn ${group.intentions.some(i => votedItems.get(i.id) === 'oppose') ? 'voted' : ''}`}
+                        onClick={(e) => handleOppose(e, group)}
+                        disabled={!group.intentions.some(i => i.counterTermId)}
+                        title="Oppose this certification"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 20l8-8h-5V4H9v8H4z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  <span className="circle-card-time">{formatTimestamp(group.createdAt)}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
+      )}
+
+      {/* Intention picker overlay (when card has multiple intentions) — portaled to body */}
+      {intentionPickerGroup && createPortal(
+        <div className="circle-picker-overlay" onClick={() => setIntentionPickerGroup(null)}>
+          <div className="circle-picker-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="circle-picker-title">
+              {intentionPickerAction} which intention?
+            </div>
+            <div className="circle-picker-options">
+              {intentionPickerGroup.intentions.map(intention => {
+                const config = INTENTION_CONFIG[intention.intentionType]
+                const isDisabled = intentionPickerAction === 'Oppose' && !intention.counterTermId
+                return (
+                  <button
+                    key={intention.intentionType}
+                    className="circle-picker-option"
+                    style={{
+                      '--picker-color': config.color
+                    } as React.CSSProperties}
+                    disabled={isDisabled}
+                    onClick={() => handleIntentionPick(intention)}
+                  >
+                    <span
+                      className="circle-intention-badge"
+                      style={{
+                        backgroundColor: `${config.color}20`,
+                        color: config.color
+                      }}
+                    >
+                      {config.label}
+                    </span>
+                    <span className="circle-picker-label">{intentionPickerGroup.pageLabel}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Support/Oppose weight modal with fee breakdown + GS slider */}

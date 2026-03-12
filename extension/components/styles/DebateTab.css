@@ -89,6 +89,12 @@
 .claim-card[data-pos="2"] { opacity: 0.3; }
 .claim-card[data-pos="3"] { opacity: 0.1; }
 
+/* Hide cards beyond visible stack depth */
+.claim-card:not([data-pos="0"]):not([data-pos="1"]):not([data-pos="2"]):not([data-pos="3"]) {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* ── Lists: background dimming, text stays white ──────────────── */
 
 .list-card[data-pos="1"] { background: rgba(16, 16, 26, 0.88); color: #fff; }

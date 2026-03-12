@@ -48,7 +48,7 @@ const DebateTab = () => {
 
   // Card stacks
   const sofiaStack = useCardStack(sofiaClaims.length, 52, 0.03)
-  const intuitionStack = useCardStack(intuitionClaims.length, 52, 0.03)
+  const intuitionStack = useCardStack(intuitionClaims.length, 52, 0.03, 3)
   const listsStack = useCardStack(featuredLists.length, 48, 0.03)
 
   // List modal state
