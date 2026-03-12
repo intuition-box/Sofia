@@ -11,11 +11,14 @@ import {
   useCertificationModal,
   useUserCertifications,
   getCertificationForUrl,
-  useWalletFromStorage
+  useWalletFromStorage,
+  useTrustCircle,
+  usePagePositions
 } from "~/hooks"
 import type { IntentionPurpose } from "~/types/discovery"
 import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
+import PagePositionBoard from "./PagePositionBoard"
 import { PageBlockchainSkeleton } from "./Skeleton"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
@@ -42,6 +45,8 @@ const PageBlockchainCard = () => {
     pageIntentionTotal,
     maxIntentionCount,
     pageMaxIntentionCount,
+    certTriples,
+    pageAtomIds,
     fetchDataForCurrentPage,
     pauseRefresh,
     resumeRefresh
@@ -55,8 +60,25 @@ const PageBlockchainCard = () => {
   const reward = useDiscoveryReward()
   const modal = useCertificationModal()
   const { walletAddress } = useWalletFromStorage()
+  const { accounts: trustCircleAccounts } = useTrustCircle(walletAddress)
   const { certifications, refetch: refetchCertifications } =
     useUserCertifications(walletAddress)
+
+  const trustCircleAddresses = useMemo(
+    () =>
+      trustCircleAccounts
+        .map((a) => a.walletAddress)
+        .filter((addr): addr is string => !!addr),
+    [trustCircleAccounts]
+  )
+
+  const { positions, userPosition, totalPositions } =
+    usePagePositions(
+      certTriples,
+      pageAtomIds,
+      walletAddress,
+      trustCircleAddresses
+    )
 
   const { certifiedIntentions, alreadyTrusted, alreadyDistrusted, certEntry } = useMemo(() => {
     if (!currentUrl || certifications.size === 0)
@@ -206,6 +228,16 @@ const PageBlockchainCard = () => {
               />
             </div>
           )}
+
+          {/* Position Board — certifiers leaderboard */}
+          {!isRestricted && totalPositions > 0 && (
+            <PagePositionBoard
+              positions={positions}
+              userPosition={userPosition}
+              totalPositions={totalPositions}
+              variant="expanded"
+            />
+          )}
         </div>
       )}
 
@@ -254,6 +286,16 @@ const PageBlockchainCard = () => {
             }
             rewardClaimed={reward.rewardClaimed}
             showXpAnimation={true}
+            positionBoard={
+              totalPositions > 0 ? (
+                <PagePositionBoard
+                  positions={positions}
+                  userPosition={userPosition}
+                  totalPositions={totalPositions}
+                  variant="compact"
+                />
+              ) : undefined
+            }
             onClose={() => {
               modal.handleModalClose()
               reward.resetReward()
