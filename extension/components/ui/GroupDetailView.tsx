@@ -170,6 +170,7 @@ const UrlRow = ({
               const isAlreadyCertified = allCertLabels.includes(type)
               const isInCart = cartPredicates.includes(predicateLabel)
               const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
+              const color = certInfo?.color
               return (
                 <button
                   key={type}
@@ -181,9 +182,13 @@ const UrlRow = ({
                   }}
                   disabled={isProcessing || isInCart || isAlreadyCertified}
                   style={isAlreadyCertified ? {
-                    backgroundColor: certInfo?.color,
-                    borderColor: certInfo?.color,
+                    backgroundColor: color,
+                    borderColor: color,
                     color: '#fff'
+                  } : (isInCart && color) ? {
+                    backgroundColor: `${color}15`,
+                    borderColor: color,
+                    color
                   } : undefined}
                 >
                   {isInCart ? `${label} ✓` : label}
@@ -195,6 +200,7 @@ const UrlRow = ({
               const predicateName = INTENTION_PREDICATES[key]
               const isInCart = cartPredicates.includes(predicateName)
               const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
+              const color = certInfo?.color
               return (
                 <button
                   key={key}
@@ -206,9 +212,13 @@ const UrlRow = ({
                   }}
                   disabled={isProcessing || isInCart || isAlreadyCertified}
                   style={isAlreadyCertified ? {
-                    backgroundColor: certInfo?.color,
-                    borderColor: certInfo?.color,
+                    backgroundColor: color,
+                    borderColor: color,
                     color: '#fff'
+                  } : (isInCart && color) ? {
+                    backgroundColor: `${color}15`,
+                    borderColor: color,
+                    color
                   } : undefined}
                 >
                   {isInCart ? `${label} ✓` : label}

@@ -32,6 +32,7 @@ class CartServiceClass {
   private listeners = new Set<() => void>()
   private currentWallet: string | null = null
   private initialized = false
+  private loaded = false
 
   // ── Store protocol (useSyncExternalStore) ──
 
@@ -58,9 +59,11 @@ class CartServiceClass {
         if (area === "session" && changes.walletAddress) {
           const newWallet = changes.walletAddress.newValue
           if (newWallet && newWallet !== this.currentWallet) {
+            this.loaded = false
             this.loadCart(newWallet)
           } else if (!newWallet) {
             this.currentWallet = null
+            this.loaded = false
             this.updateState({ items: [], count: 0 })
           }
         }
@@ -73,11 +76,12 @@ class CartServiceClass {
   // ── Public API ──
 
   async loadCart(walletAddress: string, force = false): Promise<void> {
-    // Skip reload if same wallet already loaded with items in memory
-    if (!force && this.currentWallet === walletAddress && this.state.items.length > 0) {
+    // Skip reload if same wallet already loaded (even if cart is empty)
+    if (!force && this.loaded && this.currentWallet === walletAddress) {
       return
     }
     this.currentWallet = walletAddress
+    this.loaded = true
     try {
       const items = await CartDataService.getByWallet(walletAddress)
       this.updateState({ items, count: items.length })

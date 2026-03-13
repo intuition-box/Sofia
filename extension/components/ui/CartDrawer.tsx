@@ -2,7 +2,7 @@ import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
 import { X, Trash2, ShoppingCart } from "lucide-react"
 import { useCart, useCartSubmit } from "~/hooks"
-import { getIntentionBadge } from "~/types/intentionCategories"
+import { getIntentionBadge, predicateLabelToIntentionType } from "~/types/intentionCategories"
 import WeightModal from "../modals/WeightModal"
 import BatchRewardModal from "../modals/BatchRewardModal"
 import type { ModalTriplet } from "~/hooks"
@@ -120,7 +120,10 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                 {items.map(item => {
                   const badge = getIntentionBadge(
                     item.intention ?? undefined
-                  )
+                  ) || (() => {
+                    const t = predicateLabelToIntentionType(item.predicateName)
+                    return t ? getIntentionBadge(t) : null
+                  })()
                   return (
                     <div key={item.id} className="cart-drawer__item">
                       {item.faviconUrl ? (
