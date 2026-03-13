@@ -72,7 +72,11 @@ class CartServiceClass {
 
   // ── Public API ──
 
-  async loadCart(walletAddress: string): Promise<void> {
+  async loadCart(walletAddress: string, force = false): Promise<void> {
+    // Skip reload if same wallet already loaded with items in memory
+    if (!force && this.currentWallet === walletAddress && this.state.items.length > 0) {
+      return
+    }
     this.currentWallet = walletAddress
     try {
       const items = await CartDataService.getByWallet(walletAddress)

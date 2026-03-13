@@ -1,10 +1,12 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
 import { X, Trash2, ShoppingCart } from "lucide-react"
 import { useCart, useCartSubmit } from "~/hooks"
 import { getIntentionBadge } from "~/types/intentionCategories"
 import WeightModal from "../modals/WeightModal"
+import BatchRewardModal from "../modals/BatchRewardModal"
 import type { ModalTriplet } from "~/hooks"
+import type { CartItemRecord } from "~/lib/database"
 import "../styles/CartDrawer.css"
 
 interface CartDrawerProps {
@@ -14,12 +16,17 @@ interface CartDrawerProps {
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   const { items, count, removeFromCart, clearCart } = useCart()
-  const { submitCart, submitting, result, error, reset } = useCartSubmit()
+  const { submitCart, submitting, result, error, reset, clearSubmittedItems } =
+    useCartSubmit()
   const [showWeightModal, setShowWeightModal] = useState(false)
+  const [showBatchReward, setShowBatchReward] = useState(false)
+  const submittedItemsRef = useRef<CartItemRecord[]>([])
 
-  if (!isOpen) return null
+  if (!isOpen && !showBatchReward) return null
 
   const handleCertifyAll = () => {
+    // Save a snapshot of items before submission
+    submittedItemsRef.current = [...items]
     setShowWeightModal(true)
   }
 
@@ -32,15 +39,23 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
 
   const handleWeightClose = () => {
     setShowWeightModal(false)
-    reset()
     if (result?.success) {
-      onClose()
+      // TX succeeded → open batch reward modal
+      setShowBatchReward(true)
     }
+    reset()
+  }
+
+  const handleBatchRewardClose = async () => {
+    setShowBatchReward(false)
+    // Clear cart after all rewards claimed
+    await clearSubmittedItems()
+    submittedItemsRef.current = []
+    onClose()
   }
 
   // Build modal triplets for WeightModal
   const modalTriplets: ModalTriplet[] = items.map(item => {
-    const badge = getIntentionBadge(item.intention ?? undefined)
     return {
       id: item.id,
       triplet: {
@@ -56,119 +71,122 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
 
   return createPortal(
     <>
-      <div
-        className="cart-drawer-overlay"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose()
-        }}
-      >
-        <div className="cart-drawer">
-          {/* Header */}
-          <div className="cart-drawer__header">
-            <div className="cart-drawer__title">
-              Cart
-              <span className="cart-drawer__title-count">({count})</span>
-            </div>
-            <div className="cart-drawer__actions">
-              {count > 0 && (
+      {/* Cart Drawer */}
+      {isOpen && !showBatchReward && (
+        <div
+          className="cart-drawer-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose()
+          }}
+        >
+          <div className="cart-drawer">
+            {/* Header */}
+            <div className="cart-drawer__header">
+              <div className="cart-drawer__title">
+                Cart
+                <span className="cart-drawer__title-count">({count})</span>
+              </div>
+              <div className="cart-drawer__actions">
+                {count > 0 && (
+                  <button
+                    className="cart-drawer__clear-btn"
+                    onClick={clearCart}
+                  >
+                    Clear all
+                  </button>
+                )}
                 <button
-                  className="cart-drawer__clear-btn"
-                  onClick={clearCart}
+                  className="cart-drawer__close-btn"
+                  onClick={onClose}
                 >
-                  Clear all
+                  <X size={18} />
                 </button>
-              )}
-              <button
-                className="cart-drawer__close-btn"
-                onClick={onClose}
-              >
-                <X size={18} />
-              </button>
+              </div>
             </div>
-          </div>
 
-          {/* Items */}
-          {count === 0 ? (
-            <div className="cart-drawer__empty">
-              <ShoppingCart
-                size={32}
-                className="cart-drawer__empty-icon"
-              />
-              <span className="cart-drawer__empty-text">
-                Enable cart mode and click intentions to add them here
-              </span>
-            </div>
-          ) : (
-            <div className="cart-drawer__list">
-              {items.map(item => {
-                const badge = getIntentionBadge(
-                  item.intention ?? undefined
-                )
-                return (
-                  <div key={item.id} className="cart-drawer__item">
-                    {item.faviconUrl ? (
-                      <img
-                        src={item.faviconUrl}
-                        className="cart-drawer__item-favicon"
-                        alt=""
-                      />
-                    ) : (
-                      <div className="cart-drawer__item-favicon--fallback">
-                        ?
-                      </div>
-                    )}
-                    <div className="cart-drawer__item-info">
-                      <div className="cart-drawer__item-title">
-                        {item.pageTitle || item.normalizedUrl}
-                      </div>
-                      <div className="cart-drawer__item-url">
-                        {item.normalizedUrl}
-                      </div>
-                    </div>
-                    {badge && (
-                      <span
-                        className="cart-drawer__item-pill"
-                        style={{
-                          backgroundColor: `${badge.color}20`,
-                          color: badge.color,
-                          border: `1px solid ${badge.color}40`
-                        }}
-                      >
-                        {badge.label}
-                      </span>
-                    )}
-                    <button
-                      className="cart-drawer__item-remove"
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Footer */}
-          {count > 0 && (
-            <div className="cart-drawer__footer">
-              <div className="cart-drawer__fee-row">
-                <span>{count} certification{count > 1 ? "s" : ""}</span>
-                <span className="cart-drawer__fee-value">
-                  1 transaction
+            {/* Items */}
+            {count === 0 ? (
+              <div className="cart-drawer__empty">
+                <ShoppingCart
+                  size={32}
+                  className="cart-drawer__empty-icon"
+                />
+                <span className="cart-drawer__empty-text">
+                  Click intentions to add them here
                 </span>
               </div>
-              <button
-                className="cart-drawer__submit-btn"
-                onClick={handleCertifyAll}
-                disabled={submitting}
-              >
-                {submitting ? "Certifying..." : `Certify All (${count})`}
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className="cart-drawer__list">
+                {items.map(item => {
+                  const badge = getIntentionBadge(
+                    item.intention ?? undefined
+                  )
+                  return (
+                    <div key={item.id} className="cart-drawer__item">
+                      {item.faviconUrl ? (
+                        <img
+                          src={item.faviconUrl}
+                          className="cart-drawer__item-favicon"
+                          alt=""
+                        />
+                      ) : (
+                        <div className="cart-drawer__item-favicon--fallback">
+                          ?
+                        </div>
+                      )}
+                      <div className="cart-drawer__item-info">
+                        <div className="cart-drawer__item-title">
+                          {item.pageTitle || item.normalizedUrl}
+                        </div>
+                        <div className="cart-drawer__item-url">
+                          {item.normalizedUrl}
+                        </div>
+                      </div>
+                      {badge && (
+                        <span
+                          className="cart-drawer__item-pill"
+                          style={{
+                            backgroundColor: `${badge.color}20`,
+                            color: badge.color,
+                            border: `1px solid ${badge.color}40`
+                          }}
+                        >
+                          {badge.label}
+                        </span>
+                      )}
+                      <button
+                        className="cart-drawer__item-remove"
+                        onClick={() => removeFromCart(item.id)}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Footer */}
+            {count > 0 && (
+              <div className="cart-drawer__footer">
+                <div className="cart-drawer__fee-row">
+                  <span>{count} certification{count > 1 ? "s" : ""}</span>
+                  <span className="cart-drawer__fee-value">
+                    1 transaction
+                  </span>
+                </div>
+                <button
+                  className="cart-drawer__submit-btn"
+                  onClick={handleCertifyAll}
+                  disabled={submitting}
+                >
+                  {submitting ? "Certifying..." : `Certify All (${count})`}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* WeightModal for shared weight selection */}
       {showWeightModal &&
@@ -190,6 +208,14 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           />,
           document.body
         )}
+
+      {/* Batch Reward Modal — sequential gold claiming */}
+      <BatchRewardModal
+        isOpen={showBatchReward}
+        items={submittedItemsRef.current}
+        txHash={result?.txHash}
+        onClose={handleBatchRewardClose}
+      />
     </>,
     document.body
   )

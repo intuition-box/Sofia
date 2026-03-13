@@ -43,10 +43,8 @@ export const useCartSubmit = () => {
         setResult(batchResult)
 
         if (batchResult.success) {
-          // Clear submitted items from cart
-          await cartService.clearCart(walletAddress)
-
           // Track certifications for quest system
+          // Note: cart clearing is deferred until after reward claiming
           for (let i = 0; i < items.length; i++) {
             questTrackingService.recordCertificationActivity()
           }
@@ -72,11 +70,17 @@ export const useCartSubmit = () => {
     [walletAddress, createTriplesBatch]
   )
 
+  const clearSubmittedItems = useCallback(async () => {
+    if (walletAddress) {
+      await cartService.clearCart(walletAddress)
+    }
+  }, [walletAddress])
+
   const reset = useCallback(() => {
     setSubmitting(false)
     setResult(null)
     setError(null)
   }, [])
 
-  return { submitCart, submitting, result, error, reset }
+  return { submitCart, submitting, result, error, reset, clearSubmittedItems }
 }

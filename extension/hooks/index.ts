@@ -102,6 +102,8 @@ export type { DebateClaim, FeaturedList, UseDebateClaimsResult } from './useDeba
 // Cart
 export { useCart } from './useCart'
 export { useCartSubmit } from './useCartSubmit'
+export { useBatchRewards } from './useBatchRewards'
+export type { BatchRewardItem } from './useBatchRewards'
 
 // Tracking
 export { useTracking } from './useTracking'

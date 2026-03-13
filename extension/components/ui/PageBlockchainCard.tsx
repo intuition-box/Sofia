@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "../layout/RouterProvider"
-import { ShoppingCart } from "lucide-react"
 import {
   usePageBlockchainData,
   useDiscoveryScore,
@@ -103,7 +102,6 @@ const PageBlockchainCard = () => {
 
   // Cart
   const cart = useCart()
-  const [cartMode, setCartMode] = useState(false)
   const [cartToast, setCartToast] = useState<string | null>(null)
 
   const cartIntentionsForPage = useMemo(() => {
@@ -111,6 +109,20 @@ const PageBlockchainCard = () => {
     return cart.items
       .filter(item => item.url === currentUrl && item.intention)
       .map(item => item.intention) as IntentionPurpose[]
+  }, [cart.items, currentUrl])
+
+  const trustInCart = useMemo(() => {
+    if (!currentUrl) return false
+    return cart.items.some(
+      item => item.url === currentUrl && item.predicateName === "trusts"
+    )
+  }, [cart.items, currentUrl])
+
+  const distrustInCart = useMemo(() => {
+    if (!currentUrl) return false
+    return cart.items.some(
+      item => item.url === currentUrl && item.predicateName === "distrust"
+    )
   }, [cart.items, currentUrl])
 
   const handleAddToCart = useCallback(
@@ -127,6 +139,26 @@ const PageBlockchainCard = () => {
       )
       if (added) {
         setCartToast("Added to cart")
+      } else {
+        setCartToast("Already in cart")
+      }
+    },
+    [currentUrl, pageTitle, cart]
+  )
+
+  const handleAddTrustToCart = useCallback(
+    async (predicate: "trusts" | "distrust") => {
+      if (!currentUrl) return
+      const favicon = getFaviconUrl(currentUrl, 128)
+      const added = await cart.addToCart(
+        currentUrl,
+        pageTitle,
+        predicate,
+        null,
+        favicon
+      )
+      if (added) {
+        setCartToast(`Added ${predicate === "trusts" ? "Trust" : "Distrust"} to cart`)
       } else {
         setCartToast("Already in cart")
       }
@@ -204,94 +236,44 @@ const PageBlockchainCard = () => {
           {!isRestricted && (
             <div className="trust-buttons-row">
               <button
-                className={`trust-page-button trust-btn ${alreadyTrusted || modal.trustState.success ? "success" : ""} ${modal.trustState.loading ? "loading" : ""}`}
-                onClick={() => modal.openTrustModal(currentUrl, pageTitle)}
-                disabled={
-                  modal.trustState.loading ||
-                  modal.distrustState.loading ||
-                  !currentUrl
-                }
+                className={`trust-page-button trust-btn ${alreadyTrusted ? "success" : ""} ${trustInCart ? "in-cart" : ""}`}
+                onClick={() => handleAddTrustToCart("trusts")}
+                disabled={alreadyTrusted || trustInCart || !currentUrl}
               >
-                {modal.trustState.loading ? (
-                  <>
-                    <div className="button-spinner"></div>
-                    Creating...
-                  </>
-                ) : alreadyTrusted || modal.trustState.success ? (
-                  "Trusted"
-                ) : (
-                  "TRUST"
-                )}
+                {alreadyTrusted
+                  ? "Trusted"
+                  : trustInCart
+                    ? "In Cart"
+                    : "TRUST"}
               </button>
 
               <button
-                className={`trust-page-button distrust-btn ${alreadyDistrusted || modal.distrustState.success ? "success" : ""} ${modal.distrustState.loading ? "loading" : ""}`}
-                onClick={() =>
-                  modal.openDistrustModal(currentUrl, pageTitle)
-                }
+                className={`trust-page-button distrust-btn ${alreadyDistrusted ? "success" : ""} ${distrustInCart ? "in-cart" : ""}`}
+                onClick={() => handleAddTrustToCart("distrust")}
                 disabled={
-                  modal.trustState.loading ||
-                  modal.distrustState.loading ||
-                  !currentUrl
+                  alreadyDistrusted || distrustInCart || !currentUrl
                 }
               >
-                {modal.distrustState.loading ? (
-                  <>
-                    <div className="button-spinner"></div>
-                    Creating...
-                  </>
-                ) : alreadyDistrusted || modal.distrustState.success ? (
-                  "Distrusted"
-                ) : (
-                  "DISTRUST"
-                )}
+                {alreadyDistrusted
+                  ? "Distrusted"
+                  : distrustInCart
+                    ? "In Cart"
+                    : "DISTRUST"}
               </button>
             </div>
           )}
 
-          {/* Trust/Distrust Error Display */}
-          {!isRestricted &&
-            (modal.trustState.error || modal.distrustState.error) && (
-              <div className="trust-error">
-                <small>
-                  {modal.trustState.error || modal.distrustState.error}
-                </small>
-              </div>
-            )}
-
-          {/* Discovery Section - Intention Certification */}
+          {/* Discovery Section - Intention Certification (cart mode) */}
           {!isRestricted && (
             <div className="discovery-section">
-              <div className="discovery-section__header">
-                <button
-                  className={`cart-mode-toggle ${cartMode ? "active" : ""}`}
-                  onClick={() => setCartMode(!cartMode)}
-                  title={cartMode ? "Switch to instant certify" : "Switch to cart mode"}
-                >
-                  <ShoppingCart size={14} />
-                  {cartMode ? "Cart mode" : ""}
-                </button>
-              </div>
               <IntentionBubbleSelector
                 onBubbleClick={(intention: IntentionPurpose) => {
                   if (!currentUrl) return
-                  if (cartMode) {
-                    handleAddToCart(intention)
-                  } else {
-                    modal.openIntentionModal(
-                      currentUrl,
-                      pageTitle,
-                      intention
-                    )
-                  }
+                  handleAddToCart(intention)
                 }}
                 disabled={modal.intentionState.loading}
                 isEligible={true}
-                selectedIntention={
-                  cartMode ? null : modal.intentionState.currentIntention
-                }
                 certifiedIntentions={certifiedIntentions}
-                cartMode={cartMode}
                 cartIntentions={cartIntentionsForPage}
               />
             </div>
