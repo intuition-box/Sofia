@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "../layout/RouterProvider"
+import { ShoppingCart } from "lucide-react"
 import {
   usePageBlockchainData,
   useDiscoveryScore,
@@ -13,11 +14,15 @@ import {
   getCertificationForUrl,
   useWalletFromStorage,
   useTrustCircle,
-  usePagePositions
+  usePagePositions,
+  useCart
 } from "~/hooks"
 import type { IntentionPurpose } from "~/types/discovery"
+import { INTENTION_PREDICATES } from "~/types/discovery"
+import { getFaviconUrl } from "~/lib/utils"
 import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
+import { CartToast } from "./CartDrawer"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
 import { PageBlockchainSkeleton } from "./Skeleton"
@@ -95,6 +100,46 @@ const PageBlockchainCard = () => {
 
   // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
   const effectiveUserHasCertified = userHasCertified || !!certEntry
+
+  // Cart
+  const cart = useCart()
+  const [cartMode, setCartMode] = useState(false)
+  const [cartToast, setCartToast] = useState<string | null>(null)
+
+  const cartIntentionsForPage = useMemo(() => {
+    if (!currentUrl) return [] as IntentionPurpose[]
+    return cart.items
+      .filter(item => item.url === currentUrl && item.intention)
+      .map(item => item.intention) as IntentionPurpose[]
+  }, [cart.items, currentUrl])
+
+  const handleAddToCart = useCallback(
+    async (intention: IntentionPurpose) => {
+      if (!currentUrl) return
+      const predicateName = INTENTION_PREDICATES[intention]
+      const favicon = getFaviconUrl(currentUrl, 128)
+      const added = await cart.addToCart(
+        currentUrl,
+        pageTitle,
+        predicateName,
+        intention,
+        favicon
+      )
+      if (added) {
+        setCartToast("Added to cart")
+      } else {
+        setCartToast("Already in cart")
+      }
+    },
+    [currentUrl, pageTitle, cart]
+  )
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!cartToast) return
+    const timer = setTimeout(() => setCartToast(null), 1500)
+    return () => clearTimeout(timer)
+  }, [cartToast])
 
   // UI toggle
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
@@ -217,15 +262,37 @@ const PageBlockchainCard = () => {
           {/* Discovery Section - Intention Certification */}
           {!isRestricted && (
             <div className="discovery-section">
+              <div className="discovery-section__header">
+                <button
+                  className={`cart-mode-toggle ${cartMode ? "active" : ""}`}
+                  onClick={() => setCartMode(!cartMode)}
+                  title={cartMode ? "Switch to instant certify" : "Switch to cart mode"}
+                >
+                  <ShoppingCart size={14} />
+                  {cartMode ? "Cart mode" : ""}
+                </button>
+              </div>
               <IntentionBubbleSelector
                 onBubbleClick={(intention: IntentionPurpose) => {
                   if (!currentUrl) return
-                  modal.openIntentionModal(currentUrl, pageTitle, intention)
+                  if (cartMode) {
+                    handleAddToCart(intention)
+                  } else {
+                    modal.openIntentionModal(
+                      currentUrl,
+                      pageTitle,
+                      intention
+                    )
+                  }
                 }}
                 disabled={modal.intentionState.loading}
                 isEligible={true}
-                selectedIntention={modal.intentionState.currentIntention}
+                selectedIntention={
+                  cartMode ? null : modal.intentionState.currentIntention
+                }
                 certifiedIntentions={certifiedIntentions}
+                cartMode={cartMode}
+                cartIntentions={cartIntentionsForPage}
               />
             </div>
           )}
@@ -278,6 +345,9 @@ const PageBlockchainCard = () => {
           </div>
         </div>
       )}
+
+      {/* Cart toast notification */}
+      <CartToast message={cartToast} />
 
       {modal.showWeightModal &&
         createPortal(

@@ -82,6 +82,37 @@
   margin-top: var(--spacing-md, 12px);
 }
 
+.discovery-section__header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px;
+}
+
+.cart-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cart-mode-toggle:hover {
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.cart-mode-toggle.active {
+  color: #8B5CF6;
+  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.1);
+}
+
 /* ── Trust & Distrust buttons row ── */
 
 .trust-buttons-row {

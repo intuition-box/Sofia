@@ -58,6 +58,11 @@
   font-weight: 600;
 }
 
+.intention-pill.in-cart {
+  border-style: dashed;
+  font-weight: 400;
+}
+
 .intention-pill:disabled {
   cursor: not-allowed;
   opacity: 0.5;

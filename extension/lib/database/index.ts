@@ -17,7 +17,8 @@ export type {
   IntentionGroupRecord,
   GroupUrlRecord,
   PredicateChangeRecord,
-  UserXPRecord
+  UserXPRecord,
+  CartItemRecord
 } from './indexedDB'
 
 // Data services
@@ -39,7 +40,9 @@ export {
   bookmarkService,
   recommendationsService,
   intentionGroupsService,
-  userXPService
+  userXPService,
+  CartDataService,
+  cartDataService
 } from './indexedDB-methods'
 
 // Recommendation storage

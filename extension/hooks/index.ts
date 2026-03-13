@@ -99,5 +99,9 @@ export { useDebateClaims } from './useDebateClaims'
 export type { DebateClaim, FeaturedList, UseDebateClaimsResult } from './useDebateClaims'
 
 
+// Cart
+export { useCart } from './useCart'
+export { useCartSubmit } from './useCartSubmit'
+
 // Tracking
 export { useTracking } from './useTracking'

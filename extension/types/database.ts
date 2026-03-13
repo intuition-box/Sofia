@@ -7,6 +7,7 @@ import type { ParsedSofiaMessage } from './messages'
 import type { VisitData, DOMData } from './history'
 import type { ExtensionSettings } from './storage'
 import type { BookmarkList, BookmarkedTriplet } from './bookmarks'
+import type { IntentionPurpose } from './discovery'
 
 export interface TripletsRecord {
   id?: number
@@ -109,4 +110,16 @@ export interface UserXPRecord {
   totalEarned: number
   totalSpent: number
   lastUpdated: number
+}
+
+export interface CartItemRecord {
+  id: string                        // `${walletAddress}:${normalizedUrl}:${predicateName}`
+  walletAddress: string
+  url: string
+  normalizedUrl: string
+  pageTitle: string | null
+  predicateName: string
+  intention: IntentionPurpose | null
+  faviconUrl: string | null
+  addedAt: number
 }
