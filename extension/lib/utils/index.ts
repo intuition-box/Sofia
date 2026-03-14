@@ -61,3 +61,6 @@ export { pageBlockchainReducer, PAGE_BLOCKCHAIN_INITIAL_STATE, DEFAULT_COUNTS, E
 // Debate / Claim Helpers
 export { formatTrust } from './formatTrust'
 export { calcPercentage } from './calcPercentage'
+
+// Behavioral Reputation Scoring
+export { normalizeSignal, calculateBurstPenalty, calculateAncienneteBonus, calculateCrossSourceConfidence, calculateNicheScore, calculateDomainScore, calculateReputationProfile, getDominantSignalType } from './scoringEngine'
