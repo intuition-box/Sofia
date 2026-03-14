@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
-import { X, Trash2, ShoppingCart } from "lucide-react"
+import { X, Trash2 } from "lucide-react"
+import sofiaIcon from "data-base64:~assets/icon-dark-32.png"
 import { useCart, useCartSubmit } from "~/hooks"
 import { getIntentionBadge, predicateLabelToIntentionType } from "~/types/intentionCategories"
 import WeightModal from "../modals/WeightModal"
@@ -107,9 +108,12 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             {/* Items */}
             {count === 0 ? (
               <div className="cart-drawer__empty">
-                <ShoppingCart
-                  size={32}
+                <img
+                  src={sofiaIcon}
+                  width={32}
+                  height={32}
                   className="cart-drawer__empty-icon"
+                  alt="Sofia"
                 />
                 <span className="cart-drawer__empty-text">
                   Click intentions to add them here
@@ -238,7 +242,7 @@ export const CartFab = ({
 
   return (
     <button className="cart-fab" onClick={onClick}>
-      <ShoppingCart size={20} className="cart-fab__icon" />
+      <img src={sofiaIcon} width={20} height={20} className="cart-fab__icon" alt="Sofia" />
       <span className="cart-fab__badge">{count}</span>
     </button>
   )
