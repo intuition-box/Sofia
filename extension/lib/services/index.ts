@@ -69,3 +69,6 @@ export type { CartState } from './CartService'
 
 // AI
 export { RecommendationService } from './ai/RecommendationService'
+
+// Behavioral Reputation
+export { signalNormalizationService } from './SignalNormalizationService'

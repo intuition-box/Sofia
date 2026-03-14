@@ -107,3 +107,7 @@ export type { BatchRewardItem } from './useBatchRewards'
 
 // Tracking
 export { useTracking } from './useTracking'
+
+// Behavioral Reputation
+export { useReputationScore, useDomainScore, useNicheScore } from './useReputationScore'
+export type { ReputationScoreResult } from './useReputationScore'
