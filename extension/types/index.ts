@@ -32,6 +32,9 @@ export * from './bento';
 // Interest analysis types
 export * from './interests';
 
+// Behavioral reputation types
+export * from './reputation';
+
 // Utility types
 export type Timestamp = number;
 export type URL = string;
