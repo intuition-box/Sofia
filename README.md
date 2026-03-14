@@ -184,7 +184,8 @@ Visited URLs are automatically grouped by domain into **Echoes** (intention grou
 **Group Detail View:** Clicking a card opens a detailed view with:
 - Full URL list with certification badges
 - Filter by intention type (Work/Learning/Fun/Inspiration/Buying)
-- Certify individual URLs with intention pills
+- Certify individual URLs with intention/trust/distrust pills (adds to cart)
+- In-cart pills show colored selected state matching each certification type
 - Level-up button (when progress = 100%)
 - Identity hero section ("I [predicate] [domain]") with Amplify option
 
@@ -192,7 +193,7 @@ Visited URLs are automatically grouped by domain into **Echoes** (intention grou
 
 ### 3. Certifications - Declare Intent
 
-Certify any URL with one of 5 intentions:
+Certify any URL with one of 5 intentions, or express trust/distrust:
 
 | Intention | On-Chain Predicate |
 |-----------|-------------------|
@@ -201,13 +202,31 @@ Certify any URL with one of 5 intentions:
 | **Fun** | `visits for fun` |
 | **Inspiration** | `visits for inspiration` |
 | **Buying** | `visits for buying` |
+| **Trust** | `trusts` |
+| **Distrust** | `distrust` |
 
 **On-chain structure:** Each certification creates a blockchain triple on Intuition:
 ```
 [I] ── visits_for_work ──▶ [Page URL atom]
 ```
 
-**Flow:** User clicks intention → WeightModal opens (select deposit amount from 0.01–10 TRUST, allocate to Signal/Beta Season Pool, review fee breakdown) → Atom creation (IPFS pin + hex encode) → Triple creation via SofiaFeeProxy → Transaction confirmed → Discovery Gold awarded based on ranking (Pioneer/Explorer/Contributor) → On-chain badge appears.
+**Flow:** User clicks intention or trust/distrust → Item added to **Cart** → User reviews cart → Batch submit → WeightModal confirms deposit → All triples created in batch → **Batch Rewards** shown sequentially (discovery tier + Gold earned + Share on X).
+
+**Cart System:** All certifications (intentions + trust + distrust) are queued in a persistent cart (IndexedDB-backed) before submission. The cart persists across tab navigation. A floating action button (Sofia icon) shows the cart item count.
+
+```
+Click intention/trust/distrust pill
+  → Item added to Cart (IndexedDB)
+  → CartFAB shows count badge
+  → Open CartDrawer to review items
+  → "Submit All" → WeightModal (deposit amount + fees)
+  → Batch transaction via SofiaFeeProxy
+  → BatchRewardModal: sequential reward claiming
+    → Per-page discovery tier (Pioneer/Explorer/Contributor)
+    → Gold animation overlay (video)
+    → Share on X (OG image via sofia-og.vercel.app)
+    → Continue to next reward
+```
 
 **WeightModal** is the unified transaction confirmation UI across all flows (certify, vote, follow, trust/distrust, quest claim). It displays:
 - Intention badge (colored tag with intention type)
@@ -587,7 +606,7 @@ MCP_SERVER_URL=http://127.0.0.1:3001/sse
 | Components | `components/` | 73 |
 | Pages | `components/pages/` | 11 |
 | Stylesheets | `components/styles/` | 39 |
-| Services | `lib/services/` | 23 |
+| Services | `lib/services/` | 24 |
 | Chrome Message Types | `types/messages.ts` | 43 |
 | Content Scripts | `contents/` | 7 |
 
@@ -617,4 +636,4 @@ MIT
 
 ---
 
-**Sofia v0.2.4 BETA** - Built with Mastra, GaiaNet & Intuition
+**Sofia v0.4.0 BETA** - Built with Mastra, GaiaNet & Intuition
