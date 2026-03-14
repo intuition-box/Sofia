@@ -76,6 +76,11 @@ export const PREDICATE_IDS = {
   TOP_ARTIST: "0x97c6389ca484e835e8c1d9221ad5ae2a6fdd927c5cfa255bae6a2467b8753ece",
   TOP_TRACK: "0x504301d33841aaebbdc1300d1e4ca8db3eb8763078a4d38addb7176e653aac5e",
   // Note: CREATED_PLAYLIST doesn't exist on-chain yet (created dynamically)
+  // New OAuth predicates (GitHub, Reddit, Last.fm, Strava) — created dynamically
+  CREATED_REPO: "",
+  STARRED_REPO: "",
+  TOP_TAG: "",
+  COMPLETED_ACTIVITY: "",
   // Identity predicate (Discord "I am username", Twitter "I am username")
   AM: "0x31881ce93b0051a6a02c7e4e344caa1ea518a37b92288f3f3f06c12cf7b9a4e4"
 } as const
@@ -110,6 +115,11 @@ export const PREDICATE_NAMES = {
   TOP_ARTIST: "top_artist",
   TOP_TRACK: "top_track",
   CREATED_PLAYLIST: "created_playlist",  // No ID yet, created dynamically
+  // New OAuth predicates (GitHub, Reddit, Last.fm, Strava)
+  CREATED_REPO: "created_repo",
+  STARRED_REPO: "starred_repo",
+  TOP_TAG: "top_tag",
+  COMPLETED_ACTIVITY: "completed_activity",
   // Identity predicate (Discord "I am username", Twitter "I am username")
   AM: "am"
 } as const

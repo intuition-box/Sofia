@@ -4,6 +4,11 @@ import spotifyIcon from '../../ui/social/spotify.svg'
 import twitchIcon from '../../ui/social/twitch.svg'
 import discordIcon from '../../ui/social/discord.svg'
 import xIcon from '../../ui/social/x.svg'
+import githubIcon from '../../ui/social/github.svg'
+import redditIcon from '../../ui/social/reddit.svg'
+import lastfmIcon from '../../ui/social/lastfm.svg'
+import chessIcon from '../../ui/social/chess.svg'
+import stravaIcon from '../../ui/social/strava.svg'
 import { useWalletFromStorage } from '../../../hooks'
 import { getAddress } from 'viem'
 import { useSocialVerifier } from '../../../hooks'
@@ -13,7 +18,7 @@ import '../../styles/InterestTab.css'
 
 const logger = createHookLogger('SocialsTab')
 
-type Platform = 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter'
+type Platform = 'youtube' | 'spotify' | 'twitch' | 'discord' | 'twitter' | 'github' | 'reddit' | 'lastfm' | 'chess' | 'strava'
 
 const PLATFORMS: { key: Platform; label: string; icon: string; iconClass: string }[] = [
   { key: 'twitter', label: 'X', icon: xIcon, iconClass: 'twitter-icon' },
@@ -21,6 +26,11 @@ const PLATFORMS: { key: Platform; label: string; icon: string; iconClass: string
   { key: 'youtube', label: 'YouTube', icon: youtubeIcon, iconClass: 'youtube-icon' },
   { key: 'twitch', label: 'Twitch', icon: twitchIcon, iconClass: 'twitch-icon' },
   { key: 'spotify', label: 'Spotify', icon: spotifyIcon, iconClass: 'spotify-icon' },
+  { key: 'github', label: 'GitHub', icon: githubIcon, iconClass: 'github-icon' },
+  { key: 'reddit', label: 'Reddit', icon: redditIcon, iconClass: 'reddit-icon' },
+  { key: 'lastfm', label: 'Last.fm', icon: lastfmIcon, iconClass: 'lastfm-icon' },
+  { key: 'chess', label: 'Chess.com', icon: chessIcon, iconClass: 'chess-icon' },
+  { key: 'strava', label: 'Strava', icon: stravaIcon, iconClass: 'strava-icon' },
 ]
 
 const SocialsTab = () => {
@@ -33,12 +43,17 @@ const SocialsTab = () => {
     twitch: false,
     discord: false,
     twitter: false,
+    github: false,
+    reddit: false,
+    lastfm: false,
+    chess: false,
+    strava: false,
   })
 
   useEffect(() => {
     const checkOAuthTokens = async () => {
       if (!walletAddress) {
-        setOauthTokens({ youtube: false, spotify: false, twitch: false, discord: false, twitter: false })
+        setOauthTokens({ youtube: false, spotify: false, twitch: false, discord: false, twitter: false, github: false, reddit: false, lastfm: false, chess: false, strava: false })
         return
       }
 

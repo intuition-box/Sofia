@@ -73,7 +73,17 @@ export const PREDICATE_IDS = {
   VISITS_FOR_MUSIC: "",
   // Vote predicates (nested triples - like/dislike certifications)
   LIKE: "",
-  DISLIKE: ""
+  DISLIKE: "",
+  // OAuth predicates
+  MEMBER_OF: "",
+  OWNER_OF: "",
+  TOP_ARTIST: "",
+  TOP_TRACK: "",
+  // New OAuth predicates (GitHub, Reddit, Last.fm, Strava)
+  CREATED_REPO: "",
+  STARRED_REPO: "",
+  TOP_TAG: "",
+  COMPLETED_ACTIVITY: ""
 } as const
 
 // Subject IDs (use local mock values)
@@ -106,6 +116,11 @@ export const PREDICATE_NAMES = {
   TOP_ARTIST: "top_artist",
   TOP_TRACK: "top_track",
   CREATED_PLAYLIST: "created_playlist",
+  // New OAuth predicates (GitHub, Reddit, Last.fm, Strava)
+  CREATED_REPO: "created_repo",
+  STARRED_REPO: "starred_repo",
+  TOP_TAG: "top_tag",
+  COMPLETED_ACTIVITY: "completed_activity",
   // Identity predicate (Discord "I am username", Twitter "I am username")
   AM: "am"
 } as const

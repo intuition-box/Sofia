@@ -105,6 +105,101 @@ export class PlatformRegistry {
       externalOAuth: true
     })
 
+    // GitHub Configuration - Uses external OAuth via landing page
+    this.platforms.set('github', {
+      name: 'GitHub',
+      clientId: oauthConfig.github.clientId,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: ['read:user', 'repo'],
+      authUrl: 'https://github.com/login/oauth/authorize',
+      tokenUrl: 'https://github.com/login/oauth/access_token',
+      apiBaseUrl: 'https://api.github.com',
+      endpoints: {
+        profile: '/user',
+        data: [
+          '/user/repos?type=owner&sort=updated&per_page=50',
+          '/user/starred?per_page=50'
+        ]
+      },
+      dataStructure: 'array',
+      idField: 'id',
+      dateField: 'created_at',
+      externalOAuth: true
+    })
+
+    // Reddit Configuration - Uses external OAuth via landing page
+    this.platforms.set('reddit', {
+      name: 'Reddit',
+      clientId: oauthConfig.reddit.clientId,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: ['identity', 'read', 'mysubreddits'],
+      authUrl: 'https://www.reddit.com/api/v1/authorize',
+      tokenUrl: 'https://www.reddit.com/api/v1/access_token',
+      apiBaseUrl: 'https://oauth.reddit.com',
+      endpoints: {
+        profile: '/api/v1/me',
+        data: ['/subreddits/mine/subscriber?limit=100']
+      },
+      dataStructure: 'array',
+      idField: 'name',
+      externalOAuth: true
+    })
+
+    // Last.fm Configuration - API key based (no OAuth)
+    this.platforms.set('lastfm', {
+      name: 'Last.fm',
+      clientId: oauthConfig.lastfm.apiKey,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: [],
+      authUrl: '',
+      apiBaseUrl: 'https://ws.audioscrobbler.com/2.0',
+      endpoints: {
+        profile: '/?method=user.getinfo&format=json',
+        data: [
+          '/?method=user.gettopartists&format=json&limit=50',
+          '/?method=user.gettoptags&format=json&limit=50'
+        ]
+      },
+      dataStructure: 'array',
+      idField: 'name',
+      externalOAuth: false
+    })
+
+    // Chess.com Configuration - Fully public API (no auth needed)
+    this.platforms.set('chess', {
+      name: 'Chess.com',
+      clientId: '',
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: [],
+      authUrl: '',
+      apiBaseUrl: 'https://api.chess.com/pub/player',
+      endpoints: {
+        profile: '',
+        data: ['/stats']
+      },
+      dataStructure: 'array',
+      externalOAuth: false
+    })
+
+    // Strava Configuration - Uses external OAuth via landing page
+    this.platforms.set('strava', {
+      name: 'Strava',
+      clientId: oauthConfig.strava.clientId,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: ['read', 'activity:read'],
+      authUrl: 'https://www.strava.com/oauth/authorize',
+      tokenUrl: 'https://www.strava.com/oauth/token',
+      apiBaseUrl: 'https://www.strava.com/api/v3',
+      endpoints: {
+        profile: '/athlete',
+        data: ['/athlete/activities?per_page=50']
+      },
+      dataStructure: 'array',
+      idField: 'id',
+      dateField: 'start_date',
+      externalOAuth: true
+    })
+
     // Twitter/X Configuration - Uses external OAuth via landing page
     this.platforms.set('twitter', {
       name: 'X',
@@ -196,6 +291,63 @@ export class PlatformRegistry {
     // Twitter/X Triplet Rules
     // Note: "i am username" triplet is added in TripletExtractor only if verified = true
     this.tripletRules.set('twitter', [])
+
+    // GitHub Triplet Rules
+    this.tripletRules.set('github', [
+      {
+        pattern: 'repos',
+        predicate: PREDICATE_NAMES.CREATED_REPO,
+        extractObject: (repo) => repo.full_name || repo.name,
+        extractObjectUrl: (repo) => repo.html_url
+      },
+      {
+        pattern: 'starred',
+        predicate: PREDICATE_NAMES.STARRED_REPO,
+        extractObject: (repo) => repo.full_name || repo.name,
+        extractObjectUrl: (repo) => repo.html_url
+      }
+    ])
+
+    // Reddit Triplet Rules
+    this.tripletRules.set('reddit', [
+      {
+        pattern: 'subscriber',
+        predicate: PREDICATE_NAMES.MEMBER_OF,
+        extractObject: (sub) => sub.display_name || sub.data?.display_name,
+        extractObjectUrl: (sub) => `https://www.reddit.com/r/${sub.display_name || sub.data?.display_name}`
+      }
+    ])
+
+    // Last.fm Triplet Rules
+    this.tripletRules.set('lastfm', [
+      {
+        pattern: 'topartists',
+        predicate: PREDICATE_NAMES.TOP_ARTIST,
+        extractObject: (artist) => artist.name,
+        extractObjectUrl: (artist) => artist.url,
+        extractFromPath: 'topartists.artist'
+      },
+      {
+        pattern: 'toptags',
+        predicate: PREDICATE_NAMES.TOP_TAG,
+        extractObject: (tag) => tag.name,
+        extractObjectUrl: (tag) => tag.url,
+        extractFromPath: 'toptags.tag'
+      }
+    ])
+
+    // Chess.com Triplet Rules
+    this.tripletRules.set('chess', [])
+
+    // Strava Triplet Rules
+    this.tripletRules.set('strava', [
+      {
+        pattern: 'activities',
+        predicate: PREDICATE_NAMES.COMPLETED_ACTIVITY,
+        extractObject: (activity) => activity.name,
+        extractObjectUrl: (activity) => `https://www.strava.com/activities/${activity.id}`
+      }
+    ])
 
   }
 }
