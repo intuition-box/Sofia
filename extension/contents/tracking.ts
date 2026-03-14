@@ -14,6 +14,67 @@ export const config: PlasmoCSConfig = {
 // Signal presence for dashboard detection
 document.documentElement.dataset.sofiaExtension = "true"
 
+// Auto-prompt certification when redirected from dashboard with ?sofia_certify=true
+// chrome.sidePanel.open requires a user gesture, so we show a clickable banner
+if (
+  window === window.top &&
+  window.location.search.includes("sofia_certify=true")
+) {
+  const url = new URL(window.location.href)
+  url.searchParams.delete("sofia_certify")
+  window.history.replaceState({}, "", url.toString())
+
+  const banner = document.createElement("div")
+  banner.id = "sofia-certify-banner"
+  banner.innerHTML = `
+    <span>Certify this page in Sofia</span>
+    <button id="sofia-certify-btn">Open Sofia</button>
+    <button id="sofia-certify-close">&times;</button>
+  `
+  banner.setAttribute("style", [
+    "position:fixed", "top:16px", "right:16px", "z-index:2147483647",
+    "display:flex", "align-items:center", "gap:12px",
+    "padding:12px 16px", "border-radius:12px",
+    "background:rgba(15,15,25,0.92)", "backdrop-filter:blur(12px)",
+    "border:1px solid rgba(255,255,255,0.1)",
+    "color:#fff", "font-family:system-ui,sans-serif", "font-size:14px",
+    "box-shadow:0 8px 32px rgba(0,0,0,0.4)",
+    "animation:sofia-slide-in 0.3s ease-out",
+  ].join(";"))
+
+  const style = document.createElement("style")
+  style.textContent = `
+    @keyframes sofia-slide-in {
+      from { opacity:0; transform:translateY(-12px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    #sofia-certify-btn {
+      background:#fff; color:#0f0f19; border:none; padding:6px 14px;
+      border-radius:20px; font-weight:600; font-size:13px; cursor:pointer;
+    }
+    #sofia-certify-btn:hover { background:#e0e0e0; }
+    #sofia-certify-close {
+      background:none; border:none; color:rgba(255,255,255,0.5);
+      font-size:18px; cursor:pointer; padding:0 4px;
+    }
+    #sofia-certify-close:hover { color:#fff; }
+  `
+  document.head.appendChild(style)
+  document.body.appendChild(banner)
+
+  document.getElementById("sofia-certify-btn")?.addEventListener("click", () => {
+    chrome.runtime.sendMessage({ type: "open_sidepanel" })
+    banner.remove()
+  })
+
+  document.getElementById("sofia-certify-close")?.addEventListener("click", () => {
+    banner.remove()
+  })
+
+  // Auto-dismiss after 10s
+  setTimeout(() => banner.remove(), 10000)
+}
+
 // Function to check if tracking is enabled
 async function isTrackingEnabled(): Promise<boolean> {
   try {
