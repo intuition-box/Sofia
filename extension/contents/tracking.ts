@@ -11,6 +11,9 @@ export const config: PlasmoCSConfig = {
   all_frames: true
 }
 
+// Signal presence for dashboard detection
+document.documentElement.dataset.sofiaExtension = "true"
+
 // Function to check if tracking is enabled
 async function isTrackingEnabled(): Promise<boolean> {
   try {
