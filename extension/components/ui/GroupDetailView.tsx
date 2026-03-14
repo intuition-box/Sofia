@@ -8,7 +8,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp, useGoldSystem, useGroupAmplify,
-  useDiscoveryReward, useDiscoveryScore, usePageDiscovery,
+  useDiscoveryReward, useDiscoveryScore, usePageDiscovery, useCart,
   type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
 } from '../../hooks'
 import type { GroupUrlRecord } from '~types/database'
@@ -24,6 +24,7 @@ import { createHookLogger } from '../../lib/utils/logger'
 
 const logger = createHookLogger('GroupDetailView')
 import { cleanTitle, getDisplayTitle } from '../../lib/utils/cleanTitle'
+import { CartToast } from './CartDrawer'
 import '../styles/IntentionBubbleSelector.css'
 import onChainBadgeIcon from './icons/onchainbadge.png'
 
@@ -42,17 +43,23 @@ const UrlRow = ({
   onChainStatus,
   onIntentionSelect,
   onTrustSelect,
+  onAddToCart,
+  onAddTrustToCart,
   onOAuthCertify,
   onRemove,
-  isProcessing
+  isProcessing,
+  cartPredicates
 }: {
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
   onIntentionSelect: (intention: IntentionPurpose, title?: string) => void
   onTrustSelect: (predicateName: string, title?: string) => void
+  onAddToCart: (intention: IntentionPurpose, title?: string) => void
+  onAddTrustToCart: (predicateName: string, title?: string) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
+  cartPredicates: string[]
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -161,45 +168,60 @@ const UrlRow = ({
             )}
             {TRUST_ITEMS.map(({ predicateLabel, type, label }) => {
               const isAlreadyCertified = allCertLabels.includes(type)
+              const isInCart = cartPredicates.includes(predicateLabel)
               const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
+              const color = certInfo?.color
               return (
                 <button
                   key={type}
-                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''}`}
+                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
                   onClick={() => {
-                    onTrustSelect(predicateLabel, urlRecord.title)
-                    setIsExpanded(false)
+                    if (!isInCart && !isAlreadyCertified) {
+                      onAddTrustToCart(predicateLabel, urlRecord.title)
+                    }
                   }}
-                  disabled={isProcessing}
+                  disabled={isProcessing || isInCart || isAlreadyCertified}
                   style={isAlreadyCertified ? {
-                    backgroundColor: certInfo?.color,
-                    borderColor: certInfo?.color,
+                    backgroundColor: color,
+                    borderColor: color,
                     color: '#fff'
+                  } : (isInCart && color) ? {
+                    backgroundColor: `${color}15`,
+                    borderColor: color,
+                    color
                   } : undefined}
                 >
-                  {label}
+                  {isInCart ? `${label} ✓` : label}
                 </button>
               )
             })}
             {INTENTION_ITEMS.map(({ key, label, type }) => {
               const isAlreadyCertified = allCertLabels.includes(type)
+              const predicateName = INTENTION_PREDICATES[key]
+              const isInCart = cartPredicates.includes(predicateName)
               const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
+              const color = certInfo?.color
               return (
                 <button
                   key={key}
-                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''}`}
+                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
                   onClick={() => {
-                    onIntentionSelect(key, urlRecord.title)
-                    setIsExpanded(false)
+                    if (!isInCart && !isAlreadyCertified) {
+                      onAddToCart(key, urlRecord.title)
+                    }
                   }}
-                  disabled={isProcessing}
+                  disabled={isProcessing || isInCart || isAlreadyCertified}
                   style={isAlreadyCertified ? {
-                    backgroundColor: certInfo?.color,
-                    borderColor: certInfo?.color,
+                    backgroundColor: color,
+                    borderColor: color,
                     color: '#fff'
+                  } : (isInCart && color) ? {
+                    backgroundColor: `${color}15`,
+                    borderColor: color,
+                    color
                   } : undefined}
                 >
-                  {label}
+                  {isInCart ? `${label} ✓` : label}
                 </button>
               )
             })}
@@ -214,6 +236,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
   const [processingUrls, setProcessingUrls] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState<'all' | 'uncertified' | CertificationType>('all')
   const [levelUpPreview, setLevelUpPreview] = useState<LevelUpPreview | null>(null)
+
+  // Cart
+  const cart = useCart()
+  const [cartToast, setCartToast] = useState<string | null>(null)
 
   // Get active URLs for on-chain query - memoize to prevent unnecessary refetches
   const activeUrls = useMemo(
@@ -271,6 +297,47 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
     totalCertifications: pendingUrlCertCount,
     refetch: refetchPendingDiscovery
   } = usePageDiscovery(pendingCertification?.url || null)
+
+  // Cart: add intention to cart
+  const handleAddToCart = async (url: string, intention: IntentionPurpose, title?: string) => {
+    const predicateName = INTENTION_PREDICATES[intention]
+    const favicon = getFaviconUrl(url, 128)
+    const added = await cart.addToCart(
+      url,
+      title || null,
+      predicateName,
+      intention,
+      favicon
+    )
+    setCartToast(added ? "Added to cart" : "Already in cart")
+  }
+
+  // Cart: add trust/distrust to cart
+  const handleAddTrustToCart = async (url: string, predicateName: string, title?: string) => {
+    const favicon = getFaviconUrl(url, 128)
+    const added = await cart.addToCart(
+      url,
+      title || null,
+      predicateName,
+      null,
+      favicon
+    )
+    setCartToast(added ? `Added ${predicateName} to cart` : "Already in cart")
+  }
+
+  // Get cart predicates for a specific URL
+  const getCartPredicatesForUrl = (url: string): string[] => {
+    return cart.items
+      .filter(item => item.url === url)
+      .map(item => item.predicateName)
+  }
+
+  // Auto-dismiss cart toast
+  useEffect(() => {
+    if (!cartToast) return
+    const timer = setTimeout(() => setCartToast(null), 1500)
+    return () => clearTimeout(timer)
+  }, [cartToast])
 
   // Ref to capture pre-certification count before the transaction
   const prevDiscoveryTotalRef = useRef<number>(0)
@@ -734,9 +801,12 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
               onChainStatus={getUrlCertification(urlRecord.url)}
               onIntentionSelect={(intention, title) => handleIntentionSelect(urlRecord.url, intention, title)}
               onTrustSelect={(predicateName, title) => handleTrustSelect(urlRecord.url, predicateName, title)}
+              onAddToCart={(intention, title) => handleAddToCart(urlRecord.url, intention, title)}
+              onAddTrustToCart={(predicateName, title) => handleAddTrustToCart(urlRecord.url, predicateName, title)}
               onOAuthCertify={handleOAuthCertify}
               onRemove={() => handleRemove(urlRecord.url)}
               isProcessing={processingUrls.has(urlRecord.url) || intentionLoading}
+              cartPredicates={getCartPredicatesForUrl(urlRecord.url)}
             />
           ))
         )}
@@ -788,7 +858,10 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         <div className="group-gold-balance">{totalGold} Gold available</div>
       </div>
 
-      {/* Weight Modal for on-chain certification */}
+      {/* Cart toast notification */}
+      <CartToast message={cartToast} />
+
+      {/* Weight Modal for on-chain certification (trust/distrust/oauth) */}
       {showWeightModal && createPortal(
         <WeightModal
           isOpen={showWeightModal}

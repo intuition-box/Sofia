@@ -1,0 +1,228 @@
+/* BatchRewardModal — Sequential reward claiming after batch submission */
+
+.batch-reward-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  padding: 12px;
+}
+
+.batch-reward {
+  background: linear-gradient(to bottom, #060504, #101010);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: batchRewardAppear 0.25s ease-out;
+  position: relative;
+}
+
+@keyframes batchRewardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Loading ── */
+
+.batch-reward__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 24px;
+}
+
+.batch-reward__loading-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-family: "Gotu", cursive;
+}
+
+/* ── Header ── */
+
+.batch-reward__header {
+  padding: 24px 24px 12px;
+  text-align: center;
+}
+
+.batch-reward__title {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: #f0e6d2;
+  margin: 0 0 4px;
+}
+
+.batch-reward__subtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ── Reward List ── */
+
+.batch-reward__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 16px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.batch-reward__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+}
+
+.batch-reward__item--active {
+  background: rgba(212, 175, 55, 0.06);
+  border-color: rgba(212, 175, 55, 0.2);
+}
+
+.batch-reward__item--claimed {
+  opacity: 0.5;
+}
+
+/* Left side: favicon + info */
+
+.batch-reward__item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.batch-reward__item-favicon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.batch-reward__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.batch-reward__item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.batch-reward__item-badge {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.batch-reward__item-rank {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Right side: reward info or claimed */
+
+.batch-reward__item-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.batch-reward__item-reward {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.batch-reward__item-tier {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(212, 175, 55, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.batch-reward__item-gold {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: "Gotu", cursive;
+  background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 40%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Claimed state */
+
+.batch-reward__item-claimed {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.batch-reward__item-check {
+  color: #10b981;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.batch-reward__item-claimed-text {
+  color: #10b981;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Footer ── */
+
+.batch-reward__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px 24px;
+}
+
+.batch-reward__tx-link {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.batch-reward__tx-link:hover {
+  color: rgba(255, 255, 255, 0.7);
+}

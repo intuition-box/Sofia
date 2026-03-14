@@ -48,19 +48,26 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-.intention-pill.active {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.5);
-  color: #FCD34D;
-}
-
 .intention-pill.certified {
   font-weight: 600;
+}
+
+.intention-pill.in-cart {
+  border-style: dashed;
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.08);
+  color: rgba(212, 175, 55, 0.85);
+  font-weight: 400;
+  opacity: 1;
 }
 
 .intention-pill:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+.intention-pill.in-cart:disabled {
+  opacity: 0.85;
 }
 
 .intention-hint {

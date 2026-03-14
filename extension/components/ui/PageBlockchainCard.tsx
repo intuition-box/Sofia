@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "../layout/RouterProvider"
 import {
@@ -13,11 +13,15 @@ import {
   getCertificationForUrl,
   useWalletFromStorage,
   useTrustCircle,
-  usePagePositions
+  usePagePositions,
+  useCart
 } from "~/hooks"
 import type { IntentionPurpose } from "~/types/discovery"
+import { INTENTION_PREDICATES } from "~/types/discovery"
+import { getFaviconUrl } from "~/lib/utils"
 import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
+import { CartToast } from "./CartDrawer"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
 import { PageBlockchainSkeleton } from "./Skeleton"
@@ -96,6 +100,79 @@ const PageBlockchainCard = () => {
   // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
   const effectiveUserHasCertified = userHasCertified || !!certEntry
 
+  // Cart
+  const cart = useCart()
+  const [cartToast, setCartToast] = useState<string | null>(null)
+
+  const cartIntentionsForPage = useMemo(() => {
+    if (!currentUrl) return [] as IntentionPurpose[]
+    return cart.items
+      .filter(item => item.url === currentUrl && item.intention)
+      .map(item => item.intention) as IntentionPurpose[]
+  }, [cart.items, currentUrl])
+
+  const trustInCart = useMemo(() => {
+    if (!currentUrl) return false
+    return cart.items.some(
+      item => item.url === currentUrl && item.predicateName === "trusts"
+    )
+  }, [cart.items, currentUrl])
+
+  const distrustInCart = useMemo(() => {
+    if (!currentUrl) return false
+    return cart.items.some(
+      item => item.url === currentUrl && item.predicateName === "distrust"
+    )
+  }, [cart.items, currentUrl])
+
+  const handleAddToCart = useCallback(
+    async (intention: IntentionPurpose) => {
+      if (!currentUrl) return
+      const predicateName = INTENTION_PREDICATES[intention]
+      const favicon = getFaviconUrl(currentUrl, 128)
+      const added = await cart.addToCart(
+        currentUrl,
+        pageTitle,
+        predicateName,
+        intention,
+        favicon
+      )
+      if (added) {
+        setCartToast("Added to cart")
+      } else {
+        setCartToast("Already in cart")
+      }
+    },
+    [currentUrl, pageTitle, cart]
+  )
+
+  const handleAddTrustToCart = useCallback(
+    async (predicate: "trusts" | "distrust") => {
+      if (!currentUrl) return
+      const favicon = getFaviconUrl(currentUrl, 128)
+      const added = await cart.addToCart(
+        currentUrl,
+        pageTitle,
+        predicate,
+        null,
+        favicon
+      )
+      if (added) {
+        setCartToast(`Added ${predicate === "trusts" ? "Trust" : "Distrust"} to cart`)
+      } else {
+        setCartToast("Already in cart")
+      }
+    },
+    [currentUrl, pageTitle, cart]
+  )
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!cartToast) return
+    const timer = setTimeout(() => setCartToast(null), 1500)
+    return () => clearTimeout(timer)
+  }, [cartToast])
+
   // UI toggle
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(false)
 
@@ -159,73 +236,45 @@ const PageBlockchainCard = () => {
           {!isRestricted && (
             <div className="trust-buttons-row">
               <button
-                className={`trust-page-button trust-btn ${alreadyTrusted || modal.trustState.success ? "success" : ""} ${modal.trustState.loading ? "loading" : ""}`}
-                onClick={() => modal.openTrustModal(currentUrl, pageTitle)}
-                disabled={
-                  modal.trustState.loading ||
-                  modal.distrustState.loading ||
-                  !currentUrl
-                }
+                className={`trust-page-button trust-btn ${alreadyTrusted ? "success" : ""} ${trustInCart ? "in-cart" : ""}`}
+                onClick={() => handleAddTrustToCart("trusts")}
+                disabled={alreadyTrusted || trustInCart || !currentUrl}
               >
-                {modal.trustState.loading ? (
-                  <>
-                    <div className="button-spinner"></div>
-                    Creating...
-                  </>
-                ) : alreadyTrusted || modal.trustState.success ? (
-                  "Trusted"
-                ) : (
-                  "TRUST"
-                )}
+                {alreadyTrusted
+                  ? "Trusted"
+                  : trustInCart
+                    ? "In Cart"
+                    : "TRUST"}
               </button>
 
               <button
-                className={`trust-page-button distrust-btn ${alreadyDistrusted || modal.distrustState.success ? "success" : ""} ${modal.distrustState.loading ? "loading" : ""}`}
-                onClick={() =>
-                  modal.openDistrustModal(currentUrl, pageTitle)
-                }
+                className={`trust-page-button distrust-btn ${alreadyDistrusted ? "success" : ""} ${distrustInCart ? "in-cart" : ""}`}
+                onClick={() => handleAddTrustToCart("distrust")}
                 disabled={
-                  modal.trustState.loading ||
-                  modal.distrustState.loading ||
-                  !currentUrl
+                  alreadyDistrusted || distrustInCart || !currentUrl
                 }
               >
-                {modal.distrustState.loading ? (
-                  <>
-                    <div className="button-spinner"></div>
-                    Creating...
-                  </>
-                ) : alreadyDistrusted || modal.distrustState.success ? (
-                  "Distrusted"
-                ) : (
-                  "DISTRUST"
-                )}
+                {alreadyDistrusted
+                  ? "Distrusted"
+                  : distrustInCart
+                    ? "In Cart"
+                    : "DISTRUST"}
               </button>
             </div>
           )}
 
-          {/* Trust/Distrust Error Display */}
-          {!isRestricted &&
-            (modal.trustState.error || modal.distrustState.error) && (
-              <div className="trust-error">
-                <small>
-                  {modal.trustState.error || modal.distrustState.error}
-                </small>
-              </div>
-            )}
-
-          {/* Discovery Section - Intention Certification */}
+          {/* Discovery Section - Intention Certification (cart mode) */}
           {!isRestricted && (
             <div className="discovery-section">
               <IntentionBubbleSelector
                 onBubbleClick={(intention: IntentionPurpose) => {
                   if (!currentUrl) return
-                  modal.openIntentionModal(currentUrl, pageTitle, intention)
+                  handleAddToCart(intention)
                 }}
                 disabled={modal.intentionState.loading}
                 isEligible={true}
-                selectedIntention={modal.intentionState.currentIntention}
                 certifiedIntentions={certifiedIntentions}
+                cartIntentions={cartIntentionsForPage}
               />
             </div>
           )}
@@ -278,6 +327,9 @@ const PageBlockchainCard = () => {
           </div>
         </div>
       )}
+
+      {/* Cart toast notification */}
+      <CartToast message={cartToast} />
 
       {modal.showWeightModal &&
         createPortal(

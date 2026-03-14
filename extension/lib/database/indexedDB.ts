@@ -18,14 +18,15 @@ export type {
   IntentionGroupRecord,
   GroupUrlRecord,
   PredicateChangeRecord,
-  UserXPRecord
+  UserXPRecord,
+  CartItemRecord
 } from '../../types/database'
 
 const logger = createServiceLogger('IndexedDB')
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
-const DB_VERSION = 8  // Incremented to rename ELIZA_DATA to TRIPLETS_DATA
+const DB_VERSION = 9  // Added CART_ITEMS store
 
 // Object store names
 export const STORES = {
@@ -38,7 +39,8 @@ export const STORES = {
   BOOKMARKED_TRIPLETS: 'bookmarked_triplets',
   RECOMMENDATIONS: 'recommendations',
   INTENTION_GROUPS: 'intention_groups',
-  USER_XP: 'user_xp'
+  USER_XP: 'user_xp',
+  CART_ITEMS: 'cart_items'
 } as const
 
 /**
@@ -181,6 +183,15 @@ export class SofiaIndexedDB {
     // 🆕 User XP store (XP global utilisateur)
     if (!db.objectStoreNames.contains(STORES.USER_XP)) {
       db.createObjectStore(STORES.USER_XP, { keyPath: 'id' })
+    }
+
+    // Certification cart store (batch certification queue)
+    if (!db.objectStoreNames.contains(STORES.CART_ITEMS)) {
+      const cartStore = db.createObjectStore(STORES.CART_ITEMS, {
+        keyPath: 'id'
+      })
+      cartStore.createIndex('walletAddress', 'walletAddress', { unique: false })
+      cartStore.createIndex('addedAt', 'addedAt', { unique: false })
     }
 
     logger.info('Object stores created successfully')

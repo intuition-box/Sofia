@@ -7,16 +7,16 @@ interface IntentionBubbleSelectorProps {
   onBubbleClick: (intention: IntentionPurpose) => void
   disabled?: boolean
   isEligible?: boolean
-  selectedIntention?: IntentionPurpose | null
   certifiedIntentions?: IntentionPurpose[]
+  cartIntentions?: IntentionPurpose[]
 }
 
 export const IntentionBubbleSelector = memo(({
   onBubbleClick,
   disabled = false,
   isEligible = true,
-  selectedIntention = null,
-  certifiedIntentions = []
+  certifiedIntentions = [],
+  cartIntentions = []
 }: IntentionBubbleSelectorProps) => {
   const handleClick = (intention: IntentionPurpose) => {
     if (disabled || !isEligible) return
@@ -28,21 +28,24 @@ export const IntentionBubbleSelector = memo(({
       <div className="intention-pills">
         {INTENTION_ITEMS.map(({ key, label, type }) => {
           const isCertified = certifiedIntentions.includes(key)
-          const color = isCertified ? getIntentionColor(type) : undefined
+          const isInCart = cartIntentions.includes(key)
+          const color = (isCertified || isInCart)
+            ? getIntentionColor(type)
+            : undefined
 
           return (
             <button
               key={key}
-              className={`intention-pill ${selectedIntention === key ? 'active' : ''} ${isCertified ? 'certified' : ''}`}
+              className={`intention-pill ${isCertified ? 'certified' : ''} ${isInCart && !isCertified ? 'in-cart' : ''}`}
               onClick={() => handleClick(key)}
               disabled={disabled || !isEligible}
-              style={isCertified ? {
-                backgroundColor: `${color}25`,
+              style={(isCertified || isInCart) ? {
+                backgroundColor: `${color}${isInCart && !isCertified ? '15' : '25'}`,
                 borderColor: color,
                 color
               } : undefined}
             >
-              {label}
+              {isInCart && !isCertified ? `+ ${label}` : label}
             </button>
           )
         })}

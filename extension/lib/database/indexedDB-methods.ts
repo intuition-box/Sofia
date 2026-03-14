@@ -2,7 +2,7 @@
  * Specialized methods for SofIA IndexedDB operations
  */
 
-import sofiaDB, { STORES, type TripletsRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type IntentionGroupRecord, type UserXPRecord } from './indexedDB'
+import sofiaDB, { STORES, type TripletsRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type IntentionGroupRecord, type UserXPRecord, type CartItemRecord } from './indexedDB'
 import { createServiceLogger } from '../utils/logger'
 import { MessageBus } from '../services/MessageBus'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
@@ -1118,3 +1118,35 @@ export const bookmarkService = BookmarkService
 export const recommendationsService = RecommendationsService
 export const intentionGroupsService = IntentionGroupsService  // 🆕 Export intention groups service
 export const userXPService = UserXPService  // 🆕 Export user XP service
+
+/**
+ * Cart Data Service
+ * Manages certification cart items in IndexedDB
+ */
+export class CartDataService {
+  static async addItem(item: CartItemRecord): Promise<void> {
+    await sofiaDB.put(STORES.CART_ITEMS, item)
+  }
+
+  static async removeItem(id: string): Promise<void> {
+    await sofiaDB.delete(STORES.CART_ITEMS, id)
+  }
+
+  static async getByWallet(walletAddress: string): Promise<CartItemRecord[]> {
+    const items = await sofiaDB.getAllByIndex<CartItemRecord>(
+      STORES.CART_ITEMS,
+      'walletAddress',
+      walletAddress
+    )
+    return items.sort((a, b) => a.addedAt - b.addedAt)
+  }
+
+  static async clearByWallet(walletAddress: string): Promise<void> {
+    const items = await this.getByWallet(walletAddress)
+    for (const item of items) {
+      await sofiaDB.delete(STORES.CART_ITEMS, item.id)
+    }
+  }
+}
+
+export const cartDataService = CartDataService

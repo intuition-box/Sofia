@@ -63,5 +63,9 @@ export type { TripleDetail, CertificationEntry, CertificationsStoreState } from 
 export { GlobalStakeServiceClass, globalStakeService } from './GlobalStakeService'
 export type { GlobalStakeState, GlobalStakePosition, GlobalStakeConfig, GlobalVaultStats, SeasonPosition } from '~/types/globalStake'
 
+// Cart
+export { CartServiceClass, cartService } from './CartService'
+export type { CartState } from './CartService'
+
 // AI
 export { RecommendationService } from './ai/RecommendationService'
