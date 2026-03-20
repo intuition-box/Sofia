@@ -105,5 +105,9 @@ export { useCartSubmit } from './useCartSubmit'
 export { useBatchRewards } from './useBatchRewards'
 export type { BatchRewardItem } from './useBatchRewards'
 
+// Notifications
+export { useBrowsingNudge } from './useBrowsingNudge'
+export { useCartReminder } from './useCartReminder'
+
 // Tracking
 export { useTracking } from './useTracking'

@@ -60,6 +60,9 @@ export type MessageType =
   // Wallet bridge messages
   | 'WALLET_REQUEST'
   | 'WALLET_EVENT'
+  // Browsing nudge notifications
+  | 'BROWSING_NUDGE'
+  | 'NUDGE_DISMISSED'
 
 // Specific message interfaces
 export interface ChromeMessage extends BaseMessage {

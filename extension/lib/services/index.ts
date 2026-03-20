@@ -67,5 +67,8 @@ export type { GlobalStakeState, GlobalStakePosition, GlobalStakeConfig, GlobalVa
 export { CartServiceClass, cartService } from './CartService'
 export type { CartState } from './CartService'
 
+// Browsing Nudge
+export { BrowsingNudgeServiceClass, browsingNudgeService, NUDGE_URL_THRESHOLD } from './BrowsingNudgeService'
+
 // AI
 export { RecommendationService } from './ai/RecommendationService'

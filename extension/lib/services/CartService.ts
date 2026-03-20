@@ -47,6 +47,18 @@ class CartServiceClass {
   private updateState(partial: Partial<CartState>) {
     this.state = { ...this.state, ...partial }
     for (const listener of this.listeners) listener()
+    // Sync cart count to session storage so content scripts can react
+    this.syncCartCount()
+  }
+
+  private syncCartCount() {
+    try {
+      chrome.storage.session
+        .set({ cartItemCount: this.state.count })
+        .catch(() => {})
+    } catch {
+      // Not in extension context
+    }
   }
 
   private initializeStore() {
@@ -57,7 +69,7 @@ class CartServiceClass {
     try {
       chrome.storage.onChanged.addListener((changes, area) => {
         if (area === "session" && changes.walletAddress) {
-          const newWallet = changes.walletAddress.newValue
+          const newWallet = changes.walletAddress.newValue?.toLowerCase()
           if (newWallet && newWallet !== this.currentWallet) {
             this.loaded = false
             this.loadCart(newWallet)
@@ -76,14 +88,15 @@ class CartServiceClass {
   // ── Public API ──
 
   async loadCart(walletAddress: string, force = false): Promise<void> {
+    const wallet = walletAddress.toLowerCase()
     // Skip reload if same wallet already loaded (even if cart is empty)
-    if (!force && this.loaded && this.currentWallet === walletAddress) {
+    if (!force && this.loaded && this.currentWallet === wallet) {
       return
     }
-    this.currentWallet = walletAddress
+    this.currentWallet = wallet
     this.loaded = true
     try {
-      const items = await CartDataService.getByWallet(walletAddress)
+      const items = await CartDataService.getByWallet(wallet)
       this.updateState({ items, count: items.length })
       logger.debug("Cart loaded", { wallet: walletAddress.slice(0, 8), count: items.length })
     } catch (error) {
@@ -125,6 +138,10 @@ class CartServiceClass {
       const items = [...this.state.items, record]
       this.updateState({ items, count: items.length })
       logger.info("Item added to cart", { normalizedLabel, predicateName })
+      // Reset browsing nudge counter on cart action
+      chrome.runtime
+        .sendMessage({ type: "NUDGE_DISMISSED" })
+        .catch(() => {})
       return true
     } catch (error) {
       logger.error("Failed to add item to cart", { error })
@@ -145,7 +162,7 @@ class CartServiceClass {
 
   async clearCart(walletAddress: string): Promise<void> {
     try {
-      await CartDataService.clearByWallet(walletAddress)
+      await CartDataService.clearByWallet(walletAddress.toLowerCase())
       this.updateState({ items: [], count: 0 })
       logger.info("Cart cleared", { wallet: walletAddress.slice(0, 8) })
     } catch (error) {

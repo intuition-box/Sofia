@@ -2,6 +2,7 @@ import {
   badgeService, pageDataService, pulseService, tripletStorageService,
   groupManager, xpService, XPServiceClass, goldService, getLevelUpCost,
   currencyMigrationService, sessionTracker, levelUpService,
+  browsingNudgeService,
   type TrackedUrl, type DomainCluster
 } from "../lib/services"
 import type { ChromeMessage, MessageResponse } from "../types/messages"
@@ -580,6 +581,7 @@ export function setupMessageHandlers(): void {
             return true
           }
           sessionTracker.trackUrl({ url: trackUrl, title: trackTitle || trackUrl, duration, favicon })
+          browsingNudgeService.incrementAndCheck()
           sendResponse({ success: true })
         } catch (error) {
           logger.error("TRACK_URL error", error)
@@ -595,6 +597,11 @@ export function setupMessageHandlers(): void {
           logger.error("FORCE_FLUSH_TRACKER error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
+        return true
+
+      case "NUDGE_DISMISSED":
+        browsingNudgeService.resetCounter()
+        sendResponse({ success: true })
         return true
 
       case "LEVEL_UP_GROUP":
