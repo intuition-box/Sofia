@@ -5,7 +5,7 @@
  * we use an external HTTPS page for authentication.
  */
 
-export const AUTH_PAGE_URL = 'https://sofia.intuition.box/auth'
+export const AUTH_PAGE_URL = 'https://doc.sofia.intuition.box/auth'
 
 /**
  * Build the full auth URL with callback parameters

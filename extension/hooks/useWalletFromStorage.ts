@@ -173,10 +173,10 @@ export const disconnectWallet = async () => {
  * This ensures the Privy session is also cleared
  */
 async function triggerExternalLogout(): Promise<void> {
-  const logoutUrl = 'https://sofia.intuition.box/auth/logout'
+  const logoutUrl = 'https://doc.sofia.intuition.box/auth/logout'
 
   // Try to find an existing tab on the auth domain
-  const tabs = await chrome.tabs.query({ url: 'https://sofia.intuition.box/*' })
+  const tabs = await chrome.tabs.query({ url: 'https://doc.sofia.intuition.box/*' })
 
   if (tabs.length > 0 && tabs[0].id) {
     // Update existing tab and bring it to focus

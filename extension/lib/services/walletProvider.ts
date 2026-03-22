@@ -70,7 +70,7 @@ async function sendWalletRequest(method: string, params?: any[], tabId?: number)
           // Check if the error is because we're not on an HTTPS page
           const isHttps = await isActiveTabHttps()
           if (!isHttps) {
-            reject(new Error("Wallet unavailable: navigate to an HTTPS page (e.g. sofia.intuition.box/values) to sign transactions."))
+            reject(new Error("Wallet unavailable: navigate to an HTTPS page (e.g. doc.sofia.intuition.box/values) to sign transactions."))
             return
           }
           reject(new Error(chrome.runtime.lastError.message || "Failed to communicate with wallet bridge"))

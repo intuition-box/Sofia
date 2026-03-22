@@ -1,5 +1,4 @@
 import { useState, useRef } from "react"
-import { createPortal } from "react-dom"
 import { X, Trash2 } from "lucide-react"
 import sofiaIcon from "data-base64:~assets/icon-dark-32.png"
 import { useCart, useCartSubmit } from "~/hooks"
@@ -70,7 +69,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
     }
   })
 
-  return createPortal(
+  return (
     <>
       {/* Cart Drawer */}
       {isOpen && !showBatchReward && (
@@ -197,24 +196,21 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
 
       {/* WeightModal for shared weight selection */}
       {showWeightModal &&
-        createPortal(
-          <WeightModal
-            isOpen={showWeightModal}
-            triplets={modalTriplets}
-            isProcessing={submitting}
-            transactionSuccess={result?.success ?? false}
-            transactionError={error || undefined}
-            transactionHash={
-              result?.txHash || undefined
-            }
-            createdCount={result?.createdCount ?? 0}
-            depositCount={result?.depositCount ?? 0}
-            isIntentionCertification={true}
-            onClose={handleWeightClose}
-            onSubmit={handleWeightSubmit}
-          />,
-          document.body
-        )}
+        <WeightModal
+          isOpen={showWeightModal}
+          triplets={modalTriplets}
+          isProcessing={submitting}
+          transactionSuccess={result?.success ?? false}
+          transactionError={error || undefined}
+          transactionHash={
+            result?.txHash || undefined
+          }
+          createdCount={result?.createdCount ?? 0}
+          depositCount={result?.depositCount ?? 0}
+          isIntentionCertification={true}
+          onClose={handleWeightClose}
+          onSubmit={handleWeightSubmit}
+        />}
 
       {/* Batch Reward Modal — sequential gold claiming */}
       <BatchRewardModal
@@ -223,8 +219,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
         txHash={result?.txHash}
         onClose={handleBatchRewardClose}
       />
-    </>,
-    document.body
+    </>
   )
 }
 

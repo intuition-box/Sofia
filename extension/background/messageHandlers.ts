@@ -84,7 +84,7 @@ async function handleRecommendationGeneration(message: ChromeMessage, sendRespon
 
 // Allowed origins for external messages (security)
 const ALLOWED_EXTERNAL_ORIGINS = [
-  'https://sofia.intuition.box',
+  'https://doc.sofia.intuition.box',
   'http://localhost:3000' // For development only
 ]
 
@@ -191,7 +191,7 @@ export function setupMessageHandlers(): void {
     }
 
     if (message.type === 'FIRST_CLAIM') {
-      const url = message.data?.url || 'https://sofia.intuition.box'
+      const url = message.data?.url || 'https://doc.sofia.intuition.box'
       ;(async () => {
         try {
           await chrome.storage.session.set({

@@ -240,11 +240,11 @@ export class OAuthFlowManager {
 
     // Platform-specific auth URLs on landing page
     const authUrls: Record<string, string> = {
-      twitter: 'https://sofia.intuition.box/auth/twitter',
-      youtube: 'https://sofia.intuition.box/auth/youtube',
-      spotify: 'https://sofia.intuition.box/auth/spotify',
-      discord: 'https://sofia.intuition.box/auth/discord',
-      twitch: 'https://sofia.intuition.box/auth/twitch'
+      twitter: 'https://doc.sofia.intuition.box/auth/twitter',
+      youtube: 'https://doc.sofia.intuition.box/auth/youtube',
+      spotify: 'https://doc.sofia.intuition.box/auth/spotify',
+      discord: 'https://doc.sofia.intuition.box/auth/discord',
+      twitch: 'https://doc.sofia.intuition.box/auth/twitch'
     }
 
     const baseUrl = authUrls[platform]

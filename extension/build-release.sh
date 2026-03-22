@@ -29,8 +29,8 @@ echo "  Done: version set to ${VERSION}"
 echo ""
 
 # Step 2: Build
-echo "[2/5] Building extension (pnpm build)..."
-pnpm build
+echo "[2/5] Building extension (bun run build)..."
+bun run build
 
 if [ ! -d "$BUILD_DIR" ]; then
   echo "Error: Build directory not found: $BUILD_DIR"

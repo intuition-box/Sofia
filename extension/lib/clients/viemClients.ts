@@ -45,9 +45,9 @@ async function ensureHttpsTabForWallet(): Promise<number> {
     }
 
     // No HTTPS tab available - open one
-    logger.warn('No HTTPS tab available, opening sofia.intuition.box/values')
+    logger.warn('No HTTPS tab available, opening doc.sofia.intuition.box/values')
     const newTab = await chrome.tabs.create({
-        url: 'https://sofia.intuition.box/values',
+        url: 'https://doc.sofia.intuition.box/values',
         active: true
     })
 
