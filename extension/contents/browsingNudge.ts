@@ -14,9 +14,10 @@ export const config: PlasmoCSConfig = {
   all_frames: false
 }
 
+const FALLBACK_COUNT = 15
 let notificationEl: HTMLElement | null = null
 
-function createNotification() {
+function createNotification(count = FALLBACK_COUNT) {
   if (notificationEl) return
 
   const shadow = document.createElement("div")
@@ -94,6 +95,13 @@ function createNotification() {
       color: white;
       background: rgba(255, 255, 255, 0.1);
     }
+    .sofia-nudge__count {
+      background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
     .sofia-nudge__dismiss svg {
       width: 14px;
       height: 14px;
@@ -143,7 +151,7 @@ function createNotification() {
     <div class="sofia-nudge__header">
       <img src="${sofiaIconUrl}" class="sofia-nudge__icon" alt="Sofia" />
       <p class="sofia-nudge__message">
-        It's been a while since you've been browsing. Would you like to leave a trace of your navigation?
+        You've visited <strong class="sofia-nudge__count">${count}</strong> pages without certifying any. Open Sofia to certify them!
       </p>
       <button class="sofia-nudge__dismiss" aria-label="Dismiss">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -242,6 +250,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "BROWSING_NUDGE") {
-    createNotification()
+    createNotification(message.count || FALLBACK_COUNT)
   }
 })
