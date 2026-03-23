@@ -149,6 +149,88 @@ class CartServiceClass {
     }
   }
 
+  async addVoteItem(
+    walletAddress: string,
+    url: string,
+    pageTitle: string | null,
+    predicateName: string,
+    intention: IntentionPurpose | null,
+    faviconUrl: string | null,
+    voteAction: "support" | "oppose",
+    tripleTermId: string
+  ): Promise<boolean> {
+    const { label: normalizedLabel } = normalizeUrl(url)
+    const wallet = walletAddress.toLowerCase()
+    const id = `${wallet}:${normalizedLabel}:${predicateName}:${voteAction}`
+
+    // Check for duplicate
+    if (this.state.items.some(item => item.id === id)) {
+      logger.debug("Vote already in cart", { normalizedLabel, voteAction })
+      return false
+    }
+
+    // Check for conflicting vote (support vs oppose on same triple)
+    if (this.hasConflictingVote(normalizedLabel, predicateName, voteAction)) {
+      logger.debug("Conflicting vote in cart", { normalizedLabel, voteAction })
+      return false
+    }
+
+    const record: CartItemRecord = {
+      id,
+      walletAddress: wallet,
+      url,
+      normalizedUrl: normalizedLabel,
+      pageTitle,
+      predicateName,
+      intention,
+      faviconUrl,
+      addedAt: Date.now(),
+      voteAction,
+      tripleTermId
+    }
+
+    try {
+      await CartDataService.addItem(record)
+      const items = [...this.state.items, record]
+      this.updateState({ items, count: items.length })
+      logger.info("Vote added to cart", { normalizedLabel, voteAction })
+      chrome.runtime
+        .sendMessage({ type: "NUDGE_DISMISSED" })
+        .catch(() => {})
+      return true
+    } catch (error) {
+      logger.error("Failed to add vote to cart", { error })
+      return false
+    }
+  }
+
+  hasConflictingVote(
+    normalizedUrl: string,
+    predicateName: string,
+    voteAction: "support" | "oppose"
+  ): boolean {
+    const opposite = voteAction === "support" ? "oppose" : "support"
+    return this.state.items.some(
+      item =>
+        item.normalizedUrl === normalizedUrl &&
+        item.predicateName === predicateName &&
+        item.voteAction === opposite
+    )
+  }
+
+  hasVoteInCart(
+    normalizedUrl: string,
+    predicateName: string,
+    voteAction: "support" | "oppose"
+  ): boolean {
+    return this.state.items.some(
+      item =>
+        item.normalizedUrl === normalizedUrl &&
+        item.predicateName === predicateName &&
+        item.voteAction === voteAction
+    )
+  }
+
   async removeItem(itemId: string): Promise<void> {
     try {
       await CartDataService.removeItem(itemId)
@@ -179,7 +261,8 @@ class CartServiceClass {
   // ── Batch submission helper ──
 
   toBatchInputs(items: CartItemRecord[]): BatchTripleInput[] {
-    return items.map(item => ({
+    const certItems = items.filter(item => !item.voteAction)
+    return certItems.map(item => ({
       predicateName: item.predicateName,
       objectData: {
         name: item.pageTitle || item.normalizedUrl,
@@ -188,6 +271,10 @@ class CartServiceClass {
         image: item.faviconUrl || undefined
       }
     }))
+  }
+
+  getVoteItems(items: CartItemRecord[]): CartItemRecord[] {
+    return items.filter(item => !!item.voteAction && !!item.tripleTermId)
   }
 
   // Helper: get predicate name from intention

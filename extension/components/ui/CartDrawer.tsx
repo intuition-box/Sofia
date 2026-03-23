@@ -127,6 +127,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                     const t = predicateLabelToIntentionType(item.predicateName)
                     return t ? getIntentionBadge(t) : null
                   })()
+                  const isVote = !!item.voteAction
                   return (
                     <div key={item.id} className="cart-drawer__item">
                       {item.faviconUrl ? (
@@ -148,7 +149,13 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                           {item.normalizedUrl}
                         </div>
                       </div>
-                      {badge && (
+                      {isVote ? (
+                        <span
+                          className={`cart-drawer__item-pill cart-drawer__item-pill--${item.voteAction}`}
+                        >
+                          {item.voteAction === "support" ? "▲ Support" : "▼ Oppose"}
+                        </span>
+                      ) : badge ? (
                         <span
                           className="cart-drawer__item-pill"
                           style={{
@@ -159,7 +166,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                         >
                           {badge.label}
                         </span>
-                      )}
+                      ) : null}
                       <button
                         className="cart-drawer__item-remove"
                         onClick={() => removeFromCart(item.id)}
@@ -173,23 +180,43 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             )}
 
             {/* Footer */}
-            {count > 0 && (
-              <div className="cart-drawer__footer">
-                <div className="cart-drawer__fee-row">
-                  <span>{count} certification{count > 1 ? "s" : ""}</span>
-                  <span className="cart-drawer__fee-value">
-                    1 transaction
-                  </span>
+            {count > 0 && (() => {
+              const certCount = items.filter(i => !i.voteAction).length
+              const voteItemCount = items.filter(i => !!i.voteAction).length
+              const hasVotes = voteItemCount > 0
+              const hasCerts = certCount > 0
+              const summary = [
+                hasCerts ? `${certCount} cert${certCount > 1 ? "s" : ""}` : "",
+                hasVotes ? `${voteItemCount} vote${voteItemCount > 1 ? "s" : ""}` : ""
+              ].filter(Boolean).join(" + ")
+              const btnLabel = hasVotes && !hasCerts
+                ? `Vote All (${count})`
+                : hasVotes
+                  ? `Submit All (${count})`
+                  : `Certify All (${count})`
+
+              return (
+                <div className="cart-drawer__footer">
+                  <div className="cart-drawer__fee-row">
+                    <span>{summary}</span>
+                    <span className="cart-drawer__fee-value">
+                      {hasCerts && hasVotes
+                        ? `${1 + voteItemCount} transaction${voteItemCount > 0 ? "s" : ""}`
+                        : hasVotes
+                          ? `${voteItemCount} transaction${voteItemCount > 1 ? "s" : ""}`
+                          : "1 transaction"}
+                    </span>
+                  </div>
+                  <button
+                    className="cart-drawer__submit-btn"
+                    onClick={handleCertifyAll}
+                    disabled={submitting}
+                  >
+                    {submitting ? "Processing..." : btnLabel}
+                  </button>
                 </div>
-                <button
-                  className="cart-drawer__submit-btn"
-                  onClick={handleCertifyAll}
-                  disabled={submitting}
-                >
-                  {submitting ? "Certifying..." : `Certify All (${count})`}
-                </button>
-              </div>
-            )}
+              )
+            })()}
           </div>
         </div>
       )}
