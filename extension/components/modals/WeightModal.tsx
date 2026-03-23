@@ -589,16 +589,18 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
 
           {/* Loading State */}
           {isProcessing && !transactionSuccess && (
-            <div className="modal-processing-section">
-              <SofiaLoader size={60} />
-              <div className="modal-processing-text">
-                <p className="modal-processing-title">Creating</p>
-                <p className="modal-processing-step">{processingStep}</p>
+            <>
+              <div className="modal-processing-section">
+                <SofiaLoader size={60} />
+                <div className="modal-processing-text">
+                  <p className="modal-processing-title">Creating</p>
+                  <p className="modal-processing-step">{processingStep}</p>
+                </div>
               </div>
-              <p className="modal-processing-warning">
+              <div className="modal-processing-warning">
                 Do not close or navigate away from this tab
-              </p>
-            </div>
+              </div>
+            </>
           )}
 
           {!rewardClaimed && !(transactionSuccess && discoveryReward) && (
