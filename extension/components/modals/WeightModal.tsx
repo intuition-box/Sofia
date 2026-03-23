@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
@@ -107,6 +107,18 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       setCustomValues(new Array(triplets.length).fill(''))
     }
   }, [tripletKey])
+
+  // Warn user before leaving during processing
+  useEffect(() => {
+    if (!isProcessing) return
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [isProcessing])
 
   // Processing animation steps
   useEffect(() => {
@@ -240,6 +252,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
   }
 
   const handleClose = () => {
+    if (isProcessing) return
     setSelectedWeights(new Array(triplets.length).fill('default'))
     setCustomValues(new Array(triplets.length).fill(''))
     onClose()
@@ -582,6 +595,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 <p className="modal-processing-title">Creating</p>
                 <p className="modal-processing-step">{processingStep}</p>
               </div>
+              <p className="modal-processing-warning">
+                Do not close or navigate away from this tab
+              </p>
             </div>
           )}
 
@@ -590,6 +606,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
               <button
                 className="stake-btn stake-btn-cancel"
                 onClick={handleClose}
+                disabled={isProcessing}
               >
                 {(transactionSuccess || transactionError) ? 'Close' : 'Cancel'}
               </button>
