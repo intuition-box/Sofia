@@ -239,7 +239,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           onSubmit={handleWeightSubmit}
         />}
 
-      {/* Batch Reward Modal — sequential gold claiming */}
+      {/* Batch Reward Modal — claim all + receipt card */}
       <BatchRewardModal
         isOpen={showBatchReward}
         items={submittedItemsRef.current}

@@ -137,6 +137,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
   const newAtomCount = estimateOptions?.newAtomCount ?? 1
 
   // Compute real-time breakdown for display
+  const itemCount = triplets.length
   const breakdown = useMemo(() => {
     const minimumValue = weightOptions.find(opt => opt.id === 'minimum')!.value!
     const defaultValue = weightOptions.find(opt => opt.id === 'default')!.value!
@@ -157,7 +158,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       }
     }
 
-    const createOpts = { isNewTriple, newAtomCount }
+    const createOpts = { isNewTriple, newAtomCount, itemCount }
 
     if (totalTrust <= 0 || !gsEnabled) {
       const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
@@ -178,7 +179,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const poolAmount = (totalTrust * gsPercentage) / GS_FEE_DENOMINATOR
     const signalAmount = totalTrust - poolAmount
     const minDeposit = Number(gsConfig.minGlobalDeposit) / 1e18
-    const belowMinimum = poolAmount > 0 && poolAmount < minDeposit
+    // Check belowMinimum per item, not on total — each triple is split individually
+    const perItemPool = itemCount > 0 ? poolAmount / itemCount : poolAmount
+    const belowMinimum = perItemPool > 0 && perItemPool < minDeposit
 
     const effectiveGsPercentage = belowMinimum ? 0 : gsPercentage
     const costEstimate = estimate?.(totalTrust, effectiveGsPercentage, createOpts) ?? null
@@ -195,7 +198,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount])
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, itemCount])
 
   const handleSubmit = async () => {
     try {

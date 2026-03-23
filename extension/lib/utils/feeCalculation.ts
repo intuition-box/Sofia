@@ -20,18 +20,26 @@ export function estimateCertificationCost(
   gsDenominator: number,
   feeParams: FeeParams,
   protocolCosts: ProtocolCosts,
-  options?: { isNewTriple?: boolean; newAtomCount?: number }
+  options?: {
+    isNewTriple?: boolean
+    newAtomCount?: number
+    /** Number of items in the batch (default 1) */
+    itemCount?: number
+  }
 ): CostEstimate {
   const { depositFixed, depositPct, creationFixed, feeDenom } = feeParams
   const { tripleCost, atomCost } = protocolCosts
   const isNewTriple = options?.isNewTriple ?? false
   const newAtomCount = options?.newAtomCount ?? 0
+  const itemCount = options?.itemCount ?? 1
 
   // --- Deposit split ---
   const poolFraction = gsPercentage / gsDenominator
   const poolAmount = depositTrust * poolFraction
   const signalAmount = depositTrust - poolAmount
-  const depositCount = poolAmount > 0 ? 2 : 1
+  // Each item gets its own deposit entry; with GS each item has 2 (signal + pool)
+  const depositsPerItem = poolAmount > 0 ? 2 : 1
+  const depositCount = depositsPerItem * itemCount
 
   // --- Sofia fees (from SofiaFeeProxy) ---
   // Fixed fee: depositFixedFee per deposit entry
@@ -39,7 +47,6 @@ export function estimateCertificationCost(
   const sofiaFixedFee = fixedFeePerDeposit * depositCount
 
   // Percentage fee: depositPercentageFee / FEE_DENOMINATOR * totalDeposit
-  // Math: 5% * (signal + pool) = 5% * total  (distributive property)
   const pctRate = Number(depositPct) / Number(feeDenom)
   const sofiaPercentFee = pctRate * depositTrust
 
@@ -47,15 +54,15 @@ export function estimateCertificationCost(
   const creationFixedPerUnit = Number(creationFixed) / 1e18
   let creationFixedFeeTotal = 0
   if (isNewTriple) {
-    // 1 triple creation + newAtomCount atom creations
-    creationFixedFeeTotal = creationFixedPerUnit * (1 + newAtomCount)
+    // Each item = 1 triple creation + newAtomCount atom creations
+    creationFixedFeeTotal = creationFixedPerUnit * (itemCount + newAtomCount)
   }
 
   // --- Creation costs (full mandatory cost from MultiVault on CREATE path) ---
   // Includes protocol fee + initial vault deposits — all leave the user's wallet
   let creationCost = 0
   if (isNewTriple) {
-    creationCost += Number(tripleCost) / 1e18
+    creationCost += (Number(tripleCost) / 1e18) * itemCount
     creationCost += (Number(atomCost) / 1e18) * newAtomCount
   }
 

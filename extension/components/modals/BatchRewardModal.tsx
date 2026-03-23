@@ -1,8 +1,8 @@
 /**
  * BatchRewardModal
- * Shows a sequential reward claiming flow after batch cart submission.
- * Lists each certified item with its reward tier and gold amount.
- * User claims one at a time with animation between claims.
+ * Shows batch reward claiming after cart submission.
+ * Displays total gold at top, all items with tiers,
+ * single "Claim All" action, and a receipt card for sharing on X.
  */
 
 import { useState } from "react"
@@ -21,7 +21,9 @@ const logger = createHookLogger("BatchRewardModal")
 const OG_BASE_URL = "https://sofia-og.vercel.app"
 
 const goldRewardVideoUrl = chrome.runtime.getURL("assets/bggoldreward.mp4")
-const goldReward50VideoUrl = chrome.runtime.getURL("assets/bggoldreward50.mp4")
+const goldReward50VideoUrl = chrome.runtime.getURL(
+  "assets/bggoldreward50.mp4"
+)
 
 interface BatchRewardModalProps {
   isOpen: boolean
@@ -38,51 +40,38 @@ const BatchRewardModal = ({
   txHash,
   onClose
 }: BatchRewardModalProps) => {
-  const { rewards, loading, claimedSet, totalClaimed, claimItem, reset } =
+  const { rewards, loading, claimed, totalGoldInBatch, claimAll, reset } =
     useBatchRewards(items, isOpen)
   const { totalGold } = useGoldSystem()
   const [phase, setPhase] = useState<Phase>("loading")
-  const [animatingIndex, setAnimatingIndex] = useState<number | null>(null)
   const [isSharing, setIsSharing] = useState(false)
 
   // Update phase based on loading state
   if (loading && phase !== "loading") setPhase("loading")
-  if (!loading && rewards.length > 0 && phase === "loading") setPhase("list")
+  if (!loading && rewards.length > 0 && phase === "loading")
+    setPhase("list")
 
   if (!isOpen || items.length === 0) return null
 
-  const allClaimed = rewards.length > 0 && claimedSet.size >= rewards.length
-  const firstUnclaimedIndex = rewards.findIndex(
-    (_, i) => !claimedSet.has(i)
-  )
-  const animatingReward =
-    animatingIndex !== null ? rewards[animatingIndex] : null
+  const pioneerCount = rewards.filter((r) => r.tier === "Pioneer").length
+  const explorerCount = rewards.filter((r) => r.tier === "Explorer").length
+  const contributorCount = rewards.filter(
+    (r) => r.tier === "Contributor"
+  ).length
 
-  const handleClaim = async (index: number) => {
-    await claimItem(index)
-    setAnimatingIndex(index)
+  const handleClaimAll = async () => {
+    await claimAll()
     setPhase("animation")
-  }
-
-  const handleContinue = () => {
-    setAnimatingIndex(null)
-    // Check if all claimed after this
-    if (claimedSet.size >= rewards.length) {
-      handleClose()
-    } else {
-      setPhase("list")
-    }
   }
 
   const handleClose = () => {
     reset()
     setPhase("loading")
-    setAnimatingIndex(null)
     onClose()
   }
 
   const handleShare = async () => {
-    if (isSharing || !animatingReward) return
+    if (isSharing) return
 
     const win = window.open("about:blank", "_blank")
     setIsSharing(true)
@@ -93,23 +82,34 @@ const BatchRewardModal = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            pageUrl: animatingReward.item.url,
-            pageTitle:
-              animatingReward.item.pageTitle ||
-              animatingReward.item.normalizedUrl,
-            status: animatingReward.tier,
-            rank: animatingReward.rank,
-            totalCertifiers: animatingReward.rank
+            pageUrl: rewards[0]?.item.url || "",
+            pageTitle: `${rewards.length} certifications`,
+            status: pioneerCount > 0 ? "Pioneer" : "Explorer",
+            rank: rewards.length,
+            totalCertifiers: rewards.length
           })
         }
       )
       const { url: shareUrl } = await res.json()
-      const title =
-        animatingReward.item.pageTitle ||
-        animatingReward.item.normalizedUrl
+
+      const tierParts: string[] = []
+      if (pioneerCount > 0)
+        tierParts.push(
+          `${pioneerCount} Pioneer${pioneerCount > 1 ? "s" : ""}`
+        )
+      if (explorerCount > 0)
+        tierParts.push(
+          `${explorerCount} Explorer${explorerCount > 1 ? "s" : ""}`
+        )
+      if (contributorCount > 0)
+        tierParts.push(
+          `${contributorCount} Contributor${contributorCount > 1 ? "s" : ""}`
+        )
+
       const tweetText =
-        `I just certified "${title}" as ${animatingReward.tier}` +
-        ` #${animatingReward.rank} on @0xSofia`
+        `I just certified ${rewards.length} page${rewards.length > 1 ? "s" : ""} on @0xSofia ` +
+        `(${tierParts.join(", ")}) and earned ${totalGoldInBatch} Gold!`
+
       const intentUrl =
         `https://twitter.com/intent/tweet?text=` +
         `${encodeURIComponent(tweetText)}` +
@@ -127,8 +127,6 @@ const BatchRewardModal = ({
     }
   }
 
-  const totalGoldInBatch = rewards.reduce((sum, r) => sum + r.gold, 0)
-
   return createPortal(
     <div className="batch-reward-overlay">
       <div className="batch-reward">
@@ -142,131 +140,114 @@ const BatchRewardModal = ({
           </div>
         )}
 
-        {/* List phase */}
+        {/* List phase — total gold at top, items below, claim all */}
         {phase === "list" && (
           <>
-            <div className="batch-reward__header">
-              <h2 className="batch-reward__title">Rewards</h2>
-              <p className="batch-reward__subtitle">
-                {allClaimed
-                  ? `All rewards claimed! +${totalClaimed} Gold`
-                  : `${rewards.length} certification${rewards.length > 1 ? "s" : ""} — ${totalGoldInBatch} Gold`}
-              </p>
+            {/* Gold total header */}
+            <div className="batch-reward__gold-header">
+              <span className="batch-reward__gold-amount">
+                +{totalGoldInBatch}
+              </span>
+              <span className="batch-reward__gold-label">Gold earned</span>
+              <div className="batch-reward__tier-summary">
+                {pioneerCount > 0 && (
+                  <span className="batch-reward__tier-pill batch-reward__tier-pill--pioneer">
+                    {pioneerCount} Pioneer
+                    {pioneerCount > 1 ? "s" : ""}
+                  </span>
+                )}
+                {explorerCount > 0 && (
+                  <span className="batch-reward__tier-pill batch-reward__tier-pill--explorer">
+                    {explorerCount} Explorer
+                    {explorerCount > 1 ? "s" : ""}
+                  </span>
+                )}
+                {contributorCount > 0 && (
+                  <span className="batch-reward__tier-pill batch-reward__tier-pill--contributor">
+                    {contributorCount} Contributor
+                    {contributorCount > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
             </div>
 
+            {/* Items list */}
             <div className="batch-reward__list">
-              {rewards.map((reward, index) => {
+              {rewards.map((reward) => {
                 const badge = getIntentionBadge(
                   reward.item.intention ?? undefined
                 )
-                const isClaimed = claimedSet.has(index)
-                const isActive = index === firstUnclaimedIndex && !allClaimed
-
                 return (
                   <div
                     key={reward.item.id}
-                    className={`batch-reward__item ${isClaimed ? "batch-reward__item--claimed" : ""} ${isActive ? "batch-reward__item--active" : ""}`}
-                  >
-                    <div className="batch-reward__item-left">
-                      <img
-                        src={
-                          reward.item.faviconUrl ||
-                          getFaviconUrl(reward.item.url, 32)
-                        }
-                        alt=""
-                        className="batch-reward__item-favicon"
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).style.display =
-                            "none"
-                        }}
-                      />
-                      <div className="batch-reward__item-info">
-                        <span className="batch-reward__item-title">
-                          {reward.item.pageTitle ||
-                            reward.item.normalizedUrl}
-                        </span>
+                    className="batch-reward__item">
+                    <img
+                      src={
+                        reward.item.faviconUrl ||
+                        getFaviconUrl(reward.item.url, 32)
+                      }
+                      alt=""
+                      className="batch-reward__item-favicon"
+                      onError={(e) => {
+                        ;(e.target as HTMLImageElement).style.display =
+                          "none"
+                      }}
+                    />
+                    <div className="batch-reward__item-info">
+                      <span className="batch-reward__item-title">
+                        {reward.item.pageTitle ||
+                          reward.item.normalizedUrl}
+                      </span>
+                      <div className="batch-reward__item-meta">
                         {badge && (
                           <span
                             className="batch-reward__item-badge"
-                            style={{ color: badge.color }}
-                          >
+                            style={{ color: badge.color }}>
                             {badge.label}
                           </span>
                         )}
                         <span className="batch-reward__item-rank">
                           {reward.rank === 1
                             ? "Pioneer — 1st!"
-                            : `#${reward.rank} certifier`}
+                            : `#${reward.rank}`}
                         </span>
                       </div>
                     </div>
-
-                    <div className="batch-reward__item-right">
-                      {isClaimed ? (
-                        <div className="batch-reward__item-claimed">
-                          <span className="batch-reward__item-check">
-                            ✓
-                          </span>
-                          <span className="batch-reward__item-claimed-text">
-                            Claimed
-                          </span>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="batch-reward__item-reward">
-                            <span className="batch-reward__item-tier">
-                              {reward.tier}
-                            </span>
-                            <span className="batch-reward__item-gold">
-                              +{reward.gold}
-                            </span>
-                          </div>
-                          {isActive && (
-                            <button
-                              className="claim-reward-btn"
-                              onClick={() => handleClaim(index)}
-                            >
-                              Claim
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
+                    <span className="batch-reward__item-gold">
+                      +{reward.gold}
+                    </span>
                   </div>
                 )
               })}
             </div>
 
+            {/* Footer with claim all + tx link */}
             <div className="batch-reward__footer">
               {txHash && (
                 <a
                   href={`${EXPLORER_URLS.TRANSACTION}${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="batch-reward__tx-link"
-                >
+                  className="batch-reward__tx-link">
                   View on Explorer →
                 </a>
               )}
-              {allClaimed && (
-                <button
-                  className="reward-continue-btn"
-                  onClick={handleClose}
-                >
-                  Continue
-                </button>
-              )}
+              <button
+                className="claim-reward-btn claim-reward-btn--full"
+                onClick={handleClaimAll}>
+                Claim All Rewards
+              </button>
             </div>
           </>
         )}
 
-        {/* Animation phase — overlay on top */}
-        {phase === "animation" && animatingReward && (
+        {/* Animation phase — single celebration for whole batch */}
+        {phase === "animation" && claimed && (
           <div className="reward-claimed-overlay">
             <video
               className="reward-claimed-bg-video"
               src={
-                animatingReward.gold >= 25
+                totalGoldInBatch >= 50
                   ? goldReward50VideoUrl
                   : goldRewardVideoUrl
               }
@@ -278,13 +259,67 @@ const BatchRewardModal = ({
             <div className="reward-claimed-content">
               <div className="reward-claimed-top">
                 <h2 className="reward-claimed-title">
-                  Reward
+                  Rewards
                   <br />
                   Claimed!
                 </h2>
                 <p className="reward-claimed-subtitle">
-                  {animatingReward.gold} Gold added to your balance
+                  +{totalGoldInBatch} Gold added to your balance
                 </p>
+              </div>
+
+              {/* Receipt card for sharing */}
+              <div className="batch-receipt">
+                <div className="batch-receipt__header">
+                  <span className="batch-receipt__label">
+                    Certification Receipt
+                  </span>
+                  <span className="batch-receipt__count">
+                    {rewards.length} page
+                    {rewards.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="batch-receipt__favicons">
+                  {rewards.slice(0, 8).map((reward) => (
+                    <img
+                      key={reward.item.id}
+                      src={
+                        reward.item.faviconUrl ||
+                        getFaviconUrl(reward.item.url, 24)
+                      }
+                      alt=""
+                      className="batch-receipt__favicon"
+                      onError={(e) => {
+                        ;(e.target as HTMLImageElement).style
+                          .display = "none"
+                      }}
+                    />
+                  ))}
+                  {rewards.length > 8 && (
+                    <span className="batch-receipt__more">
+                      +{rewards.length - 8}
+                    </span>
+                  )}
+                </div>
+                <div className="batch-receipt__gold">
+                  <span className="batch-receipt__gold-value">
+                    {totalGoldInBatch}
+                  </span>
+                  <span className="batch-receipt__gold-unit">
+                    Gold
+                  </span>
+                </div>
+                <button
+                  className="batch-receipt__share-btn"
+                  onClick={handleShare}
+                  disabled={isSharing}>
+                  <img
+                    src={xIcon}
+                    alt="X"
+                    className="batch-receipt__share-icon"
+                  />
+                  {isSharing ? "Sharing..." : "Share on X"}
+                </button>
               </div>
 
               <div className="reward-claimed-bottom">
@@ -292,24 +327,9 @@ const BatchRewardModal = ({
                   Total: {totalGold} Gold
                 </p>
                 <button
-                  className="share-certification-btn"
-                  onClick={handleShare}
-                  disabled={isSharing}
-                >
-                  <img
-                    src={xIcon}
-                    alt="X"
-                    className="share-certification-btn__icon"
-                  />
-                  {isSharing ? "Sharing..." : "Share"}
-                </button>
-                <button
                   className="reward-continue-btn"
-                  onClick={handleContinue}
-                >
-                  {claimedSet.size >= rewards.length
-                    ? "Done"
-                    : "Continue"}
+                  onClick={handleClose}>
+                  Done
                 </button>
               </div>
             </div>
