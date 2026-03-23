@@ -113,7 +113,7 @@ export interface UserXPRecord {
 }
 
 export interface CartItemRecord {
-  id: string                        // `${walletAddress}:${normalizedUrl}:${predicateName}`
+  id: string                        // `${walletAddress}:${normalizedUrl}:${predicateName}` or `...:${predicateName}:${voteAction}`
   walletAddress: string
   url: string
   normalizedUrl: string
@@ -122,4 +122,6 @@ export interface CartItemRecord {
   intention: IntentionPurpose | null
   faviconUrl: string | null
   addedAt: number
+  voteAction?: "support" | "oppose"  // If present, this is a vote item (not a certification)
+  tripleTermId?: string              // Vault ID for direct deposit (votes only)
 }

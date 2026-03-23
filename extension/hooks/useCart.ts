@@ -50,6 +50,31 @@ export const useCart = () => {
     if (walletAddress) cartService.clearCart(walletAddress)
   }, [walletAddress])
 
+  const addVoteToCart = useCallback(
+    (
+      url: string,
+      pageTitle: string | null,
+      predicateName: string,
+      intention: IntentionPurpose | null,
+      faviconUrl: string | null,
+      voteAction: "support" | "oppose",
+      tripleTermId: string
+    ) => {
+      if (!walletAddress) return Promise.resolve(false)
+      return cartService.addVoteItem(
+        walletAddress,
+        url,
+        pageTitle,
+        predicateName,
+        intention,
+        faviconUrl,
+        voteAction,
+        tripleTermId
+      )
+    },
+    [walletAddress]
+  )
+
   const isInCart = useCallback(
     (url: string, predicateName: string) => {
       const { label } = normalizeUrl(url)
@@ -59,12 +84,33 @@ export const useCart = () => {
     [state]
   )
 
+  const isVoteInCart = useCallback(
+    (url: string, predicateName: string, voteAction: "support" | "oppose") => {
+      const { label } = normalizeUrl(url)
+      return cartService.hasVoteInCart(label, predicateName, voteAction)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state]
+  )
+
+  const hasConflictingVote = useCallback(
+    (url: string, predicateName: string, voteAction: "support" | "oppose") => {
+      const { label } = normalizeUrl(url)
+      return cartService.hasConflictingVote(label, predicateName, voteAction)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state]
+  )
+
   return {
     items: state.items,
     count: state.count,
     addToCart,
+    addVoteToCart,
     removeFromCart,
     clearCart,
-    isInCart
+    isInCart,
+    isVoteInCart,
+    hasConflictingVote
   }
 }
