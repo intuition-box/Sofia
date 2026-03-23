@@ -86,8 +86,12 @@ export const useCart = () => {
 
   const isVoteInCart = useCallback(
     (url: string, predicateName: string, voteAction: "support" | "oppose") => {
-      const { label } = normalizeUrl(url)
-      return cartService.hasVoteInCart(label, predicateName, voteAction)
+      try {
+        const { label } = normalizeUrl(url)
+        return cartService.hasVoteInCart(label, predicateName, voteAction)
+      } catch {
+        return false
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [state]
@@ -95,8 +99,12 @@ export const useCart = () => {
 
   const hasConflictingVote = useCallback(
     (url: string, predicateName: string, voteAction: "support" | "oppose") => {
-      const { label } = normalizeUrl(url)
-      return cartService.hasConflictingVote(label, predicateName, voteAction)
+      try {
+        const { label } = normalizeUrl(url)
+        return cartService.hasConflictingVote(label, predicateName, voteAction)
+      } catch {
+        return false
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [state]
