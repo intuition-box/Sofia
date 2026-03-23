@@ -12,6 +12,7 @@
  */
 
 import { createServiceLogger } from "../utils/logger"
+import { txEventBus } from "./TxEventBus"
 import { GLOBAL_STAKE, SEASON_HISTORY } from "../config/chainConfig"
 import { getWalletKey } from "../utils/storageKeyUtils"
 
@@ -227,6 +228,12 @@ class GlobalStakeServiceClass {
         this.handleWalletChange(wallet)
       }
     })
+
+    // Refetch on deposit/redeem TX events
+    txEventBus.on("deposit", () => this.refetch())
+    txEventBus.on("deposit_gs", () => this.refetch())
+    txEventBus.on("redeem_gs", () => this.refetch())
+    txEventBus.on("batch_certification", () => this.refetch())
   }
 
   private handleWalletChange(wallet: string | null) {

@@ -2030,3 +2030,44 @@
 .season-pool-negative {
   color: #f87171;
 }
+
+.season-pool-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.season-pool-action-btn {
+  flex: 1;
+  padding: 9px 0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.season-pool-action-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.season-pool-action-btn:active {
+  transform: scale(0.98);
+}
+
+.season-pool-action-btn--redeem {
+  border-color: rgba(248, 113, 113, 0.2);
+  color: rgba(248, 113, 113, 0.75);
+}
+
+.season-pool-action-btn--redeem:hover {
+  background: rgba(248, 113, 113, 0.06);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #f87171;
+}

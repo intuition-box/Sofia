@@ -7,6 +7,7 @@ import { useCallback } from 'react'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
 import { tripletsDataService } from '../lib/database'
 import { getFaviconUrl } from '../lib/utils'
+import { txEventBus } from '../lib/services'
 import type { EchoTriplet, TripleOnChainResult, BatchTripleResult } from '../types/blockchain'
 
 /**
@@ -65,9 +66,10 @@ export const useEchoPublishing = ({
 
       // Mark as published in local storage (to hide from EchoesTab)
       await tripletsDataService.addPublishedTripletId(tripletId)
-      
+      txEventBus.emit("level_up", result.txHash)
+
       onTripletsUpdate(echoTriplets.filter(t => t.id !== tripletId))
-      
+
       return result
     } catch (error) {
       throw error
@@ -80,9 +82,15 @@ export const useEchoPublishing = ({
     }
     
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
-    
+
     try {
-      const batchInput = selectedTriplets.map((triplet, index) => {
+      // Filter out items with null weights (removed from batch by user)
+      const activeTriplets = selectedTriplets.filter((_, index) =>
+        customWeights ? customWeights[index] !== null : true
+      )
+      const activeWeights = customWeights?.filter(w => w !== null)
+
+      const batchInput = activeTriplets.map((triplet, index) => {
         // Extract favicon from URL if available
         const faviconUrl = triplet.url ? getFaviconUrl(triplet.url, 128) : ''
 
@@ -94,7 +102,7 @@ export const useEchoPublishing = ({
             url: triplet.url,
             image: faviconUrl
           },
-          customWeight: customWeights?.[index] || undefined
+          customWeight: activeWeights?.[index] || undefined
         }
       })
       
@@ -102,16 +110,17 @@ export const useEchoPublishing = ({
       
       if (result.success) {
         // Mark all published triplets in local storage (to hide from EchoesTab)
-        for (let i = 0; i < selectedTriplets.length; i++) {
-          const triplet = selectedTriplets[i]
+        for (let i = 0; i < activeTriplets.length; i++) {
+          const triplet = activeTriplets[i]
           const correspondingResult = result.results[i]
-          
+
           if (correspondingResult) {
             await tripletsDataService.addPublishedTripletId(triplet.id)
           }
         }
-        
-        const publishedIds = new Set(selectedTriplets.map(t => t.id))
+        txEventBus.emit("level_up", result.results[0]?.txHash)
+
+        const publishedIds = new Set(activeTriplets.map(t => t.id))
         onTripletsUpdate(echoTriplets.filter(t => !publishedIds.has(t.id)))
       }
       

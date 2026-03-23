@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
 import { useTracking } from '../../hooks'
 import { useWalletFromStorage, disconnectWallet } from '../../hooks'
@@ -6,7 +6,7 @@ import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
 import { cleanupProvider } from '../../lib/services/walletProvider'
-import { tripletsDataService } from '../../lib/database'
+import { tripletsDataService, userSettingsService } from '../../lib/database'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
@@ -23,6 +23,29 @@ const SettingsPage = () => {
 
   // Local UI states
   const [isClearing, setIsClearing] = useState(false)
+
+  // Auto-cleanup settings
+  const [autoCleanup, setAutoCleanup] = useState(true)
+  const [autoCleanupDays, setAutoCleanupDays] = useState(30)
+
+  useEffect(() => {
+    userSettingsService.getSettings().then(settings => {
+      setAutoCleanup(settings.autoCleanup ?? true)
+      setAutoCleanupDays(settings.autoCleanupInactiveDays ?? 30)
+    })
+  }, [])
+
+  const handleToggleAutoCleanup = async () => {
+    const newValue = !autoCleanup
+    setAutoCleanup(newValue)
+    await userSettingsService.saveSettings({ autoCleanup: newValue })
+  }
+
+  const handleChangeDays = async (days: number) => {
+    const clamped = Math.max(7, Math.min(90, days))
+    setAutoCleanupDays(clamped)
+    await userSettingsService.saveSettings({ autoCleanupInactiveDays: clamped })
+  }
 
   // Plasmo storage
   const storage = new Storage()
@@ -158,6 +181,36 @@ const SettingsPage = () => {
             Tutorial
           </button>
         </div>
+
+        {/* Group Auto-Cleanup */}
+        <div className="settings-item">
+          <div className="settings-item-content">
+            <span>Auto-Cleanup Suggestions</span>
+            <span className="settings-item-description">
+              Suggest removing inactive uncertified groups
+            </span>
+          </div>
+          <SwitchButton isEnabled={autoCleanup} onToggle={handleToggleAutoCleanup} />
+        </div>
+
+        {autoCleanup && (
+          <div className="settings-item">
+            <div className="settings-item-content">
+              <span>Inactivity Threshold</span>
+              <span className="settings-item-description">
+                Days before a group is flagged ({autoCleanupDays}d)
+              </span>
+            </div>
+            <input
+              type="range"
+              min={7}
+              max={90}
+              value={autoCleanupDays}
+              onChange={e => handleChangeDays(Number(e.target.value))}
+              className="settings-range"
+            />
+          </div>
+        )}
 
         {/* Clear All Data */}
         <div className="settings-item">

@@ -122,6 +122,16 @@ export const intuitionGraphqlClient = {
     queryCache.clear()
   },
 
+  // Subscribe to TX events — clear cache on any TX
+  _initTxSubscription: (() => {
+    import("../services/TxEventBus").then(({ txEventBus }) => {
+      txEventBus.on("*", () => {
+        queryCache.clear()
+        logger.debug("Cache cleared via TxEventBus")
+      })
+    })
+  })(),
+
   /**
    * Paginated fetch - fetches all pages of results
    * @param query - GraphQL query with $limit and $offset variables

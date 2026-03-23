@@ -186,21 +186,36 @@
   text-overflow: ellipsis;
 }
 
-.batch-reward__item-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.batch-reward__item-badge {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: lowercase;
-}
-
 .batch-reward__item-rank {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.3);
+}
+
+.batch-reward__item-tier {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+
+.batch-reward__item-tier--pioneer {
+  background: rgba(212, 175, 55, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.batch-reward__item-tier--explorer {
+  background: rgba(96, 165, 250, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.batch-reward__item-tier--contributor {
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.2);
 }
 
 .batch-reward__item-gold {
@@ -279,11 +294,10 @@
 }
 
 .batch-receipt__label {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.3px;
 }
 
 .batch-receipt__count {
@@ -327,33 +341,43 @@
   margin-left: -6px;
 }
 
-.batch-receipt__gold {
+.batch-receipt__tiers {
   display: flex;
-  align-items: baseline;
-  gap: 4px;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.batch-receipt__gold-value {
-  font-size: 32px;
-  font-weight: 700;
-  font-family: "Gotu", cursive;
-  background: linear-gradient(
-    180deg,
-    #fef3c7 0%,
-    #fcd34d 25%,
-    #f59e0b 60%,
-    #d97706 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-}
-
-.batch-receipt__gold-unit {
-  font-size: 14px;
+.batch-receipt__tier {
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(212, 175, 55, 0.7);
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+.batch-receipt__tier--pioneer {
+  background: rgba(212, 175, 55, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.batch-receipt__tier--explorer {
+  background: rgba(96, 165, 250, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.batch-receipt__tier--contributor {
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.batch-receipt__gold-line {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(212, 175, 55, 0.6);
   font-family: "Gotu", cursive;
 }
 

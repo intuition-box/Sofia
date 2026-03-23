@@ -18,6 +18,7 @@ import {
   TRUST_LABEL_TO_TYPE
 } from "../config/predicateConstants"
 import { createServiceLogger } from "../utils/logger"
+import { txEventBus } from "./TxEventBus"
 import { normalizeUrl } from "../utils"
 import { UserAllCertificationsDocument } from "@0xsofia/graphql"
 import type { IntentionPurpose } from "../../types/discovery"
@@ -62,6 +63,7 @@ class UserCertificationsServiceClass {
 
   private isFetching = false
   private listeners = new Set<() => void>()
+  private initialized = false
 
   // ── Store protocol (useSyncExternalStore) ──
 
@@ -69,7 +71,39 @@ class UserCertificationsServiceClass {
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener)
+    if (!this.initialized) this.initTxSubscription()
     return () => this.listeners.delete(listener)
+  }
+
+  private initTxSubscription() {
+    if (this.initialized) return
+    this.initialized = true
+
+    // Track wallet for TX-triggered refetch
+    chrome.storage.session
+      .get(["walletAddress"])
+      .then((result) => {
+        if (result.walletAddress) {
+          this.state = { ...this.state, walletAddress: result.walletAddress.toLowerCase() }
+        }
+      })
+      .catch(() => {})
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "session" && changes.walletAddress) {
+        const wallet = changes.walletAddress.newValue || null
+        this.state = { ...this.state, walletAddress: wallet ? wallet.toLowerCase() : null }
+      }
+    })
+
+    // Refetch on certification/vote TX events
+    const handleTx = () => {
+      const wallet = this.state.walletAddress
+      if (wallet) this.fetchCertifications(wallet)
+    }
+    txEventBus.on("certification", handleTx)
+    txEventBus.on("batch_certification", handleTx)
+    txEventBus.on("vote", handleTx)
   }
 
   private emitChange() {

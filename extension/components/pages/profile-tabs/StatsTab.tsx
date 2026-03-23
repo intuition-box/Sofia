@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { formatUnits } from 'viem'
 import { useDiscoveryScore, useGlobalStake } from "~/hooks"
+import GlobalStakeModal from '../../modals/GlobalStakeModal'
 import SofiaLoader from '../../ui/SofiaLoader'
 import { DISCOVERY_GOLD_REWARDS } from "~/types/discovery"
 import { getLevelColor, TIER_BADGES, getTierIndex } from "~/types/interests"
@@ -49,6 +50,8 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
   const nextColor = getLevelColor(level + 1)
   const { stats, loading, error, refetch } = useDiscoveryScore()
   const { config: gsConfig, position: gsPosition, vaultStats: gsVaultStats } = useGlobalStake()
+  const [gsModalOpen, setGsModalOpen] = useState(false)
+  const [gsModalMode, setGsModalMode] = useState<"deposit" | "redeem">("deposit")
 
   // Tier badges carousel
   const currentTierIndex = getTierIndex(level)
@@ -262,6 +265,27 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
               </span>
             </div>
           </div>
+          <div className="season-pool-actions">
+            <button
+              className="season-pool-action-btn"
+              onClick={() => { setGsModalMode("deposit"); setGsModalOpen(true) }}
+            >
+              Add Position
+            </button>
+            {gsPosition && gsPosition.shares > 0n && (
+              <button
+                className="season-pool-action-btn season-pool-action-btn--redeem"
+                onClick={() => { setGsModalMode("redeem"); setGsModalOpen(true) }}
+              >
+                Redeem
+              </button>
+            )}
+          </div>
+          <GlobalStakeModal
+            isOpen={gsModalOpen}
+            mode={gsModalMode}
+            onClose={() => setGsModalOpen(false)}
+          />
         </div>
       )}
     </div>

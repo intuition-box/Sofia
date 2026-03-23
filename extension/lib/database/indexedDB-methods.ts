@@ -471,7 +471,10 @@ export class UserSettingsService {
           notifications: true,
           autoBackup: true,
           debugMode: false,
-          isTrackingEnabled: true
+          isTrackingEnabled: true,
+          autoCleanup: true,
+          autoCleanupInactiveDays: 30,
+          autoCleanupMinLevel: 1
         },
         lastUpdated: Date.now()
       }
@@ -499,7 +502,10 @@ export class UserSettingsService {
         notifications: true,
         autoBackup: true,
         debugMode: false,
-        isTrackingEnabled: true
+        isTrackingEnabled: true,
+        autoCleanup: true,
+        autoCleanupInactiveDays: 30,
+        autoCleanupMinLevel: 1
       }
       
       // Save default settings

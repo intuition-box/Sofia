@@ -3,7 +3,7 @@ import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { BlockchainService, globalStakeService } from '../lib/services'
+import { BlockchainService, globalStakeService, txEventBus } from '../lib/services'
 import { createHookLogger } from '../lib/utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES } from '../lib/config/constants'
 import type { Address, Hash } from '../types/viem'
@@ -69,6 +69,7 @@ export const useWeightOnChain = () => {
       }
 
       logger.debug('Weight addition successful', { hash, receipt })
+      txEventBus.emit("deposit", hash)
 
       return {
         success: true,
@@ -234,6 +235,7 @@ export const useWeightOnChain = () => {
       }
 
       logger.debug('Shares addition successful', { hash, receipt })
+      txEventBus.emit("deposit", hash)
 
       return {
         success: true,
@@ -319,6 +321,7 @@ export const useWeightOnChain = () => {
         }
 
         logger.debug('depositWithPool successful', { hash })
+        txEventBus.emit("deposit", hash)
         return { success: true, txHash: hash }
       } else {
         // Single deposit (GS disabled or amount too small)
@@ -357,6 +360,7 @@ export const useWeightOnChain = () => {
         }
 
         logger.debug('depositWithPool single successful', { hash })
+        txEventBus.emit("deposit", hash)
         return { success: true, txHash: hash }
       }
     } catch (error) {

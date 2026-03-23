@@ -14,7 +14,7 @@ import { getClients, getPublicClient } from '../lib/clients/viemClients'
 import { MultiVaultAbi } from '../ABI/MultiVault'
 import { SELECTED_CHAIN } from '../lib/config/chainConfig'
 import { useWalletFromStorage } from '~/hooks'
-import { BlockchainService } from '~/lib/services'
+import { BlockchainService, txEventBus } from '~/lib/services'
 import { createHookLogger } from '~/lib/utils'
 import { ERROR_MESSAGES } from '~/lib/config/constants'
 import type { Address, Hash } from '../types/viem'
@@ -126,6 +126,7 @@ export const useRedeemTriple = () => {
       }
 
       logger.info('Redeem successful', { hash, tripleVaultId })
+      txEventBus.emit("redeem_triple", hash)
 
       return { success: true, txHash: hash }
     } catch (error) {
@@ -223,6 +224,7 @@ export const useRedeemTriple = () => {
       }
 
       logger.info('Batch redeem successful', { hash, count: validTermIds.length })
+      txEventBus.emit("redeem_triple", hash)
 
       return { success: true, txHash: hash }
     } catch (error) {

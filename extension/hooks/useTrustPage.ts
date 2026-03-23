@@ -3,6 +3,7 @@ import { useWalletFromStorage } from './useWalletFromStorage'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
 import { createHookLogger } from '../lib/utils/logger'
 import { ERROR_MESSAGES } from '../lib/config/constants'
+import { txEventBus } from '~/lib/services'
 
 const logger = createHookLogger('useTrustPage')
 
@@ -102,6 +103,7 @@ export const useTrustPage = (): TrustPageResult => {
       setTripleVaultId(result.tripleVaultId)
       setOperationType(result.source as 'created' | 'deposit')
       setTransactionHash(result.txHash)
+      txEventBus.emit("certification", result.txHash)
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR

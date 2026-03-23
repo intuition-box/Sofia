@@ -612,6 +612,14 @@
   line-height: 1.4;
 }
 
+/* Range input for settings */
+.settings-range {
+  width: 80px;
+  height: 4px;
+  accent-color: var(--color-primary, #C7866C);
+  cursor: pointer;
+}
+
 /* Wallet Address Display */
 .wallet-address-display {
   font-family: monospace;

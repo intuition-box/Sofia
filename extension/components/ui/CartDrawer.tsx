@@ -235,6 +235,8 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           createdCount={result?.createdCount ?? 0}
           depositCount={result?.depositCount ?? 0}
           isIntentionCertification={true}
+          showXpAnimation={true}
+          onRemoveTriplet={(tripletId) => removeFromCart(tripletId)}
           onClose={handleWeightClose}
           onSubmit={handleWeightSubmit}
         />}
