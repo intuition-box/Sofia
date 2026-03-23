@@ -10,18 +10,16 @@ import { getAddress } from 'viem'
 
 import { useRouter } from '../../layout/RouterProvider'
 import SofiaLoader from '../../ui/SofiaLoader'
-import { useWalletFromStorage, useIntentionCategories, useWeightOnChain } from '~/hooks'
+import { useWalletFromStorage, useIntentionCategories, useCart } from '~/hooks'
 import { SUBJECT_IDS, PREDICATE_IDS } from '~/lib/config/constants'
 import { SOFIA_PROXY_ADDRESS } from '~/lib/config/chainConfig'
 import { getFaviconUrl, batchResolveEns } from '~/lib/utils'
-import { questTrackingService, goldService } from '~/lib/services'
 import type { IntentionType } from '~/types/intentionCategories'
 import { INTENTION_CONFIG, predicateLabelToIntentionType } from '~/types/intentionCategories'
 
 import CategoryCard from '../../ui/CategoryCard'
 import CategoryDetailView from '../../ui/CategoryDetailView'
 import Avatar from '../../ui/Avatar'
-import WeightModal from '../../modals/WeightModal'
 import '../../styles/CircleFeedTab.css'
 import '../../styles/CategoryStyles.css'
 
@@ -353,35 +351,39 @@ const CircleFeedTab = () => {
     selectCategory: memberSelectCategory
   } = useIntentionCategories(memberWallet)
 
-  // Support/Oppose deposit system
-  const { depositWithPool } = useWeightOnChain()
-  const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [transactionSuccess, setTransactionSuccess] = useState(false)
-  const [transactionError, setTransactionError] = useState<string | undefined>()
-  const [transactionHash, setTransactionHash] = useState<string | undefined>()
-  const [selectedItem, setSelectedItem] = useState<CircleFeedItem | null>(null)
-  const [selectedVaultId, setSelectedVaultId] = useState<string>('')
-  const [selectedAction, setSelectedAction] = useState<'Support' | 'Oppose'>('Support')
+  // Cart-based vote system
+  const { addVoteToCart, isVoteInCart, hasConflictingVote } = useCart()
 
   // Intention picker state (shown when a grouped card has multiple intentions)
   const [intentionPickerGroup, setIntentionPickerGroup] = useState<GroupedFeedItem | null>(null)
   const [intentionPickerAction, setIntentionPickerAction] = useState<'Support' | 'Oppose'>('Support')
 
-  const openVoteFlow = (item: CircleFeedItem, action: 'Support' | 'Oppose') => {
+  const addVoteToCartFromItem = (item: CircleFeedItem, action: 'Support' | 'Oppose') => {
+    const voteAction = action === 'Support' ? 'support' as const : 'oppose' as const
     const vaultId = action === 'Support' ? item.tripleTermId : item.counterTermId
     if (!vaultId) return
-    setSelectedItem(item)
-    setSelectedVaultId(vaultId)
-    setSelectedAction(action)
-    setIsStakeModalOpen(true)
+
+    addVoteToCart(
+      item.pageUrl,
+      item.pageLabel,
+      item.triplePredicate,
+      predicateLabelToIntentionType(item.triplePredicate) || null,
+      getFaviconUrl(item.domain, 64),
+      voteAction,
+      vaultId
+    ).then(added => {
+      if (added) {
+        // Track local vote state for UI feedback
+        setLocalVotes(prev => new Map(prev).set(item.id, voteAction))
+      }
+    })
   }
 
   const handleSupport = (e: React.MouseEvent, group: GroupedFeedItem) => {
     e.stopPropagation()
     if (!address) return
     if (group.intentions.length === 1) {
-      openVoteFlow(group.intentions[0], 'Support')
+      addVoteToCartFromItem(group.intentions[0], 'Support')
     } else {
       setIntentionPickerGroup(group)
       setIntentionPickerAction('Support')
@@ -392,7 +394,7 @@ const CircleFeedTab = () => {
     e.stopPropagation()
     if (!address) return
     if (group.intentions.length === 1) {
-      openVoteFlow(group.intentions[0], 'Oppose')
+      addVoteToCartFromItem(group.intentions[0], 'Oppose')
     } else {
       setIntentionPickerGroup(group)
       setIntentionPickerAction('Oppose')
@@ -400,52 +402,8 @@ const CircleFeedTab = () => {
   }
 
   const handleIntentionPick = (item: CircleFeedItem) => {
-    openVoteFlow(item, intentionPickerAction)
+    addVoteToCartFromItem(item, intentionPickerAction)
     setIntentionPickerGroup(null)
-  }
-
-  const handleStakeModalClose = () => {
-    setIsStakeModalOpen(false)
-    setSelectedItem(null)
-    setSelectedVaultId('')
-    setIsProcessing(false)
-    setTransactionSuccess(false)
-    setTransactionError(undefined)
-    setTransactionHash(undefined)
-  }
-
-  const handleStakeSubmit = async (customWeights?: (bigint | null)[]): Promise<void> => {
-    if (!selectedItem || !selectedVaultId) return
-    const weight = customWeights?.[0] || BigInt(Math.floor(0.5 * 1e18))
-
-    try {
-      setIsProcessing(true)
-      setTransactionError(undefined)
-      const result = await depositWithPool(selectedVaultId, weight, 1n)
-
-      if (result.success) {
-        setTransactionHash(result.txHash)
-        setTransactionSuccess(true)
-        // Track local vote state
-        const voteType = selectedVaultId === selectedItem.tripleTermId ? 'support' : 'oppose'
-        setLocalVotes(prev => new Map(prev).set(selectedItem.id, voteType as 'support' | 'oppose'))
-        try {
-          await questTrackingService.recordVoteActivity()
-          const dailyCount = await questTrackingService.getDailyVoteCount()
-          if (address) {
-            await goldService.addVoteGold(address, dailyCount)
-          }
-        } catch {
-          // Non-critical, swallow error
-        }
-      } else {
-        setTransactionError(result.error || 'Transaction failed')
-      }
-    } catch (error) {
-      setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
-    } finally {
-      setIsProcessing(false)
-    }
   }
 
   const loading = trustCircleLoading || eventsLoading
@@ -671,29 +629,44 @@ const CircleFeedTab = () => {
                   >
                     {group.memberLabel}
                   </span>
-                  {group.intentions.some(i => i.tripleTermId) && (
-                    <div className="circle-card-actions">
-                      <button
-                        className={`circle-action-btn circle-support-btn ${group.intentions.some(i => votedItems.get(i.id) === 'support') ? 'voted' : ''}`}
-                        onClick={(e) => handleSupport(e, group)}
-                        title="Support this certification"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                        </svg>
-                      </button>
-                      <button
-                        className={`circle-action-btn circle-oppose-btn ${group.intentions.some(i => votedItems.get(i.id) === 'oppose') ? 'voted' : ''}`}
-                        onClick={(e) => handleOppose(e, group)}
-                        disabled={!group.intentions.some(i => i.counterTermId)}
-                        title="Oppose this certification"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 20l8-8h-5V4H9v8H4z" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
+                  {group.intentions.some(i => i.tripleTermId) && (() => {
+                    const hasSupported = group.intentions.some(i => votedItems.get(i.id) === 'support')
+                    const hasOpposed = group.intentions.some(i => votedItems.get(i.id) === 'oppose')
+                    const inCartSupport = group.intentions.some(i =>
+                      isVoteInCart(i.pageUrl, i.triplePredicate, "support")
+                    )
+                    const inCartOppose = group.intentions.some(i =>
+                      isVoteInCart(i.pageUrl, i.triplePredicate, "oppose")
+                    )
+                    // Disable if already voted the opposite on-chain or in cart
+                    const supportDisabled = hasOpposed || inCartOppose
+                    const opposeDisabled = hasSupported || inCartSupport || !group.intentions.some(i => i.counterTermId)
+
+                    return (
+                      <div className="circle-card-actions">
+                        <button
+                          className={`circle-action-btn circle-support-btn ${hasSupported || inCartSupport ? 'voted' : ''}`}
+                          onClick={(e) => handleSupport(e, group)}
+                          disabled={supportDisabled}
+                          title={inCartSupport ? "In cart" : "Support this certification"}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 4l-8 8h5v8h6v-8h5z" />
+                          </svg>
+                        </button>
+                        <button
+                          className={`circle-action-btn circle-oppose-btn ${hasOpposed || inCartOppose ? 'voted' : ''}`}
+                          onClick={(e) => handleOppose(e, group)}
+                          disabled={opposeDisabled}
+                          title={inCartOppose ? "In cart" : "Oppose this certification"}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 20l8-8h-5V4H9v8H4z" />
+                          </svg>
+                        </button>
+                      </div>
+                    )
+                  })()}
                   <span className="circle-card-time">{formatTimestamp(group.createdAt)}</span>
                 </div>
               </div>
@@ -742,30 +715,6 @@ const CircleFeedTab = () => {
         document.body
       )}
 
-      {/* Support/Oppose weight modal with fee breakdown + GS slider */}
-      <WeightModal
-        isOpen={isStakeModalOpen}
-        triplets={selectedItem ? [{
-          id: selectedVaultId,
-          triplet: {
-            subject: selectedItem.tripleSubject,
-            predicate: selectedItem.triplePredicate,
-            object: selectedItem.tripleObject
-          },
-          description: '',
-          url: selectedItem.pageUrl,
-          intention: predicateLabelToIntentionType(selectedItem.triplePredicate) || undefined
-        }] : []}
-        isProcessing={isProcessing}
-        transactionSuccess={transactionSuccess}
-        transactionError={transactionError}
-        transactionHash={transactionHash}
-        estimateOptions={{ isNewTriple: false, newAtomCount: 0 }}
-        submitLabel={selectedAction}
-        showXpAnimation={true}
-        onClose={handleStakeModalClose}
-        onSubmit={handleStakeSubmit}
-      />
     </div>
   )
 }
