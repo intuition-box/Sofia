@@ -21,6 +21,9 @@ export interface ExtensionSettings {
   autoBackup: boolean;
   debugMode: boolean;
   isTrackingEnabled: boolean;
+  autoCleanup: boolean;
+  autoCleanupInactiveDays: number;
+  autoCleanupMinLevel: number;
 }
 
 // Cache and temporary data

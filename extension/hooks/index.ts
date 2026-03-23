@@ -41,6 +41,7 @@ export { useIdentityResolution } from './useIdentityResolution'
 
 // Groups & Intentions
 export { default as useIntentionGroups, type IntentionGroupWithStats, type SortOption } from './useIntentionGroups'
+export { default as useGroupManager, type ManagerFilter, type ManagerSort } from './useGroupManager'
 export { useOnChainIntentionGroups } from './useOnChainIntentionGroups'
 export { default as useGroupOnChainCertifications, type UrlCertificationStatus } from './useGroupOnChainCertifications'
 export { default as useGroupAmplify } from './useGroupAmplify'

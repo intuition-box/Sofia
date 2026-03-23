@@ -9,7 +9,9 @@ import type { IntentionType } from '../../../types/intentionCategories'
 import { INTENTION_CONFIG } from '../../../types/intentionCategories'
 import GroupBentoCard from '../../ui/GroupBentoCard'
 import GroupDetailView from '../../ui/GroupDetailView'
+import GroupManagerModal from '../../modals/GroupManagerModal'
 import SofiaLoader from '../../ui/SofiaLoader'
+import { userSettingsService } from '~/lib/database'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
 import '../../styles/CommonPage.css'
@@ -19,6 +21,10 @@ import '../../styles/CircleFeedTab.css'
 const EchoesTab = () => {
   const [certFilter, setCertFilter] = useState<IntentionType | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showManager, setShowManager] = useState(false)
+  const [managerInitialFilter, setManagerInitialFilter] = useState<'all' | 'inactive'>('all')
+  const [cleanupBannerDismissed, setCleanupBannerDismissed] = useState(false)
+  const [inactiveCount, setInactiveCount] = useState(0)
   const {
     groups,
     selectedGroup,
@@ -44,6 +50,28 @@ const EchoesTab = () => {
       deleteGroup(group.id)
     }
   }, [groups, deleteGroup])
+
+  // Auto-cleanup: detect inactive groups and show banner
+  useEffect(() => {
+    let cancelled = false
+    userSettingsService.getSettings().then(settings => {
+      if (cancelled || !settings.autoCleanup) return
+      const cutoff = Date.now() - settings.autoCleanupInactiveDays * 24 * 60 * 60 * 1000
+      const inactive = groups.filter(g =>
+        !g.isVirtualGroup &&
+        g.level <= settings.autoCleanupMinLevel &&
+        g.certifiedCount === 0 &&
+        g.updatedAt < cutoff
+      )
+      setInactiveCount(inactive.length)
+    })
+    return () => { cancelled = true }
+  }, [groups])
+
+  const handleOpenManager = (filter: 'all' | 'inactive' = 'all') => {
+    setManagerInitialFilter(filter)
+    setShowManager(true)
+  }
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'level', label: 'Level' },
@@ -167,8 +195,34 @@ const EchoesTab = () => {
                 {option.label}
               </button>
             ))}
+            <button
+              className="sort-btn gm-manage-btn"
+              onClick={() => handleOpenManager('all')}
+              title="Manage groups"
+            >
+              Manage
+            </button>
           </div>
         </div>
+
+        {/* Inactive groups cleanup banner */}
+        {inactiveCount > 0 && !cleanupBannerDismissed && (
+          <div className="gm-cleanup-banner">
+            <span>{inactiveCount} inactive group{inactiveCount > 1 ? 's' : ''} found</span>
+            <button
+              className="gm-cleanup-review"
+              onClick={() => handleOpenManager('inactive')}
+            >
+              Review
+            </button>
+            <button
+              className="gm-cleanup-dismiss"
+              onClick={() => setCleanupBannerDismissed(true)}
+            >
+              &times;
+            </button>
+          </div>
+        )}
 
         {/* Certification filter chips */}
         <div className="circle-category-chips">
@@ -212,6 +266,16 @@ const EchoesTab = () => {
           </div>
         )}
       </div>
+
+      <GroupManagerModal
+        isOpen={showManager}
+        groups={groups}
+        deleteGroup={deleteGroup}
+        removeUrl={removeUrl}
+        loadGroups={loadGroups}
+        onClose={() => setShowManager(false)}
+        initialFilter={managerInitialFilter}
+      />
     </div>
   )
 }
