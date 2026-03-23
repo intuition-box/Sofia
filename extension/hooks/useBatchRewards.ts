@@ -1,7 +1,7 @@
 /**
  * useBatchRewards Hook
  * Fetches per-page certification counts after batch TX,
- * computes reward tiers, and manages sequential gold claiming.
+ * computes reward tiers, and manages bulk gold claiming.
  */
 
 import { useState, useEffect, useCallback, useRef } from "react"
@@ -84,8 +84,8 @@ export const useBatchRewards = (
 ) => {
   const [rewards, setRewards] = useState<BatchRewardItem[]>([])
   const [loading, setLoading] = useState(false)
-  const [claimedSet, setClaimedSet] = useState<Set<number>>(new Set())
-  const [totalClaimed, setTotalClaimed] = useState(0)
+  const [claimed, setClaimed] = useState(false)
+  const [totalGoldInBatch, setTotalGoldInBatch] = useState(0)
   const fetchedRef = useRef(false)
 
   // Fetch cert counts and compute rewards when TX succeeds
@@ -152,12 +152,14 @@ export const useBatchRewards = (
         }
       })
 
+      const batchTotal = rewardItems.reduce((sum, r) => sum + r.gold, 0)
       setRewards(rewardItems)
+      setTotalGoldInBatch(batchTotal)
       setLoading(false)
 
       logger.info("Batch rewards computed", {
         count: rewardItems.length,
-        totalGold: rewardItems.reduce((sum, r) => sum + r.gold, 0)
+        totalGold: batchTotal
       })
     }
 
@@ -165,34 +167,27 @@ export const useBatchRewards = (
     return () => { cancelled = true }
   }, [txSuccess, items])
 
-  // Claim gold for a specific item
-  const claimItem = useCallback(async (index: number) => {
-    const reward = rewards[index]
-    if (!reward || claimedSet.has(index)) return
+  // Claim all rewards at once
+  const claimAll = useCallback(async () => {
+    if (claimed || rewards.length === 0) return
 
     try {
-      await discoveryScoreService.claimGold(reward.gold)
-      setClaimedSet(prev => {
-        const next = new Set(prev)
-        next.add(index)
-        return next
-      })
-      setTotalClaimed(prev => prev + reward.gold)
-      logger.info("Reward claimed", {
-        index,
-        tier: reward.tier,
-        gold: reward.gold
+      await discoveryScoreService.claimGold(totalGoldInBatch)
+      setClaimed(true)
+      logger.info("All rewards claimed", {
+        count: rewards.length,
+        totalGold: totalGoldInBatch
       })
     } catch (err) {
-      logger.error("Failed to claim reward", { index, error: err })
+      logger.error("Failed to claim all rewards", { error: err })
     }
-  }, [rewards, claimedSet])
+  }, [rewards, claimed, totalGoldInBatch])
 
   // Reset state
   const reset = useCallback(() => {
     setRewards([])
-    setClaimedSet(new Set())
-    setTotalClaimed(0)
+    setClaimed(false)
+    setTotalGoldInBatch(0)
     setLoading(false)
     fetchedRef.current = false
   }, [])
@@ -200,9 +195,9 @@ export const useBatchRewards = (
   return {
     rewards,
     loading,
-    claimedSet,
-    totalClaimed,
-    claimItem,
+    claimed,
+    totalGoldInBatch,
+    claimAll,
     reset
   }
 }
