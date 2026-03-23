@@ -10,7 +10,7 @@ import { discoveryScoreService } from "~/lib/services"
 import { PREDICATE_IDS } from "../lib/config/chainConfig"
 import { createHookLogger } from "~/lib/utils"
 import { DISCOVERY_GOLD_REWARDS, DISCOVERY_THRESHOLDS } from "~/types/discovery"
-import { CertificationTriplesDocument } from "@0xsofia/graphql"
+import { PageCertificationDataDocument } from "@0xsofia/graphql"
 import type { CartItemRecord } from "~/lib/database"
 
 const logger = createHookLogger("useBatchRewards")
@@ -47,12 +47,54 @@ function computeTier(prevTotal: number): {
   return { tier: "Contributor", gold: DISCOVERY_GOLD_REWARDS.CONTRIBUTOR }
 }
 
-async function fetchCertCountForHostname(
-  hostname: string
-): Promise<number> {
+/** Extract hostname from URL */
+function getHostname(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, "")
+  } catch {
+    return ""
+  }
+}
+
+/** Match a triple's object URL against a target URL */
+function tripleMatchesUrl(
+  triple: { object?: { label?: string | null; value?: { thing?: { url?: string | null } | null } | null } | null },
+  targetUrl: string
+): boolean {
+  const targetHostname = getHostname(targetUrl)
+  if (!targetHostname) return false
+
+  // Match by object URL (new atoms)
+  const objectUrl = triple.object?.value?.thing?.url
+  if (objectUrl) {
+    return getHostname(objectUrl) === targetHostname &&
+      objectUrl.replace(/\/$/, "") === targetUrl.replace(/\/$/, "")
+  }
+
+  // Match by object label (old atoms where label = URL)
+  const label = triple.object?.label || ""
+  if (label.startsWith("http")) {
+    return getHostname(label) === targetHostname &&
+      label.replace(/\/$/, "") === targetUrl.replace(/\/$/, "")
+  }
+
+  return false
+}
+
+/**
+ * Fetch all triples for a hostname, then count unique holders
+ * per specific URL (not the whole hostname).
+ */
+async function fetchCertCountsForUrls(
+  hostname: string,
+  urls: string[]
+): Promise<Map<string, number>> {
+  const urlCounts = new Map<string, number>()
+  for (const url of urls) urlCounts.set(url, 0)
+
   try {
     const response = await intuitionGraphqlClient.request(
-      CertificationTriplesDocument,
+      PageCertificationDataDocument,
       {
         predicateIds: CERTIFICATION_PREDICATE_IDS,
         hostnameLike: `%${hostname}%`
@@ -60,22 +102,29 @@ async function fetchCertCountForHostname(
     )
 
     const triples = response?.triples || []
-    const uniqueHolders = new Set<string>()
 
-    for (const triple of triples) {
-      for (const pos of (triple as any).positions || []) {
-        const accountId = pos.account_id?.toLowerCase()
-        if (accountId) {
-          uniqueHolders.add(accountId)
+    // For each URL, count unique holders on triples matching that specific URL
+    for (const url of urls) {
+      const uniqueHolders = new Set<string>()
+
+      for (const triple of triples) {
+        if (!tripleMatchesUrl(triple, url)) continue
+
+        for (const pos of (triple as any).positions || []) {
+          const accountId = pos.account_id?.toLowerCase()
+          if (accountId) {
+            uniqueHolders.add(accountId)
+          }
         }
       }
-    }
 
-    return uniqueHolders.size
+      urlCounts.set(url, uniqueHolders.size)
+    }
   } catch (err) {
-    logger.error("Failed to fetch cert count", { hostname, error: err })
-    return 0
+    logger.error("Failed to fetch cert counts", { hostname, error: err })
   }
+
+  return urlCounts
 }
 
 export const useBatchRewards = (
@@ -102,53 +151,40 @@ export const useBatchRewards = (
       await new Promise(resolve => setTimeout(resolve, INDEXER_DELAY))
       if (cancelled) return
 
-      // Get unique hostnames
-      const hostnameMap = new Map<string, number>()
+      // Group items by hostname for batched queries
+      const hostnameGroups = new Map<string, CartItemRecord[]>()
       for (const item of items) {
-        try {
-          const hostname = new URL(item.url)
-            .hostname.toLowerCase()
-            .replace(/^www\./, "")
-          if (!hostnameMap.has(hostname)) {
-            hostnameMap.set(hostname, 0)
-          }
-        } catch {
-          // Invalid URL, skip
-        }
+        const hostname = getHostname(item.url)
+        if (!hostname) continue
+        const group = hostnameGroups.get(hostname) || []
+        group.push(item)
+        hostnameGroups.set(hostname, group)
       }
 
-      // Fetch cert counts in parallel
-      const hostnames = Array.from(hostnameMap.keys())
-      const counts = await Promise.all(
-        hostnames.map(h => fetchCertCountForHostname(h))
-      )
-      for (let i = 0; i < hostnames.length; i++) {
-        hostnameMap.set(hostnames[i], counts[i])
+      // Fetch per-URL counts (batched by hostname)
+      const urlCounts = new Map<string, number>()
+      for (const [hostname, groupItems] of hostnameGroups) {
+        const urls = [...new Set(groupItems.map(i => i.url))]
+        const counts = await fetchCertCountsForUrls(hostname, urls)
+        for (const [url, count] of counts) {
+          urlCounts.set(url, count)
+        }
       }
 
       if (cancelled) return
 
-      // Compute rewards per item
+      // Compute rewards per item (using per-URL counts)
       const rewardItems: BatchRewardItem[] = items.map(item => {
-        let hostname = ""
-        try {
-          hostname = new URL(item.url)
-            .hostname.toLowerCase()
-            .replace(/^www\./, "")
-        } catch {
-          // fallback
-        }
-
-        const totalOnPage = hostnameMap.get(hostname) || 0
+        const totalOnUrl = urlCounts.get(item.url) || 0
         // User just certified, so prevTotal = total - 1
-        const prevTotal = Math.max(0, totalOnPage - 1)
+        const prevTotal = Math.max(0, totalOnUrl - 1)
         const { tier, gold } = computeTier(prevTotal)
 
         return {
           item,
           tier,
           gold,
-          rank: totalOnPage
+          rank: totalOnUrl
         }
       })
 
