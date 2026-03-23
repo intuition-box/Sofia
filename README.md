@@ -362,7 +362,7 @@ A shared staking vault where a percentage of each deposit is automatically alloc
 ### 9. Authentication & Identity
 
 #### Wallet Connection (Privy)
-- External auth page at `https://sofia.intuition.box/auth` (HTTPS required for Privy)
+- External auth page at `https://doc.sofia.intuition.box/auth` (HTTPS required for Privy)
 - Wallet address stored in `chrome.storage.session` (clears on browser restart)
 - Supports MetaMask, Rabby, Coinbase, and other EIP-1193 wallets
 - Wallet bridge via content scripts relays requests between extension and web page
@@ -530,7 +530,7 @@ Extension Background (mastraClient.ts)
 
 ### Prerequisites
 - Node.js >= 22.13.0
-- pnpm 10.15.1
+- [Bun](https://bun.sh) (runtime + package manager)
 - Chrome browser
 
 ### Installation & Development
@@ -538,25 +538,24 @@ Extension Background (mastraClient.ts)
 **Terminal 1 - MCP Server:**
 ```bash
 cd intuition-mcp-server
-pnpm install
-pnpm run start:http
+bun install
+bun run start:http
 # → http://localhost:3001
 ```
 
 **Terminal 2 - Mastra Backend:**
 ```bash
 cd sofia-mastra
-pnpm install
-pnpm dev
+bun install
+bun run dev
 # → http://localhost:4111
 ```
 
 **Terminal 3 - Extension:**
 ```bash
 cd extension
-pnpm install
-pnpm run dev    # Development (.env.development) → testnet
-pnpm run build  # Production (.env) → mainnet
+bun install
+bun run build  # Production (.env.production) → mainnet
 ```
 
 Load the extension from `build/chrome-mv3-prod/` in Chrome.
@@ -636,4 +635,4 @@ MIT
 
 ---
 
-**Sofia v0.4.0 BETA** - Built with Mastra, GaiaNet & Intuition
+**Sofia v0.5.1 BETA** - Built with Mastra, GaiaNet & Intuition
