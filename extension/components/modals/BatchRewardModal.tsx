@@ -198,21 +198,15 @@ const BatchRewardModal = ({
                         {reward.item.pageTitle ||
                           reward.item.normalizedUrl}
                       </span>
-                      <div className="batch-reward__item-meta">
-                        {badge && (
-                          <span
-                            className="batch-reward__item-badge"
-                            style={{ color: badge.color }}>
-                            {badge.label}
-                          </span>
-                        )}
-                        <span className="batch-reward__item-rank">
-                          {reward.rank === 1
-                            ? "Pioneer — 1st!"
-                            : `#${reward.rank}`}
-                        </span>
-                      </div>
+                      <span className="batch-reward__item-rank">
+                        {reward.tier} — {reward.rank === 1
+                          ? "1st!"
+                          : `#${reward.rank}`}
+                      </span>
                     </div>
+                    <span className={`batch-reward__item-tier batch-reward__item-tier--${reward.tier.toLowerCase()}`}>
+                      {reward.tier}
+                    </span>
                     <span className="batch-reward__item-gold">
                       +{reward.gold}
                     </span>
@@ -272,7 +266,7 @@ const BatchRewardModal = ({
               <div className="batch-receipt">
                 <div className="batch-receipt__header">
                   <span className="batch-receipt__label">
-                    Certification Receipt
+                    Certified
                   </span>
                   <span className="batch-receipt__count">
                     {rewards.length} page
@@ -301,14 +295,26 @@ const BatchRewardModal = ({
                     </span>
                   )}
                 </div>
-                <div className="batch-receipt__gold">
-                  <span className="batch-receipt__gold-value">
-                    {totalGoldInBatch}
-                  </span>
-                  <span className="batch-receipt__gold-unit">
-                    Gold
-                  </span>
+                <div className="batch-receipt__tiers">
+                  {pioneerCount > 0 && (
+                    <span className="batch-receipt__tier batch-receipt__tier--pioneer">
+                      {pioneerCount} Pioneer{pioneerCount > 1 ? "s" : ""}
+                    </span>
+                  )}
+                  {explorerCount > 0 && (
+                    <span className="batch-receipt__tier batch-receipt__tier--explorer">
+                      {explorerCount} Explorer{explorerCount > 1 ? "s" : ""}
+                    </span>
+                  )}
+                  {contributorCount > 0 && (
+                    <span className="batch-receipt__tier batch-receipt__tier--contributor">
+                      {contributorCount} Contributor{contributorCount > 1 ? "s" : ""}
+                    </span>
+                  )}
                 </div>
+                <span className="batch-receipt__gold-line">
+                  +{totalGoldInBatch} Gold earned
+                </span>
                 <button
                   className="batch-receipt__share-btn"
                   onClick={handleShare}

@@ -12,6 +12,7 @@
  */
 
 import { intuitionGraphqlClient } from "../clients/graphql-client"
+import { txEventBus } from "./TxEventBus"
 import type { UserDiscoveryStats } from "../../types/discovery"
 import { goldService } from "./GoldService"
 import { createServiceLogger } from "../utils/logger"
@@ -206,6 +207,10 @@ class DiscoveryScoreServiceClass {
         this.handleWalletChange(wallet)
       }
     })
+
+    // Refetch on certification TX events
+    txEventBus.on("certification", () => this.refetch())
+    txEventBus.on("batch_certification", () => this.refetch())
   }
 
   private handleWalletChange(wallet: string | null) {

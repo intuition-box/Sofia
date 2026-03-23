@@ -1,0 +1,102 @@
+/* GlobalStakeModal — Deposit/Redeem for Beta Season Pool */
+/* Reuses Modal.css classes (modal-overlay, modal-content, modal-body, etc.) */
+/* Only defines GS-specific styles below */
+
+.gs-modal__header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.gs-modal__title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #FBF7F5;
+  margin: 0 0 2px;
+}
+
+.gs-modal__subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Current position summary */
+
+.gs-modal__position {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gs-modal__position-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gs-modal__position-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.gs-modal__position-value {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gs-modal__positive {
+  color: #4ade80;
+}
+
+.gs-modal__negative {
+  color: #f87171;
+}
+
+/* Deposit amount section */
+
+.gs-modal__amount-section {
+  margin-bottom: 12px;
+}
+
+/* Redeem percentage pills */
+
+.gs-modal__redeem-pills {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.gs-modal__redeem-pills .weight-modal-pill {
+  flex: 1;
+}
+
+/* Receive value highlight */
+
+.gs-modal__receive-value {
+  font-weight: 700;
+  color: #4ade80;
+}
+
+/* Empty state */
+
+.gs-modal__empty {
+  text-align: center;
+  padding: 24px 0;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+}

@@ -2,7 +2,7 @@ import { useState, useCallback } from "react"
 import { useCreateTripleOnChain } from "./useCreateTripleOnChain"
 import { useWeightOnChain } from "./useWeightOnChain"
 import { useWalletFromStorage } from "./useWalletFromStorage"
-import { cartService, questTrackingService, goldService } from "~/lib/services"
+import { cartService, questTrackingService, goldService, txEventBus } from "~/lib/services"
 import { createHookLogger } from "~/lib/utils"
 import type { CartItemRecord } from "~/lib/database"
 import type { BatchTripleResult } from "~/types/blockchain"
@@ -99,6 +99,7 @@ export const useCartSubmit = () => {
               deposited: batchResult.depositCount,
               votes: votesSucceeded
             })
+            txEventBus.emit("batch_certification", batchResult.results[0]?.txHash)
           } else {
             setError("Some certifications failed. Check results.")
             logger.error("Cart batch partially failed", {
@@ -116,6 +117,7 @@ export const useCartSubmit = () => {
           })
           if (votesSucceeded > 0) {
             logger.info("Vote-only cart submitted", { votes: votesSucceeded })
+            txEventBus.emit("vote")
           }
         }
       } catch (err) {

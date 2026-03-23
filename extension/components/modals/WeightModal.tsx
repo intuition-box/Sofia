@@ -51,6 +51,8 @@ interface WeightModalProps {
   }
   /** Rendered below the success card (e.g. PagePositionBoard) */
   positionBoard?: React.ReactNode
+  /** Called when user removes a triplet from the batch (receives triplet id) */
+  onRemoveTriplet?: (tripletId: string) => void
   onClose: () => void
   onSubmit: (customWeights?: (bigint | null)[]) => Promise<void>
 }
@@ -71,7 +73,7 @@ const weightOptions: WeightOption[] = [
   { id: 'custom', label: 'Custom', value: null, description: 'Enter your own amount' }
 ]
 
-const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, positionBoard, onClose, onSubmit }: WeightModalProps) => {
+const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = false, transactionError, transactionHash, createdCount = 0, depositCount = 0, isIntentionCertification = false, discoveryReward, onClaimReward, rewardClaimed = false, fixedDeposit, estimateOptions, submitLabel, showXpAnimation = false, curveSelector, positionBoard, onRemoveTriplet, onClose, onSubmit }: WeightModalProps) => {
   const [selectedWeights, setSelectedWeights] = useState<(WeightOption['id'])[]>([])
   const [customValues, setCustomValues] = useState<string[]>([])
   const [processingStep, setProcessingStep] = useState('')
@@ -99,12 +101,21 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     }
   }, [isOpen, getUserPercentage])
 
+  // Track removed triplets (by index) — kept in array for stable submit mapping
+  const [removedIndices, setRemovedIndices] = useState<Set<number>>(new Set())
+  // Apply a single weight option to ALL triplets at once
+  const [globalWeight, setGlobalWeight] = useState<WeightOption['id']>('default')
+  const [globalCustomValue, setGlobalCustomValue] = useState('')
+
   // Initialize weights array when the actual triplets change (not just reference)
   const tripletKey = triplets.map(t => t.id).join(',')
   useEffect(() => {
     if (triplets.length > 0) {
       setSelectedWeights(new Array(triplets.length).fill('default'))
       setCustomValues(new Array(triplets.length).fill(''))
+      setGlobalWeight('default')
+      setGlobalCustomValue('')
+      setRemovedIndices(new Set())
     }
   }, [tripletKey])
 
@@ -149,7 +160,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
   const newAtomCount = estimateOptions?.newAtomCount ?? 1
 
   // Compute real-time breakdown for display
-  const itemCount = triplets.length
+  const activeCount = triplets.length - removedIndices.size
   const breakdown = useMemo(() => {
     const minimumValue = weightOptions.find(opt => opt.id === 'minimum')!.value!
     const defaultValue = weightOptions.find(opt => opt.id === 'default')!.value!
@@ -159,6 +170,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalTrust = fixedDeposit
     } else {
       for (let i = 0; i < selectedWeights.length; i++) {
+        if (removedIndices.has(i)) continue
         const sel = selectedWeights[i]
         if (sel === 'custom') {
           const cv = customValues[i]
@@ -170,7 +182,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       }
     }
 
-    const createOpts = { isNewTriple, newAtomCount, itemCount }
+    const createOpts = { isNewTriple, newAtomCount, itemCount: activeCount }
 
     if (totalTrust <= 0 || !gsEnabled) {
       const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
@@ -192,7 +204,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const signalAmount = totalTrust - poolAmount
     const minDeposit = Number(gsConfig.minGlobalDeposit) / 1e18
     // Check belowMinimum per item, not on total — each triple is split individually
-    const perItemPool = itemCount > 0 ? poolAmount / itemCount : poolAmount
+    const perItemPool = activeCount > 0 ? poolAmount / activeCount : poolAmount
     const belowMinimum = perItemPool > 0 && perItemPool < minDeposit
 
     const effectiveGsPercentage = belowMinimum ? 0 : gsPercentage
@@ -210,7 +222,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, itemCount])
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, activeCount, removedIndices])
 
   const handleSubmit = async () => {
     try {
@@ -223,6 +235,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       const defaultValue = weightOptions.find(opt => opt.id === 'default')!.value!
 
       const weightBigIntArray: (bigint | null)[] = selectedWeights.map((selectedWeight, index) => {
+        // Removed items → null weight
+        if (removedIndices.has(index)) return null
+
         let trustValue: number
 
         if (selectedWeight === 'custom') {
@@ -270,6 +285,21 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     setCustomValues(newCustomValues)
   }
 
+  const handleApplyAll = (optionId: WeightOption['id']) => {
+    setGlobalWeight(optionId)
+    setSelectedWeights(new Array(triplets.length).fill(optionId))
+    if (optionId !== 'custom') {
+      setCustomValues(new Array(triplets.length).fill(''))
+    }
+  }
+
+  const handleGlobalCustomChange = (value: string) => {
+    setGlobalCustomValue(value)
+    setGlobalWeight('custom')
+    setSelectedWeights(new Array(triplets.length).fill('custom'))
+    setCustomValues(new Array(triplets.length).fill(value))
+  }
+
   const parseErrorMessage = (error: string): string => {
     if (error.includes('Wallet unavailable:') || error.includes('navigate to an HTTPS page')) {
       return error
@@ -305,11 +335,71 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
             </p>
           )}
 
+          {/* Apply to all — when multiple triplets */}
+          {isFormState && fixedDeposit == null && activeCount > 1 && (
+            <div className="weight-modal-apply-all">
+              <span className="weight-modal-apply-all__label">
+                Set all ({activeCount} items)
+              </span>
+              <div className="weight-modal-amount-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.000001"
+                  value={
+                    globalWeight === 'custom'
+                      ? globalCustomValue
+                      : (weightOptions.find(opt => opt.id === globalWeight)?.value || '')
+                  }
+                  onChange={(e) => handleGlobalCustomChange(e.target.value)}
+                  onFocus={(e) => {
+                    handleApplyAll('custom')
+                    e.target.select()
+                  }}
+                  className="weight-modal-amount-input"
+                  placeholder="0.01"
+                  disabled={isProcessing}
+                />
+                <div className="weight-modal-pills">
+                  {weightOptions.filter(opt => opt.id !== 'custom').map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => {
+                        handleApplyAll(option.id)
+                        setGlobalCustomValue('')
+                      }}
+                      className={`weight-modal-pill ${globalWeight === option.id ? 'selected' : ''}`}
+                      disabled={isProcessing}
+                    >
+                      {option.value}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Triplets List — form state only (hidden on success with reward) */}
           {!(transactionSuccess && discoveryReward) && (
             <div className="modal-triplets-list">
-              {triplets.map((triplet, index) => (
+              {triplets.map((triplet, index) => {
+                if (removedIndices.has(index)) return null
+                return (
                 <div key={triplet.id} className="weight-modal-triplet-card">
+                  {/* Remove button — only when multiple items */}
+                  {isFormState && triplets.length > 1 && (
+                    <button
+                      className="weight-modal-triplet-remove"
+                      onClick={() => {
+                        setRemovedIndices(prev => new Set(prev).add(index))
+                        onRemoveTriplet?.(triplet.id)
+                      }}
+                      disabled={isProcessing || activeCount <= 1}
+                      title="Remove from batch"
+                    >
+                      ×
+                    </button>
+                  )}
                   <div className="weight-modal-triplet-text">
                     {(() => {
                       const badge = getIntentionBadge(triplet.intention)
@@ -397,7 +487,8 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                     </div>
                   )}
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
@@ -616,7 +707,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                 <button
                   className="modal-btn primary"
                   onClick={handleSubmit}
-                  disabled={isProcessing || breakdown.totalEstimate > userBalance}
+                  disabled={isProcessing || breakdown.totalEstimate > userBalance || activeCount === 0}
                 >
                   {isProcessing
                     ? (submitLabel ? 'Processing...' : 'Amplifying...')

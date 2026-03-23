@@ -873,6 +873,7 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
           createdCount={intentionOperationType === 'created' ? 1 : 0}
           depositCount={intentionOperationType === 'deposit' ? 1 : 0}
           isIntentionCertification={true}
+          showXpAnimation={true}
           discoveryReward={intentionSuccess ? reward.discoveryReward : null}
           onClaimReward={() => reward.handleClaimReward(claimDiscoveryGold)}
           rewardClaimed={reward.rewardClaimed}

@@ -34,6 +34,8 @@ export { BadgeService, badgeService } from './BadgeService'
 
 // Messaging
 export { MessageBus, messageBus } from './MessageBus'
+export { txEventBus } from './TxEventBus'
+export type { TxEventType, TxEvent } from './TxEventBus'
 
 // Page & Session
 export { PageDataService, pageDataService } from './PageDataService'
