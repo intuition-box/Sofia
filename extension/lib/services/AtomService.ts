@@ -9,7 +9,7 @@
  * - blockchainService.ts: low-level blockchain operations
  */
 
-import { getClients } from '../clients/viemClients'
+import { getClients, getPublicClient } from '../clients/viemClients'
 import { stringToHex } from 'viem'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../config/chainConfig'
@@ -367,7 +367,7 @@ class AtomServiceClass {
       // Calculate expected vaultId
       const expectedVaultId = await BlockchainService.calculateAtomId(ipfsUri)
 
-      const { publicClient } = await getClients()
+      const publicClient = getPublicClient()
 
       try {
         const simulation = await publicClient.simulateContract({
@@ -535,7 +535,8 @@ class AtomServiceClass {
 
       // Create new atoms sequentially to handle AtomExists errors gracefully
       if (newAtoms.length > 0) {
-        const { walletClient, publicClient } = await getClients()
+        const { walletClient } = await getClients()
+        const publicClient = getPublicClient()
         const atomCost = await BlockchainService.getAtomCost()
         const totalCost = await BlockchainService.getTotalCreationCost(0, 0n, atomCost)
         const contractAddress = BlockchainService.getContractAddress()

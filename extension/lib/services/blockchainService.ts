@@ -1,4 +1,4 @@
-import { getClients } from '../clients/viemClients'
+import { getClients, getPublicClient } from '../clients/viemClients'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { stringToHex } from 'viem'
@@ -28,7 +28,7 @@ export class BlockchainService {
    * @param totalDeposit Total amount being deposited
    */
   static async calculateDepositFee(depositCount: number, totalDeposit: bigint): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     return await publicClient.readContract({
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
@@ -42,7 +42,7 @@ export class BlockchainService {
    * Get total cost for a single deposit including Sofia fees
    */
   static async getTotalDepositCost(depositAmount: bigint): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     return await publicClient.readContract({
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
@@ -59,7 +59,7 @@ export class BlockchainService {
    * @param multiVaultCost Total cost required by MultiVault (atomCost/tripleCost * count + totalDeposit)
    */
   static async getTotalCreationCost(depositCount: number, totalDeposit: bigint, multiVaultCost: bigint): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     return await publicClient.readContract({
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
@@ -76,7 +76,6 @@ export class BlockchainService {
   static async getFeeParams(): Promise<FeeParams> {
     if (this.feeCache) return this.feeCache
 
-    const { getPublicClient } = await import('../clients/viemClients')
     const publicClient = getPublicClient()
     const addr = this.PROXY_ADDRESS as `0x${string}`
 
@@ -140,7 +139,7 @@ export class BlockchainService {
    * This ensures the ID matches exactly what the contract uses
    */
   static async calculateAtomId(ipfsUri: string): Promise<string> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     const encodedData = stringToHex(ipfsUri)
 
     return await publicClient.readContract({
@@ -156,7 +155,7 @@ export class BlockchainService {
    * Check if atom exists on-chain
    */
   static async checkAtomExists(ipfsUri: string): Promise<AtomCheckResult> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     const atomHash = await this.calculateAtomId(ipfsUri)
 
     const exists = await publicClient.readContract({
@@ -188,8 +187,6 @@ export class BlockchainService {
       contractAddress: this.MULTIVAULT_ADDRESS
     })
 
-    // Use getPublicClient for read-only operations (faster, no wallet needed)
-    const { getPublicClient } = await import('../clients/viemClients')
     const publicClient = getPublicClient()
 
     try {
@@ -432,7 +429,7 @@ export class BlockchainService {
    * Wait for approval transaction and verify it succeeded
    */
   static async waitForApprovalConfirmation(txHash: `0x${string}`): Promise<boolean> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
 
     const receipt = await publicClient.waitForTransactionReceipt({
       hash: txHash

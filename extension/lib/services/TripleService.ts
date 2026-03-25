@@ -16,7 +16,7 @@
  * - GlobalStakeService.ts: split calculation for global stake
  */
 
-import { getClients } from '../clients/viemClients'
+import { getClients, getPublicClient } from '../clients/viemClients'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../config/chainConfig'
@@ -225,7 +225,7 @@ class TripleServiceClass {
 
       if (tripleCheck.exists) {
         // Triple exists — deposit on it (+ global stake if enabled)
-        const { publicClient } = await getClients()
+        const publicClient = getPublicClient()
 
         const feeCost = await BlockchainService.getTripleCost()
         const depositAmount = customWeight !== undefined ? customWeight : feeCost
@@ -649,7 +649,7 @@ class TripleServiceClass {
 
       // Process deposits on existing triples — single depositBatch
       if (triplesToDeposit.length > 0) {
-        const { publicClient } = await getClients()
+        const publicClient = getPublicClient()
 
         logger.debug('Processing deposits on existing triples via depositBatch', {
           count: triplesToDeposit.length
