@@ -102,6 +102,10 @@ export { useDebateClaims } from './useDebateClaims'
 export type { DebateClaim, FeaturedList, UseDebateClaimsResult } from './useDebateClaims'
 
 
+// Topic Interests (from Sofia Explorer)
+export { useTopicInterests } from './useTopicInterests'
+export type { TopicInterestsResult } from './useTopicInterests'
+
 // Cart
 export { useCart } from './useCart'
 export { useCartSubmit } from './useCartSubmit'

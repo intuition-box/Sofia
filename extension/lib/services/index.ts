@@ -69,6 +69,10 @@ export type { GlobalStakeState, GlobalStakePosition, GlobalStakeConfig, GlobalVa
 export { CartServiceClass, cartService } from './CartService'
 export type { CartState } from './CartService'
 
+// Topic Interests (from Sofia Explorer)
+export { topicPositionsService } from './TopicPositionsService'
+export type { UserTopicPosition, TopicPositionsState } from './TopicPositionsService'
+
 // Browsing Nudge
 export { BrowsingNudgeServiceClass, browsingNudgeService, NUDGE_URL_THRESHOLD } from './BrowsingNudgeService'
 
