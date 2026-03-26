@@ -66,7 +66,8 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       },
       description: item.pageTitle || item.normalizedUrl,
       url: item.url,
-      intention: item.intention ?? undefined
+      intention: item.intention ?? undefined,
+      interestContext: item.interestContext
     }
   })
 

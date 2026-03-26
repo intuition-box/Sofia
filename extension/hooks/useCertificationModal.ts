@@ -35,6 +35,7 @@ export interface ModalTriplet {
   description: string
   url: string
   intention?: IntentionPurpose | IntentionType
+  interestContext?: string | null
 }
 
 interface TrustDistrustState {

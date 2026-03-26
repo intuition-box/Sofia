@@ -2274,6 +2274,14 @@
   white-space: nowrap;
 }
 
+.weight-modal-context-badge {
+  font-size: 10px;
+  font-weight: 500;
+  font-style: italic;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
 .weight-modal-url-hint {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.3);

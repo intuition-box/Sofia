@@ -12,6 +12,7 @@ import { createHookLogger } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
 import type { IntentionType } from "~/types/intentionCategories"
 import { getIntentionBadge } from "~/types/intentionCategories"
+import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
 import '../styles/Modal.css'
 
 const logger = createHookLogger('WeightModal')
@@ -433,6 +434,17 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                           >
                             {badge.label}
                           </span>
+                          {triplet.interestContext && TOPIC_LABELS[triplet.interestContext] && (
+                            <>
+                              <span className="weight-modal-cert-dot">·</span>
+                              <span
+                                className="weight-modal-context-badge"
+                                style={{ color: TOPIC_COLORS[triplet.interestContext] || "#888" }}
+                              >
+                                {TOPIC_LABELS[triplet.interestContext]}
+                              </span>
+                            </>
+                          )}
                         </span>
                       )
                       if (isVotePredicate) {
