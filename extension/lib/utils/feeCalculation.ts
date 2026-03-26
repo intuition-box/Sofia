@@ -25,6 +25,8 @@ export function estimateCertificationCost(
     newAtomCount?: number
     /** Number of items in the batch (default 1) */
     itemCount?: number
+    /** Number of context triples (TX2) — each costs tripleCost + min deposit */
+    contextTripleCount?: number
   }
 ): CostEstimate {
   const { depositFixed, depositPct, creationFixed, feeDenom } = feeParams
@@ -32,6 +34,7 @@ export function estimateCertificationCost(
   const isNewTriple = options?.isNewTriple ?? false
   const newAtomCount = options?.newAtomCount ?? 0
   const itemCount = options?.itemCount ?? 1
+  const contextTripleCount = options?.contextTripleCount ?? 0
 
   // --- Deposit split ---
   const poolFraction = gsPercentage / gsDenominator
@@ -66,8 +69,23 @@ export function estimateCertificationCost(
     creationCost += (Number(atomCost) / 1e18) * newAtomCount
   }
 
+  // --- TX2: Context triple costs (min deposit + creation per context triple) ---
+  let contextTripleCost = 0
+  if (contextTripleCount > 0) {
+    const minDeposit = 0.01 // MIN_TRIPLE_DEPOSIT in TRUST
+    const ctxTripleCost = Number(tripleCost) / 1e18
+    // Each context triple: creation cost + min deposit + sofia fees on deposit
+    const ctxSofiaFixed = fixedFeePerDeposit * contextTripleCount
+    const ctxSofiaPct = pctRate * (minDeposit * contextTripleCount)
+    const ctxCreationFixed = creationFixedPerUnit * contextTripleCount
+    contextTripleCost =
+      (ctxTripleCost * contextTripleCount) +
+      (minDeposit * contextTripleCount) +
+      ctxSofiaFixed + ctxSofiaPct + ctxCreationFixed
+  }
+
   // --- Totals ---
-  const totalFees = sofiaFixedFee + sofiaPercentFee + creationFixedFeeTotal + creationCost
+  const totalFees = sofiaFixedFee + sofiaPercentFee + creationFixedFeeTotal + creationCost + contextTripleCost
   const totalEstimate = depositTrust + totalFees
 
   return {
@@ -80,6 +98,7 @@ export function estimateCertificationCost(
     creationFixedFee: creationFixedFeeTotal,
     totalFees,
     totalEstimate,
-    depositCount
+    depositCount,
+    contextTripleCost,
   }
 }

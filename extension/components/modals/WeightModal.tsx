@@ -183,7 +183,11 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       }
     }
 
-    const createOpts = { isNewTriple, newAtomCount, itemCount: activeCount }
+    // Count active items with interest context for TX2 cost estimation
+    const contextTripleCount = triplets.filter(
+      (t, i) => !removedIndices.has(i) && t.interestContext
+    ).length
+    const createOpts = { isNewTriple, newAtomCount, itemCount: activeCount, contextTripleCount }
 
     if (totalTrust <= 0 || !gsEnabled) {
       const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
@@ -195,6 +199,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         creationCost: costEstimate?.creationCost ?? 0,
         sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
         sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+        contextTripleCost: costEstimate?.contextTripleCost ?? 0,
         totalFees: costEstimate?.totalFees ?? 0,
         totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
         depositCount: costEstimate?.depositCount ?? 1
@@ -219,11 +224,12 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       creationCost: costEstimate?.creationCost ?? 0,
       sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
       sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+      contextTripleCost: costEstimate?.contextTripleCost ?? 0,
       totalFees: costEstimate?.totalFees ?? 0,
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, activeCount, removedIndices])
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, activeCount, removedIndices, triplets])
 
   const handleSubmit = async () => {
     try {
@@ -597,6 +603,12 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                     <div className="weight-modal-cost-row weight-modal-cost-sub">
                       <span>Intuition fee (creation only)</span>
                       <span>{formatTrust(breakdown.creationCost)} TRUST</span>
+                    </div>
+                  )}
+                  {breakdown.contextTripleCost > 0 && (
+                    <div className="weight-modal-cost-row weight-modal-cost-sub">
+                      <span>Context triples (min deposit)</span>
+                      <span>{formatTrust(breakdown.contextTripleCost)} TRUST</span>
                     </div>
                   )}
                   <div className="weight-modal-cost-divider" />

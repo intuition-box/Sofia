@@ -129,4 +129,5 @@ export interface CostEstimate {
   totalFees: number
   totalEstimate: number
   depositCount: number
+  contextTripleCost: number   // TX2: context triple creation + min deposit (0 if no context)
 }
