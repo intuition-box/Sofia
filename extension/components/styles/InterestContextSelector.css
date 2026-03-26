@@ -1,0 +1,64 @@
+/* Interest Context Selector — topic interest buttons */
+
+.interest-context {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-top: 8px;
+}
+
+.interest-context__label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: "Gotu", cursive;
+  letter-spacing: 0.5px;
+  text-transform: lowercase;
+}
+
+.interest-context__buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.interest-context__btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg, 12px);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-family-primary, "Montserrat", sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.interest-context__btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.interest-context__btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.interest-context__btn--selected {
+  font-weight: 700;
+}
+
+.interest-context__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

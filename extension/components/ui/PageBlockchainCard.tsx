@@ -14,13 +14,15 @@ import {
   useWalletFromStorage,
   useTrustCircle,
   usePagePositions,
-  useCart
+  useCart,
+  useTopicInterests
 } from "~/hooks"
 import type { IntentionPurpose } from "~/types/discovery"
 import { INTENTION_PREDICATES } from "~/types/discovery"
 import { getFaviconUrl } from "~/lib/utils"
 import WeightModal from "../modals/WeightModal"
 import { IntentionBubbleSelector } from "./IntentionBubbleSelector"
+import { InterestContextSelector } from "./InterestContextSelector"
 import { CartToast } from "./CartDrawer"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
@@ -99,6 +101,10 @@ const PageBlockchainCard = () => {
 
   // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
   const effectiveUserHasCertified = userHasCertified || !!certEntry
+
+  // Topic interests (from Sofia Explorer)
+  const { topInterests, hasInterests } = useTopicInterests()
+  const [selectedContext, setSelectedContext] = useState<string | null>(null)
 
   // Cart
   const cart = useCart()
@@ -231,6 +237,16 @@ const PageBlockchainCard = () => {
             }
             onNavigateDiscovery={() => navigateTo("discovery-profile")}
           />
+
+          {/* Interest Context (from Sofia Explorer) */}
+          {!isRestricted && hasInterests && (
+            <InterestContextSelector
+              interests={topInterests}
+              selectedContext={selectedContext}
+              onSelectContext={setSelectedContext}
+              disabled={modal.intentionState.loading}
+            />
+          )}
 
           {/* Trust/Distrust pills + Intention pills (unified) */}
           {!isRestricted && (
