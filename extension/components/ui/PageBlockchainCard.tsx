@@ -141,7 +141,8 @@ const PageBlockchainCard = () => {
         pageTitle,
         predicateName,
         intention,
-        favicon
+        favicon,
+        selectedContext
       )
       if (added) {
         setCartToast("Added to cart")
@@ -149,7 +150,7 @@ const PageBlockchainCard = () => {
         setCartToast("Already in cart")
       }
     },
-    [currentUrl, pageTitle, cart]
+    [currentUrl, pageTitle, cart, selectedContext]
   )
 
   const handleAddTrustToCart = useCallback(
@@ -161,7 +162,8 @@ const PageBlockchainCard = () => {
         pageTitle,
         predicate,
         null,
-        favicon
+        favicon,
+        selectedContext
       )
       if (added) {
         setCartToast(`Added ${predicate === "trusts" ? "Trust" : "Distrust"} to cart`)
@@ -169,7 +171,7 @@ const PageBlockchainCard = () => {
         setCartToast("Already in cart")
       }
     },
-    [currentUrl, pageTitle, cart]
+    [currentUrl, pageTitle, cart, selectedContext]
   )
 
   // Auto-dismiss toast

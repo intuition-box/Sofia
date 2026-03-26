@@ -122,6 +122,7 @@ export interface CartItemRecord {
   intention: IntentionPurpose | null
   faviconUrl: string | null
   addedAt: number
+  interestContext?: string | null     // Topic slug e.g. "web3-crypto" (from Sofia Explorer)
   voteAction?: "support" | "oppose"  // If present, this is a vote item (not a certification)
   tripleTermId?: string              // Vault ID for direct deposit (votes only)
 }
