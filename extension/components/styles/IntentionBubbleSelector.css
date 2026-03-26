@@ -61,6 +61,19 @@
   opacity: 1;
 }
 
+.intention-pill--trust {
+  text-transform: capitalize;
+  font-weight: 400;
+}
+
+.intention-pills__separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  align-self: center;
+  flex-shrink: 0;
+}
+
 .intention-pill:disabled {
   cursor: not-allowed;
   opacity: 0.5;

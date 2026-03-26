@@ -232,38 +232,7 @@ const PageBlockchainCard = () => {
             onNavigateDiscovery={() => navigateTo("discovery-profile")}
           />
 
-          {/* Trust & Distrust Buttons Row */}
-          {!isRestricted && (
-            <div className="trust-buttons-row">
-              <button
-                className={`trust-page-button trust-btn ${alreadyTrusted ? "success" : ""} ${trustInCart ? "in-cart" : ""}`}
-                onClick={() => handleAddTrustToCart("trusts")}
-                disabled={alreadyTrusted || trustInCart || !currentUrl}
-              >
-                {alreadyTrusted
-                  ? "Trusted"
-                  : trustInCart
-                    ? "In Cart"
-                    : "TRUST"}
-              </button>
-
-              <button
-                className={`trust-page-button distrust-btn ${alreadyDistrusted ? "success" : ""} ${distrustInCart ? "in-cart" : ""}`}
-                onClick={() => handleAddTrustToCart("distrust")}
-                disabled={
-                  alreadyDistrusted || distrustInCart || !currentUrl
-                }
-              >
-                {alreadyDistrusted
-                  ? "Distrusted"
-                  : distrustInCart
-                    ? "In Cart"
-                    : "DISTRUST"}
-              </button>
-            </div>
-          )}
-
-          {/* Discovery Section - Intention Certification (cart mode) */}
+          {/* Trust/Distrust pills + Intention pills (unified) */}
           {!isRestricted && (
             <div className="discovery-section">
               <IntentionBubbleSelector
@@ -271,10 +240,15 @@ const PageBlockchainCard = () => {
                   if (!currentUrl) return
                   handleAddToCart(intention)
                 }}
+                onTrustClick={(predicate) => handleAddTrustToCart(predicate)}
                 disabled={modal.intentionState.loading}
                 isEligible={true}
                 certifiedIntentions={certifiedIntentions}
                 cartIntentions={cartIntentionsForPage}
+                alreadyTrusted={alreadyTrusted}
+                alreadyDistrusted={alreadyDistrusted}
+                trustInCart={trustInCart}
+                distrustInCart={distrustInCart}
               />
             </div>
           )}
