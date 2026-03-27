@@ -4,13 +4,14 @@ import { useWeightOnChain } from "./useWeightOnChain"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { cartService, questTrackingService, goldService, txEventBus } from "~/lib/services"
 import { createHookLogger } from "~/lib/utils"
+import { TOPIC_ATOM_IDS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
 import type { BatchTripleResult } from "~/types/blockchain"
 
 const logger = createHookLogger("useCartSubmit")
 
 export const useCartSubmit = () => {
-  const { createTriplesBatch } = useCreateTripleOnChain()
+  const { createTriplesBatch, createContextTriplesBatch } = useCreateTripleOnChain()
   const { depositWithPool } = useWeightOnChain()
   const { walletAddress } = useWalletFromStorage()
   const [submitting, setSubmitting] = useState(false)
@@ -84,6 +85,31 @@ export const useCartSubmit = () => {
             }
           }
           setVoteCount(votesSucceeded)
+        }
+
+        // 3. Process interest context triples (TX2 — nested triples)
+        if (batchResult?.success) {
+          const contextItems = certItems
+            .filter(item => item.interestContext)
+            .map((item, i) => {
+              const tripleVaultId = batchResult.results[i]?.tripleVaultId
+              const topicTermId = TOPIC_ATOM_IDS[item.interestContext!]
+              return tripleVaultId && topicTermId
+                ? { certTripleVaultId: tripleVaultId, topicTermId }
+                : null
+            })
+            .filter(Boolean) as { certTripleVaultId: string; topicTermId: string }[]
+
+          if (contextItems.length > 0) {
+            try {
+              logger.info("Submitting context triples", { count: contextItems.length })
+              await createContextTriplesBatch(contextItems)
+              logger.info("Context triples submitted successfully")
+            } catch (ctxError) {
+              // Non-blocking: cert succeeded, context is bonus
+              logger.warn("Context triples failed (non-blocking)", { error: ctxError })
+            }
+          }
         }
 
         // Build combined result

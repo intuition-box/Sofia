@@ -73,7 +73,9 @@ export const PREDICATE_IDS = {
   VISITS_FOR_MUSIC: "",
   // Vote predicates (nested triples - like/dislike certifications)
   LIKE: "",
-  DISLIKE: ""
+  DISLIKE: "",
+  // Interest context predicate (nested triples - certification "in context of" topic)
+  IN_CONTEXT_OF: ""
 } as const
 
 // Subject IDs (use local mock values)
@@ -107,7 +109,9 @@ export const PREDICATE_NAMES = {
   TOP_TRACK: "top_track",
   CREATED_PLAYLIST: "created_playlist",
   // Identity predicate (Discord "I am username", Twitter "I am username")
-  AM: "am"
+  AM: "am",
+  // Interest context predicate
+  IN_CONTEXT_OF: "in context of"
 } as const
 
 // Minimum stake for intention certification (0.1 TRUST = 1e17 wei)

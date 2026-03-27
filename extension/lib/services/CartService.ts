@@ -110,7 +110,8 @@ class CartServiceClass {
     pageTitle: string | null,
     predicateName: string,
     intention: IntentionPurpose | null,
-    faviconUrl: string | null
+    faviconUrl: string | null,
+    interestContext?: string | null
   ): Promise<boolean> {
     const { label: normalizedLabel } = normalizeUrl(url)
     const id = `${walletAddress.toLowerCase()}:${normalizedLabel}:${predicateName}`
@@ -130,7 +131,8 @@ class CartServiceClass {
       predicateName,
       intention,
       faviconUrl,
-      addedAt: Date.now()
+      addedAt: Date.now(),
+      interestContext: interestContext || null,
     }
 
     try {

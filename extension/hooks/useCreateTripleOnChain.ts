@@ -185,8 +185,54 @@ export const useCreateTripleOnChain = () => {
     }
   }
 
+  /**
+   * Create "in context of" nested triples after cert batch.
+   * Subject = cert triple vault ID, Predicate = "in context of", Object = topic atom.
+   */
+  const createContextTriplesBatch = async (
+    contextItems: { certTripleVaultId: string; topicTermId: string }[]
+  ): Promise<BatchTripleResult> => {
+    try {
+      if (!address) {
+        throw new Error(ERROR_MESSAGES.WALLET_NOT_CONNECTED)
+      }
+
+      await ensureProxyApproval()
+
+      logger.debug("Starting context triples batch", { count: contextItems.length })
+
+      // Resolve "in context of" predicate
+      let predicateVaultId = tripleService.getPredicateIdIfExists("in context of")
+
+      if (!predicateVaultId) {
+        // Create predicate atom on first use
+        const pinned = await pinAtomToIPFS({
+          name: "in context of",
+          description: 'Predicate: certification is "in context of" a topic',
+          url: ""
+        })
+        const created = await createAtomsFromPinned([pinned])
+        predicateVaultId = created["in context of"].vaultId
+        logger.info("Created 'in context of' predicate atom", { predicateVaultId })
+      }
+
+      // Build resolved triples: certTriple → "in context of" → topicAtom
+      const resolvedTriples: ResolvedTriple[] = contextItems.map(item => ({
+        subjectId: item.certTripleVaultId,
+        predicateId: predicateVaultId!,
+        objectId: item.topicTermId,
+      }))
+
+      return tripleService.createTriplesBatch(resolvedTriples, address)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
+      throw new Error(`Context triples batch failed: ${errorMessage}`)
+    }
+  }
+
   return {
     createTripleOnChain,
-    createTriplesBatch
+    createTriplesBatch,
+    createContextTriplesBatch
   }
 }

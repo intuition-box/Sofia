@@ -93,6 +93,9 @@ class TripleServiceClass {
     if (predicateName === 'dislike') {
       return PREDICATE_IDS.DISLIKE || null
     }
+    if (predicateName === 'in context of') {
+      return PREDICATE_IDS.IN_CONTEXT_OF || null
+    }
     return null
   }
 
