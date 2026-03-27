@@ -607,7 +607,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                   )}
                   {breakdown.contextTripleCost > 0 && (
                     <div className="weight-modal-cost-row weight-modal-cost-sub">
-                      <span>Context triples (min deposit)</span>
+                      <span>Context (creation + deposit)</span>
                       <span>{formatTrust(breakdown.contextTripleCost)} TRUST</span>
                     </div>
                   )}

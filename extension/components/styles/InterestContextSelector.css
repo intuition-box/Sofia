@@ -58,6 +58,10 @@
   font-weight: 700;
 }
 
+.interest-context__btn--certified {
+  font-weight: 700;
+}
+
 .interest-context__btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

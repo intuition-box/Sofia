@@ -87,15 +87,16 @@ const PageBlockchainCard = () => {
       trustCircleAddresses
     )
 
-  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted, certEntry } = useMemo(() => {
+  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted, certEntry, certifiedContexts } = useMemo(() => {
     if (!currentUrl || certifications.size === 0)
-      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false, certEntry: null }
+      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false, certEntry: null, certifiedContexts: [] as string[] }
     const entry = getCertificationForUrl(certifications, currentUrl)
     return {
       certifiedIntentions: entry?.intentions ?? [],
       alreadyTrusted: entry?.trustPredicates?.includes("trusts") ?? false,
       alreadyDistrusted: entry?.trustPredicates?.includes("distrust") ?? false,
-      certEntry: entry
+      certEntry: entry,
+      certifiedContexts: entry?.interestContexts ?? []
     }
   }, [currentUrl, certifications])
 
@@ -247,6 +248,7 @@ const PageBlockchainCard = () => {
               selectedContext={selectedContext}
               onSelectContext={setSelectedContext}
               disabled={modal.intentionState.loading}
+              certifiedContexts={certifiedContexts}
             />
           )}
 
