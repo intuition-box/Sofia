@@ -21,6 +21,7 @@ import { createServiceLogger } from "../utils/logger"
 import { txEventBus } from "./TxEventBus"
 import { normalizeUrl } from "../utils"
 import { UserAllCertificationsDocument } from "@0xsofia/graphql"
+import { ATOM_ID_TO_TOPIC } from "../config/topicConfig"
 import type { IntentionPurpose } from "../../types/discovery"
 
 const logger = createServiceLogger("UserCertificationsService")
@@ -40,6 +41,7 @@ export interface CertificationEntry {
   trustPredicates: string[]
   isRootDomain: boolean
   triples: TripleDetail[]
+  interestContexts: string[]  // topic slugs from nested "in context of" triples
 }
 
 export interface CertificationsStoreState {
@@ -262,10 +264,16 @@ class UserCertificationsServiceClass {
             oauthPredicates: isOAuthPredicate ? [predicateLabel] : [],
             trustPredicates: isTrustPredicate ? [predicateLabel] : [],
             isRootDomain,
-            triples: tripleDetail.tripleTermId ? [tripleDetail] : []
+            triples: tripleDetail.tripleTermId ? [tripleDetail] : [],
+            interestContexts: []
           })
         }
       }
+
+      // ── Secondary query: fetch "in context of" nested triples ──
+      // Collect all cert triple term_ids, then query triples where
+      // subject.term_id IN [certTermIds] AND predicate.label = "in context of"
+      await this.fetchInterestContexts(newCertifications)
 
       this.state = {
         ...this.state,
@@ -298,6 +306,74 @@ class UserCertificationsServiceClass {
     } finally {
       this.isFetching = false
       this.emitChange()
+    }
+  }
+
+  /**
+   * Fetch "in context of" nested triples for all cert triples.
+   * Mutates the CertificationEntry.interestContexts in place.
+   */
+  private async fetchInterestContexts(
+    certifications: Map<string, CertificationEntry>
+  ): Promise<void> {
+    // Collect all tripleTermIds and build reverse lookup: termId → entry
+    const termIdToEntry = new Map<string, CertificationEntry>()
+    for (const entry of certifications.values()) {
+      for (const triple of entry.triples) {
+        if (triple.tripleTermId) {
+          termIdToEntry.set(triple.tripleTermId, entry)
+        }
+      }
+    }
+
+    const allTermIds = Array.from(termIdToEntry.keys())
+    if (allTermIds.length === 0) return
+
+    try {
+      // Query: triples where subject is one of our cert triples
+      // and predicate is "in context of"
+      // Use subject_id (not subject { term_id }) because the subject is a
+      // nested triple, not a regular atom — subject join returns null for triples.
+      const CONTEXT_QUERY = `
+        query GetContextTriples($subjectTermIds: [String!]!) {
+          triples(
+            where: {
+              subject_id: { _in: $subjectTermIds }
+              predicate: { label: { _eq: "in context of" } }
+            }
+            limit: 500
+          ) {
+            subject_id
+            object { term_id label }
+          }
+        }
+      `
+
+      const data = await intuitionGraphqlClient.request(
+        CONTEXT_QUERY,
+        { subjectTermIds: allTermIds }
+      )
+
+      const contextTriples = data.triples || []
+      logger.debug("Context triples fetched", { count: contextTriples.length })
+
+      for (const ct of contextTriples) {
+        const subjectId = ct.subject_id
+        const objectTermId = ct.object?.term_id
+        if (!subjectId || !objectTermId) continue
+
+        const entry = termIdToEntry.get(subjectId)
+        if (!entry) continue
+
+        // Resolve topic slug from atom term_id
+        const topicSlug = ATOM_ID_TO_TOPIC.get(objectTermId)
+        if (topicSlug && !entry.interestContexts.includes(topicSlug)) {
+          entry.interestContexts.push(topicSlug)
+        }
+      }
+    } catch (err) {
+      // Non-blocking: context is bonus info
+      logger.warn("Failed to fetch context triples", err)
     }
   }
 

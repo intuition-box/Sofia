@@ -3,6 +3,7 @@ import { X, Trash2 } from "lucide-react"
 import sofiaIcon from "data-base64:~assets/icon-dark-32.png"
 import { useCart, useCartSubmit } from "~/hooks"
 import { getIntentionBadge, predicateLabelToIntentionType } from "~/types/intentionCategories"
+import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
 import WeightModal from "../modals/WeightModal"
 import BatchRewardModal from "../modals/BatchRewardModal"
 import type { ModalTriplet } from "~/hooks"
@@ -65,7 +66,8 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       },
       description: item.pageTitle || item.normalizedUrl,
       url: item.url,
-      intention: item.intention ?? undefined
+      intention: item.intention ?? undefined,
+      interestContext: item.interestContext
     }
   })
 
@@ -167,6 +169,18 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                           {badge.label}
                         </span>
                       ) : null}
+                      {item.interestContext && TOPIC_LABELS[item.interestContext] && (
+                        <span
+                          className="cart-drawer__item-pill cart-drawer__item-pill--context"
+                          style={{
+                            backgroundColor: `${TOPIC_COLORS[item.interestContext] || "#888"}15`,
+                            color: TOPIC_COLORS[item.interestContext] || "#888",
+                            border: `1px dashed ${TOPIC_COLORS[item.interestContext] || "#888"}40`
+                          }}
+                        >
+                          {TOPIC_LABELS[item.interestContext]}
+                        </span>
+                      )}
                       <button
                         className="cart-drawer__item-remove"
                         onClick={() => removeFromCart(item.id)}

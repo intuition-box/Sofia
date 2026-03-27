@@ -12,6 +12,7 @@ import { createHookLogger } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
 import type { IntentionType } from "~/types/intentionCategories"
 import { getIntentionBadge } from "~/types/intentionCategories"
+import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
 import '../styles/Modal.css'
 
 const logger = createHookLogger('WeightModal')
@@ -182,7 +183,11 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       }
     }
 
-    const createOpts = { isNewTriple, newAtomCount, itemCount: activeCount }
+    // Count active items with interest context for TX2 cost estimation
+    const contextTripleCount = triplets.filter(
+      (t, i) => !removedIndices.has(i) && t.interestContext
+    ).length
+    const createOpts = { isNewTriple, newAtomCount, itemCount: activeCount, contextTripleCount }
 
     if (totalTrust <= 0 || !gsEnabled) {
       const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
@@ -194,6 +199,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
         creationCost: costEstimate?.creationCost ?? 0,
         sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
         sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+        contextTripleCost: costEstimate?.contextTripleCost ?? 0,
         totalFees: costEstimate?.totalFees ?? 0,
         totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
         depositCount: costEstimate?.depositCount ?? 1
@@ -218,11 +224,12 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       creationCost: costEstimate?.creationCost ?? 0,
       sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
       sofiaPercentFee: costEstimate?.sofiaPercentFee ?? 0,
+      contextTripleCost: costEstimate?.contextTripleCost ?? 0,
       totalFees: costEstimate?.totalFees ?? 0,
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, activeCount, removedIndices])
+  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, activeCount, removedIndices, triplets])
 
   const handleSubmit = async () => {
     try {
@@ -433,6 +440,17 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                           >
                             {badge.label}
                           </span>
+                          {triplet.interestContext && TOPIC_LABELS[triplet.interestContext] && (
+                            <>
+                              <span className="weight-modal-cert-dot">·</span>
+                              <span
+                                className="weight-modal-context-badge"
+                                style={{ color: TOPIC_COLORS[triplet.interestContext] || "#888" }}
+                              >
+                                {TOPIC_LABELS[triplet.interestContext]}
+                              </span>
+                            </>
+                          )}
                         </span>
                       )
                       if (isVotePredicate) {
@@ -585,6 +603,12 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                     <div className="weight-modal-cost-row weight-modal-cost-sub">
                       <span>Intuition fee (creation only)</span>
                       <span>{formatTrust(breakdown.creationCost)} TRUST</span>
+                    </div>
+                  )}
+                  {breakdown.contextTripleCost > 0 && (
+                    <div className="weight-modal-cost-row weight-modal-cost-sub">
+                      <span>Context (creation + deposit)</span>
+                      <span>{formatTrust(breakdown.contextTripleCost)} TRUST</span>
                     </div>
                   )}
                   <div className="weight-modal-cost-divider" />

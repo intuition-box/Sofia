@@ -26,7 +26,8 @@ export const useCart = () => {
       pageTitle: string | null,
       predicateName: string,
       intention: IntentionPurpose | null,
-      faviconUrl: string | null
+      faviconUrl: string | null,
+      interestContext?: string | null
     ) => {
       if (!walletAddress) return Promise.resolve(false)
       return cartService.addItem(
@@ -35,7 +36,8 @@ export const useCart = () => {
         pageTitle,
         predicateName,
         intention,
-        faviconUrl
+        faviconUrl,
+        interestContext
       )
     },
     [walletAddress]

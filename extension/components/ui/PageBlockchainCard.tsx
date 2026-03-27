@@ -87,15 +87,16 @@ const PageBlockchainCard = () => {
       trustCircleAddresses
     )
 
-  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted, certEntry } = useMemo(() => {
+  const { certifiedIntentions, alreadyTrusted, alreadyDistrusted, certEntry, certifiedContexts } = useMemo(() => {
     if (!currentUrl || certifications.size === 0)
-      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false, certEntry: null }
+      return { certifiedIntentions: [] as IntentionPurpose[], alreadyTrusted: false, alreadyDistrusted: false, certEntry: null, certifiedContexts: [] as string[] }
     const entry = getCertificationForUrl(certifications, currentUrl)
     return {
       certifiedIntentions: entry?.intentions ?? [],
       alreadyTrusted: entry?.trustPredicates?.includes("trusts") ?? false,
       alreadyDistrusted: entry?.trustPredicates?.includes("distrust") ?? false,
-      certEntry: entry
+      certEntry: entry,
+      certifiedContexts: entry?.interestContexts ?? []
     }
   }, [currentUrl, certifications])
 
@@ -141,7 +142,8 @@ const PageBlockchainCard = () => {
         pageTitle,
         predicateName,
         intention,
-        favicon
+        favicon,
+        selectedContext
       )
       if (added) {
         setCartToast("Added to cart")
@@ -149,7 +151,7 @@ const PageBlockchainCard = () => {
         setCartToast("Already in cart")
       }
     },
-    [currentUrl, pageTitle, cart]
+    [currentUrl, pageTitle, cart, selectedContext]
   )
 
   const handleAddTrustToCart = useCallback(
@@ -161,7 +163,8 @@ const PageBlockchainCard = () => {
         pageTitle,
         predicate,
         null,
-        favicon
+        favicon,
+        selectedContext
       )
       if (added) {
         setCartToast(`Added ${predicate === "trusts" ? "Trust" : "Distrust"} to cart`)
@@ -169,7 +172,7 @@ const PageBlockchainCard = () => {
         setCartToast("Already in cart")
       }
     },
-    [currentUrl, pageTitle, cart]
+    [currentUrl, pageTitle, cart, selectedContext]
   )
 
   // Auto-dismiss toast
@@ -245,6 +248,7 @@ const PageBlockchainCard = () => {
               selectedContext={selectedContext}
               onSelectContext={setSelectedContext}
               disabled={modal.intentionState.loading}
+              certifiedContexts={certifiedContexts}
             />
           )}
 

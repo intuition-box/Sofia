@@ -77,7 +77,9 @@ export const PREDICATE_IDS = {
   TOP_TRACK: "0x504301d33841aaebbdc1300d1e4ca8db3eb8763078a4d38addb7176e653aac5e",
   // Note: CREATED_PLAYLIST doesn't exist on-chain yet (created dynamically)
   // Identity predicate (Discord "I am username", Twitter "I am username")
-  AM: "0x31881ce93b0051a6a02c7e4e344caa1ea518a37b92288f3f3f06c12cf7b9a4e4"
+  AM: "0x31881ce93b0051a6a02c7e4e344caa1ea518a37b92288f3f3f06c12cf7b9a4e4",
+  // Interest context predicate (nested triples - certification "in context of" topic)
+  IN_CONTEXT_OF: ""
 } as const
 
 // Subject IDs (Mainnet) - Verified via GraphQL queries
@@ -111,7 +113,9 @@ export const PREDICATE_NAMES = {
   TOP_TRACK: "top_track",
   CREATED_PLAYLIST: "created_playlist",  // No ID yet, created dynamically
   // Identity predicate (Discord "I am username", Twitter "I am username")
-  AM: "am"
+  AM: "am",
+  // Interest context predicate
+  IN_CONTEXT_OF: "in context of"
 } as const
 
 // Minimum stake for intention certification (0.1 TRUST = 1e17 wei)

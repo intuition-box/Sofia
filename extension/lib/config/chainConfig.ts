@@ -17,7 +17,8 @@ const logger = createServiceLogger('ChainConfig')
 const network = process.env.PLASMO_PUBLIC_NETWORK || 'testnet'
 
 // Select config based on network
-let config: typeof devConfig
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let config: any
 let networkName: string
 
 if (network === 'local') {

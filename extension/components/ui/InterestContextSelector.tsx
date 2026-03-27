@@ -7,6 +7,7 @@ interface InterestContextSelectorProps {
   selectedContext: string | null
   onSelectContext: (slug: string | null) => void
   disabled?: boolean
+  certifiedContexts?: string[]
 }
 
 export const InterestContextSelector = memo(({
@@ -14,6 +15,7 @@ export const InterestContextSelector = memo(({
   selectedContext,
   onSelectContext,
   disabled = false,
+  certifiedContexts = [],
 }: InterestContextSelectorProps) => {
   if (interests.length === 0) return null
 
@@ -28,17 +30,19 @@ export const InterestContextSelector = memo(({
       <div className="interest-context__buttons">
         {interests.map(({ topicSlug, label, color }) => {
           const isSelected = selectedContext === topicSlug
+          const isCertified = certifiedContexts.includes(topicSlug)
+          const isActive = isSelected || isCertified
           return (
             <button
               key={topicSlug}
-              className={`interest-context__btn ${isSelected ? "interest-context__btn--selected" : ""}`}
+              className={`interest-context__btn ${isSelected ? "interest-context__btn--selected" : ""} ${isCertified ? "interest-context__btn--certified" : ""}`}
               onClick={() => handleClick(topicSlug)}
               disabled={disabled}
-              style={isSelected ? {
+              style={isActive ? {
                 borderColor: color,
                 color,
-                backgroundColor: `${color}20`,
-                boxShadow: `0 0 12px ${color}30`,
+                backgroundColor: `${color}${isCertified ? '25' : '20'}`,
+                boxShadow: isSelected ? `0 0 12px ${color}30` : undefined,
               } : undefined}
             >
               {label}
