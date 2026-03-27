@@ -39,7 +39,6 @@ export type { TxEventType, TxEvent } from './TxEventBus'
 
 // Page & Session
 export { PageDataService, pageDataService } from './PageDataService'
-export { PulseService, pulseService } from './PulseService'
 export { SessionTrackerService, sessionTracker } from './SessionTracker'
 export type { TrackedUrl, DomainCluster } from './SessionTracker'
 
@@ -50,10 +49,6 @@ export type { AgentIds } from './UserSessionManager'
 // Storage
 export { TripletStorageService, tripletStorageService } from './TripletStorageService'
 
-// MCP & Interest Analysis
-export { MCPServiceClass, mcpService } from './MCPService'
-export { InterestAnalysisServiceClass, interestAnalysisService } from './InterestAnalysisService'
-export type { CachedInterestData } from './InterestAnalysisService'
 
 // Discovery & Certifications
 export { DiscoveryScoreServiceClass, discoveryScoreService } from './DiscoveryScoreService'

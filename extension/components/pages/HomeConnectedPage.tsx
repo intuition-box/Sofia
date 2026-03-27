@@ -5,16 +5,12 @@ import CircularMenu from '../ui/orbanimation/CircularMenu'
 import PageBlockchainCard from '../ui/PageBlockchainCard'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import '../styles/HomeConnectedPage.css'
-import { Storage } from "@plasmohq/storage"
 import { createHookLogger } from '../../lib/utils'
 
 const logger = createHookLogger('HomeConnectedPage')
 
-const storage = new Storage()
-
 const HomeConnectedPage = () => {
   const [showMenu, setShowMenu] = useState(false)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const { navigateTo } = useRouter()
 
@@ -26,34 +22,14 @@ const HomeConnectedPage = () => {
     setShowMenu(false)
   }
 
-  const handleStartAnalysis = () => {
-    setIsAnalyzing(true)
-    setShowMenu(false)
-  }
-
   const handleStartImport = () => {
     setIsImporting(true)
     setShowMenu(false)
   }
 
-  const handleChatSubmit = async (message: string) => {
-    logger.debug('handleChatSubmit called', { message })
-    if (message.trim()) {
-      await storage.set("pendingChatInput", message)
-      logger.debug('Message saved to storage', { message })
-      navigateTo('chat')
-    }
-  }
-
-  // Listen for pulse analysis and theme extraction completion via Chrome runtime messages
+  // Listen for theme extraction completion via Chrome runtime messages
   useEffect(() => {
     const handleMessage = (message: any) => {
-      if (message.type === 'PULSE_ANALYSIS_COMPLETE') {
-        logger.info('Pulse analysis completed, redirecting')
-        setIsAnalyzing(false)
-        localStorage.setItem('targetTab', 'Pulse')
-        navigateTo('Sofia')
-      }
       if (message.type === 'THEME_EXTRACTION_COMPLETE') {
         logger.info('Theme extraction completed, redirecting to Echoes')
         setIsImporting(false)
@@ -72,14 +48,10 @@ const HomeConnectedPage = () => {
   return (
     <>
       <FullScreenLoader
-        isVisible={isAnalyzing}
-        message="Analyzing your browsing session..."
-      />
-      <FullScreenLoader
         isVisible={isImporting}
         message="Importing and analyzing your bookmarks..."
       />
-      {showMenu && !isAnalyzing && !isImporting && (
+      {showMenu && !isImporting && (
         <div
           className="page-blur-overlay"
           onClick={handleBackgroundClick}
@@ -114,10 +86,8 @@ const HomeConnectedPage = () => {
           }}
         >
           <PulseAnimation
-            size={120}
             onToggleMenu={handleOrbClick}
             showMenu={showMenu}
-            onChatSubmit={handleChatSubmit}
           />
           <CircularMenu
             isVisible={showMenu}
@@ -125,7 +95,6 @@ const HomeConnectedPage = () => {
               logger.debug('Menu item clicked', { item })
               setShowMenu(false)
             }}
-            onStartAnalysis={handleStartAnalysis}
             onStartImport={handleStartImport}
           />
         </div>

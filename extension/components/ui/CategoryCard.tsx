@@ -5,7 +5,6 @@
  */
 
 import type { IntentionCategory } from '../../types/intentionCategories'
-import '../styles/InterestTab.css'
 import '../styles/BookmarkStyles.css'
 
 interface CategoryCardProps {

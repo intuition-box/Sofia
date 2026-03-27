@@ -1,12 +1,11 @@
 /**
  * Agent Router - Routes messages to Mastra agents via HTTP
- * All agents (SofIA, ThemeExtractor, Pulse, Recommendation, ChatBot) use Mastra HTTP
+ * All agents (SofIA, ThemeExtractor, Recommendation) use Mastra HTTP
  */
 
 import { sofiaDB, STORES } from "../lib/database"
 import {
   sendThemeExtractionToMastra,
-  sendPulseToMastra,
   sendRecommendationToMastra,
   sendChatbotToMastra
 } from "./mastraClient"
@@ -85,7 +84,7 @@ export async function sendRecommendationRequest(walletData: any): Promise<any> {
  * @param agentType - Which agent to send to
  * @param text - Message text to send
  */
-export async function sendMessage(agentType: 'CHATBOT' | 'THEMEEXTRACTOR' | 'PULSEAGENT' | 'RECOMMENDATION', text: string): Promise<any> {
+export async function sendMessage(agentType: 'CHATBOT' | 'THEMEEXTRACTOR' | 'RECOMMENDATION', text: string): Promise<any> {
   switch (agentType) {
     case 'CHATBOT':
       // ChatBot uses Mastra HTTP with MCP tools
@@ -149,37 +148,6 @@ export async function sendMessage(agentType: 'CHATBOT' | 'THEMEEXTRACTOR' | 'PUL
         return []
       }
 
-    case 'PULSEAGENT':
-      // PulseAgent uses Mastra HTTP
-      logger.info('[PULSEAGENT] Sending to Mastra')
-      try {
-        const tabs = JSON.parse(text)
-        const result = await sendPulseToMastra(tabs)
-
-        // Store pulse analysis and notify UI
-        // Wrap themes in expected format for PulseTab parsing
-        const themesData = Array.isArray(result) ? { themes: result } : result
-        const pulseRecord = {
-          messageId: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          content: { text: JSON.stringify(themesData) },
-          timestamp: Date.now(),
-          type: 'pulse_analysis'
-        }
-        await sofiaDB.put(STORES.TRIPLETS_DATA, pulseRecord)
-        logger.info('[PulseAgent] Pulse analysis stored', { themes: themesData.themes?.length || 0 })
-
-        try {
-          chrome.runtime.sendMessage({ type: "PULSE_ANALYSIS_COMPLETE" })
-        } catch (e) {
-          logger.warn('[PulseAgent] Could not notify UI', e)
-        }
-
-        return result
-      } catch (e) {
-        logger.error('[PULSEAGENT] Failed to parse tabs', e)
-        return await sendPulseToMastra([])
-      }
-
     case 'RECOMMENDATION':
       // Recommendation uses Mastra HTTP
       logger.info('[RECOMMENDATION] Sending to Mastra')
@@ -195,3 +163,4 @@ export async function sendMessage(agentType: 'CHATBOT' | 'THEMEEXTRACTOR' | 'PUL
       throw new Error(`Unknown agent type: ${agentType}`)
   }
 }
+

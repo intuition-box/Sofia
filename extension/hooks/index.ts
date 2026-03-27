@@ -94,7 +94,6 @@ export { useUserSignals } from './useUserSignals'
 
 // Recommendations & Interest
 export { useRecommendations } from './useRecommendations'
-export { default as useInterestAnalysis } from './useInterestAnalysis'
 export { useInterestAttention } from './useInterestAttention'
 
 // Debate

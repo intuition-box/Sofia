@@ -9,7 +9,6 @@ import { getAddress } from 'viem'
 import { useSocialVerifier } from '../../../hooks'
 import { createHookLogger } from '../../../lib/utils/logger'
 import '../../styles/AccountTab.css'
-import '../../styles/InterestTab.css'
 
 const logger = createHookLogger('SocialsTab')
 

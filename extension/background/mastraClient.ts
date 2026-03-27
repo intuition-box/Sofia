@@ -59,25 +59,6 @@ export async function sendThemeExtractionToMastra(urls: string[]): Promise<any[]
 }
 
 /**
- * Send pulse analysis request to Mastra PulseAgent
- * @param tabs - Array of tab data [{url, title, keywords, description}]
- * @returns Pulse analysis themes
- */
-export async function sendPulseToMastra(tabs: any[]): Promise<any> {
-  const prompt = JSON.stringify(tabs)
-
-  logger.info(`Sending ${tabs.length} tabs to PulseAgent`)
-
-  try {
-    const result = await callMastraAgent('pulseAgent', prompt)
-    return result.themes || result
-  } catch (error) {
-    logger.error('PulseAgent error', error)
-    return { themes: [] }
-  }
-}
-
-/**
  * Send recommendation request to Mastra RecommendationAgent
  * @param walletData - Wallet data and user interests
  * @returns Recommendations
@@ -103,40 +84,37 @@ export async function sendRecommendationToMastra(walletData: any): Promise<any> 
  * @returns Agent response text
  */
 export async function sendChatbotToMastra(message: string): Promise<string> {
-  logger.info('Sending to ChatBot workflow', { message: message.substring(0, 100) });
+  logger.info('Sending to ChatBot workflow', { message: message.substring(0, 100) })
 
   try {
-    // Use start-async which creates and runs the workflow synchronously
     const response = await fetch(`${MASTRA_API_URL}/api/workflows/chatbotWorkflow/start-async`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ inputData: { message } })
-    });
+    })
 
     if (!response.ok) {
-      const errorText = await response.text();
-      logger.error('Workflow error', { status: response.status, errorText });
-      throw new Error(`Mastra workflow error: ${response.status} - ${errorText}`);
+      const errorText = await response.text()
+      logger.error('Workflow error', { status: response.status, errorText })
+      throw new Error(`Mastra workflow error: ${response.status} - ${errorText}`)
     }
 
-    const result = await response.json();
-    logger.debug('Workflow result', { result: JSON.stringify(result).substring(0, 500) });
+    const result = await response.json()
+    logger.debug('Workflow result', { result: JSON.stringify(result).substring(0, 500) })
 
-    // Extract response from workflow result
     const chatResponse = result?.response
       || result?.result?.response
       || result?.['format-final-response']?.response
-      || result?.steps?.['format-final-response']?.output?.response;
+      || result?.steps?.['format-final-response']?.output?.response
 
     if (chatResponse) {
-      return chatResponse;
+      return chatResponse
     }
 
-    // Fallback to raw result
-    return typeof result === 'string' ? result : JSON.stringify(result);
+    return typeof result === 'string' ? result : JSON.stringify(result)
   } catch (error) {
-    logger.error('ChatBot workflow error', error);
-    throw error;
+    logger.error('ChatBot workflow error', error)
+    throw error
   }
 }
 

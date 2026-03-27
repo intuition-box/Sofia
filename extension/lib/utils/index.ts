@@ -27,9 +27,6 @@ export { getWalletKey } from './storageKeyUtils'
 // Cache & Async
 export { refetchWithBackoff, debounce } from './refetchUtils'
 
-// Circle & Interest
-export { fetchMemberDomainActivity } from './circleInterestUtils'
-
 // Level System (Groups/Echoes)
 export { LEVEL_THRESHOLDS, calculateLevel, calculateLevelProgress } from './levelCalculation'
 

@@ -1,20 +1,19 @@
 /**
  * LevelUpService
  *
- * Handles group level-up with Gold cost and AI predicate generation.
+ * Handles group level-up with Gold cost.
  * Level-ups spend Gold (not XP) since they are local operations.
+ * Predicate is generated locally (no AI dependency).
  *
  * Related files:
  * - GoldService.ts: provides Gold balance and spending
  * - GroupManager.ts: manages group data in IndexedDB
- * - mastraClient.ts: generates AI predicates
  */
 
 import { createServiceLogger } from '../utils/logger'
 import { calculateDominantCertification, sumCertifications } from '../utils/certificationHelpers'
 import { groupManager, type CertificationType } from './GroupManager'
 import { goldService, getLevelUpCost } from './GoldService'
-import { generatePredicate, type PredicateInput } from '../../background/mastraClient'
 import { IntentionGroupsService } from '../database/indexedDB-methods'
 import type { IntentionGroupRecord } from '~types/database'
 import type { LevelUpResult, LevelUpPreview } from '~types/levelUp'
@@ -152,28 +151,12 @@ class LevelUpServiceClass {
       }
     }
 
-    // Enrich certifications with OAuth predicates for AI context
-    const enrichedCertifications: Record<string, number> = { ...certifications }
-    if (hasOAuthUrls) {
-      for (const url of group.urls) {
-        if (url.oauthPredicate && !url.removed) {
-          enrichedCertifications[url.oauthPredicate] = (enrichedCertifications[url.oauthPredicate] || 0) + 1
-        }
-      }
-    }
-
-    // Generate predicate via AI
-    const predicateInput: PredicateInput = {
-      domain: group.domain,
-      title: group.title,
-      level: newLevel,
-      certifications: enrichedCertifications,
-      previousPredicate: group.currentPredicate
-    }
-
-    logger.info('Calling AI for predicate')
-    const predicateResult = await generatePredicate(predicateInput)
-    logger.info('AI predicate generated', { predicate: predicateResult.predicate })
+    // Generate predicate locally (based on dominant certification)
+    const dominant = calculateDominantCertification(certifications)
+    const newPredicate = dominant
+      ? `${group.domain} — ${dominant.type} (lvl ${newLevel})`
+      : `${group.domain} — level ${newLevel}`
+    logger.info("Predicate generated locally", { predicate: newPredicate })
 
     // Spend Gold
     const spendResult = await goldService.spendGold(wallet, cost)
@@ -186,11 +169,11 @@ class LevelUpServiceClass {
     }
 
     // Update group
-    const reason = this.buildReason(enrichedCertifications, newLevel)
+    const reason = this.buildReason(certifications, newLevel)
     const updated = await groupManager.updateAfterLevelUp(
       actualGroupId,
       newLevel,
-      predicateResult.predicate,
+      newPredicate,
       reason,
       cost
     )
@@ -210,8 +193,8 @@ class LevelUpServiceClass {
       previousLevel: group.level,
       newLevel,
       previousPredicate: group.currentPredicate,
-      newPredicate: predicateResult.predicate,
-      predicateReason: predicateResult.reason,
+      newPredicate,
+      predicateReason: reason,
       goldSpent: cost
     }
   }
