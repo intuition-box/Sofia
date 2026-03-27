@@ -5,7 +5,7 @@ import { formatUnits, getAddress } from 'viem'
 
 import SofiaLoader from '../ui/SofiaLoader'
 import XpAnimation from '../ui/XpAnimation'
-import { useWalletFromStorage, useGoldSystem, useFeeEstimate, useGlobalStake, GS_FEE_DENOMINATOR } from "~/hooks"
+import { useWalletFromStorage, useGoldSystem, useFeeEstimate, useGlobalStake, GS_FEE_DENOMINATOR, usePlatformPool, PP_FEE_DENOMINATOR } from "~/hooks"
 import type { ModalTriplet } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
 import { createHookLogger } from "~/lib/utils"
@@ -84,6 +84,36 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     getUserPercentage()
   )
 
+  const { ppEnabled, getUserPercentage: getPPPercentage, setUserPercentage: setPPPercentage, detectPlatformFromUrl } = usePlatformPool()
+  // Per-platform percentage: slug → percentage (0-50000)
+  const [ppPerPlatform, setPpPerPlatform] = useState<Record<string, number>>({})
+
+  const setPpForSlug = (slug: string, pct: number) => {
+    setPpPerPlatform(prev => ({ ...prev, [slug]: pct }))
+  }
+
+  const getPpForSlug = (slug: string): number => {
+    return ppPerPlatform[slug] ?? getPPPercentage()
+  }
+
+  const detectedPlatforms = useMemo(() => {
+    const seen = new Set<string>()
+    const platforms: { slug: string; termId: string; label: string }[] = []
+    for (const t of triplets) {
+      const p = detectPlatformFromUrl(t.url)
+      if (p && !seen.has(p.termId)) {
+        seen.add(p.termId)
+        platforms.push(p)
+      }
+    }
+    return platforms
+  }, [triplets])
+
+  const hasPlatforms = detectedPlatforms.length > 0
+  const platformLabel = detectedPlatforms.length === 1
+    ? `${detectedPlatforms[0].label} Pool`
+    : `Platform Pool (${detectedPlatforms.length})`
+
   const { walletAddress } = useWalletFromStorage()
   const { totalGold } = useGoldSystem()
   const { estimate } = useFeeEstimate()
@@ -95,12 +125,13 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
     : 0
 
-  // Resync GS preference when modal opens
+  // Resync GS + PP preferences when modal opens
   useEffect(() => {
     if (isOpen) {
       setGsPercentage(getUserPercentage())
+      setPpPerPlatform({})
     }
-  }, [isOpen, getUserPercentage])
+  }, [isOpen, getUserPercentage, getPPPercentage])
 
   // Track removed triplets (by index) — kept in array for stable submit mapping
   const [removedIndices, setRemovedIndices] = useState<Set<number>>(new Set())
@@ -187,14 +218,21 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     const contextTripleCount = triplets.filter(
       (t, i) => !removedIndices.has(i) && t.interestContext
     ).length
-    const createOpts = { isNewTriple, newAtomCount, itemCount: activeCount, contextTripleCount }
+    // Average PP percentage across all detected platforms
+    const totalPPPercentage = hasPlatforms
+      ? detectedPlatforms.reduce((sum, p) => sum + getPpForSlug(p.slug), 0) / detectedPlatforms.length
+      : 0
+    const effectivePP = Math.round(totalPPPercentage)
+    const createOpts = { isNewTriple, newAtomCount, itemCount: activeCount, contextTripleCount, ppPercentage: effectivePP }
 
     if (totalTrust <= 0 || !gsEnabled) {
       const costEstimate = estimate?.(totalTrust, 0, createOpts) ?? null
+      const platformPoolAmount = (totalTrust * effectivePP) / PP_FEE_DENOMINATOR
       return {
         totalTrust,
-        signalAmount: totalTrust,
+        signalAmount: totalTrust - platformPoolAmount,
         poolAmount: 0,
+        platformPoolAmount,
         belowMinimum: false,
         creationCost: costEstimate?.creationCost ?? 0,
         sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
@@ -207,7 +245,8 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
     }
 
     const poolAmount = (totalTrust * gsPercentage) / GS_FEE_DENOMINATOR
-    const signalAmount = totalTrust - poolAmount
+    const platformPoolAmount = (totalTrust * effectivePP) / PP_FEE_DENOMINATOR
+    const signalAmount = totalTrust - poolAmount - platformPoolAmount
     const minDeposit = Number(gsConfig.minGlobalDeposit) / 1e18
     // Check belowMinimum per item, not on total — each triple is split individually
     const perItemPool = activeCount > 0 ? poolAmount / activeCount : poolAmount
@@ -220,6 +259,7 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalTrust,
       signalAmount,
       poolAmount,
+      platformPoolAmount,
       belowMinimum,
       creationCost: costEstimate?.creationCost ?? 0,
       sofiaFixedFee: costEstimate?.sofiaFixedFee ?? 0,
@@ -229,13 +269,18 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
       totalEstimate: costEstimate?.totalEstimate ?? totalTrust,
       depositCount: costEstimate?.depositCount ?? 1
     }
-  }, [selectedWeights, customValues, gsPercentage, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, activeCount, removedIndices, triplets])
+  }, [selectedWeights, customValues, gsPercentage, ppPerPlatform, gsEnabled, gsConfig, estimate, fixedDeposit, isNewTriple, newAtomCount, activeCount, removedIndices, triplets, hasPlatforms, detectedPlatforms])
 
   const handleSubmit = async () => {
     try {
-      // Persist GS preference before submitting
+      // Persist GS + PP preferences before submitting
       if (gsEnabled) {
         setUserPercentage(gsPercentage)
+      }
+      if (ppEnabled && hasPlatforms) {
+        // Persist the average as default for next time
+        const avgPP = detectedPlatforms.reduce((sum, p) => sum + getPpForSlug(p.slug), 0) / detectedPlatforms.length
+        setPPPercentage(Math.round(avgPP))
       }
 
       const minimumValue = weightOptions.find(opt => opt.id === 'minimum')!.value!
@@ -466,30 +511,9 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                     })()}
                   </div>
 
-                  {/* Amount Section — only in form state, hidden when fixedDeposit */}
+                  {/* Amount pills — only in form state, hidden when fixedDeposit */}
                   {isFormState && fixedDeposit == null && (
                     <div className="weight-modal-amount-row">
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.000001"
-                        value={
-                          selectedWeights[index] === 'custom'
-                            ? (customValues[index] || '')
-                            : (weightOptions.find(opt => opt.id === selectedWeights[index])?.value || '')
-                        }
-                        onChange={(e) => {
-                          handleWeightSelection(index, 'custom')
-                          handleCustomValueChange(index, e.target.value)
-                        }}
-                        onFocus={(e) => {
-                          handleWeightSelection(index, 'custom')
-                          e.target.select()
-                        }}
-                        className="weight-modal-amount-input"
-                        placeholder="0.01"
-                        disabled={isProcessing}
-                      />
                       <div className="weight-modal-pills">
                         {weightOptions.filter(opt => opt.id !== 'custom').map((option) => (
                           <button
@@ -504,6 +528,34 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                       </div>
                     </div>
                   )}
+
+                  {/* Per-item platform pool slider */}
+                  {isFormState && ppEnabled && (() => {
+                    const itemPlatform = detectPlatformFromUrl(triplet.url)
+                    if (!itemPlatform) return null
+                    const slugPct = getPpForSlug(itemPlatform.slug)
+                    return (
+                      <div className="pp-item-slider">
+                        <span className="pp-item-slider__label">
+                          {itemPlatform.label} Pool
+                        </span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={50000}
+                          step={1000}
+                          value={slugPct}
+                          onChange={(e) => setPpForSlug(itemPlatform.slug, Number(e.target.value))}
+                          className="pp-item-slider__input"
+                          style={{ '--pp-fill-pct': `${(slugPct / 50000) * 100}%` } as React.CSSProperties}
+                          disabled={isProcessing}
+                        />
+                        <span className="pp-item-slider__value">
+                          {slugPct / 1000}%
+                        </span>
+                      </div>
+                    )
+                  })()}
                 </div>
                 )
               })}
@@ -585,6 +637,12 @@ const WeightModal = ({ isOpen, triplets, isProcessing, transactionSuccess = fals
                     <span>{formatTrust(breakdown.poolAmount)} TRUST</span>
                   </div>
                 </>
+              )}
+              {hasPlatforms && breakdown.platformPoolAmount > 0 && (
+                <div className="weight-modal-cost-row weight-modal-cost-sub">
+                  <span>{platformLabel}</span>
+                  <span>{formatTrust(breakdown.platformPoolAmount)} TRUST</span>
+                </div>
               )}
               {breakdown.totalFees > 0 && (
                 <>

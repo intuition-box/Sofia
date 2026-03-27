@@ -73,6 +73,9 @@ export type { CartState } from './CartService'
 export { topicPositionsService } from './TopicPositionsService'
 export type { UserTopicPosition, TopicPositionsState } from './TopicPositionsService'
 
+// Platform Pool
+export { platformPoolService } from './PlatformPoolService'
+
 // Browsing Nudge
 export { BrowsingNudgeServiceClass, browsingNudgeService, NUDGE_URL_THRESHOLD } from './BrowsingNudgeService'
 

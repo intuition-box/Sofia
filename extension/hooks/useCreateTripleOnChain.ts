@@ -177,7 +177,8 @@ export const useCreateTripleOnChain = () => {
         customWeight: input.customWeight
       }))
 
-      return tripleService.createTriplesBatch(resolvedTriples, address)
+      const urls = inputs.map(i => i.objectData.url).filter(Boolean)
+      return tripleService.createTriplesBatch(resolvedTriples, address, urls)
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
