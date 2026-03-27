@@ -22,6 +22,7 @@ import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { SELECTED_CHAIN } from '../config/chainConfig'
 import { BlockchainService } from './blockchainService'
 import { globalStakeService } from './GlobalStakeService'
+import { platformPoolService } from './PlatformPoolService'
 import { createServiceLogger } from '../utils/logger'
 import { BLOCKCHAIN_CONFIG, ERROR_MESSAGES, PREDICATE_IDS, SUBJECT_IDS } from '../config/constants'
 import type { TripleOnChainResult, BatchTripleResult } from '../../types/blockchain'
@@ -197,6 +198,66 @@ class TripleServiceClass {
     })
 
     return true
+  }
+
+  /**
+   * Append platform pool entries to batch arrays if PP is enabled.
+   * Supports multiple platforms (one deposit per unique platform).
+   * Mutates the arrays in place. Returns true if any PP was appended.
+   */
+  private appendPlatformDeposits(
+    termIds: string[],
+    curveIds: bigint[],
+    assets: bigint[],
+    totalDepositAmount: bigint,
+    platformTermIds: string[]
+  ): boolean {
+    if (!platformPoolService.isEnabled() || platformTermIds.length === 0) return false
+
+    const split = platformPoolService.calculateSplit(totalDepositAmount)
+    if (!split) return false
+
+    // Split platform amount equally across unique platforms
+    const perPlatformAmount = split.platformAmount / BigInt(platformTermIds.length)
+    if (perPlatformAmount === 0n) return false
+
+    // Scale down existing assets proportionally
+    const ratio = split.mainAmount * 100000n / totalDepositAmount
+    for (let i = 0; i < assets.length; i++) {
+      assets[i] = (assets[i] * ratio) / 100000n
+    }
+
+    // Append one entry per unique platform
+    for (const termId of platformTermIds) {
+      termIds.push(termId)
+      curveIds.push(1n) // linear curve
+      assets.push(perPlatformAmount)
+    }
+
+    logger.debug('Platform pools appended', {
+      count: platformTermIds.length,
+      perPlatformAmount: perPlatformAmount.toString()
+    })
+
+    return true
+  }
+
+  /**
+   * Detect unique platforms from URLs.
+   * Returns deduplicated array of platform termIds.
+   */
+  private resolveUniquePlatformTermIds(urls?: string[]): string[] {
+    if (!urls?.length || !platformPoolService.isEnabled()) return []
+    const seen = new Set<string>()
+    const result: string[] = []
+    for (const url of urls) {
+      const platform = platformPoolService.detectPlatformFromUrl(url)
+      if (platform && !seen.has(platform.termId)) {
+        seen.add(platform.termId)
+        result.push(platform.termId)
+      }
+    }
+    return result
   }
 
   /**
@@ -434,7 +495,8 @@ class TripleServiceClass {
    */
   async createTriplesBatch(
     resolvedTriples: ResolvedTriple[],
-    address: string
+    address: string,
+    urls?: string[]
   ): Promise<BatchTripleResult> {
     try {
       if (!address) {
@@ -544,33 +606,46 @@ class TripleServiceClass {
             })
           }
 
-          // Global stake after batch create (separate TX, non-blocking)
+          // Global stake + platform pool after batch create (separate TX, non-blocking)
+          const postCreateTermIds: string[] = []
+          const postCreateCurveIds: bigint[] = []
+          const postCreateAssets: bigint[] = []
+
           if (batchSplit) {
+            const config = globalStakeService.getConfig()
+            postCreateTermIds.push(config.termId)
+            postCreateCurveIds.push(config.curveId)
+            postCreateAssets.push(batchSplit.globalAmount)
+          }
+
+          // Platform pool deposits after creation (one per unique platform)
+          const createPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
+          if (createPlatformTermIds.length > 0) {
+            const ppSplit = platformPoolService.calculateSplit(totalDeposit)
+            if (ppSplit) {
+              const perPlatform = ppSplit.platformAmount / BigInt(createPlatformTermIds.length)
+              for (const ptId of createPlatformTermIds) {
+                postCreateTermIds.push(ptId)
+                postCreateCurveIds.push(1n)
+                postCreateAssets.push(perPlatform)
+              }
+            }
+          }
+
+          if (postCreateTermIds.length > 0) {
             try {
-              const config = globalStakeService.getConfig()
-              const gsCost = await BlockchainService.getTotalDepositCost(batchSplit.globalAmount)
-
-              const gsHash = await walletClient.writeContract({
-                address: contractAddress,
-                abi: SofiaFeeProxyAbi,
-                functionName: 'deposit',
-                args: [
-                  address as Address,
-                  config.termId as Address,
-                  config.curveId,
-                  0n
-                ],
-                value: gsCost,
-                chain: SELECTED_CHAIN,
-                maxFeePerGas: BLOCKCHAIN_CONFIG.MAX_FEE_PER_GAS,
-                maxPriorityFeePerGas: BLOCKCHAIN_CONFIG.MAX_PRIORITY_FEE_PER_GAS,
-                account: address as Address
+              const postCreateHash = await this.executeDepositBatch(
+                address,
+                postCreateTermIds,
+                postCreateCurveIds,
+                postCreateAssets
+              )
+              await publicClient.waitForTransactionReceipt({ hash: postCreateHash })
+              logger.info('Post-create deposits succeeded (GS + platform pool)', {
+                entries: postCreateTermIds.length
               })
-
-              await publicClient.waitForTransactionReceipt({ hash: gsHash })
-              logger.info('Global stake deposit after batch create succeeded')
-            } catch (gsError) {
-              logger.warn('Global stake deposit after batch create failed (non-blocking)', gsError)
+            } catch (postError) {
+              logger.warn('Post-create deposits failed (non-blocking)', postError)
             }
           }
 
@@ -613,9 +688,13 @@ class TripleServiceClass {
               fallbackAssets.push(depositAmount)
             }
 
-            // Append global stake
+            // Append global stake + platform pool
             const totalFallbackDeposit = fallbackAssets.reduce((sum, a) => sum + a, 0n)
             this.appendGlobalStake(fallbackTermIds, fallbackCurveIds, fallbackAssets, totalFallbackDeposit)
+            const fallbackPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
+            if (fallbackPlatformTermIds.length > 0) {
+              this.appendPlatformDeposits(fallbackTermIds, fallbackCurveIds, fallbackAssets, totalFallbackDeposit, fallbackPlatformTermIds)
+            }
 
             // Single depositBatch for all fallback deposits
             const fallbackHash = await this.executeDepositBatch(
@@ -664,11 +743,15 @@ class TripleServiceClass {
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
 
-        // Append global stake
+        // Append global stake + platform pool
         const totalDeposit = assets.reduce((sum, a) => sum + a, 0n)
         this.appendGlobalStake(termIds, curveIds, assets, totalDeposit)
+        const depositPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
+        if (depositPlatformTermIds.length > 0) {
+          this.appendPlatformDeposits(termIds, curveIds, assets, totalDeposit, depositPlatformTermIds)
+        }
 
-        // Single depositBatch for all existing triple deposits + GS
+        // Single depositBatch for all existing triple deposits + GS + PP
         const depositHash = await this.executeDepositBatch(
           address,
           termIds,
