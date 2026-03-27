@@ -9,7 +9,6 @@ import screenshotInterest from '../../assets/interest.png'
 import screenshotCircle from '../../assets/circle.png'
 import screenshotStreak from '../../assets/streak.png'
 import screenshotCommunity from '../../assets/community.png'
-import screenshotChat from '../../assets/chat.png'
 import screenshotProfile from '../../assets/profil.png'
 import screenshotSelect from '../../assets/selectbookmark.png'
 import '../styles/OnboardingStyles.css'
@@ -84,12 +83,6 @@ const STEPS: TutorialStep[] = [
     description:
       'See what your trust circle is certifying in the Circle feed. Like or dislike their certifications to express your opinion and contribute to content curation.',
     screenshot: screenshotCircle
-  },
-  {
-    title: 'Chat with Sofia',
-    description:
-      'Ask Sofia anything! Your AI assistant can help you explore your browsing data, get personalized recommendations, and navigate the Intuition knowledge graph.',
-    screenshot: screenshotChat
   },
   // --- Bloc 5: Onboarding final ---
   {

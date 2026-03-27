@@ -1,6 +1,6 @@
 /**
  * QuestTrackingService
- * Centralized service for tracking quest-related events (streaks, Pulse usage)
+ * Centralized service for tracking quest-related events (streaks, certifications, votes)
  * Data is stored per-wallet to isolate user identities
  */
 
@@ -39,15 +39,6 @@ export class QuestTrackingService {
   // Returns YYYY-MM-DD in UTC
   private getToday(): string {
     return new Date().toISOString().split('T')[0]
-  }
-
-  // Returns the Monday of current week in UTC
-  private getMondayOfWeek(): string {
-    const now = new Date()
-    const day = now.getUTCDay()
-    const diff = now.getUTCDate() - day + (day === 0 ? -6 : 1)
-    const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), diff))
-    return monday.toISOString().split('T')[0]
   }
 
   // Called after each successful publish
@@ -189,59 +180,6 @@ export class QuestTrackingService {
     return result[dailyCountKey] || 0
   }
 
-  // ── Pulse tracking ──
-
-  async recordPulseLaunch(): Promise<void> {
-    const walletAddress = await this.getWalletAddress()
-    if (!walletAddress) {
-      logger.warn('No wallet connected, cannot record pulse launch')
-      return
-    }
-
-    await this.resetWeeklyIfNeeded(walletAddress)
-
-    const pulseLaunchesKey = this.getStorageKey('pulse_launches', walletAddress)
-    const weeklyPulseUsesKey = this.getStorageKey('weekly_pulse_uses', walletAddress)
-
-    const result = await chrome.storage.local.get([pulseLaunchesKey, weeklyPulseUsesKey])
-    const pulse_launches = result[pulseLaunchesKey] || 0
-    const weekly_pulse_uses = result[weeklyPulseUsesKey] || 0
-
-    await chrome.storage.local.set({
-      [pulseLaunchesKey]: pulse_launches + 1,
-      [weeklyPulseUsesKey]: weekly_pulse_uses + 1
-    })
-  }
-
-  async getPulseStats(): Promise<{ total: number; weekly: number }> {
-    const walletAddress = await this.getWalletAddress()
-    if (!walletAddress) return { total: 0, weekly: 0 }
-
-    await this.resetWeeklyIfNeeded(walletAddress)
-
-    const pulseLaunchesKey = this.getStorageKey('pulse_launches', walletAddress)
-    const weeklyPulseUsesKey = this.getStorageKey('weekly_pulse_uses', walletAddress)
-
-    const result = await chrome.storage.local.get([pulseLaunchesKey, weeklyPulseUsesKey])
-    return {
-      total: result[pulseLaunchesKey] || 0,
-      weekly: result[weeklyPulseUsesKey] || 0
-    }
-  }
-
-  private async resetWeeklyIfNeeded(walletAddress: string): Promise<void> {
-    const monday = this.getMondayOfWeek()
-    const weeklyPulseStartKey = this.getStorageKey('weekly_pulse_start', walletAddress)
-    const weeklyPulseUsesKey = this.getStorageKey('weekly_pulse_uses', walletAddress)
-
-    const result = await chrome.storage.local.get(weeklyPulseStartKey)
-    if (result[weeklyPulseStartKey] !== monday) {
-      await chrome.storage.local.set({
-        [weeklyPulseUsesKey]: 0,
-        [weeklyPulseStartKey]: monday
-      })
-    }
-  }
 }
 
 export const questTrackingService = QuestTrackingService.getInstance()

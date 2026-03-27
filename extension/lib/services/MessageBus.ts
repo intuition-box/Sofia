@@ -168,11 +168,6 @@ export class MessageBus {
     });
   }
 
-  // Analysis operations
-  public async startPulseAnalysis(): Promise<MessageResponse | null> {
-    return this.sendMessage({ type: 'START_PULSE_ANALYSIS' });
-  }
-
   // Tracking stats
   public async getTrackingStats(): Promise<MessageResponse | null> {
     return this.sendMessage({ type: 'GET_TRACKING_STATS' });
