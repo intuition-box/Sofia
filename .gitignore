@@ -44,6 +44,7 @@ yarn-error.log*
 components/SplineBackground.tsx
 
 .eliza
+.claude
 
 .env
 .internal_doc
@@ -53,6 +54,7 @@ task
 
 /docs
 .claude
+.github
 
 # Docker build artifacts (keep start-agents.sh)
 /docker-build/agent/
@@ -71,4 +73,4 @@ WORLD_ENTITY_MEMORY_LEAK_ANALYSIS.md
 #Version
 sofia-agent-latest.tar.gz
 
-
+/PLAN.md

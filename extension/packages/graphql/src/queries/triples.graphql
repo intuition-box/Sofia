@@ -1,0 +1,168 @@
+# Main pagination query
+query GetTriples(
+  $limit: Int
+  $offset: Int
+  $orderBy: [triples_order_by!]
+  $where: triples_bool_exp
+) {
+  total: triples_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+  triples(limit: $limit, offset: $offset, order_by: $orderBy, where: $where) {
+    ...TripleMetadata
+    ...TripleTxn
+    ...TripleVaultDetails
+    creator {
+      ...AccountMetadata
+    }
+  }
+}
+
+# Combined query with aggregates and nodes
+query GetTriplesWithAggregates(
+  $limit: Int
+  $offset: Int
+  $orderBy: [triples_order_by!]
+  $where: triples_bool_exp
+) {
+  triples_aggregate(
+    limit: $limit
+    offset: $offset
+    order_by: $orderBy
+    where: $where
+  ) {
+    aggregate {
+      count
+    }
+    nodes {
+      ...TripleMetadata
+      ...TripleTxn
+      ...TripleVaultDetails
+      creator {
+        ...AccountMetadata
+      }
+    }
+  }
+}
+
+query GetTriplesCount($where: triples_bool_exp) {
+  triples_aggregate(where: $where) {
+    total: aggregate {
+      count
+    }
+  }
+}
+
+query GetTriple($tripleId: String!) {
+  triple(term_id: $tripleId) {
+    ...TripleMetadata
+    ...TripleTxn
+    ...TripleVaultDetails
+    creator {
+      ...AccountMetadata
+    }
+  }
+}
+
+query GetAtomTriplesWithPositions($where: triples_bool_exp) {
+  triples_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}
+
+query GetTriplesWithPositions(
+  $limit: Int
+  $offset: Int
+  $orderBy: [triples_order_by!]
+  $where: triples_bool_exp
+  $address: String
+) {
+  total: triples_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+  triples(limit: $limit, offset: $offset, order_by: $orderBy, where: $where) {
+    term_id
+    counter_term_id
+    subject {
+      term_id
+      label
+      image
+    }
+    predicate {
+      term_id
+      label
+      image
+    }
+    object {
+      term_id
+      label
+      image
+    }
+    term {
+      vaults {
+        total_shares
+        position_count
+        positions(where: { account_id: { _ilike: $address } }) {
+          account {
+            id
+            label
+            image
+          }
+          shares
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        total_shares
+        position_count
+        positions(where: { account_id: { _ilike: $address } }) {
+          account {
+            id
+            label
+            image
+          }
+          shares
+        }
+      }
+    }
+  }
+}
+
+query FindTriples(
+  $where: triples_bool_exp = {}
+  $address: String!
+  $limit: Int = 100
+) {
+  triples(where: $where, limit: $limit) {
+    term_id
+    subject_id
+    predicate_id
+    object_id
+    positions(where: { account_id: { _eq: $address } }) {
+      shares
+    }
+  }
+}
+
+query FindNestedTriples(
+  $where: triples_bool_exp = {}
+  $limit: Int = 100
+) {
+  triples(where: $where, limit: $limit) {
+    term_id
+    subject_id
+    predicate_id
+    object_id
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
+      shares
+    }
+  }
+}

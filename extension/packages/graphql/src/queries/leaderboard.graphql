@@ -1,0 +1,78 @@
+query GetTopSofiaAccounts($proxy: String!, $since: timestamptz!) {
+  deposits(
+    where: {
+      sender_id: { _eq: $proxy }
+      assets_after_fees: { _neq: "0" }
+      created_at: { _gte: $since }
+    }
+    order_by: { created_at: desc }
+  ) {
+    receiver_id
+    receiver {
+      id
+      label
+      image
+      atom {
+        term_id
+      }
+    }
+  }
+}
+
+# Leaderboard: positions in the Daily Certification atom vault, ranked by shares
+query GetStreakLeaderboard(
+  $atomId: String!
+  $curveId: numeric!
+  $limit: Int!
+) {
+  vaults(where: { term_id: { _eq: $atomId }, curve_id: { _eq: $curveId } }) {
+    current_share_price
+    total_shares
+    position_count
+    positions(
+      limit: $limit
+      order_by: { shares: desc }
+    ) {
+      account_id
+      account {
+        id
+        label
+        image
+      }
+      shares
+    }
+  }
+}
+
+# Deposit days per user via proxy — used to calculate streak days
+query GetProxyDepositDays($senderId: String!, $termId: String!) {
+  deposits(
+    where: {
+      sender_id: { _eq: $senderId }
+      term_id: { _eq: $termId }
+      assets_after_fees: { _neq: "0" }
+    }
+    order_by: { created_at: desc }
+  ) {
+    receiver_id
+    created_at
+  }
+}
+
+# Verified wallets: accounts that have the has_tag triple for a given tag
+query GetVerifiedWallets($predicateId: String!, $tagLabel: String!) {
+  triples(where: {
+    predicate_id: { _eq: $predicateId }
+    object: { label: { _eq: $tagLabel } }
+  }) {
+    subject {
+      term_id
+      label
+      value {
+        account {
+          id
+        }
+      }
+    }
+  }
+}

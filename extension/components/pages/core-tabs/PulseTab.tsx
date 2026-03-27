@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
-import { elizaDataService } from '../../../lib/database/indexedDB-methods'
-import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
-import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
+import { createHookLogger } from '../../../lib/utils/logger'
+import { useWalletFromStorage, useEchoPublishing } from '../../../hooks'
+import { tripletsDataService, sofiaDB, STORES } from '../../../lib/database'
+import type { TripletsRecord } from '~types/database'
 import WeightModal from '../../modals/WeightModal'
 import SofiaLoader from '../../ui/SofiaLoader'
 import type { EchoTriplet } from '../../../types/blockchain'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
+import '../../styles/PulsePage.css'
 
 
 interface PulseTheme {
@@ -27,6 +28,12 @@ interface PulseAnalysis {
   themes: PulseTheme[]
 }
 
+const logger = createHookLogger('PulseTab')
+
+const getHostname = (url: string): string => {
+  try { return new URL(url).hostname } catch { return url }
+}
+
 const PulseTab = () => {
   const { walletAddress: address } = useWalletFromStorage()
   const [pulseAnalyses, setPulseAnalyses] = useState<PulseAnalysis[]>([])
@@ -35,13 +42,17 @@ const PulseTab = () => {
   const [expandedTriplets, setExpandedTriplets] = useState<Set<string>>(new Set())
   const [selectedSessions, setSelectedSessions] = useState<Set<number>>(new Set())
   const [selectedTriplets, setSelectedTriplets] = useState<Set<string>>(new Set()) // Format: "sessionIndex-tripletIndex"
-  
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+
   // Modal state for custom weighting
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [selectedTripletsForWeighting, setSelectedTripletsForWeighting] = useState<EchoTriplet[]>([])
   const [isCreating, setIsCreating] = useState(false)
   const [transactionSuccess, setTransactionSuccess] = useState(false)
   const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [transactionHash, setTransactionHash] = useState<string | undefined>(undefined)
+  const [createdCount, setCreatedCount] = useState(0)
+  const [depositCount, setDepositCount] = useState(0)
 
   // Create EchoTriplets from selected pulse triplets for publishing
   const createEchoTripletsFromSelection = (): EchoTriplet[] => {
@@ -97,7 +108,7 @@ const PulseTab = () => {
   })
 
   // Helper function to parse themes from message content
-  const parseThemesFromMessage = (msg: any): PulseTheme[] => {
+  const parseThemesFromMessage = (msg: TripletsRecord): PulseTheme[] => {
     try {
       const text = (typeof msg.content === 'object' && msg.content && 'text' in msg.content && typeof msg.content.text === 'string')
         ? msg.content.text
@@ -152,12 +163,12 @@ const PulseTab = () => {
           if (arrayEnd !== -1) {
             // Extract just {"themes":[...]}
             const cleanJson = `{"themes":${jsonStr.substring(arrayStart, arrayEnd + 1)}}`
-            console.log("🫀 [PulseTab] Cleaned JSON:", cleanJson.substring(0, 100) + "...")
+            logger.debug('Cleaned JSON', { preview: cleanJson.substring(0, 100) })
             try {
               const parsed = JSON.parse(cleanJson)
               return parsed.themes || []
             } catch (parseError) {
-              console.warn("🫀 [PulseTab] Cleaned JSON parse failed:", parseError)
+              logger.warn('Cleaned JSON parse failed', parseError)
             }
           }
         }
@@ -167,18 +178,19 @@ const PulseTab = () => {
       try {
         const parsed = JSON.parse(jsonStr)
         return parsed.themes || []
-      } catch {
+      } catch (fallbackError) {
+        logger.warn('Direct JSON parse failed', fallbackError)
         return []
       }
     } catch (error) {
-      console.warn("🫀 [PulseTab] Failed to parse message:", error)
+      logger.warn('Failed to parse message', error)
       return []
     }
   }
 
   // Helper function to update message themes in IndexedDB
   const updateMessageThemes = async (messageId: number, newThemes: PulseTheme[]) => {
-    const allMessages = await elizaDataService.getAllMessages()
+    const allMessages = await tripletsDataService.getAllMessages()
     const originalMessage = allMessages.find(msg => msg.id === messageId)
     if (!originalMessage || !originalMessage.content) return
 
@@ -194,72 +206,86 @@ const PulseTab = () => {
         if (jsonStr.startsWith('{{') && jsonStr.endsWith('}}')) {
           jsonStr = jsonStr.slice(1, -1)
         }
-        const parsed = JSON.parse(jsonStr)
-        parsed.themes = newThemes
-        const updatedText = text.replace(jsonMatch[0], JSON.stringify(parsed))
-        
-        const updatedMessage = {
-          ...originalMessage,
-          content: {
-            ...originalMessage.content,
-            text: updatedText
+        try {
+          const parsed = JSON.parse(jsonStr)
+          parsed.themes = newThemes
+          const updatedText = text.replace(jsonMatch[0], JSON.stringify(parsed))
+
+          const updatedMessage = {
+            ...originalMessage,
+            content: {
+              ...originalMessage.content,
+              text: updatedText
+            }
           }
+
+          await sofiaDB.put(STORES.TRIPLETS_DATA, updatedMessage)
+        } catch (parseError) {
+          logger.warn('Failed to parse/update message themes', parseError)
         }
-        
-        await sofiaDB.put(STORES.ELIZA_DATA, updatedMessage)
       }
     }
   }
 
   // Fetch pulse analyses from IndexedDB
-  useEffect(() => {
-    const fetchPulseAnalyses = async () => {
-      try {
-        console.log("🫀 [PulseTab] Fetching pulse analyses from IndexedDB...")
-        const messages = await elizaDataService.getAllMessages()
-        
-        console.log("🫀 [PulseTab] Total messages in IndexedDB:", messages.length)
-        console.log("🫀 [PulseTab] Message types distribution:", messages.reduce((acc, m) => {
-          acc[m.type] = (acc[m.type] || 0) + 1
-          return acc
-        }, {} as Record<string, number>))
-        
-        // Filter messages that are pulse analyses
-        const pulseMessages = messages.filter(msg => msg.type === 'pulse_analysis')
-        
-        console.log("🫀 [PulseTab] Found pulse messages:", pulseMessages.length)
-        console.log("🫀 [PulseTab] Pulse messages details:", pulseMessages)
-        
-        // Parse and group themes by message (analysis session)
-        const analysisGroups: PulseAnalysis[] = []
-        pulseMessages.forEach((msg, msgIndex) => {
-          console.log("🫀 [PulseTab] Parsing message:", msg.id, "content:", msg.content)
-          const themes = parseThemesFromMessage(msg)
-          console.log("🫀 [PulseTab] Parsed themes:", themes.length, themes)
-          if (themes.length > 0) {
-            analysisGroups.push({
-              msgIndex,
-              messageId: msg.id,
-              timestamp: msg.timestamp,
-              themes
-            })
-          }
-        })
-        
-        // Sort by timestamp (most recent first)
-        analysisGroups.sort((a, b) => b.timestamp - a.timestamp)
-        
-        console.log("🫀 [PulseTab] Created analysis groups:", analysisGroups.length)
-        setPulseAnalyses(analysisGroups)
-      } catch (error) {
-        console.error("🫀 [PulseTab] Error fetching pulse analyses:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const fetchPulseAnalyses = async () => {
+    try {
+      logger.info('Fetching pulse analyses from IndexedDB')
+      const messages = await tripletsDataService.getAllMessages()
 
+      logger.debug('Total messages in IndexedDB', { count: messages.length })
+      logger.debug('Message types distribution', messages.reduce((acc, m) => {
+        acc[m.type] = (acc[m.type] || 0) + 1
+        return acc
+      }, {} as Record<string, number>))
+
+      // Filter messages that are pulse analyses
+      const pulseMessages = messages.filter(msg => msg.type === 'pulse_analysis')
+
+      logger.debug('Found pulse messages', { count: pulseMessages.length })
+      logger.debug('Pulse messages details', pulseMessages)
+
+      // Parse and group themes by message (analysis session)
+      const analysisGroups: PulseAnalysis[] = []
+      pulseMessages.forEach((msg, msgIndex) => {
+        if (msg.id === undefined) return
+        logger.debug('Parsing message', { id: msg.id, content: msg.content })
+        const themes = parseThemesFromMessage(msg)
+        logger.debug('Parsed themes', { count: themes.length, themes })
+        if (themes.length > 0) {
+          analysisGroups.push({
+            msgIndex,
+            messageId: msg.id,
+            timestamp: msg.timestamp,
+            themes
+          })
+        }
+      })
+
+      // Sort by timestamp (most recent first)
+      analysisGroups.sort((a, b) => b.timestamp - a.timestamp)
+
+      logger.info('Created analysis groups', { count: analysisGroups.length })
+      setPulseAnalyses(analysisGroups)
+    } catch (error) {
+      logger.error('Error fetching pulse analyses', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchPulseAnalyses()
   }, [])
+
+  // Start pulse analysis with loading state
+  const startPulseAnalysis = () => {
+    setIsAnalyzing(true)
+    chrome.runtime.sendMessage({ type: 'START_PULSE_ANALYSIS' }, () => {
+      // Re-fetch analyses after completion
+      fetchPulseAnalyses().finally(() => setIsAnalyzing(false))
+    })
+  }
 
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleString()
@@ -277,18 +303,24 @@ const PulseTab = () => {
   // Handle modal weight submission - exact same logic as EchoesTab
   const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
     if (selectedTripletsForWeighting.length === 0) return
-    
+
     try {
       setIsCreating(true)
       setTransactionError(null)
       setTransactionSuccess(false)
-      
+      setTransactionHash(undefined)
+      setCreatedCount(0)
+      setDepositCount(0)
+
       // Use publishSelected with custom weights - same as EchoesTab
-      await publishSelected(customWeights)
-      
+      const result = await publishSelected(customWeights)
+
+      setCreatedCount(result.createdCount || 0)
+      setDepositCount(result.depositCount || 0)
+      setTransactionHash(result.txHash)
       setTransactionSuccess(true)
     } catch (error) {
-      console.error('Failed to publish triplets with custom weights:', error)
+      logger.error('Failed to publish triplets with custom weights', error)
       setTransactionError(error instanceof Error ? error.message : 'Failed to publish')
     } finally {
       setIsCreating(false)
@@ -301,6 +333,9 @@ const PulseTab = () => {
     setSelectedTripletsForWeighting([])
     setTransactionError(null)
     setTransactionSuccess(false)
+    setTransactionHash(undefined)
+    setCreatedCount(0)
+    setDepositCount(0)
     // Clear selection using the hook's clearSelection (same as EchoesTab)
     setSelectedTriplets(new Set())
   }
@@ -404,7 +439,7 @@ const PulseTab = () => {
       
       for (const sessionIndex of sortedIndices) {
         const analysisToDelete = pulseAnalyses[sessionIndex]
-        await elizaDataService.deleteMessageById(analysisToDelete.messageId)
+        await tripletsDataService.deleteMessageById(analysisToDelete.messageId)
       }
       
       // Remove from local state
@@ -416,9 +451,9 @@ const PulseTab = () => {
       setExpandedSessions(new Set())
       setExpandedTriplets(new Set())
       
-      console.log(`🫀 [PulseTab] Deleted ${sessionCount} research sessions`)
+      logger.info('Deleted research sessions', { count: sessionCount })
     } catch (error) {
-      console.error('🫀 [PulseTab] Error deleting selected sessions:', error)
+      logger.error('Error deleting selected sessions', error)
       alert('Failed to delete selected sessions. Please try again.')
     }
   }
@@ -429,7 +464,7 @@ const PulseTab = () => {
     
     try {
       // Group triplets by session to update messages efficiently
-      const sessionUpdates = new Map()
+      const sessionUpdates = new Map<number, Set<number>>()
       
       selectedTriplets.forEach(tripletId => {
         const [sessionIndex, themeIndex] = tripletId.split('-').map(Number)
@@ -447,7 +482,7 @@ const PulseTab = () => {
         
         if (filteredThemes.length === 0) {
           // Delete entire message if no themes left
-          await elizaDataService.deleteMessageById(analysis.messageId)
+          await tripletsDataService.deleteMessageById(analysis.messageId)
         } else {
           // Update message with filtered themes using helper function
           await updateMessageThemes(analysis.messageId, filteredThemes)
@@ -469,9 +504,9 @@ const PulseTab = () => {
       })
       setSelectedTriplets(new Set())
       
-      console.log(`🫀 [PulseTab] Removed ${selectedTriplets.size} triplets from IndexedDB`)
+      logger.info('Removed triplets from IndexedDB', { count: selectedTriplets.size })
     } catch (error) {
-      console.error('🫀 [PulseTab] Error deleting selected triplets:', error)
+      logger.error('Error deleting selected triplets', error)
       alert('Failed to remove selected triplets. Please try again.')
     }
   }
@@ -484,10 +519,10 @@ const PulseTab = () => {
   }, [pulseAnalyses])
 
 
-  if (loading) {
+  if (loading || isAnalyzing) {
     return (
-      <div className="triples-container">
-        <div className="loading-indicator">
+      <div className="pulse-container">
+        <div className="pulse-loading-indicator">
           <SofiaLoader size={150} />
         </div>
       </div>
@@ -496,9 +531,17 @@ const PulseTab = () => {
 
   if (pulseAnalyses.length === 0) {
     return (
-      <div className="triples-container">
-        <div className="loading-indicator">
-          <SofiaLoader size={150} />
+      <div className="pulse-container">
+        <div className="reveal-interest-cta" style={{ flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '40px 20px' }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', textAlign: 'center', maxWidth: '280px', lineHeight: '1.5' }}>
+            Analyze your open tabs to discover browsing patterns and extract semantic signals from your current session.
+          </p>
+          <button
+            className="btn iridescence-btn"
+            onClick={startPulseAnalysis}
+          >
+            Pulse Analysis
+          </button>
         </div>
       </div>
     )
@@ -506,14 +549,24 @@ const PulseTab = () => {
 
 
   return (
-    <div className="triples-container">
+    <div className="pulse-container">
+      {/* Pulse Analysis CTA */}
+      <div className="reveal-interest-cta">
+        <button
+          className="btn iridescence-btn"
+          onClick={startPulseAnalysis}
+        >
+          Pulse Analysis
+        </button>
+      </div>
+
       {/* Button to select all triplets when none selected */}
       {selectedTriplets.size === 0 && pulseAnalyses.length > 0 && (
-        <div className="selection-panel">
-          <div className="selection-info">
-            <label className="select-all-label">
-              <span onClick={toggleSelectAllTriplets} className="cursor-pointer">
-                Select All Triplets for Publishing
+        <div className="pulse-selection-panel">
+          <div className="pulse-selection-info">
+            <label className="pulse-select-all-label">
+              <span onClick={toggleSelectAllTriplets} className="pulse-cursor-pointer">
+                Select All Signals for Publishing
               </span>
             </label>
           </div>
@@ -522,34 +575,28 @@ const PulseTab = () => {
 
       {/* Panel for triplet selection and publishing */}
       {selectedTriplets.size > 0 && (
-        <div className="selection-panel">
-          <div className="selection-info">
-            <label className="select-all-label">
-              <span className="cursor-default">
-                {selectedTriplets.size} triplets selected for publishing
+        <div className="pulse-selection-panel">
+          <div className="pulse-selection-info">
+            <label className="pulse-select-all-label">
+              <span className="pulse-cursor-default">
+                {selectedTriplets.size} Signals selected for publishing
               </span>
             </label>
           </div>
-          
-          <div className="batch-actions">
-            <button 
-              className="batch-btn add-to-signals"
+
+          <div className="pulse-batch-actions">
+            <button
+              className="pulse-batch-btn pulse-add-to-signals"
               onClick={handleAmplifyClick}
               disabled={isCreating}
             >
               Amplify ({selectedTriplets.size})
             </button>
-            <button 
-              className="batch-btn delete-selected"
+            <button
+              className="pulse-batch-btn pulse-delete-selected"
               onClick={deleteSelectedTriplets}
             >
               Remove ({selectedTriplets.size})
-            </button>
-            <button 
-              className="batch-btn bg-gray-600"
-              onClick={toggleSelectAllTriplets}
-            >
-              {selectedTriplets.size > 0 ? `${selectedTriplets.size} selected` : 'Select All'}
             </button>
           </div>
         </div>
@@ -557,11 +604,11 @@ const PulseTab = () => {
 
       {/* Button to select all sessions when none selected */}
       {selectedSessions.size === 0 && pulseAnalyses.length > 0 && (
-        <div className={`selection-panel ${selectedTriplets.size > 0 ? 'margin-top-conditional' : 'margin-top-none'}`}>
-          <div className="selection-info">
-            <label className="select-all-label">
-              <span onClick={toggleSelectAllSessions} className="cursor-pointer">
-                Select All Sessions for Deletion
+        <div className={`pulse-selection-panel ${selectedTriplets.size > 0 ? 'pulse-margin-top-conditional' : 'pulse-margin-top-none'}`}>
+          <div className="pulse-selection-info">
+            <label className="pulse-select-all-label">
+              <span onClick={toggleSelectAllSessions} className="pulse-cursor-pointer">
+                Delete All
               </span>
             </label>
           </div>
@@ -570,123 +617,117 @@ const PulseTab = () => {
 
       {/* Panel for session selection and deletion */}
       {selectedSessions.size > 0 && (
-        <div className={`selection-panel ${selectedTriplets.size > 0 ? 'margin-top-conditional' : 'margin-top-none'}`}>
-          <div className="selection-info">
-            <label className="select-all-label">
-              <span className="cursor-default">
+        <div className={`pulse-selection-panel ${selectedTriplets.size > 0 ? 'pulse-margin-top-conditional' : 'pulse-margin-top-none'}`}>
+          <div className="pulse-selection-info">
+            <label className="pulse-select-all-label">
+              <span className="pulse-cursor-default">
                 {selectedSessions.size} sessions selected for deletion
               </span>
             </label>
           </div>
-          
-          <div className="batch-actions">
-            <button 
-              className="batch-btn delete-selected"
+
+          <div className="pulse-batch-actions">
+            <button
+              className="pulse-batch-btn pulse-delete-selected"
               onClick={deleteSelectedSessions}
             >
               Remove Sessions ({selectedSessions.size})
-            </button>
-            <button 
-              className="batch-btn bg-gray-600"
-              onClick={toggleSelectAllSessions}
-            >
-              {selectedSessions.size > 0 ? `${selectedSessions.size} selected` : 'Select All'}
             </button>
           </div>
         </div>
       )}
 
-      <div className="triples-list">
+      <div className="pulse-list">
         {pulseAnalyses.map((analysis, analysisIndex) => {
           const isSessionExpanded = expandedSessions.has(analysisIndex)
           const isSelected = selectedSessions.has(analysisIndex)
           
           return (
-            <div 
-              key={analysis.msgIndex} 
-              className={`echo-card ${isSelected ? 'border-blue' : 'border-default'}`}
+            <div
+              key={analysis.msgIndex}
+              className={`session-card ${isSelected ? 'session-selected' : ''}`}
             >
-              <div className={`triplet-item ${isSessionExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}>
-                <div className="analysis-header flex-space-between">
-                  <div className="analysis-session-content">
+              <div className={`pulse-triplet-item ${isSessionExpanded ? 'pulse-expanded' : ''}`}>
+                <div className="pulse-analysis-header pulse-flex-space-between">
+                  <div className="pulse-analysis-session-content">
                     <input
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleSessionSelection(analysisIndex)}
-                      className="session-checkbox"
+                      className="pulse-session-checkbox"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <div
-                      className="clickable session-expand-content"
+                      className="pulse-clickable pulse-session-expand-content"
                       onClick={() => toggleSessionExpansion(analysisIndex)}
                     >
                       <h4>
-                        <span className="session-arrow">
+                        <span className="pulse-session-arrow">
                           {isSessionExpanded ? '▼' : '▶'}
                         </span>
-                        Research Session #{analysisIndex + 1}
+                        Session #{analysisIndex + 1}
                       </h4>
-                      <div className="analysis-meta">
-                        <span className="analysis-time">{formatTimestamp(analysis.timestamp)}</span>
+                      <div className="pulse-analysis-meta">
+                        <span className="pulse-analysis-time">{formatTimestamp(analysis.timestamp)}</span>
                       </div>
                     </div>
                   </div>
               </div>
-              
+
               {isSessionExpanded && (
-                <div className="analysis-themes">
+                <div className="pulse-analysis-themes">
               {analysis.themes.map((theme, themeIndex) => {
                 const tripletId = `${analysisIndex}-${themeIndex}`
                 const isExpanded = expandedTriplets.has(tripletId)
                 const isSelected = selectedTriplets.has(tripletId)
                 
                 return (
-                  <div 
+                  <div
                     key={`${analysis.msgIndex}-${themeIndex}`}
-                    className={`echo-card triplet-card-pointer ${isSelected ? 'border-blue' : 'border-default'}`}
+                    className={`pulse-card pulse-card-pointer ${isSelected ? 'pulse-selected' : ''}`}
                     onClick={() => toggleTripletSelection(analysisIndex, themeIndex)}
                   >
-                    <div className={`triplet-item ${isExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}>
-                      <div className="echo-header">
+                    <div className={`pulse-triplet-item ${isExpanded ? 'pulse-expanded' : ''}`}>
+                      <div className="pulse-header">
                         <p
-                          className="triplet-text clickable"
+                          className="pulse-text pulse-clickable"
                           onClick={(e) => {
                             e.stopPropagation() // Prevent triplet selection
                             toggleTripletExpansion(analysisIndex, themeIndex)
                           }}
                         >
-                          <span className="subject">I</span>{' '}
-                          <span className="action">{theme.predicate}</span>{' '}
-                          <span className="object">{theme.object}</span>
+                          <span className="pulse-subject">I</span>{' '}
+                          <span className="pulse-action">{theme.predicate}</span>{' '}
+                          <span className="pulse-object">{theme.object}</span>
                         </p>
                       </div>
 
                       {isExpanded && (
-                        <div className="triplet-details">
-                          <div className="triplet-detail-section">
-                            <h4 className="triplet-detail-title">Pattern Name</h4>
-                            <p className="triplet-detail-name">{theme.name}</p>
+                        <div className="pulse-details">
+                          <div className="pulse-detail-section">
+                            <h4 className="pulse-detail-title">Pattern Name</h4>
+                            <p className="pulse-detail-name">{theme.name}</p>
                           </div>
-                          
-                          <div className="triplet-detail-section">
-                            <h4 className="triplet-detail-title">Keywords</h4>
-                            <div className="triplet-detail-description">
+
+                          <div className="pulse-detail-section">
+                            <h4 className="pulse-detail-title">Keywords</h4>
+                            <div className="pulse-detail-description">
                               {theme.keywords?.join(', ') || 'No keywords'}
                             </div>
                           </div>
-                          
+
                           {theme.urls && theme.urls.length > 0 && (
-                            <div className="triplet-detail-section">
-                              <h4 className="triplet-detail-title">Evidence URLs</h4>
+                            <div className="pulse-detail-section">
+                              <h4 className="pulse-detail-title">Link</h4>
                               {theme.urls.map((url: string, i: number) => (
-                                <a 
-                                  key={i} 
-                                  href={url} 
-                                  target="_blank" 
+                                <a
+                                  key={i}
+                                  href={url}
+                                  target="_blank"
                                   rel="noopener noreferrer"
-                                  className="triplet-detail-url"
+                                  className="pulse-detail-url"
                                 >
-                                  {new URL(url).hostname}
+                                  {getHostname(url)}
                                 </a>
                               ))}
                             </div>
@@ -712,6 +753,9 @@ const PulseTab = () => {
         isProcessing={isCreating}
         transactionSuccess={transactionSuccess}
         transactionError={transactionError}
+        transactionHash={transactionHash}
+        createdCount={createdCount}
+        depositCount={depositCount}
         onClose={handleWeightModalClose}
         onSubmit={handleWeightSubmit}
       />

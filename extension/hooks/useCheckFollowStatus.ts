@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWalletFromStorage } from './useWalletFromStorage'
-import { BlockchainService } from '../lib/services/blockchainService'
+import { BlockchainService } from '../lib/services'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../lib/config/constants'
 import { createHookLogger } from '../lib/utils/logger'
 
@@ -41,9 +41,42 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
         return
       }
 
-      // Validate that accountTermId is a bytes32 (66 chars) and not a wallet address (42 chars)
+      // accountTermId from Intuition API can be either:
+      // - bytes32 (66 chars): the actual termId hash
+      // - address (42 chars): for some atom types, term_id contains the vaultId instead
+      // For follow/trust check, we need the termId (bytes32)
+      // If we receive an address, we can't reliably check - skip for now
+      if (!accountTermId.startsWith('0x')) {
+        logger.warn('Invalid accountTermId - must start with 0x', {
+          accountTermId
+        })
+        setStatus({
+          isFollowing: false,
+          isTrusting: false,
+          loading: false,
+          error: 'Invalid account ID format'
+        })
+        return
+      }
+
+      // If it's an address (42 chars), we can't check follow status reliably
+      // because calculateTripleId expects termIds (bytes32), not vaultIds
+      if (accountTermId.length === 42) {
+        logger.warn('accountTermId is a vaultId (address), not a termId - cannot check follow status', {
+          accountTermId
+        })
+        setStatus({
+          isFollowing: false,
+          isTrusting: false,
+          loading: false,
+          error: null // No error, just can't check
+        })
+        return
+      }
+
+      // Validate it's a proper bytes32 (66 chars)
       if (accountTermId.length !== 66) {
-        logger.warn('Invalid accountTermId - expected bytes32 (66 chars) but got', {
+        logger.warn('Invalid accountTermId - expected bytes32 (66 chars) or address (42 chars)', {
           accountTermId,
           length: accountTermId.length
         })
@@ -51,7 +84,7 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
           isFollowing: false,
           isTrusting: false,
           loading: false,
-          error: 'Invalid account term ID'
+          error: 'Invalid account ID'
         })
         return
       }
@@ -78,16 +111,30 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
           accountTermId
         )
 
+        // Triple existence is global - we need to check if THIS user has shares
+        let userIsFollowing = false
+        let userIsTrusting = false
+
+        if (followCheck.exists && followCheck.tripleVaultId) {
+          const shares = await BlockchainService.getUserSharesInTriple(address, followCheck.tripleVaultId)
+          userIsFollowing = shares > 0n
+        }
+
+        if (trustCheck.exists && trustCheck.tripleVaultId) {
+          const shares = await BlockchainService.getUserSharesInTriple(address, trustCheck.tripleVaultId)
+          userIsTrusting = shares > 0n
+        }
+
         logger.debug('Status check complete', {
-          isFollowing: followCheck.exists,
-          isTrusting: trustCheck.exists,
+          isFollowing: userIsFollowing,
+          isTrusting: userIsTrusting,
           followTripleId: followCheck.tripleVaultId,
           trustTripleId: trustCheck.tripleVaultId
         })
 
         setStatus({
-          isFollowing: followCheck.exists,
-          isTrusting: trustCheck.exists,
+          isFollowing: userIsFollowing,
+          isTrusting: userIsTrusting,
           followTripleId: followCheck.tripleVaultId || undefined,
           trustTripleId: trustCheck.tripleVaultId || undefined,
           loading: false,
@@ -114,7 +161,18 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
   const refetch = async () => {
     if (!address || !accountTermId) return
 
-    // Validate term ID length
+    // Validate ID format
+    if (!accountTermId.startsWith('0x')) {
+      logger.warn('Invalid accountTermId in refetch', { accountTermId })
+      return
+    }
+
+    // Skip if it's an address (42 chars) instead of termId (66 chars)
+    if (accountTermId.length === 42) {
+      logger.warn('Cannot refetch status for vaultId (address)', { accountTermId })
+      return
+    }
+
     if (accountTermId.length !== 66) {
       logger.warn('Invalid accountTermId in refetch', {
         accountTermId,
@@ -138,9 +196,22 @@ export const useCheckFollowStatus = (accountTermId?: string) => {
         accountTermId
       )
 
+      let userIsFollowing = false
+      let userIsTrusting = false
+
+      if (followCheck.exists && followCheck.tripleVaultId) {
+        const shares = await BlockchainService.getUserSharesInTriple(address, followCheck.tripleVaultId)
+        userIsFollowing = shares > 0n
+      }
+
+      if (trustCheck.exists && trustCheck.tripleVaultId) {
+        const shares = await BlockchainService.getUserSharesInTriple(address, trustCheck.tripleVaultId)
+        userIsTrusting = shares > 0n
+      }
+
       setStatus({
-        isFollowing: followCheck.exists,
-        isTrusting: trustCheck.exists,
+        isFollowing: userIsFollowing,
+        isTrusting: userIsTrusting,
         followTripleId: followCheck.tripleVaultId || undefined,
         trustTripleId: trustCheck.tripleVaultId || undefined,
         loading: false,

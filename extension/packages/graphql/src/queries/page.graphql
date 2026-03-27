@@ -1,0 +1,127 @@
+# Page Blockchain Data Queries
+# Used by: usePageBlockchainData
+
+# Get atom IDs by URL hostname (with label + url for page-level filtering)
+query AtomIdsByURL($likeStr: String!) {
+  atoms(
+    limit: 2000
+    where: {
+      _or: [
+        { label: { _ilike: $likeStr } }
+        { value: { thing: { url: { _ilike: $likeStr } } } }
+      ]
+    }
+  ) {
+    term_id
+    label
+    value {
+      thing {
+        url
+      }
+    }
+  }
+}
+
+# Get atom details by term IDs (with vault data for position filtering)
+query AtomsByTermIds($atomIds: [String!]!) {
+  atoms(
+    where: {
+      term_id: { _in: $atomIds }
+    }
+  ) {
+    term_id
+    label
+    type
+    created_at
+    term {
+      vaults {
+        total_shares
+        total_assets
+        position_count
+      }
+    }
+  }
+}
+
+# Get total count of triplets for given atom IDs (only with positions > 0)
+query TriplesCountByAtomIds($atomIds: [String!]!) {
+  triples_aggregate(
+    where: {
+      _and: [
+        { _or: [
+          { subject: { term_id: { _in: $atomIds } } },
+          { predicate: { term_id: { _in: $atomIds } } },
+          { object: { term_id: { _in: $atomIds } } }
+        ]}
+        { positions: { shares: { _gt: "0" } } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}
+
+# Get triplets containing any of the given atoms (only with positions > 0)
+query TriplesByAtomIds($atomIds: [String!]!) {
+  triples(
+    limit: 100
+    where: {
+      _and: [
+        { _or: [
+          { subject: { term_id: { _in: $atomIds } } },
+          { predicate: { term_id: { _in: $atomIds } } },
+          { object: { term_id: { _in: $atomIds } } }
+        ]}
+        { positions: { shares: { _gt: "0" } } }
+      ]
+    }
+  ) {
+    term_id
+    created_at
+    subject { term_id label }
+    predicate { term_id label }
+    object { term_id label }
+    term {
+      vaults {
+        curve_id
+        position_count
+        total_shares
+        total_assets
+      }
+    }
+  }
+}
+
+# Get trust/distrust positions for a page (filtered by specific atom IDs)
+query TrustDistrustByPage($atomIds: [String!]!) {
+  trustTriples: triples(
+    where: {
+      predicate: { label: { _eq: "trusts" } }
+      object: { term_id: { _in: $atomIds } }
+      positions: { shares: { _gt: "0" } }
+    }
+  ) {
+    term_id
+    object { term_id }
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
+      shares
+    }
+  }
+  distrustTriples: triples(
+    where: {
+      predicate: { label: { _ilike: "distrust" } }
+      object: { term_id: { _in: $atomIds } }
+      positions: { shares: { _gt: "0" } }
+    }
+  ) {
+    term_id
+    object { term_id }
+    positions(where: { shares: { _gt: "0" } }) {
+      account_id
+      shares
+    }
+  }
+}

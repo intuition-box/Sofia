@@ -62,7 +62,18 @@ export const EXPLORER_URLS = {
 export const PREDICATE_IDS = {
   FOLLOW: "0x0000000000000000000000000000000000000000000000000000000000000001",
   TRUSTS: "0x0000000000000000000000000000000000000000000000000000000000000002",
-  DISTRUST: "0x0000000000000000000000000000000000000000000000000000000000000004"
+  DISTRUST: "0x0000000000000000000000000000000000000000000000000000000000000004",
+  HAS_TAG: "0x0000000000000000000000000000000000000000000000000000000000000005",
+  // Discovery/Intention predicates (will be created on first use)
+  VISITS_FOR_WORK: "",
+  VISITS_FOR_LEARNING: "",
+  VISITS_FOR_FUN: "",
+  VISITS_FOR_INSPIRATION: "",
+  VISITS_FOR_BUYING: "",
+  VISITS_FOR_MUSIC: "",
+  // Vote predicates (nested triples - like/dislike certifications)
+  LIKE: "",
+  DISLIKE: ""
 } as const
 
 // Subject IDs (use local mock values)
@@ -70,9 +81,56 @@ export const SUBJECT_IDS = {
   I: "0x0000000000000000000000000000000000000000000000000000000000000003"
 } as const
 
+// Bot Verifier Address (not used in local but needed for type compatibility)
+export const BOT_VERIFIER_ADDRESS = "0x0000000000000000000000000000000000000000" as const
+
 // Predicate Names (for display)
 export const PREDICATE_NAMES = {
   FOLLOW: "follow",
   TRUSTS: "trusts",
-  DISTRUST: "distrust"
+  DISTRUST: "distrust",
+  HAS_TAG: "has tag",
+  // Discovery/Intention predicates
+  VISITS_FOR_WORK: "visits for work",
+  VISITS_FOR_LEARNING: "visits for learning",
+  VISITS_FOR_FUN: "visits for fun",
+  VISITS_FOR_INSPIRATION: "visits for inspiration",
+  VISITS_FOR_BUYING: "visits for buying",
+  VISITS_FOR_MUSIC: "visits for music",
+  // Vote predicates
+  LIKE: "like",
+  DISLIKE: "dislike",
+  // OAuth predicates
+  MEMBER_OF: "member_of",
+  OWNER_OF: "owner_of",
+  TOP_ARTIST: "top_artist",
+  TOP_TRACK: "top_track",
+  CREATED_PLAYLIST: "created_playlist",
+  // Identity predicate (Discord "I am username", Twitter "I am username")
+  AM: "am"
 } as const
+
+// Minimum stake for intention certification (0.1 TRUST = 1e17 wei)
+export const INTENTION_MIN_STAKE = 100000000000000000n // 0.1 TRUST
+
+// Shared atom vault for daily streak deposits (not used in local)
+export const DAILY_CERTIFICATION_ATOM_ID = "" as const
+
+// Fixed stake amount for daily streak deposit (1 TRUST)
+export const DAILY_STREAK_STAKE = 1000000000000000000n // 1 TRUST
+
+// Shared atom vault for daily vote deposits (not used in local)
+export const DAILY_VOTE_ATOM_ID = "" as const
+export const DAILY_VOTE_STAKE = 1000000000000000000n // 1 TRUST
+
+// Global Stake configuration (disabled in local)
+export const GLOBAL_STAKE = {
+  ENABLED: false,
+  PERCENTAGE: 20000, // 20% (FEE_DENOMINATOR=100000)
+  CURVE_ID: 1n,
+  TERM_ID: "",
+  SEASON_NAME: "Beta",
+  MIN_GLOBAL_DEPOSIT: 10000000000000000n // 0.01 TRUST
+} as const
+
+export const SEASON_HISTORY = [] as const

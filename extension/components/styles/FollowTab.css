@@ -1,5 +1,5 @@
 .follow-tab {
-  padding: 20px;
+  padding: var(--spacing-xl);
   padding-bottom: 100px;
   max-width: 100%;
   position: relative;
@@ -10,20 +10,22 @@
 /* Filter buttons */
 .filter-buttons {
   display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+  margin-top: 5px;
 }
 
 .filter-btn {
-  padding: 8px 20px;
-  background: #1a1a1a;
-  color: #9ca3af;
-  border: 1px solid #2a2a2a;
-  border-radius: 20px;
-  font-size: 14px;
+  padding: var(--spacing-sm) var(--spacing-xl);
+  background: rgba(26, 26, 26, 0.95);
+  color: var(--color-text-very-muted);
+  border: 1px solid rgba(42, 42, 42, 1);
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-base);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .filter-btn:hover {
@@ -32,31 +34,43 @@
 }
 
 .filter-btn.active {
-  background: #2a2a2a;
-  color: #fff;
+  background: rgba(42, 42, 42, 1);
+  color: var(--color-text-secondary);
   border-color: #3a3a3a;
+}
+
+.filter-btn.trustactive {
+  background: var(--color-gradient-button);
+  animation: orb-gradient 20s ease infinite;
+  background-size: 200% 200%;
+  padding: var(--spacing-sm) var(--spacing-xl);
+  color: var(--color-text-dark);
+  border-color: #ffb01c;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
 /* Title */
 .follow-title {
-  color: #fff;
-  font-size: 16px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
   font-weight: 400;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
 }
 
 /* Search and Sort */
 .search-container {
   position: relative;
   width: 100%;
-  margin-bottom: 20px;
-  z-index: 100;
+  margin-bottom: var(--spacing-xl);
+  z-index: var(--z-header);
   min-height: 50px;
 }
 
 .search-sort-container {
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .search-sort-container .input {
@@ -68,16 +82,15 @@
   position: relative;
   width: 100%;
   background: transparent;
-  margin-top: 8px;
+  margin-top: var(--spacing-sm);
   max-height: 500px;
   overflow-y: auto;
   overflow-x: hidden;
-  z-index: 1000;
+  z-index: var(--z-modal);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-bottom: 8px;
-
+  gap: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
 }
 
 /* Custom scrollbar for search results */
@@ -90,7 +103,7 @@
 }
 
 .search-results-dropdown::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: rgba(42, 42, 42, 1);
   border-radius: 3px;
 }
 
@@ -102,11 +115,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: var(--spacing-lg);
   background: #0a0a0a;
-  border: 1px solid #1a1a1a;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border: 1px solid rgba(26, 26, 26, 1);
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
 }
 
 .search-result-card:hover {
@@ -116,10 +129,10 @@
 }
 
 .search-results-more {
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   text-align: center;
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   background-color: rgba(255, 255, 255, 0.02);
 }
 
@@ -146,30 +159,33 @@
 
 .sort-select option {
   background: #0a0a0a;
-  color: #fff;
+  color: var(--color-text-secondary);
 }
 
 /* Accounts list */
 .followed-accounts {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .followed-account-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  backdrop-filter: blur(20px);
-  border: 1px solid #1a1a1a;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  padding: var(--spacing-lg);
+  backdrop-filter: var(--backdrop-blur-heavy);
+  -webkit-backdrop-filter: var(--backdrop-blur-heavy);
+  border: 1px solid rgba(26, 26, 26, 1);
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
 }
 
 .followed-account-card:hover {
   background: #0f0f0f;
-  border-color: #2a2a2a;
+  border-color: rgba(42, 42, 42, 1);
 }
 
 .account-link {
@@ -181,22 +197,22 @@
 }
 
 .account-link:hover .account-label {
-  color: #c7866c;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
 .account-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-lg);
   flex: 1;
   min-width: 0;
 }
 
 .account-number {
-  color: #6b7280;
-  font-size: 14px;
-  min-width: 20px;
+  color: var(--color-text-very-muted);
+  font-size: var(--font-size-base);
+  min-width: var(--spacing-xl);
   text-align: right;
   flex-shrink: 0;
 }
@@ -204,12 +220,12 @@
 .account-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -217,7 +233,7 @@
 .account-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
   min-width: 0;
   flex: 1;
 }
@@ -225,14 +241,14 @@
 .search-account-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
   min-width: 0;
   flex: 1;
 }
 
 .account-label {
-  color: #fff;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
   font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
@@ -242,12 +258,12 @@
 .account-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-lg);
   flex-shrink: 0;
 }
 
 .trust-amount {
-  color: #6b7280;
+  color: var(--color-text-very-muted);
   font-size: 13px;
   display: flex;
   align-items: center;
@@ -259,37 +275,37 @@
 .error-state,
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
+  padding: var(--spacing-4xl) var(--spacing-xl);
 }
 
 .loading-state p {
-  color: #6b7280;
-  font-size: 14px;
+  color: var(--color-text-very-muted);
+  font-size: var(--font-size-base);
 }
 
 .error-state h3 {
-  color: #dc2626;
-  margin-bottom: 8px;
-  font-size: 18px;
+  color: var(--color-error);
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-xl);
   font-weight: 600;
 }
 
 .error-state p {
-  color: #6b7280;
-  margin-bottom: 16px;
-  font-size: 14px;
+  color: var(--color-text-very-muted);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-base);
 }
 
 .retry-button {
-  padding: 8px 16px;
-  background: #3b82f6;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-info);
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .retry-button:hover {
@@ -297,15 +313,16 @@
 }
 
 .empty-state h3 {
-  color: #6b7280;
-  margin-bottom: 8px;
-  font-size: 18px;
+  color: var(--color-text-very-muted);
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-xl);
   font-weight: 500;
 }
 
 .empty-state p {
-  color: #9ca3af;
-  font-size: 14px;
+  color: var(--color-text-very-muted);
+  font-size: var(--font-size-base);
+  line-height: 1px;
 }
 
 /* Responsive design */
@@ -321,7 +338,7 @@
 
 @media (max-width: 480px) {
   .follow-tab {
-    padding: 16px;
+    padding: var(--spacing-lg);
   }
 
   .filter-buttons {
@@ -333,18 +350,18 @@
   }
 
   .account-left {
-    gap: 12px;
+    gap: var(--spacing-md);
   }
 
   .account-number {
     min-width: 15px;
-    font-size: 12px;
+    font-size: var(--font-size-sm);
   }
 
   .account-avatar {
     width: 32px;
     height: 32px;
-    font-size: 12px;
+    font-size: var(--font-size-sm);
   }
 
   .account-label {
@@ -353,6 +370,49 @@
   }
 
   .trust-amount {
-    font-size: 12px;
+    font-size: var(--font-size-sm);
   }
+}
+
+/* Trust button in following section */
+.follow-tab .trust-page-button.salmon-gradient-button {
+  padding: var(--spacing-sm) 23px;
+}
+
+/* Explorer top accounts section */
+.explorer-top-accounts {
+  margin-top: var(--spacing-lg);
+}
+
+.explorer-section-title {
+  color: var(--color-text-very-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+/* Explorer panel info section */
+.explorer-info {
+  margin-top: 32px;
+  padding: var(--spacing-2xl);
+  background: rgba(26, 26, 26, 0.95);
+  border: 1px solid rgba(42, 42, 42, 1);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.explorer-info h3 {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.explorer-info p {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-very-muted);
+  line-height: 1.6;
 }

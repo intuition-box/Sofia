@@ -86,7 +86,7 @@ export const useFollowAccount = () => {
     setIsLoading(true)
 
     try {
-      // TODO: Implement actual unfollow logic
+      // Unfollow is handled by useRedeemTriple hook - this is a legacy placeholder
       await new Promise(resolve => setTimeout(resolve, 2000))
 
       return {

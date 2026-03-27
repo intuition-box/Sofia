@@ -5,11 +5,15 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useBookmarks } from '../../hooks/useBookmarks'
+import { useBookmarks } from '../../hooks'
 import type { Triplet } from '~components/pages/core-tabs/types'
 import type { BookmarkedTriplet } from '../../types/bookmarks'
 import QuickActionButton from './QuickActionButton'
+import BookmarkPlusIcon from './icons/bookmark-plus.svg'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/BookmarkStyles.css'
+
+const logger = createHookLogger('BookmarkButton')
 
 interface BookmarkButtonProps {
   triplet: Triplet
@@ -37,7 +41,7 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
         setNewListName('')
         setIsCreatingList(false)
       } catch (err) {
-        console.error('Failed to create list and add triplet:', err)
+        logger.error('Failed to create list and add triplet', err)
       }
     } else if (selectedListId) {
       // Add to existing list
@@ -45,7 +49,7 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
         await addTripletToList(selectedListId, triplet, sourceInfo)
         setShowModal(false)
       } catch (err) {
-        console.error('Failed to add triplet to list:', err)
+        logger.error('Failed to add triplet to list', err)
       }
     }
   }
@@ -65,15 +69,25 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
 
   return (
     <>
-      <QuickActionButton
-        action="add"
-        onClick={handleOpenModal}
-        className={className}
-      />
+      {className === 'portal-button' ? (
+        <button
+          className="portal-button"
+          onClick={handleOpenModal}
+        >
+          <img src={BookmarkPlusIcon} alt="bookmark" className="portal-button-icon" />
+          Bookmark
+        </button>
+      ) : (
+        <QuickActionButton
+          action="add"
+          onClick={handleOpenModal}
+          className={className}
+        />
+      )}
 
       {showModal && createPortal(
         <div
-          className="modal-overlay"
+          className="bookmark-modal-overlay"
           onClick={() => {
             setShowModal(false)
             setIsCreatingList(false)
@@ -82,22 +96,22 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
           }}
         >
           <div
-            className="modal-content"
+            className="bookmark-modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header">
-              <div className="modal-title">
+            <div className="bookmark-modal-header">
+              <div className="bookmark-modal-title">
                 Add to Bookmark List
               </div>
             </div>
 
-            <div className="modal-body">
+            <div className="bookmark-modal-body">
               {/* Show triplet preview */}
-              <div className="triplet-preview">
-                <div className="triplet-preview-label">
+              <div className="bookmark-triplet-preview">
+                <div className="bookmark-triplet-preview-label">
                   Triplet to bookmark:
                 </div>
-                <div className="triplet-preview-content">
+                <div className="bookmark-triplet-preview-content">
                   <strong>{triplet.subject}</strong> → {triplet.predicate} → <strong>{triplet.object}</strong>
                 </div>
               </div>
@@ -106,14 +120,14 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                 <>
                   {/* List selection */}
                   {lists.length > 0 ? (
-                    <div className="form-group">
-                      <label className="label">
+                    <div className="bookmark-form-group">
+                      <label className="bookmark-label">
                         Select a list:
                       </label>
                       <select
                         value={selectedListId}
                         onChange={(e) => setSelectedListId(e.target.value)}
-                        className="select"
+                        className="bookmark-select"
                       >
                         <option value="">Choose a list...</option>
                         {lists.map(list => (
@@ -124,16 +138,16 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                       </select>
                     </div>
                   ) : (
-                    <div className="empty-message">
+                    <div className="bookmark-empty-message">
                       No bookmark lists found. Create your first list below!
                     </div>
                   )}
 
                   {/* Create new list option */}
-                  <div className="form-group">
+                  <div className="bookmark-form-group">
                     <button
                       onClick={() => setIsCreatingList(true)}
-                      className="btn secondary full-width"
+                      className="bookmark-button bookmark-button-full"
                     >
                       + Create New List
                     </button>
@@ -142,8 +156,8 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
               ) : (
                 <>
                   {/* Create new list form */}
-                  <div className="form-group">
-                    <label className="label">
+                  <div className="bookmark-form-group">
+                    <label className="bookmark-label">
                       New list name:
                     </label>
                     <input
@@ -152,17 +166,17 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                       onChange={(e) => setNewListName(e.target.value)}
                       placeholder="Enter list name..."
                       autoFocus
-                      className="input"
+                      className="bookmark-input"
                     />
                   </div>
 
-                  <div className="form-group">
+                  <div className="bookmark-form-group">
                     <button
                       onClick={() => {
                         setIsCreatingList(false)
                         setNewListName('')
                       }}
-                      className="btn secondary full-width"
+                      className="bookmark-button bookmark-button-full"
                     >
                       ← Back to List Selection
                     </button>
@@ -171,7 +185,7 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
               )}
 
               {/* Action buttons */}
-              <div className="form-actions">
+              <div className="bookmark-button-group">
                 <button
                   onClick={() => {
                     setShowModal(false)
@@ -179,14 +193,14 @@ const BookmarkButton = ({ triplet, sourceInfo, size = 'small', className }: Book
                     setNewListName('')
                     setSelectedListId('')
                   }}
-                  className="btn secondary"
+                  className="bookmark-button"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddToBookmark}
                   disabled={isCreatingList ? !newListName.trim() : !selectedListId}
-                  className="btn primary"
+                  className={isCreatingList ? (!newListName.trim() ? 'bookmark-button-disabled' : 'bookmark-button-primary') : (!selectedListId ? 'bookmark-button-disabled' : 'bookmark-button-primary')}
                 >
                   {isCreatingList ? 'Create & Add' : 'Add to List'}
                 </button>

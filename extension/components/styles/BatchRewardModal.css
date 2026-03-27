@@ -1,0 +1,417 @@
+/* BatchRewardModal — Batch reward claiming after cart submission */
+
+.batch-reward-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  padding: 12px;
+}
+
+.batch-reward {
+  background: linear-gradient(to bottom, #060504, #101010);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: batchRewardAppear 0.25s ease-out;
+  position: relative;
+}
+
+@keyframes batchRewardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Loading ── */
+
+.batch-reward__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 24px;
+}
+
+.batch-reward__loading-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-family: "Gotu", cursive;
+}
+
+/* ── Gold Header (top corner total) ── */
+
+.batch-reward__gold-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 28px 24px 16px;
+  position: relative;
+}
+
+.batch-reward__gold-amount {
+  font-size: 48px;
+  font-weight: 700;
+  font-family: "Gotu", cursive;
+  background: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #fcd34d 25%,
+    #f59e0b 60%,
+    #d97706 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  animation: goldCountUp 0.6s ease-out;
+}
+
+@keyframes goldCountUp {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.batch-reward__gold-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: "Gotu", cursive;
+  letter-spacing: 0.5px;
+}
+
+.batch-reward__tier-summary {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.batch-reward__tier-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+.batch-reward__tier-pill--pioneer {
+  background: rgba(212, 175, 55, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.batch-reward__tier-pill--explorer {
+  background: rgba(96, 165, 250, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.batch-reward__tier-pill--contributor {
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+/* ── Reward List ── */
+
+.batch-reward__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 16px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.batch-reward__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+}
+
+.batch-reward__item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.batch-reward__item-favicon {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.batch-reward__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.batch-reward__item-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.batch-reward__item-rank {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.batch-reward__item-tier {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+
+.batch-reward__item-tier--pioneer {
+  background: rgba(212, 175, 55, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.batch-reward__item-tier--explorer {
+  background: rgba(96, 165, 250, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.batch-reward__item-tier--contributor {
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.batch-reward__item-gold {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Gotu", cursive;
+  background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 40%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex-shrink: 0;
+}
+
+/* ── Footer ── */
+
+.batch-reward__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px 24px;
+}
+
+.batch-reward__tx-link {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.batch-reward__tx-link:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Full-width claim all button */
+.claim-reward-btn--full {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px 32px;
+  font-size: 16px;
+}
+
+/* ── Receipt Card (Share on X) ── */
+
+.batch-receipt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  width: 85%;
+  max-width: 280px;
+  animation: receiptSlideUp 0.5s ease-out 0.3s both;
+}
+
+@keyframes receiptSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.batch-receipt__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.batch-receipt__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.3px;
+}
+
+.batch-receipt__count {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.batch-receipt__favicons {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 4px 0;
+}
+
+.batch-receipt__favicon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #101010;
+  object-fit: contain;
+  background: #1a1a1a;
+  margin-left: -6px;
+}
+
+.batch-receipt__favicon:first-child {
+  margin-left: 0;
+}
+
+.batch-receipt__more {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #101010;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: -6px;
+}
+
+.batch-receipt__tiers {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.batch-receipt__tier {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+.batch-receipt__tier--pioneer {
+  background: rgba(212, 175, 55, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.batch-receipt__tier--explorer {
+  background: rgba(96, 165, 250, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.batch-receipt__tier--contributor {
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.batch-receipt__gold-line {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(212, 175, 55, 0.6);
+  font-family: "Gotu", cursive;
+}
+
+.batch-receipt__share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.batch-receipt__share-btn:hover {
+  background: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.batch-receipt__share-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.batch-receipt__share-icon {
+  width: 14px;
+  height: 14px;
+  filter: invert(1);
+}

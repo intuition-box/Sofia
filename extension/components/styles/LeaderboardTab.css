@@ -1,0 +1,400 @@
+/* ========== LEADERBOARD TAB ========== */
+
+.leaderboard-tab {
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+}
+
+/* Tab switcher */
+.leaderboard-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: 10px 0 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: var(--spacing-xs);
+}
+
+.leaderboard-tab-btn {
+  flex: 1;
+  padding: var(--spacing-sm) 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.leaderboard-tab-btn:hover {
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.leaderboard-tab-btn.active {
+  color: var(--color-text-secondary);
+  background: var(--color-border-glass);
+}
+
+.leaderboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 var(--spacing-md);
+}
+
+.leaderboard-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+}
+
+.leaderboard-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.leaderboard-count {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.leaderboard-refresh {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  color: var(--color-text-very-muted);
+  font-size: var(--font-size-lg);
+  padding: var(--spacing-xs) 10px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.leaderboard-refresh:hover {
+  background: var(--color-bg-glass-lighter);
+  color: var(--color-text-secondary);
+}
+
+.leaderboard-refresh:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ========== PODIUM (Top 3) ========== */
+
+.leaderboard-podium {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+/* BG layer — IN FLOW, determines podium height. Content can never move it. */
+.podium-bg-layer {
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+  user-select: none;
+}
+
+.podium-bg-slot {
+  flex: 1;
+}
+
+.podium-bg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Content layer — ABSOLUTE overlay, completely decoupled from bg */
+.podium-content-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Each podium column */
+.podium-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+/* Staircase: padding-bottom pushes content UP from pedestal surface.
+   Gold highest (tallest pedestal), bronze lowest (shortest pedestal). */
+.podium-gold {
+  padding-bottom: 11%;
+}
+
+.podium-silver {
+  padding-bottom: 4%;
+}
+
+.podium-bronze {
+  padding-bottom: 3%;
+}
+
+.podium-column:hover {
+  opacity: 0.85;
+}
+
+/* Current user highlight */
+.podium-column.current-user {
+  background: rgba(106, 204, 147, 0.06);
+  border-radius: 12px;
+}
+
+/* Medal (hexagon badge) — above the ring */
+.podium-medal {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  width: 21%;
+  margin-bottom: 7px;
+}
+
+/* Ring zone: square ring SVG + avatar centered */
+.podium-ring-zone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Ring sizing: all rings are 965x965 (square) */
+.podium-gold .podium-ring-zone {
+  width: 60%;
+}
+
+.podium-silver .podium-ring-zone,
+.podium-bronze .podium-ring-zone {
+  width: 45%;
+}
+
+.podium-ring {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Avatar centered in the ring — sized relative to ring zone */
+.podium-avatar-wrapper {
+  position: absolute;
+  top: 44%;
+  left: 44%;
+  transform: translate(-50%, -50%);
+  width: 65%;
+  height: 65%;
+  border-radius: 50%;
+}
+
+.podium-avatar-wrapper .podium-avatar {
+  border-radius: 50%;
+  width: 118% !important;
+  height: 118% !important;
+  object-fit: cover;
+}
+
+/* User info — sits on the pedestal */
+.podium-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  z-index: 1;
+  padding: 4px 0 0;
+  margin-top: 21px;
+}
+
+/* Podium text styles */
+.podium-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  word-break: break-word;
+}
+
+.podium-gold .podium-name {
+  font-size: 13px;
+}
+
+.podium-streak {
+  font-size: 17px;
+  font-weight: 600;
+  color: #eab67a;
+  background: #eab67a1f;
+  padding: 1px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ========== LIST (Ranks 4+) ========== */
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* Row */
+.leaderboard-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px var(--spacing-md);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.15s;
+}
+
+.leaderboard-row.clickable {
+  cursor: pointer;
+}
+
+.leaderboard-row.clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.leaderboard-row.current-user {
+  background: rgba(106, 204, 147, 0.1);
+  border: 1px solid rgba(106, 204, 147, 0.2);
+}
+
+/* Rank */
+.leaderboard-rank {
+  width: 32px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+/* Avatar */
+.leaderboard-avatar {
+  flex-shrink: 0;
+}
+
+/* Info */
+.leaderboard-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-address {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: monospace;
+}
+
+/* Streak badge */
+.leaderboard-streak {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: #eab67a;
+  background: rgba(234, 182, 122, 0.1);
+  padding: 2px var(--spacing-sm);
+  border-radius: 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Stats */
+.leaderboard-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.leaderboard-shares {
+  font-size: 14px;
+  font-weight: 700;
+  color: #eab67a;
+}
+
+.leaderboard-value {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ========== STATES ========== */
+
+.leaderboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.leaderboard-empty {
+  text-align: center;
+  padding: var(--spacing-4xl) var(--spacing-xl);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: var(--font-size-base);
+}
+
+.leaderboard-error {
+  text-align: center;
+  padding: var(--spacing-4xl) var(--spacing-xl);
+  color: var(--color-text-placeholder);
+}
+
+.leaderboard-retry-btn {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-xl);
+  background: rgba(106, 204, 147, 0.15);
+  border: 1px solid rgba(106, 204, 147, 0.3);
+  border-radius: 8px;
+  color: #6acc93;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.leaderboard-retry-btn:hover {
+  background: rgba(106, 204, 147, 0.25);
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 360px) {
+  .podium-name {
+    font-size: 9px;
+  }
+
+  .podium-gold .podium-name {
+    font-size: 11px;
+  }
+}

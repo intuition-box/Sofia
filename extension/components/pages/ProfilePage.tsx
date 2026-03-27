@@ -1,30 +1,36 @@
-import { useState, useEffect, Suspense, lazy } from 'react'
+import { useState, useEffect, useTransition, Suspense, lazy } from 'react'
 import { useRouter } from '../layout/RouterProvider'
+import SofiaLoader from '../ui/SofiaLoader'
 import '../styles/Global.css'
 import '../styles/CommonPage.css'
 import '../styles/ProfilePage.css'
 
 // Lazy load tabs pour optimiser le chargement
 const AccountTab = lazy(() => import('./profile-tabs/AccountTab'))
-const FollowTab = lazy(() => import('./profile-tabs/FollowTab'))
-const TrustCircleTab = lazy(() => import('./profile-tabs/FeedTab'))
+const CommunityTab = lazy(() => import('./profile-tabs/CommunityTab'))
+const HistoryTab = lazy(() => import('./profile-tabs/HistoryTab'))
 
 const ProfilePage = () => {
   const { goBack, activeProfileTab, setActiveProfileTab } = useRouter()
-  const [activeTab, setActiveTab] = useState<'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals'>(
-    (activeProfileTab as 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals') || 'account'
+  const [activeTab, setActiveTab] = useState<'account' | 'community' | 'history' | 'bookmarks' | 'signals'>(
+    (activeProfileTab as 'account' | 'community' | 'history' | 'bookmarks' | 'signals') || 'account'
   )
 
+  const [expandedHistoryTriplet, setExpandedHistoryTriplet] = useState<{ tripletId: string } | null>(null)
+  const [, startTransition] = useTransition()
+
   // Sync local tab state with router context
-  const handleTabChange = (tab: 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals') => {
-    setActiveTab(tab)
-    setActiveProfileTab(tab)
+  const handleTabChange = (tab: 'account' | 'community' | 'history' | 'bookmarks' | 'signals') => {
+    startTransition(() => {
+      setActiveTab(tab)
+      setActiveProfileTab(tab)
+    })
   }
 
   // Restore active tab when coming back from user profile
   useEffect(() => {
     if (activeProfileTab) {
-      setActiveTab(activeProfileTab as 'account' | 'follow' | 'trust-circle' | 'bookmarks' | 'signals')
+      setActiveTab(activeProfileTab as 'account' | 'community' | 'history' | 'bookmarks' | 'signals')
     }
   }, [activeProfileTab])
 
@@ -32,20 +38,23 @@ const ProfilePage = () => {
     switch (activeTab) {
       case 'account':
         return (
-          <Suspense fallback={<div className="loading-state">Loading...</div>}>
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
             <AccountTab />
           </Suspense>
         )
-      case 'follow':
+      case 'community':
         return (
-          <Suspense fallback={<div className="loading-state">Loading...</div>}>
-            <FollowTab />
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
+            <CommunityTab />
           </Suspense>
         )
-      case 'trust-circle':
+      case 'history':
         return (
-          <Suspense fallback={<div className="loading-state">Loading...</div>}>
-            <TrustCircleTab />
+          <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
+            <HistoryTab
+              expandedTriplet={expandedHistoryTriplet}
+              setExpandedTriplet={setExpandedHistoryTriplet}
+            />
           </Suspense>
         )
       default:
@@ -63,16 +72,16 @@ const ProfilePage = () => {
           Account
         </button>
         <button
-          className={`tab ${activeTab === 'follow' ? 'active' : ''}`}
-          onClick={() => handleTabChange('follow')}
+          className={`tab ${activeTab === 'community' ? 'active' : ''}`}
+          onClick={() => handleTabChange('community')}
         >
-          Follow
+          Community
         </button>
         <button
-          className={`tab ${activeTab === 'trust-circle' ? 'active' : ''}`}
-          onClick={() => handleTabChange('trust-circle')}
+          className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => handleTabChange('history')}
         >
-          Activity
+          History
         </button>
       </div>
 

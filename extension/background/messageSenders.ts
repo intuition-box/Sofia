@@ -2,50 +2,59 @@
  * MESSAGE SENDERS - Chrome API Utilities
  *
  * This file provides utility functions for accessing Chrome APIs.
- * For sending messages to agents, use sendMessage() directly from websocket.ts
  *
  * Functions here:
  * - getAllBookmarks() - Get bookmarks from Chrome API
  * - getAllHistory() - Get history from Chrome API
- * - sendOllamaRequest() - Proxy for Ollama requests
  */
 
 import { EXCLUDED_URL_PATTERNS } from "./constants"
 import { isSensitiveUrl } from "./utils/url"
+import { createServiceLogger } from "../lib/utils/logger"
+import type { BookmarkData } from "~types/bookmarks"
+
+const logger = createServiceLogger('MessageSenders')
 
 // === Chrome API Utilities ===
-function extractBookmarkUrls(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): string[] {
-  const urls: string[] = []
-  
-  function traverseBookmarks(nodes: chrome.bookmarks.BookmarkTreeNode[]) {
+
+function extractBookmarkData(bookmarkNodes: chrome.bookmarks.BookmarkTreeNode[]): BookmarkData[] {
+  const bookmarks: BookmarkData[] = []
+
+  function traverse(nodes: chrome.bookmarks.BookmarkTreeNode[]) {
     for (const node of nodes) {
       if (node.url) {
-        urls.push(node.url)
+        bookmarks.push({ url: node.url, title: node.title || node.url })
       }
       if (node.children) {
-        traverseBookmarks(node.children)
+        traverse(node.children)
       }
     }
   }
-  
-  traverseBookmarks(bookmarkNodes)
-  return urls
+
+  traverse(bookmarkNodes)
+  return bookmarks
 }
 
-export async function getAllBookmarks(): Promise<{ success: boolean; urls?: string[]; error?: string }> {
+export async function getAllBookmarks(): Promise<{ success: boolean; bookmarks?: BookmarkData[]; error?: string }> {
   try {
     const bookmarkTree = await chrome.bookmarks.getTree()
-    const allUrls = extractBookmarkUrls(bookmarkTree)
-    
-    // Limit to 200 most recent bookmarks to avoid prompt being too long
-    const urls = allUrls.slice(0, 200)
-    
-    console.log(`📚 Extracted ${allUrls.length} bookmarks, using ${urls.length} (limited)`)
-    
-    return { success: true, urls }
+    const all = extractBookmarkData(bookmarkTree)
+
+    // Filter sensitive and excluded URLs
+    const filtered = all.filter(b =>
+      !isSensitiveUrl(b.url) &&
+      !EXCLUDED_URL_PATTERNS.some(pattern => b.url.includes(pattern))
+    )
+
+    // Limit to 500 bookmarks
+    const bookmarks = filtered.slice(0, 500)
+
+    logger.info(`Extracted ${all.length} bookmarks, filtered to ${filtered.length}, using ${bookmarks.length}`)
+
+    return { success: true, bookmarks }
   } catch (error) {
-    console.error("❌ Failed to get bookmarks:", error)
-    return { success: false, error: error.message }
+    logger.error("Failed to get bookmarks", error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
@@ -64,39 +73,10 @@ export async function getAllHistory(): Promise<{success: boolean, urls?: string[
       .filter((url): url is string => !!url && !isSensitiveUrl(url))
       .filter(url => !EXCLUDED_URL_PATTERNS.some(pattern => url.includes(pattern)))
     
-    console.log('📚 Extracted', urls.length, 'history URLs')
+    logger.info(`Extracted ${urls.length} history URLs`)
     return { success: true, urls }
   } catch (error) {
-    console.error('❌ Failed to get browsing history:', error)
+    logger.error('Failed to get browsing history', error)
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
-}
-
-// === Ollama proxy (for background script context) ===
-export async function sendOllamaRequest(url: string, options: RequestInit): Promise<any> {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(
-      {
-        type: "OLLAMA_REQUEST",
-        data: { 
-          url: url,
-          method: options.method,
-          headers: options.headers,
-          body: options.body
-        }
-      },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-          return;
-        }
-        
-        if (response.success) {
-          resolve(response.data);
-        } else {
-          reject(new Error(response.error));
-        }
-      }
-    );
-  });
 }

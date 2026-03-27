@@ -1,5 +1,6 @@
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import welcomeLogo from '../ui/icons/welcomeLogo.png'
+import packageJson from '~/package.json'
 import '../styles/HomePage.css'
 
 const HomePage = () => {
@@ -8,6 +9,9 @@ const HomePage = () => {
     <div className="home-page">
       <div className="welcome-header">
         <img src={welcomeLogo} alt="Welcome on SofIA" className="welcome-image" />
+        <p className="description-paragraph" style={{ textAlign: 'center', marginTop: '4px' }}>
+          v{packageJson.version}
+        </p>
       </div>
 
       <div className="description-sections">
@@ -23,12 +27,14 @@ const HomePage = () => {
         This creates a living, semantic graph of your online activity, which you can enrich, share and get certified.
         </p>
 
-        <p className="description-paragraph terms-text">For more details, please read and accept the <a href="../../docs/terms-and-conditions.md" target="_blank" rel="noopener noreferrer"><strong>Terms and Conditions</strong></a>.</p>
+        <p className="description-paragraph terms-text">For more details, please read and accept the <a href="https://doc.sofia.intuition.box/terms" target="_blank" rel="noopener noreferrer"><strong>Terms and Conditions</strong></a> and our <a href="https://doc.sofia.intuition.box/privacy" target="_blank" rel="noopener noreferrer"><strong>Privacy Policy</strong></a>.</p>
+
       </div>
 
       <div className="connect-section">
         <WalletConnectionButton />
       </div>
+
     </div>
   )
 }

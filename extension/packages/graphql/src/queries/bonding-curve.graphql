@@ -1,0 +1,48 @@
+# Bonding Curve Data Queries
+# Used by: useBondingCurveData
+
+# Get bonding curve data for a triple (price history + vault data)
+query GetTripleBondingCurveData(
+  $tripleId: String!
+  $curveId: numeric!
+  $walletAddress: String!
+) {
+  share_price_changes(
+    order_by: {block_timestamp: asc}
+    where: {term_id: {_eq: $tripleId}, curve_id: {_eq: $curveId}}
+  ) {
+    block_timestamp
+    share_price
+    total_assets
+  }
+  vaults(where: {term_id: {_eq: $tripleId}, curve_id: {_eq: $curveId}}) {
+    term {
+      total_market_cap
+    }
+    current_share_price
+    total_shares
+    positions(where: {account_id: {_eq: $walletAddress}}) {
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+}
+
+# Get atom vault data for profit calculation (shares, price, deposits)
+query GetAtomVaultData(
+  $atomId: String!
+  $curveId: numeric!
+  $walletAddress: String!
+) {
+  vaults(where: {term_id: {_eq: $atomId}, curve_id: {_eq: $curveId}}) {
+    current_share_price
+    total_shares
+    position_count
+    positions(where: {account_id: {_ilike: $walletAddress}}) {
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+}

@@ -1,475 +1,280 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useElizaData } from '../../../hooks/useElizaData'
-import { elizaDataService } from '../../../lib/database/indexedDB-methods'
-import sofiaDB, { STORES } from '../../../lib/database/indexedDB'
-import { useEchoPublishing } from '../../../hooks/useEchoPublishing'
-import { useEchoSelection } from '../../../hooks/useEchoSelection'
-import { useWalletFromStorage } from '../../../hooks/useWalletFromStorage'
-import WeightModal from '../../modals/WeightModal'
-import Iridescence from '../../ui/Iridescence'
+/**
+ * EchoesTab Component
+ * Displays intention groups as a bento grid with detail view
+ */
+
+import { useState, useEffect, useRef } from 'react'
+import { useIntentionGroups, type SortOption } from '../../../hooks'
+import type { IntentionType } from '../../../types/intentionCategories'
+import { INTENTION_CONFIG } from '../../../types/intentionCategories'
+import GroupBentoCard from '../../ui/GroupBentoCard'
+import GroupDetailView from '../../ui/GroupDetailView'
+import GroupManagerModal from '../../modals/GroupManagerModal'
 import SofiaLoader from '../../ui/SofiaLoader'
-import type { EchoTriplet } from '../../../types/blockchain'
+import { userSettingsService } from '~/lib/database'
 import '../../styles/CoreComponents.css'
 import '../../styles/CorePage.css'
+import '../../styles/CommonPage.css'
+import '../../styles/CategoryStyles.css'
+import '../../styles/CircleFeedTab.css'
 
-interface EchoesTabProps {
-  expandedTriplet: { msgIndex: number; tripletIndex: number } | null
-  setExpandedTriplet: (value: { msgIndex: number; tripletIndex: number } | null) => void
-}
-
-
-const EchoesTab = ({ expandedTriplet, setExpandedTriplet }: EchoesTabProps) => {
-  // Local state for EchoesTab
-  const [echoTriplets, setEchoTriplets] = useState<EchoTriplet[]>([])
-  const { walletAddress: address } = useWalletFromStorage()
-  const [hasInitialLoad, setHasInitialLoad] = useState(false)
-  
-  // Modal state for custom weighting
-  const [showWeightModal, setShowWeightModal] = useState(false)
-  const [selectedTripletsForWeighting, setSelectedTripletsForWeighting] = useState<EchoTriplet[]>([])
-  
-  // Predicate filtering state
-  const [selectedPredicate, setSelectedPredicate] = useState<string>('all')
-  const [isPredicateDropdownOpen, setIsPredicateDropdownOpen] = useState(false)
-
-  // Hook IndexedDB pour les messages Eliza parsés uniquement
+const EchoesTab = () => {
+  const [certFilter, setCertFilter] = useState<IntentionType | 'all'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showManager, setShowManager] = useState(false)
+  const [managerInitialFilter, setManagerInitialFilter] = useState<'all' | 'inactive'>('all')
+  const [cleanupBannerDismissed, setCleanupBannerDismissed] = useState(false)
+  const [inactiveCount, setInactiveCount] = useState(0)
   const {
-    allMessages,
-    loadMessages
-  } = useElizaData()
+    groups,
+    selectedGroup,
+    isLoading,
+    error,
+    sortBy,
+    setSortBy,
+    loadGroups,
+    selectGroup,
+    certifyUrl,
+    removeUrl,
+    refreshGroup,
+    deleteGroup
+  } = useIntentionGroups()
 
-  // Tous les messages sont déjà des parsed_message (pas de raw stockage)
-  const parsedMessages = allMessages
-  const refreshMessages = loadMessages
-
-  // Listen for ECHOES_UPDATED messages from background to auto-refresh
+  // Auto-delete groups with 0 active URLs (use ref to avoid infinite loop)
+  const deletedGroupsRef = useRef(new Set<string>())
   useEffect(() => {
-    const handleMessage = (message: any) => {
-      if (message.type === 'ECHOES_UPDATED') {
-        console.log('🔄 [EchoesTab] Received ECHOES_UPDATED, refreshing...')
-        loadMessages()
-      }
+    const emptyGroups = groups.filter(g => g.activeUrlCount === 0 && !g.isVirtualGroup && !g.urls.some(u => u.oauthPredicate) && !deletedGroupsRef.current.has(g.id))
+    if (emptyGroups.length === 0) return
+    for (const group of emptyGroups) {
+      deletedGroupsRef.current.add(group.id)
+      deleteGroup(group.id)
     }
+  }, [groups, deleteGroup])
 
-    chrome.runtime.onMessage.addListener(handleMessage)
-    return () => {
-      chrome.runtime.onMessage.removeListener(handleMessage)
-    }
-  }, [loadMessages])
-
-  // Extract unique predicates from triplets
-  const uniquePredicates = useMemo(() => {
-    const predicates = new Set<string>()
-    echoTriplets.forEach(triplet => {
-      if (triplet.triplet.predicate) {
-        predicates.add(triplet.triplet.predicate)
-      }
+  // Auto-cleanup: detect inactive groups and show banner
+  useEffect(() => {
+    let cancelled = false
+    userSettingsService.getSettings().then(settings => {
+      if (cancelled || !settings.autoCleanup) return
+      const cutoff = Date.now() - settings.autoCleanupInactiveDays * 24 * 60 * 60 * 1000
+      const inactive = groups.filter(g =>
+        !g.isVirtualGroup &&
+        g.level <= settings.autoCleanupMinLevel &&
+        g.certifiedCount === 0 &&
+        g.updatedAt < cutoff
+      )
+      setInactiveCount(inactive.length)
     })
-    return Array.from(predicates).sort()
-  }, [echoTriplets])
+    return () => { cancelled = true }
+  }, [groups])
 
-  // Filter triplets by selected predicate
-  const filteredTriplets = useMemo(() => {
-    if (selectedPredicate === 'all') {
-      return echoTriplets
-    }
-    return echoTriplets.filter(triplet => triplet.triplet.predicate === selectedPredicate)
-  }, [echoTriplets, selectedPredicate])
-
-  // Available echoes for selection hook
-  const availableEchoes = filteredTriplets.filter(t => t.status === 'available')
-  
-  // Selection management hook
-  const {
-    selectedEchoes,
-    isSelectAll,
-    toggleEchoSelection,
-    toggleSelectAll,
-    clearSelection,
-    deleteSelected
-  } = useEchoSelection({
-    availableEchoes,
-    echoTriplets,
-    setEchoTriplets,
-    refreshMessages,
-    elizaDataService,
-    sofiaDB,
-    STORES
-  })
-
-  // Publishing management hook
-  const {
-    publishTriplet,
-    publishSelected
-  } = useEchoPublishing({
-    echoTriplets,
-    selectedEchoes,
-    address: address || '',
-    onTripletsUpdate: setEchoTriplets,
-    clearSelection
-  })
-  
-  // Handle predicate filtering
-  const handlePredicateSelection = (predicate: string) => {
-    setSelectedPredicate(predicate)
-    setIsPredicateDropdownOpen(false)
+  const handleOpenManager = (filter: 'all' | 'inactive' = 'all') => {
+    setManagerInitialFilter(filter)
+    setShowManager(true)
   }
 
-  const handlePredicateDropdownClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsPredicateDropdownOpen(!isPredicateDropdownOpen)
-  }
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'level', label: 'Level' },
+    { value: 'urls', label: 'URLs' },
+    { value: 'alphabetic', label: 'A-Z' },
+    { value: 'recent', label: 'Recent' }
+  ]
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setIsPredicateDropdownOpen(false)
-    }
+  // Filter out ENS names (.eth) and wallet addresses (0x)
+  const baseGroups = groups.filter(g =>
+    !g.domain.endsWith('.eth') && !g.domain.startsWith('0x')
+  )
 
-    if (isPredicateDropdownOpen) {
-      document.addEventListener('click', handleClickOutside)
-    }
+  // Filter by certification type
+  const certFilteredGroups = certFilter === 'all'
+    ? baseGroups
+    : baseGroups.filter(g => (g.certificationBreakdown[certFilter] || 0) > 0)
 
-    return () => {
-      document.removeEventListener('click', handleClickOutside)
-    }
-  }, [isPredicateDropdownOpen])
-  
-  // Local state for UI feedback
-  const [isCreating, setIsCreating] = useState(false)
-  const [transactionSuccess, setTransactionSuccess] = useState(false)
-  const [transactionError, setTransactionError] = useState<string | null>(null)
-  const [createdCount, setCreatedCount] = useState(0)
-  const [depositCount, setDepositCount] = useState(0)
+  // Filter by search query
+  const filteredGroups = searchQuery.trim()
+    ? certFilteredGroups.filter(g => g.domain.toLowerCase().includes(searchQuery.toLowerCase()))
+    : certFilteredGroups
 
-  // Function to get favicon URL from a website URL
-  const getFaviconUrl = (url: string): string => {
-    if (!url) return ''
-    
-    try {
-      const urlObj = new URL(url)
-      // Use Google's favicon service as fallback, it's very reliable
-      return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`
-    } catch {
-      return ''
+  const handleDeleteGroup = async (groupId: string) => {
+    const group = groups.find(g => g.id === groupId)
+    if (!group) return
+
+    const confirmed = window.confirm(
+      `Delete "${group.domain}"?\n\n` +
+      `⚠️ This will only remove the group from your local view.\n` +
+      `Your on-chain certifications will remain on the blockchain and won't be affected.`
+    )
+
+    if (confirmed) {
+      await deleteGroup(groupId)
     }
   }
 
-
-  // Handle Amplify button click - always opens modal for weight selection
-  const handleAmplifyClick = () => {
-    const selectedTriplets = filteredTriplets.filter(t => selectedEchoes.has(t.id))
-    if (selectedTriplets.length > 0) {
-      setSelectedTripletsForWeighting(selectedTriplets)
-      setShowWeightModal(true)
-    }
-  }
-
-  // Handle modal weight submission
-  const handleWeightSubmit = async (customWeights?: (bigint | null)[]) => {
-    if (selectedTripletsForWeighting.length === 0) return
-
-    try {
-      setIsCreating(true)
-      setTransactionError(null)
-      setTransactionSuccess(false)
-      setCreatedCount(0)
-      setDepositCount(0)
-
-      const result = await publishSelected(customWeights)
-
-      setCreatedCount(result.createdCount || 0)
-      setDepositCount(result.depositCount || 0)
-      setTransactionSuccess(true)
-    } catch (error) {
-      console.error('Failed to publish triplets with custom weights:', error)
-      setTransactionError(error instanceof Error ? error.message : 'Failed to publish')
-    } finally {
-      setIsCreating(false)
-    }
-  }
-
-  // Handle modal close
-  const handleWeightModalClose = () => {
-    setShowWeightModal(false)
-    setSelectedTripletsForWeighting([])
-    setTransactionError(null)
-    setTransactionSuccess(false)
-    setCreatedCount(0)
-    setDepositCount(0)
-    clearSelection()
-  }
-
-  // Transform rawMessages to echoTriplets
-  useEffect(() => {
-    const transformMessages = async () => {
-      try {
-        console.log('🔍 EchoesTab: parsedMessages count:', parsedMessages.length)
-        console.log('🔍 EchoesTab: parsedMessages sample:', parsedMessages.slice(0, 3))
-
-        // Load blacklist of published triplets
-        const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
-
-        const newEchoTriplets: EchoTriplet[] = []
-        const seenHashes = new Set<string>() // Track seen triplets to avoid duplicates
-
-        for (const record of parsedMessages) {
-          if (record.type === 'parsed_message' && record.content) {
-            const parsed = record.content as any // Already parsed by useElizaData
-
-            if (parsed && parsed.triplets && parsed.triplets.length > 0) {
-              parsed.triplets.forEach((triplet, index) => {
-                // Normalize triplet values - handle both string format (ElizaOS) and object format (Mastra)
-                const subjectValue = typeof triplet.subject === 'object' ? triplet.subject?.name : triplet.subject
-                const predicateValue = typeof triplet.predicate === 'object' ? triplet.predicate?.name : triplet.predicate
-                const objectValue = typeof triplet.object === 'object' ? triplet.object?.name : triplet.object
-
-                // Extract URL from object if it's an object (Mastra format)
-                const objectUrl = typeof triplet.object === 'object' ? triplet.object?.url : (triplet.objectUrl || '')
-
-                // Generate hash for deduplication
-                const hash = `${subjectValue}|${predicateValue}|${objectValue}`.toLowerCase()
-                if (seenHashes.has(hash)) {
-                  return // Skip duplicate triplet
-                }
-                seenHashes.add(hash)
-
-                const tripletId = `${record.messageId}_${index}`
-
-                // Skip if already published
-                if (publishedTripletIds.includes(tripletId)) {
-                  return
-                }
-
-                const echoTriplet: EchoTriplet = {
-                  id: tripletId,
-                  triplet: {
-                    subject: subjectValue || 'User',
-                    predicate: predicateValue || 'visited',
-                    object: objectValue || ''
-                  },
-                  url: objectUrl || parsed.rawObjectUrl || '',
-                  description: parsed.rawObjectDescription || parsed.intention,
-                  timestamp: record.timestamp,
-                  sourceMessageId: record.messageId,
-                  status: 'available'
-                }
-                newEchoTriplets.push(echoTriplet)
-              })
-            }
-          }
-        }
-
-        setEchoTriplets(newEchoTriplets)
-        setHasInitialLoad(true)
-
-
-      } catch (error) {
-        console.error('❌ EchoesTab: Failed to transform messages:', error)
-        setHasInitialLoad(true)
-      }
-    }
-
-    transformMessages()
-  }, [parsedMessages])
-
-  // Unused functions removed
-  const availableCount = filteredTriplets.filter(t => t.status === 'available').length
-
-  // Afficher le loading seulement au premier chargement
-  if (!hasInitialLoad && parsedMessages.length === 0) {
+  // Show detail view if a group is selected
+  if (selectedGroup) {
     return (
       <div className="triples-container">
-        <div className="loading-indicator">
-          <SofiaLoader size={150} />
+        <GroupDetailView
+          group={selectedGroup}
+          onBack={() => selectGroup(null)}
+          onCertifyUrl={(url, cert) => certifyUrl(selectedGroup.id, url, cert)}
+          onRemoveUrl={(url) => removeUrl(selectedGroup.id, url)}
+          onRefresh={() => refreshGroup(selectedGroup.id)}
+        />
+      </div>
+    )
+  }
+
+  // Loading state
+  if (isLoading && groups.length === 0) {
+    return (
+      <div className="triples-container">
+        <div className="groups-loading">
+          <SofiaLoader size={60} />
         </div>
       </div>
     )
   }
-  
+
+  // Error state
+  if (error) {
+    return (
+      <div className="triples-container">
+        <div className="groups-error">
+          <p>Failed to load groups</p>
+          <button onClick={loadGroups} className="refresh-button">
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty state (no groups at all)
+  if (baseGroups.length === 0) {
+    return (
+      <div className="triples-container">
+        <div className="groups-empty">
+          <p>No browsing groups yet</p>
+          <p className="empty-subtext">
+            Continue browsing and your visited sites will appear here
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="triples-container">
-      {(selectedEchoes.size > 0 || availableCount > 0) && (
-        <div className="selection-panel">
-          <div className="selection-info">
-            <label className="select-all-label">
-              <span onClick={toggleSelectAll} className="cursor-pointer">{selectedEchoes.size > 0 ? `${selectedEchoes.size} selected` : 'Select All'}</span>
-            </label>
+      <div className="groups-section">
+        <div className="category-toolbar">
+          <div className="category-search-container">
+            <input
+              type="text"
+              placeholder="Search groups..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="category-search-input"
+            />
+            {searchQuery && (
+              <button
+                className="category-search-clear"
+                onClick={() => setSearchQuery('')}
+              >
+                x
+              </button>
+            )}
           </div>
-          
-          {selectedEchoes.size > 0 && (
-            <div>
-              <div className="batch-actions">
-                <button
-                  className="batch-btn add-to-signals iridescence-btn"
-                  onClick={handleAmplifyClick}
-                  disabled={isCreating}
-                >
-                  <div className="iridescence-btn-background">
-                    <Iridescence
-                      color={[1, 0.4, 0.5]}
-                      speed={0.3}
-                      mouseReact={false}
-                      amplitude={0.1}
-                      zoom={0.05}
-                    />
-                  </div>
-                  <span className="iridescence-btn-content">
-                    Amplify ({selectedEchoes.size})
-                  </span>
-                </button>
-                <button 
-                  className="batch-btn delete-selected"
-                  onClick={deleteSelected}
-                >
-                  Remove ({selectedEchoes.size})
-                </button>
-              </div>
-              {isCreating && selectedEchoes.size > 1 && (
-                <div className="processing-message">
-                  <div>Processing batch amplification...</div>
-                </div>
-              )}
-            </div>
+          <div className="sort-buttons">
+            {sortOptions.map(option => (
+              <button
+                key={option.value}
+                className={`sort-btn ${sortBy === option.value ? 'active' : ''}`}
+                onClick={() => setSortBy(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+            <button
+              className="sort-btn gm-manage-btn"
+              onClick={() => handleOpenManager('all')}
+              title="Manage groups"
+            >
+              Manage
+            </button>
+          </div>
+        </div>
+
+        {/* Inactive groups cleanup banner */}
+        {inactiveCount > 0 && !cleanupBannerDismissed && (
+          <div className="gm-cleanup-banner">
+            <span>{inactiveCount} inactive group{inactiveCount > 1 ? 's' : ''} found</span>
+            <button
+              className="gm-cleanup-review"
+              onClick={() => handleOpenManager('inactive')}
+            >
+              Review
+            </button>
+            <button
+              className="gm-cleanup-dismiss"
+              onClick={() => setCleanupBannerDismissed(true)}
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
+        {/* Certification filter chips */}
+        <div className="circle-category-chips">
+          <button
+            className={`circle-chip ${certFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setCertFilter('all')}
+          >
+            All
+          </button>
+          {(Object.entries(INTENTION_CONFIG) as [IntentionType, { label: string; color: string }][]).map(
+            ([type, config]) => (
+              <button
+                key={type}
+                className={`circle-chip ${certFilter === type ? 'active' : ''}`}
+                style={{
+                  '--chip-color': config.color
+                } as React.CSSProperties}
+                onClick={() => setCertFilter(type)}
+              >
+                {config.label}
+              </button>
+            )
           )}
         </div>
-      )}
 
-      {/* Predicate Filter */}
-      {echoTriplets.length > 0 && (
-        <div className="sort-controls">
-          <div className={`sort-dropdown ${isPredicateDropdownOpen ? 'open' : ''}`}>
-            <div 
-              className="sort-dropdown-trigger" 
-              onClick={handlePredicateDropdownClick}
-            >
-              <span>
-                {selectedPredicate === 'all' 
-                  ? `All (${availableCount})` 
-                  : `${selectedPredicate} (${availableCount})`
-                }
-              </span>
-              <span className="sort-dropdown-arrow">▼</span>
-            </div>
-            <div className={`sort-dropdown-menu ${isPredicateDropdownOpen ? 'open' : ''}`}>
-              <div
-                className={`sort-dropdown-option ${selectedPredicate === 'all' ? 'selected' : ''}`}
-                onClick={() => handlePredicateSelection('all')}
-              >
-                <span>All</span>
-              </div>
-              {uniquePredicates.map((predicate) => (
-                <div
-                  key={predicate}
-                  className={`sort-dropdown-option ${selectedPredicate === predicate ? 'selected' : ''}`}
-                  onClick={() => handlePredicateSelection(predicate)}
-                >
-                  <span>{predicate}</span>
-                </div>
-              ))}
-            </div>
+        {filteredGroups.length === 0 ? (
+          <div className="groups-empty">
+            <p>No groups match this filter</p>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="bento-grid">
+            {filteredGroups.map((group) => (
+              <GroupBentoCard
+                key={group.id}
+                group={group}
+                onClick={() => selectGroup(group.id)}
+                onDelete={handleDeleteGroup}
+                size="small"
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Liste des triplets disponibles pour publication */}
-      {availableCount > 0 && (
-        <div className="available-triplets-section">
-          {/* <h4>🔗 Available for Publication ({availableCount})</h4> */}
-          {filteredTriplets
-            .filter(t => t.status === 'available')
-            .sort((a, b) => b.timestamp - a.timestamp)
-            .map((tripletItem, index) => {
-              const isExpanded = expandedTriplet?.msgIndex === 1 && expandedTriplet?.tripletIndex === index
-
-              return (
-                <div
-                  key={tripletItem.id}
-                  className={`echo-card cursor-pointer ${selectedEchoes.has(tripletItem.id) ? 'selected' : ''}`}
-                  onClick={() => toggleEchoSelection(tripletItem.id)}
-                >
-                  <div className={`triplet-item ${isExpanded ? 'expanded' : ''}`}>
-                    <div className="echo-header position-relative">
-                      <p
-                        className="triplet-text clickable"
-                        onClick={(e) => {
-                          e.stopPropagation() // Prevent card selection
-                          setExpandedTriplet(isExpanded ? null : { msgIndex: 1, tripletIndex: index })
-                        }}
-                      >
-                        <span className="subject">{(tripletItem.triplet.subject === 'User' || tripletItem.triplet.subject === 'I' || tripletItem.triplet.subject === address) ? 'You' : tripletItem.triplet.subject}</span>{' '}
-                        <span className="action">{tripletItem.triplet.predicate}</span>{' '}
-                        <span className="object">{tripletItem.triplet.object}</span>
-                      </p>
-                      {tripletItem.url && (
-                        <img 
-                          src={getFaviconUrl(tripletItem.url)} 
-                          alt="favicon"
-                          className="triplet-favicon triplet-favicon-positioned"
-                          onError={(e) => {
-                            // Fallback if Google's service fails
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                          }}
-                        />
-                      )}
-                    </div>
-
-
-                    {isCreating && (
-                      <div className="processing-message">
-                        <div>Amplifying echo...</div>
-                      </div>
-                    )}
-
-                    {isExpanded && (
-                        <div className="triplet-detail-section">
-                          <h4 className="triplet-detail-title">Source</h4>
-                          <p className="triplet-detail-name">
-                            <a href={tripletItem.url} target="_blank" rel="noopener noreferrer" className="triplet-url-link">
-                              {tripletItem.url}
-                            </a>
-                          </p>
-                          <p className="triplet-detail-timestamp">
-                            {new Date(tripletItem.timestamp).toLocaleString()}
-                          </p>
-                        </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })
-          }
-        </div>
-      )}
-      {/* Empty states */}
-      {echoTriplets.length === 0 ? (
-        <div className="empty-state">
-          <p>Continue to navigate</p>
-          <p className="empty-subtext">
-            Your triples will appear automatically 
-          </p>
-        </div>
-      ) : availableEchoes.length === 0 ? (
-        <div className="empty-state">
-          <p>All echoes have been amplified!</p>
-          <p className="empty-subtext">
-            Check the Signals tab to view your published triplets
-          </p>
-        </div>
-      ) : null}
-
-      {/* Weight Selection Modal */}
-      <WeightModal
-        isOpen={showWeightModal}
-        triplets={selectedTripletsForWeighting}
-        isProcessing={isCreating}
-        transactionSuccess={transactionSuccess}
-        transactionError={transactionError}
-        createdCount={createdCount}
-        depositCount={depositCount}
-        onClose={handleWeightModalClose}
-        onSubmit={handleWeightSubmit}
+      <GroupManagerModal
+        isOpen={showManager}
+        groups={groups}
+        deleteGroup={deleteGroup}
+        removeUrl={removeUrl}
+        loadGroups={loadGroups}
+        onClose={() => setShowManager(false)}
+        initialFilter={managerInitialFilter}
       />
     </div>
   )

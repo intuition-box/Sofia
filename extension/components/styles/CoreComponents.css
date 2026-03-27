@@ -16,6 +16,7 @@
   padding: 0 16px;
   box-sizing: border-box;
   overflow-x: hidden;
+  min-height: 651px;
 }
 
 .bookmarks-container {
@@ -62,7 +63,7 @@
 }
 
 .border-default:hover {
-  border-color: var(--color-primary);
+  border-color: rgba(255, 255, 255, 0.486);
 }
 
 .border-blue {
@@ -80,7 +81,7 @@
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  gap: 12px;
+  gap: 5px;
   margin-bottom: -7px;
 }
 
@@ -102,7 +103,7 @@
 .triplet-header,
 .echo-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
   gap: 8px;
   margin-bottom: 3px;
@@ -120,10 +121,6 @@
   gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.triplet-text.clickable:hover {
-  opacity: 0.8;
 }
 
 /* Subject, Predicate, Object styles */
@@ -173,32 +170,23 @@
 /* ========== TRIPLET DETAILS ========== */
 
 .triplet-detail-section {
-  padding: 16px;
-  background-color: rgba(251, 247, 245, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(242, 222, 214, 0.1);
   transition: all 0.3s ease;
   overflow: hidden;
   width: 100%;
   box-sizing: border-box;
-  margin-top: 12px;
 }
-
-.triplet-detail-section:hover {
-  background-color: rgba(251, 247, 245, 0.08);
-  border-color: rgba(199, 134, 108, 0.3);
-  transform: translateY(-1px);
+.triplet-detail-timestamp{
+  color: rgba(255, 255, 255, 0.452);
+  margin: 1px;
 }
-
 .triplet-detail-title {
   font-family: 'Gotu', cursive;
   font-size: 16px;
   font-weight: 600;
-  color: #C7866C;
-  margin: 0 0 12px 0;
+  color: #e7b586;
+  margin: 0 0 -20px 0;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 .triplet-detail-name {
@@ -207,6 +195,7 @@
   font-weight: 600;
   color: #FBF7F5;
   margin: 0 0 8px 0;
+  margin-top: 20px;
   line-height: 1.4;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -223,13 +212,6 @@
   opacity: 0.9;
 }
 
-.triplet-detail-timestamp {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
-  color: #F2DED6;
-  opacity: 0.7;
-  margin: 8px 0 0 0;
-}
 
 .triplet-detail-url {
   font-family: 'Montserrat', sans-serif;
@@ -378,51 +360,72 @@
 }
 
 .add-to-signals:hover {
-  color: #FBF7F5;
   transform: translateY(-1px);
 }
 
 /* Iridescence button styles */
 .iridescence-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.iridescence-btn-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
+  padding: 12px 24px;
   border-radius: 12px;
-  overflow: hidden;
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
-}
-
-.iridescence-btn:hover:not(:disabled) .iridescence-btn-background {
-  opacity: 1;
-}
-
-.iridescence-btn-content {
-  position: relative;
-  z-index: 1;
+  border: none;
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  color: #000000;
+  font-family: 'Gotu', cursive;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  cursor: pointer;
+  transition: all 1s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
+.iridescence-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.iridescence-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.iridescence-btn:hover:not(:disabled) {
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
+}
+
+@keyframes orb-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Removed .iridescence-btn-background and .iridescence-btn-content - no longer needed */
+
 .delete-selected {
-  background: rgba(220, 38, 38, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #bbbbbb;
+  background: #ffffff33;
+  border: 1px solid #9090904d;
 }
 
 .delete-selected:hover {
   background: rgba(220, 38, 38, 0.3);
-  color: #FBF7F5;
+  color: #ff7860;
   transform: translateY(-1px);
 }
 
@@ -438,53 +441,32 @@
 }
 
 .portal-button {
-  background: rgba(255, 255, 255, 0.1);
+  background: #3937371a;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   color: white;
-  padding: 4px 8px;
-  font-size: 12px;
+  padding: 15px 16px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: 'Montserrat', sans-serif;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portal-button-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
 }
 
 .portal-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+  background: rgba(255, 208, 180, 0.082);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px 0 rgba(255, 226, 145, 0.281);
 }
-
-/* ========== UPVOTE BADGES ========== */
-
-.upvote-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(76, 175, 80, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 60px;
-  justify-content: center;
-  z-index: 2;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.upvote-badge:hover {
-  background: rgba(76, 175, 80, 0.2);
-  transform: scale(1.05);
-}
-
 /* ========== UTILITY CLASSES ========== */
 
 .cursor-pointer {
@@ -511,12 +493,15 @@
 }
 
 .triplet-url-link {
-  color: white;
+  color: #afafaf;
+}
+
+.triplet-url-link:hover {
+  color: #ffb453;
 }
 
 .triplet-text-container {
   position: relative;
-  width: 100%;
 }
 
 .triplet-actions-container {
@@ -535,96 +520,17 @@
   opacity: 0.8;
 }
 
-.upvote-badge-relative {
-  position: relative;
-  bottom: auto;
-  right: auto;
-  background: rgba(76, 175, 80, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 60px;
-  justify-content: center;
-  cursor: default;
-  white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
-}
-
-/* ========== SHARES BADGES (Curve 2) ========== */
-
-.shares-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 80px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border: 1px solid rgba(102, 126, 234, 0.4);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 60px;
-  justify-content: center;
-  z-index: 2;
-  cursor: default;
-  white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.shares-badge-relative {
-  position: relative;
-  bottom: auto;
-  right: auto;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border: 1px solid rgba(102, 126, 234, 0.4);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 60px;
-  justify-content: center;
-  cursor: default;
-  white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
-}
-
 /* ========== STAKE BUTTON ========== */
 
-.stake-button {
-  padding: 4px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  transition: all 0.2s;
-  margin-left: 6px;
-}
-
-.stake-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
 .portal-fallback-link {
-  color: #888;
-  font-style: italic;
+  color: #b9977d;
+}
+
+.triplet-detail-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  align-items: center;
 }
 
 .triplet-detail-actions {
@@ -759,7 +665,7 @@
   color: #C7866C;
   font-style: normal;
   margin-top: 10px;
-  line-height: 1.4;
+  line-height: 0px;
 }
 
 .refresh-button {
@@ -822,6 +728,9 @@
   .echo-header,
   .triplet-header {
     gap: none;
+    position: relative;
+    display: flex;
+    flex-direction: row;
   }
   
   .batch-btn {
@@ -838,15 +747,6 @@
     font-size: 11px;
   }
 
-  .upvote-badge {
-    padding: 3px 8px;
-    font-size: 11px;
-    min-width: 50px;
-  }
-
-  .triplet-detail-section {
-    padding: 12px;
-  }
 }
 
 /* ========== PULSE TAB SPECIFIC STYLES ========== */
@@ -1012,7 +912,8 @@
 }
 
 .bookmark-search-container {
-  margin-top: 12px;
+
+  margin-bottom: 12px;
 }
 
 .bookmark-content-padding {
@@ -1177,4 +1078,42 @@
   .recommendation-category {
     font-size: 16px;
   }
+}
+
+/* ========== BONDING CURVE CHART IN EXPANDED VIEW ========== */
+
+.chart-section-expanded {
+  margin-top: 16px;
+}
+
+.chart-curve-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  justify-content: flex-start;
+  
+}
+
+.curve-selector-btn {
+  padding: 5px 30px;
+  background-color: rgba(255, 255, 255, 0.021);
+  border: 1px solid rgba(255, 255, 255, 0.103);
+  border-radius: 33px;
+  color: #ffffff88;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.curve-selector-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.curve-selector-btn.active {
+  background-color: rgba(175, 116, 76, 0.3);
+  border-color: rgba(175, 129, 76, 0.6);
+  box-shadow: 0 0 8px rgba(175, 144, 76, 0.4);
+  color: #ffffff;
 }

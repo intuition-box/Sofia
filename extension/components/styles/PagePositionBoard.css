@@ -1,0 +1,279 @@
+/* ── PagePositionBoard ── */
+
+.position-board {
+  border-radius: var(--radius-lg);
+  background: rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(50px) saturate(100%);
+  -webkit-backdrop-filter: blur(50px) saturate(100%);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+
+.position-board__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-very-light);
+}
+
+.position-board__title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.3px;
+}
+
+.position-board__count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-very-muted);
+  font-weight: 500;
+}
+
+/* ── List ── */
+
+.position-board__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Item ── */
+
+.position-board__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  transition: var(--transition-fast);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.position-board__item:last-child {
+  border-bottom: none;
+}
+
+.position-board__item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.position-board__item.position-board__item--current-user {
+  background: rgba(199, 134, 108, 0.08);
+  border-left: 2px solid var(--color-primary);
+}
+
+.position-board__item.position-board__item--trust-circle {
+  background: rgba(96, 165, 250, 0.05);
+}
+
+/* ── Rank ── */
+
+.position-board__rank {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-very-muted);
+  min-width: 24px;
+  text-align: center;
+}
+
+.position-board__item:first-child .position-board__rank {
+  color: #D4A843;
+}
+
+/* ── Avatar ── */
+
+.position-board__avatar {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px;
+  font-size: 9px !important;
+}
+
+.position-board--compact .position-board__avatar {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  font-size: 8px !important;
+}
+
+/* ── Label ── */
+
+.position-board__label {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.position-board__item--current-user .position-board__label {
+  color: var(--color-primary-light);
+  font-weight: 600;
+}
+
+/* ── Badge ── */
+
+.position-board__badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.position-board__badge--pioneer {
+  color: #D4A843;
+  background: rgba(212, 168, 67, 0.12);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+}
+
+.position-board__badge--explorer {
+  color: #6B8AFF;
+  background: rgba(107, 138, 255, 0.1);
+  border: 1px solid rgba(107, 138, 255, 0.15);
+}
+
+.position-board__badge--contributor {
+  color: var(--color-text-very-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── You Tag ── */
+
+.position-board__you-tag {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+/* ── Circle Tag ── */
+
+.position-board__circle-tag {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-info);
+  opacity: 0.8;
+}
+
+/* ── More ── */
+
+.position-board__more {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-very-muted);
+  text-align: center;
+}
+
+/* ── Compact variant (WeightModal) ── */
+
+.position-board--compact {
+  border-radius: var(--radius-md);
+}
+
+.position-board--compact .position-board__item {
+  padding: 3px var(--spacing-sm);
+}
+
+.position-board--compact .position-board__header {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+/* ── Expanded variant (PageBlockchainCard) ── */
+
+.position-board--expanded {
+  margin-top: var(--spacing-sm);
+}
+
+.position-board--expanded .position-board__item {
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+/* ── Loading state ── */
+
+.position-board__loading {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-very-muted);
+  text-align: center;
+  animation: positionBoardPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes positionBoardPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ── Empty state ── */
+
+.position-board__empty {
+  padding: var(--spacing-md);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-very-muted);
+}
+
+/* ── Animation ── */
+
+@keyframes positionBoardAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.position-board {
+  animation: positionBoardAppear 0.3s ease-out;
+}
+
+/* ── ShareCertificationButton ── */
+
+.share-certification-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-family: var(--font-family-primary);
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.share-certification-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.share-certification-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.share-certification-btn__icon {
+  width: 14px;
+  height: 14px;
+  filter: invert(1);
+}

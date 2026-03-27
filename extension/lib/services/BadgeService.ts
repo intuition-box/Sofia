@@ -3,7 +3,7 @@
  * Centralizes all badge-related operations
  */
 
-import { elizaDataService } from '../database/indexedDB-methods'
+import { tripletsDataService } from '../database/indexedDB-methods'
 import type { MessageResponse } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
 
@@ -45,10 +45,10 @@ export class BadgeService {
   public async countAvailableEchoes(): Promise<number> {
     try {
       // Load published triplet IDs to exclude them
-      const publishedTripletIds = await elizaDataService.loadPublishedTripletIds()
+      const publishedTripletIds = await tripletsDataService.loadPublishedTripletIds()
       
       // Get all parsed messages from IndexedDB
-      const messages = await elizaDataService.getMessagesByType('parsed_message')
+      const messages = await tripletsDataService.getMessagesByType('parsed_message')
       
       let availableCount = 0
       
@@ -56,17 +56,17 @@ export class BadgeService {
         if (record.type === 'parsed_message' && record.content) {
           try {
             // Parse the content if it's a string
-            let parsed: any
+            let parsed: { triplets?: unknown[] }
             if (typeof record.content === 'string') {
               parsed = JSON.parse(record.content)
             } else if (record.content && typeof record.content === 'object') {
-              parsed = record.content as any
+              parsed = record.content as { triplets?: unknown[] }
             } else {
               continue
             }
-            
-            if (parsed && parsed.triplets && Array.isArray(parsed.triplets) && parsed.triplets.length > 0) {
-              parsed.triplets.forEach((triplet: any, index: number) => {
+
+            if (parsed && Array.isArray(parsed.triplets) && parsed.triplets.length > 0) {
+              parsed.triplets.forEach((_triplet: unknown, index: number) => {
                 const tripletId = `${record.messageId}_${index}`
                 
                 // Only count if not already published

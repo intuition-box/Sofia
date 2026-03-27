@@ -1,25 +1,23 @@
-import { connectToMetamask, getMetamaskConnection } from "./metamask"
-import { MessageBus } from "../lib/services/MessageBus"
-import type { ChromeMessage, MessageResponse } from "../types/messages"
-import { recordScroll } from "./behavior"
-import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
-import { getAllBookmarks, getAllHistory } from "./messageSenders"
-import { convertThemesToTriplets } from "./tripletProcessor"
-import { elizaDataService } from "../lib/database/indexedDB-methods"
 import {
-  recordUserPredicate,
-  getTopIntentions,
-  getDomainIntentionStats,
-  getPredicateUpgradeSuggestions,
-  getIntentionGlobalStats
-} from "./intentionRanking"
-import { badgeService } from "../lib/services/BadgeService"
-import { pageDataService } from "../lib/services/PageDataService"
-import { pulseService } from "../lib/services/PulseService"
-import { tripletStorageService } from "../lib/services/TripletStorageService"
-import { initializeSocketsOnWalletConnect } from "./index"
+  badgeService, pageDataService, pulseService, tripletStorageService,
+  groupManager, xpService, XPServiceClass, goldService, getLevelUpCost,
+  currencyMigrationService, sessionTracker, levelUpService,
+  browsingNudgeService,
+  type TrackedUrl, type DomainCluster
+} from "../lib/services"
+import type { ChromeMessage, MessageResponse } from "../types/messages"
+import { sendMessage, sendThemeExtractionRequest, sendRecommendationRequest } from "./agentRouter"
+import { intuitionGraphqlClient } from "../lib/clients/graphql-client"
+import { getAddress } from "viem"
+import { getAllBookmarks, getAllHistory } from "./messageSenders"
+import { initializeOnWalletConnect } from "./index"
+import { oauthService } from "./oauth"
+import { IntentionGroupsService } from "../lib/database"
+import { createServiceLogger } from '../lib/utils/logger'
 
-// 🔥 FIX: Flag to prevent duplicate message handlers registration
+const logger = createServiceLogger('MessageHandlers')
+
+// Flag to prevent duplicate message handlers registration
 let handlersRegistered = false
 
 
@@ -34,14 +32,14 @@ async function handleDataExtraction(
   try {
     const result = await dataFetcher()
     if (result.success && result.urls) {
-      console.log(`🔄 Starting ${type} analysis for`, result.urls.length, 'URLs')
+      logger.info(`Starting ${type} analysis for ${result.urls.length} URLs`)
       const finalResult = await processor(result.urls)
       sendResponse(finalResult)
     } else {
       sendResponse({ success: false, error: result.error })
     }
   } catch (error) {
-    console.error(`❌ ${type} extraction error:`, error)
+    logger.error(`${type} extraction error`, error)
     sendResponse({ success: false, error: error.message })
   }
 }
@@ -56,7 +54,7 @@ async function handleRecommendationGeneration(message: ChromeMessage, sendRespon
       return
     }
 
-    console.log('💎 [messageHandlers] Generating recommendations for wallet:', walletData.address)
+    logger.info('[messageHandlers] Generating recommendations for wallet', { address: walletData.address })
 
     // Send request and wait for response (imported at top)
     const recommendationsData = await sendRecommendationRequest(walletData)
@@ -69,14 +67,14 @@ async function handleRecommendationGeneration(message: ChromeMessage, sendRespon
     // Extract recommendations array from response
     const recommendations = recommendationsData.recommendations || []
 
-    console.log('✅ [messageHandlers] Received', recommendations.length, 'recommendation categories')
+    logger.info(`[messageHandlers] Received ${recommendations.length} recommendation categories`)
     sendResponse({
       success: true,
       recommendations
     })
 
   } catch (error) {
-    console.error('❌ [messageHandlers] Recommendation generation failed:', error)
+    logger.error('[messageHandlers] Recommendation generation failed', error)
     sendResponse({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -84,94 +82,66 @@ async function handleRecommendationGeneration(message: ChromeMessage, sendRespon
   }
 }
 
-// Enhanced Ollama request handler with better error handling
-async function handleOllamaRequest(payload: any, sendResponse: (response: MessageResponse) => void): Promise<void> {
-  try {
-    const url = "http://127.0.0.1:11434/api/chat";
-    
-    // Enhanced logging
-    console.log('[BG→Ollama] POST', url, {
-      model: payload.model,
-      stream: payload.stream,
-      messagesCount: Array.isArray(payload.messages) ? payload.messages.length : 0
-    });
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: payload.model ?? "llama3:latest",
-        messages: payload.messages ?? [],
-        stream: Boolean(payload.stream)
-      })
-    });
+// Allowed origins for external messages (security)
+const ALLOWED_EXTERNAL_ORIGINS = [
+  'https://doc.sofia.intuition.box',
+  'http://localhost:3000' // For development only
+]
 
-    // Enhanced response handling with fallback parsing
-    const text = await response.text();
-    let data: any;
-    try { 
-      data = JSON.parse(text); 
-    } catch { 
-      data = { raw: text }; 
-    }
-
-    // Debug CORS headers
-    console.log('[BG→Ollama] status:', response.status,
-      'ACAO:', response.headers.get("access-control-allow-origin"),
-      'Vary:', response.headers.get("vary"));
-
-    if (!response.ok) {
-      console.log('❌ [Background] Ollama error:', response.status, response.statusText);
-      sendResponse({ 
-        success: false, 
-        status: response.status,
-        error: data?.error || text 
-      });
-      return;
-    }
-
-    console.log('✅ [Background] Ollama success');
-    sendResponse({ 
-      success: true, 
-      status: response.status,
-      data 
-    });
-    
-  } catch (error) {
-    console.error('[BG→Ollama] fetch error:', error);
-    sendResponse({ 
-      success: false, 
-      error: String(error) 
-    });
-  }
-}
-
+// Supported OAuth platforms
+const SUPPORTED_OAUTH_PLATFORMS = ['twitter', 'youtube', 'spotify', 'discord', 'twitch']
 
 export function setupMessageHandlers(): void {
   // 🔥 FIX: Prevent duplicate handler registration
   if (handlersRegistered) {
-    console.log("⚠️ [messageHandlers] Handlers already registered, skipping")
+    logger.warn("[messageHandlers] Handlers already registered, skipping")
     return
   }
   handlersRegistered = true
-  console.log("📨 [messageHandlers] Registering message handlers...")
+  logger.info("[messageHandlers] Registering message handlers...")
 
   // Handle external messages from auth page (localhost:3000 or sofia.intuition.box)
   chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
-    console.log('📨 External message received:', message.type, 'from:', sender.origin)
+    logger.debug('External message received', { type: message.type, origin: sender.origin })
+
+    // SECURITY: Validate origin before processing any external message
+    const isAllowedOrigin = sender.origin && ALLOWED_EXTERNAL_ORIGINS.some(
+      allowed => sender.origin!.startsWith(allowed)
+    )
+
+    if (!isAllowedOrigin) {
+      logger.warn('Rejected external message from untrusted origin', { origin: sender.origin })
+      sendResponse({ success: false, error: 'Untrusted origin' })
+      return true
+    }
 
     if (message.type === 'WALLET_CONNECTED') {
       const walletAddress = message.data?.walletAddress || message.walletAddress
+      const walletType = message.data?.walletType || message.walletType || null
       if (walletAddress) {
-        chrome.storage.session.set({ walletAddress }).then(async () => {
-          console.log('✅ Wallet connected from external page:', walletAddress)
-          // Initialize sockets now that wallet is connected
-          await initializeSocketsOnWalletConnect()
-          sendResponse({ success: true })
-        }).catch((error) => {
-          console.error('❌ Failed to save wallet:', error)
-          sendResponse({ success: false, error: error.message })
-        })
+        (async () => {
+          try {
+            // Check if wallet changed using persistent lastActiveWallet
+            const { lastActiveWallet } = await chrome.storage.local.get('lastActiveWallet')
+            if (lastActiveWallet && lastActiveWallet.toLowerCase() !== walletAddress.toLowerCase()) {
+              logger.info('[messageHandlers] Wallet changed', { from: lastActiveWallet, to: walletAddress })
+              await IntentionGroupsService.clearAll()
+            }
+            // Update lastActiveWallet
+            await chrome.storage.local.set({ lastActiveWallet: walletAddress })
+            await chrome.storage.session.set({ walletAddress, walletType, pending_external_auth: true })
+            // Migrate XP from non-prefixed keys to wallet-prefixed keys (one-time)
+            await XPServiceClass.migrateToWalletKeys(walletAddress)
+            // Migrate unified XP to dual currency (XP + Gold) — one-time, idempotent
+            await currencyMigrationService.migrate(walletAddress)
+            logger.info('Wallet connected from external page', { walletAddress, walletType })
+            await initializeOnWalletConnect()
+            sendResponse({ success: true })
+          } catch (error) {
+            logger.error('Failed to save wallet', error)
+            sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+          }
+        })()
       } else {
         sendResponse({ success: false, error: 'No wallet address provided' })
       }
@@ -179,13 +149,65 @@ export function setupMessageHandlers(): void {
     }
 
     if (message.type === 'WALLET_DISCONNECTED') {
-      chrome.storage.session.remove('walletAddress').then(() => {
-        console.log('✅ Wallet disconnected from external page')
+      chrome.storage.session.remove(['walletAddress', 'walletType']).then(() => {
+        logger.info('Wallet disconnected from external page')
         sendResponse({ success: true })
       }).catch((error) => {
-        console.error('❌ Failed to disconnect wallet:', error)
+        logger.error('Failed to disconnect wallet', error)
         sendResponse({ success: false, error: error.message })
       })
+      return true
+    }
+
+    // Handle OAuth token from landing page (generic handler for all platforms)
+    if (message.type === 'OAUTH_TOKEN_SUCCESS' || message.type === 'TWITTER_OAUTH_SUCCESS') {
+      const { platform, accessToken, refreshToken, expiresIn } = message
+
+      // Validate platform
+      const platformName = platform || 'twitter'
+      if (!SUPPORTED_OAUTH_PLATFORMS.includes(platformName)) {
+        logger.warn('Unsupported OAuth platform', { platform: platformName })
+        sendResponse({ success: false, error: `Unsupported platform: ${platformName}` })
+        return true
+      }
+
+      if (accessToken) {
+        oauthService.handleExternalOAuthToken(
+          platformName,
+          accessToken,
+          refreshToken,
+          expiresIn
+        ).then(() => {
+          logger.info(`${platformName} OAuth token received and stored`)
+          sendResponse({ success: true })
+        }).catch((error) => {
+          logger.error(`Failed to store ${platformName} token`, error)
+          sendResponse({ success: false, error: error.message })
+        })
+      } else {
+        sendResponse({ success: false, error: 'No access token provided' })
+      }
+      return true
+    }
+
+    if (message.type === 'FIRST_CLAIM') {
+      const url = message.data?.url || 'https://doc.sofia.intuition.box'
+      ;(async () => {
+        try {
+          await chrome.storage.session.set({
+            pending_first_claim: { url }
+          })
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+          if (tab?.id) {
+            await chrome.sidePanel.open({ tabId: tab.id })
+          }
+          logger.info('First claim intent stored', { url })
+          sendResponse({ success: true })
+        } catch (error) {
+          logger.error('Failed to handle FIRST_CLAIM', error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+      })()
       return true
     }
 
@@ -224,29 +246,11 @@ export function setupMessageHandlers(): void {
           await sendMessage('CHATBOT', message.text)
           sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ Failed to send chatbot message:", error)
+          logger.error("Failed to send chatbot message", error)
           sendResponse({ success: false, error: error.message })
         }
         return true
 
-      case "CONNECT_TO_METAMASK":
-        connectToMetamask()
-          .then(result => MessageBus.getInstance().sendMetamaskResult(result))
-          .catch(error => {
-            console.error("MetaMask error:", error)
-            MessageBus.getInstance().sendMetamaskResult({ success: false, error: error.message })
-          })
-        break
-
-      case "GET_METAMASK_ACCOUNT": {
-        const connection = getMetamaskConnection()
-        sendResponse(
-          connection?.account
-            ? { success: true, account: connection.account, chainId: connection.chainId }
-            : { success: false, error: "No MetaMask connection found" }
-        )
-        break
-      }
 
       case "GET_TRACKING_STATS":
         sendResponse({
@@ -259,24 +263,75 @@ export function setupMessageHandlers(): void {
         sendResponse({ success: true, message: "No local data to clear" })
         break
 
+      case "FETCH_BOOKMARKS":
+        // Return bookmarks list without processing (for selection UI)
+        try {
+          const fetchResult = await getAllBookmarks()
+          sendResponse({ success: true, bookmarks: fetchResult.bookmarks || [] })
+        } catch (error) {
+          logger.error("FETCH_BOOKMARKS error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
       case "GET_BOOKMARKS":
-        handleDataExtraction('bookmarks', getAllBookmarks, async (urls: string[]) => {
-          const themes = await sendThemeExtractionRequest(urls)
+      case "IMPORT_SELECTED_BOOKMARKS": {
+        // GET_BOOKMARKS: fetch all + import (orb button)
+        // IMPORT_SELECTED_BOOKMARKS: import only selected bookmarks (onboarding)
+        try {
+          let bookmarksToImport: { url: string; title: string }[]
+
+          if (message.type === "IMPORT_SELECTED_BOOKMARKS" && message.data?.bookmarks) {
+            bookmarksToImport = message.data.bookmarks
+          } else {
+            const bookmarkResult = await getAllBookmarks()
+            if (!bookmarkResult.success || !bookmarkResult.bookmarks) {
+              sendResponse({ success: false, error: bookmarkResult.error })
+              return true
+            }
+            bookmarksToImport = bookmarkResult.bookmarks
+          }
+
+          // Group bookmarks by domain → DomainCluster[]
+          const domainMap = new Map<string, TrackedUrl[]>()
+          for (const bm of bookmarksToImport) {
+            try {
+              const domain = new URL(bm.url).hostname.replace('www.', '')
+              if (!domainMap.has(domain)) domainMap.set(domain, [])
+              domainMap.get(domain)!.push({
+                url: bm.url,
+                title: bm.title,
+                domain,
+                duration: 0,
+                visitedAt: Date.now()
+              })
+            } catch { /* skip invalid URLs */ }
+          }
+
+          const clusters: DomainCluster[] = Array.from(domainMap.entries()).map(([domain, urls]) => ({
+            domain,
+            urls,
+            totalDuration: 0
+          }))
+
+          await groupManager.processFlush(clusters)
 
           // Send completion notification to UI
           chrome.runtime.sendMessage({
             type: 'THEME_EXTRACTION_COMPLETE',
-            themesExtracted: themes?.length || 0
-          }).catch(() => {}) // Ignore if no listener
+            themesExtracted: clusters.length
+          }).catch(() => {})
 
-          return {
+          sendResponse({
             success: true,
-            message: 'Bookmark analysis completed',
-            themesExtracted: themes?.length || 0,
-            triplesProcessed: true
-          }
-        }, sendResponse)
+            message: `Imported ${bookmarksToImport.length} bookmarks into ${clusters.length} groups`
+          })
+        } catch (error) {
+          logger.error("IMPORT_BOOKMARKS error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
         return true
+      }
 
       case "GET_HISTORY":
         handleDataExtraction('history', getAllHistory, async (urls: string[]) => {
@@ -297,68 +352,6 @@ export function setupMessageHandlers(): void {
       case "STORE_DETECTED_TRIPLETS":
         tripletStorageService.handleStoreDetectedTriplets(message, sendResponse)
         return true
-
-
-      case "GET_INTENTION_RANKING":
-        try {
-          const limit = message.data?.limit || 10
-          const rankings = getTopIntentions(limit)
-          sendResponse({ success: true, data: rankings })
-        } catch (error) {
-          console.error("❌ GET_INTENTION_RANKING error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "GET_DOMAIN_INTENTIONS":
-        try {
-          const domain = message.data?.domain
-          if (!domain) {
-            sendResponse({ success: false, error: "Domain parameter required" })
-            return true
-          }
-          const stats = getDomainIntentionStats(domain)
-          sendResponse({ success: true, data: stats })
-        } catch (error) {
-          console.error("❌ GET_DOMAIN_INTENTIONS error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "RECORD_PREDICATE":
-        try {
-          const { url, predicate } = message.data || {}
-          if (!url || !predicate) {
-            sendResponse({ success: false, error: "URL and predicate parameters required" })
-            return true
-          }
-          recordUserPredicate(url, predicate)
-          console.log(`🎯 [messageHandlers] Predicate "${predicate}" recorded for ${url}`)
-          sendResponse({ success: true })
-        } catch (error) {
-          console.error("❌ RECORD_PREDICATE error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
-      case "GET_UPGRADE_SUGGESTIONS":
-        try {
-          const minConfidence = message.data?.minConfidence || 0.7
-          const suggestions = getPredicateUpgradeSuggestions(minConfidence)
-          const globalStats = getIntentionGlobalStats()
-          sendResponse({ 
-            success: true, 
-            data: { 
-              suggestions, 
-              globalStats 
-            }
-          })
-        } catch (error) {
-          console.error("❌ GET_UPGRADE_SUGGESTIONS error:", error)
-          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
-        }
-        return true
-
 
       case "START_PULSE_ANALYSIS":
         pulseService.handlePulseAnalysis(sendResponse)
@@ -381,10 +374,6 @@ export function setupMessageHandlers(): void {
         badgeService.handleBadgeUpdate(sendResponse)
         return true
 
-      case "OLLAMA_REQUEST":
-        handleOllamaRequest(message.payload, sendResponse)
-        return true
-
       case "GENERATE_RECOMMENDATIONS":
         handleRecommendationGeneration(message, sendResponse)
         return true
@@ -399,7 +388,7 @@ export function setupMessageHandlers(): void {
           // For now, just return success - the actual GraphQL query is handled in the frontend
           sendResponse({ success: true, data: { url } })
         } catch (error) {
-          console.error("❌ GET_PAGE_BLOCKCHAIN_DATA error:", error)
+          logger.error("GET_PAGE_BLOCKCHAIN_DATA error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
@@ -407,55 +396,304 @@ export function setupMessageHandlers(): void {
       case "PAGE_ANALYSIS":
         try {
           // Log page analysis data for debugging
-          console.log("📋 Page analysis received:", message.data)
+          logger.debug("Page analysis received", message.data)
           // This is a fire-and-forget message, no response needed
         } catch (error) {
-          console.error("❌ PAGE_ANALYSIS error:", error)
+          logger.error("PAGE_ANALYSIS error", error)
         }
         break
 
       case "URL_CHANGED":
         try {
           // Log URL change for debugging
-          console.log("🔗 URL changed:", message.data)
+          logger.debug("URL changed", message.data)
           // This is a fire-and-forget message, no response needed
         } catch (error) {
-          console.error("❌ URL_CHANGED error:", error)
+          logger.error("URL_CHANGED error", error)
         }
         break
 
-      case "WALLET_CONNECTED":
+      case "WALLET_DISCONNECTED":
         try {
-          const walletAddress = message.data?.walletAddress || message.walletAddress
-          if (walletAddress) {
-            await chrome.storage.session.set({ walletAddress })
-            console.log("✅ Wallet connected:", walletAddress)
-            sendResponse({ success: true })
-          } else {
-            sendResponse({ success: false, error: "No wallet address provided" })
-          }
+          await chrome.storage.session.remove(['walletAddress', 'walletType'])
+          logger.info("Wallet disconnected")
+          sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ WALLET_CONNECTED error:", error)
+          logger.error("WALLET_DISCONNECTED error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
 
-      case "WALLET_DISCONNECTED":
+      // =====================================================
+      // 🆕 INTENTION GROUPS HANDLERS
+      // =====================================================
+
+      case "GET_INTENTION_GROUPS":
         try {
-          await chrome.storage.session.remove('walletAddress')
-          console.log("✅ Wallet disconnected")
+          const groups = await groupManager.getAllGroups()
+          sendResponse({ success: true, groups })
+        } catch (error) {
+          logger.error("GET_INTENTION_GROUPS error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "GET_GROUP_DETAILS":
+        try {
+          const groupId = message.groupId || message.data?.groupId
+          if (!groupId) {
+            sendResponse({ success: false, error: "Group ID required" })
+            return true
+          }
+          const group = await groupManager.getGroup(groupId)
+          if (group) {
+            const stats = groupManager.getGroupStats(group)
+            sendResponse({ success: true, group, stats })
+          } else {
+            sendResponse({ success: false, error: "Group not found" })
+          }
+        } catch (error) {
+          logger.error("GET_GROUP_DETAILS error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "GET_USER_XP":
+        try {
+          const { lastActiveWallet: xpWallet } = await chrome.storage.local.get('lastActiveWallet')
+          const xpStats = await xpService.getStats(xpWallet || '')
+          const goldStats = await goldService.getStats(xpWallet || '')
+          sendResponse({ success: true, xp: xpStats, gold: goldStats })
+        } catch (error) {
+          logger.error("GET_USER_XP error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "CERTIFY_URL":
+        try {
+          const { groupId: certGroupId, url: certUrl, certification } = message.data || message
+          if (!certGroupId || !certUrl || !certification) {
+            sendResponse({ success: false, error: "groupId, url, and certification required" })
+            return true
+          }
+          const certResult = await groupManager.certifyUrl(certGroupId, certUrl, certification)
+          sendResponse({ success: certResult.success, goldGained: certResult.goldGained, error: certResult.error })
+        } catch (error) {
+          logger.error("CERTIFY_URL error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "REMOVE_URL_FROM_GROUP":
+        try {
+          const { groupId: removeGroupId, url: removeUrl } = message.data || message
+          if (!removeGroupId || !removeUrl) {
+            sendResponse({ success: false, error: "groupId and url required" })
+            return true
+          }
+          const removed = await groupManager.removeUrl(removeGroupId, removeUrl)
+          sendResponse({ success: removed })
+        } catch (error) {
+          logger.error("REMOVE_URL_FROM_GROUP error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "DELETE_GROUP":
+        try {
+          const { groupId: deleteGroupId } = message.data || message
+          if (!deleteGroupId) {
+            sendResponse({ success: false, error: "groupId required" })
+            return true
+          }
+          await groupManager.deleteGroup(deleteGroupId)
           sendResponse({ success: true })
         } catch (error) {
-          console.error("❌ WALLET_DISCONNECTED error:", error)
+          logger.error("DELETE_GROUP error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "UPDATE_GROUP_LEVEL":
+        // Restore level from on-chain data (used when local cache is stale)
+        try {
+          const { groupId: updateLvlGroupId, level: newLevel, certifiedCount } = message.data || message
+          if (!updateLvlGroupId || !newLevel) {
+            sendResponse({ success: false, error: "groupId and level required" })
+            return true
+          }
+          const groupToUpdate = await groupManager.getGroup(updateLvlGroupId)
+          if (!groupToUpdate) {
+            sendResponse({ success: false, error: "Group not found" })
+            return true
+          }
+          // Allow both upgrades and downgrades (sync with on-chain)
+          if (newLevel !== groupToUpdate.level) {
+            groupToUpdate.level = newLevel
+            if (certifiedCount) {
+              groupToUpdate.totalCertifications = certifiedCount
+            }
+            groupToUpdate.updatedAt = Date.now()
+            await IntentionGroupsService.saveGroup(groupToUpdate)
+            logger.info(`[messageHandlers] Updated level for ${updateLvlGroupId}: ${newLevel}`)
+          }
+          sendResponse({ success: true })
+        } catch (error) {
+          logger.error("UPDATE_GROUP_LEVEL error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "GET_LEVEL_UP_COST":
+        try {
+          const { groupId: lvlGroupId } = message.data || message
+          if (!lvlGroupId) {
+            sendResponse({ success: false, error: "groupId required" })
+            return true
+          }
+          const lvlGroup = await groupManager.getGroup(lvlGroupId)
+          if (!lvlGroup) {
+            sendResponse({ success: false, error: "Group not found" })
+            return true
+          }
+          const cost = getLevelUpCost(lvlGroup.level)
+          const { lastActiveWallet: lvlWallet } = await chrome.storage.local.get('lastActiveWallet')
+          const goldStats = await goldService.getStats(lvlWallet || '')
+          sendResponse({
+            success: true,
+            cost,
+            currentLevel: lvlGroup.level,
+            availableGold: goldStats.totalGold,
+            canAfford: goldStats.totalGold >= cost
+          })
+        } catch (error) {
+          logger.error("GET_LEVEL_UP_COST error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "TRACK_URL":
+        try {
+          const { url: trackUrl, title: trackTitle, duration, favicon } = message.data || message
+          if (!trackUrl) {
+            sendResponse({ success: false, error: "url required" })
+            return true
+          }
+          sessionTracker.trackUrl({ url: trackUrl, title: trackTitle || trackUrl, duration, favicon })
+          browsingNudgeService.incrementAndCheck()
+          sendResponse({ success: true })
+        } catch (error) {
+          logger.error("TRACK_URL error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "FORCE_FLUSH_TRACKER":
+        try {
+          const clusters = await sessionTracker.forceFlush()
+          sendResponse({ success: true, clustersCount: clusters.length })
+        } catch (error) {
+          logger.error("FORCE_FLUSH_TRACKER error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "NUDGE_DISMISSED":
+        browsingNudgeService.resetCounter()
+        sendResponse({ success: true })
+        return true
+
+      case "LEVEL_UP_GROUP":
+        try {
+          const { groupId: levelUpGroupId, certificationBreakdown, targetLevel } = message.data || message
+          if (!levelUpGroupId) {
+            sendResponse({ success: false, error: "groupId required" })
+            return true
+          }
+          logger.info(`[messageHandlers] Level up request for group: ${levelUpGroupId}`, { targetLevel })
+          const levelUpResult = await levelUpService.levelUp(levelUpGroupId, certificationBreakdown, targetLevel)
+          sendResponse({
+            success: levelUpResult.success,
+            ...levelUpResult
+          })
+        } catch (error) {
+          logger.error("LEVEL_UP_GROUP error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      case "PREVIEW_LEVEL_UP":
+        try {
+          const { groupId: previewGroupId, targetLevel: previewTargetLevel } = message.data || message
+          if (!previewGroupId) {
+            sendResponse({ success: false, error: "groupId required" })
+            return true
+          }
+          const preview = await levelUpService.previewLevelUp(previewGroupId, previewTargetLevel)
+          if (preview) {
+            sendResponse({ success: true, ...preview })
+          } else {
+            sendResponse({ success: false, error: "Group not found" })
+          }
+        } catch (error) {
+          logger.error("PREVIEW_LEVEL_UP error", error)
+          sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+        return true
+
+      // =====================================================
+      // DEEP LINK: Share page → UserProfilePage
+      // =====================================================
+
+      case "DEEP_LINK_PROFILE":
+        try {
+          const { wallet, name } = message.data || {}
+          if (!wallet) {
+            sendResponse({ success: false, error: "wallet required" })
+            return true
+          }
+
+          // Resolve Account atom termId from wallet address
+          const checksumAddress = getAddress(wallet)
+          const lowercaseAddress = checksumAddress.toLowerCase()
+
+          const FIND_ACCOUNT_ATOM = `
+            query FindAccountAtom($address: String!) {
+              atoms(where: { _and: [{ data: { _ilike: $address } }, { type: { _eq: "Account" } }] }, limit: 1) {
+                term_id
+              }
+            }
+          `
+
+          const atomResponse = await intuitionGraphqlClient.request(FIND_ACCOUNT_ATOM, {
+            address: `%${lowercaseAddress}%`
+          })
+
+          const termId = atomResponse?.atoms?.[0]?.term_id || ""
+
+          // Store navigation intent in session storage
+          await chrome.storage.session.set({
+            pending_profile_view: {
+              termId,
+              label: name || `${wallet.slice(0, 6)}...${wallet.slice(-4)}`,
+              walletAddress: checksumAddress,
+            }
+          })
+
+          logger.info("[Deep Link] Profile intent stored for " + checksumAddress.slice(0, 8) + "...")
+          sendResponse({ success: true })
+        } catch (error) {
+          logger.error("DEEP_LINK_PROFILE error", error)
           sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
         }
         return true
 
     }
 
-    sendResponse({ success: true })
+    sendResponse({ success: false, error: 'Unknown message type: ' + message.type })
     })().catch(error => {
-      console.error("❌ Message handler error:", error)
+      logger.error("Message handler error", error)
       sendResponse({ success: false, error: error.message })
     })
     return true

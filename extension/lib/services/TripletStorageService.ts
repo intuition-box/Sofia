@@ -3,7 +3,7 @@
  * Handles bookmark and detected triplets storage
  */
 
-import { elizaDataService } from '../database/indexedDB-methods'
+import { tripletsDataService } from '../database/indexedDB-methods'
 import { badgeService } from './BadgeService'
 import type { ChromeMessage, MessageResponse } from '../../types/messages'
 import { createServiceLogger } from '../utils/logger'
@@ -39,7 +39,7 @@ export class TripletStorageService {
         processed: false
       }
       
-      await elizaDataService.storeMessage(newMessage, newMessage.id)
+      await tripletsDataService.storeMessage(newMessage, newMessage.id)
       logger.info('Bookmark triplets stored in IndexedDB', { id: newMessage.id })
       
       sendResponse({ success: true, id: newMessage.id })
@@ -83,7 +83,7 @@ export class TripletStorageService {
         processed: false
       }
       
-      await elizaDataService.storeMessage(newMessage, newMessage.id)
+      await tripletsDataService.storeMessage(newMessage, newMessage.id)
       logger.info('Detected triplets stored', { 
         id: newMessage.id, 
         count: triplets.length,

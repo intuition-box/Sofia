@@ -9,8 +9,6 @@
   border: 1px solid var(--color-border-glass);
   box-shadow: var(--shadow-glass);
   margin: var(--spacing-sm);
-  backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
-  -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
 }
 
 .page-header {
@@ -68,26 +66,17 @@
   background-color: #897359;
 }
 
-.page-content {
+.profile-page .page-content {
   border-radius: var(--radius-lg);
-  backdrop-filter: var(--backdrop-blur-heavy) var(--backdrop-saturate);
-  -webkit-backdrop-filter: var(--backdrop-blur) var(--backdrop-saturate);
   transition: var(--transition-normal);
   padding: var(--spacing-xl);
-  background: var(--color-bg-glass-light);
-  border: 1px solid var(--color-border-glass);
+  border: none;
+  background: transparent;
 }
 
 .loading-state {
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: var(--spacing-4xl);
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-lg);
-  color: var(--color-primary);
-  background-color: var(--color-bg-glass-light);
-  border-radius: var(--radius-lg);
-  backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
-  -webkit-backdrop-filter: var(--backdrop-blur-light) var(--backdrop-saturate);
+  align-items: center;
+  min-height: 400px;
 }

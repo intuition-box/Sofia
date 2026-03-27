@@ -1,0 +1,61 @@
+fragment VaultBasicDetails on vaults {
+  term_id
+  curve_id
+  term {
+    atom {
+      term_id
+      label
+    }
+    triple {
+      term_id
+      subject {
+        term_id
+        label
+      }
+      predicate {
+        term_id
+        label
+      }
+      object {
+        term_id
+        label
+      }
+    }
+  }
+  current_share_price
+  total_shares
+}
+
+fragment VaultPositionsAggregate on vaults {
+  positions_aggregate {
+    ...PositionAggregateFields
+  }
+}
+
+fragment VaultFilteredPositions on vaults {
+  positions(where: { account_id: { _in: $addresses } }) {
+    ...PositionFields
+  }
+}
+
+fragment VaultUnfilteredPositions on vaults {
+  positions {
+    ...PositionFields
+  }
+}
+
+fragment VaultDetails on vaults {
+  ...VaultBasicDetails
+}
+
+fragment VaultDetailsWithFilteredPositions on vaults {
+  ...VaultBasicDetails
+  ...VaultFilteredPositions
+}
+
+fragment VaultFieldsForTriple on vaults {
+  total_shares
+  current_share_price
+  ...VaultPositionsAggregate
+  ...VaultFilteredPositions
+}

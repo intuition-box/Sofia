@@ -1,0 +1,434 @@
+/* Interest Tab Styles */
+
+.interest-tab {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100%;
+}
+
+.interest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.interest-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0;
+}
+
+.interest-analyze-btn {
+  background: var(--color-gradient-button);
+  color: #000;
+  cursor: pointer;
+  background-size: 200% 200%;
+  border: none;
+  border-radius: 7px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 4px clamp(2px, 10vw, 284px); /* Responsive horizontal padding */
+  font-family: Gotu, cursive;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 1s;
+  animation: 20s infinite orb-gradient;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px #ec489966;
+  width: 100%; /* Prend toute la largeur du conteneur */
+  max-width: 608px; /* Limite la largeur max */
+}
+
+.interest-analyze-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.interest-analyze-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.interest-analyze-btn:hover:not(:disabled) {
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
+}
+
+.interest-analyze-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.interest-summary {
+  background: #fbf9eb;
+  border: 1px solid rgba(199, 134, 108, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.interest-summary-text {
+  color: #000418;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  text-align: left;
+}
+
+.interest-summary-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-tertiary, #666);
+}
+
+/* ===== 2-Column Interest Grid ===== */
+
+.interest-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 420px) {
+  .interest-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Interest Card ===== */
+
+.interest-card {
+  background: #1a1a1e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.interest-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Card title */
+.interest-card .interest-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px 0;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* Gauge container with badge overlay */
+.interest-gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.interest-gauge-svg {
+  width: 130px;
+  height: 70px;
+}
+
+/* Level badge (hexagonal SVG shape overlapping gauge) */
+.interest-level-badge {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.interest-level-badge-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 6px var(--level-color)) drop-shadow(0 0 12px var(--level-color));
+}
+
+.interest-level-badge-text {
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.03em;
+}
+
+/* XP progress row */
+.interest-xp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.interest-xp-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.interest-xp-bar-wrap {
+  flex: 1;
+}
+
+.interest-xp-bar-bg {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.interest-xp-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.interest-xp-next-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Domain favicons row */
+.interest-domains-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex: 1;
+}
+
+.interest-domain-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+}
+
+.interest-domain-more {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Activity Summary — pushed to bottom of card */
+.interest-activity-summary {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 8px;
+  margin-top: auto;
+}
+
+.interest-activity-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.interest-activity-text {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== Loading / Error / Empty states ===== */
+
+.interest-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.interest-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(199, 134, 108, 0.2);
+  border-top-color: #C7866C;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.interest-loading-text {
+  margin-top: 16px;
+  color: var(--text-secondary, #aaa);
+  font-size: 14px;
+}
+
+.interest-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.interest-error-icon {
+  font-size: 24px;
+}
+
+.interest-error-text {
+  color: #EF4444;
+  font-size: 14px;
+  text-align: center;
+}
+
+.interest-error-retry {
+  background: transparent;
+  border: 1px solid #EF4444;
+  color: #EF4444;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.interest-error-retry:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.interest-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.interest-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.interest-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0 0 8px 0;
+}
+
+.interest-empty-text {
+  color: var(--text-secondary, #aaa);
+  font-size: 14px;
+  margin: 0 0 20px 0;
+  max-width: 280px;
+}
+
+/* ===== Analyze button footer ===== */
+
+.interest-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+/* ===== Intentions Breakdown ===== */
+
+.intentions-breakdown-section {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.intentions-breakdown-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #FBF7F5;
+  margin: 0 0 14px 0;
+  text-align: left;
+}
+
+.intentions-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.intention-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intention-label {
+  width: 80px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  flex-shrink: 0;
+}
+
+.intention-bar-container {
+  flex: 1;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.intention-bar {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+.intention-value {
+  min-width: 24px;
+  text-align: right;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}

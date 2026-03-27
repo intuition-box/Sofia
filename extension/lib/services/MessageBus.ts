@@ -1,15 +1,15 @@
 /**
  * Centralized class to manage Chrome runtime messages
- * Provides safe messaging 
+ * Provides safe messaging
  */
-import type { 
-  ChromeMessage, 
-  MessageResponse, 
-  TripletMessage, 
-  BadgeMessage, 
-  MetamaskMessage,
-  MessageType 
+import type {
+  ChromeMessage,
+  MessageResponse,
+  MessageType
 } from '../../types/messages'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('MessageBus')
 
 export class MessageBus {
   private static instance: MessageBus;
@@ -28,9 +28,38 @@ export class MessageBus {
     try {
       return await chrome.runtime.sendMessage(message);
     } catch (error) {
-      console.warn('MessageBus: Message send error:', error);
+      logger.warn('Message send error', error);
       return null;
     }
+  }
+
+  // Send message with automatic retry and exponential backoff
+  // Retries on: service worker death, null response, response.success === false
+  public async sendMessageWithRetry(
+    message: ChromeMessage,
+    maxAttempts = 3,
+    initialDelay = 800
+  ): Promise<MessageResponse> {
+    let lastError: string | null = null
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (attempt > 0) {
+        const delay = initialDelay * Math.pow(2, attempt - 1)
+        logger.warn(`Retry ${attempt}/${maxAttempts - 1} for ${message.type} after ${delay}ms`)
+        await new Promise(r => setTimeout(r, delay))
+      }
+
+      try {
+        const response = await chrome.runtime.sendMessage(message)
+        if (response?.success) return response
+        lastError = response?.error || "Message failed"
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error)
+        logger.warn(`Message attempt ${attempt + 1}/${maxAttempts} failed for ${message.type}`, error)
+      }
+    }
+
+    return { success: false, error: lastError || "Failed after retries" }
   }
 
   // Send message without waiting for response
@@ -45,14 +74,6 @@ export class MessageBus {
     this.sendMessageFireAndForget({
       type: "AGENT_RESPONSE",
       data: data
-    });
-  }
-
-  // Specific messages for MetaMask
-  public sendMetamaskResult(result: MetamaskMessage['data']): void {
-    this.sendMessageFireAndForget({
-      type: 'METAMASK_RESULT',
-      data: result
     });
   }
 
@@ -131,15 +152,6 @@ export class MessageBus {
     });
   }
 
-  // MetaMask operations
-  public async connectToMetamask(): Promise<MessageResponse | null> {
-    return this.sendMessage({ type: 'CONNECT_TO_METAMASK' });
-  }
-
-  public async getMetamaskAccount(): Promise<MessageResponse | null> {
-    return this.sendMessage({ type: 'GET_METAMASK_ACCOUNT' });
-  }
-
   // Data operations
   public async getBookmarks(): Promise<MessageResponse | null> {
     return this.sendMessage({ type: 'GET_BOOKMARKS' });
@@ -153,35 +165,6 @@ export class MessageBus {
     return this.sendMessage({
       type: 'STORE_BOOKMARK_TRIPLETS',
       data: { text, timestamp }
-    });
-  }
-
-  // Intention and ranking
-  public async getIntentionRanking(limit?: number): Promise<MessageResponse | null> {
-    return this.sendMessage({
-      type: 'GET_INTENTION_RANKING',
-      data: { limit }
-    });
-  }
-
-  public async getDomainIntentions(domain: string): Promise<MessageResponse | null> {
-    return this.sendMessage({
-      type: 'GET_DOMAIN_INTENTIONS',
-      data: { domain }
-    });
-  }
-
-  public async recordPredicate(url: string, predicate: string): Promise<MessageResponse | null> {
-    return this.sendMessage({
-      type: 'RECORD_PREDICATE',
-      data: { url, predicate }
-    });
-  }
-
-  public async getUpgradeSuggestions(minConfidence?: number): Promise<MessageResponse | null> {
-    return this.sendMessage({
-      type: 'GET_UPGRADE_SUGGESTIONS',
-      data: { minConfidence }
     });
   }
 

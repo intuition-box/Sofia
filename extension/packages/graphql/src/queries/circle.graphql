@@ -1,0 +1,234 @@
+query GetTrustCirclePositions(
+  $subjectId: String!
+  $predicateId: String!
+  $address: String!
+  $offset: Int
+  $positionsOrderBy: [positions_order_by!]
+) {
+  triples_aggregate(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { positions: { account_id: { _ilike: $address } } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  triples(
+    offset: $offset
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+        { positions: { account_id: { _ilike: $address } } }
+      ]
+    }
+  ) {
+    term_id
+    subject {
+      label
+    }
+    predicate {
+      label
+    }
+    object {
+      term_id
+      label
+      type
+      accounts {
+        id
+        label
+        image
+      }
+    }
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        current_share_price
+        positions_aggregate {
+          aggregate {
+            count
+            sum {
+              shares
+            }
+          }
+        }
+        positions(
+          where: { account_id: { _ilike: $address } }
+          order_by: $positionsOrderBy
+        ) {
+          account_id
+          account {
+            id
+            label
+          }
+          shares
+        }
+      }
+    }
+  }
+}
+
+query GetTrustCircleAccounts(
+  $subjectId: String!
+  $predicateId: String!
+  $walletAddress: String!
+) {
+  triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+      ]
+    }
+  ) {
+    object {
+      term_id
+      label
+      type
+      accounts {
+        id
+        label
+        image
+      }
+    }
+    term {
+      vaults(
+        where: { curve_id: { _eq: "2" } }
+        order_by: { curve_id: asc }
+      ) {
+        positions(where: { account_id: { _eq: $walletAddress } }) {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}
+
+
+
+query GetSofiaTrustedActivity(
+  $trustedWallets: [String!]!
+  $proxy: String!
+  $limit: Int!
+  $offset: Int!
+) {
+  events(
+    limit: $limit
+    offset: $offset
+    order_by: { created_at: desc }
+    where: {
+      _and: [
+        { type: { _neq: "FeesTransfered" } }
+
+        {
+          _or: [
+            {
+              _and: [
+                { type: { _eq: "Deposited" } }
+                { deposit: { sender_id: { _eq: $proxy } } }
+                { deposit: { receiver: { id: { _in: $trustedWallets } } } }
+                { deposit: { assets_after_fees: { _neq: "0" } } }
+              ]
+            }
+
+            {
+              _and: [
+                { type: { _eq: "Redeemed" } }
+                { redemption: { sender_id: { _in: $trustedWallets } } }
+                {
+                  _or: [
+                    {
+                      _and: [
+                        { triple_id: { _is_null: false } }
+                        { triple: { creator: { id: { _eq: $proxy } } } }
+                      ]
+                    }
+                    {
+                      _and: [
+                        { atom_id: { _is_null: false } }
+                        { atom: { creator: { id: { _eq: $proxy } } } }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ) {
+    id
+    type
+    created_at
+    transaction_hash
+
+    deposit {
+      sender_id
+      assets_after_fees
+      shares
+      sender { id label image }
+      receiver { id label image }
+    }
+
+    redemption {
+      sender_id
+      assets
+      shares
+      sender { id label image }
+    }
+
+    atom {
+      term_id
+      label
+      type
+      creator { id label image }
+    }
+
+    triple {
+      term_id
+      counter_term_id
+      creator { id label image }
+      subject { label term_id }
+      predicate { label term_id }
+      object {
+        label
+        term_id
+        value {
+          thing {
+              url
+          }
+        }
+      }
+    }
+  }
+}
+
+query FindUserPositionsOnTriples(
+  $termIds: [String!]!
+  $address: String!
+  $limit: Int = 500
+) {
+  triples(where: { term_id: { _in: $termIds } }, limit: $limit) {
+    term_id
+    counter_term_id
+    positions(where: { account_id: { _eq: $address } }) {
+      shares
+    }
+    counter_term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        positions(where: { account_id: { _eq: $address } }) {
+          shares
+        }
+      }
+    }
+  }
+}

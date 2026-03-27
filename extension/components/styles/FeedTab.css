@@ -28,22 +28,41 @@
   gap: 0;
 }
 
+.feed-item-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feed-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-header-text {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 .feed-item-container {
-  background: #ffffff05;
+  background: #00020841 !important;
   border-bottom: 1px solid #ffffff14;
   align-items: flex-start;
   gap: 22px;
   padding: 16px 20px;
   transition: all .2s;
   display: flex;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
   border-radius: 10px;
 }
 
 /* Avatar */
 .feed-avatar {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   flex-shrink: 0;
   overflow: hidden;
@@ -74,16 +93,19 @@
 .feed-account-name {
   color: #fff;
   font-weight: 600;
+  font-size: 16px;
 }
 
 .feed-action {
   color: #fff;
   font-weight: 400;
+  font-size: 16px;
 }
 
 .feed-details-link {
   color: #fff;
   font-weight: 600;
+  padding-top: 3px;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -95,6 +117,28 @@
 .feed-details-text {
   color: #fff;
   font-weight: 600;
+}
+
+/* Link Button */
+.feed-link-button {
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  margin-left: auto;
+  display: inline-block;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.8;
+}
+
+.feed-link-button:hover {
+  transform: scale(1.2);
+  opacity: 1;
+  text-decoration: none;
+}
+
+.feed-link-button:visited {
+  color: #fff;
+  text-decoration: none;
 }
 
 /* Meta info (timestamp and category) */
@@ -130,42 +174,85 @@
   flex: 1;
   padding: 8px 16px;
   border-radius: 6px;
-  border: none;
   cursor: pointer;
   font-size: 12px;
   font-weight: 900;
   transition: 0.2s;
-  color: rgb(0, 0, 14);
   min-width: 0;
   white-space: nowrap;
 }
 
-/* Join Button */
+/* Join Button - orb gradient style (like trust-btn) */
 .trust-page-button.join-button-css {
-  background: linear-gradient(135deg, #ff8a65 0%, #ff6e40 50%, #ff8a65 100%);
-  background-size: 200% 200%;
-  animation: salmon-gradient 3s ease infinite;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: none;
+  color: #ffffff;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease;
+  font-family: 'Gotu', cursive;
 }
 
-.trust-page-button.join-button-css:hover {
+.trust-page-button.join-button-css::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.trust-page-button.join-button-css > * {
+  position: relative;
+  z-index: 1;
+}
+
+.trust-page-button.join-button-css:hover:not(:disabled) {
   transform: translateY(-2px);
+  background-color: rgba(86, 236, 72, 0.15);
+  color: white;
 }
 
-@keyframes salmon-gradient {
+@keyframes orb-gradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* Decline Button */
+/* Decline Button - Outline/Ghost style (like distrust-btn) */
 .feed-decline-button {
-  background: rgba(255, 255, 255, 0.219);
-  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: none;
+  color: #ffffff;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease;
   font-family: 'Gotu', cursive;
 }
 
-.feed-decline-button:hover {
-  background: rgba(255, 0, 0, 0.144);
+.feed-decline-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.feed-decline-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background-color: rgba(253, 78, 78, 0.15);
+  color: white;
 }
 
 /* Empty State */
@@ -184,19 +271,22 @@
 .empty-state p {
   color: #9ca3af;
   font-size: 14px;
-  margin: 0;
+  line-height: 1px;
 }
 
 .empty-subtext {
   color: #6b7280;
   font-size: 13px;
   margin-top: 8px;
+  line-height: 23px;
 }
 
 /* Loading State */
 .loading-state {
-  text-align: center;
-  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }
 
 .loading-state p {

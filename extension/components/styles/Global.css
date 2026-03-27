@@ -1,7 +1,7 @@
 /* Styles globaux et communs à toute l'application */
 
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&family=Gotu:wght@400;600&family=Montserrat:wght@400;500;600&display=block');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&family=Gotu:wght@400;600&family=Montserrat:wght@400;500;600&family=Rubik+Mono+One&display=block');
 
 /* Reset CSS global */
 * {
@@ -34,14 +34,19 @@ body {
 }
 
 :root {
+  /* Claims (Debate) — global pour portals */
+  --claims-support: var(--color-hover-light);
+  --claims-oppose: var(--color-hover);
+
   /* Couleurs principales */
   --color-primary: #C7866C;
   --color-primary-dark: #372118;
   --color-primary-light: #F2DED6;
   --color-secondary: #945941;
   --color-accent: #A6AF6B;
-  --color-hover: #FFB3C4;
-  --color-hover-light: #FFE078;
+  --color-hover: #cea2fd;
+  --color-hover-light: #F59E0B;
+  --color-gradient-button: linear-gradient(135deg, #D790C7 0%, #d37cbf 20%, #ffc6b0 50%, #ffa7b1 80%, #cea2fd 100%);
   
 
 .figma-colors{

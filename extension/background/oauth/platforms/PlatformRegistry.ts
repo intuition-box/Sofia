@@ -25,11 +25,10 @@ export class PlatformRegistry {
   }
 
   private initializePlatforms() {
-    // YouTube Configuration
+    // YouTube Configuration - Uses external OAuth via landing page
     this.platforms.set('youtube', {
       name: 'YouTube',
       clientId: oauthConfig.youtube.clientId,
-      clientSecret: oauthConfig.youtube.clientSecret,
       flow: OAuthFlow.AUTHORIZATION_CODE,
       scope: ['https://www.googleapis.com/auth/youtube.readonly'],
       authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
@@ -43,14 +42,14 @@ export class PlatformRegistry {
         ]
       },
       dataStructure: 'items',
-      dateField: 'snippet.publishedAt'
+      dateField: 'snippet.publishedAt',
+      externalOAuth: true
     })
 
-    // Spotify Configuration
+    // Spotify Configuration - Uses external OAuth via landing page
     this.platforms.set('spotify', {
       name: 'Spotify',
       clientId: oauthConfig.spotify.clientId,
-      clientSecret: oauthConfig.spotify.clientSecret,
       flow: OAuthFlow.AUTHORIZATION_CODE,
       scope: ['user-read-private', 'user-follow-read', 'user-top-read'],
       authUrl: 'https://accounts.spotify.com/authorize',
@@ -65,16 +64,18 @@ export class PlatformRegistry {
         ]
       },
       dataStructure: 'items',
-      idField: 'id'
+      idField: 'id',
+      externalOAuth: true
     })
 
-    // Twitch Configuration
+    // Twitch Configuration - Uses external OAuth via landing page
     this.platforms.set('twitch', {
       name: 'Twitch',
       clientId: oauthConfig.twitch.clientId,
-      flow: OAuthFlow.IMPLICIT,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
       scope: ['user:read:follows', 'user:read:subscriptions'],
       authUrl: 'https://id.twitch.tv/oauth2/authorize',
+      tokenUrl: 'https://id.twitch.tv/oauth2/token',
       apiBaseUrl: 'https://api.twitch.tv/helix',
       endpoints: {
         profile: '/users',
@@ -82,7 +83,45 @@ export class PlatformRegistry {
       },
       dataStructure: 'data',
       idField: 'broadcaster_id',
-      requiresClientId: true
+      requiresClientId: true,
+      externalOAuth: true
+    })
+
+    // Discord Configuration - Uses external OAuth via landing page
+    this.platforms.set('discord', {
+      name: 'Discord',
+      clientId: oauthConfig.discord.clientId,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: ['identify', 'email', 'guilds'],
+      authUrl: 'https://discord.com/api/oauth2/authorize',
+      tokenUrl: 'https://discord.com/api/oauth2/token',
+      apiBaseUrl: 'https://discord.com/api/v10',
+      endpoints: {
+        profile: '/users/@me',
+        data: ['/users/@me/guilds']
+      },
+      dataStructure: 'array',
+      idField: 'id',
+      externalOAuth: true
+    })
+
+    // Twitter/X Configuration - Uses external OAuth via landing page
+    this.platforms.set('twitter', {
+      name: 'X',
+      clientId: oauthConfig.twitter.clientId,
+      flow: OAuthFlow.AUTHORIZATION_CODE,
+      scope: ['users.read', 'tweet.read'],
+      authUrl: 'https://twitter.com/i/oauth2/authorize',
+      tokenUrl: 'https://api.x.com/2/oauth2/token',
+      apiBaseUrl: 'https://api.twitter.com/2',
+      endpoints: {
+        profile: '/users/me?user.fields=id,name,username,profile_image_url,verified',
+        data: []
+      },
+      dataStructure: 'data',
+      idField: 'id',
+      requiresPKCE: true,
+      externalOAuth: true
     })
 
   }
@@ -97,8 +136,8 @@ export class PlatformRegistry {
         extractObjectUrl: (item) => `https://www.youtube.com/channel/${item.snippet.resourceId.channelId}`
       },
       {
-        pattern: 'playlists', 
-        predicate: 'created_playlist',
+        pattern: 'playlists',
+        predicate: PREDICATE_NAMES.CREATED_PLAYLIST,
         extractObject: (item) => item.snippet.title,
         extractObjectUrl: (item) => `https://www.youtube.com/playlist?list=${item.id}`
       }
@@ -115,13 +154,13 @@ export class PlatformRegistry {
       },
       {
         pattern: 'top/tracks',
-        predicate: 'top_track',
+        predicate: PREDICATE_NAMES.TOP_TRACK,
         extractObject: (item) => `${item.name} by ${item.artists[0].name}`,
         extractObjectUrl: (item) => item.external_urls?.spotify
       },
       {
         pattern: 'top/artists',
-        predicate: 'top_artist', 
+        predicate: PREDICATE_NAMES.TOP_ARTIST,
         extractObject: (artist) => artist.name,
         extractObjectUrl: (artist) => artist.external_urls?.spotify
       }
@@ -136,6 +175,27 @@ export class PlatformRegistry {
         extractObjectUrl: (item) => `https://www.twitch.tv/${item.broadcaster_login}`
       }
     ])
+
+    // Discord Triplet Rules
+    // Note: All Discord triplets require profile.verified = true (checked in TripletExtractor)
+    this.tripletRules.set('discord', [
+      {
+        pattern: 'guilds',
+        predicate: PREDICATE_NAMES.MEMBER_OF,
+        extractObject: (guild) => guild.name,
+        extractObjectUrl: (guild) => `https://discord.com/channels/${guild.id}`
+      },
+      {
+        pattern: 'guilds',
+        predicate: PREDICATE_NAMES.OWNER_OF,
+        extractObject: (guild) => guild.owner ? guild.name : null,
+        extractObjectUrl: (guild) => `https://discord.com/channels/${guild.id}`
+      }
+    ])
+
+    // Twitter/X Triplet Rules
+    // Note: "i am username" triplet is added in TripletExtractor only if verified = true
+    this.tripletRules.set('twitter', [])
 
   }
 }

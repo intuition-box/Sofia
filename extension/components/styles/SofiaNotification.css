@@ -1,0 +1,109 @@
+/* SofiaNotification — slide-up nudge notification */
+
+.sofia-notification {
+  position: fixed;
+  bottom: 90px;
+  left: 12px;
+  right: 12px;
+  z-index: 9997;
+  background: rgba(10, 9, 8, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: sofiaNotifSlideUp 0.25s ease-out;
+}
+
+@keyframes sofiaNotifSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sofia-notification__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.sofia-notification__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.sofia-notification__message {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sofia-notification__dismiss-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.sofia-notification__dismiss-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sofia-notification__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.sofia-notification__action-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  transition: all 0.2s;
+}
+
+.sofia-notification__action-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.sofia-notification__secondary-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  transition: all 0.15s;
+}
+
+.sofia-notification__secondary-btn:hover {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
+}

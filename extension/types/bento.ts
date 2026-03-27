@@ -8,15 +8,3 @@ export interface BentoItem {
   category: string
   size: 'small' | 'tall' | 'mega'
 }
-
-export interface BentoItemWithImage extends BentoItem {
-  ogImage: string
-}
-
-export interface BentoState {
-  validItems: BentoItemWithImage[]
-  isLoading: boolean
-  error: string | null
-}
-
-export type BentoStateListener = (state: BentoState) => void

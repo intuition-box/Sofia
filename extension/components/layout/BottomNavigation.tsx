@@ -1,7 +1,9 @@
-import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { useState } from 'react'
+import { useWalletFromStorage, useQuestSystem, useCart } from '../../hooks'
 import { useRouter } from './RouterProvider'
 import { Home } from 'lucide-react'
 import Dock, { DockItemData } from '../ui/NavigationBar'
+import CartDrawer, { CartFab } from '../ui/CartDrawer'
 import sofiaIcon from '../ui/icons/Icon=Sofia.svg'
 import resonanceIcon from '../ui/icons/ResonanceIcon.svg'
 import personIcon from '../ui/icons/Icon=person.svg'
@@ -11,8 +13,13 @@ const BottomNavigation = () => {
   const { walletAddress, authenticated } = useWalletFromStorage()
   const account = authenticated ? walletAddress : null
   const { navigateTo } = useRouter()
+  const { claimableQuests } = useQuestSystem()
+  const { count: cartCount } = useCart()
+  const [showCartDrawer, setShowCartDrawer] = useState(false)
 
   if (!account) return null
+
+  const hasClaimable = claimableQuests.length > 0
 
   const dockItems: DockItemData[] = [
     {
@@ -33,7 +40,8 @@ const BottomNavigation = () => {
     {
       icon: <img src={personIcon} alt="Profile" style={{ width: '24px', height: '24px' }} />,
       label: 'Profile',
-      onClick: () => navigateTo('profile')
+      onClick: () => navigateTo('profile'),
+      className: hasClaimable ? 'has-claimable' : ''
     },
     {
       icon: <img src={settingsIcon} alt="Settings" style={{ width: '24px', height: '24px' }} />,
@@ -43,12 +51,22 @@ const BottomNavigation = () => {
   ]
 
   return (
-    <Dock
-      items={dockItems}
-      panelHeight={80}
-      baseItemSize={60}
-      magnification={60}
-    />
+    <>
+      <CartFab
+        count={cartCount}
+        onClick={() => setShowCartDrawer(true)}
+      />
+      <CartDrawer
+        isOpen={showCartDrawer}
+        onClose={() => setShowCartDrawer(false)}
+      />
+      <Dock
+        items={dockItems}
+        panelHeight={80}
+        baseItemSize={60}
+        magnification={60}
+      />
+    </>
   )
 }
 

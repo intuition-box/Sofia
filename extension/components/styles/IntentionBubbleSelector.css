@@ -1,0 +1,96 @@
+/* Intention Selector - Compact Design */
+.intention-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  margin-top: 12px;
+}
+
+.intention-selector.not-eligible {
+  opacity: 0.6;
+}
+
+.intention-selector .intention-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Gotu', cursive;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.intention-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.intention-pill {
+  padding: 6px 16px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  font-weight: 200;
+  font-family: 'Montserrat', cursive;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: lowercase;
+}
+
+.intention-pill:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.intention-pill.certified {
+  font-weight: 600;
+}
+
+.intention-pill.in-cart {
+  border-style: dashed;
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.08);
+  color: rgba(212, 175, 55, 0.85);
+  font-weight: 400;
+  opacity: 1;
+}
+
+.intention-pill--trust {
+  text-transform: capitalize;
+  font-weight: 400;
+}
+
+.intention-pills__separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.intention-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.intention-pill.in-cart:disabled {
+  opacity: 0.85;
+}
+
+.intention-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* Discovery Section container */
+.discovery-section {
+  margin-top: 8px;
+}

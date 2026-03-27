@@ -3,6 +3,63 @@
  * Styles pour les modals et composants de bookmarks
  */
 
+/* ========== BOOKMARK CSS VARIABLES ========== */
+:root {
+  /* Spacing */
+  --bookmark-list-gap: 8px;
+  --bookmark-item-gap: 12px;
+  --bookmark-card-margin: 12px;
+
+  /* Colors */
+  --bookmark-text-primary: #F2DED6;
+  --bookmark-text-secondary: rgba(255, 255, 255, 0.79);
+  --bookmark-text-muted: rgba(255, 255, 255, 0.6);
+  --bookmark-accent: rgba(199, 134, 108, 0.8);
+  --bookmark-accent-hover: rgba(199, 134, 108, 0.9);
+  --bookmark-border: rgba(199, 134, 108, 0.4);
+  --bookmark-border-hover: rgba(199, 134, 108, 0.6);
+  --bookmark-bg-card: #2d2b2c;
+  --bookmark-bg-glass: rgba(0, 0, 0, 0.3);
+
+  /* Typography */
+  --bookmark-font-size-sm: 12px;
+  --bookmark-font-size-base: 13px;
+  --bookmark-font-size-md: 14px;
+
+  /* Border radius */
+  --bookmark-radius-sm: 4px;
+  --bookmark-radius-md: 8px;
+  --bookmark-radius-lg: 12px;
+  --bookmark-radius-pill: 16px;
+}
+
+/* ========== BOOKMARK TRIPLETS LIST ========== */
+.bookmark-triplets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ========== BOOKMARK CARD ========== */
+.bookmark-card {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.377);
+  border-radius: var(--bookmark-radius-lg);
+  padding: var(--bookmark-card-margin);
+  backdrop-filter: blur(50px) saturate(100%);
+  -webkit-backdrop-filter: blur(50px) saturate(100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.bookmark-card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.486);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
 /* Bouton New List avec couleurs inversées */
 .bookmark-header .btn.primary:not(.iridescence-btn) {
   background: rgba(0, 0, 0, 0.3);
@@ -17,19 +74,20 @@
   box-shadow: var(--shadow-button-hover);
 }
 
-/* Modal Overlay pour les bookmarks */
+/* Modal Overlay pour les bookmarks - Positionné EN HAUT */
 .bookmark-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--color-bg-overlay);
   z-index: var(--z-modal);
   display: flex;
-  align-items: center;
+  align-items: flex-start;        /* Aligné en HAUT au lieu de center */
   justify-content: center;
   backdrop-filter: var(--backdrop-blur-light);
+  padding-top: 40px;              /* Espacement depuis le haut */
+  overflow-y: auto;               /* Permet le scroll si nécessaire */
 }
 
 /* Modal Content avec style echo-card border-green */
@@ -39,13 +97,25 @@
   max-width: 400px;
   width: 90%;
   border: 1px solid var(--color-border-muted);
-  background: linear-gradient(135deg, var(--color-primary) 0%, rgb(67, 67, 67) 50%, var(--color-primary) 100%);
-  box-shadow: var(--shadow-heavy);
-  max-height: 80vh;
+  background: #2d2b2c;
+  max-height: calc(100vh - 80px);  /* Hauteur max ajustée pour l'espace du haut */
   z-index: var(--z-modal);
   overflow: auto;
   pointer-events: auto;
   position: relative;
+  animation: bookmarkModalSlideDown 0.3s ease-out;  /* Animation depuis le haut */
+}
+
+/* Animation d'apparition depuis le haut */
+@keyframes bookmarkModalSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Titres dans les modals */
@@ -62,6 +132,38 @@
   margin-bottom: var(--spacing-xs);
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
+}
+
+.bookmark-url-preview {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xs);
+  margin-left:10px
+}
+
+/* Signal row dans le mode Add */
+.bookmark-signal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bookmark-signal-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.bookmark-signal-link:hover .category-url-label {
+  color: var(--bookmark-accent);
+}
+
+.bookmark-signal-row .btn {
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 /* Champs de saisie */
@@ -139,7 +241,7 @@
 
 .bookmark-button:hover {
   background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(199, 134, 108, 0.6);
+  border-color: rgba(209, 96, 92, 0.6);
 }
 
 /* Bouton primaire */
@@ -147,16 +249,17 @@
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border-muted);
-  background: var(--color-primary);
-  color: var(--color-text-secondary);
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  color: black;
   cursor: pointer;
   font-size: var(--font-size-base);
   transition: var(--transition-fast);
 }
 
 .bookmark-button-primary:hover {
-  background: rgba(199, 134, 108, 0.9);
-  border-color: rgba(199, 134, 108, 0.8);
+  border-color: rgb(255, 174, 142);
 }
 
 /* Bouton désactivé */
@@ -206,6 +309,26 @@
   color: rgba(255, 255, 255, 0.79);
 }
 
+/* Empty state pour BookmarkTab */
+.bookmark-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.bookmark-empty-state p {
+  color: #9ca3af;
+  font-size: 14px;
+  line-height: 1.6;        /* Espacement normal entre les lignes */
+  margin: 0 0 12px 0;      /* Espacement entre les paragraphes */
+}
+
+.bookmark-empty-subtext {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 8px;
+  line-height: 1.6;        /* Espacement normal entre les lignes */
+}
+
 /* Conteneurs */
 .bookmark-form-group {
   margin-bottom: var(--spacing-lg);
@@ -231,6 +354,16 @@
   margin: 0;
   color: var(--color-text-primary);
   font-size: var(--font-size-xl);
+}
+
+/* Selected list title - same style as inactive tabs */
+.bookmark-list-title {
+  margin: 16px 0 8px 0;
+  padding: 0;
+  font-family: 'Gotu', cursive;
+  font-size: 24px;
+  font-weight: 800;
+  color: rgb(255, 255, 255);
 }
 
 /* Navigation des listes */
@@ -311,11 +444,11 @@
 }
 
 .bookmark-triplet-card {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: none;
 }
 
 .bookmark-card {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 5px;
 }
 
 .bookmark-list-info h4 {
@@ -366,6 +499,13 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-lg);
+}
+
+/* Modal body styles */
+.bookmark-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .bookmark-modal-close {
@@ -437,10 +577,11 @@
 
 .bookmark-header-content {
   display: flex;
+  position: relative;
+  flex-direction: column;
   align-items: flex-start;
   gap: 8px;
   margin-bottom: 3px;
-  position: relative;
 }
 
 /* ========== BOOKMARK TEXT ========== */
@@ -486,4 +627,64 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ========== BOOKMARK LISTS GRID (2 columns) ========== */
+.lists-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ========== BOOKMARK FAVICON GRID (iOS-style) ========== */
+.bookmark-favicon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.bookmark-favicon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bookmark-favicon-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease;
+}
+
+.bookmark-favicon-icon:hover {
+  transform: scale(1.08);
+}
+
+.bookmark-favicon-label {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.bookmark-favicon-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
 }

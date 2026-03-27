@@ -6,6 +6,9 @@ import PageBlockchainCard from '../ui/PageBlockchainCard'
 import FullScreenLoader from '../ui/FullScreenLoader'
 import '../styles/HomeConnectedPage.css'
 import { Storage } from "@plasmohq/storage"
+import { createHookLogger } from '../../lib/utils'
+
+const logger = createHookLogger('HomeConnectedPage')
 
 const storage = new Storage()
 
@@ -34,10 +37,10 @@ const HomeConnectedPage = () => {
   }
 
   const handleChatSubmit = async (message: string) => {
-    console.log("🎯 handleChatSubmit called with message:", message)
+    logger.debug('handleChatSubmit called', { message })
     if (message.trim()) {
       await storage.set("pendingChatInput", message)
-      console.log("💾 Message saved to storage:", message)
+      logger.debug('Message saved to storage', { message })
       navigateTo('chat')
     }
   }
@@ -46,13 +49,13 @@ const HomeConnectedPage = () => {
   useEffect(() => {
     const handleMessage = (message: any) => {
       if (message.type === 'PULSE_ANALYSIS_COMPLETE') {
-        console.log('🫀 Pulse analysis completed, redirecting...')
+        logger.info('Pulse analysis completed, redirecting')
         setIsAnalyzing(false)
         localStorage.setItem('targetTab', 'Pulse')
         navigateTo('Sofia')
       }
       if (message.type === 'THEME_EXTRACTION_COMPLETE') {
-        console.log('📚 Theme extraction completed, redirecting to Echoes...')
+        logger.info('Theme extraction completed, redirecting to Echoes')
         setIsImporting(false)
         localStorage.setItem('targetTab', 'Echoes')
         navigateTo('Sofia')
@@ -89,7 +92,7 @@ const HomeConnectedPage = () => {
             background: 'radial-gradient(circle at center, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.05) 100%)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            zIndex: 999,
+            zIndex: 50,
             cursor: 'pointer'
           }}
         />
@@ -98,7 +101,7 @@ const HomeConnectedPage = () => {
       <PageBlockchainCard />
 
 
-      <div className="pulse-animation-section">
+      <div className={`pulse-animation-section ${showMenu ? "menu-open" : ""}`}>
         <div
           className="pulse-with-menu"
           style={{
@@ -119,7 +122,7 @@ const HomeConnectedPage = () => {
           <CircularMenu
             isVisible={showMenu}
             onItemClick={(item) => {
-              console.log('Menu item clicked:', item)
+              logger.debug('Menu item clicked', { item })
               setShowMenu(false)
             }}
             onStartAnalysis={handleStartAnalysis}

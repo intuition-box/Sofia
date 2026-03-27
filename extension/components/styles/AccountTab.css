@@ -1,47 +1,4 @@
-/* ========== PROFILE HEADER ========== */
-.profile-header {
-  display: flex;
-  align-items: center;
-  padding: 20px 16px;
-  margin-bottom:-20px;
-}
-
-.profile-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-info {
-  flex: 1;
-}
-
-.profile-name {
-  font-family: 'Gotu', cursive;
-  font-size: 20px;
-  font-weight: 600;
-  color: #FBF7F5;
-  margin: 0 0 4px 0;
-}
-
-.profile-email {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* Profile header styles are in ProfileHeader.css */
 
 /* ========== STATS SECTION ========== */
 .stats-section {
@@ -117,25 +74,25 @@
 
 /* ========== PLATFORM ICONS ========== */
 .platform-icons-container {
-  display: flex;
-  justify-content: center;
-  gap: 64px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   padding: 16px;
   margin-bottom: 20px;
+  margin-top:-13px
 }
 
 .connect-button {
   backdrop-filter: blur(20px);
   border: 1px solid #ffffff1a;
   border-radius: 12px;
-  width: 70px;
-  height: 37px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 var(--spacing-xl);
+  padding: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
+  aspect-ratio: 1;
 }
 
 .connect-button.youtube:hover {
@@ -168,6 +125,26 @@
   border-color: #7b1fa250;
 }
 
+.connect-button.discord:hover {
+  background-color: #5865F2;
+  border-color: #4752c450;
+}
+
+.connect-button.discord.connected {
+  background-color: #5865F2;
+  border-color: #4752c450;
+}
+
+.connect-button.twitter:hover {
+  background-color: #5d5d5d;
+  border-color: #33333350;
+}
+
+.connect-button.twitter.connected {
+  background-color: #000000;
+  border-color: #33333350;
+}
+
 .platform-icon {
   width: 40px;
   height: 40px;
@@ -191,9 +168,27 @@
   border-radius: 10px;
 }
 
+.discord-icon {
+  border-radius: 10px;
+}
+
+.twitter-icon {
+  border-radius: 10px;
+}
+
+.connect-button.twitter.connected .twitter-icon img {
+  filter: invert(1);
+}
+
 .connect-button-text {
   color: var(--color-text-secondary);
   font-weight: 200;
+}
+
+.social-verify-section {
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px;
 }
 
 
@@ -227,6 +222,49 @@
   }
 }
 
+.quest-refresh-btn {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.quest-refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.quest-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quest-refresh-btn-inline {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  padding: 0 var(--spacing-xs);
+  line-height: 1;
+  transition: var(--transition-fast);
+}
+
+.quest-refresh-btn-inline:hover:not(:disabled) {
+  color: var(--color-text-primary);
+}
+
+.quest-refresh-btn-inline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .quest-item {
   display: flex;
   align-items: center;
@@ -254,6 +292,16 @@
   align-items: flex-start;
   flex-direction: column;
   gap: 4px;
+}
+
+.quest-badge-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 2px 0;
 }
 
 .quest-title {
@@ -599,4 +647,1427 @@
   color: var(--color-text-tertiary);
   font-style: italic;
   border-top: 1px solid var(--color-border-secondary);
+}
+
+/* ========== SOCIAL LINK BUTTON ========== */
+.social-link-button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+
+.social-link-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
+}
+
+.social-link-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Social linked styles are in ProfileHeader.css */
+
+/* ========== CLAIM XP BUTTON ========== */
+.claim-xp-button {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border: none;
+  border-radius: 8px;
+  color: #1a1a1a;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  margin-top: 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.claim-xp-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+.claim-xp-button:active {
+  transform: translateY(0);
+}
+
+.claim-xp-button.claiming {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.claim-xp-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========== BADGES SECTION ========== */
+.badges-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 8px 12px;
+  margin-top: -4px;
+}
+
+.badge-item {
+  background: linear-gradient(135deg, rgba(72, 187, 120, 0.2) 0%, rgba(72, 187, 120, 0.1) 100%);
+  border: 1px solid rgba(72, 187, 120, 0.4);
+  color: #48bb78;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.badge-item:hover {
+  background: linear-gradient(135deg, rgba(72, 187, 120, 0.3) 0%, rgba(72, 187, 120, 0.2) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}
+
+.badge-more {
+  background: linear-gradient(135deg, rgba(160, 160, 160, 0.2) 0%, rgba(160, 160, 160, 0.1) 100%);
+  border-color: rgba(160, 160, 160, 0.4);
+  color: #a0a0a0;
+}
+
+/* ========== SUB-TABS ========== */
+.sub-tabs {
+  display: flex;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(29px);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 5px;
+}
+
+.sub-tab {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sub-tab:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sub-tab.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #FBF7F5;
+}
+
+.sub-tab.has-claimable {
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.25), 0 0 16px rgba(255, 215, 0, 0.1);
+  animation: sub-tab-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes sub-tab-glow {
+  from {
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.2), 0 0 12px rgba(255, 215, 0, 0.08);
+  }
+  to {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.35), 0 0 20px rgba(255, 215, 0, 0.15);
+  }
+}
+
+/* ========== STATS TAB CONTENT ========== */
+.stats-tab-content {
+  padding: 16px 16px 80px;
+}
+
+.stats-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.stats-error,
+.stats-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stats-error {
+  color: #F87171;
+}
+
+.stats-error button {
+  padding: 8px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #F87171;
+  cursor: pointer;
+}
+
+.stats-empty .empty-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.stats-empty h3 {
+  font-size: 18px;
+  color: white;
+  margin: 0 0 8px 0;
+}
+
+.stats-empty p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+/* ========== DISCOVERY BADGES SECTION ========== */
+.discovery-section {
+  margin-bottom: 20px;
+}
+
+.discovery-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.discovery-section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.reroll-points-btn {
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reroll-points-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.discovery-badges-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.discovery-badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  position: relative;
+}
+
+.discovery-badge-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+.badge-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.badge-icon-wrapper:hover {
+  transform: scale(1.08);
+}
+
+.badge-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+}
+
+.badge-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.badge-count {
+  font-family: 'Gotu', cursive;
+  font-size: 28px;
+  font-weight: 700;
+  color: #FBF7F5;
+  line-height: 1;
+}
+
+/* ========== XP PROGRESS BAR ========== */
+.xp-progress-section {
+  margin-bottom: 20px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.xp-progress-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.xp-level-badge {
+  position: relative;
+  width: 36px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.xp-level-badge svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 6px var(--badge-color)) drop-shadow(0 0 12px var(--badge-color));
+}
+
+.xp-level-badge-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.xp-progress-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.xp-progress-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.xp-progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+}
+
+.xp-signals-count {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.xp-signals-value {
+  font-family: 'Gotu', cursive;
+  font-size: 16px;
+  font-weight: 700;
+  color: #FBF7F5;
+  line-height: 1;
+  margin-right: 5px;
+}
+
+.xp-signals-label {
+  font-family: 'Gotu', cursive;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+/* ========== DISCOVERY MECHANISM PANEL ========== */
+.discovery-mechanism-panel {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.mechanism-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #FBF7F5;
+  margin: 0 0 10px 0;
+  text-align: left;
+}
+
+.mechanism-content {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  text-align: left;
+}
+
+.mechanism-content p {
+  margin: 4px 0;
+}
+
+.mechanism-content strong {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.highlight-pioneer {
+  color: #FCD34D;
+  font-weight: 600;
+}
+
+.highlight-explorer {
+  color: #93C5FD;
+  font-weight: 600;
+}
+
+.highlight-contributor {
+  color: #C4B5FD;
+  font-weight: 600;
+}
+
+/* ========== TIER BADGES CAROUSEL ========== */
+.tier-badges-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.tier-badges-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 0;
+}
+
+.tier-badges-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.tier-badge-item {
+  flex: 0 0 25%;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-xs);
+  opacity: 0.3;
+  transition: var(--transition-normal);
+}
+
+.tier-badge-item.unlocked {
+  opacity: 1;
+}
+
+.tier-badge-item.next {
+  opacity: 0.55;
+}
+
+.tier-badge-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tier-badge-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tier-badge-img.locked {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.tier-badge-range {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-placeholder);
+  line-height: 1;
+}
+
+.tier-badge-item.unlocked .tier-badge-range {
+  color: var(--color-text-muted);
+}
+
+.tier-badge-name {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.tier-badge-item.unlocked .tier-badge-name {
+  color: var(--color-text-secondary);
+}
+
+.tier-badges-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: var(--spacing-sm);
+}
+
+.tier-dot {
+  width: var(--spacing-sm);
+  height: var(--spacing-sm);
+  border-radius: var(--radius-full);
+  background: var(--color-border-light);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.tier-dot.active {
+  background: var(--color-text-muted);
+}
+
+/* ========== ACHIEVEMENTS SECTION ========== */
+.achievements-section {
+  margin-bottom: 20px;
+}
+
+/* Streak Vault Card */
+.streak-vault-card {
+  background: linear-gradient(135deg, rgba(234, 182, 122, 0.12) 0%, rgba(106, 204, 147, 0.08) 100%);
+  border: 1px solid rgba(234, 182, 122, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.streak-vault-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.streak-vault-title-row {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.streak-vault-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #EAB67A;
+  background: rgba(234, 182, 122, 0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.streak-vault-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.streak-vault-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #EAB67A;
+}
+
+.streak-vault-participants {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.streak-vault-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.streak-vault-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.streak-vault-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.streak-vault-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.streak-vault-value.positive {
+  color: #6ACC93;
+}
+
+.streak-vault-value.negative {
+  color: #e57373;
+}
+
+/* ========== STREAK HUB CARD (new unified streak + daily actions) ========== */
+.streak-hub-card {
+  display: flex;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(234, 182, 122, 0.2);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  margin-top: 15px
+}
+
+.streak-hub-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 120px;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 14px 10px;
+}
+
+.streak-hub-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.streak-hub-days {
+  font-family: 'Gotu', cursive;
+  font-size: 22px;
+  font-weight: 700;
+  color: #FBF7F5;
+  line-height: 1;
+  text-align: center;
+}
+
+.streak-hub-progress {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.streak-hub-progress-fill {
+  height: 100%;
+  background: #ffffff;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 16px rgba(255, 255, 255, 0.3);
+}
+
+.streak-hub-progress-pct {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.streak-hub-right {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 14px;
+  justify-content: center;
+  min-width: 0;
+}
+
+.streak-hub-action {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.streak-hub-action-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  text-align: center;
+}
+
+.streak-hub-claim-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #0f1420;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.streak-hub-claim-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+.streak-hub-claim-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.streak-hub-claim-btn.claiming {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.streak-hub-subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+}
+
+.streak-hub-week {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 3px;
+  width: 100%;
+}
+
+.streak-hub-pill {
+  display: flex;
+  background: rgba(34, 197, 94, 0.25);
+  border-radius: 10px;
+  gap: 0;
+}
+
+.streak-hub-pill .streak-hub-day.active {
+  background: transparent;
+}
+
+.streak-hub-day {
+  flex: 1;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.streak-hub-day.active {
+  background: rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.streak-hub-day.today {
+  background: rgba(255, 170, 0, 0.2);
+  border: 1.5px solid rgba(255, 170, 0, 0.7);
+  color: #ffaa00;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.streak-hub-day.missed {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Week day bubbles inside vault cards */
+.streak-week-bubbles {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 4px;
+  gap: 4px;
+}
+
+.streak-bubble {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s;
+}
+
+.streak-bubble.validated {
+  background: rgba(106, 204, 147, 0.2);
+  color: #6ACC93;
+}
+
+/* Streak Section (Daily & Streak quests) */
+.streak-section {
+  margin-bottom: 16px;
+}
+
+.streak-section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.streak-section-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.streak-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s;
+}
+
+.streak-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.streak-card.claimable_xp {
+  border-color: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.15);
+}
+
+.streak-card.completed {
+  opacity: 0.6;
+}
+
+.streak-card-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.streak-card.locked .streak-card-img,
+.streak-card.completed .streak-card-img {
+  filter: grayscale(80%);
+}
+
+.streak-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.streak-card-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.streak-card-progress {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.streak-card-claim {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #0f1420;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.streak-card-claim:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.streak-card-claim:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.streak-card-bar {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.streak-card-bar-fill {
+  height: 100%;
+  background: #EAB67A;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Section label for daily/other groups */
+.achievements-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.achievements-section-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Separator between daily and other quests */
+.achievements-separator {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+  margin: 16px 0;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.achievement-card {
+  display: flex;
+  flex-direction: column;
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.achievement-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Card visual area (image + badge) */
+.achievement-card-visual {
+  position: relative;
+  width: 100%;
+  height: 110px;
+  overflow: hidden;
+  background: #0f1420;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievement-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.15);
+}
+
+.achievement-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.achievement-type-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: rgba(72, 187, 120, 0.85);
+  color: #0f1420;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Badge color variants */
+.achievement-type-badge.signal {
+  background: #10b981;
+}
+
+.achievement-type-badge.bookmark {
+  background: #c084fc;
+}
+
+.achievement-type-badge.oauth,
+.achievement-type-badge.social-link {
+  background: linear-gradient(135deg, #f87171, #facc15, #34d399, #60a5fa, #c084fc);
+}
+
+.achievement-type-badge.follow {
+  background: linear-gradient(135deg, #f472b6, #ffffff);
+}
+
+.achievement-type-badge.trust {
+  background: #d4a017;
+}
+
+.achievement-type-badge.streak {
+  background: #f97316;
+}
+
+.achievement-type-badge.pulse {
+  background: #10b981;
+}
+
+.achievement-type-badge.curator {
+  background: #ef4444;
+}
+
+.achievement-type-badge.social {
+  background: #d946ef;
+}
+
+.achievement-type-badge.discovery {
+  background: #cd7f32;
+}
+
+.achievement-type-badge.gold {
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+}
+
+/* Card info area */
+.achievement-card-info {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.achievement-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.achievement-description {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.achievement-xp {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f1420;
+  background: #48bb78;
+  padding: 2px 8px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.achievement-xp.signal {
+  background: #10b981;
+}
+
+.achievement-xp.bookmark {
+  background: #c084fc;
+}
+
+.achievement-xp.oauth,
+.achievement-xp.social-link {
+  background: linear-gradient(135deg, #f87171, #facc15, #34d399, #60a5fa, #c084fc);
+}
+
+.achievement-xp.follow {
+  background: linear-gradient(135deg, #f472b6, #ffffff);
+}
+
+.achievement-xp.trust {
+  background: #d4a017;
+}
+
+.achievement-xp.streak {
+  background: #f97316;
+}
+
+.achievement-xp.pulse {
+  background: #10b981;
+}
+
+.achievement-xp.curator {
+  background: #ef4444;
+}
+
+.achievement-xp.social {
+  background: #d946ef;
+}
+
+.achievement-xp.discovery {
+  background: #cd7f32;
+}
+
+.achievement-xp.gold {
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+}
+
+/* Locked achievements */
+.achievement-card.locked {
+  opacity: 0.5;
+}
+
+.achievement-card.locked .achievement-card-img {
+  filter: grayscale(100%);
+}
+
+.achievement-type-badge.locked {
+  background: rgba(150, 150, 150, 0.6);
+}
+
+.achievement-xp.locked {
+  background: rgba(150, 150, 150, 0.4);
+  color: rgba(15, 20, 32, 0.5);
+}
+
+/* In-progress achievements (active quests) */
+.achievement-card.in-progress .achievement-card-img {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+.achievement-card.in-progress .achievement-card-info {
+  opacity: 0.6;
+}
+
+/* Keep progress overlay fully visible on grayed cards */
+.achievement-card.in-progress .achievement-progress-overlay {
+  opacity: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
+}
+
+/* Progress circle overlay on card image */
+.achievement-progress-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Progress text (e.g. "3/5") */
+.achievement-progress-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Claimable achievements (golden glow) */
+.achievement-card.claimable {
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.15);
+  animation: achievement-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes achievement-glow {
+  from {
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2), 0 0 16px rgba(255, 215, 0, 0.1);
+  }
+  to {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4), 0 0 24px rgba(255, 215, 0, 0.2);
+  }
+}
+
+/* Claim button inside achievement card */
+.achievement-claim-btn {
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #0f1420;
+}
+
+.achievement-claim-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.achievement-claim-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.achievement-claim-btn.claiming {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.achievement-claim-btn.verify {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: white;
+}
+
+.achievement-claim-btn.verify:hover {
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+}
+
+/* ========== ACHIEVEMENTS TAB CONTENT ========== */
+.achievements-tab-content {
+  padding: 12px 16px 80px;
+}
+
+.achievements-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.achievements-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.achievements-empty h3 {
+  font-size: 16px;
+  color: white;
+  margin: 0;
+}
+
+.achievements-empty p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+/* ========== BETA SEASON POOL CARD ========== */
+
+.season-pool-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.season-pool-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #FBF7F5;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.season-pool-metrics {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.season-pool-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  gap: 4px;
+}
+
+.season-pool-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.season-pool-value {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.season-pool-pct {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.season-pool-positive {
+  color: #4ade80;
+}
+
+.season-pool-negative {
+  color: #f87171;
+}
+
+.season-pool-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.season-pool-action-btn {
+  flex: 1;
+  padding: 9px 0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.season-pool-action-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.season-pool-action-btn:active {
+  transform: scale(0.98);
+}
+
+.season-pool-action-btn--redeem {
+  border-color: rgba(248, 113, 113, 0.2);
+  color: rgba(248, 113, 113, 0.75);
+}
+
+.season-pool-action-btn--redeem:hover {
+  background: rgba(248, 113, 113, 0.06);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #f87171;
 }

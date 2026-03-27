@@ -1,17 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from '../layout/RouterProvider'
-import { useTracking } from '../../hooks/useTracking'
-import { useWalletFromStorage, disconnectWallet } from '../../hooks/useWalletFromStorage'
+import { useTracking } from '../../hooks'
+import { useWalletFromStorage, disconnectWallet } from '../../hooks'
 import SwitchButton from '../ui/SwitchButton'
 import WalletConnectionButton from '../ui/THP_WalletConnectionButton'
 import { Storage } from '@plasmohq/storage'
-import { cleanupProvider } from '../../lib/services/metamask'
-import { elizaDataService } from '../../lib/database/indexedDB-methods'
+import { cleanupProvider } from '../../lib/services/walletProvider'
+import { tripletsDataService, userSettingsService } from '../../lib/database'
 import { RecommendationService } from '../../lib/services/ai/RecommendationService'
-import { GlobalResonanceService } from '../../lib/services/GlobalResonanceService'
 import '../styles/Global.css'
 import '../styles/SettingsPage.css'
+import { createHookLogger } from '../../lib/utils/logger'
 import '../styles/Modal.css'
+import packageJson from '~/package.json'
+
+const logger = createHookLogger('SettingsPage')
 
 const SettingsPage = () => {
   const { navigateTo } = useRouter()
@@ -20,6 +23,29 @@ const SettingsPage = () => {
 
   // Local UI states
   const [isClearing, setIsClearing] = useState(false)
+
+  // Auto-cleanup settings
+  const [autoCleanup, setAutoCleanup] = useState(true)
+  const [autoCleanupDays, setAutoCleanupDays] = useState(30)
+
+  useEffect(() => {
+    userSettingsService.getSettings().then(settings => {
+      setAutoCleanup(settings.autoCleanup ?? true)
+      setAutoCleanupDays(settings.autoCleanupInactiveDays ?? 30)
+    })
+  }, [])
+
+  const handleToggleAutoCleanup = async () => {
+    const newValue = !autoCleanup
+    setAutoCleanup(newValue)
+    await userSettingsService.saveSettings({ autoCleanup: newValue })
+  }
+
+  const handleChangeDays = async (days: number) => {
+    const clamped = Math.max(7, Math.min(90, days))
+    setAutoCleanupDays(clamped)
+    await userSettingsService.saveSettings({ autoCleanupInactiveDays: clamped })
+  }
 
   // Plasmo storage
   const storage = new Storage()
@@ -41,27 +67,39 @@ const SettingsPage = () => {
       // Clear Plasmo storage
       await storage.clear()
 
-      // Clear custom IndexedDB data (Eliza messages, triplets, etc.)
-      await elizaDataService.clearAll()
+      // Clear custom IndexedDB data (triplets, etc.)
+      await tripletsDataService.clearAll()
 
-      // Clear OAuth tokens and sync info
-      await chrome.storage.local.remove([
-        'oauth_token_youtube', 'oauth_token_spotify', 'oauth_token_twitch', 'oauth_token_twitter',
-        'sync_info_youtube', 'sync_info_spotify', 'sync_info_twitch', 'sync_info_twitter'
-      ])
+      // Clear OAuth tokens, sync info, and platform profiles (old + per-wallet keys)
+      const allLocalData: Record<string, any> = await chrome.storage.local.get()
+      const keysToRemove = Object.keys(allLocalData).filter(key =>
+        key.startsWith('oauth_token_') ||
+        key.startsWith('sync_info_') ||
+        key.startsWith('discord_profile') ||
+        key.startsWith('completed_quests') ||
+        key.startsWith('claimed_quests') ||
+        key.startsWith('claimed_discovery_xp') ||
+        key.startsWith('group_certification_xp') ||
+        key.startsWith('spent_xp') ||
+        key.startsWith('discovery_gold') ||
+        key.startsWith('certification_gold') ||
+        key.startsWith('spent_gold') ||
+        key.startsWith('currency_migration_v1') ||
+        key.startsWith('quest_progress_') ||
+        key.startsWith('social_attestation') ||
+        key === 'lastActiveWallet'
+      )
+      if (keysToRemove.length > 0) {
+        await chrome.storage.local.remove(keysToRemove)
+      }
 
       // Clear recommendations cache (if user has account)
       if (account) {
         await RecommendationService.clearCache(account)
-        console.log('✅ Recommendations cache cleared for account:', account)
+        logger.info('Recommendations cache cleared for account', account)
       }
 
-      // Clear global resonance service state
-      const globalService = GlobalResonanceService.getInstance()
-      globalService.clearCache()
-      console.log('✅ Global resonance service cache cleared')
-
-      // Clear IndexedDB completely (recommendations + og:images)
+      // Clear IndexedDB completely
       const databases = await indexedDB.databases()
       for (const db of databases) {
         if (db.name) {
@@ -70,13 +108,13 @@ const SettingsPage = () => {
             deleteReq.onsuccess = () => resolve(true)
             deleteReq.onerror = () => reject(deleteReq.error)
           })
-          console.log('✅ Deleted IndexedDB database:', db.name)
+          logger.info('Deleted IndexedDB database', db.name)
         }
       }
 
       alert('All storage cleared: Plasmo, IndexedDB, OAuth, Wallet, Recommendations, and Images!')
     } catch (error) {
-      console.error('❌ Failed to clear storage:', error)
+      logger.error('Failed to clear storage', error)
       alert('Failed to clear storage. Please try again.')
     } finally {
       setIsClearing(false)
@@ -114,7 +152,7 @@ const SettingsPage = () => {
         <div className="settings-item">
           <span>Status</span>
           <a
-            href="https://stats.intuition.sh/"
+            href="https://status.intuition.sh/"
             target="_blank"
             rel="noopener noreferrer"
             className="available-for-btn"
@@ -133,6 +171,47 @@ const SettingsPage = () => {
           <WalletConnectionButton />
         </div>
 
+        {/* Replay Tutorial */}
+        <div className="settings-item">
+          <span>Tutorial</span>
+          <button
+            onClick={() => navigateTo('onboarding-tutorial')}
+            className="delete-button-3d noselect"
+          >
+            Tutorial
+          </button>
+        </div>
+
+        {/* Group Auto-Cleanup */}
+        <div className="settings-item">
+          <div className="settings-item-content">
+            <span>Auto-Cleanup Suggestions</span>
+            <span className="settings-item-description">
+              Suggest removing inactive uncertified groups
+            </span>
+          </div>
+          <SwitchButton isEnabled={autoCleanup} onToggle={handleToggleAutoCleanup} />
+        </div>
+
+        {autoCleanup && (
+          <div className="settings-item">
+            <div className="settings-item-content">
+              <span>Inactivity Threshold</span>
+              <span className="settings-item-description">
+                Days before a group is flagged ({autoCleanupDays}d)
+              </span>
+            </div>
+            <input
+              type="range"
+              min={7}
+              max={90}
+              value={autoCleanupDays}
+              onChange={e => handleChangeDays(Number(e.target.value))}
+              className="settings-range"
+            />
+          </div>
+        )}
+
         {/* Clear All Data */}
         <div className="settings-item">
           <span>Clear All Data</span>
@@ -144,7 +223,15 @@ const SettingsPage = () => {
             {isClearing ? 'Clearing...' : 'Delete'}
           </button>
         </div>
+
       </div>
+
+      <p className="description-paragraph terms-text" style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', opacity: 0.6 }}>
+        <a href="https://doc.sofia.intuition.box/privacy" target="_blank" rel="noopener noreferrer"><strong>Privacy Policy</strong></a> · <a href="https://doc.sofia.intuition.box/terms" target="_blank" rel="noopener noreferrer"><strong>Terms & Conditions</strong></a>
+      </p>
+      <p className="description-paragraph terms-text" style={{ textAlign: 'center', marginTop: '8px' }}>
+        v{packageJson.version}
+      </p>
     </div>
   )
 }

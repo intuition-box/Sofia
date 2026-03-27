@@ -1,0 +1,178 @@
+fragment AtomValue on atoms {
+  value {
+    person {
+      name
+      image
+      description
+      url
+    }
+    thing {
+      name
+      image
+      description
+      url
+    }
+    organization {
+      name
+      image
+      description
+      url
+    }
+    account {
+      id
+      label
+      image
+    }
+  }
+}
+
+fragment AtomMetadata on atoms {
+  term_id
+  data
+  image
+  label
+  emoji
+  type
+  wallet_id
+  creator {
+    id
+    label
+    image
+  }
+  ...AtomValue
+}
+
+fragment AtomTxn on atoms {
+  block_number
+  created_at
+  transaction_hash
+  creator_id
+}
+
+fragment AtomVaultDetails on atoms {
+  term_id
+  wallet_id
+  term {
+    vaults(where: { curve_id: { _eq: "1" } }) {
+      position_count
+      total_shares
+      current_share_price
+      positions_aggregate {
+        aggregate {
+          count
+          sum {
+            shares
+          }
+        }
+      }
+      positions {
+        id
+        account {
+          label
+          id
+        }
+        shares
+      }
+    }
+  }
+}
+
+fragment AtomTriple on atoms {
+  as_subject_triples {
+    term_id
+    object {
+      data
+      term_id
+      image
+      label
+      emoji
+      type
+      creator {
+        ...AccountMetadata
+      }
+    }
+    predicate {
+      data
+      term_id
+      image
+      label
+      emoji
+      type
+      creator {
+        ...AccountMetadata
+      }
+    }
+  }
+  as_predicate_triples {
+    term_id
+    subject {
+      data
+      term_id
+      image
+      label
+      emoji
+      type
+      creator {
+        ...AccountMetadata
+      }
+    }
+    object {
+      data
+      term_id
+      image
+      label
+      emoji
+      type
+      creator {
+        ...AccountMetadata
+      }
+    }
+  }
+  as_object_triples {
+    term_id
+    subject {
+      data
+      term_id
+      image
+      label
+      emoji
+      type
+      creator {
+        ...AccountMetadata
+      }
+    }
+    predicate {
+      data
+      term_id
+      image
+      label
+      emoji
+      type
+      creator {
+        ...AccountMetadata
+      }
+    }
+  }
+}
+
+fragment AtomVaultDetailsWithPositions on atoms {
+  term {
+    vaults(where: { curve_id: { _eq: "1" } }) {
+      total_shares
+      current_share_price
+      positions_aggregate(where: { account_id: { _in: $addresses } }) {
+        aggregate {
+          sum {
+            shares
+          }
+        }
+        nodes {
+          account {
+            id
+          }
+          shares
+        }
+      }
+    }
+  }
+}

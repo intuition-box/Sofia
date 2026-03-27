@@ -2,29 +2,32 @@
  * Specialized methods for SofIA IndexedDB operations
  */
 
-import sofiaDB, { STORES, type ElizaRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type AgentChannelRecord } from './indexedDB'
+import sofiaDB, { STORES, type TripletsRecord, type NavigationRecord, type ProfileRecord, type SettingsRecord, type SearchRecord, type RecommendationRecord, type IntentionGroupRecord, type UserXPRecord, type CartItemRecord } from './indexedDB'
+import { createServiceLogger } from '../utils/logger'
 import { MessageBus } from '../services/MessageBus'
 import type { ParsedSofiaMessage, Message, Triplet } from '~types/messages'
-import { parseSofiaMessage } from '../utils/parseSofiaMessage'
+import { parseSofiaMessage } from '../utils'
 import type { VisitData } from '~types/history'
 import type { ExtensionSettings } from '~types/storage'
 import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
 
+const logger = createServiceLogger('IndexedDB')
+
 /**
- * Eliza Data Methods
+ * Triplets Data Methods
  */
-export class ElizaDataService {
+export class TripletsDataService {
   /**
-   * Store a message from Eliza - only store if parsing succeeds
+   * Store a message - only store if parsing succeeds
    */
   static async storeMessage(message: Message, messageId?: string): Promise<number> {
     // Try to parse the message first
     const parsed = parseSofiaMessage(message.content.text, message.created_at)
     if (parsed && parsed.triplets.length > 0) {
-      console.log(`🔍 Parsed message with ${parsed.triplets.length} triplets - storing only parsed version`)
+      logger.debug(`Parsed message with ${parsed.triplets.length} triplets - storing only parsed version`)
       return await this.storeParsedMessage(parsed, messageId)
     } else {
-      console.log('⚠️ Message could not be parsed or has no triplets - skipping storage')
+      logger.warn('Message could not be parsed or has no triplets - skipping storage')
       return 0
     }
   }
@@ -35,15 +38,15 @@ export class ElizaDataService {
    * Store a parsed Sofia message with triplets
    */
   static async storeParsedMessage(parsedMessage: ParsedSofiaMessage, messageId?: string): Promise<number> {
-    const record: ElizaRecord = {
+    const record: TripletsRecord = {
       messageId: messageId || `parsed_${Date.now()}_${Math.random()}`,
       content: parsedMessage,
       timestamp: Date.now(),
       type: 'parsed_message'
     }
 
-    const result = await sofiaDB.add(STORES.ELIZA_DATA, record)
-    console.log('🧠 Parsed Sofia message stored:', messageId)
+    const result = await sofiaDB.add(STORES.TRIPLETS_DATA, record)
+    logger.info('Parsed Sofia message stored', { messageId })
 
     // Note: Badge update is handled differently based on context:
     // - OAuth: Direct call to updateEchoBadge in TripletExtractor
@@ -53,24 +56,24 @@ export class ElizaDataService {
   }
 
   /**
-   * Get all Eliza messages
+   * Get all triplet records
    */
-  static async getAllMessages(): Promise<ElizaRecord[]> {
-    return await sofiaDB.getAll<ElizaRecord>(STORES.ELIZA_DATA)
+  static async getAllMessages(): Promise<TripletsRecord[]> {
+    return await sofiaDB.getAll<TripletsRecord>(STORES.TRIPLETS_DATA)
   }
 
   /**
    * Get messages by type
    */
-  static async getMessagesByType(type: 'message' | 'parsed_message' | 'triplet'): Promise<ElizaRecord[]> {
-    return await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'type', type)
+  static async getMessagesByType(type: 'message' | 'parsed_message' | 'triplet'): Promise<TripletsRecord[]> {
+    return await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'type', type)
   }
 
   /**
    * Get recent messages (last N messages)
    */
-  static async getRecentMessages(limit: number = 50): Promise<ElizaRecord[]> {
-    const allMessages = await sofiaDB.getAll<ElizaRecord>(STORES.ELIZA_DATA)
+  static async getRecentMessages(limit: number = 50): Promise<TripletsRecord[]> {
+    const allMessages = await sofiaDB.getAll<TripletsRecord>(STORES.TRIPLETS_DATA)
     return allMessages
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit)
@@ -81,17 +84,17 @@ export class ElizaDataService {
    */
   static async deleteOldMessages(daysToKeep: number = 30): Promise<number> {
     const cutoffDate = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000)
-    const allMessages = await sofiaDB.getAll<ElizaRecord>(STORES.ELIZA_DATA)
+    const allMessages = await sofiaDB.getAll<TripletsRecord>(STORES.TRIPLETS_DATA)
     
     let deletedCount = 0
     for (const message of allMessages) {
       if (message.timestamp < cutoffDate && message.id) {
-        await sofiaDB.delete(STORES.ELIZA_DATA, message.id)
+        await sofiaDB.delete(STORES.TRIPLETS_DATA, message.id)
         deletedCount++
       }
     }
     
-    console.log(`🧹 Deleted ${deletedCount} old Eliza messages`)
+    logger.info(`Deleted ${deletedCount} old triplet records`)
     return deletedCount
   }
 
@@ -100,23 +103,23 @@ export class ElizaDataService {
    */
   static async storeTripletStates(tripletStates: any[]): Promise<number> {
     // Remove existing triplet states first
-    const existing = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_triplet_states')
+    const existing = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_triplet_states')
     for (const record of existing) {
       if (record.id) {
-        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+        await sofiaDB.delete(STORES.TRIPLETS_DATA, record.id)
       }
     }
     
     // Store new triplet states
-    const record: ElizaRecord = {
+    const record: TripletsRecord = {
       messageId: 'echoesTab_triplet_states',
-      content: tripletStates as any,
+      content: tripletStates,
       timestamp: Date.now(),
       type: 'triplet'
     }
     
-    const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
-    console.log('💾 EchoesTab triplet states persisted:', tripletStates.length)
+    const result = await sofiaDB.put(STORES.TRIPLETS_DATA, record)
+    logger.info('EchoesTab triplet states persisted', { count: tripletStates.length })
     return result as number
   }
 
@@ -124,9 +127,9 @@ export class ElizaDataService {
    * Load triplet states for EchoesTab
    */
   static async loadTripletStates(): Promise<any[]> {
-    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_triplet_states')
+    const records = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_triplet_states')
     if (records.length > 0 && records[0].content) {
-      return records[0].content as any[]
+      return records[0].content as unknown[]
     }
     return []
   }
@@ -136,23 +139,23 @@ export class ElizaDataService {
    */
   static async storePublishedTripletIds(publishedIds: string[]): Promise<number> {
     // Remove existing published triplet IDs first
-    const existing = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_published_triplets')
+    const existing = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_published_triplets')
     for (const record of existing) {
       if (record.id) {
-        await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
+        await sofiaDB.delete(STORES.TRIPLETS_DATA, record.id)
       }
     }
     
     // Store new published triplet IDs
-    const record: ElizaRecord = {
+    const record: TripletsRecord = {
       messageId: 'echoesTab_published_triplets',
-      content: publishedIds as any,
+      content: publishedIds,
       timestamp: Date.now(),
       type: 'published_triplets'
     }
     
-    const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
-    console.log('🚫 Published triplet IDs stored:', publishedIds.length)
+    const result = await sofiaDB.put(STORES.TRIPLETS_DATA, record)
+    logger.info('Published triplet IDs stored', { count: publishedIds.length })
     return result as number
   }
 
@@ -160,7 +163,7 @@ export class ElizaDataService {
    * Load published triplet IDs
    */
   static async loadPublishedTripletIds(): Promise<string[]> {
-    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'messageId', 'echoesTab_published_triplets')
+    const records = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'messageId', 'echoesTab_published_triplets')
     if (records.length > 0 && records[0].content) {
       const ids = records[0].content as string[]
       return ids
@@ -176,13 +179,13 @@ export class ElizaDataService {
     if (!existingIds.includes(tripletId)) {
       existingIds.push(tripletId)
       await this.storePublishedTripletIds(existingIds)
-      console.log('🚫 Added triplet to published list:', tripletId)
+      logger.debug('Added triplet to published list', { tripletId })
       
       // Notify background to update badge count
       try {
         MessageBus.getInstance().sendMessageFireAndForget({ type: 'TRIPLET_PUBLISHED' })
       } catch (error) {
-        console.error('❌ Failed to notify background of published triplet:', error)
+        logger.error('Failed to notify background of published triplet', error)
       }
     }
   }
@@ -195,14 +198,14 @@ export class ElizaDataService {
     await this.cleanupOldTripletRecords()
     
     // Check if this triplet already exists by looking for existing record
-    const existingRecord = await sofiaDB.getByIndex<ElizaRecord>(
-      STORES.ELIZA_DATA, 
+    const existingRecord = await sofiaDB.getByIndex<TripletsRecord>(
+      STORES.TRIPLETS_DATA, 
       'messageId', 
       `published_triplet_${tripletDetails.originalId || tripletDetails.tripleVaultId}`
     )
     
     // Create or update individual triplet record with unique messageId
-    const record: ElizaRecord = {
+    const record: TripletsRecord = {
       messageId: `published_triplet_${tripletDetails.originalId || tripletDetails.tripleVaultId}`,
       content: tripletDetails,
       timestamp: Date.now(),
@@ -215,16 +218,16 @@ export class ElizaDataService {
     }
     
     try {
-      const result = await sofiaDB.put(STORES.ELIZA_DATA, record)
-      console.log('🔗 Published triplet details stored:', tripletDetails.tripleVaultId || tripletDetails.originalId)
+      const result = await sofiaDB.put(STORES.TRIPLETS_DATA, record)
+      logger.info('Published triplet details stored', { id: tripletDetails.tripleVaultId || tripletDetails.originalId })
       return result as number
     } catch (error) {
       if (error instanceof Error && error.name === 'ConstraintError') {
-        console.warn('⚠️ Constraint error detected, attempting to resolve...', error.message)
+        logger.warn('Constraint error detected, attempting to resolve...', { message: error.message })
         // Try to clean up conflicts and retry once
         await this.cleanupOldTripletRecords()
-        const retryResult = await sofiaDB.put(STORES.ELIZA_DATA, record)
-        console.log('🔗 Published triplet details stored (retry):', tripletDetails.tripleVaultId || tripletDetails.originalId)
+        const retryResult = await sofiaDB.put(STORES.TRIPLETS_DATA, record)
+        logger.info('Published triplet details stored (retry)', { id: tripletDetails.tripleVaultId || tripletDetails.originalId })
         return retryResult as number
       }
       throw error
@@ -239,11 +242,11 @@ export class ElizaDataService {
     try {
       await this.cleanupOldTripletRecords()
     } catch (error) {
-      console.warn('⚠️ Warning: Could not clean up old triplet records during load:', error)
+      logger.warn('Could not clean up old triplet records during load', error)
       // Continue without cleanup if it fails
     }
     
-    const records = await sofiaDB.getAllByIndex<ElizaRecord>(STORES.ELIZA_DATA, 'type', 'published_triplets_details')
+    const records = await sofiaDB.getAllByIndex<TripletsRecord>(STORES.TRIPLETS_DATA, 'type', 'published_triplets_details')
     // Filter to only get individual triplet records (not the old format)
     const tripletRecords = records.filter(record => 
       record.messageId.startsWith('published_triplet_') && record.content
@@ -257,20 +260,20 @@ export class ElizaDataService {
   static async cleanupOldTripletRecords(): Promise<void> {
     try {
       // Remove old format records that use 'published_triplets_details' as messageId
-      const oldRecords = await sofiaDB.getAllByIndex<ElizaRecord>(
-        STORES.ELIZA_DATA, 
+      const oldRecords = await sofiaDB.getAllByIndex<TripletsRecord>(
+        STORES.TRIPLETS_DATA, 
         'messageId', 
         'published_triplets_details'
       )
       
       for (const record of oldRecords) {
         if (record.id && record.messageId === 'published_triplets_details') {
-          await sofiaDB.delete(STORES.ELIZA_DATA, record.id)
-          console.log('🧹 Cleaned up old triplet record format')
+          await sofiaDB.delete(STORES.TRIPLETS_DATA, record.id)
+          logger.debug('Cleaned up old triplet record format')
         }
       }
     } catch (error) {
-      console.warn('⚠️ Warning: Could not clean up old triplet records:', error)
+      logger.warn('Could not clean up old triplet records', error)
     }
   }
 
@@ -282,10 +285,10 @@ export class ElizaDataService {
     const messageToDelete = allMessages.find(msg => msg.messageId === messageId)
     
     if (messageToDelete && messageToDelete.id) {
-      await sofiaDB.delete(STORES.ELIZA_DATA, messageToDelete.id)
-      console.log('🗑️ Eliza message deleted:', messageId)
+      await sofiaDB.delete(STORES.TRIPLETS_DATA, messageToDelete.id)
+      logger.debug('Triplet record deleted', { messageId })
     } else {
-      console.warn('⚠️ Message not found for deletion:', messageId)
+      logger.warn('Message not found for deletion', { messageId })
     }
   }
 
@@ -294,19 +297,19 @@ export class ElizaDataService {
    */
   static async deleteMessageById(id: number): Promise<void> {
     try {
-      await sofiaDB.delete(STORES.ELIZA_DATA, id)
-      console.log('🗑️ Eliza message deleted by ID:', id)
+      await sofiaDB.delete(STORES.TRIPLETS_DATA, id)
+      logger.debug('Triplet record deleted by ID', { id })
     } catch (error) {
-      console.warn('⚠️ Failed to delete message by ID:', id, error)
+      logger.warn('Failed to delete message by ID', { id, error })
     }
   }
 
   /**
-   * Clear all Eliza data
+   * Clear all triplets data
    */
   static async clearAll(): Promise<void> {
-    await sofiaDB.clear(STORES.ELIZA_DATA)
-    console.log('🗑️ All Eliza data cleared')
+    await sofiaDB.clear(STORES.TRIPLETS_DATA)
+    logger.info('All triplets data cleared')
   }
 }
 
@@ -337,7 +340,7 @@ export class NavigationDataService {
       result = await sofiaDB.add(STORES.NAVIGATION_DATA, record)
     }
     
-    console.log('📊 Visit data stored for:', url)
+    logger.debug('Visit data stored', { url })
     return result as number
   }
 
@@ -381,7 +384,7 @@ export class NavigationDataService {
    */
   static async clearAll(): Promise<void> {
     await sofiaDB.clear(STORES.NAVIGATION_DATA)
-    console.log('🗑️ All navigation data cleared')
+    logger.info('All navigation data cleared')
   }
 }
 
@@ -412,7 +415,7 @@ export class UserProfileService {
     profile.lastUpdated = Date.now()
 
     await sofiaDB.put(STORES.USER_PROFILE, profile)
-    console.log('👤 User profile saved')
+    logger.info('User profile saved')
   }
 
   /**
@@ -428,7 +431,7 @@ export class UserProfileService {
    */
   static async updateProfilePhoto(photoData: string): Promise<void> {
     await this.saveProfile(photoData)
-    console.log('📷 Profile photo updated')
+    logger.info('Profile photo updated')
   }
 
   /**
@@ -436,7 +439,7 @@ export class UserProfileService {
    */
   static async updateBio(bio: string): Promise<void> {
     await this.saveProfile(undefined, bio)
-    console.log('📝 Bio updated')
+    logger.info('Bio updated')
   }
 
   /**
@@ -444,7 +447,7 @@ export class UserProfileService {
    */
   static async updateProfileUrl(url: string): Promise<void> {
     await this.saveProfile(undefined, undefined, url)
-    console.log('🔗 Profile URL updated')
+    logger.info('Profile URL updated')
   }
 }
 
@@ -468,7 +471,10 @@ export class UserSettingsService {
           notifications: true,
           autoBackup: true,
           debugMode: false,
-          isTrackingEnabled: true
+          isTrackingEnabled: true,
+          autoCleanup: true,
+          autoCleanupInactiveDays: 30,
+          autoCleanupMinLevel: 1
         },
         lastUpdated: Date.now()
       }
@@ -479,7 +485,7 @@ export class UserSettingsService {
     currentSettings.lastUpdated = Date.now()
 
     await sofiaDB.put(STORES.USER_SETTINGS, currentSettings)
-    console.log('⚙️ User settings saved:', settings)
+    logger.info('User settings saved', settings)
   }
 
   /**
@@ -496,7 +502,10 @@ export class UserSettingsService {
         notifications: true,
         autoBackup: true,
         debugMode: false,
-        isTrackingEnabled: true
+        isTrackingEnabled: true,
+        autoCleanup: true,
+        autoCleanupInactiveDays: 30,
+        autoCleanupMinLevel: 1
       }
       
       // Save default settings
@@ -515,7 +524,7 @@ export class UserSettingsService {
     value: ExtensionSettings[K]
   ): Promise<void> {
     await this.saveSettings({ [key]: value } as Partial<ExtensionSettings>)
-    console.log(`⚙️ Setting updated: ${key} = ${value}`)
+    logger.info(`Setting updated: ${key} = ${value}`)
   }
 }
 
@@ -552,7 +561,7 @@ export class SearchHistoryService {
       }
       
       const result = await sofiaDB.add(STORES.SEARCH_HISTORY, record)
-      console.log('🔍 Search query added to history:', query)
+      logger.debug('Search query added to history', { query })
       return result as number
     }
   }
@@ -590,7 +599,7 @@ export class SearchHistoryService {
    */
   static async clearHistory(): Promise<void> {
     await sofiaDB.clear(STORES.SEARCH_HISTORY)
-    console.log('🗑️ Search history cleared')
+    logger.info('Search history cleared')
   }
 
   /**
@@ -608,41 +617,46 @@ export class SearchHistoryService {
       }
     }
     
-    console.log(`🧹 Deleted ${deletedCount} old search queries`)
+    logger.info(`Deleted ${deletedCount} old search queries`)
     return deletedCount
   }
 }
 
 /**
  * Bookmark Service Methods
+ * All bookmarks are stored per-wallet to isolate user identities
  */
 export class BookmarkService {
   /**
-   * Create a new bookmark list
+   * Create a new bookmark list (per-wallet)
    */
-  static async createList(name: string, description?: string): Promise<string> {
+  static async createList(walletAddress: string, name: string, description?: string): Promise<string> {
     const listId = `list_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
+
     const list: BookmarkList = {
       id: listId,
+      walletAddress,
       name,
       description,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       tripletIds: []
     }
-    
+
     await sofiaDB.put(STORES.BOOKMARK_LISTS, list)
-    console.log('📋 Bookmark list created:', name)
+    logger.info('Bookmark list created', { name, wallet: walletAddress.slice(0, 8) })
     return listId
   }
 
   /**
-   * Get all bookmark lists
+   * Get all bookmark lists for a specific wallet
    */
-  static async getAllLists(): Promise<BookmarkList[]> {
+  static async getAllLists(walletAddress: string): Promise<BookmarkList[]> {
     const lists = await sofiaDB.getAll<BookmarkList>(STORES.BOOKMARK_LISTS)
-    return lists.sort((a, b) => b.updatedAt - a.updatedAt)
+    // Filter by wallet address
+    return lists
+      .filter(list => list.walletAddress === walletAddress)
+      .sort((a, b) => b.updatedAt - a.updatedAt)
   }
 
   /**
@@ -668,7 +682,7 @@ export class BookmarkService {
     }
 
     await sofiaDB.put(STORES.BOOKMARK_LISTS, updatedList)
-    console.log('📋 Bookmark list updated:', listId)
+    logger.debug('Bookmark list updated', { listId })
   }
 
   /**
@@ -683,7 +697,7 @@ export class BookmarkService {
 
     // Delete the list itself
     await sofiaDB.delete(STORES.BOOKMARK_LISTS, listId)
-    console.log('🗑️ Bookmark list deleted:', listId)
+    logger.info('Bookmark list deleted', { listId })
   }
 
   /**
@@ -719,7 +733,7 @@ export class BookmarkService {
     }
 
     await sofiaDB.put(STORES.BOOKMARK_LISTS, updatedList)
-    console.log('🔖 Triplet added to list:', listId, triplet.subject)
+    logger.debug('Triplet added to list', { listId, subject: triplet.subject })
   }
 
   /**
@@ -742,7 +756,7 @@ export class BookmarkService {
     }
 
     await sofiaDB.put(STORES.BOOKMARK_LISTS, updatedList)
-    console.log('🗑️ Triplet removed from list:', listId, tripletId)
+    logger.debug('Triplet removed from list', { listId, tripletId })
   }
 
   /**
@@ -764,23 +778,31 @@ export class BookmarkService {
   }
 
   /**
-   * Get all bookmarked triplets
+   * Get all bookmarked triplets for a specific wallet
+   * (Only returns triplets that belong to lists owned by this wallet)
    */
-  static async getAllTriplets(): Promise<BookmarkedTriplet[]> {
-    const triplets = await sofiaDB.getAll<BookmarkedTriplet>(STORES.BOOKMARKED_TRIPLETS)
-    return triplets.sort((a, b) => b.addedAt - a.addedAt)
+  static async getAllTriplets(walletAddress: string): Promise<BookmarkedTriplet[]> {
+    // Get all lists for this wallet
+    const lists = await this.getAllLists(walletAddress)
+    const tripletIds = new Set(lists.flatMap(list => list.tripletIds))
+
+    // Get all triplets and filter by those belonging to this wallet's lists
+    const allTriplets = await sofiaDB.getAll<BookmarkedTriplet>(STORES.BOOKMARKED_TRIPLETS)
+    return allTriplets
+      .filter(triplet => tripletIds.has(triplet.id))
+      .sort((a, b) => b.addedAt - a.addedAt)
   }
 
   /**
-   * Search triplets across all lists
+   * Search triplets across all lists for a specific wallet
    */
-  static async searchTriplets(query: string): Promise<BookmarkedTriplet[]> {
+  static async searchTriplets(walletAddress: string, query: string): Promise<BookmarkedTriplet[]> {
     if (!query.trim()) return []
 
-    const allTriplets = await this.getAllTriplets()
+    const allTriplets = await this.getAllTriplets(walletAddress)
     const lowercaseQuery = query.toLowerCase()
 
-    return allTriplets.filter(triplet => 
+    return allTriplets.filter(triplet =>
       triplet.triplet.subject.toLowerCase().includes(lowercaseQuery) ||
       triplet.triplet.predicate.toLowerCase().includes(lowercaseQuery) ||
       triplet.triplet.object.toLowerCase().includes(lowercaseQuery) ||
@@ -795,7 +817,7 @@ export class BookmarkService {
   static async clearAll(): Promise<void> {
     await sofiaDB.clear(STORES.BOOKMARK_LISTS)
     await sofiaDB.clear(STORES.BOOKMARKED_TRIPLETS)
-    console.log('🗑️ All bookmarks cleared')
+    logger.info('All bookmarks cleared')
   }
 }
 
@@ -820,7 +842,7 @@ export class RecommendationsService {
     }
     
     await sofiaDB.put(STORES.RECOMMENDATIONS, record)
-    console.log('💾 Recommendations saved for wallet:', walletAddress)
+    logger.info('Recommendations saved', { wallet: walletAddress })
   }
 
   /**
@@ -844,7 +866,7 @@ export class RecommendationsService {
     const maxAge = maxAgeHours * 60 * 60 * 1000 // Convert hours to milliseconds
     const isValid = Date.now() - record.lastUpdated < maxAge
     
-    console.log('⏰ Recommendations cache check:', {
+    logger.debug('Recommendations cache check', {
       wallet: walletAddress,
       age: `${Math.round((Date.now() - record.lastUpdated) / (60 * 60 * 1000))}h`,
       valid: isValid
@@ -884,7 +906,7 @@ export class RecommendationsService {
     }
 
     await sofiaDB.put(STORES.RECOMMENDATIONS, updatedRecord)
-    console.log('🔄 Recommendations updated for wallet:', walletAddress)
+    logger.info('Recommendations updated', { wallet: walletAddress })
   }
 
   /**
@@ -944,9 +966,9 @@ export class RecommendationsService {
     })
 
     const result = Array.from(categoryMap.values())
-    console.log('🔄 Merged recommendations:', {
+    logger.debug('Merged recommendations', {
       old: oldRecs.length,
-      new: newRecs.length, 
+      new: newRecs.length,
       final: result.length,
       totalSuggestions: result.reduce((sum, rec) => sum + rec.suggestions.length, 0)
     })
@@ -959,7 +981,7 @@ export class RecommendationsService {
    */
   static async deleteRecommendations(walletAddress: string): Promise<void> {
     await sofiaDB.delete(STORES.RECOMMENDATIONS, walletAddress.toLowerCase())
-    console.log('🗑️ Recommendations deleted for wallet:', walletAddress)
+    logger.info('Recommendations deleted', { wallet: walletAddress })
   }
 
   /**
@@ -975,7 +997,7 @@ export class RecommendationsService {
    */
   static async clearAll(): Promise<void> {
     await sofiaDB.clear(STORES.RECOMMENDATIONS)
-    console.log('🗑️ All recommendations cleared')
+    logger.info('All recommendations cleared')
   }
 
   /**
@@ -993,151 +1015,144 @@ export class RecommendationsService {
       }
     }
     
-    console.log(`🧹 Deleted ${deletedCount} old recommendation records`)
+    logger.info(`Deleted ${deletedCount} old recommendation records`)
     return deletedCount
   }
 }
 
 /**
- * 🆕 Agent Channels Service
- * Manages persistent storage of channel IDs for multi-user support
+ * 🆕 Intention Groups Service
+ * Manages persistent storage of domain-based intention groups
  */
-export class AgentChannelsService {
+export class IntentionGroupsService {
   /**
-   * Store channel ID for a user-agent pair
+   * Get all intention groups
    */
-  static async storeChannelId(
-    walletAddress: string,
-    agentName: string,
-    channelId: string,
-    agentId: string
-  ): Promise<void> {
-    const key = `${walletAddress.toLowerCase()}:${agentName}`
-    const record: AgentChannelRecord = {
-      key,
-      channelId,
-      walletAddress: walletAddress.toLowerCase(),
-      agentName,
-      agentId,
-      createdAt: Date.now(),
-      lastUsed: Date.now()
+  static async getAllGroups(): Promise<IntentionGroupRecord[]> {
+    const groups = await sofiaDB.getAll<IntentionGroupRecord>(STORES.INTENTION_GROUPS)
+    return groups.sort((a, b) => b.updatedAt - a.updatedAt)
+  }
+
+  /**
+   * Get a specific group by ID (domain)
+   */
+  static async getGroup(groupId: string): Promise<IntentionGroupRecord | null> {
+    return await sofiaDB.get<IntentionGroupRecord>(STORES.INTENTION_GROUPS, groupId) || null
+  }
+
+  /**
+   * Save or update an intention group
+   */
+  static async saveGroup(group: IntentionGroupRecord): Promise<void> {
+    group.updatedAt = Date.now()
+    await sofiaDB.put(STORES.INTENTION_GROUPS, group)
+    logger.info(`[IntentionGroups] Saved group: ${group.id}`)
+  }
+
+  /**
+   * Delete a group
+   */
+  static async deleteGroup(groupId: string): Promise<void> {
+    await sofiaDB.delete(STORES.INTENTION_GROUPS, groupId)
+    logger.info(`[IntentionGroups] Deleted group: ${groupId}`)
+  }
+
+  /**
+   * Clear all groups
+   */
+  static async clearAll(): Promise<void> {
+    await sofiaDB.clear(STORES.INTENTION_GROUPS)
+    logger.info('[IntentionGroups] Cleared all groups')
+  }
+}
+
+/**
+ * 🆕 User XP Service
+ * Manages user XP storage
+ */
+export class UserXPService {
+  /**
+   * Get current user XP
+   */
+  static async getUserXP(): Promise<UserXPRecord | null> {
+    return await sofiaDB.get<UserXPRecord>(STORES.USER_XP, 'user') || null
+  }
+
+  /**
+   * Save user XP
+   */
+  static async saveUserXP(xp: UserXPRecord): Promise<void> {
+    xp.lastUpdated = Date.now()
+    await sofiaDB.put(STORES.USER_XP, xp)
+    logger.info(`[UserXP] Saved XP: ${xp.totalXP}`)
+  }
+
+  /**
+   * Initialize user XP if not exists
+   */
+  static async initializeIfNeeded(): Promise<UserXPRecord> {
+    let xp = await this.getUserXP()
+    if (!xp) {
+      xp = {
+        id: 'user',
+        totalXP: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        lastUpdated: Date.now()
+      }
+      await this.saveUserXP(xp)
     }
-
-    await sofiaDB.put(STORES.AGENT_CHANNELS, record)
-    console.log(`💾 [AgentChannels] Stored channel for ${agentName}:`, channelId)
+    return xp
   }
 
   /**
-   * Get stored channel ID for a user-agent pair
+   * Clear user XP
    */
-  static async getStoredChannelId(
-    walletAddress: string,
-    agentName: string
-  ): Promise<string | null> {
-    const key = `${walletAddress.toLowerCase()}:${agentName}`
-    const record = await sofiaDB.get<AgentChannelRecord>(STORES.AGENT_CHANNELS, key)
-
-    if (record?.channelId) {
-      // Update lastUsed timestamp
-      record.lastUsed = Date.now()
-      await sofiaDB.put(STORES.AGENT_CHANNELS, record)
-
-      console.log(`♻️ [AgentChannels] Retrieved channel for ${agentName}:`, record.channelId)
-      return record.channelId
-    }
-
-    console.log(`🆕 [AgentChannels] No existing channel for ${agentName}`)
-    return null
-  }
-
-  /**
-   * Get all channels for a specific wallet address
-   */
-  static async getAllUserChannels(walletAddress: string): Promise<AgentChannelRecord[]> {
-    const allChannels = await sofiaDB.getAllByIndex<AgentChannelRecord>(
-      STORES.AGENT_CHANNELS,
-      'walletAddress',
-      walletAddress.toLowerCase()
-    )
-    return allChannels
-  }
-
-  /**
-   * Get all channels for a specific agent (across all users)
-   */
-  static async getAllAgentChannels(agentName: string): Promise<AgentChannelRecord[]> {
-    const allChannels = await sofiaDB.getAllByIndex<AgentChannelRecord>(
-      STORES.AGENT_CHANNELS,
-      'agentName',
-      agentName
-    )
-    return allChannels
-  }
-
-  /**
-   * Delete a specific channel
-   */
-  static async deleteChannel(walletAddress: string, agentName: string): Promise<void> {
-    const key = `${walletAddress.toLowerCase()}:${agentName}`
-    await sofiaDB.delete(STORES.AGENT_CHANNELS, key)
-    console.log(`🗑️ [AgentChannels] Deleted channel for ${agentName}`)
-  }
-
-  /**
-   * Clear all channels for a specific wallet (useful for logout)
-   */
-  static async clearUserChannels(walletAddress: string): Promise<number> {
-    const userChannels = await this.getAllUserChannels(walletAddress)
-
-    for (const channel of userChannels) {
-      await sofiaDB.delete(STORES.AGENT_CHANNELS, channel.key)
-    }
-
-    console.log(`🗑️ [AgentChannels] Cleared ${userChannels.length} channels for wallet ${walletAddress}`)
-    return userChannels.length
-  }
-
-  /**
-   * Clear ALL channels (for debugging)
-   */
-  static async clearAllChannels(): Promise<void> {
-    await sofiaDB.clear(STORES.AGENT_CHANNELS)
-    console.log('🗑️ [AgentChannels] Cleared all channels')
-  }
-
-  /**
-   * Get channel statistics (for debugging)
-   */
-  static async getChannelStats(): Promise<{
-    totalChannels: number
-    uniqueWallets: number
-    channelsByAgent: Record<string, number>
-  }> {
-    const allChannels = await sofiaDB.getAll<AgentChannelRecord>(STORES.AGENT_CHANNELS)
-
-    const uniqueWallets = new Set(allChannels.map(c => c.walletAddress)).size
-    const channelsByAgent: Record<string, number> = {}
-
-    for (const channel of allChannels) {
-      channelsByAgent[channel.agentName] = (channelsByAgent[channel.agentName] || 0) + 1
-    }
-
-    return {
-      totalChannels: allChannels.length,
-      uniqueWallets,
-      channelsByAgent
-    }
+  static async clearAll(): Promise<void> {
+    await sofiaDB.clear(STORES.USER_XP)
+    logger.info('[UserXP] Cleared user XP')
   }
 }
 
 // Export all services
-export const elizaDataService = ElizaDataService
+export const tripletsDataService = TripletsDataService
 export const navigationDataService = NavigationDataService
 export const userProfileService = UserProfileService
 export const userSettingsService = UserSettingsService
 export const searchHistoryService = SearchHistoryService
 export const bookmarkService = BookmarkService
 export const recommendationsService = RecommendationsService
-export const agentChannelsService = AgentChannelsService  // 🆕 Export agent channels service
+export const intentionGroupsService = IntentionGroupsService  // 🆕 Export intention groups service
+export const userXPService = UserXPService  // 🆕 Export user XP service
 
-// Published triplet storage exports removed - using Intuition indexer as single source of truth
+/**
+ * Cart Data Service
+ * Manages certification cart items in IndexedDB
+ */
+export class CartDataService {
+  static async addItem(item: CartItemRecord): Promise<void> {
+    await sofiaDB.put(STORES.CART_ITEMS, item)
+  }
+
+  static async removeItem(id: string): Promise<void> {
+    await sofiaDB.delete(STORES.CART_ITEMS, id)
+  }
+
+  static async getByWallet(walletAddress: string): Promise<CartItemRecord[]> {
+    const items = await sofiaDB.getAllByIndex<CartItemRecord>(
+      STORES.CART_ITEMS,
+      'walletAddress',
+      walletAddress
+    )
+    return items.sort((a, b) => a.addedAt - b.addedAt)
+  }
+
+  static async clearByWallet(walletAddress: string): Promise<void> {
+    const items = await this.getByWallet(walletAddress)
+    for (const item of items) {
+      await sofiaDB.delete(STORES.CART_ITEMS, item.id)
+    }
+  }
+}
+
+export const cartDataService = CartDataService

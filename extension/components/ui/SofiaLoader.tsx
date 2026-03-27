@@ -1,4 +1,4 @@
-import './SofiaLoader.css';
+import '../styles/SofiaLoader.css';
 
 interface SofiaLoaderProps {
   size?: number;

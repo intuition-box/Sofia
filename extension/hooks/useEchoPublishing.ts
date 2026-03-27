@@ -5,8 +5,20 @@
 
 import { useCallback } from 'react'
 import { useCreateTripleOnChain } from './useCreateTripleOnChain'
-import { elizaDataService } from '../lib/database/indexedDB-methods'
+import { tripletsDataService } from '../lib/database'
+import { getFaviconUrl } from '../lib/utils'
+import { txEventBus } from '../lib/services'
 import type { EchoTriplet, TripleOnChainResult, BatchTripleResult } from '../types/blockchain'
+
+/**
+ * Clean AI analysis artifacts from description
+ * Simply use the object name (page title) as description - cleaner and more reliable
+ */
+const cleanDescription = (objectName: string): string => {
+  // Just use the object name (page title) as description
+  // This is cleaner than trying to parse AI-generated descriptions
+  return objectName.slice(0, 150)
+}
 
 interface UseEchoPublishingParams {
   echoTriplets: EchoTriplet[]
@@ -39,21 +51,13 @@ export const useEchoPublishing = ({
     
     try {
       // Calculate favicon URL from triplet URL
-      let faviconUrl = ''
-      if (triplet.url) {
-        try {
-          const urlObj = new URL(triplet.url)
-          faviconUrl = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=128`
-        } catch {
-          // Invalid URL, skip favicon
-        }
-      }
+      const faviconUrl = triplet.url ? getFaviconUrl(triplet.url, 128) : ''
 
       const result = await createTripleOnChain(
         triplet.triplet.predicate,
         {
           name: triplet.triplet.object,
-          description: triplet.description,
+          description: cleanDescription(triplet.triplet.object),
           url: triplet.url,
           image: faviconUrl
         },
@@ -61,10 +65,11 @@ export const useEchoPublishing = ({
       )
 
       // Mark as published in local storage (to hide from EchoesTab)
-      await elizaDataService.addPublishedTripletId(tripletId)
-      
+      await tripletsDataService.addPublishedTripletId(tripletId)
+      txEventBus.emit("level_up", result.txHash)
+
       onTripletsUpdate(echoTriplets.filter(t => t.id !== tripletId))
-      
+
       return result
     } catch (error) {
       throw error
@@ -77,29 +82,27 @@ export const useEchoPublishing = ({
     }
     
     const selectedTriplets = echoTriplets.filter(t => selectedEchoes.has(t.id))
-    
+
     try {
-      const batchInput = selectedTriplets.map((triplet, index) => {
+      // Filter out items with null weights (removed from batch by user)
+      const activeTriplets = selectedTriplets.filter((_, index) =>
+        customWeights ? customWeights[index] !== null : true
+      )
+      const activeWeights = customWeights?.filter(w => w !== null)
+
+      const batchInput = activeTriplets.map((triplet, index) => {
         // Extract favicon from URL if available
-        let faviconUrl = ''
-        if (triplet.url) {
-          try {
-            const urlObj = new URL(triplet.url)
-            faviconUrl = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=128`
-          } catch {
-            // Invalid URL, skip favicon
-          }
-        }
+        const faviconUrl = triplet.url ? getFaviconUrl(triplet.url, 128) : ''
 
         return {
           predicateName: triplet.triplet.predicate,
           objectData: {
             name: triplet.triplet.object,
-            description: triplet.description,
+            description: cleanDescription(triplet.triplet.object),
             url: triplet.url,
             image: faviconUrl
           },
-          customWeight: customWeights?.[index] || undefined
+          customWeight: activeWeights?.[index] || undefined
         }
       })
       
@@ -107,16 +110,17 @@ export const useEchoPublishing = ({
       
       if (result.success) {
         // Mark all published triplets in local storage (to hide from EchoesTab)
-        for (let i = 0; i < selectedTriplets.length; i++) {
-          const triplet = selectedTriplets[i]
+        for (let i = 0; i < activeTriplets.length; i++) {
+          const triplet = activeTriplets[i]
           const correspondingResult = result.results[i]
-          
+
           if (correspondingResult) {
-            await elizaDataService.addPublishedTripletId(triplet.id)
+            await tripletsDataService.addPublishedTripletId(triplet.id)
           }
         }
-        
-        const publishedIds = new Set(selectedTriplets.map(t => t.id))
+        txEventBus.emit("level_up", result.results[0]?.txHash)
+
+        const publishedIds = new Set(activeTriplets.map(t => t.id))
         onTripletsUpdate(echoTriplets.filter(t => !publishedIds.has(t.id)))
       }
       

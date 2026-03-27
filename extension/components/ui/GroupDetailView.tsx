@@ -1,0 +1,889 @@
+/**
+ * GroupDetailView Component
+ * Displays the detail view of an intention group with URL list and certification options
+ * Shows on-chain certification status and allows creating new certifications
+ */
+
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import {
+  useIntentionCertify, useRedeemTriple, useGroupOnChainCertifications, useLevelUp, useGoldSystem, useGroupAmplify,
+  useDiscoveryReward, useDiscoveryScore, usePageDiscovery, useCart,
+  type IntentionGroupWithStats, type UrlCertificationStatus, type LevelUpPreview
+} from '../../hooks'
+import type { GroupUrlRecord } from '~types/database'
+import type { CertificationType } from '~/lib/services'
+import type { IntentionPurpose } from '../../types/discovery'
+import { INTENTION_PREDICATES } from '../../types/discovery'
+import { CERTIFICATION_LIST, INTENTION_ITEMS, TRUST_ITEMS } from '~/types/intentionCategories'
+import { EXPLORER_URLS } from '../../lib/config/chainConfig'
+import { intuitionGraphqlClient } from '../../lib/clients/graphql-client'
+import WeightModal from '../modals/WeightModal'
+import { normalizeUrl, calculateLevel, calculateLevelProgress, getFaviconUrl, formatDuration, formatShortDate, intentionToCertification, getEffectiveCertStatus } from '~/lib/utils'
+import { createHookLogger } from '../../lib/utils/logger'
+
+const logger = createHookLogger('GroupDetailView')
+import { cleanTitle, getDisplayTitle } from '../../lib/utils/cleanTitle'
+import { CartToast } from './CartDrawer'
+import '../styles/IntentionBubbleSelector.css'
+import onChainBadgeIcon from './icons/onchainbadge.png'
+
+interface GroupDetailViewProps {
+  group: IntentionGroupWithStats
+  onBack: () => void
+  onCertifyUrl: (url: string, certification: CertificationType) => Promise<boolean>
+  onRemoveUrl: (url: string) => Promise<boolean>
+  onRefresh?: () => Promise<void>
+}
+
+
+// URL Row Component
+const UrlRow = ({
+  urlRecord,
+  onChainStatus,
+  onIntentionSelect,
+  onTrustSelect,
+  onAddToCart,
+  onAddTrustToCart,
+  onOAuthCertify,
+  onRemove,
+  isProcessing,
+  cartPredicates
+}: {
+  urlRecord: GroupUrlRecord
+  onChainStatus?: UrlCertificationStatus
+  onIntentionSelect: (intention: IntentionPurpose, title?: string) => void
+  onTrustSelect: (predicateName: string, title?: string) => void
+  onAddToCart: (intention: IntentionPurpose, title?: string) => void
+  onAddTrustToCart: (predicateName: string, title?: string) => void
+  onOAuthCertify: (urlRecord: GroupUrlRecord) => void
+  onRemove: () => void
+  isProcessing: boolean
+  cartPredicates: string[]
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  // Use Pipeline 2 data with Pipeline 1 fallback for trust/distrust
+  const { isCertified: isCertifiedOnChain, labels: allCertLabels } =
+    getEffectiveCertStatus(urlRecord, onChainStatus)
+
+  const allCertInfos = allCertLabels
+    .map(label => CERTIFICATION_LIST.find(c => c.type === label))
+    .filter(Boolean) as typeof CERTIFICATION_LIST
+
+  return (
+    <div className={`url-row ${urlRecord.removed ? 'removed' : ''} ${isExpanded ? 'expanded' : ''} ${isCertifiedOnChain ? 'on-chain' : ''}`}>
+      <div className="url-row-main">
+        <img
+          src={getFaviconUrl(urlRecord.url, 16)}
+          alt=""
+          className="url-favicon"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            target.style.display = 'none'
+          }}
+        />
+        <div className="url-info">
+          <a
+            href={urlRecord.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="url-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {urlRecord.title ? getDisplayTitle(urlRecord.title, urlRecord.url) : urlRecord.url}
+          </a>
+          <div className="url-meta">
+            <span className="url-date">{formatShortDate(urlRecord.addedAt)}</span>
+            <span className="url-duration">{formatDuration(urlRecord.attentionTime)}</span>
+            {isCertifiedOnChain && (
+              <img src={onChainBadgeIcon} alt="" className="on-chain-badge" title="Certified on-chain" />
+            )}
+          </div>
+        </div>
+
+        {/* Certification badge AND menu buttons */}
+        <div className="url-actions">
+          {/* Show all certification badges if certified ON-CHAIN */}
+          {isCertifiedOnChain && allCertInfos.length > 0 && (
+            <div className="cert-badges">
+              {allCertInfos.map((certInfo) => (
+                <span
+                  key={certInfo.type}
+                  className="cert-badge on-chain"
+                  style={{ backgroundColor: certInfo.color }}
+                  title={`Certified as ${certInfo.label} (on-chain)`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Always show menu for non-removed URLs */}
+          {!urlRecord.removed && (
+            <>
+              <button
+                className="menu-dots-btn"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsExpanded(!isExpanded)
+                }}
+                disabled={isProcessing}
+                title={isCertifiedOnChain ? "Add another certification" : "Certify this URL"}
+              >
+                <span className="dot"></span>
+                <span className="dot"></span>
+                <span className="dot"></span>
+              </button>
+              <button
+                className="remove-btn"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove()
+                }}
+                disabled={isProcessing}
+                title="Remove URL"
+              >
+                ×
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Expanded section with OAuth predicate + intention bubbles on same line */}
+      {isExpanded && (
+        <div className="url-expanded-section">
+          <div className="intention-pills">
+            {urlRecord.oauthPredicate && (
+              <button
+                className="oauth-predicate-btn"
+                onClick={() => {
+                  onOAuthCertify(urlRecord)
+                  setIsExpanded(false)
+                }}
+                disabled={isProcessing}
+              >
+                {urlRecord.oauthPredicate}
+              </button>
+            )}
+            {TRUST_ITEMS.map(({ predicateLabel, type, label }) => {
+              const isAlreadyCertified = allCertLabels.includes(type)
+              const isInCart = cartPredicates.includes(predicateLabel)
+              const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
+              const color = certInfo?.color
+              return (
+                <button
+                  key={type}
+                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
+                  onClick={() => {
+                    if (!isInCart && !isAlreadyCertified) {
+                      onAddTrustToCart(predicateLabel, urlRecord.title)
+                    }
+                  }}
+                  disabled={isProcessing || isInCart || isAlreadyCertified}
+                  style={isAlreadyCertified ? {
+                    backgroundColor: color,
+                    borderColor: color,
+                    color: '#fff'
+                  } : (isInCart && color) ? {
+                    backgroundColor: `${color}15`,
+                    borderColor: color,
+                    color
+                  } : undefined}
+                >
+                  {isInCart ? `${label} ✓` : label}
+                </button>
+              )
+            })}
+            {INTENTION_ITEMS.map(({ key, label, type }) => {
+              const isAlreadyCertified = allCertLabels.includes(type)
+              const predicateName = INTENTION_PREDICATES[key]
+              const isInCart = cartPredicates.includes(predicateName)
+              const certInfo = CERTIFICATION_LIST.find(c => c.type === type)
+              const color = certInfo?.color
+              return (
+                <button
+                  key={key}
+                  className={`intention-pill ${isAlreadyCertified ? 'certified' : ''} ${isInCart ? 'in-cart' : ''}`}
+                  onClick={() => {
+                    if (!isInCart && !isAlreadyCertified) {
+                      onAddToCart(key, urlRecord.title)
+                    }
+                  }}
+                  disabled={isProcessing || isInCart || isAlreadyCertified}
+                  style={isAlreadyCertified ? {
+                    backgroundColor: color,
+                    borderColor: color,
+                    color: '#fff'
+                  } : (isInCart && color) ? {
+                    backgroundColor: `${color}15`,
+                    borderColor: color,
+                    color
+                  } : undefined}
+                >
+                  {isInCart ? `${label} ✓` : label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }: GroupDetailViewProps) => {
+  const [processingUrls, setProcessingUrls] = useState<Set<string>>(new Set())
+  const [filter, setFilter] = useState<'all' | 'uncertified' | CertificationType>('all')
+  const [levelUpPreview, setLevelUpPreview] = useState<LevelUpPreview | null>(null)
+
+  // Cart
+  const cart = useCart()
+  const [cartToast, setCartToast] = useState<string | null>(null)
+
+  // Get active URLs for on-chain query - memoize to prevent unnecessary refetches
+  const activeUrls = useMemo(
+    () => group.urls.filter(u => !u.removed).map(u => u.url),
+    [group.urls]
+  )
+
+  // Fetch on-chain certification status
+  const {
+    stats: onChainStats,
+    loading: onChainLoading,
+    getUrlCertification,
+    refetch: refetchOnChain
+  } = useGroupOnChainCertifications(group.domain, activeUrls)
+
+  // Gold system hook (for displaying available Gold)
+  const { totalGold } = useGoldSystem()
+
+  // Level up hook
+  const {
+    levelUp,
+    preview: previewLevelUp,
+    loading: levelUpLoading,
+    result: levelUpResult,
+    reset: resetLevelUp
+  } = useLevelUp()
+
+  // Redeem hook (for removing on-chain positions)
+  const { redeemAllPositions } = useRedeemTriple()
+
+  // Amplify hook (publish group identity on-chain)
+  const {
+    amplify,
+    loading: amplifyLoading,
+    result: amplifyResult,
+    reset: resetAmplify
+  } = useGroupAmplify()
+  // Amplified = true if current predicate was already published on-chain
+  const isAmplified = group.amplifiedPredicate === group.currentPredicate && !!group.currentPredicate
+
+  // Modal state for on-chain certification
+  const [showWeightModal, setShowWeightModal] = useState(false)
+  const [modalTriplets, setModalTriplets] = useState<any[]>([])
+  const [pendingCertification, setPendingCertification] = useState<{
+    url: string
+    intention: IntentionPurpose
+    oauthPredicate?: string  // For OAuth URLs, use this predicate directly instead of intention
+    title?: string           // Page title for atom name
+  } | null>(null)
+
+  // Discovery reward hooks (same pattern as PageBlockchainCard)
+  const { claimDiscoveryGold, refetch: refetchDiscoveryScore } = useDiscoveryScore()
+  const reward = useDiscoveryReward()
+  const {
+    totalCertifications: pendingUrlCertCount,
+    refetch: refetchPendingDiscovery
+  } = usePageDiscovery(pendingCertification?.url || null)
+
+  // Cart: add intention to cart
+  const handleAddToCart = async (url: string, intention: IntentionPurpose, title?: string) => {
+    const predicateName = INTENTION_PREDICATES[intention]
+    const favicon = getFaviconUrl(url, 128)
+    const added = await cart.addToCart(
+      url,
+      title || null,
+      predicateName,
+      intention,
+      favicon
+    )
+    setCartToast(added ? "Added to cart" : "Already in cart")
+  }
+
+  // Cart: add trust/distrust to cart
+  const handleAddTrustToCart = async (url: string, predicateName: string, title?: string) => {
+    const favicon = getFaviconUrl(url, 128)
+    const added = await cart.addToCart(
+      url,
+      title || null,
+      predicateName,
+      null,
+      favicon
+    )
+    setCartToast(added ? `Added ${predicateName} to cart` : "Already in cart")
+  }
+
+  // Get cart predicates for a specific URL
+  const getCartPredicatesForUrl = (url: string): string[] => {
+    return cart.items
+      .filter(item => item.url === url)
+      .map(item => item.predicateName)
+  }
+
+  // Auto-dismiss cart toast
+  useEffect(() => {
+    if (!cartToast) return
+    const timer = setTimeout(() => setCartToast(null), 1500)
+    return () => clearTimeout(timer)
+  }, [cartToast])
+
+  // Ref to capture pre-certification count before the transaction
+  const prevDiscoveryTotalRef = useRef<number>(0)
+  // On-chain certification hook
+  const {
+    certifyWithIntention,
+    certifyWithCustomPredicate,
+    reset: resetIntention,
+    loading: intentionLoading,
+    success: intentionSuccess,
+    error: intentionError,
+    operationType: intentionOperationType,
+    transactionHash: intentionTxHash
+  } = useIntentionCertify()
+
+  // Use on-chain stats for certification count, with Pipeline 1 fallback
+  const certifiedCount = useMemo(() => {
+    // Count from Pipeline 2 (useGroupOnChainCertifications)
+    const p2Count = onChainStats?.certifiedCount ?? 0
+    // Count from Pipeline 1 fallback (urlRecord.onChainCertification)
+    const p1Count = group.urls.filter(u =>
+      !u.removed && u.isOnChain && u.onChainCertification
+    ).length
+    return Math.max(p2Count, p1Count, group.certifiedCount)
+  }, [onChainStats, group.urls, group.certifiedCount])
+
+  // Level from on-chain certifications (auto up/down, no local fallback)
+  const currentLevel = calculateLevel(certifiedCount)
+
+  // Fetch level up preview when group changes
+  useEffect(() => {
+    const fetchPreview = async () => {
+      const preview = await previewLevelUp(group.id, currentLevel)
+      setLevelUpPreview(preview)
+    }
+    fetchPreview()
+  }, [group.id, group.level, currentLevel, previewLevelUp])
+
+  // Handle level up
+  const handleLevelUp = async () => {
+    // Always pass certification breakdown from UI (has on-chain data)
+    const result = await levelUp(group.id, group.certificationBreakdown, currentLevel)
+    if (result.success) {
+      // Refresh the preview after successful level up
+      const newPreview = await previewLevelUp(group.id, currentLevel)
+      setLevelUpPreview(newPreview)
+      // Refresh the group to get updated predicate
+      if (onRefresh) {
+        await onRefresh()
+      }
+    }
+  }
+
+  // Handle amplify (publish identity on-chain)
+  const handleAmplify = async () => {
+    const result = await amplify(group.id)
+    if (result.success && onRefresh) {
+      await onRefresh()
+    }
+  }
+
+  // Progress toward NEXT level threshold
+  const { progressPercent, xpToNextLevel } = calculateLevelProgress(certifiedCount, currentLevel)
+
+  // Level Up available when on-chain level exceeds highest level with a generated predicate
+  const highestPredicateLevel = group.predicateHistory?.length > 0
+    ? Math.max(...group.predicateHistory.map(h => h.toLevel))
+    : 0
+  const canLevelUp = currentLevel > 1 && currentLevel > highestPredicateLevel
+
+  // Filter URLs - use Pipeline 2 with Pipeline 1 fallback for trust/distrust
+  const filteredUrls = group.urls.filter(url => {
+    if (url.removed) return false
+    const status = getEffectiveCertStatus(url, getUrlCertification(url.url))
+
+    if (filter === 'all') return true
+    if (filter === 'uncertified') return !status.isCertified
+    return status.labels.includes(filter)
+  })
+
+  // Sort by most recent first
+  const sortedUrls = [...filteredUrls].sort((a, b) => b.addedAt - a.addedAt)
+
+  // Calculate uncertified count using Pipeline 2 + Pipeline 1 fallback
+  const uncertifiedCount = group.urls.filter(u => {
+    if (u.removed) return false
+    const status = getEffectiveCertStatus(u, getUrlCertification(u.url))
+    return !status.isCertified
+  }).length
+
+  // Handle intention selection - opens the WeightModal
+  const handleIntentionSelect = (url: string, intention: IntentionPurpose, title?: string) => {
+    try {
+      const { label: pageLabel } = normalizeUrl(url)
+      const displayName = (title ? cleanTitle(title) : null) || pageLabel
+
+      // Prepare triplet for intention modal
+      const triplet = {
+        id: `intention-${intention}`,
+        triplet: {
+          subject: 'I',
+          predicate: INTENTION_PREDICATES[intention],
+          object: displayName
+        },
+        description: `I ${INTENTION_PREDICATES[intention]} ${displayName}`,
+        url: url,
+        intention: intention
+      }
+
+      setPendingCertification({ url, intention, title })
+      setModalTriplets([triplet])
+      setShowWeightModal(true)
+    } catch (error) {
+      logger.error('Invalid URL', url)
+    }
+  }
+
+  // Handle trust/distrust selection - opens the WeightModal with trust predicate
+  const handleTrustSelect = (url: string, predicateName: string, title?: string) => {
+    try {
+      const { label: pageLabel } = normalizeUrl(url)
+      const displayName = (title ? cleanTitle(title) : null) || pageLabel
+
+      const trustItem = TRUST_ITEMS.find(p => p.predicateLabel === predicateName)
+      const triplet = {
+        id: `trust-${predicateName}`,
+        triplet: {
+          subject: 'I',
+          predicate: predicateName,
+          object: displayName
+        },
+        description: `I ${predicateName} ${displayName}`,
+        url: url,
+        intention: trustItem?.type as IntentionPurpose | undefined
+      }
+
+      setPendingCertification({ url, intention: 'for_fun', oauthPredicate: predicateName, title })
+      setModalTriplets([triplet])
+      setShowWeightModal(true)
+    } catch (error) {
+      logger.error('Invalid URL', url)
+    }
+  }
+
+  // Handle OAuth certification - uses predicate from OAuth extraction
+  const handleOAuthCertify = (urlRecord: GroupUrlRecord) => {
+    if (!urlRecord.oauthPredicate) return
+
+    // Prepare triplet with OAuth predicate
+    const triplet = {
+      id: `oauth-${urlRecord.oauthPredicate}-${Date.now()}`,
+      triplet: {
+        subject: 'I',
+        predicate: urlRecord.oauthPredicate,
+        object: cleanTitle(urlRecord.title)
+      },
+      description: `I ${urlRecord.oauthPredicate} ${cleanTitle(urlRecord.title)}`,
+      url: urlRecord.url
+    }
+
+    // Store OAuth predicate to use the correct predicate on-chain
+    setPendingCertification({
+      url: urlRecord.url,
+      intention: 'for_fun', // Fallback only
+      oauthPredicate: urlRecord.oauthPredicate,
+      title: urlRecord.title
+    })
+    setModalTriplets([triplet])
+    setShowWeightModal(true)
+  }
+
+  // Handle modal submit - create on-chain triple
+  const handleModalSubmit = async (customWeights?: (bigint | null)[]) => {
+    if (!pendingCertification || !customWeights || customWeights.length === 0) return
+
+    const { url, intention, oauthPredicate, title } = pendingCertification
+
+    // Capture pre-certification count BEFORE the transaction
+    prevDiscoveryTotalRef.current = pendingUrlCertCount
+
+    setProcessingUrls(prev => new Set(prev).add(url))
+
+    try {
+      const weight = customWeights[0] || undefined
+
+      // Use OAuth predicate if available, otherwise use intention predicate
+      if (oauthPredicate) {
+        await certifyWithCustomPredicate(url, oauthPredicate, undefined, title, weight as bigint | undefined)
+      } else {
+        await certifyWithIntention(url, intention, title, weight as bigint | undefined)
+      }
+
+      // Also update local database
+      const certification = oauthPredicate || intentionToCertification[intention]
+      await onCertifyUrl(url, certification as CertificationType)
+
+      // Wait for GraphQL indexer to process the transaction before refetching
+      // The indexer typically needs 2-5 seconds to index new transactions
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
+      // Clear GraphQL cache to force fresh data
+      intuitionGraphqlClient.clearCache()
+
+      // Refetch on-chain data to update stats
+      await refetchOnChain()
+
+      // Refetch discovery data and calculate reward based on pre-cert position
+      await refetchPendingDiscovery()
+      reward.calculateAndTriggerReward(prevDiscoveryTotalRef.current)
+
+      // Refetch global discovery score so StatsTab updates
+      refetchDiscoveryScore()
+
+      // Also refresh the parent group to update merged data
+      if (onRefresh) {
+        await onRefresh()
+      }
+    } catch (error) {
+      logger.error('Certification failed', error)
+    } finally {
+      setProcessingUrls(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(url)
+        return newSet
+      })
+    }
+  }
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setShowWeightModal(false)
+    setModalTriplets([])
+    setPendingCertification(null)
+    resetIntention()
+    reward.resetReward()
+  }
+
+  const handleRemove = async (url: string) => {
+    const onChainStatus = getUrlCertification(url)
+    const urlRecord = group.urls.find(u => u.url === url)
+    const effectiveStatus = urlRecord
+      ? getEffectiveCertStatus(urlRecord, onChainStatus)
+      : { isCertified: false, labels: [] }
+
+    // If URL is certified on-chain, redeem positions first
+    if (onChainStatus?.isCertifiedOnChain && onChainStatus.tripleDetails?.length) {
+      const confirmed = confirm('This will redeem your position and withdraw your stake. Continue?')
+      if (!confirmed) return
+
+      setProcessingUrls(prev => new Set(prev).add(url))
+      try {
+        const tripleVaultIds = onChainStatus.tripleDetails.map(t => t.tripleTermId)
+        const result = await redeemAllPositions(tripleVaultIds)
+
+        if (!result.success) {
+          alert(`Redeem failed: ${result.error}`)
+          return
+        }
+
+        // Remove locally after successful redeem
+        await onRemoveUrl(url)
+
+        // Wait for indexer then refresh on-chain data
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        intuitionGraphqlClient.clearCache()
+        await refetchOnChain()
+        if (onRefresh) await onRefresh()
+      } finally {
+        setProcessingUrls(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(url)
+          return newSet
+        })
+      }
+      return
+    }
+
+    // Not certified on-chain: just remove locally
+    setProcessingUrls(prev => new Set(prev).add(url))
+    try {
+      await onRemoveUrl(url)
+    } finally {
+      setProcessingUrls(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(url)
+        return newSet
+      })
+    }
+  }
+
+  return (
+    <div className="group-detail-view">
+      {/* Header */}
+      <div className="group-detail-header">
+        <button className="back-btn" onClick={onBack}>
+          Back
+        </button>
+        <div className="group-detail-title-section">
+          <h2 className="group-detail-domain">{group.domain}</h2>
+          <span className={`group-detail-level level-${Math.min(currentLevel, 10)}`}>Level {currentLevel}</span>
+        </div>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="group-detail-stats">
+        <div className="stat-card">
+          <span className="stat-number">{group.activeUrlCount}</span>
+          <span className="stat-text">URLs</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-number">{onChainLoading ? '...' : certifiedCount}</span>
+          <span className="stat-text">On-chain</span>
+        </div>
+        <div className="stat-card highlight">
+          <span className="stat-number">{onChainLoading ? '...' : uncertifiedCount}</span>
+          <span className="stat-text">To certify</span>
+        </div>
+      </div>
+
+      {/* Identity Hero Section - Visible triple with Amplify button */}
+      {/* Hide when Level Up is available to focus user attention on leveling up */}
+      {group.currentPredicate && !(canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success) && (
+        <div className="identity-hero-section">
+          <div className="identity-content">
+            <div className="identity-triple">
+              <span className="identity-subject">I</span>
+              <span className="identity-predicate">{group.currentPredicate}</span>
+              <span className="identity-object">{group.domain}</span>
+            </div>
+            {/* Amplify Success */}
+            {amplifyResult?.success && (
+              <div className="amplify-success-inline">
+                <span>✓ On-chain</span>
+                {amplifyResult.txHash && (
+                  <a
+                    href={`${EXPLORER_URLS.TRANSACTION}${amplifyResult.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tx-link-inline"
+                  >
+                    TX ↗
+                  </a>
+                )}
+                <button className="dismiss-btn-small" onClick={resetAmplify}>×</button>
+              </div>
+            )}
+            {/* Amplify Error */}
+            {amplifyResult?.error && !amplifyResult.success && (
+              <div className="amplify-error-inline">
+                <span>⚠️ {amplifyResult.error}</span>
+                <button className="dismiss-btn-small" onClick={resetAmplify}>×</button>
+              </div>
+            )}
+          </div>
+          {!isAmplified && !amplifyResult?.success && (
+            <button
+              className="amplify-btn-inline"
+              onClick={handleAmplify}
+              disabled={amplifyLoading}
+            >
+              {amplifyLoading ? '...' : 'Amplify'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Level Progress - transforms into Level Up when ready */}
+      <div className={`level-progress-section ${canLevelUp && levelUpPreview?.canLevelUp ? 'ready-to-level-up' : ''}`}>
+        {canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success ? (
+          /* Ready to Level Up - show integrated button */
+          <button
+            className="level-up-integrated-btn"
+            onClick={handleLevelUp}
+            disabled={levelUpLoading}
+          >
+            {levelUpLoading ? (
+              <span className="loading-text">Generating signal...</span>
+            ) : (
+              <>
+                <span className="level-up-text">Level Up to {levelUpPreview.nextLevel}</span>
+                <span className="level-up-cost">{levelUpPreview.cost} Gold</span>
+              </>
+            )}
+          </button>
+        ) : (
+          /* Normal progress display */
+          <>
+            <div className="level-progress-header">
+              <span className="level-label">Level {currentLevel}</span>
+              <span className="level-xp">
+                {onChainLoading ? '...' : (
+                  xpToNextLevel > 0
+                    ? `${xpToNextLevel} cert${xpToNextLevel > 1 ? 's' : ''} to Level ${currentLevel + 1}`
+                    : 'Max level!'
+                )}
+              </span>
+            </div>
+            <div className="progress-bar-container level-bar">
+              <div
+                className="progress-bar-fill"
+                style={{
+                  width: `${progressPercent}%`,
+                  background: 'linear-gradient(90deg, #C7866C, #D4A574)'
+                }}
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Certification Filter */}
+      <div className="filter-section">
+        <button
+          className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+          onClick={() => setFilter('all')}
+        >
+          All ({group.activeUrlCount})
+        </button>
+        <button
+          className={`filter-btn ${filter === 'uncertified' ? 'active' : ''}`}
+          onClick={() => setFilter('uncertified')}
+        >
+          Uncertified ({uncertifiedCount})
+        </button>
+        {CERTIFICATION_LIST.map(cert => {
+          // Count from Pipeline 2 + Pipeline 1 fallback
+          let count = 0
+          for (const u of group.urls) {
+            if (u.removed) continue
+            const status = getEffectiveCertStatus(u, getUrlCertification(u.url))
+            if (status.labels.includes(cert.type)) count++
+          }
+          if (count === 0) return null
+          return (
+            <button
+              key={cert.type}
+              className={`filter-btn ${filter === cert.type ? 'active' : ''}`}
+              onClick={() => setFilter(cert.type)}
+              style={{
+                borderColor: cert.color,
+                color: filter === cert.type ? cert.color : undefined
+              }}
+            >
+              {cert.label} ({count})
+            </button>
+          )
+        })}
+      </div>
+
+      {/* URL List */}
+      <div className="url-list">
+        {sortedUrls.length === 0 ? (
+          <div className="empty-urls">
+            <p>No URLs match the filter</p>
+          </div>
+        ) : (
+          sortedUrls.map(urlRecord => (
+            <UrlRow
+              key={urlRecord.url}
+              urlRecord={urlRecord}
+              onChainStatus={getUrlCertification(urlRecord.url)}
+              onIntentionSelect={(intention, title) => handleIntentionSelect(urlRecord.url, intention, title)}
+              onTrustSelect={(predicateName, title) => handleTrustSelect(urlRecord.url, predicateName, title)}
+              onAddToCart={(intention, title) => handleAddToCart(urlRecord.url, intention, title)}
+              onAddTrustToCart={(predicateName, title) => handleAddTrustToCart(urlRecord.url, predicateName, title)}
+              onOAuthCertify={handleOAuthCertify}
+              onRemove={() => handleRemove(urlRecord.url)}
+              isProcessing={processingUrls.has(urlRecord.url) || intentionLoading}
+              cartPredicates={getCartPredicatesForUrl(urlRecord.url)}
+            />
+          ))
+        )}
+      </div>
+
+      {/* XP Hint */}
+      {uncertifiedCount > 0 && (
+        <div className="xp-hint">
+          Certify URLs to earn Discovery Gold!
+        </div>
+      )}
+
+      {/* Level Up Section - shows result messages and button when progress < 100% */}
+      <div className="level-up-section">
+        {/* Level Up Result - always show */}
+        {levelUpResult?.success && (
+          <div className="level-up-success">
+            <span className="success-icon">🎉</span>
+            <div className="success-content">
+              <span className="success-title">Level Up!</span>
+              <span className="success-predicate">
+                New identity: I {levelUpResult.newPredicate} {group.domain}
+              </span>
+            </div>
+            <button className="dismiss-btn" onClick={resetLevelUp}>×</button>
+          </div>
+        )}
+
+        {levelUpResult?.error && !levelUpResult.success && (
+          <div className="level-up-error">
+            <span className="error-icon">⚠️</span>
+            <span className="error-text">{levelUpResult.error}</span>
+            {levelUpResult.required && levelUpResult.available !== undefined && (
+              <span className="error-detail">
+                Need {levelUpResult.required} Gold, have {levelUpResult.available} Gold
+              </span>
+            )}
+            <button className="dismiss-btn" onClick={resetLevelUp}>×</button>
+          </div>
+        )}
+
+        {/* Show progress hint when not yet ready to level up */}
+        {!canLevelUp && xpToNextLevel > 0 && (
+          <div className="xp-needed">
+            {xpToNextLevel} cert{xpToNextLevel > 1 ? 's' : ''} to Level {currentLevel + 1}
+          </div>
+        )}
+
+        <div className="group-gold-balance">{totalGold} Gold available</div>
+      </div>
+
+      {/* Cart toast notification */}
+      <CartToast message={cartToast} />
+
+      {/* Weight Modal for on-chain certification (trust/distrust/oauth) */}
+      {showWeightModal && createPortal(
+        <WeightModal
+          isOpen={showWeightModal}
+          triplets={modalTriplets}
+          isProcessing={intentionLoading}
+          transactionSuccess={intentionSuccess}
+          transactionError={intentionError || undefined}
+          transactionHash={intentionTxHash || undefined}
+          createdCount={intentionOperationType === 'created' ? 1 : 0}
+          depositCount={intentionOperationType === 'deposit' ? 1 : 0}
+          isIntentionCertification={true}
+          showXpAnimation={true}
+          discoveryReward={intentionSuccess ? reward.discoveryReward : null}
+          onClaimReward={() => reward.handleClaimReward(claimDiscoveryGold)}
+          rewardClaimed={reward.rewardClaimed}
+          onClose={handleModalClose}
+          onSubmit={handleModalSubmit}
+        />,
+        document.body
+      )}
+    </div>
+  )
+}
+
+export default GroupDetailView

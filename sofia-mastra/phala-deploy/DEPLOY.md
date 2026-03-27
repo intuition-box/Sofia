@@ -107,6 +107,7 @@ Une fois déployé, tu auras accès à :
 - `pulseAgent`
 - `recommendationAgent`
 - `chatbotAgent`
+- `predicateAgent` - Génère des prédicats d'identité pour les groupes d'intention
 
 ### Workflows disponibles
 - `sofiaWorkflow`

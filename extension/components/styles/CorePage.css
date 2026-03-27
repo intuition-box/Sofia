@@ -113,21 +113,48 @@
   border-radius: 0;
   backdrop-filter: blur(10px);
   padding: 0;
-  height: 860px
-  max-height: 860px;
+  min-height: 900px;
 }
 
 /* États de chargement - utilise .loading-state de CoreComponents.css comme base */
 .loading-state {
-  text-align: center;
-  color: #F2DED6;
-  font-style: italic;
-  padding: 40px;
-  background-color: rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Reveal Interest CTA */
+.reveal-interest-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.reveal-interest-btn {
+  background: linear-gradient(135deg, #8276ED 0%, #F6427B 50%, #FFBF33 100%);
+  border: none;
   border-radius: 12px;
-  backdrop-filter: blur(5px) saturate(100%);
-  -webkit-backdrop-filter: blur(5px) saturate(100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Gotu', cursive;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(130, 118, 237, 0.3);
+}
+
+.reveal-interest-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(130, 118, 237, 0.6);
+  filter: brightness(1.1);
+}
+
+.reveal-interest-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 12px rgba(130, 118, 237, 0.4);
 }
 
 /* Mobile Responsiveness */
@@ -136,13 +163,18 @@
     gap: 16px;
     margin-bottom: 20px;
   }
-  
+
   .tab {
     font-size: 14px;
     padding: 8px 0;
   }
-  
+
   .page-content {
     padding: 0;
+  }
+
+  .reveal-interest-btn {
+    padding: 12px 24px;
+    font-size: 14px;
   }
 }

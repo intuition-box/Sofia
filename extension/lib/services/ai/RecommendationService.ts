@@ -3,17 +3,16 @@
  * Centralizes all business logic
  */
 
-import { OllamaClient } from './OllamaClient'
 import { StorageRecommendation } from '../../database/StorageRecommendation'
-import { StorageOgImage } from '../../database/StorageOgImage'
-import type { Recommendation, BentoSuggestion, OllamaMessage, WalletData } from './types'
+import type { Recommendation, WalletData } from './types'
 import { intuitionGraphqlClient } from '../../clients/graphql-client'
 import { SUBJECT_IDS } from '../../config/constants'
 import { getAddress } from 'viem'
+import { createServiceLogger } from '../../utils/logger'
+
+const logger = createServiceLogger('RecommendationService')
 
 export class RecommendationService {
-  private static readonly OG_IMAGES_CACHE_HOURS = 24 * 30         // 30 jours
-
   /**
    * Generate recommendations for a wallet
    */
@@ -23,13 +22,13 @@ export class RecommendationService {
     additive: boolean = false
   ): Promise<Recommendation[]> {
     try {
-      console.log('🚀 [RecommendationService] Generating recommendations for', walletAddress, additive ? '(additive)' : '(replace)')
+      logger.info('Generating recommendations', { walletAddress, mode: additive ? 'additive' : 'replace' })
 
       // Check cache first (unless force refresh)
       if (!forceRefresh && !additive) {
         const cached = await StorageRecommendation.load(walletAddress)
         if (cached && cached.length > 0) {
-          console.log('📋 [RecommendationService] Using cached recommendations')
+          logger.debug('Using cached recommendations')
           return cached
         }
       }
@@ -37,7 +36,7 @@ export class RecommendationService {
       // Get wallet data
       const walletData = await this.getWalletData(walletAddress)
       if (!walletData.triples.length) {
-        console.log('📭 [RecommendationService] No wallet data found')
+        logger.info('No wallet data found')
         return []
       }
 
@@ -48,23 +47,23 @@ export class RecommendationService {
       if (additive) {
         const existingRecommendations = await StorageRecommendation.load(walletAddress) || []
         const mergedRecommendations = this.mergeRecommendations(existingRecommendations, newRecommendations)
-        console.log('🔄 [RecommendationService] Merged', existingRecommendations.length, '+', newRecommendations.length, '=', mergedRecommendations.length, 'recommendations')
+        logger.debug('Merged recommendations', { existing: existingRecommendations.length, new: newRecommendations.length, merged: mergedRecommendations.length })
         
         // Save merged recommendations to cache
         await StorageRecommendation.save(walletAddress, mergedRecommendations)
         
         // Return ONLY the new recommendations for UI processing
-        console.log('✅ [RecommendationService] Generated', newRecommendations.length, 'NEW recommendations (', mergedRecommendations.length, 'total in cache)')
+        logger.info('Generated new recommendations', { newCount: newRecommendations.length, totalInCache: mergedRecommendations.length })
         return newRecommendations
       } else {
         // Non-additive mode: save and return all recommendations
         await StorageRecommendation.save(walletAddress, newRecommendations)
-        console.log('✅ [RecommendationService] Generated', newRecommendations.length, 'recommendations')
+        logger.info('Generated recommendations', { count: newRecommendations.length })
         return newRecommendations
       }
 
     } catch (error) {
-      console.error('❌ [RecommendationService] Generation failed:', error)
+      logger.error('Generation failed', error)
       throw error
     }
   }
@@ -110,7 +109,7 @@ export class RecommendationService {
    */
   private static async getWalletData(walletAddress: string): Promise<WalletData> {
     try {
-      console.log('🔍 [RecommendationService] Fetching wallet data for:', walletAddress)
+      logger.debug('Fetching wallet data', { walletAddress })
       
       const checksumAddress = getAddress(walletAddress)
       
@@ -153,24 +152,24 @@ export class RecommendationService {
       
       const response = await intuitionGraphqlClient.request(triplesQuery, { where })
       
-      console.log('✅ [RecommendationService] Found', response?.triples?.length || 0, 'triples')
+      logger.debug('Found triples', { count: response?.triples?.length || 0 })
       
       return {
         address: walletAddress,
         triples: response?.triples || []
       }
     } catch (error) {
-      console.error('❌ [RecommendationService] GraphQL failed:', error)
+      logger.error('GraphQL failed', error)
       throw error
     }
   }
 
   /**
-   * Generate recommendations with RecommendationAgent (ElizaOS)
+   * Generate recommendations with RecommendationAgent (Mastra)
    */
   private static async generateWithAgent(walletData: WalletData): Promise<Recommendation[]> {
     try {
-      console.log('💎 [RecommendationService] Calling RecommendationAgent for recommendations')
+      logger.info('Calling RecommendationAgent for recommendations')
 
       return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
@@ -180,24 +179,24 @@ export class RecommendationService {
           },
           (response) => {
             if (chrome.runtime.lastError) {
-              console.error('❌ [RecommendationService] Chrome runtime error:', chrome.runtime.lastError)
+              logger.error('Chrome runtime error', chrome.runtime.lastError)
               reject(new Error(chrome.runtime.lastError.message))
               return
             }
 
             if (!response) {
-              console.error('❌ [RecommendationService] No response from background')
+              logger.error('No response from background')
               reject(new Error('No response from background script'))
               return
             }
 
             if (response.success && response.recommendations) {
-              console.log('✅ [RecommendationService] Received', response.recommendations.length, 'recommendations from agent')
+              logger.info('Received recommendations from agent', { count: response.recommendations.length })
               // Validate and filter recommendations
               const validRecommendations = this.validateRecommendations(response.recommendations)
               resolve(validRecommendations)
             } else {
-              console.error('❌ [RecommendationService] Agent error:', response.error)
+              logger.error('Agent error', response.error)
               reject(new Error(response.error || 'Failed to generate recommendations'))
             }
           }
@@ -205,7 +204,7 @@ export class RecommendationService {
       })
 
     } catch (error) {
-      console.error('❌ [RecommendationService] Agent generation failed:', error)
+      logger.error('Agent generation failed', error)
       throw error
     }
   }
@@ -218,7 +217,7 @@ export class RecommendationService {
       .filter((rec: any) => {
         const isValid = rec.category && rec.suggestions?.length > 0
         if (!isValid) {
-          console.log('❌ [RecommendationService] Invalid recommendation:', rec)
+          logger.warn('Invalid recommendation', rec)
         }
         return isValid
       })
@@ -227,12 +226,12 @@ export class RecommendationService {
           .filter((s: any) => {
             const isValid = s.name && s.url && s.url.startsWith('http')
             if (!isValid) {
-              console.log('❌ [RecommendationService] Invalid suggestion:', s)
+              logger.warn('Invalid suggestion', s)
             }
             return isValid
           })
 
-        console.log(`✅ [RecommendationService] Category "${rec.category}": ${rec.suggestions.length} → ${validSuggestions.length} valid suggestions`)
+        logger.debug(`Category "${rec.category}": ${rec.suggestions.length} -> ${validSuggestions.length} valid suggestions`)
 
         return {
           category: rec.category,
@@ -242,225 +241,5 @@ export class RecommendationService {
         }
       })
       .filter((rec: Recommendation) => rec.suggestions.length > 0)
-  }
-
-  /**
-   * Generate recommendations with Ollama (FALLBACK - keep for compatibility)
-   */
-  private static async generateWithOllama(walletData: WalletData): Promise<Recommendation[]> {
-    try {
-      console.log('🤖 [RecommendationService] Calling Ollama for recommendations')
-
-      const messages: OllamaMessage[] = [
-        {
-          role: 'system',
-          content: `You are a Web3 recommendation expert. Analyze wallet data and respond ONLY with valid JSON in this exact format:
-
-{
-  "recommendations": [
-    {
-      "category": "Category name",
-      "title": "Similar new projects", 
-      "reason": "Reason based on data",
-      "suggestions": [
-        {"name": "Project name", "url": "https://..."},
-        {"name": "Project name", "url": "https://..."}
-      ]
-    }
-  ]
-}
-
-IMPORTANT: Respond ONLY with JSON, nothing else.`
-        },
-        {
-          role: 'user',
-          content: `Analyze wallet ${walletData.address} and generate comprehensive recommendations across multiple interest areas:
-
-Data: ${walletData.triples.length} blockchain activities
-Projects followed: ${JSON.stringify(walletData.triples.slice(0, 8), null, 2)}
-
-Instructions:
-1. Generate 5-7 diverse interest categories (Web3, DeFi, NFT, Art, Design, Culture, Gaming, Tech, etc.)
-2. Do NOT suggest same projects already followed
-3. Give 6-8 high-quality suggestions per category
-4. Include both Web3 and traditional web platforms
-5. Provide real, accessible URLs from well-known platforms
-6. Focus on popular, established sites with good SEO (likely to have og:image)
-7. Mix of: protocols, marketplaces, tools, communities, educational resources
-
-Generate 35-50 total suggestions across all categories.`
-        }
-      ]
-
-      const response = await OllamaClient.chat(messages)
-      return this.parseOllamaResponse(response) // Use old parsing for Ollama fallback
-
-    } catch (error) {
-      console.error('❌ [RecommendationService] Ollama generation failed:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Parse Ollama response (simplified logic)
-   */
-  private static parseOllamaResponse(response: string): Recommendation[] {
-    try {
-      console.log('🔧 [RecommendationService] Parsing Ollama response')
-      
-      // Clean response
-      let cleanResponse = response.trim()
-      
-      // Extract JSON
-      const jsonStart = cleanResponse.indexOf('{')
-      const jsonEnd = cleanResponse.lastIndexOf('}') + 1
-      
-      if (jsonStart === -1 || jsonEnd === 0) {
-        console.warn('❌ No JSON found in response')
-        return []
-      }
-      
-      const jsonString = cleanResponse.substring(jsonStart, jsonEnd)
-      console.log('🔍 [RecommendationService] Extracted JSON:', jsonString.substring(0, 200) + '...')
-      
-      const parsed = JSON.parse(jsonString)
-      console.log('📦 [RecommendationService] Parsed object:', parsed)
-      
-      // Check structure
-      const recommendations = parsed.recommendations || []
-      console.log('📋 [RecommendationService] Raw recommendations count:', recommendations.length)
-      
-      if (recommendations.length > 0) {
-        console.log('🔍 [RecommendationService] First recommendation sample:', recommendations[0])
-      }
-      
-      // Filter and validate
-      const validRecommendations = recommendations
-        .filter((rec: any) => {
-          const isValid = rec.category && rec.suggestions?.length > 0
-          if (!isValid) {
-            console.log('❌ [RecommendationService] Invalid recommendation:', rec)
-          }
-          return isValid
-        })
-        .map((rec: any) => {
-          const validSuggestions = rec.suggestions
-            .filter((s: any) => {
-              const isValid = s.name && s.url && s.url.startsWith('http')
-              if (!isValid) {
-                console.log('❌ [RecommendationService] Invalid suggestion:', s)
-              }
-              return isValid
-            })
-          
-          console.log(`✅ [RecommendationService] Category "${rec.category}": ${rec.suggestions.length} → ${validSuggestions.length} valid suggestions`)
-          
-          return {
-            category: rec.category,
-            title: rec.title || 'Similar new projects',
-            reason: rec.reason || 'Based on your activity',
-            suggestions: validSuggestions
-          }
-        })
-        .filter((rec: Recommendation) => rec.suggestions.length > 0)
-      
-      console.log('✅ [RecommendationService] Final result:', validRecommendations.length, 'valid recommendations')
-      return validRecommendations
-      
-    } catch (error) {
-      console.error('❌ [RecommendationService] Parse failed:', error)
-      return []
-    }
-  }
-
-  /**
-   * Get og:image from URL with persistent cache (NO FALLBACK - if no og:image, site is considered dead)
-   */
-  static async getOgImage(url: string): Promise<string | null> {
-    try {
-      // Check persistent cache first
-      const isValid = await StorageOgImage.isValid(url, this.OG_IMAGES_CACHE_HOURS)
-      if (isValid) {
-        const cached = await StorageOgImage.load(url)
-        if (cached !== null) {
-          console.log('💾 [RecommendationService] Using cached og:image for:', url)
-          return cached
-        }
-      }
-
-      console.log('🖼️ [RecommendationService] Fetching og:image for:', url)
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; Sofia-Bot/1.0)',
-        },
-        signal: AbortSignal.timeout(10000) // 10s timeout
-      })
-      
-      if (!response.ok) {
-        await StorageOgImage.save(url, null)
-        return null
-      }
-      
-      const html = await response.text()
-      
-      // Look ONLY for og:image meta tag - no fallback
-      const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']*?)["'][^>]*>/i)
-      if (ogImageMatch && ogImageMatch[1]) {
-        const ogImage = ogImageMatch[1]
-        await StorageOgImage.save(url, ogImage)
-        return ogImage
-      }
-      
-      // No og:image = dead site = cache null and return null
-      await StorageOgImage.save(url, null)
-      return null
-      
-    } catch (error) {
-      console.log(`❌ [RecommendationService] Failed to get og:image for ${url}:`, error)
-      await StorageOgImage.save(url, null)
-      return null
-    }
-  }
-
-  /**
-   * Get suggestions with og:images (filtered - only sites with og:image)
-   * Optimized to reuse existing validItems when possible
-   */
-  static async getSuggestionsWithPreviews(
-    suggestions: { name: string, url: string, category: string, size: 'small' | 'tall' | 'mega' }[], 
-    existingValidItems: Array<{ name: string, url: string, category: string, size: 'small' | 'tall' | 'mega', ogImage: string }> = []
-  ): Promise<Array<{ name: string, url: string, category: string, size: 'small' | 'tall' | 'mega', ogImage: string }>> {
-    const validSuggestions = []
-    
-    // Create a map of existing valid items for fast lookup
-    const existingMap = new Map(existingValidItems.map(item => [item.url, item.ogImage]))
-    
-    for (const suggestion of suggestions) {
-      // Check if we already have this URL with og:image
-      const existingOgImage = existingMap.get(suggestion.url)
-      
-      if (existingOgImage) {
-        // Reuse existing og:image
-        validSuggestions.push({
-          ...suggestion,
-          ogImage: existingOgImage
-        })
-        console.log(`♻️ [RecommendationService] Reusing cached og:image for ${suggestion.url}`)
-      } else {
-        // Fetch new og:image
-        const ogImage = await this.getOgImage(suggestion.url)
-        if (ogImage) { // Only add if og:image exists
-          validSuggestions.push({
-            ...suggestion,
-            ogImage
-          })
-        }
-      }
-    }
-    
-    console.log(`✅ [RecommendationService] Filtered ${validSuggestions.length}/${suggestions.length} valid suggestions with og:image (${existingValidItems.length} reused)`)
-    return validSuggestions
   }
 }

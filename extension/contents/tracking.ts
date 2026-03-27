@@ -1,8 +1,10 @@
 import type { PlasmoCSConfig } from "plasmo"
-import type { PlasmoMessage } from "~types/messaging"
 import { Storage } from "@plasmohq/storage"
+import { EXCLUDED_URL_PATTERNS, RESTRICTED_DOMAINS } from "../background/constants"
+import { createServiceLogger } from "../lib/utils/logger"
 
 const storage = new Storage()
+const logger = createServiceLogger('Tracking')
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -20,7 +22,7 @@ async function isTrackingEnabled(): Promise<boolean> {
     // Default to true if not set or any other value
     return true
   } catch (error) {
-    console.error("Error checking tracking status:", error)
+    logger.error("Error checking tracking status", error)
     return true // Default to enabled on error
   }
 }
@@ -29,26 +31,10 @@ function shouldIgnoreFrame(): boolean {
   const url = window.location.href
   const hostname = window.location.hostname
 
-  const ignoredDomains = [
-    "googletagmanager.com",
-    "doubleclick.net",
-    "amazon-adsystem.com",
-    "google.com/recaptcha",
-    "adtrafficquality.google",
-    "contextual.media.net",
-    "rubiconproject.com",
-    "pubmatic.com",
-    "jscache.com",
-    "indexww.com",
-    "a-mo.net",
-    "casalemedia.com",
-    "ogs.google.com",
-    "www.google.com",
-    "youtube.com",
-    "wallet",
-  ]
-
-  if (window !== window.top && ignoredDomains.some(domain => hostname.includes(domain))) {
+  if (window !== window.top && (
+    EXCLUDED_URL_PATTERNS.some(pattern => hostname.includes(pattern) || url.includes(pattern)) ||
+    RESTRICTED_DOMAINS.some(domain => hostname.includes(domain))
+  )) {
     return true
   }
 
@@ -76,14 +62,14 @@ async function getCurrentTabId(): Promise<number> {
 
 async function extractRealData() {
   const enabled = await isTrackingEnabled()
-  console.log("🔍 [TRACKING DEBUG] Tracking enabled:", enabled)
+  logger.debug("Tracking enabled check", { enabled })
   
   if (!enabled) {
-    console.log("🔒 Tracking disabled - PAGE_DATA not sent")
+    logger.info("Tracking disabled - PAGE_DATA not sent")
     return
   }
   
-  console.log("✅ [TRACKING DEBUG] Tracking active - extracting page data")
+  logger.info("Tracking active - extracting page data")
 
   const title = document.title || ""
   const keywords = document.querySelector('meta[name="keywords"]')?.getAttribute("content") || ""
@@ -102,74 +88,139 @@ async function extractRealData() {
   }
 
   try {
-    console.log("📤 [TRACKING DEBUG] Sending PAGE_DATA:", pageData)
+    logger.debug("Sending PAGE_DATA", pageData)
     chrome.runtime.sendMessage({
       type: "PAGE_DATA",
       data: pageData,
       tabId: await getCurrentTabId(),
       pageLoadTime: Date.now()
-    } as PlasmoMessage)
-    console.log("✅ [TRACKING DEBUG] PAGE_DATA sent successfully")
+    })
+    logger.info("PAGE_DATA sent successfully")
   } catch (error) {
-    console.error("❌ [TRACKING DEBUG] Error sending PAGE_DATA:", error)
+    logger.error("Error sending PAGE_DATA", error)
   }
 }
 
 function startWhenReady() {
-  console.log("🚀 [TRACKING DEBUG] startWhenReady called on:", window.location.href)
+  logger.info("startWhenReady called", { url: window.location.href })
   
   if (shouldIgnoreFrame()) {
-    console.log("🚫 [TRACKING DEBUG] Frame ignored for:", window.location.hostname)
+    logger.debug("Frame ignored", { hostname: window.location.hostname })
     return
   }
 
-  console.log("📋 [TRACKING DEBUG] Document ready state:", document.readyState)
+  logger.debug("Document ready state", { readyState: document.readyState })
   
   if (document.readyState === "loading") {
-    console.log("⏳ [TRACKING DEBUG] Waiting for DOMContentLoaded...")
+    logger.debug("Waiting for DOMContentLoaded")
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("🎯 [TRACKING DEBUG] DOMContentLoaded - starting extraction in 1s")
+      logger.debug("DOMContentLoaded - starting extraction in 1s")
       setTimeout(extractRealData, 1000)
     })
   } else {
-    console.log("▶️ [TRACKING DEBUG] DOM ready - starting extraction in 1s")
+    logger.debug("DOM ready - starting extraction in 1s")
     setTimeout(extractRealData, 1000)
   }
 }
 
 // Variables for duration tracking
 let pageStartTime = Date.now()
+let trackingTimerId: ReturnType<typeof setTimeout> | null = null
+let hasTrackedUrl = false
+
+// Minimum time on page before tracking (3 seconds)
+const MIN_TIME_BEFORE_TRACK = 3000
+
+// Track URL for Intention Groups after minimum time
+async function trackUrlAfterDelay() {
+  if (hasTrackedUrl) return
+
+  const enabled = await isTrackingEnabled()
+  if (!enabled) return
+
+  if (shouldIgnoreFrame()) return
+
+  hasTrackedUrl = true
+  const url = window.location.href
+  const title = document.title || url
+
+  logger.info("Tracking URL after 3s", { url })
+
+  try {
+    chrome.runtime.sendMessage({
+      type: "TRACK_URL",
+      data: {
+        url,
+        title,
+        duration: Date.now() - pageStartTime
+      }
+    })
+  } catch (error) {
+    logger.error("Error tracking URL", error)
+  }
+}
+
+// Start tracking timer when page loads
+function startTrackingTimer() {
+  if (trackingTimerId) {
+    clearTimeout(trackingTimerId)
+  }
+  hasTrackedUrl = false
+  pageStartTime = Date.now()
+
+  trackingTimerId = setTimeout(trackUrlAfterDelay, MIN_TIME_BEFORE_TRACK)
+}
 
 // Track page duration on visibility change or before unload
 async function sendPageDuration() {
   const duration = Date.now() - pageStartTime
   const url = window.location.href
-  console.log("⏱️ [TRACKING DEBUG] Sending PAGE_DURATION:", duration, "for URL:", url)
-  
+  logger.debug("Sending PAGE_DURATION", { duration, url })
+
   try {
     chrome.runtime.sendMessage({
       type: "PAGE_DURATION",
       data: { duration, url }
     })
-    console.log("✅ [TRACKING DEBUG] PAGE_DURATION sent for URL:", url, "duration:", duration)
+    logger.info("PAGE_DURATION sent", { url, duration })
   } catch (error) {
-    console.error("❌ [TRACKING DEBUG] Error sending PAGE_DURATION:", error)
+    logger.error("Error sending PAGE_DURATION", error)
   }
 }
 
 // Send duration when page becomes hidden or user leaves
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") {
-    console.log("👁️ [TRACKING DEBUG] Page hidden - sending duration")
+    logger.debug("Page hidden - sending duration")
     sendPageDuration()
+    // Also track URL if user stayed long enough
+    if (Date.now() - pageStartTime >= MIN_TIME_BEFORE_TRACK) {
+      trackUrlAfterDelay()
+    }
   }
 })
 
 // Send duration before page unloads
 window.addEventListener("beforeunload", () => {
-  console.log("🚪 [TRACKING DEBUG] Page unloading - sending duration")
+  logger.debug("Page unloading - sending duration")
   sendPageDuration()
 })
 
+// Track URL changes in SPAs (like GitHub)
+let lastTrackedUrl = window.location.href
+
+function checkUrlChange() {
+  const currentUrl = window.location.href
+  if (currentUrl !== lastTrackedUrl) {
+    logger.info("SPA navigation detected", { url: currentUrl })
+    lastTrackedUrl = currentUrl
+    startTrackingTimer()
+  }
+}
+
+// Check for URL changes periodically (for SPAs)
+setInterval(checkUrlChange, 1000)
+
 // Initialize tracking
 startWhenReady()
+startTrackingTimer()

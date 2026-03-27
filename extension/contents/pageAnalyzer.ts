@@ -1,4 +1,7 @@
 import type { PlasmoCSConfig } from "plasmo"
+import { createServiceLogger } from '../lib/utils/logger'
+
+const logger = createServiceLogger('PageAnalyzer')
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -13,7 +16,10 @@ function sanitizeUrl(url: string): string {
     // Remove common tracking parameters
     const trackingParams = [
       'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
-      'fbclid', 'gclid', 'mc_eid', 'mc_cid', '_ga', 'ref', 'source'
+      'fbclid', 'gclid', 'mc_eid', 'mc_cid', '_ga', 'ref', 'source',
+      // Auth / extension session params
+      'extensionId', 'autoLogin', 'state', 'code', 'nonce',
+      'redirect', 'redirectUrl', 'redirect_uri', 'returnUrl', 'return_url',
     ]
     
     trackingParams.forEach(param => urlObj.searchParams.delete(param))
@@ -26,12 +32,13 @@ function sanitizeUrl(url: string): string {
 
 // Listen for page analysis requests from the extension
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("🔍 [Page Analyzer] Received message:", message.type)
+  logger.debug('Received message', { type: message.type })
   
   if (message.type === "GET_CLEAN_URL") {
     const cleanUrl = sanitizeUrl(window.location.href)
-    console.log("🔍 [Page Analyzer] Returning clean URL:", cleanUrl)
-    sendResponse({ success: true, url: cleanUrl })
+    const pageTitle = document.title || ""
+    logger.debug('Returning clean URL', { cleanUrl, pageTitle })
+    sendResponse({ success: true, url: cleanUrl, title: pageTitle })
     return true
   }
   
@@ -42,7 +49,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       domain: window.location.hostname,
       title: document.title || ""
     }
-    console.log("🔍 [Page Analyzer] Returning page data:", pageData)
+    logger.debug('Returning page data', pageData)
     sendResponse({ success: true, data: pageData })
     return true
   }
@@ -55,7 +62,7 @@ let lastUrl = window.location.href
 function notifyUrlChange() {
   const currentUrl = window.location.href
   if (currentUrl !== lastUrl) {
-    console.log("🔍 [Page Analyzer] URL changed from", lastUrl, "to", currentUrl)
+    logger.debug('URL changed', { oldUrl: lastUrl, newUrl: currentUrl })
     lastUrl = currentUrl
     
     // Notify the extension
@@ -94,4 +101,4 @@ window.addEventListener('popstate', () => {
 // Periodic check for URL changes (fallback)
 setInterval(notifyUrlChange, 2000)
 
-console.log("🔍 [Page Analyzer] Content script loaded for:", window.location.href)
+logger.info('Content script loaded', { url: window.location.href })

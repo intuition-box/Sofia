@@ -1,9 +1,10 @@
 {
   "name": "sofia",
   "displayName": "Sofia BETA",
-  "version": "0.1.2",
+  "version": "0.5.2",
   "description": "Transform your browsing into structured knowledge on the blockchain. AI-powered insights and web3 integration.",
   "author": "me",
+  "workspaces": ["packages/*"],
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build --no-minify && node scripts/post-build.js",
@@ -19,7 +20,7 @@
     "@0xintuition/1ui": "^0.4.1",
     "@0xintuition/graphql": "1.0.0-alpha.0",
     "@0xintuition/protocol": "1.0.0-alpha.3",
-    "@apollo/client": "^3.13.8",
+    "@0xsofia/graphql": "workspace:*",
     "@dicebear/collection": "^9.2.4",
     "@dicebear/core": "^9.2.4",
     "@elizaos/plugin-mcp": "^1.0.8",
@@ -32,19 +33,14 @@
     "cors": "^2.8.5",
     "evt": "^2.5.9",
     "express": "^5.1.0",
-    "framer-motion": "^12.23.24",
     "graphql": "^16.11.0",
     "lucide-react": "^0.525.0",
-    "metamask-extension-provider": "^5.0.0",
+    "mipd": "^0.0.7",
     "node-fetch": "^3.3.2",
-    "ogl": "^1.0.11",
     "plasmo": "0.90.5",
     "postprocessing": "^6.37.8",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-router-dom": "^7.7.1",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
     "tailwind": "^4.0.0",
     "three": "^0.180.0",
     "umami": "^2.10.0",
@@ -82,14 +78,12 @@
     ],
     "host_permissions": [
       "<all_urls>",
-      "http://127.0.0.1:8080/*",
-      "http://127.0.0.1:11434/*",
       "https://auth.privy.io/*"
     ],
     "externally_connectable": {
       "matches": [
         "http://localhost:3000/*",
-        "https://sofia.intuition.box/*"
+        "https://doc.sofia.intuition.box/*"
       ]
     },
     "side_panel": {

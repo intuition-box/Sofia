@@ -1,0 +1,426 @@
+query GetFollowingPositions(
+  $subjectId: String!
+  $predicateId: String!
+  $address: String!
+  $limit: Int
+  $offset: Int
+  $positionsOrderBy: [positions_order_by!]
+) {
+  triples_aggregate(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { positions: { account_id: { _ilike: $address }, shares: { _gt: "0" } } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  triples(
+    limit: $limit
+    offset: $offset
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+        { positions: { account_id: { _ilike: $address }, shares: { _gt: "0" } } }
+      ]
+    }
+  ) {
+    term_id
+    subject {
+      ...AtomMetadata
+    }
+    predicate {
+      ...AtomMetadata
+    }
+    object {
+      ...AtomMetadata
+      accounts {
+        atom {
+          term {
+            total_market_cap
+            positions_aggregate {
+              aggregate {
+                count
+              }
+            }
+            vaults(order_by: {curve_id: asc}) {
+              current_share_price
+              total_shares
+              position_count
+            }
+          }
+        }
+      }
+    }
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        current_share_price
+        positions_aggregate {
+          aggregate {
+            count
+            sum {
+              shares
+            }
+          }
+        }
+        positions(
+          where: { account_id: { _ilike: $address }, shares: { _gt: "0" } }
+          order_by: $positionsOrderBy
+        ) {
+          account_id
+          account {
+            id
+            label
+            image
+            atom_id
+            atom {
+              term_id
+              label
+              data
+              type
+              image
+            }
+          }
+          shares
+        }
+      }
+    }
+  }
+}
+
+query GetFollowerPositions(
+  $subjectId: String!
+  $predicateId: String!
+  $objectId: String!
+  $positionsLimit: Int
+  $positionsOffset: Int
+  $positionsOrderBy: [positions_order_by!]
+  $positionsWhere: positions_bool_exp
+) {
+  triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object_id: { _eq: $objectId } }
+      ]
+    }
+  ) {
+    term_id
+    subject {
+      ...AtomMetadata
+    }
+    predicate {
+      ...AtomMetadata
+    }
+    object {
+      ...AtomMetadata
+    }
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        current_share_price
+        positions_aggregate {
+          aggregate {
+            count
+            sum {
+              shares
+            }
+          }
+        }
+        positions(
+          limit: $positionsLimit
+          offset: $positionsOffset
+          order_by: $positionsOrderBy
+          where: $positionsWhere
+        ) {
+          account {
+            id
+            label
+            image
+          }
+          shares
+        }
+      }
+    }
+  }
+}
+
+# Combined query to get following and followers
+query GetConnections(
+  $subjectId: String!
+  $predicateId: String!
+  $objectId: String!
+  $addresses: [String!]
+  $positionsLimit: Int
+  $positionsOffset: Int
+  $positionsOrderBy: [positions_order_by!]
+  $positionsWhere: positions_bool_exp
+) {
+  # Following
+  following_count: triples_aggregate(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object_id: { _eq: $objectId } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  following: triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object_id: { _eq: $objectId } }
+      ]
+    }
+  ) {
+    ...FollowMetadata
+  }
+
+  # Followers
+  followers_count: triples_aggregate(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { positions: { account_id: { _in: $addresses } } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  followers: triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { positions: { account_id: { _in: $addresses } } }
+      ]
+    }
+  ) {
+    ...FollowMetadata
+  }
+}
+
+query GetConnectionsCount(
+  $subjectId: String!
+  $predicateId: String!
+  $objectId: String!
+  $address: String!
+) {
+  # Following count
+  following_count: triples_aggregate(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { positions: { account_id: { _ilike: $address } } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+
+  # Followers count
+  followers_count: triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object_id: { _eq: $objectId } }
+      ]
+    }
+  ) {
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        positions_aggregate {
+          aggregate {
+            count
+            sum {
+              shares
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# Query for user's following accounts (I -> FOLLOW -> Account)
+# Returns triples where user has positions on curve_id = 1
+query GetMyFollowing(
+  $subjectId: String!
+  $predicateId: String!
+  $walletAddress: String!
+) {
+  triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+        { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
+      ]
+    }
+  ) {
+    term_id
+    created_at
+    subject {
+      ...AtomMetadata
+    }
+    predicate {
+      ...AtomMetadata
+    }
+    object {
+      ...AtomMetadata
+    }
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }, order_by: { curve_id: asc }) {
+        positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
+          account_id
+          shares
+          created_at
+        }
+      }
+    }
+  }
+}
+
+# Query for user's trust circle (I -> TRUSTS -> Account)
+# Returns triples where user has positions on ANY curve (1 or 2)
+query GetMyTrustCircle(
+  $subjectId: String!
+  $predicateId: String!
+  $walletAddress: String!
+) {
+  triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+        { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
+      ]
+    }
+  ) {
+    term_id
+    created_at
+    subject {
+      ...AtomMetadata
+    }
+    predicate {
+      ...AtomMetadata
+    }
+    object {
+      ...AtomMetadata
+    }
+    term {
+      vaults(order_by: { curve_id: asc }) {
+        curve_id
+        positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
+          account_id
+          shares
+          created_at
+        }
+      }
+    }
+  }
+}
+
+# Query to find user's Account atom by wallet address
+query GetAccountAtomByWallet($address: String!) {
+  atoms(
+    where: {
+      _and: [
+        { data: { _ilike: $address } }
+        { type: { _eq: "Account" } }
+      ]
+    }
+    limit: 1
+  ) {
+    term_id
+    label
+    data
+    type
+    image
+  }
+}
+
+# Query for user's followers (positions on I -> FOLLOW -> MY_ACCOUNT_ATOM)
+query GetMyFollowers(
+  $subjectId: String!
+  $predicateId: String!
+  $objectId: String!
+) {
+  triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object_id: { _eq: $objectId } }
+      ]
+    }
+  ) {
+    term_id
+    created_at
+    subject {
+      ...AtomMetadata
+    }
+    predicate {
+      ...AtomMetadata
+    }
+    object {
+      ...AtomMetadata
+    }
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        positions {
+          account {
+            id
+            label
+            image
+            atom_id
+            atom {
+              term_id
+              label
+              data
+              type
+              image
+            }
+          }
+          shares
+          created_at
+        }
+      }
+    }
+  }
+}
+
+# Query to fetch IPFS data for atoms by labels
+query GetAtomDataByLabels($labels: [String!]!) {
+  atoms(where: { label: { _in: $labels } }) {
+    label
+    data
+    image
+  }
+}
+
+

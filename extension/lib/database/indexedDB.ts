@@ -1,107 +1,47 @@
 /**
  * IndexedDB service for SofIA extension
- * Manages local storage of Eliza messages, navigation data, user profile, and settings
+ * Manages local storage of triplets, navigation data, user profile, and settings
  */
 
-import type { ParsedSofiaMessage} from '../../types/messages'
-import type { VisitData, DOMData } from '~types/history'
-import type { ExtensionSettings } from '~types/storage'
-import type { BookmarkList, BookmarkedTriplet } from '~types/bookmarks'
+import { createServiceLogger } from '../utils/logger'
+
+// Re-export all record types from centralized types
+export type {
+  TripletsRecord,
+  NavigationRecord,
+  ProfileRecord,
+  SettingsRecord,
+  SearchRecord,
+  BookmarkListRecord,
+  BookmarkedTripletRecord,
+  RecommendationRecord,
+  IntentionGroupRecord,
+  GroupUrlRecord,
+  PredicateChangeRecord,
+  UserXPRecord,
+  CartItemRecord
+} from '../../types/database'
+
+const logger = createServiceLogger('IndexedDB')
 
 // Database configuration
 const DB_NAME = 'sofia-extension-db'
-const DB_VERSION = 6  // 🆕 Incrémenté pour ajouter agent_channels
+const DB_VERSION = 9  // Added CART_ITEMS store
 
 // Object store names
 export const STORES = {
-  ELIZA_DATA: 'eliza_data',
+  TRIPLETS_DATA: 'triplets_data',
   NAVIGATION_DATA: 'navigation_data',
   USER_PROFILE: 'user_profile',
   USER_SETTINGS: 'user_settings',
   SEARCH_HISTORY: 'search_history',
   BOOKMARK_LISTS: 'bookmark_lists',
   BOOKMARKED_TRIPLETS: 'bookmarked_triplets',
-  DOMAIN_INTENTIONS: 'domain_intentions',
   RECOMMENDATIONS: 'recommendations',
-  AGENT_CHANNELS: 'agent_channels'  // 🆕 Store pour la persistance des channels
+  INTENTION_GROUPS: 'intention_groups',
+  USER_XP: 'user_xp',
+  CART_ITEMS: 'cart_items'
 } as const
-
-// Record types for IndexedDB
-export interface ElizaRecord {
-  id?: number
-  messageId: string
-  content: ParsedSofiaMessage | any[] | string[]
-  timestamp: number
-  type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details' | 'pulse_analysis'
-}
-
-export interface NavigationRecord {
-  id?: number
-  url: string
-  visitData: VisitData
-  domData?: DOMData
-  lastUpdated: number
-}
-
-export interface ProfileRecord {
-  id: 'profile'
-  profilePhoto?: string
-  bio: string
-  profileUrl: string
-  lastUpdated: number
-}
-
-export interface SettingsRecord {
-  id: 'settings'
-  settings: ExtensionSettings
-  lastUpdated: number
-}
-
-export interface SearchRecord {
-  id?: number
-  query: string
-  timestamp: number
-  results?: any[]
-}
-
-export interface BookmarkListRecord extends Omit<BookmarkList, 'id'> {
-  id?: string
-}
-
-export interface BookmarkedTripletRecord extends Omit<BookmarkedTriplet, 'id'> {
-  id?: string
-}
-
-export interface DomainIntentionRecord {
-  domain: string
-  visitCount: number
-  totalDuration: number
-  avgDuration: number
-  maxAttentionScore: number
-  lastVisit: number
-  firstVisit: number
-  predicates: Record<string, number>
-  intentionScore: number
-}
-
-export interface RecommendationRecord {
-  walletAddress: string
-  rawResponse: string
-  parsedRecommendations: any[]
-  timestamp: number
-  lastUpdated: number
-}
-
-// 🆕 Agent channel record for multi-user persistence
-export interface AgentChannelRecord {
-  key: string  // Format: "wallet_address:agent_name"
-  channelId: string
-  walletAddress: string
-  agentName: string
-  agentId: string
-  createdAt: number
-  lastUsed: number
-}
 
 /**
  * IndexedDB Database Service
@@ -126,13 +66,14 @@ export class SofiaIndexedDB {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
 
       request.onerror = () => {
-        console.error('❌ Error opening IndexedDB:', request.error)
+        logger.error('Error opening IndexedDB', request.error)
+        this.dbPromise = null // Reset to allow retry on next call
         reject(request.error)
       }
 
       request.onsuccess = () => {
         this.db = request.result
-        console.log('✅ IndexedDB initialized successfully')
+        logger.info('IndexedDB initialized successfully')
         resolve(request.result)
       }
 
@@ -149,17 +90,17 @@ export class SofiaIndexedDB {
    * Create object stores and indexes
    */
   private createObjectStores(db: IDBDatabase): void {
-    console.log('🔧 Creating IndexedDB object stores...')
+    logger.debug('Creating IndexedDB object stores')
 
-    // Eliza data store
-    if (!db.objectStoreNames.contains(STORES.ELIZA_DATA)) {
-      const elizaStore = db.createObjectStore(STORES.ELIZA_DATA, { 
-        keyPath: 'id', 
-        autoIncrement: true 
+    // Triplets data store
+    if (!db.objectStoreNames.contains(STORES.TRIPLETS_DATA)) {
+      const tripletsStore = db.createObjectStore(STORES.TRIPLETS_DATA, {
+        keyPath: 'id',
+        autoIncrement: true
       })
-      elizaStore.createIndex('messageId', 'messageId', { unique: true })
-      elizaStore.createIndex('timestamp', 'timestamp', { unique: false })
-      elizaStore.createIndex('type', 'type', { unique: false })
+      tripletsStore.createIndex('messageId', 'messageId', { unique: true })
+      tripletsStore.createIndex('timestamp', 'timestamp', { unique: false })
+      tripletsStore.createIndex('type', 'type', { unique: false })
     }
 
     // Navigation data store
@@ -219,16 +160,6 @@ export class SofiaIndexedDB {
       bookmarkedTripletsStore.createIndex('addedAt', 'addedAt', { unique: false })
     }
 
-    // Domain intentions store
-    if (!db.objectStoreNames.contains(STORES.DOMAIN_INTENTIONS)) {
-      const domainIntentionsStore = db.createObjectStore(STORES.DOMAIN_INTENTIONS, {
-        keyPath: 'domain'
-      })
-      domainIntentionsStore.createIndex('visitCount', 'visitCount', { unique: false })
-      domainIntentionsStore.createIndex('lastVisit', 'lastVisit', { unique: false })
-      domainIntentionsStore.createIndex('intentionScore', 'intentionScore', { unique: false })
-    }
-
     // Recommendations store
     if (!db.objectStoreNames.contains(STORES.RECOMMENDATIONS)) {
       const recommendationsStore = db.createObjectStore(STORES.RECOMMENDATIONS, {
@@ -238,18 +169,32 @@ export class SofiaIndexedDB {
       recommendationsStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
     }
 
-    // 🆕 Agent channels store (pour persistance multi-user)
-    if (!db.objectStoreNames.contains(STORES.AGENT_CHANNELS)) {
-      const agentChannelsStore = db.createObjectStore(STORES.AGENT_CHANNELS, {
-        keyPath: 'key'  // Format: "wallet_address:agent_name"
+    // 🆕 Intention Groups store (groupes de domaines persistants)
+    if (!db.objectStoreNames.contains(STORES.INTENTION_GROUPS)) {
+      const intentionGroupsStore = db.createObjectStore(STORES.INTENTION_GROUPS, {
+        keyPath: 'id'  // = domain
       })
-      agentChannelsStore.createIndex('walletAddress', 'walletAddress', { unique: false })
-      agentChannelsStore.createIndex('agentName', 'agentName', { unique: false })
-      agentChannelsStore.createIndex('channelId', 'channelId', { unique: false })
-      agentChannelsStore.createIndex('lastUsed', 'lastUsed', { unique: false })
+      intentionGroupsStore.createIndex('domain', 'domain', { unique: true })
+      intentionGroupsStore.createIndex('level', 'level', { unique: false })
+      intentionGroupsStore.createIndex('createdAt', 'createdAt', { unique: false })
+      intentionGroupsStore.createIndex('updatedAt', 'updatedAt', { unique: false })
     }
 
-    console.log('✅ Object stores created successfully')
+    // 🆕 User XP store (XP global utilisateur)
+    if (!db.objectStoreNames.contains(STORES.USER_XP)) {
+      db.createObjectStore(STORES.USER_XP, { keyPath: 'id' })
+    }
+
+    // Certification cart store (batch certification queue)
+    if (!db.objectStoreNames.contains(STORES.CART_ITEMS)) {
+      const cartStore = db.createObjectStore(STORES.CART_ITEMS, {
+        keyPath: 'id'
+      })
+      cartStore.createIndex('walletAddress', 'walletAddress', { unique: false })
+      cartStore.createIndex('addedAt', 'addedAt', { unique: false })
+    }
+
+    logger.info('Object stores created successfully')
   }
 
   /**
@@ -405,7 +350,7 @@ export class SofiaIndexedDB {
       this.db.close()
       this.db = null
       this.dbPromise = null
-      console.log('🔒 IndexedDB connection closed')
+      logger.info('IndexedDB connection closed')
     }
   }
 
@@ -417,12 +362,12 @@ export class SofiaIndexedDB {
       const request = indexedDB.deleteDatabase(DB_NAME)
       
       request.onsuccess = () => {
-        console.log('🗑️ Database deleted successfully')
+        logger.info('Database deleted successfully')
         resolve()
       }
       
       request.onerror = () => {
-        console.error('❌ Error deleting database:', request.error)
+        logger.error('Error deleting database', request.error)
         reject(request.error)
       }
     })

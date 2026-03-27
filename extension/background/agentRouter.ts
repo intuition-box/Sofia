@@ -3,14 +3,16 @@
  * All agents (SofIA, ThemeExtractor, Pulse, Recommendation, ChatBot) use Mastra HTTP
  */
 
-import { sofiaDB, STORES } from "../lib/database/indexedDB"
+import { sofiaDB, STORES } from "../lib/database"
 import {
   sendThemeExtractionToMastra,
   sendPulseToMastra,
   sendRecommendationToMastra,
-  sendSofiaToMastra,
   sendChatbotToMastra
 } from "./mastraClient"
+import { createServiceLogger } from '../lib/utils/logger'
+
+const logger = createServiceLogger('AgentRouter')
 
 /**
  * Send theme extraction request to Mastra ThemeExtractor agent
@@ -18,7 +20,7 @@ import {
  * @returns Promise resolving to extracted themes
  */
 export async function sendThemeExtractionRequest(urls: string[]): Promise<any[]> {
-  console.log(`🎨 [ThemeExtractor] Sending ${urls.length} URLs to Mastra`)
+  logger.info(`[ThemeExtractor] Sending ${urls.length} URLs to Mastra`)
 
   try {
     const triplets = await sendThemeExtractionToMastra(urls)
@@ -42,19 +44,19 @@ export async function sendThemeExtractionRequest(urls: string[]): Promise<any[]>
         type: 'parsed_message'
       }
 
-      await sofiaDB.put(STORES.ELIZA_DATA, parsedRecord)
-      console.log("✅ [ThemeExtractor] Triplets stored in IndexedDB:", { count: enrichedTriplets.length })
+      await sofiaDB.put(STORES.TRIPLETS_DATA, parsedRecord)
+      logger.info('[ThemeExtractor] Triplets stored in IndexedDB', { count: enrichedTriplets.length })
 
       try {
         chrome.runtime.sendMessage({ type: "ECHOES_UPDATED" })
       } catch (e) {
-        console.warn("⚠️ [ThemeExtractor] Could not notify UI:", e)
+        logger.warn('[ThemeExtractor] Could not notify UI', e)
       }
     }
 
     return triplets
   } catch (error) {
-    console.error("❌ [ThemeExtractor] Mastra request failed:", error)
+    logger.error('[ThemeExtractor] Mastra request failed', error)
     return []
   }
 }
@@ -65,14 +67,14 @@ export async function sendThemeExtractionRequest(urls: string[]): Promise<any[]>
  * @returns Promise resolving to recommendations
  */
 export async function sendRecommendationRequest(walletData: any): Promise<any> {
-  console.log(`💎 [Recommendation] Sending request to Mastra`)
+  logger.info('[Recommendation] Sending request to Mastra')
 
   try {
     const recommendations = await sendRecommendationToMastra(walletData)
-    console.log("✅ [Recommendation] Received from Mastra:", recommendations)
+    logger.debug('[Recommendation] Received from Mastra', recommendations)
     return recommendations
   } catch (error) {
-    console.error("❌ [Recommendation] Mastra request failed:", error)
+    logger.error('[Recommendation] Mastra request failed', error)
     return null
   }
 }
@@ -83,11 +85,11 @@ export async function sendRecommendationRequest(walletData: any): Promise<any> {
  * @param agentType - Which agent to send to
  * @param text - Message text to send
  */
-export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACTOR' | 'PULSEAGENT' | 'RECOMMENDATION', text: string): Promise<any> {
+export async function sendMessage(agentType: 'CHATBOT' | 'THEMEEXTRACTOR' | 'PULSEAGENT' | 'RECOMMENDATION', text: string): Promise<any> {
   switch (agentType) {
     case 'CHATBOT':
       // ChatBot uses Mastra HTTP with MCP tools
-      console.log(`📤 [CHATBOT] Sending to Mastra:`, text.substring(0, 100))
+      logger.info('[CHATBOT] Sending to Mastra', { text: text.substring(0, 100) })
 
       try {
         const response = await sendChatbotToMastra(text)
@@ -97,12 +99,12 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
           type: "CHATBOT_RESPONSE",
           text: response
         }).catch((error) => {
-          console.warn("⚠️ [Chatbot] Error sending response:", error)
+          logger.warn('[Chatbot] Error sending response', error)
         })
 
         return response
       } catch (error) {
-        console.error("❌ [CHATBOT] Mastra request failed:", error)
+        logger.error('[CHATBOT] Mastra request failed', error)
         // Send error to UI
         chrome.runtime.sendMessage({
           type: "CHATBOT_RESPONSE",
@@ -111,56 +113,9 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
         throw error
       }
 
-    case 'SOFIA':
-      // SofIA uses Mastra HTTP - parse the text to extract fields
-      console.log(`🧠 [SOFIA] Sending to Mastra:`, text.substring(0, 100))
-      // For SofIA, the text format is: "URL: ...\nTitle: ...\nDescription: ...\nAttention Score: ...\nVisits: ..."
-      const urlMatch = text.match(/URL:\s*(.+)/i)
-      const titleMatch = text.match(/Title:\s*(.+)/i)
-      const descMatch = text.match(/Description:\s*(.*)/i)
-      const attentionMatch = text.match(/Attention\s*Score:\s*([\d.]+)/i)
-      const visitsMatch = text.match(/Visits:\s*(\d+)/i)
-
-      try {
-        const sofiaResult = await sendSofiaToMastra(
-          urlMatch?.[1]?.trim() || '',
-          titleMatch?.[1]?.trim() || '',
-          descMatch?.[1]?.trim() || '',
-          parseFloat(attentionMatch?.[1] || '0'),
-          parseInt(visitsMatch?.[1] || '0', 10)
-        )
-
-        // Store SofIA triplets in IndexedDB
-        if (sofiaResult && sofiaResult.triplets && sofiaResult.triplets.length > 0) {
-          const sofiaRecord = {
-            messageId: `sofia_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            content: {
-              triplets: sofiaResult.triplets,
-              intention: `Analyzed: ${titleMatch?.[1]?.trim() || urlMatch?.[1]?.trim() || 'page'}`
-            },
-            timestamp: Date.now(),
-            type: 'parsed_message'
-          }
-          await sofiaDB.put(STORES.ELIZA_DATA, sofiaRecord)
-          console.log("✅ [SofIA] Triplets stored in IndexedDB:", { id: sofiaRecord.messageId, count: sofiaResult.triplets.length })
-
-          // Notify UI that new echoes are available
-          try {
-            chrome.runtime.sendMessage({ type: "ECHOES_UPDATED" })
-          } catch (e) {
-            console.warn("⚠️ [SofIA] Could not notify UI:", e)
-          }
-        }
-
-        return sofiaResult
-      } catch (sofiaError) {
-        console.error("❌ [SOFIA] Failed to process:", sofiaError)
-        return null
-      }
-
     case 'THEMEEXTRACTOR':
       // ThemeExtractor uses Mastra HTTP
-      console.log(`🎨 [THEMEEXTRACTOR] Sending to Mastra`)
+      logger.info('[THEMEEXTRACTOR] Sending to Mastra')
       // Extract URLs from the text
       const urls = text.split('\n').filter(line => line.startsWith('http'))
       try {
@@ -177,26 +132,26 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
             timestamp: Date.now(),
             type: 'parsed_message'
           }
-          await sofiaDB.put(STORES.ELIZA_DATA, themeRecord)
-          console.log("✅ [ThemeExtractor] Triplets stored in IndexedDB:", { id: themeRecord.messageId, count: themeResult.length })
+          await sofiaDB.put(STORES.TRIPLETS_DATA, themeRecord)
+          logger.info('[ThemeExtractor] Triplets stored in IndexedDB', { id: themeRecord.messageId, count: themeResult.length })
 
           // Notify UI that new echoes are available
           try {
             chrome.runtime.sendMessage({ type: "ECHOES_UPDATED" })
           } catch (e) {
-            console.warn("⚠️ [ThemeExtractor] Could not notify UI:", e)
+            logger.warn('[ThemeExtractor] Could not notify UI', e)
           }
         }
 
         return themeResult
       } catch (themeError) {
-        console.error("❌ [THEMEEXTRACTOR] Failed to process:", themeError)
+        logger.error('[THEMEEXTRACTOR] Failed to process', themeError)
         return []
       }
 
     case 'PULSEAGENT':
       // PulseAgent uses Mastra HTTP
-      console.log(`🫀 [PULSEAGENT] Sending to Mastra`)
+      logger.info('[PULSEAGENT] Sending to Mastra')
       try {
         const tabs = JSON.parse(text)
         const result = await sendPulseToMastra(tabs)
@@ -210,29 +165,29 @@ export async function sendMessage(agentType: 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACT
           timestamp: Date.now(),
           type: 'pulse_analysis'
         }
-        await sofiaDB.put(STORES.ELIZA_DATA, pulseRecord)
-        console.log("✅ [PulseAgent] Pulse analysis stored:", { themes: themesData.themes?.length || 0 })
+        await sofiaDB.put(STORES.TRIPLETS_DATA, pulseRecord)
+        logger.info('[PulseAgent] Pulse analysis stored', { themes: themesData.themes?.length || 0 })
 
         try {
           chrome.runtime.sendMessage({ type: "PULSE_ANALYSIS_COMPLETE" })
         } catch (e) {
-          console.warn("⚠️ [PulseAgent] Could not notify UI:", e)
+          logger.warn('[PulseAgent] Could not notify UI', e)
         }
 
         return result
       } catch (e) {
-        console.error("❌ [PULSEAGENT] Failed to parse tabs:", e)
+        logger.error('[PULSEAGENT] Failed to parse tabs', e)
         return await sendPulseToMastra([])
       }
 
     case 'RECOMMENDATION':
       // Recommendation uses Mastra HTTP
-      console.log(`💎 [RECOMMENDATION] Sending to Mastra`)
+      logger.info('[RECOMMENDATION] Sending to Mastra')
       try {
         const walletData = JSON.parse(text)
         return await sendRecommendationToMastra(walletData)
       } catch (e) {
-        console.error("❌ [RECOMMENDATION] Failed to parse wallet data:", e)
+        logger.error('[RECOMMENDATION] Failed to parse wallet data', e)
         return await sendRecommendationToMastra({})
       }
 

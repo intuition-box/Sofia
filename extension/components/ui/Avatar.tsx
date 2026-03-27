@@ -1,6 +1,8 @@
-import { useState } from 'react'
-import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl } from '../../lib/utils/avatar'
-import './Avatar.css'
+import { useState, useEffect, memo } from 'react'
+import { isValidImageUrl, shouldShowDiceBearAvatar, generateDiceBearAvatar, getInitials, normalizeAvatarUrl, createHookLogger } from '~/lib/utils'
+import '../styles/Avatar.css'
+
+const logger = createHookLogger('Avatar')
 
 interface AvatarProps {
   imgSrc?: string          // URL de l'image (depuis ENS ou autre)
@@ -10,7 +12,7 @@ interface AvatarProps {
   size?: 'small' | 'medium' | 'large'
 }
 
-const Avatar = ({
+const Avatar = memo(({
   imgSrc,
   name,
   avatarClassName = '',
@@ -19,8 +21,13 @@ const Avatar = ({
 }: AvatarProps) => {
   const [imageError, setImageError] = useState(false)
 
+  // Reset error state when image source changes
+  useEffect(() => {
+    setImageError(false)
+  }, [imgSrc])
+
   const handleImageError = () => {
-    console.warn('Avatar image failed to load:', imgSrc)
+    logger.warn('Avatar image failed to load', imgSrc)
     setImageError(true)
   }
 
@@ -36,6 +43,7 @@ const Avatar = ({
           alt={name || 'Avatar'}
           className={`avatar-image ${imageClassName}`}
           onError={handleImageError}
+          referrerPolicy="no-referrer"
         />
       </div>
     )
@@ -62,6 +70,6 @@ const Avatar = ({
       <span className="avatar-initials">{initials}</span>
     </div>
   )
-}
+})
 
 export default Avatar

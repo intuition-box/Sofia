@@ -12,12 +12,12 @@
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  padding: 20px;
+  padding: 12px;
   overflow-y: auto;
 }
 
 .modal-overlay.processing {
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .modal-content {
@@ -85,10 +85,10 @@
 
 /* Body */
 .modal-body {
-  padding: 0 24px 24px 24px;
+  padding: 16px 24px 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 7px;
 }
 
 .modal-section {
@@ -98,13 +98,12 @@
 }
 
 .modal-description {
-  font-size: 14px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
-  text-align: center;
-  margin: 0;
+  text-align: left;
   line-height: 1.4;
   max-width: 400px;
-  margin: 0 auto;
+  margin: 0 auto 4px;
 }
 
 /* Identity/Account Info (for UpvoteModal and FollowModal) */
@@ -239,40 +238,45 @@
   -moz-appearance: textfield;
 }
 
+/* Amount Row - Input and Pills on same line */
+.modal-amount-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* Amount/Weight Options */
 .modal-amount-options {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  justify-content: center;
+  gap: 26px;
+  justify-content: flex-end;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .modal-amount-option {
-  padding: 8px 16px;
-  border-radius: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: white;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
-  min-width: 80px;
+  min-width: 50px;
 }
 
 .modal-amount-option.selected {
-  border-color: var(--color-primary);
-  background: rgba(59, 130, 246, 0.2);
-  color: var(--color-primary);
+  border-color: #ffffff75;
+  color: #ffb659;
+  background: #513a10;
 }
 
 .modal-amount-option:hover:not(.selected) {
-  background: rgba(255, 255, 255, 0.1);
+  background: #513a10;
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -284,7 +288,7 @@
 
 .modal-amount-value {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* Custom Input */
@@ -292,6 +296,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.modal-custom-label-main {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: left;
+  margin-bottom: 8px;
 }
 
 .modal-custom-label {
@@ -305,12 +317,27 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 12px 16px;
+  padding: 10px 7px;
   color: white;
-  font-size: 16px;
+  font-size: 14px;
   text-align: center;
   outline: none;
   transition: all 0.2s ease;
+  flex: 1;
+  min-width: 0;
+  max-width: 200px;
+}
+
+/* Hide number input arrows/scrollbar */
+.modal-custom-input::-webkit-outer-spin-button,
+.modal-custom-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.modal-custom-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .modal-custom-input:focus {
@@ -361,28 +388,41 @@
 }
 
 .modal-triplet-info {
-  margin-bottom: 12px;
+  margin-bottom: none;
 }
 
 .modal-triplet-info p {
-  margin: 0;
+  margin: 10;
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
+  text-align: center;
 }
 
 .modal-triplet-info .subject {
-  color: #60a5fa;
+  color: #feffdc;
   font-weight: 600;
+  font-size: 20px;
 }
 
 .modal-triplet-info .action {
-  color: #34d399;
+  color: #e7ce4c;
   font-weight: 500;
+  font-size: 20px;
 }
 
 .modal-triplet-info .object {
-  color: #fbbf24;
+  color: #f1a20d;
   font-weight: 500;
+  font-size: 20px;
+}
+
+.modal-triplet-info .triplet-url-hint {
+  display: block;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 4px;
+  font-family: monospace;
+  text-align: center;
 }
 
 /* Weight Options (for WeightModal) */
@@ -480,6 +520,246 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* ========== SUCCESS CARD (Two-Column Layout) ========== */
+
+.modal-success-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 20px;
+  animation: successCardAppear 0.5s ease-out;
+}
+
+@keyframes successCardAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Top golden glow */
+.modal-success-card-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(180, 140, 60, 0.3) 15%,
+    rgba(212, 175, 55, 0.8) 35%,
+    rgba(245, 200, 80, 1) 50%,
+    rgba(212, 175, 55, 0.8) 65%,
+    rgba(180, 140, 60, 0.3) 85%,
+    transparent 100%
+  );
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4), 0 0 30px rgba(212, 175, 55, 0.15);
+}
+
+.modal-success-xp-animation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0 0;
+}
+
+.modal-success-card-inner {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  gap: 16px;
+}
+
+/* Left Column */
+.modal-success-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.modal-success-title {
+  font-family: 'Gotu', cursive;;
+  font-size: 28px;
+  font-weight: 600;
+  color: #f0e6d2;
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: 0.3px;
+}
+
+.modal-success-subtitle {
+  color: rgba(240, 230, 210, 0.65);
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.modal-tx-link {
+  color: rgba(240, 230, 210, 0.65);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
+  margin-top: 4px;
+}
+
+.modal-tx-link:hover {
+  color: #f0e6d2;
+}
+
+/* Right Column */
+.modal-success-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.reward-status-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(180, 130, 40, 0.2) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 6px;
+  color: #d4af37;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.reward-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.reward-label {
+  color: rgba(240, 230, 210, 0.7);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.reward-amount {
+  font-size: 32px;
+  font-weight: 600;
+  font-family:'Gotu', cursive;;
+  background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 40%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.claim-reward-btn {
+  padding: 10px 28px;
+  background: linear-gradient(180deg, #f0b232 0%, #c47d1a 50%, #a86515 100%);
+  border: 1px solid rgba(245, 190, 60, 0.5);
+  border-radius: 8px;
+  color: #1a1000;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow:
+    0 2px 8px rgba(200, 150, 30, 0.3),
+    inset 0 1px 0 rgba(255, 220, 120, 0.3);
+  font-family: 'Gotu', cursive;
+  letter-spacing: 0.3px;
+}
+
+.claim-reward-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 16px rgba(200, 150, 30, 0.5),
+    inset 0 1px 0 rgba(255, 220, 120, 0.4);
+}
+
+.claim-reward-btn:active {
+  transform: translateY(0);
+}
+
+/* Claimed state in right column */
+.modal-success-right.claimed {
+  gap: 6px;
+}
+
+.reward-claimed-icon {
+  font-size: 28px;
+  color: #10B981;
+}
+
+.reward-claimed-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #10B981;
+}
+
+/* Success card without reward (no right column) */
+.modal-success-card:not(.has-reward) .modal-success-card-inner {
+  justify-content: center;
+}
+
+.modal-success-card:not(.has-reward) .modal-success-left {
+  align-items: center;
+  text-align: center;
+}
+
+/* Error State */
+.modal-error-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.modal-error-icon {
+  font-size: 48px;
+}
+
+.modal-error-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-error-title {
+  color: #f44336;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-error-message {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
 .modal-loading-spinner {
   width: 20px;
   height: 20px;
@@ -512,7 +792,6 @@
 }
 
 .modal-processing-title,
-.modal-success-title,
 .modal-error-title {
   font-size: 16px;
   font-weight: 600;
@@ -538,6 +817,18 @@
 
 .modal-error-step {
   color: rgba(239, 68, 68, 0.8);
+}
+
+.modal-processing-warning {
+  font-size: 11px;
+  color: rgba(251, 191, 36, 0.85);
+  text-align: center;
+  margin: 12px auto 0;
+  padding: 6px 12px;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 6px;
+  max-width: fit-content;
 }
 
 /* Switch Button Styles */
@@ -678,6 +969,10 @@
 .modal-actions {
   display: flex;
   gap: 12px;
+  margin-top: 12px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
 }
 
 .modal-btn {
@@ -689,7 +984,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
-  min-width: 120px;
+  min-width: 0;
 }
 
 .modal-btn.secondary {
@@ -704,44 +999,42 @@
 }
 
 .modal-btn.primary {
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  border: none;
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  font-family: 'Gotu', cursive;
   position: relative;
-  background: transparent;
-  border: 1px solid rgba(217, 119, 6, 0.3);
-  color: white;
   overflow: hidden;
+  transition: all 1s ease;
 }
 
-.modal-btn-background {
+.modal-btn.primary::before {
+  content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
   z-index: 0;
-  border-radius: 50px;
-  overflow: hidden;
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
 }
 
-.modal-btn.primary:hover:not(:disabled) .modal-btn-background {
-  opacity: 1;
-}
-
-.modal-btn-content {
+.modal-btn.primary > * {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-family: Gotu, cursive;
-  font-size: 14px;
 }
 
+/* Removed .modal-btn-background and .modal-btn-content - no longer needed */
+
 .modal-btn.primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
 }
 
 .modal-btn.primary.blue {
@@ -867,40 +1160,52 @@
   cursor: not-allowed;
 }
 
-/* Curve Toggle - For StakeModal */
+/* Curve Selector */
+.curve-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.curve-selector-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-very-muted);
+  white-space: nowrap;
+}
+
+/* Curve Toggle - Pill style */
 .curve-toggle {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 6px;
 }
 
-.curve-toggle-option {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.curve-toggle-btn {
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--color-border-glass);
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
+  transition: all var(--transition-fast);
+  font-size: var(--font-size-xs);
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-very-muted);
 }
 
-.curve-toggle-option:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
+.curve-toggle-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.2);
+  color: var(--color-text-primary);
 }
 
-.curve-toggle-option.selected {
-  background: rgba(100, 150, 255, 0.2);
-  border-color: rgba(100, 150, 255, 0.5);
-  color: rgba(255, 255, 255, 0.95);
+.curve-toggle-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--color-text-primary);
 }
 
-.curve-toggle-option:disabled {
+.curve-toggle-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 /* ========== STAKE MODAL SPECIFIC STYLES ========== */
@@ -1002,8 +1307,110 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 14px;
   margin: 12px 0;
+}
+
+.stake-position-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12px;
+}
+
+.stake-position-tabs {
+  display: flex;
+  gap: 12px;
+}
+
+.stake-position-tab {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.stake-position-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+}
+
+.stake-position-tab-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.stake-info-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.stake-info-icon:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Custom tooltip */
+.stake-info-icon::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 50%;
+  transform: translateX(50%);
+  background: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+  width: 220px;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tooltip arrow */
+.stake-info-icon::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  right: 50%;
+  transform: translateX(50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.stake-info-icon:hover::after,
+.stake-info-icon:hover::before {
+  opacity: 1;
 }
 
 .stake-position-header {
@@ -1118,9 +1525,9 @@
 
 /* Stake Modal Input - Larger text */
 .stake-modal-content .modal-custom-input {
-  font-size: 24px;
-  font-weight: 600;
-  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 300;
+  padding: 2px 18px;
   text-align: center;
 }
 
@@ -1128,6 +1535,44 @@
   color: rgba(255, 255, 255, 0.3);
   font-size: 20px;
   font-weight: 500;
+}
+
+/* Curve Selection Pills */
+.stake-curve-selection {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+.stake-curve-pill {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.stake-curve-pill.selected {
+  border-color: #ffffff75;
+  color: #ffb659;
+  background: #513a10;
+}
+
+.stake-curve-pill:hover:not(.selected) {
+  background: #513a10;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.stake-curve-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .stake-modal-content .modal-section {
@@ -1141,4 +1586,892 @@
 .stake-modal-content .modal-description {
   margin: 10px 0;
   font-size: 13px;
+}
+
+/* ========================================
+   NEW STAKE MODAL STYLES (Screenshot Design)
+   ======================================== */
+
+/* Chart Section */
+.stake-chart-section {
+  margin: 16px 0;
+}
+
+.stake-chart-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.stake-chart-error,
+.stake-chart-no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+.stake-chart-error {
+  color: rgba(255, 100, 100, 0.7);
+}
+
+.stake-chart-no-data {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+}
+
+.stake-chart-header {
+  margin-bottom: 16px;
+}
+
+.stake-chart-balance {
+  margin-bottom: 12px;
+}
+
+.stake-chart-balance-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stake-chart-balance-value {
+  font-size: 32px;
+  font-weight: 300;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stake-chart-balance-change {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stake-chart-balance-change.positive {
+  color: #4caf50;
+}
+
+.stake-chart-balance-change.negative {
+  color: #f44336;
+}
+
+.stake-chart-metrics {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.stake-chart-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stake-chart-metric-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stake-chart-metric-value {
+  font-size: 13px;
+  color: white;
+  font-weight: 500;
+}
+
+.stake-chart-container {
+  margin-top: 16px;
+  width: 100%;
+  min-height: 200px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+}
+
+/* Amount Section - New Layout */
+.stake-amount-section {
+  margin: 20px 0;
+}
+
+.stake-amount-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 12px;
+}
+
+/* Input Container with integrated toggle */
+.stake-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.stake-amount-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  padding: 0;
+}
+
+.stake-amount-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+}
+
+.stake-amount-input::-webkit-outer-spin-button,
+.stake-amount-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.stake-amount-input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* Toggle integrated in input */
+.stake-input-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.stake-input-toggle .stake-toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+}
+
+.stake-input-toggle .stake-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+}
+
+.stake-input-toggle .stake-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.stake-input-toggle .stake-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  transition: 0.3s;
+}
+
+.stake-input-toggle .stake-toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.stake-input-toggle .stake-toggle-switch input:checked + .stake-toggle-slider {
+  background-color: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.6);
+}
+
+.stake-input-toggle .stake-toggle-switch input:checked + .stake-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+/* Balance Display */
+.stake-balance {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 12px;
+}
+
+/* Amount Pills */
+.stake-amount-pills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stake-amount-pill {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.stake-amount-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.stake-amount-pill.selected {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffb659;
+}
+
+.stake-amount-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* New Buttons - Screenshot Style */
+.stake-btn {
+  border-radius: 24px;
+  font-family: 'Gotu', cursive;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 11px 44px;
+}
+
+.stake-btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stake-btn-cancel:hover:not(:disabled) {
+  background: rgba(255, 0, 0, 0.068);
+  border-color: rgba(255, 0, 0, 0.226);
+  color: rgb(252, 106, 106);
+}
+
+.stake-btn-submit {
+  background: var(--color-gradient-button);
+  background-size: 200% 200%;
+  animation: orb-gradient 20s ease infinite;
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+  position: relative;
+  overflow: hidden;
+  transition: all 1s ease;
+  padding: 11px 24px;
+}
+
+.stake-btn-submit::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stake-btn-submit > * {
+  position: relative;
+  z-index: 1;
+}
+
+.stake-btn-submit:hover:not(:disabled) {
+  box-shadow: 0 12px 48px rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
+}
+
+.stake-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stake-btn-submit:disabled {
+  background: rgba(236, 72, 153, 0.3);
+  box-shadow: none;
+  animation: none;
+}
+
+@keyframes orb-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ========== REWARD CLAIMED OVERLAY ========== */
+
+.reward-claimed-overlay {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 480px;
+  padding: 32px 24px;
+  margin: -24px;
+  border-radius: 24px;
+  overflow: hidden;
+  animation: claimedOverlayAppear 0.4s ease-out;
+}
+
+.reward-claimed-bg-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -45%);
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.reward-claimed-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 5, 4, 0.55) 0%,
+    rgba(6, 5, 4, 0.1) 30%,
+    rgba(6, 5, 4, 0.1) 55%,
+    rgba(6, 5, 4, 0.75) 75%,
+    rgba(6, 5, 4, 0.95) 100%
+  );
+  z-index: -1;
+  border-radius: 24px;
+}
+
+@keyframes claimedOverlayAppear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.reward-claimed-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 658px;
+  justify-content: space-between;
+}
+
+.reward-claimed-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.reward-claimed-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 62px;
+  font-weight: 400;
+  color: #f0e6d2;
+  text-align: center;
+  line-height: 1.15;
+  margin: 0;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+.reward-claimed-subtitle {
+  color: rgba(240, 230, 210, 0.65);
+  font-size: 14px;
+  margin: 0;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.reward-claimed-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.reward-claimed-total {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f0e6d2;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.reward-claimed-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.reward-continue-btn {
+  padding: 12px 36px;
+  width: 100%;
+  max-width: 240px;
+  background: linear-gradient(180deg, #f0b232 0%, #c47d1a 50%, #a86515 100%);
+  border: 1px solid rgba(245, 190, 60, 0.5);
+  border-radius: 10px;
+  color: #1a1000;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow:
+    0 2px 8px rgba(200, 150, 30, 0.3),
+    inset 0 1px 0 rgba(255, 220, 120, 0.3);
+  font-family: 'Gotu', cursive;
+}
+
+.reward-continue-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 16px rgba(200, 150, 30, 0.5),
+    inset 0 1px 0 rgba(255, 220, 120, 0.4);
+}
+
+.reward-view-tx-link {
+  color: rgba(240, 230, 210, 0.6);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+
+.reward-view-tx-link:hover {
+  color: #f0e6d2;
+  text-decoration: underline;
+}
+
+/* ========== GLOBAL STAKE SLIDER ========== */
+
+.gs-slider-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gs-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gs-slider-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gs-slider-value {
+  font-family: 'Gotu', cursive;
+  font-size: 15px;
+  color: #ffb659;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Range input — custom track + thumb */
+.gs-slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    #c47d1a 0%,
+    #f0b232 var(--gs-fill-pct, 40%),
+    rgba(255, 255, 255, 0.08) var(--gs-fill-pct, 40%),
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  transition: background 0.1s ease;
+}
+
+.gs-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f0b232 0%, #c47d1a 100%);
+  border: 2px solid rgba(245, 190, 60, 0.5);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(200, 150, 30, 0.4);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.gs-slider-input::-webkit-slider-thumb:hover {
+  box-shadow: 0 2px 12px rgba(200, 150, 30, 0.6),
+              0 0 8px rgba(240, 178, 50, 0.4);
+  transform: scale(1.1);
+}
+
+.gs-slider-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f0b232 0%, #c47d1a 100%);
+  border: 2px solid rgba(245, 190, 60, 0.5);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(200, 150, 30, 0.4);
+}
+
+.gs-slider-input::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gs-slider-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gs-slider-breakdown {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gs-slider-breakdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gs-slider-breakdown-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.gs-slider-breakdown-value {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gs-slider-breakdown-value.pool {
+  color: #ffb659;
+}
+
+.gs-slider-minimum-hint {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  font-style: italic;
+}
+
+/* ========== WEIGHT MODAL FORM REFRESH ========== */
+
+.weight-modal-triplet-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.weight-modal-triplet-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.weight-modal-triplet-text .subject {
+  color: #ffb659;
+  font-weight: 600;
+}
+
+.weight-modal-triplet-text .action {
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.weight-modal-triplet-text .object {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.weight-modal-cert-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid;
+  border-radius: 8px;
+}
+
+.weight-modal-cert-dot {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 14px;
+  font-style: normal;
+}
+
+.weight-modal-intention-badge {
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.weight-modal-url-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weight-modal-amount-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.weight-modal-amount-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 8px;
+  color: white;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+  -moz-appearance: textfield;
+}
+
+.weight-modal-amount-input::-webkit-outer-spin-button,
+.weight-modal-amount-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.weight-modal-amount-input:focus {
+  border-color: rgba(255, 182, 89, 0.4);
+  background: rgba(255, 182, 89, 0.08);
+}
+
+.weight-modal-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.weight-modal-pill {
+  padding: 6px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-width: 38px;
+}
+
+.weight-modal-pill:hover:not(.selected):not(:disabled) {
+  background: rgba(255, 182, 89, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.weight-modal-pill.selected {
+  border-color: rgba(255, 182, 89, 0.5);
+  color: #ffb659;
+  background: rgba(255, 182, 89, 0.12);
+}
+
+.weight-modal-pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ========== TRIPLET REMOVE BUTTON ========== */
+
+.weight-modal-triplet-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  padding: 0;
+  z-index: 1;
+}
+
+.weight-modal-triplet-remove:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.weight-modal-triplet-remove:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+/* ========== APPLY TO ALL (batch weight) ========== */
+
+.weight-modal-apply-all {
+  background: rgba(255, 182, 89, 0.04);
+  border: 1px solid rgba(255, 182, 89, 0.15);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.weight-modal-apply-all__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 182, 89, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+/* ========== COST BREAKDOWN SUMMARY ========== */
+
+.weight-modal-cost-summary {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weight-modal-cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.weight-modal-cost-sub {
+  padding-left: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.weight-modal-cost-fee {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.weight-modal-cost-fees-subtotal {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+.weight-modal-cost-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 2px 0;
+}
+
+.weight-modal-cost-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffb659;
+}
+
+.weight-modal-cost-balance {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.weight-modal-insufficient {
+  color: #ff5555;
+}
+
+.weight-modal-cost-note {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+  margin: 2px 0 0 0;
+  font-style: italic;
 }

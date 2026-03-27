@@ -1,4 +1,4 @@
-import { useWalletFromStorage } from '../../hooks/useWalletFromStorage'
+import { useWalletFromStorage } from '../../hooks'
 import Background from './background'
 import { useRouter } from './RouterProvider'
 import '../styles/Global.css'
@@ -13,10 +13,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const account = authenticated ? walletAddress : null
   const { currentPage } = useRouter()
 
+  const isOnboarding = currentPage.startsWith('onboarding')
+
   return (
-    <div className="app-container">
-      <Background />
-      {(account && currentPage !== 'home-connected') || (!account && currentPage === 'home') ? (
+    <div className={`app-container ${isOnboarding ? 'app-container--onboarding' : ''}`}>
+      {!isOnboarding && <Background />}
+      {!isOnboarding && ((account && currentPage !== 'home-connected') || (!account && currentPage === 'home')) ? (
         <div className="app-overlay" />
       ) : null}
 

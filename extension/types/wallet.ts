@@ -1,10 +1,10 @@
 /**
- * Wallet connection types (MetaMask integration)
+ * Wallet connection types (Generic wallet integration)
  * Extends existing wallet functionality with tracking data
  */
 
-// MetaMask connection data
-export interface MetaMaskConnection {
+// Wallet connection data
+export interface WalletConnection {
   account: string;
   chainId: string;
   isConnected: boolean;

@@ -2,24 +2,6 @@
  * Types pour le système AI/Recommandations
  */
 
-export interface BentoItem {
-  name: string
-  url: string
-  category: string
-  size: 'small' | 'tall' | 'mega'
-}
-
-export interface BentoItemWithImage extends BentoItem {
-  ogImage: string
-}
-
-export interface BentoState {
-  validItems: BentoItemWithImage[]
-  isLoading: boolean
-  error: string | null
-  lastProcessedHash: string | null
-}
-
 export interface BentoSuggestion {
   name: string
   url: string
@@ -36,11 +18,6 @@ export interface Recommendation {
     name: string
     url: string
   }[]
-}
-
-export interface OllamaMessage {
-  role: 'system' | 'user' | 'assistant'
-  content: string
 }
 
 export interface WalletData {

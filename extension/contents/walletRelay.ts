@@ -1,0 +1,78 @@
+import type { PlasmoCSConfig } from "plasmo"
+import { createServiceLogger } from "../lib/utils/logger"
+
+const logger = createServiceLogger('WalletRelay')
+
+export const config: PlasmoCSConfig = {
+  matches: ["<all_urls>"],
+  all_frames: false,
+  // Default world is ISOLATED - can communicate with chrome.runtime
+}
+
+// Pending requests waiting for response from MAIN world
+const pendingRequests = new Map<string, (response: any) => void>()
+
+// Listen for messages from extension (background/sidepanel)
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type !== "WALLET_REQUEST") return false
+
+  const { requestId, method, params } = message
+
+  logger.debug("Forwarding to MAIN world", { method })
+
+  // Store the callback for this request
+  pendingRequests.set(requestId, sendResponse)
+
+  // Cleanup stale requests after 60s (aligned with walletProvider.ts timeout)
+  setTimeout(() => {
+    if (pendingRequests.has(requestId)) {
+      const cb = pendingRequests.get(requestId)
+      pendingRequests.delete(requestId)
+      cb?.({ error: { code: -32603, message: `Wallet request timeout: ${method}` } })
+    }
+  }, 60000)
+
+  // Forward to MAIN world (walletBridge.ts)
+  window.postMessage({
+    type: "SOFIA_WALLET_REQUEST",
+    requestId,
+    method,
+    params
+  }, "*")
+
+  // Return true to indicate we'll respond asynchronously
+  return true
+})
+
+// Listen for responses from MAIN world (walletBridge.ts)
+window.addEventListener("message", (event) => {
+  if (event.source !== window) return
+
+  // Handle wallet responses
+  if (event.data?.type === "SOFIA_WALLET_RESPONSE") {
+    const { requestId, result, error } = event.data
+    const callback = pendingRequests.get(requestId)
+
+    if (callback) {
+      logger.debug("Sending response back", { requestId, status: result ? "success" : "error" })
+      callback({ result, error })
+      pendingRequests.delete(requestId)
+    }
+  }
+
+  // Handle wallet events (forward to background)
+  if (event.data?.type === "SOFIA_WALLET_EVENT") {
+    const { event: eventName, data } = event.data
+    logger.debug("Forwarding event", { eventName })
+
+    chrome.runtime.sendMessage({
+      type: "WALLET_EVENT",
+      event: eventName,
+      data
+    }).catch(() => {
+      // Ignore errors (background may not be listening)
+    })
+  }
+})
+
+logger.info("Relay initialized")

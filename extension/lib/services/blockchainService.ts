@@ -1,13 +1,15 @@
-import { getClients } from '../clients/viemClients'
+import { getClients, getPublicClient } from '../clients/viemClients'
 import { MultiVaultAbi } from '../../ABI/MultiVault'
 import { SofiaFeeProxyAbi } from '../../ABI/SofiaFeeProxy'
 import { stringToHex } from 'viem'
-import type { AtomCheckResult, TripleCheckResult } from '../../types/blockchain'
+import type { AtomCheckResult, TripleCheckResult, FeeParams, ProtocolCosts } from '../../types/blockchain'
 import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS, SELECTED_CHAIN } from '../config/chainConfig'
+import { createServiceLogger } from '../utils/logger'
+
+const logger = createServiceLogger('BlockchainService')
 
 /**
  * Centralized service for blockchain operations
- * Eliminates code duplication across multiple hooks
  *
  * All write operations go through the Sofia Fee Proxy which:
  * - Collects fees (0.1 TRUST fixed per deposit + 5% of deposit amount)
@@ -17,6 +19,8 @@ import { MULTIVAULT_CONTRACT_ADDRESS, SOFIA_PROXY_ADDRESS, SELECTED_CHAIN } from
 export class BlockchainService {
   private static readonly MULTIVAULT_ADDRESS = MULTIVAULT_CONTRACT_ADDRESS
   private static readonly PROXY_ADDRESS = SOFIA_PROXY_ADDRESS
+  private static feeCache: FeeParams | null = null
+  private static protocolCostsCache: ProtocolCosts | null = null
 
   /**
    * Calculate Sofia fee for deposits
@@ -24,12 +28,13 @@ export class BlockchainService {
    * @param totalDeposit Total amount being deposited
    */
   static async calculateDepositFee(depositCount: number, totalDeposit: bigint): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     return await publicClient.readContract({
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
       functionName: 'calculateDepositFee',
-      args: [BigInt(depositCount), totalDeposit]
+      args: [BigInt(depositCount), totalDeposit],
+      authorizationList: undefined
     }) as bigint
   }
 
@@ -37,12 +42,13 @@ export class BlockchainService {
    * Get total cost for a single deposit including Sofia fees
    */
   static async getTotalDepositCost(depositAmount: bigint): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     return await publicClient.readContract({
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
       functionName: 'getTotalDepositCost',
-      args: [depositAmount]
+      args: [depositAmount],
+      authorizationList: undefined
     }) as bigint
   }
 
@@ -53,13 +59,79 @@ export class BlockchainService {
    * @param multiVaultCost Total cost required by MultiVault (atomCost/tripleCost * count + totalDeposit)
    */
   static async getTotalCreationCost(depositCount: number, totalDeposit: bigint, multiVaultCost: bigint): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     return await publicClient.readContract({
       address: this.PROXY_ADDRESS as `0x${string}`,
       abi: SofiaFeeProxyAbi,
       functionName: 'getTotalCreationCost',
-      args: [BigInt(depositCount), totalDeposit, multiVaultCost]
+      args: [BigInt(depositCount), totalDeposit, multiVaultCost],
+      authorizationList: undefined
     }) as bigint
+  }
+
+  /**
+   * Read fee parameters from SofiaFeeProxy contract.
+   * Cached in memory — call clearFeeCache() after admin fee changes.
+   */
+  static async getFeeParams(): Promise<FeeParams> {
+    if (this.feeCache) return this.feeCache
+
+    const publicClient = getPublicClient()
+    const addr = this.PROXY_ADDRESS as `0x${string}`
+
+    const [depositFixed, depositPct, feeDenom] = await Promise.all([
+      publicClient.readContract({ address: addr, abi: SofiaFeeProxyAbi, functionName: 'depositFixedFee', authorizationList: undefined }) as Promise<bigint>,
+      publicClient.readContract({ address: addr, abi: SofiaFeeProxyAbi, functionName: 'depositPercentageFee', authorizationList: undefined }) as Promise<bigint>,
+      publicClient.readContract({ address: addr, abi: SofiaFeeProxyAbi, functionName: 'FEE_DENOMINATOR', authorizationList: undefined }) as Promise<bigint>
+    ])
+
+    // creationFixedFee may not exist on older contract deployments
+    let creationFixed = 0n
+    try {
+      creationFixed = await publicClient.readContract({ address: addr, abi: SofiaFeeProxyAbi, functionName: 'creationFixedFee', authorizationList: undefined }) as bigint
+    } catch {
+      logger.debug('creationFixedFee not available on contract, defaulting to 0')
+    }
+
+    this.feeCache = { depositFixed, depositPct, creationFixed, feeDenom }
+
+    logger.debug('Fee params loaded', {
+      depositFixed: Number(depositFixed) / 1e18,
+      depositPct: Number(depositPct),
+      creationFixed: Number(creationFixed) / 1e18,
+      feeDenom: Number(feeDenom)
+    })
+
+    return this.feeCache
+  }
+
+  static clearFeeCache() {
+    this.feeCache = null
+    this.protocolCostsCache = null
+  }
+
+  /**
+   * Read full creation costs from MultiVault getAtomCost/getTripleCost.
+   * These are the mandatory amounts required by the contract on CREATE path.
+   * Includes protocol fee + initial vault deposits (both leave the user's wallet).
+   * Cached in memory alongside fee params.
+   */
+  static async getProtocolCosts(): Promise<ProtocolCosts> {
+    if (this.protocolCostsCache) return this.protocolCostsCache
+
+    const [atomCost, tripleCost] = await Promise.all([
+      this.getAtomCost(),
+      this.getTripleCost()
+    ])
+
+    this.protocolCostsCache = { atomCost, tripleCost }
+
+    logger.debug('Protocol costs loaded', {
+      atomCost: Number(atomCost) / 1e18,
+      tripleCost: Number(tripleCost) / 1e18
+    })
+
+    return this.protocolCostsCache
   }
 
   /**
@@ -67,14 +139,15 @@ export class BlockchainService {
    * This ensures the ID matches exactly what the contract uses
    */
   static async calculateAtomId(ipfsUri: string): Promise<string> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     const encodedData = stringToHex(ipfsUri)
 
     return await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
       functionName: 'calculateAtomId',
-      args: [encodedData]
+      args: [encodedData],
+      authorizationList: undefined
     }) as string
   }
 
@@ -82,14 +155,15 @@ export class BlockchainService {
    * Check if atom exists on-chain
    */
   static async checkAtomExists(ipfsUri: string): Promise<AtomCheckResult> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
     const atomHash = await this.calculateAtomId(ipfsUri)
 
     const exists = await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
       functionName: 'isTermCreated',
-      args: [atomHash as `0x${string}`]
+      args: [atomHash as `0x${string}`],
+      authorizationList: undefined
     }) as boolean
 
     return {
@@ -106,17 +180,17 @@ export class BlockchainService {
     predicateVaultId: string,
     objectVaultId: string
   ): Promise<TripleCheckResult> {
-    console.log('🔍 BlockchainService.checkTripleExists - Starting check', {
+    logger.debug('checkTripleExists - Starting check', {
       subjectVaultId,
       predicateVaultId,
       objectVaultId,
       contractAddress: this.MULTIVAULT_ADDRESS
     })
 
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
 
     try {
-      console.log('🔍 BlockchainService.checkTripleExists - Calculating triple ID')
+      logger.debug('checkTripleExists - Calculating triple ID')
 
       // Calculate the triple ID
       const tripleId = await publicClient.readContract({
@@ -127,25 +201,25 @@ export class BlockchainService {
           subjectVaultId as `0x${string}`,
           predicateVaultId as `0x${string}`,
           objectVaultId as `0x${string}`
-        ]
+        ],
+        authorizationList: undefined
       }) as `0x${string}`
 
-      console.log('🔍 BlockchainService.checkTripleExists - Triple ID calculated', {
-        tripleId
-      })
+      logger.debug('checkTripleExists - Triple ID calculated', { tripleId })
 
       // Check if triple exists using getTriple
       try {
-        console.log('🔍 BlockchainService.checkTripleExists - Calling getTriple')
+        logger.debug('checkTripleExists - Calling getTriple')
 
         const tripleData = await publicClient.readContract({
           address: this.MULTIVAULT_ADDRESS as `0x${string}`,
           abi: MultiVaultAbi,
           functionName: 'getTriple',
-          args: [tripleId]
+          args: [tripleId],
+          authorizationList: undefined
         }) as [string, string, string] // [subjectId, predicateId, objectId]
 
-        console.log('🔍 BlockchainService.checkTripleExists - Triple data retrieved', {
+        logger.debug('checkTripleExists - Triple data retrieved', {
           tripleId,
           tripleData,
           expectedSubject: subjectVaultId,
@@ -163,7 +237,7 @@ export class BlockchainService {
           retrievedObject.toLowerCase() === objectVaultId.toLowerCase()
 
         if (exactMatch) {
-          console.log('✅ BlockchainService.checkTripleExists - Exact triple match found!', {
+          logger.info('checkTripleExists - Exact triple match found', {
             tripleId,
             retrievedData: tripleData
           })
@@ -174,7 +248,7 @@ export class BlockchainService {
             tripleHash: tripleId
           }
         } else {
-          console.log('⚠️ BlockchainService.checkTripleExists - Hash collision detected!', {
+          logger.warn('checkTripleExists - Hash collision detected', {
             tripleId,
             expected: [subjectVaultId, predicateVaultId, objectVaultId],
             retrieved: tripleData,
@@ -187,11 +261,10 @@ export class BlockchainService {
           }
         }
       } catch (getTripleError) {
-        console.log('❌ BlockchainService.checkTripleExists - getTriple failed', {
+        logger.debug('checkTripleExists - getTriple failed (triple does not exist)', {
           tripleId,
-          error: getTripleError,
           errorMessage: getTripleError instanceof Error ? getTripleError.message : 'Unknown error',
-          errorSignature: (getTripleError as any)?.signature || 'no signature'
+          errorSignature: getTripleError instanceof Object && 'signature' in getTripleError ? (getTripleError as { signature: string }).signature : 'no signature'
         })
 
         // getTriple reverts if triple doesn't exist
@@ -201,8 +274,7 @@ export class BlockchainService {
         }
       }
     } catch (contractError) {
-      console.error('❌ BlockchainService.checkTripleExists - Contract error', {
-        error: contractError,
+      logger.error('checkTripleExists - Contract error', {
         errorMessage: contractError instanceof Error ? contractError.message : 'Unknown error'
       })
 
@@ -215,15 +287,65 @@ export class BlockchainService {
   }
 
   /**
-   * Get atom cost from contract (reads from MultiVault)
+   * Get user's shares in a triple vault
+   * Returns > 0n if the user has deposited into this triple
    */
-  static async getAtomCost(): Promise<bigint> {
-    const { publicClient } = await getClients()
+  static async getUserSharesInTriple(
+    userAddress: string,
+    tripleTermId: string
+  ): Promise<bigint> {
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
 
     return await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
-      functionName: 'getAtomCost'
+      functionName: 'getShares',
+      args: [
+        userAddress as `0x${string}`,
+        tripleTermId as `0x${string}`,
+        1n // curveId = 1 for triples
+      ],
+      authorizationList: undefined
+    }) as bigint
+  }
+
+  /**
+   * Get user's shares in an atom vault
+   * Returns > 0n if the user has deposited into this atom
+   */
+  static async getUserSharesInAtom(
+    userAddress: string,
+    atomTermId: string
+  ): Promise<bigint> {
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
+
+    return await publicClient.readContract({
+      address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
+      functionName: 'getShares',
+      args: [
+        userAddress as `0x${string}`,
+        atomTermId as `0x${string}`,
+        1n // curveId = 1 for atom vaults
+      ],
+      authorizationList: undefined
+    }) as bigint
+  }
+
+  /**
+   * Get atom cost from contract (reads from MultiVault)
+   */
+  static async getAtomCost(): Promise<bigint> {
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
+
+    return await publicClient.readContract({
+      address: this.MULTIVAULT_ADDRESS as `0x${string}`,
+      abi: MultiVaultAbi,
+      functionName: 'getAtomCost',
+      authorizationList: undefined
     }) as bigint
   }
 
@@ -231,15 +353,17 @@ export class BlockchainService {
    * Get triple cost from contract (reads from MultiVault)
    */
   static async getTripleCost(): Promise<bigint> {
-    const { publicClient } = await getClients()
+    const { getPublicClient } = await import('../clients/viemClients')
+    const publicClient = getPublicClient()
 
     const cost = await publicClient.readContract({
       address: this.MULTIVAULT_ADDRESS as `0x${string}`,
       abi: MultiVaultAbi,
-      functionName: 'getTripleCost'
+      functionName: 'getTripleCost',
+      authorizationList: undefined
     }) as bigint
 
-    console.log('[BlockchainService] getTripleCost returned:', {
+    logger.debug('getTripleCost returned', {
       cost: cost.toString(),
       costInTRUST: Number(cost) / 1e18,
       contractAddress: this.MULTIVAULT_ADDRESS
@@ -282,37 +406,6 @@ export class BlockchainService {
   } as const
 
   /**
-   * Check if user has approved the proxy for deposits on MultiVault
-   * The proxy needs approval to deposit on behalf of the user (receiver pattern)
-   * @param userAddress The user's wallet address
-   * @returns true if proxy is approved for deposits
-   */
-  static async checkProxyApproval(userAddress?: string): Promise<boolean> {
-    if (!userAddress) {
-      return false
-    }
-
-    const { publicClient } = await getClients()
-
-    try {
-      // Check approval status on MultiVault: approvals(owner, sender) returns ApprovalTypes
-      const approvalType = await publicClient.readContract({
-        address: this.MULTIVAULT_ADDRESS as `0x${string}`,
-        abi: MultiVaultAbi,
-        functionName: 'approvals',
-        args: [userAddress as `0x${string}`, this.PROXY_ADDRESS as `0x${string}`]
-      }) as number
-
-      // ApprovalTypes: 0=NONE, 1=DEPOSIT, 2=REDEMPTION, 3=BOTH
-      // We need at least DEPOSIT (1) or BOTH (3)
-      return approvalType === this.ApprovalTypes.DEPOSIT || approvalType === this.ApprovalTypes.BOTH
-    } catch (error) {
-      console.error('Error checking proxy approval:', error)
-      return false
-    }
-  }
-
-  /**
    * Request user to approve proxy for deposits on MultiVault
    * @returns Transaction hash
    */
@@ -336,7 +429,7 @@ export class BlockchainService {
    * Wait for approval transaction and verify it succeeded
    */
   static async waitForApprovalConfirmation(txHash: `0x${string}`): Promise<boolean> {
-    const { publicClient } = await getClients()
+    const publicClient = getPublicClient()
 
     const receipt = await publicClient.waitForTransactionReceipt({
       hash: txHash

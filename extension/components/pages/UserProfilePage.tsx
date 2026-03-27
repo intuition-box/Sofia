@@ -1,371 +1,256 @@
-import { useState, useEffect } from 'react'
-import { useRouter } from '../layout/RouterProvider'
-import Avatar from '../ui/Avatar'
-import { useUserSignals } from '../../hooks/useUserSignals'
-import { useUserLists } from '../../hooks/useUserLists'
-import { useUserAtomStats } from '../../hooks/useUserAtomStats'
-import { useCheckFollowStatus } from '../../hooks/useCheckFollowStatus'
-import FollowButton from '../ui/FollowButton'
-import TrustAccountButton from '../ui/TrustAccountButton'
-import { getEnsAvatar } from '../../lib/utils/ensUtils'
-import '../styles/UserProfile.css'
+import { useState, useEffect, Suspense, lazy } from "react"
+
+import { useRouter } from "../layout/RouterProvider"
+import SofiaLoader from "../ui/SofiaLoader"
+import {
+  useCheckFollowStatus,
+  useUserQuests,
+  useIdentityResolution,
+  useTrustedByCount,
+  useAccountStats,
+  useUserDiscoveryScore
+} from "../../hooks"
+import ProfileHeader from "../ui/ProfileHeader"
+import FollowButton from "../ui/FollowButton"
+import TrustAccountButton from "../ui/TrustAccountButton"
+import "../styles/UserProfile.css"
+import "../styles/ProfilePage.css"
+
+// Lazy load tabs (same pattern as ProfilePage)
+const UserStatsTab = lazy(() => import("./profile-tabs/UserStatsTab"))
+const UserInterestTab = lazy(() => import("./profile-tabs/UserInterestTab"))
+const AchievementsTab = lazy(() => import("./profile-tabs/AchievementsTab"))
+const CommunityTab = lazy(() => import("./profile-tabs/CommunityTab"))
+const UserBookmarksTab = lazy(() => import("./profile-tabs/UserBookmarksTab"))
+
+type SubTab = "stats" | "achievements" | "bookmarks" | "interest" | "community"
+
+const isValidTab = (tab?: string): tab is SubTab =>
+  !!tab && ["stats", "achievements", "bookmarks", "interest", "community"].includes(tab)
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
-  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(userProfileData?.image)
+  const [activeTab, setActiveTab] = useState<SubTab>(
+    isValidTab(userProfileData?.initialTab) ? userProfileData.initialTab : "stats"
+  )
 
   // Check if we already follow/trust this account
   const followStatus = useCheckFollowStatus(userProfileData?.termId)
 
-  // Get detailed stats using the correct query
-  const atomStats = useUserAtomStats(
-    userProfileData?.termId,
+  // User quests for the profile being viewed (on-chain completed only + signals count)
+  const {
+    completedQuests,
+    totalXP,
+    level,
+    signalsCreated,
+    loading: questsLoading
+  } = useUserQuests(userProfileData?.walletAddress)
+
+  // Trusted-by count (people who trust this account)
+  const {
+    count: trustedByCount,
+    refetch: fetchTrustedByCount
+  } = useTrustedByCount(userProfileData?.walletAddress)
+
+  // Signals created (from on-chain stats)
+  const { signalsCreated: accountSignals } = useAccountStats(
     userProfileData?.walletAddress
   )
 
+  // Discovery score for the viewed user
   const {
-    signals,
-    loading: signalsLoading,
-    error: signalsError,
-    hasMore: hasMoreSignals,
-    loadMore: loadMoreSignals
-  } = useUserSignals(userProfileData?.termId, userProfileData?.walletAddress)
+    stats: discoveryStats,
+    loading: discoveryLoading,
+    error: discoveryError,
+    refetch: refetchDiscovery
+  } = useUserDiscoveryScore(userProfileData?.walletAddress)
 
-  const {
-    lists,
-    loading: listsLoading,
-    error: listsError,
-    hasMore: hasMoreLists,
-    loadMore: loadMoreLists
-  } = useUserLists(userProfileData?.termId)
+  // Identity resolution for the profile being viewed
+  const { displayLabel, displayAvatar } = useIdentityResolution({
+    walletAddress: userProfileData?.walletAddress,
+    label: userProfileData?.label,
+    image: userProfileData?.image,
+    enableCache: true
+  })
 
-  // Fetch ENS avatar if not available from Intuition
+  // Fetch trusted-by count on mount
   useEffect(() => {
-    const fetchAvatar = async () => {
-      if (!userProfileData?.image && userProfileData?.label) {
-        console.log('🔍 Fetching ENS avatar for:', userProfileData.label)
-        const avatar = await getEnsAvatar(userProfileData.label, userProfileData.image)
-        if (avatar) {
-          console.log('✅ ENS avatar found:', avatar)
-          setAvatarUrl(avatar)
-        }
-      }
+    if (userProfileData?.walletAddress) {
+      fetchTrustedByCount()
     }
-
-    fetchAvatar()
-  }, [userProfileData?.label, userProfileData?.image])
+  }, [userProfileData?.walletAddress, fetchTrustedByCount])
 
   if (!userProfileData) {
     return (
-      <div className="user-profile-page">
-        <div className="user-profile-error">
-          No user data available
+      <div className="page profile-page">
+        <div className="profile-section account-tab">
+          <div className="user-profile-error">
+            No user data available
+          </div>
         </div>
       </div>
     )
   }
 
-  // Format market cap from Wei to readable format
-  const formatMarketCap = (value: string): string => {
-    const num = parseFloat(value) / 1e18
-    if (num >= 1e9) return `${(num / 1e9).toFixed(2)}B`
-    if (num >= 1e6) return `${(num / 1e6).toFixed(2)}M`
-    if (num >= 1e3) return `${(num / 1e3).toFixed(2)}K`
-    return num.toFixed(2)
+  // Render follow/trust actions
+  const renderActions = () => {
+    if (!userProfileData.termId || !userProfileData.walletAddress) return null
+
+    // Only show follow/trust buttons if termId is valid (bytes32 - 66 chars)
+    if (userProfileData.termId.length !== 66) {
+      return (
+        <div className="user-profile-status-note">
+          Follow/Trust unavailable (invalid ID format)
+        </div>
+      )
+    }
+
+    if (followStatus.loading) {
+      return (
+        <button className="follow-button salmon-gradient-button" disabled>
+          Loading...
+        </button>
+      )
+    }
+
+    if (followStatus.isTrusting) {
+      return (
+        <button className="follow-button salmon-gradient-button" disabled>
+          Trusted
+        </button>
+      )
+    }
+
+    if (followStatus.isFollowing) {
+      return (
+        <TrustAccountButton
+          accountTermId={userProfileData.termId}
+          accountLabel={userProfileData.label}
+          onSuccess={() => {
+            followStatus.refetch()
+          }}
+        />
+      )
+    }
+
+    return (
+      <FollowButton
+        account={{
+          id: userProfileData.termId,
+          label: userProfileData.label,
+          termId: userProfileData.termId,
+          type: "Account",
+          createdAt: new Date().toISOString(),
+          creatorId: "",
+          atomType: "Account",
+          image: displayAvatar,
+          data: userProfileData.walletAddress
+        }}
+        onFollowSuccess={() => {
+          followStatus.refetch()
+        }}
+      />
+    )
   }
 
-  // Calculate signals created from atomStats position count
-  const signalsCreated = atomStats.positionCount || 0
-  const totalMarketCap = formatMarketCap(atomStats.totalMarketCap)
+  const effectiveSignals = accountSignals ?? signalsCreated
 
   return (
-    <div className="user-profile-page">
-      {/* Back Button */}
-      <button className="user-profile-back-button" onClick={goBack}>
-        ← Back
-      </button>
-
+    <div className="page profile-page">
+    <div className="profile-section account-tab">
+      <div className="page-content">
       {/* Profile Header */}
-      <div className="user-profile-header">
-        <Avatar
-          imgSrc={avatarUrl}
-          name={userProfileData.label}
-          avatarClassName="user-profile-avatar"
-          size="large"
-        />
-        <div className="user-profile-info">
-          <h2 className="user-profile-name">{userProfileData.label}</h2>
-          {userProfileData.walletAddress && (
-            <p className="user-profile-wallet">
-              {userProfileData.walletAddress.slice(0, 6)}...{userProfileData.walletAddress.slice(-4)}
-            </p>
+      <ProfileHeader
+        avatarUrl={displayAvatar}
+        displayName={displayLabel}
+        walletAddress={userProfileData.walletAddress}
+        signalsCreated={effectiveSignals}
+        actions={renderActions()}
+        backButton={
+          <button className="user-profile-back-button" onClick={goBack}>
+            ← Back
+          </button>
+        }
+      />
+
+      {/* Sub-tabs Navigation */}
+      <div className="sub-tabs">
+        <button
+          className={`sub-tab ${activeTab === "stats" ? "active" : ""}`}
+          onClick={() => setActiveTab("stats")}
+        >
+          Stats
+        </button>
+        <button
+          className={`sub-tab ${activeTab === "achievements" ? "active" : ""}`}
+          onClick={() => setActiveTab("achievements")}
+        >
+          Quests
+        </button>
+        <button
+          className={`sub-tab ${activeTab === "bookmarks" ? "active" : ""}`}
+          onClick={() => setActiveTab("bookmarks")}
+        >
+          Bookmarks
+        </button>
+        <button
+          className={`sub-tab ${activeTab === "interest" ? "active" : ""}`}
+          onClick={() => setActiveTab("interest")}
+        >
+          Interest
+        </button>
+        <button
+          className={`sub-tab ${activeTab === "community" ? "active" : ""}`}
+          onClick={() => setActiveTab("community")}
+        >
+          Community
+        </button>
+      </div>
+
+      {/* Tab Content */}
+        <Suspense fallback={<div className="loading-state"><SofiaLoader size={150} /></div>}>
+          {activeTab === "stats" && (
+            <UserStatsTab
+              walletAddress={userProfileData.walletAddress}
+              trustedByCount={trustedByCount}
+              level={level}
+              totalXP={totalXP}
+              signalsCreated={effectiveSignals}
+              discoveryStats={discoveryStats}
+              discoveryLoading={discoveryLoading}
+              discoveryError={discoveryError}
+              onRetry={refetchDiscovery}
+            />
           )}
-        </div>
-        {userProfileData.termId && userProfileData.walletAddress && (
-          <>
-            {followStatus.loading ? (
-              <button className="follow-button salmon-gradient-button" disabled>
-                Loading...
-              </button>
-            ) : followStatus.isTrusting ? (
-              <button className="follow-button salmon-gradient-button" disabled>
-                Trusted ✓
-              </button>
-            ) : followStatus.isFollowing ? (
-              <TrustAccountButton
-                accountVaultId={userProfileData.termId}
-                accountLabel={userProfileData.label}
-                onSuccess={() => {
-                  console.log('✅ Trust created, refetching status')
-                  followStatus.refetch()
-                }}
-              />
-            ) : (
-              <FollowButton
-                account={{
-                  id: userProfileData.termId,
-                  label: userProfileData.label,
-                  termId: userProfileData.termId,
-                  type: 'Account',
-                  createdAt: new Date().toISOString(),
-                  creatorId: '',
-                  atomType: 'Account',
-                  image: avatarUrl,
-                  data: userProfileData.walletAddress
-                }}
-                onFollowSuccess={() => {
-                  console.log('✅ Follow created, refetching status')
-                  followStatus.refetch()
-                }}
-              />
-            )}
-          </>
-        )}
+
+          {activeTab === "achievements" && (
+            <AchievementsTab
+              quests={completedQuests}
+              loading={questsLoading}
+              claimingQuestId={null}
+              isSocialVerified={false}
+              canVerify={false}
+              isVerifying={false}
+              onClaimXP={async () => ({ success: false })}
+              onVerifySocials={async () => ({ success: false })}
+              onMarkCompleted={() => {}}
+            />
+          )}
+
+          {activeTab === "bookmarks" && (
+            <UserBookmarksTab walletAddress={userProfileData.walletAddress} />
+          )}
+
+          {activeTab === "interest" && (
+            <UserInterestTab walletAddress={userProfileData.walletAddress} />
+          )}
+
+          {activeTab === "community" && (
+            <CommunityTab walletAddress={userProfileData.walletAddress} />
+          )}
+        </Suspense>
       </div>
-
-      {/* Stats Section */}
-      <div className="user-profile-stats-section">
-        {atomStats.loading ? (
-          <div className="user-profile-stats-loading">Loading stats...</div>
-        ) : atomStats.error ? (
-          <div className="user-profile-stats-error">{atomStats.error}</div>
-        ) : (
-          <div className="user-profile-stats-grid">
-            <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{signalsCreated}</div>
-              <div className="user-profile-stat-label">Signals Created</div>
-            </div>
-            <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{totalMarketCap}</div>
-              <div className="user-profile-stat-label">Total Market Cap</div>
-            </div>
-            <div className="user-profile-stat-item">
-              <div className="user-profile-stat-value">{atomStats.followersCount}</div>
-              <div className="user-profile-stat-label">Followers</div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Separator */}
-      <div className="user-profile-separator"></div>
-
-      {/* Signals Section */}
-      <div className="user-profile-section">
-        <h3 className="user-profile-section-title">Signals Created</h3>
-
-        {signalsLoading && signals.length === 0 && (
-          <div className="user-profile-loading">Loading signals...</div>
-        )}
-
-        {signalsError && (
-          <div className="user-profile-error">{signalsError}</div>
-        )}
-
-        {!signalsLoading && signals.length === 0 && !signalsError && (
-          <div className="user-profile-empty">No signals created yet</div>
-        )}
-
-        {signals.length > 0 && (
-          <div className="user-profile-signals-grid">
-            {signals.map((signal) => (
-              <a
-                key={signal.termId}
-                href={`https://portal.intuition.systems/explore/triple/${signal.triple.term_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="user-profile-signal-card"
-              >
-                {/* Triple representation */}
-                <div className="user-profile-signal-triple">
-                  <div className="user-profile-signal-atom">
-                    {signal.triple.subject.image && (
-                      <img
-                        src={signal.triple.subject.image}
-                        alt={signal.triple.subject.label}
-                        className="user-profile-signal-atom-image"
-                      />
-                    )}
-                    <span className="user-profile-signal-atom-label">
-                      {signal.triple.subject.label}
-                    </span>
-                  </div>
-
-                  <span className="user-profile-signal-predicate">
-                    {signal.triple.predicate.label}
-                  </span>
-
-                  <div className="user-profile-signal-atom">
-                    {signal.triple.object.image && (
-                      <img
-                        src={signal.triple.object.image}
-                        alt={signal.triple.object.label}
-                        className="user-profile-signal-atom-image"
-                      />
-                    )}
-                    <span className="user-profile-signal-atom-label">
-                      {signal.triple.object.label}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="user-profile-signal-stats">
-                  <div className="user-profile-signal-stat">
-                    <span className="user-profile-signal-stat-label">Market Cap</span>
-                    <span className="user-profile-signal-stat-value">
-                      {formatMarketCap(signal.totalMarketCap)}
-                    </span>
-                  </div>
-                  <div className="user-profile-signal-stat">
-                    <span className="user-profile-signal-stat-label">Positions</span>
-                    <span className="user-profile-signal-stat-value">
-                      {signal.positionCount}
-                    </span>
-                  </div>
-                  <div className="user-profile-signal-stat">
-                    <span className="user-profile-signal-stat-label">Created</span>
-                    <span className="user-profile-signal-stat-value">
-                      {new Date(signal.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-
-        {hasMoreSignals && (
-          <button
-            className="user-profile-load-more"
-            onClick={loadMoreSignals}
-            disabled={signalsLoading}
-          >
-            {signalsLoading ? 'Loading...' : 'Load More Signals'}
-          </button>
-        )}
-      </div>
-
-      {/* Separator */}
-      <div className="user-profile-separator"></div>
-
-      {/* Lists Section */}
-      <div className="user-profile-section">
-        <h3 className="user-profile-section-title">Lists Created</h3>
-
-        {listsLoading && lists.length === 0 && (
-          <div className="user-profile-loading">Loading lists...</div>
-        )}
-
-        {listsError && (
-          <div className="user-profile-error">{listsError}</div>
-        )}
-
-        {!listsLoading && lists.length === 0 && !listsError && (
-          <div className="user-profile-empty">No lists created yet</div>
-        )}
-
-        {lists.length > 0 && (
-          <div className="user-profile-lists-grid">
-            {lists.map((list) => (
-              <a
-                key={list.objectTermId}
-                href={`https://portal.intuition.systems/explore/atom/${list.objectTermId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="user-profile-list-card"
-              >
-                {/* List Header */}
-                <div className="user-profile-list-header">
-                  {list.objectImage && (
-                    <img
-                      src={list.objectImage}
-                      alt={list.objectLabel}
-                      className="user-profile-list-image"
-                    />
-                  )}
-                  <div className="user-profile-list-info">
-                    <h4 className="user-profile-list-label">{list.objectLabel}</h4>
-                    <p className="user-profile-list-predicate">{list.predicateLabel}</p>
-                  </div>
-                </div>
-
-                {/* Preview of triplets */}
-                {list.triplets.length > 0 && (
-                  <div className="user-profile-list-preview">
-                    {list.triplets.map((triplet) => (
-                      <div key={triplet.subjectTermId} className="user-profile-list-preview-item">
-                        {triplet.subjectImage && (
-                          <img
-                            src={triplet.subjectImage}
-                            alt={triplet.subjectLabel}
-                            className="user-profile-list-preview-image"
-                          />
-                        )}
-                        <span className="user-profile-list-preview-label">
-                          {triplet.subjectLabel}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Stats */}
-                <div className="user-profile-list-stats">
-                  <div className="user-profile-list-stat">
-                    <span className="user-profile-list-stat-label">Items</span>
-                    <span className="user-profile-list-stat-value">
-                      {list.tripleCount}
-                    </span>
-                  </div>
-                  <div className="user-profile-list-stat">
-                    <span className="user-profile-list-stat-label">Market Cap</span>
-                    <span className="user-profile-list-stat-value">
-                      {formatMarketCap(list.totalMarketCap)}
-                    </span>
-                  </div>
-                  <div className="user-profile-list-stat">
-                    <span className="user-profile-list-stat-label">Positions</span>
-                    <span className="user-profile-list-stat-value">
-                      {list.totalPositionCount}
-                    </span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-
-        {hasMoreLists && (
-          <button
-            className="user-profile-load-more"
-            onClick={loadMoreLists}
-            disabled={listsLoading}
-          >
-            {listsLoading ? 'Loading...' : 'Load More Lists'}
-          </button>
-        )}
-      </div>
+    </div>
     </div>
   )
 }
