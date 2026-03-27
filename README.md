@@ -59,7 +59,7 @@ Sofia is a Chrome extension that tracks your browsing, lets you certify URLs wit
     Spend Gold to        Complete quests     AI analyzes your
     level up domains     to earn XP and      certifications to
     and generate AI      unlock badges       build your interest
-    predicates                               profile
+    predicate                               profile
 ```
 
 ---
