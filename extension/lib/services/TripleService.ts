@@ -164,82 +164,70 @@ class TripleServiceClass {
   }
 
   /**
-   * Append global stake entry to batch arrays if GS is enabled.
-   * Mutates the arrays in place. Returns true if GS was appended.
+   * Append GS + PP entries to batch arrays in a SINGLE pass.
+   * Computes the combined signal ratio once, avoiding double-scaling.
+   * Mutates the arrays in place.
    */
-  private appendGlobalStake(
-    termIds: string[],
-    curveIds: bigint[],
-    assets: bigint[],
-    totalDepositAmount: bigint
-  ): boolean {
-    if (!globalStakeService.isEnabled()) return false
-
-    const split = globalStakeService.calculateSplit(totalDepositAmount)
-    if (!split) return false
-
-    const config = globalStakeService.getConfig()
-
-    // Scale down existing assets proportionally
-    const ratio = split.mainAmount * 100000n / totalDepositAmount
-    for (let i = 0; i < assets.length; i++) {
-      assets[i] = (assets[i] * ratio) / 100000n
-    }
-
-    // Append global stake entry
-    termIds.push(config.termId)
-    curveIds.push(config.curveId)
-    assets.push(split.globalAmount)
-
-    logger.debug('Global stake appended', {
-      mainAmount: split.mainAmount.toString(),
-      globalAmount: split.globalAmount.toString(),
-      percentage: config.percentage
-    })
-
-    return true
-  }
-
-  /**
-   * Append platform pool entries to batch arrays if PP is enabled.
-   * Supports multiple platforms (one deposit per unique platform).
-   * Mutates the arrays in place. Returns true if any PP was appended.
-   */
-  private appendPlatformDeposits(
+  private appendPoolDeposits(
     termIds: string[],
     curveIds: bigint[],
     assets: bigint[],
     totalDepositAmount: bigint,
     platformTermIds: string[]
-  ): boolean {
-    if (!platformPoolService.isEnabled() || platformTermIds.length === 0) return false
+  ): void {
+    if (totalDepositAmount === 0n) return
 
-    const split = platformPoolService.calculateSplit(totalDepositAmount)
-    if (!split) return false
+    const gsEnabled = globalStakeService.isEnabled()
+    const gsSplit = gsEnabled ? globalStakeService.calculateSplit(totalDepositAmount) : null
+    const gsConfig = gsEnabled ? globalStakeService.getConfig() : null
 
-    // Split platform amount equally across unique platforms
-    const perPlatformAmount = split.platformAmount / BigInt(platformTermIds.length)
-    if (perPlatformAmount === 0n) return false
+    const ppEnabled = platformPoolService.isEnabled() && platformTermIds.length > 0
+    const ppSplit = ppEnabled ? platformPoolService.calculateSplit(totalDepositAmount) : null
 
-    // Scale down existing assets proportionally
-    const ratio = split.mainAmount * 100000n / totalDepositAmount
-    for (let i = 0; i < assets.length; i++) {
-      assets[i] = (assets[i] * ratio) / 100000n
+    // Calculate combined signal ratio in one pass
+    // signal = total - gsAmount - ppAmount
+    const gsAmount = gsSplit?.globalAmount ?? 0n
+    const ppAmount = ppSplit?.platformAmount ?? 0n
+    const signalAmount = totalDepositAmount - gsAmount - ppAmount
+
+    if (signalAmount <= 0n) {
+      logger.warn("Pool deposits would consume entire deposit, skipping", {
+        total: totalDepositAmount.toString(),
+        gs: gsAmount.toString(),
+        pp: ppAmount.toString()
+      })
+      return
     }
 
-    // Append one entry per unique platform
-    for (const termId of platformTermIds) {
-      termIds.push(termId)
-      curveIds.push(1n) // linear curve
-      assets.push(perPlatformAmount)
+    // Scale down ALL existing assets in one pass
+    const originalCount = assets.length
+    for (let i = 0; i < originalCount; i++) {
+      assets[i] = (assets[i] * signalAmount) / totalDepositAmount
     }
 
-    logger.debug('Platform pools appended', {
-      count: platformTermIds.length,
-      perPlatformAmount: perPlatformAmount.toString()
-    })
+    // Append GS entry
+    if (gsSplit && gsConfig) {
+      termIds.push(gsConfig.termId)
+      curveIds.push(gsConfig.curveId)
+      assets.push(gsAmount)
+      logger.debug("GS appended", { amount: gsAmount.toString() })
+    }
 
-    return true
+    // Append PP entries (split equally per platform)
+    if (ppSplit && platformTermIds.length > 0) {
+      const perPlatform = ppAmount / BigInt(platformTermIds.length)
+      if (perPlatform > 0n) {
+        for (const termId of platformTermIds) {
+          termIds.push(termId)
+          curveIds.push(1n)
+          assets.push(perPlatform)
+        }
+        logger.debug("PP appended", {
+          count: platformTermIds.length,
+          perPlatform: perPlatform.toString()
+        })
+      }
+    }
   }
 
   /**
@@ -304,13 +292,13 @@ class TripleServiceClass {
         const curveIds = [depositCurveId]
         const assets = [depositAmount]
 
-        // Append global stake if enabled
-        const gsAppended = this.appendGlobalStake(termIds, curveIds, assets, depositAmount)
+        // Append GS + PP if enabled (single pass, no double-scaling)
+        this.appendPoolDeposits(termIds, curveIds, assets, depositAmount, [])
 
         let hash: Hash
 
-        if (gsAppended) {
-          // depositBatch: main + GS in 1 TX
+        if (termIds.length > 1) {
+          // depositBatch: main + pools in 1 TX
           hash = await this.executeDepositBatch(address, termIds, curveIds, assets)
         } else {
           // Single deposit (GS disabled or amount too small)
@@ -688,13 +676,10 @@ class TripleServiceClass {
               fallbackAssets.push(depositAmount)
             }
 
-            // Append global stake + platform pool
+            // Append GS + PP in single pass
             const totalFallbackDeposit = fallbackAssets.reduce((sum, a) => sum + a, 0n)
-            this.appendGlobalStake(fallbackTermIds, fallbackCurveIds, fallbackAssets, totalFallbackDeposit)
             const fallbackPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
-            if (fallbackPlatformTermIds.length > 0) {
-              this.appendPlatformDeposits(fallbackTermIds, fallbackCurveIds, fallbackAssets, totalFallbackDeposit, fallbackPlatformTermIds)
-            }
+            this.appendPoolDeposits(fallbackTermIds, fallbackCurveIds, fallbackAssets, totalFallbackDeposit, fallbackPlatformTermIds)
 
             // Single depositBatch for all fallback deposits
             const fallbackHash = await this.executeDepositBatch(
@@ -743,13 +728,10 @@ class TripleServiceClass {
           t.customWeight !== undefined ? t.customWeight : MIN_TRIPLE_DEPOSIT
         )
 
-        // Append global stake + platform pool
+        // Append GS + PP in single pass
         const totalDeposit = assets.reduce((sum, a) => sum + a, 0n)
-        this.appendGlobalStake(termIds, curveIds, assets, totalDeposit)
         const depositPlatformTermIds = this.resolveUniquePlatformTermIds(urls)
-        if (depositPlatformTermIds.length > 0) {
-          this.appendPlatformDeposits(termIds, curveIds, assets, totalDeposit, depositPlatformTermIds)
-        }
+        this.appendPoolDeposits(termIds, curveIds, assets, totalDeposit, depositPlatformTermIds)
 
         // Single depositBatch for all existing triple deposits + GS + PP
         const depositHash = await this.executeDepositBatch(
