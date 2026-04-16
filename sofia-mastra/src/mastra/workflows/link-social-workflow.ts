@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { createPublicClient, createWalletClient, http, stringToHex, encodeFunctionData } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
+import { storeToken } from '../db/tokens';
 import { intuitionMainnet, RPC_URL } from '../config/chain';
 import {
   MULTIVAULT_ADDRESS,
@@ -265,6 +266,20 @@ const executeLinkSocial = createStep({
     }
 
     console.log(`[LinkSocialWorkflow] Verified ${platform} user: ${verification.userId} (${verification.username})`);
+
+    // Store OAuth token (encrypted) for later signal fetching
+    try {
+      await storeToken(
+        walletAddress,
+        platform,
+        oauthToken,
+        undefined,
+        verification.userId,
+        verification.username,
+      );
+    } catch (err) {
+      console.warn('[LinkSocialWorkflow] Token storage failed (non-blocking):', err);
+    }
 
     // Check for BOT_PRIVATE_KEY
     const botPrivateKey = process.env.BOT_PRIVATE_KEY;

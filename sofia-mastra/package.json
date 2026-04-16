@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "mastra dev",
-    "build": "mastra build",
+    "dev": "NODE_OPTIONS='--experimental-global-webcrypto' mastra dev",
+    "build": "NODE_OPTIONS='--experimental-global-webcrypto' mastra build",
     "start": "mastra start"
   },
   "keywords": [],

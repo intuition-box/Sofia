@@ -6,6 +6,9 @@ import { sofiaWorkflow } from './workflows/sofia-workflow';
 import { chatbotWorkflow } from './workflows/chatbot-workflow';
 import { socialVerifierWorkflow } from './workflows/social-verifier-workflow';
 import { linkSocialWorkflow } from './workflows/link-social-workflow';
+import { signalFetcherWorkflow } from './workflows/signal-fetcher-workflow';
+import { initTokenTable } from './db/tokens';
+import './signals/registry'; // Register all signal fetchers
 import { themeExtractorAgent } from './agents/theme-extractor-agent';
 import { pulseAgent } from './agents/pulse-agent';
 import { recommendationAgent } from './agents/recommendation-agent';
@@ -13,8 +16,11 @@ import { chatbotAgent } from './agents/chatbot-agent';
 import { predicateAgent } from './agents/predicate-agent';
 import { skillsAnalysisAgent } from './agents/skills-analysis-agent';
 
+// Init token table on startup
+initTokenTable().catch(err => console.error('[TokenDB] Init failed:', err));
+
 export const mastra = new Mastra({
-  workflows: { sofiaWorkflow, chatbotWorkflow, socialVerifierWorkflow, linkSocialWorkflow },
+  workflows: { sofiaWorkflow, chatbotWorkflow, socialVerifierWorkflow, linkSocialWorkflow, signalFetcherWorkflow },
   agents: { themeExtractorAgent, pulseAgent, recommendationAgent, chatbotAgent, predicateAgent, skillsAnalysisAgent },
   scorers: {
   },
@@ -32,6 +38,6 @@ export const mastra = new Mastra({
     default: { enabled: true },
   },
   bundler: {
-    externals: ['pino', 'pino-pretty', 'bufferutil', 'utf-8-validate'],
+    externals: ['pino', 'pino-pretty', 'bufferutil', 'utf-8-validate', 'crypto'],
   },
 });
