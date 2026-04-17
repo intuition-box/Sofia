@@ -49,7 +49,12 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
     clientSecret: process.env.TWITCH_CLIENT_SECRET || "",
     authUrl: "https://id.twitch.tv/oauth2/authorize",
     tokenUrl: "https://id.twitch.tv/oauth2/token",
-    scopes: ["user:read:follows"],
+    scopes: [
+      "user:read:email",
+      "user:read:follows",
+      "moderator:read:followers",
+      "channel:read:subscriptions",
+    ],
   },
   github: {
     clientId: process.env.GITHUB_CLIENT_ID || "",

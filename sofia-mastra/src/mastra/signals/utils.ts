@@ -73,3 +73,62 @@ export class TokenExpiredError extends Error {
     this.name = "TokenExpiredError"
   }
 }
+
+/**
+ * Parse a value to a finite number, fallback to 0 if invalid.
+ */
+export function safeNumber(value: unknown): number {
+  const n = typeof value === "number" ? value : Number(value)
+  return Number.isFinite(n) ? n : 0
+}
+
+/**
+ * Wrap a secondary API call so a single failure doesn't abort the whole fetcher.
+ * Primary fetches (getUser, getRepos, etc.) should NOT use this — they can throw.
+ */
+export async function safeStep<T>(
+  fn: () => Promise<T>,
+  fallback: T,
+  label: string,
+  warnings: string[]
+): Promise<T> {
+  try {
+    return await fn()
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    warnings.push(`${label}:${msg}`)
+    return fallback
+  }
+}
+
+/**
+ * Validate a raw metrics object. Filters out NaN/Infinity, clamps negatives to 0.
+ * Returns sanitized metrics + warnings for invalid entries.
+ */
+export function validateMetrics(raw: unknown): {
+  metrics: Record<string, number>
+  warnings: string[]
+} {
+  const metrics: Record<string, number> = {}
+  const warnings: string[] = []
+
+  if (!raw || typeof raw !== "object") {
+    return { metrics, warnings: ["invalid_metrics_object"] }
+  }
+
+  for (const [k, v] of Object.entries(raw)) {
+    const n = typeof v === "number" ? v : Number(v)
+    if (!Number.isFinite(n)) {
+      warnings.push(`invalid_metric:${k}`)
+      continue
+    }
+    if (n < 0) {
+      warnings.push(`negative_metric:${k}`)
+      metrics[k] = 0
+      continue
+    }
+    metrics[k] = n
+  }
+
+  return { metrics, warnings }
+}

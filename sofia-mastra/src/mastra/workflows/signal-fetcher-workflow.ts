@@ -1,7 +1,7 @@
 import { createStep, createWorkflow } from "@mastra/core/workflows"
 import { z } from "zod"
 import { getToken } from "../db/tokens"
-import { SIGNAL_FETCHERS } from "../signals/registry"
+import { SIGNAL_FETCHERS, runFetcher } from "../signals/registry"
 import { TokenExpiredError } from "../signals/utils"
 
 const inputSchema = z.object({
@@ -14,6 +14,7 @@ const outputSchema = z.object({
   platformId: z.string().optional(),
   fetchedAt: z.number().optional(),
   metrics: z.record(z.string(), z.number()).optional(),
+  warnings: z.array(z.string()).optional(),
   error: z.string().optional(),
 })
 
@@ -33,28 +34,25 @@ const executeSignalFetch = createStep({
       `[SignalFetcher] Fetching ${platform} signals for ${walletAddress.slice(0, 8)}...`
     )
 
-    // 1. Get stored token
     const tokenRecord = await getToken(walletAddress, platform)
     if (!tokenRecord) {
       return { success: false, platformId: platform, error: "no_token" }
     }
 
-    // 2. Get fetcher
-    const fetcher = SIGNAL_FETCHERS[platform]
-    if (!fetcher) {
+    if (!SIGNAL_FETCHERS[platform]) {
       return { success: false, platformId: platform, error: "no_fetcher" }
     }
 
-    // 3. Fetch metrics
     try {
-      const metrics = await fetcher(
+      const { metrics, warnings } = await runFetcher(
+        platform,
         tokenRecord.access_token,
         tokenRecord.user_id
       )
 
       console.log(
-        `[SignalFetcher] ${platform} metrics fetched:`,
-        Object.keys(metrics).join(", ")
+        `[SignalFetcher] ${platform} metrics: ${Object.keys(metrics).join(", ")}` +
+          (warnings.length ? ` | warnings: ${warnings.length}` : "")
       )
 
       return {
@@ -62,6 +60,7 @@ const executeSignalFetch = createStep({
         platformId: platform,
         fetchedAt: Date.now(),
         metrics,
+        warnings,
       }
     } catch (error) {
       if (error instanceof TokenExpiredError) {

@@ -1,47 +1,84 @@
 import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch } from "./utils"
+import { safeFetch, safeNumber } from "./utils"
 
 const BASE = "https://api.spotify.com/v1"
 
 export const fetchSpotifySignals: SignalFetcher = async (
-  token
+  token,
+  _userId,
+  ctx
 ): Promise<PlatformMetrics> => {
   const headers = { Authorization: `Bearer ${token}` }
+  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
+    try { return await fn() } catch { return fallback }
+  })
 
-  // Top artists → extract unique genres
-  const artistsRes = await safeFetch(
-    `${BASE}/me/top/artists?time_range=medium_term&limit=50`,
-    headers
-  )
-  const artistsData = await artistsRes.json()
-  const artists = artistsData.items ?? []
-
-  const genres = new Set<string>()
-  for (const artist of artists) {
-    for (const genre of artist.genres ?? []) {
-      genres.add(genre)
-    }
-  }
-
-  // User playlists (only those owned by the user)
-  const playlistsRes = await safeFetch(
-    `${BASE}/me/playlists?limit=50`,
-    headers
-  )
-  const playlistsData = await playlistsRes.json()
-
-  // Get user ID to filter owned playlists
+  // Primary — user profile (followers + id)
   const meRes = await safeFetch(`${BASE}/me`, headers)
   const meData = await meRes.json()
-  const userId = meData.id
+  const userId: string = meData.id
+  const followersTotal = safeNumber(meData.followers?.total)
 
-  const ownedPlaylists = (playlistsData.items ?? []).filter(
-    (p: any) => p.owner?.id === userId
+  // Top artists → extract unique genres
+  const { genres, topArtistsCount } = await safe(
+    async () => {
+      const res = await safeFetch(
+        `${BASE}/me/top/artists?time_range=medium_term&limit=50`,
+        headers
+      )
+      const data = await res.json()
+      const artists = data.items ?? []
+      const set = new Set<string>()
+      for (const a of artists) for (const g of a.genres ?? []) set.add(g)
+      return { genres: set.size, topArtistsCount: artists.length }
+    },
+    { genres: 0, topArtistsCount: 0 },
+    "spotify_top_artists"
+  )
+
+  // Top tracks → count + avg popularity
+  const { topTracksCount, avgTrackPopularity } = await safe(
+    async () => {
+      const res = await safeFetch(
+        `${BASE}/me/top/tracks?time_range=medium_term&limit=50`,
+        headers
+      )
+      const data = await res.json()
+      const tracks = data.items ?? []
+      if (tracks.length === 0) {
+        return { topTracksCount: 0, avgTrackPopularity: 0 }
+      }
+      const totalPop = tracks.reduce(
+        (sum: number, t: any) => sum + safeNumber(t.popularity),
+        0
+      )
+      return {
+        topTracksCount: tracks.length,
+        avgTrackPopularity: Math.round((totalPop / tracks.length) * 10) / 10,
+      }
+    },
+    { topTracksCount: 0, avgTrackPopularity: 0 },
+    "spotify_top_tracks"
+  )
+
+  // Owned playlists
+  const ownedPlaylists = await safe(
+    async () => {
+      const res = await safeFetch(`${BASE}/me/playlists?limit=50`, headers)
+      const data = await res.json()
+      const items = data.items ?? []
+      return items.filter((p: any) => p.owner?.id === userId).length
+    },
+    0,
+    "spotify_playlists"
   )
 
   return {
-    diversite_genres: genres.size,
-    playlists_creees: ownedPlaylists.length,
-    top_artists_count: artists.length,
+    diversite_genres: genres,
+    playlists_creees: ownedPlaylists,
+    top_artists_count: topArtistsCount,
+    followers: followersTotal,
+    top_tracks_count: topTracksCount,
+    avg_track_popularity: avgTrackPopularity,
   }
 }

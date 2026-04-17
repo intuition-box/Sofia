@@ -1,11 +1,12 @@
-import type { PlatformMetrics, SignalFetcher } from "./types"
-import { safeFetch, monthsSince } from "./utils"
+import type { FetcherContext, PlatformMetrics, SignalFetcher } from "./types"
+import { safeFetch, monthsSince, safeNumber } from "./utils"
 
 const BASE = "https://api.twitch.tv/helix"
 
 export const fetchTwitchSignals: SignalFetcher = async (
   token,
-  _userId
+  _userId,
+  ctx
 ): Promise<PlatformMetrics> => {
   const clientId = process.env.TWITCH_CLIENT_ID
   if (!clientId) {
@@ -17,7 +18,7 @@ export const fetchTwitchSignals: SignalFetcher = async (
     "Client-Id": clientId,
   }
 
-  // User info
+  // Primary fetch — can throw TokenExpiredError
   const userRes = await safeFetch(`${BASE}/users`, headers)
   const userData = await userRes.json()
   const user = userData.data?.[0]
@@ -26,6 +27,8 @@ export const fetchTwitchSignals: SignalFetcher = async (
     return {
       heures_stream_mois: 0,
       followers: 0,
+      follows_count: 0,
+      subs_count: 0,
       anciennete_mois: 0,
       is_affiliate: 0,
       is_partner: 0,
@@ -33,37 +36,83 @@ export const fetchTwitchSignals: SignalFetcher = async (
   }
 
   const broadcasterId = user.id
+  const safe = ctx?.safeStep ?? (async (fn, fallback) => {
+    try { return await fn() } catch { return fallback }
+  })
 
-  // Follower count
-  const followersRes = await safeFetch(
-    `${BASE}/channels/followers?broadcaster_id=${broadcasterId}&first=1`,
-    headers
+  // Channel followers (requires moderator:read:followers scope)
+  // /helix/channels/followers?broadcaster_id=X&moderator_id=X
+  const followers = await safe(
+    async () => {
+      const res = await safeFetch(
+        `${BASE}/channels/followers?broadcaster_id=${broadcasterId}&moderator_id=${broadcasterId}&first=1`,
+        headers
+      )
+      const data = await res.json()
+      return safeNumber(data.total)
+    },
+    0,
+    "twitch_followers"
   )
-  const followersData = await followersRes.json()
-  const followerCount = followersData.total ?? 0
 
-  // Past broadcasts → estimate stream hours
-  const videosRes = await safeFetch(
-    `${BASE}/videos?user_id=${broadcasterId}&type=archive&first=100`,
-    headers
+  // How many channels the user follows (doesn't require extra scope vs user:read:follows)
+  const followsCount = await safe(
+    async () => {
+      const res = await safeFetch(
+        `${BASE}/channels/followed?user_id=${broadcasterId}&first=1`,
+        headers
+      )
+      const data = await res.json()
+      return safeNumber(data.total)
+    },
+    0,
+    "twitch_follows"
   )
-  const videosData = await videosRes.json()
-  const videos = videosData.data ?? []
 
-  // Filter videos from last 30 days and sum durations
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  // Sub count (channel:read:subscriptions) — best-effort, fails silently for non-affiliates
+  const subsCount = await safe(
+    async () => {
+      const res = await safeFetch(
+        `${BASE}/subscriptions?broadcaster_id=${broadcasterId}&first=1`,
+        headers
+      )
+      const data = await res.json()
+      return safeNumber(data.total)
+    },
+    0,
+    "twitch_subs"
+  )
 
-  let totalSeconds = 0
-  for (const video of videos) {
-    const createdAt = new Date(video.created_at)
-    if (createdAt < thirtyDaysAgo) continue
-    totalSeconds += parseTwitchDuration(video.duration ?? "0h0m0s")
-  }
+  // Past broadcasts → estimate stream hours in the last 30 days
+  const streamHours = await safe(
+    async () => {
+      const res = await safeFetch(
+        `${BASE}/videos?user_id=${broadcasterId}&type=archive&first=100`,
+        headers
+      )
+      const data = await res.json()
+      const videos = data.data ?? []
+
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+      let totalSeconds = 0
+      for (const video of videos) {
+        const createdAt = new Date(video.created_at)
+        if (createdAt < thirtyDaysAgo) continue
+        totalSeconds += parseTwitchDuration(video.duration ?? "0h0m0s")
+      }
+      return Math.round(totalSeconds / 3600)
+    },
+    0,
+    "twitch_stream_hours"
+  )
 
   return {
-    heures_stream_mois: Math.round(totalSeconds / 3600),
-    followers: followerCount,
+    heures_stream_mois: streamHours,
+    followers,
+    follows_count: followsCount,
+    subs_count: subsCount,
     anciennete_mois: user.created_at ? monthsSince(user.created_at) : 0,
     is_affiliate: user.broadcaster_type === "affiliate" ? 1 : 0,
     is_partner: user.broadcaster_type === "partner" ? 1 : 0,
