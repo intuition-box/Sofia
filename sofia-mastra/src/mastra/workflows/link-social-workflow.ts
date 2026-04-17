@@ -4,6 +4,7 @@ import { createPublicClient, createWalletClient, http, stringToHex, encodeFuncti
 import { privateKeyToAccount } from 'viem/accounts';
 
 import { storeToken } from '../db/tokens';
+import { verifyAndGetUserId } from '../oauth/verify';
 import { intuitionMainnet, RPC_URL } from '../config/chain';
 import {
   MULTIVAULT_ADDRESS,
@@ -108,117 +109,6 @@ const outputSchema = z.object({
   socialAtomCreated: z.boolean().optional(),
   error: z.string().optional(),
 });
-
-// OAuth verification result
-interface OAuthVerificationResult {
-  valid: boolean;
-  userId?: string;
-  username?: string;
-  error?: string;
-}
-
-// OAuth endpoints configuration
-const OAUTH_ENDPOINTS = {
-  youtube: {
-    url: 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true',
-    authHeader: (token: string) => `Bearer ${token}`,
-  },
-  spotify: {
-    url: 'https://api.spotify.com/v1/me',
-    authHeader: (token: string) => `Bearer ${token}`,
-  },
-  discord: {
-    url: 'https://discord.com/api/users/@me',
-    authHeader: (token: string) => `Bearer ${token}`,
-  },
-  twitch: {
-    url: 'https://api.twitch.tv/helix/users',
-    authHeader: (token: string) => `Bearer ${token}`,
-    requiresClientId: true,
-  },
-  twitter: {
-    url: 'https://api.twitter.com/2/users/me',
-    authHeader: (token: string) => `Bearer ${token}`,
-  },
-} as const;
-
-/**
- * Verify OAuth token and retrieve user ID
- */
-async function verifyAndGetUserId(
-  platform: Platform,
-  token: string,
-  clientId?: string
-): Promise<OAuthVerificationResult> {
-  const endpoint = OAUTH_ENDPOINTS[platform];
-
-  try {
-    const headers: Record<string, string> = {
-      Authorization: endpoint.authHeader(token),
-    };
-
-    if (platform === 'twitch') {
-      const twitchClientId = clientId || process.env.TWITCH_CLIENT_ID;
-      if (!twitchClientId) {
-        return { valid: false, error: 'Twitch Client ID required' };
-      }
-      headers['Client-Id'] = twitchClientId;
-    }
-
-    const response = await fetch(endpoint.url, { headers });
-
-    if (!response.ok) {
-      return { valid: false, error: `API returned ${response.status}` };
-    }
-
-    const data = await response.json();
-
-    console.log(`[LinkSocialWorkflow] ${platform} API response:`, JSON.stringify(data).substring(0, 500));
-
-    // Extract userId based on platform
-    let userId: string | undefined;
-    let username: string | undefined;
-
-    switch (platform) {
-      case 'discord':
-        // Discord: { id: "123456789", username: "user" }
-        userId = data.id ? String(data.id) : undefined;
-        username = data.username ? String(data.username) : undefined;
-        break;
-      case 'youtube':
-        // YouTube: { items: [{ id: "UCxxxxx", snippet: { title: "Channel Name" } }] }
-        userId = data.items?.[0]?.id ? String(data.items[0].id) : undefined;
-        username = data.items?.[0]?.snippet?.title ? String(data.items[0].snippet.title) : undefined;
-        break;
-      case 'spotify':
-        // Spotify: { id: "user123", display_name: "User Name" }
-        userId = data.id ? String(data.id) : undefined;
-        username = data.display_name ? String(data.display_name) : undefined;
-        break;
-      case 'twitch':
-        // Twitch: { data: [{ id: "123456", login: "username" }] }
-        userId = data.data?.[0]?.id ? String(data.data[0].id) : undefined;
-        username = data.data?.[0]?.login ? String(data.data[0].login) : undefined;
-        break;
-      case 'twitter':
-        // Twitter: { data: { id: "123456789", username: "user" } }
-        userId = data.data?.id ? String(data.data.id) : undefined;
-        username = data.data?.username ? String(data.data.username) : undefined;
-        break;
-    }
-
-    console.log(`[LinkSocialWorkflow] ${platform} extracted userId: ${userId}, username: ${username}`);
-
-    if (!userId) {
-      return { valid: false, error: `Could not extract user ID from ${platform} response` };
-    }
-
-    return { valid: true, userId, username };
-  } catch (error) {
-    console.error(`[LinkSocialWorkflow] ${platform}: Verification failed:`, error);
-    return { valid: false, error: error instanceof Error ? error.message : 'Unknown error' };
-  }
-}
 
 /**
  * Link Social Workflow

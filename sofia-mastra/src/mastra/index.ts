@@ -8,6 +8,7 @@ import { socialVerifierWorkflow } from './workflows/social-verifier-workflow';
 import { linkSocialWorkflow } from './workflows/link-social-workflow';
 import { signalFetcherWorkflow } from './workflows/signal-fetcher-workflow';
 import { initTokenTable } from './db/tokens';
+import { oauthRoutes } from './oauth/routes';
 import './signals/registry'; // Register all signal fetchers
 import { themeExtractorAgent } from './agents/theme-extractor-agent';
 import { pulseAgent } from './agents/pulse-agent';
@@ -36,6 +37,9 @@ export const mastra = new Mastra({
   },
   observability: {
     default: { enabled: true },
+  },
+  server: {
+    apiRoutes: oauthRoutes,
   },
   bundler: {
     externals: ['pino', 'pino-pretty', 'bufferutil', 'utf-8-validate', 'crypto'],
