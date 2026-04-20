@@ -145,55 +145,52 @@ export const usePageBlockchainData = (): UsePageBlockchainDataResult => {
         })
         .map((a: any) => a.term_id)
 
-      let atomsResponse: any = { atoms: [] }
-      if (foundAtomIds.length > 0) {
-        atomsResponse = await intuitionGraphqlClient.request(
-          AtomsByTermIdsDocument,
-          { atomIds: foundAtomIds }
-        )
-      }
+      // Phase 2: All remaining queries run in parallel — they all depend on
+      // foundAtomIds (already resolved) or just hostname, never on each other.
+      const atomsPromise = foundAtomIds.length > 0
+        ? intuitionGraphqlClient.request(AtomsByTermIdsDocument, {
+            atomIds: foundAtomIds
+          })
+        : Promise.resolve({ atoms: [] } as any)
+
+      const triplesCountPromise = foundAtomIds.length > 0
+        ? intuitionGraphqlClient.request(TriplesCountByAtomIdsDocument, {
+            atomIds: foundAtomIds
+          })
+        : Promise.resolve({
+            triples_aggregate: { aggregate: { count: 0 } }
+          } as any)
+
+      const triplesPromise = foundAtomIds.length > 0
+        ? intuitionGraphqlClient.request(TriplesByAtomIdsDocument, {
+            atomIds: foundAtomIds
+          })
+        : Promise.resolve({ triples: [] } as any)
+
+      const certPromise = certPredicateIds.length > 0
+        ? intuitionGraphqlClient.request(PageCertificationDataDocument, {
+            predicateIds: certPredicateIds,
+            hostnameLike: `%${hostname}%`
+          })
+        : Promise.resolve({ triples: [] } as any)
+
+      const [
+        atomsResponse,
+        triplesCountResponse,
+        triplesResponse,
+        certResponse
+      ] = await Promise.all([
+        atomsPromise,
+        triplesCountPromise,
+        triplesPromise,
+        certPromise
+      ])
 
       const atoms = atomsResponse?.atoms || []
-      const atomIds = atoms.map((atom: any) => atom.term_id)
-
-      // Phase 2: Parallel queries
-      // PageCertificationData uses hostname (not atomIds) → runs in parallel
-      const certPromise = certPredicateIds.length > 0
-        ? intuitionGraphqlClient.request(
-            PageCertificationDataDocument,
-            {
-              predicateIds: certPredicateIds,
-              hostnameLike: `%${hostname}%`
-            }
-          )
-        : Promise.resolve({ triples: [] })
-
-      let triplesResponse
-      let totalTriplesCount = 0
-
-      if (atomIds.length > 0) {
-        const [triplesCountResponse, triplesDataResponse, certResponse] =
-          await Promise.all([
-            intuitionGraphqlClient.request(TriplesCountByAtomIdsDocument, {
-              atomIds
-            }),
-            intuitionGraphqlClient.request(TriplesByAtomIdsDocument, {
-              atomIds
-            }),
-            certPromise
-          ])
-
-        totalTriplesCount =
-          triplesCountResponse?.triples_aggregate?.aggregate?.count || 0
-        triplesResponse = triplesDataResponse
-        var certTriples: CertTriple[] =
-          (certResponse as any)?.triples || []
-      } else {
-        triplesResponse = { triples: [] }
-        const certResponse = await certPromise
-        var certTriples: CertTriple[] =
-          (certResponse as any)?.triples || []
-      }
+      const totalTriplesCount =
+        triplesCountResponse?.triples_aggregate?.aggregate?.count || 0
+      const certTriples: CertTriple[] =
+        (certResponse as any)?.triples || []
 
       // Fallback: derive page atom IDs from cert triples whose object URL matches
       const pageAtomIdsFromCerts = certTriples
