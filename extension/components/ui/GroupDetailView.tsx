@@ -657,52 +657,6 @@ const GroupDetailView = ({ group, onBack, onCertifyUrl, onRemoveUrl, onRefresh }
         </div>
       </div>
 
-      {/* Identity Hero Section - Visible triple with Amplify button */}
-      {/* Hide when Level Up is available to focus user attention on leveling up */}
-      {group.currentPredicate && !(canLevelUp && levelUpPreview?.canLevelUp && !levelUpResult?.success) && (
-        <div className="identity-hero-section">
-          <div className="identity-content">
-            <div className="identity-triple">
-              <span className="identity-subject">I</span>
-              <span className="identity-predicate">{group.currentPredicate}</span>
-              <span className="identity-object">{group.domain}</span>
-            </div>
-            {/* Amplify Success */}
-            {amplifyResult?.success && (
-              <div className="amplify-success-inline">
-                <span>✓ On-chain</span>
-                {amplifyResult.txHash && (
-                  <a
-                    href={`${EXPLORER_URLS.TRANSACTION}${amplifyResult.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="tx-link-inline"
-                  >
-                    TX ↗
-                  </a>
-                )}
-                <button className="dismiss-btn-small" onClick={resetAmplify}>×</button>
-              </div>
-            )}
-            {/* Amplify Error */}
-            {amplifyResult?.error && !amplifyResult.success && (
-              <div className="amplify-error-inline">
-                <span>⚠️ {amplifyResult.error}</span>
-                <button className="dismiss-btn-small" onClick={resetAmplify}>×</button>
-              </div>
-            )}
-          </div>
-          {!isAmplified && !amplifyResult?.success && (
-            <button
-              className="amplify-btn-inline"
-              onClick={handleAmplify}
-              disabled={amplifyLoading}
-            >
-              {amplifyLoading ? '...' : 'Amplify'}
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Level Progress - transforms into Level Up when ready */}
       <div className={`level-progress-section ${canLevelUp && levelUpPreview?.canLevelUp ? 'ready-to-level-up' : ''}`}>

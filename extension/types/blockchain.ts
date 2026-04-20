@@ -130,4 +130,5 @@ export interface CostEstimate {
   totalEstimate: number
   depositCount: number
   contextTripleCost: number   // TX2: context triple creation + min deposit (0 if no context)
+  platformPoolAmount: number  // Platform pool deposit (0 if no platform detected)
 }

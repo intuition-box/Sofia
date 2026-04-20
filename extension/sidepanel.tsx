@@ -17,7 +17,6 @@ import SettingsPage from "./components/pages/SettingsPage"
 import ProfilePage from "./components/pages/ProfilePage"
 import CorePage from "./components/pages/CorePage"
 import ResonancePage from "./components/pages/ResonancePage"
-import ChatPage from "./components/pages/ChatPage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import OnboardingImportPage from "./components/pages/OnboardingImportPage"
 import OnboardingTutorialPage from "./components/pages/OnboardingTutorialPage"
@@ -92,8 +91,6 @@ const SidePanelContent = () => {
         return <CorePage />
       case 'resonance':
         return <ResonancePage />
-      case 'chat':
-        return <ChatPage />
       case 'user-profile':
         return <UserProfilePage />
       case 'onboarding-import':

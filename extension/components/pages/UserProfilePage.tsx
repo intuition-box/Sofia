@@ -18,15 +18,14 @@ import "../styles/ProfilePage.css"
 
 // Lazy load tabs (same pattern as ProfilePage)
 const UserStatsTab = lazy(() => import("./profile-tabs/UserStatsTab"))
-const UserInterestTab = lazy(() => import("./profile-tabs/UserInterestTab"))
 const AchievementsTab = lazy(() => import("./profile-tabs/AchievementsTab"))
 const CommunityTab = lazy(() => import("./profile-tabs/CommunityTab"))
 const UserBookmarksTab = lazy(() => import("./profile-tabs/UserBookmarksTab"))
 
-type SubTab = "stats" | "achievements" | "bookmarks" | "interest" | "community"
+type SubTab = "stats" | "achievements" | "bookmarks" | "community"
 
 const isValidTab = (tab?: string): tab is SubTab =>
-  !!tab && ["stats", "achievements", "bookmarks", "interest", "community"].includes(tab)
+  !!tab && ["stats", "achievements", "bookmarks", "community"].includes(tab)
 
 const UserProfilePage = () => {
   const { userProfileData, goBack } = useRouter()
@@ -194,12 +193,6 @@ const UserProfilePage = () => {
           Bookmarks
         </button>
         <button
-          className={`sub-tab ${activeTab === "interest" ? "active" : ""}`}
-          onClick={() => setActiveTab("interest")}
-        >
-          Interest
-        </button>
-        <button
           className={`sub-tab ${activeTab === "community" ? "active" : ""}`}
           onClick={() => setActiveTab("community")}
         >
@@ -239,10 +232,6 @@ const UserProfilePage = () => {
 
           {activeTab === "bookmarks" && (
             <UserBookmarksTab walletAddress={userProfileData.walletAddress} />
-          )}
-
-          {activeTab === "interest" && (
-            <UserInterestTab walletAddress={userProfileData.walletAddress} />
           )}
 
           {activeTab === "community" && (

@@ -1,5 +1,5 @@
 import {
-  badgeService, pageDataService, pulseService, tripletStorageService,
+  badgeService, pageDataService, tripletStorageService,
   groupManager, xpService, XPServiceClass, goldService, getLevelUpCost,
   currencyMigrationService, sessionTracker, levelUpService,
   browsingNudgeService,
@@ -353,9 +353,6 @@ export function setupMessageHandlers(): void {
         tripletStorageService.handleStoreDetectedTriplets(message, sendResponse)
         return true
 
-      case "START_PULSE_ANALYSIS":
-        pulseService.handlePulseAnalysis(sendResponse)
-        return true
 
 
       case "UPDATE_ECHO_BADGE":

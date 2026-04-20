@@ -26,8 +26,7 @@ export interface MessageData {
   | "UPDATE_ECHO_BADGE" 
   | "TRIPLET_PUBLISHED"
   | "TRIPLETS_DELETED"
-  | "INITIALIZE_BADGE"
-  | "START_PULSE_ANALYSIS";
+  | "INITIALIZE_BADGE";
   data: any;
   pageLoadTime?: number;
   tabId?: number;

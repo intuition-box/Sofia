@@ -12,9 +12,34 @@ export const INTUITION_GRAPHQL_ENDPOINT = API_CONFIG.GRAPHQL_ENDPOINT
 const CACHE_TTL_MS = 30000
 const queryCache = new Map<string, { data: any; timestamp: number }>()
 
-// Request queue to prevent concurrent requests
-let requestQueue: Promise<any> = Promise.resolve()
-const MIN_REQUEST_INTERVAL_MS = 150 // Minimum 150ms between requests
+// Concurrency limit — up to MAX_CONCURRENT requests run in parallel. Replaces
+// the previous single-slot queue which serialized every GraphQL call and
+// bottlenecked the whole extension. Rate-limit protection is handled by the
+// 429 retry/backoff logic below plus MIN_REQUEST_INTERVAL_MS jitter per slot.
+const MAX_CONCURRENT = 3
+const MIN_REQUEST_INTERVAL_MS = 50 // Per-slot minimum interval
+
+let activeSlots = 0
+const waitingForSlot: Array<() => void> = []
+
+const acquireSlot = (): Promise<void> => {
+  if (activeSlots < MAX_CONCURRENT) {
+    activeSlots++
+    return Promise.resolve()
+  }
+  return new Promise<void>((resolve) => {
+    waitingForSlot.push(() => {
+      activeSlots++
+      resolve()
+    })
+  })
+}
+
+const releaseSlot = (): void => {
+  activeSlots--
+  const next = waitingForSlot.shift()
+  if (next) next()
+}
 
 // Retry configuration
 const MAX_RETRIES = 3
@@ -45,9 +70,9 @@ export const intuitionGraphqlClient = {
       return cached.data
     }
 
-    // Queue the request to prevent concurrent calls
-    const result = await (requestQueue = requestQueue.then(async () => {
-      // Double-check cache (another request might have populated it)
+    await acquireSlot()
+    try {
+      // Double-check cache (another request might have populated it while we waited)
       const cached2 = queryCache.get(cacheKey)
       if (cached2 && Date.now() - cached2.timestamp < CACHE_TTL_MS) {
         return cached2.data
@@ -56,11 +81,9 @@ export const intuitionGraphqlClient = {
       // Retry loop with exponential backoff
       let lastError: Error | null = null
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-        // Add delay to respect rate limits
         if (attempt === 0) {
           await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL_MS))
         } else {
-          // Exponential backoff: 1s, 2s, 4s
           const backoffDelay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt - 1)
           logger.warn(`Retry ${attempt}/${MAX_RETRIES} after ${backoffDelay}ms...`)
           await new Promise(resolve => setTimeout(resolve, backoffDelay))
@@ -81,7 +104,7 @@ export const intuitionGraphqlClient = {
           if (!response.ok) {
             if (response.status === 429) {
               lastError = new Error(`HTTP error! status: 429 (rate limited)`)
-              continue // Retry with backoff
+              continue
             }
             throw new Error(`HTTP error! status: ${response.status}`)
           }
@@ -92,10 +115,8 @@ export const intuitionGraphqlClient = {
             throw new Error(`GraphQL error: ${json.errors[0].message}`)
           }
 
-          // Cache the result
           queryCache.set(cacheKey, { data: json.data, timestamp: Date.now() })
 
-          // Clean old cache entries periodically
           if (queryCache.size > 50) {
             cleanCache()
           }
@@ -103,18 +124,16 @@ export const intuitionGraphqlClient = {
           return json.data
         } catch (err) {
           lastError = err instanceof Error ? err : new Error(String(err))
-          // Only retry on rate limiting (429), not other errors
           if (!lastError.message.includes('429')) {
             throw lastError
           }
         }
       }
 
-      // All retries exhausted
       throw lastError || new Error('GraphQL request failed after retries')
-    }))
-
-    return result
+    } finally {
+      releaseSlot()
+    }
   },
 
   // Clear cache (useful after mutations)

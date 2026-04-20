@@ -39,7 +39,6 @@ export type { TxEventType, TxEvent } from './TxEventBus'
 
 // Page & Session
 export { PageDataService, pageDataService } from './PageDataService'
-export { PulseService, pulseService } from './PulseService'
 export { SessionTrackerService, sessionTracker } from './SessionTracker'
 export type { TrackedUrl, DomainCluster } from './SessionTracker'
 
@@ -50,10 +49,6 @@ export type { AgentIds } from './UserSessionManager'
 // Storage
 export { TripletStorageService, tripletStorageService } from './TripletStorageService'
 
-// MCP & Interest Analysis
-export { MCPServiceClass, mcpService } from './MCPService'
-export { InterestAnalysisServiceClass, interestAnalysisService } from './InterestAnalysisService'
-export type { CachedInterestData } from './InterestAnalysisService'
 
 // Discovery & Certifications
 export { DiscoveryScoreServiceClass, discoveryScoreService } from './DiscoveryScoreService'
@@ -72,6 +67,9 @@ export type { CartState } from './CartService'
 // Topic Interests (from Sofia Explorer)
 export { topicPositionsService } from './TopicPositionsService'
 export type { UserTopicPosition, TopicPositionsState } from './TopicPositionsService'
+
+// Platform Pool
+export { platformPoolService } from './PlatformPoolService'
 
 // Browsing Nudge
 export { BrowsingNudgeServiceClass, browsingNudgeService, NUDGE_URL_THRESHOLD } from './BrowsingNudgeService'

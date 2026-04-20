@@ -4,7 +4,7 @@
  */
 
 // Agent types for routing
-export type AgentType = 'SOFIA' | 'CHATBOT' | 'THEMEEXTRACTOR' | 'PULSEAGENT' | 'RECOMMENDATION'
+export type AgentType = 'SOFIA' | 'THEMEEXTRACTOR' | 'RECOMMENDATION'
 
 // Session configuration
 export const SESSION_CONFIG = {

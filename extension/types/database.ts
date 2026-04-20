@@ -14,7 +14,7 @@ export interface TripletsRecord {
   messageId: string
   content: ParsedSofiaMessage | any[] | string[]
   timestamp: number
-  type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details' | 'pulse_analysis'
+  type: 'message' | 'triplet' | 'parsed_message' | 'published_triplets' | 'published_triplets_details'
 }
 
 export interface NavigationRecord {

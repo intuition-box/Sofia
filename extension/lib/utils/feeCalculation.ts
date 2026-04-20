@@ -27,6 +27,8 @@ export function estimateCertificationCost(
     itemCount?: number
     /** Number of context triples (TX2) — each costs tripleCost + min deposit */
     contextTripleCount?: number
+    /** Platform pool percentage (0-100000, same denominator as GS) */
+    ppPercentage?: number
   }
 ): CostEstimate {
   const { depositFixed, depositPct, creationFixed, feeDenom } = feeParams
@@ -35,13 +37,16 @@ export function estimateCertificationCost(
   const newAtomCount = options?.newAtomCount ?? 0
   const itemCount = options?.itemCount ?? 1
   const contextTripleCount = options?.contextTripleCount ?? 0
+  const ppPercentage = options?.ppPercentage ?? 0
 
-  // --- Deposit split ---
+  // --- Deposit split (GS + Platform Pool) ---
   const poolFraction = gsPercentage / gsDenominator
+  const ppFraction = ppPercentage / gsDenominator
   const poolAmount = depositTrust * poolFraction
-  const signalAmount = depositTrust - poolAmount
-  // Each item gets its own deposit entry; with GS each item has 2 (signal + pool)
-  const depositsPerItem = poolAmount > 0 ? 2 : 1
+  const platformPoolAmount = depositTrust * ppFraction
+  const signalAmount = depositTrust - poolAmount - platformPoolAmount
+  // Each item gets deposit entries: signal + GS (if > 0) + PP (if > 0)
+  const depositsPerItem = 1 + (poolAmount > 0 ? 1 : 0) + (platformPoolAmount > 0 ? 1 : 0)
   const depositCount = depositsPerItem * itemCount
 
   // --- Sofia fees (from SofiaFeeProxy) ---
@@ -84,14 +89,38 @@ export function estimateCertificationCost(
       ctxSofiaFixed + ctxSofiaPct + ctxCreationFixed
   }
 
+  // --- Post-create deposit fees (GS + PP are deposited in separate TX after creation) ---
+  // Each separate deposit entry incurs its own sofia fixed + % fees
+  let postCreateFees = 0
+  if (isNewTriple) {
+    let postCreateEntries = 0
+    let postCreateTotal = 0
+    // GS deposit
+    if (poolAmount > 0) {
+      postCreateEntries++
+      postCreateTotal += poolAmount
+    }
+    // PP deposit(s)
+    if (platformPoolAmount > 0) {
+      postCreateEntries++
+      postCreateTotal += platformPoolAmount
+    }
+    if (postCreateEntries > 0) {
+      postCreateFees =
+        (fixedFeePerDeposit * postCreateEntries) +
+        (pctRate * postCreateTotal)
+    }
+  }
+
   // --- Totals ---
-  const totalFees = sofiaFixedFee + sofiaPercentFee + creationFixedFeeTotal + creationCost + contextTripleCost
+  const totalFees = sofiaFixedFee + sofiaPercentFee + creationFixedFeeTotal + creationCost + contextTripleCost + postCreateFees
   const totalEstimate = depositTrust + totalFees
 
   return {
     depositAmount: depositTrust,
     signalAmount,
     poolAmount,
+    platformPoolAmount,
     creationCost,
     sofiaFixedFee,
     sofiaPercentFee,

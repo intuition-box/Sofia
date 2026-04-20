@@ -94,7 +94,6 @@ export { useUserSignals } from './useUserSignals'
 
 // Recommendations & Interest
 export { useRecommendations } from './useRecommendations'
-export { default as useInterestAnalysis } from './useInterestAnalysis'
 export { useInterestAttention } from './useInterestAttention'
 
 // Debate
@@ -111,6 +110,9 @@ export { useCart } from './useCart'
 export { useCartSubmit } from './useCartSubmit'
 export { useBatchRewards } from './useBatchRewards'
 export type { BatchRewardItem } from './useBatchRewards'
+
+// Platform Pool
+export { usePlatformPool, PP_FEE_DENOMINATOR } from './usePlatformPool'
 
 // Notifications
 export { useBrowsingNudge } from './useBrowsingNudge'

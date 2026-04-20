@@ -168,10 +168,9 @@ export class QuestProgressService {
     const currentStreak = localData.onChainCertStreak ?? 0
     const currentVoteStreak = localData.onChainVoteStreak ?? 0
 
-    // Daily flags + pulse from QuestTrackingService (still local)
+    // Daily flags from QuestTrackingService (still local)
     const hasSignalToday = await questTrackingService.hasSignalToday()
     const hasCertificationToday = await questTrackingService.hasCertificationToday()
-    const pulseStats = await questTrackingService.getPulseStats()
 
     // Vote counts from QuestTrackingService (still local)
     const totalVotes = await questTrackingService.getTotalVotes()
@@ -191,8 +190,8 @@ export class QuestProgressService {
       currentStreak,
       hasSignalToday,
       hasCertificationToday,
-      pulseLaunches: pulseStats.total,
-      weeklyPulseUses: pulseStats.weekly,
+      pulseLaunches: 0,
+      weeklyPulseUses: 0,
       discordConnected,
       youtubeConnected,
       spotifyConnected,
