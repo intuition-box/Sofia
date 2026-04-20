@@ -36,6 +36,13 @@ import {
   deriveVerifiedPlatforms,
   deriveUserProfile,
   deriveUserStats,
+  // Sofia-specific (Phase 3.A)
+  deriveTrustCircle,
+  deriveFollowing,
+  deriveDailyStreak,
+  deriveVerifiedOAuthPlatforms,
+  deriveIntentionGroups,
+  deriveGlobalStakePosition,
   realtimeKeys
 } from "./derivations"
 import {
@@ -209,7 +216,7 @@ export class SubscriptionManager {
     this.subscriptions.set("tracked-positions", unsub)
   }
 
-  // ── Cache writers (Phase 1.B: log-only; Phase 3 activates derivations) ────
+  // ── Cache writers (Phase 3.A: real derivations wired) ────────────────────
 
   private onPositionsUpdate(data: WatchUserPositionsSubscription) {
     const positions = data.positions ?? []
@@ -218,11 +225,38 @@ export class SubscriptionManager {
 
     const qc = this.queryClient
     try {
+      // Raw payload — consumers that want the full list read this key.
       qc.setQueryData(realtimeKeys.positions(wallet), positions)
+
+      // Sofia-specific derivations (Phase 3.A) — each one filters positions
+      // by predicate / atom term_id and produces the shape the matching
+      // hook consumes. Phase 3.B migrates those hooks to read from here.
       qc.setQueryData(
-        realtimeKeys.verifiedPlatforms(wallet),
-        deriveVerifiedPlatforms(positions)
+        realtimeKeys.trustCircle(wallet),
+        deriveTrustCircle(positions)
       )
+      qc.setQueryData(
+        realtimeKeys.following(wallet),
+        deriveFollowing(positions)
+      )
+      qc.setQueryData(
+        realtimeKeys.dailyStreak(wallet),
+        deriveDailyStreak(positions)
+      )
+      qc.setQueryData(
+        realtimeKeys.verifiedOAuthPlatforms(wallet),
+        deriveVerifiedOAuthPlatforms(positions)
+      )
+      qc.setQueryData(
+        realtimeKeys.intentionGroups(wallet),
+        deriveIntentionGroups(positions)
+      )
+      qc.setQueryData(
+        realtimeKeys.globalStakePosition(wallet),
+        deriveGlobalStakePosition(positions)
+      )
+
+      // Aggregate views — consumed by profile UI.
       qc.setQueryData(
         realtimeKeys.userProfileDerived(wallet),
         deriveUserProfile(positions)
@@ -230,6 +264,12 @@ export class SubscriptionManager {
       qc.setQueryData(
         realtimeKeys.userStats(wallet),
         deriveUserStats(positions)
+      )
+
+      // Legacy alias — Sofia's "verified platforms" === OAuth platforms.
+      qc.setQueryData(
+        realtimeKeys.verifiedPlatforms(wallet),
+        deriveVerifiedPlatforms(positions)
       )
     } catch (err) {
       console.error("[WS positions] derivation/setQueryData failed", err)
