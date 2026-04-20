@@ -20,9 +20,33 @@ export type Position = NonNullable<
 >[number]
 
 // ── Query key builders (single source of truth) ─────────────────────────────
+//
+// Canonical keys written by SubscriptionManager.onPositionsUpdate (top-500
+// user positions) and onTrackedPositionsUpdate (targeted atom subscriptions).
+// Hook consumers (Phase 3.B) read from these keys with staleTime:Infinity
+// instead of firing HTTP queries.
 
 export const realtimeKeys = {
+  // Core
   positions: (wallet: string) => ["positions", wallet] as const,
+  userProfileDerived: (wallet: string) =>
+    ["user-profile-derived", wallet] as const,
+  userStats: (wallet: string) => ["user-stats", wallet] as const,
+
+  // Sofia-specific derivations (Phase 3.A)
+  trustCircle: (wallet: string) => ["trust-circle", wallet] as const,
+  following: (wallet: string) => ["following", wallet] as const,
+  followers: (wallet: string) => ["followers", wallet] as const,
+  dailyStreak: (wallet: string) => ["daily-streak", wallet] as const,
+  verifiedOAuthPlatforms: (wallet: string) =>
+    ["verified-oauth-platforms", wallet] as const,
+  intentionGroups: (wallet: string) => ["intention-groups", wallet] as const,
+  globalStakePosition: (wallet: string) =>
+    ["global-stake-position", wallet] as const,
+
+  // Legacy Explorer keys — kept for SubscriptionManager compat. Sofia doesn't
+  // map topics/categories/platforms the same way; may be removed in cleanup
+  // once we're sure no consumer references them.
   topicPositionsMap: (wallet: string) =>
     ["topic-positions-map", wallet] as const,
   categoryPositionsMap: (wallet: string) =>
@@ -30,10 +54,7 @@ export const realtimeKeys = {
   platformPositionsMap: (wallet: string) =>
     ["platform-positions-map", wallet] as const,
   verifiedPlatforms: (wallet: string) =>
-    ["verified-platforms", wallet] as const,
-  userProfileDerived: (wallet: string) =>
-    ["user-profile-derived", wallet] as const,
-  userStats: (wallet: string) => ["user-stats", wallet] as const
+    ["verified-platforms", wallet] as const
 }
 
 // ── BigInt helpers (stable cache shape) ─────────────────────────────────────
