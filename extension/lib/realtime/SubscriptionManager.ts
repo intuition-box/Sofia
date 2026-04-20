@@ -46,6 +46,11 @@ import {
   realtimeKeys
 } from "./derivations"
 import {
+  DAILY_CERTIFICATION_ATOM_ID,
+  DAILY_VOTE_ATOM_ID,
+  GLOBAL_STAKE
+} from "~/lib/config/chainConfig"
+import {
   markConnecting,
   markConnected,
   markOffline,
@@ -54,13 +59,25 @@ import {
 
 /**
  * Atom term_ids to subscribe to via WatchUserTrackedPositions (in addition
- * to the top-500 positions sub). Stays empty in Phase 1.B — Phase 3 will
- * add Sofia-specific termIds (predicate atoms, quest atoms, etc.) once
- * the relevant atom config is defined. With an empty list, the tracked
- * subscription is effectively a no-op (Hasura filters with _in: [] → no
- * rows), saving bandwidth.
+ * to the top-500 positions sub). These are atoms where the user's position
+ * matters for live UI but might otherwise be missed if the user has >500
+ * positions and this one sits below the cap (1 TRUST stake on a daily atom
+ * is trivially buried under certification triples with larger shares).
+ *
+ * Contents:
+ * - DAILY_CERTIFICATION_ATOM_ID → powers deriveDailyStreak.certifiedToday
+ * - DAILY_VOTE_ATOM_ID → powers deriveDailyStreak.votedToday
+ * - GLOBAL_STAKE.TERM_ID → powers deriveGlobalStakePosition (Beta pool)
+ *
+ * Future candidates (require dynamic resolution, not hardcoded):
+ * - The user's Account atom term_id → drives followers count (requires an
+ *   initial HTTP fetch via findAccountAtom(walletAddress) at connect time)
  */
-const TRACKED_TERM_IDS: string[] = []
+const TRACKED_TERM_IDS: string[] = [
+  DAILY_CERTIFICATION_ATOM_ID,
+  DAILY_VOTE_ATOM_ID,
+  GLOBAL_STAKE.TERM_ID
+]
 
 const toQueryString = (doc: unknown): string => {
   if (typeof doc === "string") return doc
