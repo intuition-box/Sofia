@@ -113,26 +113,36 @@ throwaway messaging code.
    - `derivations.ts`
    - `wsStatus.ts`
 
-3. In the extension app:
+3. In the extension app (shipped in Phase 1.B — SW-direct, not offscreen):
    - Add `PLASMO_PUBLIC_GRAPHQL_WS_URL` env var (default
      `wss://mainnet.intuition.sh/v1/graphql`).
-   - Create the offscreen document (`background/offscreen/realtime.html` +
-     `realtime.ts`). SW spawns it via `chrome.offscreen.createDocument({
-     reasons: ['WORKERS'], justification: 'WebSocket subscription for user
-     positions' })` on wallet-connect, closes on wallet-disconnect.
-   - Offscreen holds the `SubscriptionManager` instance + `setInterval(ping,
-     25000)` keepalive (WS `ConnectionAck`).
-   - Wallet flow: popup writes `sofia-active-wallet` to `chrome.storage.local`
-     → SW listens via `chrome.storage.onChanged` → ensures offscreen doc →
-     offscreen reads the wallet and calls `manager.connect(wallet)`.
-   - Wallet switch: popup rewrites `sofia-active-wallet` → offscreen receives
-     `onChanged` → `manager.disconnect() + manager.connect(newWallet)`.
-   - Security: every `chrome.runtime.onMessage` handler guards
-     `sender.id === chrome.runtime.id`.
+   - Create `extension/background/realtime.ts` that holds the
+     `SubscriptionManager` instance in the service worker directly. MV3
+     keeps the SW alive as long as an open WebSocket is active, so the
+     30s idle shutdown doesn't apply while a user is connected.
+   - Wallet flow: the popup already writes `walletAddress` to
+     `chrome.storage.session` (existing convention). SW listens via
+     `chrome.storage.onChanged` → `manager.connect(wallet)` on write,
+     `manager.disconnect()` on removal.
+   - Wallet switch: onChanged fires with a new value → manager reconnects.
 
-**Acceptance**: open the popup with a wallet connected, check chrome://inspect
-for the offscreen doc, see `[WS positions]` logs with N positions. Switch
-wallet in popup → new subscription kicks in within 1s.
+**Why SW-direct over offscreen document**: the extension already owns
+one offscreen doc (`public/offscreen.html`, theme detection) and Chrome
+caps us at one per extension. Merging theme + realtime is feasible but
+invasive (migrate vanilla JS → TS, rewire CSS for theme detection's
+Canvas trick). Phase 5 can migrate to a unified offscreen if SW kills
+are observed under memory pressure. For Phase 1.B, SW-direct is the
+path of least resistance and meets the acceptance criteria.
+
+**Security** (deferred to Phase 4 messaging): new `chrome.runtime.onMessage`
+handlers guard `sender.id === chrome.runtime.id`. Phase 1.B adds no new
+onMessage handlers (driven by `storage.onChanged`), so no guards needed
+here.
+
+**Acceptance**: open the popup with a wallet connected, inspect the SW in
+`chrome://extensions/ → Inspect views: service worker` — see
+`[WS positions] N positions for 0xabc123…` logs. Switch wallet in popup
+→ new subscription kicks in within 1s.
 
 ### Phase 2 — React Query persister + cross-context bus (1-2 d)
 
