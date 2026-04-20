@@ -175,24 +175,64 @@ cross-context propagation bus.
 from cache, no loading spinner. Bump `CACHE_VERSION` to `"v2"` and reload →
 cache wiped, fresh fetch.
 
-### Phase 3 — Derivations + cache writes (1 d)
+### Phase 3 — Derivations + hook migrations
 
-Port `src/lib/realtime/derivations.ts` from Explorer. Wire
-`onPositionsUpdate` + `onTrackedPositionsUpdate` in the offscreen to write:
+Split into two sub-PRs to keep reviewable chunks:
 
-- `['positions', wallet]`
-- `['verified-platforms', wallet]`
-- `['user-profile-derived', wallet]`
-- `['user-stats', wallet]`
-- `['topic-positions-map', wallet]` (from tracked subscription)
-- `['category-positions-map', wallet]`
-- `['platform-positions-map', wallet]`
+#### Phase 3.A — Sofia-specific derivations (shipped)
+
+Replaces the Phase 1.B stubs with real derivation logic adapted to
+Sofia's atom set (no "topics/categories/platforms" à la Explorer — Sofia
+models things differently).
+
+`onPositionsUpdate` now writes 8 cache keys per WS push:
+
+- `['positions', wallet]` — raw payload
+- `['user-profile-derived', wallet]` — full profile view
+- `['user-stats', wallet]` — aggregate counts / staked total
+- `['trust-circle', wallet]` — `{accountTermId, accountLabel, shares, tripleTermId}[]` from predicate TRUSTS
+- `['following', wallet]` — same shape from predicate FOLLOW (curve_id=1)
+- `['daily-streak', wallet]` — `{certifiedToday, votedToday}` booleans from DAILY_CERTIFICATION/VOTE atoms
+- `['verified-oauth-platforms', wallet]` — set of platforms from MEMBER_OF/OWNER_OF/TOP_ARTIST/TOP_TRACK/AM predicates
+- `['intention-groups', wallet]` — VISITS_FOR_* positions grouped by URL/domain
+- `['global-stake-position', wallet]` — position on Beta season pool atom
+- `['verified-platforms', wallet]` — legacy alias for OAuth platforms
+
+`TRACKED_TERM_IDS` now contains:
+- `DAILY_CERTIFICATION_ATOM_ID`
+- `DAILY_VOTE_ATOM_ID`
+- `GLOBAL_STAKE.TERM_ID`
+
+This guarantees these positions arrive regardless of the user's total
+position count (1-TRUST daily stakes would otherwise drop below the
+top-500 cap for power users).
 
 All keys scoped by `wallet` for multi-wallet correctness.
 
-Port hook migrations from Explorer commits tagged `Phase 3`: `useTopicPositions`,
-`useUserProfile`, etc. Grep matching extension hooks and apply the same
-`staleTime: 10min, gcTime: 24h, refetchOnWindowFocus: false`.
+**Acceptance**: SW console shows `[WS tracked] N positions` on connect
+(N ∈ [0..3] depending on user's quest activity). Inspect cache in popup
+devtools: `queryClient.getQueryData(['trust-circle', wallet])` returns
+the expected trust list.
+
+#### Phase 3.B — Hook migrations (not started)
+
+Migrate 5 candidate hooks to read from the WS-backed cache keys with
+`staleTime: Infinity, enabled: !!wallet`. Drop their HTTP fetchers.
+
+Candidates from the Phase 3 audit:
+- `useTrustCircle` → `['trust-circle', wallet]`
+- `useFollowing` → `['following', wallet]`
+- `useFollowers` → requires dynamic My Account atom tracking (deferred)
+- `useUserSignals` → partial migration (top-100 positions only)
+- `useAccountStats` → `['user-stats', wallet]`
+
+Plus `useQuestSystem` gets a light trigger-based refetch: WS sees a
+position on DAILY_* → invalidate the HTTP streak count query.
+
+Blockers that stay HTTP:
+- `useUserDiscoveryScore` (cross-user, different wallet)
+- `useUserCertifications` singleton (>500 possible, refactor invasive)
+- `useTrendingCertifications` (cross-user firehose)
 
 ### Phase 4 — Optimistic updates (1 d)
 
