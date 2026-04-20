@@ -1,6 +1,7 @@
 import { GraphQLClient } from 'graphql-request'
 
 import { API_URL_PROD } from './constants'
+import { configureWsClient } from './wsClient'
 
 export interface ClientConfig {
   headers: HeadersInit
@@ -13,8 +14,14 @@ let globalConfig: { apiUrl?: string } = {
   apiUrl: DEFAULT_API_URL,
 }
 
-export function configureClient(config: { apiUrl: string }) {
-  globalConfig = { ...globalConfig, ...config }
+export function configureClient(config: {
+  apiUrl: string
+  wsUrl?: string
+}) {
+  globalConfig = { ...globalConfig, apiUrl: config.apiUrl }
+  if (config.wsUrl) {
+    configureWsClient({ wsUrl: config.wsUrl })
+  }
 }
 
 export function getClientConfig(token?: string): ClientConfig {
