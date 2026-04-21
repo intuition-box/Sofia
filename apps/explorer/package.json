@@ -65,7 +65,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "prebuild": "pnpm --filter @0xsofia/dashboard-graphql build",
+    "prebuild": "bun run --filter @0xsofia/dashboard-graphql build",
     "build": "vite build",
     "typecheck": "tsc -b",
     "preview": "vite preview"
