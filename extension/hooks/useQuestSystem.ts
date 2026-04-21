@@ -326,17 +326,51 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     setClaimingQuestId(questId)
     setError(null)
 
-    // Optimistic daily-streak flip: quest icon + streak panel reflect the
-    // new activity in 0ms, well before the on-chain TX confirms (3-5s).
-    // The WS SubscriptionManager will overwrite with the authoritative
-    // value as soon as the deposit lands, so the optimistic is effectively
-    // a no-op refresh on success.
+    // Optimistic daily-streak flip: both the WS-backed cache key AND the
+    // local userProgress state get flipped together, so the quest icon
+    // and streak panel reflect the new activity in 0ms regardless of
+    // which source the UI reads from. The WS will overwrite the cache
+    // once the TX confirms; QuestProgressService will reconcile
+    // userProgress on the next refresh cycle.
+    const isDailyCert = questId === 'daily-certification'
+    const isDailyVote = questId === 'daily-vote'
+    const cacheRollback = isDailyCert
+      ? applyOptimisticDailyStreak(queryClient, walletAddress, 'cert')
+      : isDailyVote
+        ? applyOptimisticDailyStreak(queryClient, walletAddress, 'vote')
+        : null
+
+    let progressRollback: (() => void) | null = null
+    if (isDailyCert || isDailyVote) {
+      const today = new Date().toISOString().split('T')[0]
+      const snapshot = userProgress
+      progressRollback = () => setUserProgress(snapshot)
+      const datesKey = isDailyCert ? 'certActivityDates' : 'voteActivityDates'
+      const existing = snapshot[datesKey]
+      const nextDates = existing.includes(today)
+        ? existing
+        : [...existing, today].sort()
+      setUserProgress({
+        ...snapshot,
+        ...(isDailyCert
+          ? {
+              hasCertificationToday: true,
+              certActivityDates: nextDates
+            }
+          : {
+              hasVotedToday: true,
+              voteActivityDates: nextDates
+            })
+      })
+    }
+
     const optimisticRollback =
-      questId === 'daily-certification'
-        ? applyOptimisticDailyStreak(queryClient, walletAddress, 'cert')
-        : questId === 'daily-vote'
-          ? applyOptimisticDailyStreak(queryClient, walletAddress, 'vote')
-          : null
+      cacheRollback || progressRollback
+        ? () => {
+            cacheRollback?.()
+            progressRollback?.()
+          }
+        : null
 
     try {
       logger.info('Creating on-chain badge for quest', { title: quest.title })
