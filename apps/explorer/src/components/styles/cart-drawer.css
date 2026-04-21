@@ -1,0 +1,35 @@
+/* ── CartDrawer ── */
+.cd-aside {
+  top: 62px;
+  width: 333px;
+  height: calc(100vh - 58px);
+  z-index: 10000;
+  background: var(--sidebar);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+  pointer-events: none;
+}
+.cd-aside.cd-open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Mobile: full-width cart */
+@media (max-width: 767px) {
+  .cd-aside {
+    width: 100%;
+    top: 56px;
+    height: calc(100vh - 56px);
+    border-left: none;
+  }
+}
+/* Tablet: slightly narrower */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .cd-aside {
+    top: 56px;
+    height: calc(100vh - 56px);
+  }
+}

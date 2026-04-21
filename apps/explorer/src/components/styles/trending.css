@@ -1,0 +1,10 @@
+/* ── TrendingPages ── */
+.tp-list { display: flex; flex-direction: column; gap: 8px; }
+.tp-skeleton-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; }
+.tp-link { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; text-decoration: none; }
+.tp-link-content { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.tp-favicon { width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0; }
+.tp-text { min-width: 0; }
+.tp-domain { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tp-badge { flex-shrink: 0; margin-left: 8px; }
+.tp-title { display: flex; align-items: center; gap: 8px; }

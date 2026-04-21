@@ -1,0 +1,250 @@
+/* ── ProfileDrawer ── */
+.pd-aside {
+  top: 62px;
+  width: 400px;
+  height: calc(100vh - 58px);
+  z-index: 9999;
+  border-left: 1px solid var(--border);
+  background: linear-gradient(170deg, color-mix(in oklab, var(--accent) 6%, var(--background)) 0%, var(--background) 60%);
+  backdrop-filter: blur(20px);
+  transform: translateX(100%);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+  pointer-events: none;
+}
+.pd-aside.pd-open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Avatar */
+.pd-avatar { width: 88px; height: 88px; }
+
+/* Profile banner area */
+.pd-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px 24px;
+  position: relative;
+}
+
+.pd-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* Name */
+.pd-name { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.pd-address { font-size: 11px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+/* Stats */
+.pd-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+.pd-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--card) 80%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
+  transition: background 0.2s, border-color 0.2s;
+}
+.pd-stat-card:hover {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.pd-stat-value { font-size: 20px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+.pd-stat-label { font-size: 10px; font-weight: 500; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Section title */
+.pd-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  padding: 0 24px;
+  margin-bottom: 8px;
+}
+
+/* Discovery badges — row with icons */
+.pd-badge-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.pd-badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  padding: 12px 4px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--accent) 6%, var(--card));
+  border: 1px solid color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.pd-badge-icon { width: 40px; height: 40px; object-fit: contain; }
+.pd-badge-label { font-size: 10px; font-weight: 500; color: var(--muted-foreground); }
+.pd-badge-value { font-size: 20px; font-weight: 800; line-height: 1; color: var(--foreground); }
+
+/* Trust Circle */
+.pd-circle-count {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-foreground);
+  background: color-mix(in oklab, var(--accent) 20%, transparent);
+  padding: 1px 6px;
+  border-radius: 99px;
+}
+
+.pd-circle-loading {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+.pd-circle-loading-text {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.pd-circle-empty {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.pd-circle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pd-circle-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+.pd-circle-item:hover {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+.pd-circle-rank {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  min-width: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-circle-avatar { width: 32px; height: 32px; }
+
+.pd-circle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.pd-circle-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-circle-trust {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Trust Score */
+.pd-trust-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--card) 80%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
+}
+
+.pd-trust-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.pd-trust-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.pd-trust-value {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--foreground);
+}
+
+.pd-trust-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+  overflow: hidden;
+}
+
+.pd-trust-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #10B981, #3B82F6);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile: full-width profile drawer */
+@media (max-width: 767px) {
+  .pd-aside {
+    width: 100%;
+    top: 56px;
+    height: calc(100vh - 56px);
+    border-left: none;
+  }
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  .pd-aside {
+    top: 56px;
+    height: calc(100vh - 56px);
+  }
+}
+
+/* Share button */
+.pd-share-btn {
+  gap: 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}

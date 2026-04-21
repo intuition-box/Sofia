@@ -1,0 +1,66 @@
+query GetTripleVaultStats($termId: String!, $address: String) {
+  triples(where: { term_id: { _eq: $termId } }) {
+    term_id
+    term {
+      vaults {
+        market_cap
+        total_shares
+        position_count
+        current_share_price
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+          total_deposit_assets_after_total_fees
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        market_cap
+        total_shares
+        position_count
+        current_share_price
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+          total_deposit_assets_after_total_fees
+        }
+      }
+    }
+  }
+}
+
+query GetBatchTripleVaultStats($termIds: [String!]!, $address: String) {
+  triples(where: { term_id: { _in: $termIds } }) {
+    term_id
+    subject { label term_id }
+    predicate { label term_id }
+    object {
+      label
+      term_id
+      value { thing { url name } }
+    }
+    term {
+      vaults {
+        market_cap
+        total_shares
+        position_count
+        current_share_price
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+          total_deposit_assets_after_total_fees
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        market_cap
+        total_shares
+        position_count
+        current_share_price
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+          total_deposit_assets_after_total_fees
+        }
+      }
+    }
+  }
+}

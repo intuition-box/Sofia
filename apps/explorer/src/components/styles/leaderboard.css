@@ -1,0 +1,139 @@
+/* ── Leaderboard table cells ── */
+.lb-cell { padding: 12px 16px; font-size: 14px; vertical-align: middle; }
+.lb-cell-num { padding: 12px 16px; font-size: 14px; vertical-align: middle; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Oswald', system-ui, sans-serif; font-weight: 500; letter-spacing: 0.01em; }
+.lb-cell-head { padding: 12px 16px; font-size: 11px; font-weight: 600; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.12em; vertical-align: middle; text-align: left; font-family: 'Oswald', system-ui, sans-serif; }
+.lb-cell-head-num { padding: 12px 16px; font-size: 11px; font-weight: 600; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.12em; vertical-align: middle; text-align: right; cursor: pointer; user-select: none; font-family: 'Oswald', system-ui, sans-serif; transition: color 0.15s; }
+.lb-cell-head-num:hover { color: var(--foreground); }
+.lb-sort-active { color: #FCD34D !important; }
+
+/* ── Layout ── */
+.lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, #FCD34D 6%, transparent) 0%,
+      transparent 100%);
+}
+.lb-title {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lb-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: #FCD34D;
+  border-radius: 2px;
+}
+.lb-tab-group { display: flex; gap: 4px; }
+.lb-tab-group button[data-active="true"] {
+  background: #FCD34D;
+  color: #1a1a1a;
+  border-color: #FCD34D;
+}
+.lb-tab-group button[data-active="true"]:hover {
+  background: #FBBF24;
+  border-color: #FBBF24;
+}
+.lb-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+.lb-border-row { border-bottom: 1px solid var(--border); }
+
+/* ── Rank column ── */
+.lb-rank {
+  padding: 12px 16px;
+  font-size: 14px;
+  vertical-align: middle;
+  width: 64px;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-weight: 500;
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.lb-rank-head {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  vertical-align: middle;
+  width: 64px;
+  text-align: center;
+  font-family: 'Oswald', system-ui, sans-serif;
+}
+
+/* Podium badges for top 3 */
+.lb-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Oswald', system-ui, sans-serif;
+  border: 1.5px solid currentColor;
+}
+.lb-rank-1 { color: #FCD34D; background: color-mix(in oklab, #FCD34D 14%, transparent); box-shadow: 0 0 12px -2px color-mix(in oklab, #FCD34D 50%, transparent); }
+.lb-rank-2 { color: #D4D4D8; background: color-mix(in oklab, #D4D4D8 12%, transparent); }
+.lb-rank-3 { color: #D08C5C; background: color-mix(in oklab, #D08C5C 14%, transparent); }
+
+/* Top 3 row treatment */
+.lb-top-row { background: color-mix(in oklab, #FCD34D 3%, transparent); }
+.lb-top-row .lb-username { font-weight: 600; }
+.lb-top-row .lb-avatar { width: 28px; height: 28px; }
+
+/* ── User link ── */
+.lb-user-link { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-weight: 500; transition: color 0.15s; }
+.lb-user-link:hover { color: #FCD34D; }
+.lb-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; transition: transform 0.2s; }
+.lb-user-link:hover .lb-avatar { transform: scale(1.08); }
+.lb-username { max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Self row highlight ── */
+.lb-self-row { border-left: 3px solid var(--primary); background: rgba(255, 198, 176, 0.08); }
+
+/* Row hover */
+.lb-table tbody tr.lb-border-row:hover { background: color-mix(in oklab, var(--foreground) 3%, transparent); }
+.lb-table tbody tr.lb-border-row.lb-self-row:hover { background: rgba(255, 198, 176, 0.14); }
+
+/* ── Skeleton ── */
+.lb-skeleton { height: 20px; border-radius: 4px; }
+
+/* ── Error ── */
+.lb-error { padding: 12px 16px; font-size: 14px; vertical-align: middle; text-align: center; color: var(--destructive-foreground); }
+
+/* ── P&L colors ── */
+.lb-positive { color: #22c55e; }
+.lb-negative { color: #ef4444; }
+
+/* ── Trust legend ── */
+.lb-trust-legend {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lb-trust-legend p {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.4;
+}
+.lb-trust-legend strong {
+  color: var(--foreground);
+  font-weight: 600;
+}

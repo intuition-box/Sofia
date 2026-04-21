@@ -1,0 +1,311 @@
+/* ──────────────────────────────────────────────────────────
+   Personal Stats — player card / standing
+   ────────────────────────────────────────────────────────── */
+
+.ps-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-top: 4px solid #FCD34D;
+  border-radius: 14px;
+  background: var(--card);
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, #FCD34D 30%, transparent) inset,
+    0 24px 60px -28px color-mix(in oklab, #FCD34D 22%, transparent);
+}
+
+.ps-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      color-mix(in oklab, #FCD34D 4%, transparent) 0 1px,
+      transparent 1px 14px
+    );
+  mix-blend-mode: screen;
+  opacity: 0.6;
+}
+
+/* ── Top bar ── */
+.ps-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 22px;
+  border-bottom: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  position: relative;
+  z-index: 1;
+}
+.ps-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--foreground);
+}
+.ps-bar-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  background: #FCD34D;
+  border-radius: 2px;
+}
+.ps-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 16px 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #000;
+  background: #000;
+  color: #fff;
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  cursor: pointer;
+  transition: all 0.18s;
+  box-shadow: 0 2px 0 0 color-mix(in oklab, #FCD34D 60%, transparent);
+}
+.ps-share-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 0 #FCD34D, 0 6px 16px -6px rgba(0, 0, 0, 0.4);
+}
+.ps-share-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 0 #FCD34D;
+}
+.ps-share-btn:disabled { opacity: 0.5; cursor: wait; }
+.ps-share-btn svg { width: 14px; height: 14px; fill: currentColor; }
+/* Light-mode-friendly inverse: in dark mode the black-on-dark loses contrast against the card,
+   add a subtle outline glow */
+.dark .ps-share-btn {
+  box-shadow: 0 0 0 1px color-mix(in oklab, #FCD34D 40%, transparent), 0 2px 0 0 color-mix(in oklab, #FCD34D 60%, transparent);
+}
+.dark .ps-share-btn:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px #FCD34D, 0 4px 0 0 #FCD34D, 0 6px 16px -6px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Body ── */
+.ps-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Player zone (left) ── */
+.ps-player {
+  padding: 26px 24px;
+  border-right: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.ps-rank-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.ps-rank {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 76px;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+.ps-rank-hash {
+  font-size: 0.42em;
+  font-weight: 500;
+  color: #FCD34D;
+  margin-top: 0.18em;
+}
+.ps-rank-of {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+/* Top 3 special tints */
+.ps-rank--1 { color: #FCD34D; text-shadow: 0 0 28px color-mix(in oklab, #FCD34D 50%, transparent); }
+.ps-rank--2 { color: #D4D4D8; }
+.ps-rank--3 { color: #D08C5C; }
+
+.ps-divider {
+  width: 38px;
+  height: 1px;
+  background: color-mix(in oklab, #FCD34D 50%, transparent);
+}
+
+.ps-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.ps-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid color-mix(in oklab, #FCD34D 50%, transparent);
+  box-shadow: 0 0 0 4px var(--card), 0 0 16px -4px color-mix(in oklab, #FCD34D 60%, transparent);
+}
+.ps-name {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--foreground);
+}
+.ps-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, #FCD34D 60%, transparent);
+  background: color-mix(in oklab, #FCD34D 10%, transparent);
+  color: #FCD34D;
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.ps-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #FCD34D;
+}
+
+/* ── Stats zone (right) ── */
+.ps-stats {
+  padding: 24px 28px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+.ps-stats--split {
+  grid-template-columns: 1.3fr 1fr;
+  column-gap: 32px;
+}
+.ps-stats--split .ps-stats-col + .ps-stats-col {
+  padding-left: 32px;
+  border-left: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+.ps-stats-col {
+  display: flex;
+  flex-direction: column;
+}
+.ps-section-title {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #FCD34D;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ps-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 2px;
+  background: #FCD34D;
+}
+.ps-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.ps-stat-list {
+  display: flex;
+  flex-direction: column;
+}
+.ps-stat-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px dashed color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+.ps-stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+.ps-stat-label {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.ps-stat-value {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+.ps-stat-value--positive { color: #22c55e; }
+.ps-stat-value--negative { color: #ef4444; }
+
+
+/* ── Not alpha state ── */
+.ps-empty {
+  position: relative;
+  z-index: 1;
+  padding: 36px 24px;
+  text-align: center;
+}
+.ps-empty-title {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--foreground);
+}
+.ps-empty-sub {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin-top: 6px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 820px) {
+  .ps-body { grid-template-columns: 1fr; }
+  .ps-player {
+    border-right: none;
+    border-bottom: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
+  }
+  .ps-rank { font-size: 64px; }
+}

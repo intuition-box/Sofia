@@ -1,0 +1,303 @@
+/* ── WeightModal ── */
+
+/* Overlay */
+.wm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 16px;
+}
+
+.wm-overlay.wm-processing {
+  pointer-events: auto;
+}
+
+/* Content card */
+.wm-content {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: wm-appear 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes wm-appear {
+  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Body */
+.wm-body {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wm-description {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  line-height: 1.4;
+}
+
+/* ── Triplet cards ── */
+.wm-triplets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wm-triplet-card {
+  background: var(--muted)/30;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wm-triplet-text {
+  font-size: 13px;
+  color: var(--foreground);
+  line-height: 1.4;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Amount input ── */
+.wm-amount-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.wm-amount-input {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 8px;
+  color: var(--foreground);
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+  -moz-appearance: textfield;
+}
+
+.wm-amount-input::-webkit-outer-spin-button,
+.wm-amount-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.wm-amount-input:focus {
+  border-color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 8%, transparent);
+}
+
+/* Pills */
+.wm-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.wm-pill {
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  min-width: 38px;
+  text-align: center;
+}
+
+.wm-pill:hover:not(.wm-pill-active):not(:disabled) {
+  background: color-mix(in oklch, var(--primary) 8%, transparent);
+  border-color: color-mix(in oklch, var(--primary) 30%, transparent);
+}
+
+.wm-pill-active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+}
+
+.wm-pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Cost summary ── */
+.wm-cost-summary {
+  background: color-mix(in oklch, var(--muted) 50%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.wm-cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.wm-cost-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 3px 0;
+}
+
+.wm-cost-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.wm-cost-balance {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.wm-cost-insufficient {
+  color: var(--destructive);
+}
+
+.wm-cost-note {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  opacity: 0.6;
+  margin: 2px 0 0;
+  font-style: italic;
+}
+
+/* ── Actions ── */
+.wm-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.wm-btn {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wm-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.wm-btn-cancel:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--destructive) 8%, transparent);
+  border-color: color-mix(in oklch, var(--destructive) 30%, transparent);
+  color: var(--destructive);
+}
+
+.wm-btn-submit {
+  background: var(--primary);
+  border: none;
+  color: var(--primary-foreground);
+}
+
+.wm-btn-submit:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+
+/* ── Processing ── */
+.wm-processing-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 16px;
+  background: color-mix(in oklch, var(--muted) 30%, transparent);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.wm-processing-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Success ── */
+.wm-success-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  animation: wm-appear 0.4s ease-out;
+}
+
+.wm-success-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--primary) 50%, transparent 100%);
+  opacity: 0.8;
+}
+
+.wm-success-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 20px;
+  gap: 12px;
+}
+
+/* ── Error ── */
+.wm-error-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  background: color-mix(in oklch, var(--destructive) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--destructive) 20%, transparent);
+  border-radius: 12px;
+}

@@ -1,0 +1,3 @@
+/* ── DomainSelector ── */
+.ds-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-bottom: 40px; }
+.ds-actions { padding-top: 32px; }

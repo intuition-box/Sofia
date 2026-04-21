@@ -1,0 +1,60 @@
+query GetAllActivity($proxy: String!, $limit: Int!, $offset: Int!) {
+  events(
+    limit: $limit
+    offset: $offset
+    order_by: { created_at: desc }
+    where: {
+      type: { _eq: "Deposited" }
+      deposit: {
+        sender_id: { _ilike: $proxy }
+        assets_after_fees: { _neq: "0" }
+      }
+    }
+  ) {
+    id
+    created_at
+    deposit {
+      receiver { id label image }
+    }
+    triple {
+      term_id
+      counter_term_id
+      predicate { label term_id }
+      object {
+        label
+        value { thing { url name } }
+      }
+    }
+  }
+}
+
+query GetUserActivity($proxy: String!, $receiver: String!, $limit: Int!, $offset: Int!) {
+  events(
+    limit: $limit
+    offset: $offset
+    order_by: { created_at: desc }
+    where: {
+      type: { _eq: "Deposited" }
+      deposit: {
+        sender_id: { _ilike: $proxy }
+        receiver_id: { _ilike: $receiver }
+        assets_after_fees: { _neq: "0" }
+      }
+    }
+  ) {
+    id
+    created_at
+    deposit {
+      receiver { id label image }
+    }
+    triple {
+      term_id
+      counter_term_id
+      predicate { label term_id }
+      object {
+        label
+        value { thing { url name } }
+      }
+    }
+  }
+}
