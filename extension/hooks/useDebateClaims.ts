@@ -440,6 +440,24 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
       if (!selectedClaim || !selectedVaultId) return
       const weight = customWeights?.[0] || BigInt(Math.floor(0.5 * 1e18))
 
+      // Optimistic: flip the local vote marker immediately so the green
+      // support/oppose arrow appears on the ClaimCard in 0ms. Rolled back
+      // below if the deposit throws or returns success:false.
+      const voteType: "support" | "oppose" =
+        selectedVaultId === selectedClaim.termId ? "support" : "oppose"
+      const claimId = selectedClaim.id
+      const previousVote = localVotes.get(claimId)
+      setLocalVotes((prev) => new Map(prev).set(claimId, voteType))
+
+      const rollbackOptimistic = () => {
+        setLocalVotes((prev) => {
+          const next = new Map(prev)
+          if (previousVote === undefined) next.delete(claimId)
+          else next.set(claimId, previousVote)
+          return next
+        })
+      }
+
       try {
         setIsProcessing(true)
         setTransactionError(undefined)
@@ -449,16 +467,6 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
         if (result.success) {
           setTransactionHash(result.txHash)
           setTransactionSuccess(true)
-          // Track local vote state
-          const voteType =
-            selectedVaultId === selectedClaim.termId ? "support" : "oppose"
-          setLocalVotes(
-            (prev) =>
-              new Map(prev).set(
-                selectedClaim.id,
-                voteType as "support" | "oppose"
-              )
-          )
           // Quest/Gold tracking (non-critical)
           try {
             await questTrackingService.recordVoteActivity()
@@ -471,9 +479,11 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
             // Swallow non-critical error
           }
         } else {
+          rollbackOptimistic()
           setTransactionError(result.error || "Transaction failed")
         }
       } catch (error) {
+        rollbackOptimistic()
         setTransactionError(
           error instanceof Error ? error.message : "Transaction failed"
         )
@@ -481,7 +491,14 @@ export const useDebateClaims = (): UseDebateClaimsResult => {
         setIsProcessing(false)
       }
     },
-    [selectedClaim, selectedVaultId, selectedCurve, depositWithPool, address]
+    [
+      selectedClaim,
+      selectedVaultId,
+      selectedCurve,
+      depositWithPool,
+      address,
+      localVotes
+    ]
   )
 
   // ── List expand/collapse + lazy fetch entries ───────────────────

@@ -15,7 +15,9 @@ import type { QueryClient } from "@tanstack/react-query"
 import type { WatchUserPositionsSubscription } from "@0xsofia/graphql"
 import {
   DAILY_CERTIFICATION_ATOM_ID,
+  DAILY_STREAK_STAKE,
   DAILY_VOTE_ATOM_ID,
+  DAILY_VOTE_STAKE,
   GLOBAL_STAKE,
   PREDICATE_IDS
 } from "~/lib/config/chainConfig"
@@ -428,7 +430,88 @@ export function deriveVerifiedPlatforms(positions: Position[]): string[] {
   return deriveVerifiedOAuthPlatforms(positions)
 }
 
-// ── Optimistic updates (Phase 4 wires these to deposit/redeem flows) ─────────
+// ── Optimistic updates ──────────────────────────────────────────────────────
+//
+// Applied client-side right after the user clicks an action, so the UI
+// reflects the change in 0ms instead of waiting the 3-5s indexer lag
+// before the WS pushes the real state. When the WS eventually arrives,
+// it overwrites the same query key with the authoritative value (in
+// practice identical to the optimistic one for daily streak, so it's
+// effectively a no-op refresh).
+
+export type DailyStreakKind = "cert" | "vote"
+
+/**
+ * Flip the daily-streak cache key to reflect a fresh cert/vote deposit.
+ * Returns a rollback function that restores the previous snapshot — call
+ * it from the transaction's catch block if the TX fails or the user
+ * cancels.
+ *
+ * Usage:
+ *   const rollback = applyOptimisticDailyStreak(qc, wallet, "cert")
+ *   try { await claimTx() } catch (err) { rollback(); throw err }
+ */
+export function applyOptimisticDailyStreak(
+  qc: QueryClient,
+  walletAddress: string,
+  kind: DailyStreakKind
+): () => void {
+  const wallet = walletAddress.toLowerCase()
+  const key = realtimeKeys.dailyStreak(wallet)
+  const previous = qc.getQueryData<DailyStreakStatus>(key)
+
+  // Use the chainConfig stake constants as the optimistic share amount.
+  // When the WS overwrites this shortly after, the real value will be
+  // equivalent (same stake, same atom) — effectively a no-op refresh.
+  const baseline: DailyStreakStatus = previous ?? {
+    certifiedToday: false,
+    votedToday: false,
+    certificationShares: "0",
+    voteShares: "0"
+  }
+
+  const next: DailyStreakStatus = {
+    ...baseline,
+    ...(kind === "cert"
+      ? {
+          certifiedToday: true,
+          certificationShares: DAILY_STREAK_STAKE.toString()
+        }
+      : {
+          votedToday: true,
+          voteShares: DAILY_VOTE_STAKE.toString()
+        })
+  }
+
+  qc.setQueryData<DailyStreakStatus>(key, next)
+
+  return () => {
+    // Restore the exact snapshot we had before the optimistic apply.
+    // If previous was undefined (first action of the session), remove
+    // the entry so consumers fall back to their own defaults.
+    if (previous === undefined) {
+      qc.removeQueries({ queryKey: key, exact: true })
+    } else {
+      qc.setQueryData<DailyStreakStatus>(key, previous)
+    }
+  }
+}
+
+/**
+ * Explicit clear without the rollback-closure dance. Prefer the rollback
+ * returned by applyOptimisticDailyStreak — it restores the previous
+ * snapshot instead of forcing certifiedToday/votedToday back to false
+ * (which would be wrong if the user had already acted earlier today).
+ */
+export function clearOptimisticDailyStreak(
+  qc: QueryClient,
+  walletAddress: string
+): void {
+  const wallet = walletAddress.toLowerCase()
+  qc.removeQueries({ queryKey: realtimeKeys.dailyStreak(wallet), exact: true })
+}
+
+// ── Legacy placeholders (Phase 3.B v2 can fill these in) ────────────────────
 
 export function applyOptimisticPosition(
   _qc: QueryClient,
@@ -436,7 +519,9 @@ export function applyOptimisticPosition(
   _termId: string,
   _delta: bigint
 ): void {
-  // Phase 4 implementation.
+  // Generic variant deferred — requires per-termId routing (topic /
+  // category / platform / triple) that Sofia's atom model doesn't neatly
+  // cover. Phase 3.B v2 should implement alongside the hook migrations.
 }
 
 export function clearOptimisticPosition(
@@ -444,5 +529,5 @@ export function clearOptimisticPosition(
   _walletAddress: string,
   _termId: string
 ): void {
-  // Phase 4 implementation.
+  // Same as above.
 }

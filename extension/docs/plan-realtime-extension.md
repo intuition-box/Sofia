@@ -234,25 +234,44 @@ Blockers that stay HTTP:
 - `useUserCertifications` singleton (>500 possible, refactor invasive)
 - `useTrendingCertifications` (cross-user firehose)
 
-### Phase 4 — Optimistic updates (1 d)
+### Phase 4 — Optimistic updates (shipped as "mini")
 
-Port `applyOptimisticPosition` / `clearOptimisticPosition` from
-`sofia-explorer/src/lib/realtime/derivations.ts`.
+Scoped down to the two flows where an optimistic flip is genuinely
+visible (the rest would need Phase 3.B v2 consumers to matter).
 
-**Transport: direct `chrome.runtime.sendMessage` popup → offscreen** (NOT via
-persister — storage latency of 5-50ms breaks the "instant UI" feel).
+**Shipped**:
+- `applyOptimisticDailyStreak(qc, wallet, kind)` in `derivations.ts` —
+  flips `['daily-streak', wallet]` cache key, returns a rollback closure
+  that restores the exact pre-apply snapshot (not a blind set-to-false,
+  which would be wrong if the user already acted earlier today).
+- `clearOptimisticDailyStreak(qc, wallet)` helper for explicit removal.
+- `useQuestSystem.claimQuestXP` wires the cache flip AND a parallel
+  `setUserProgress` update so the quest icon turns green in 0ms
+  regardless of whether the consumer reads from the WS cache or from
+  local `userProgress` state. Rollback on throw or success:false;
+  TripleExists treated as success.
+- `useDebateClaims.handleStakeSubmit` (Resonance support/oppose claim)
+  — `setLocalVotes` moved from the `result.success` branch to BEFORE
+  the `await depositWithPool`, so the green support/oppose arrow
+  appears the moment the user confirms the stake modal. Previous vote
+  captured for precise rollback.
 
-Flow:
-1. User clicks "Deposit 10 TRUST" in popup
-2. Popup applies optimistic on **its own** `QueryClient` → UI updates in 0ms
-3. Popup fires `{ type: 'OPTIMISTIC_POSITION', payload }` to offscreen
-4. Offscreen applies same optimistic on its `QueryClient` (persister → storage
-   → popup rehydrate is idempotent, no-op in practice)
-5. TX broadcasts on-chain, WS subscription receives the event, overwrites optimistic
-6. TX failure → popup sends `{ type: 'CLEAR_OPTIMISTIC' }` → rollback
+**Transport**: direct setState — no offscreen messaging needed since we
+run SW-direct, not offscreen. The popup's QueryClient is the one the
+UI reads, so mutating it directly is enough. The SW's QueryClient
+catches up via chrome.storage.onChanged when the WS push arrives.
 
-Hook into the extension's deposit/redeem flows (grep `executeSingleDeposit`
-or similar).
+**Deferred to Phase 3.B v2**:
+- Generic `applyOptimisticPosition(qc, wallet, termId, delta)` that
+  routes by termId type (topic / category / platform / triple). Needs
+  per-termId metadata Sofia doesn't cleanly expose yet — ship alongside
+  the hook migration attempts for trust / follow / intentions.
+
+**Flows still not optimistic**:
+- Cart submit (batch certifications, intentions, trust/distrust) — the
+  ModalWeight UI already shows a processing/success state, optimistic
+  would just duplicate that
+- Regular deposit / redeem — no WS-fed consumer to benefit yet
 
 ### Phase 5 — Offline badge + HTTP fallback (1 d)
 

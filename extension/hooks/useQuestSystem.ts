@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { useBookmarks } from './useBookmarks'
 import { useDiscoveryScore } from './useDiscoveryScore'
@@ -23,7 +23,10 @@ import { QuestBadgeService, QuestProgressService } from '../lib/services'
 import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from '../lib/config/chainConfig'
 import { computeQuestStatuses, calculateLevelFromXP, calculateXPForNextLevel, getClaimId, getWalletKey } from '../lib/utils'
 import { createHookLogger } from '../lib/utils/logger'
-import { realtimeKeys } from '../lib/realtime/derivations'
+import {
+  applyOptimisticDailyStreak,
+  realtimeKeys
+} from '../lib/realtime/derivations'
 import type { DailyStreakStatus } from '../lib/realtime/derivations'
 import { QUEST_DEFINITIONS } from '../types/questTypes'
 import type { Quest, UserProgress, QuestSystemResult } from '../types/questTypes'
@@ -54,6 +57,8 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
   const { stats: discoveryStats } = isReadOnlyMode
     ? { stats: undefined }
     : discoveryData
+
+  const queryClient = useQueryClient()
 
   // On-chain streak data (same source as LeaderboardTab)
   const certStreak = useOnChainStreak(DAILY_CERTIFICATION_ATOM_ID, walletAddress)
@@ -321,6 +326,52 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
     setClaimingQuestId(questId)
     setError(null)
 
+    // Optimistic daily-streak flip: both the WS-backed cache key AND the
+    // local userProgress state get flipped together, so the quest icon
+    // and streak panel reflect the new activity in 0ms regardless of
+    // which source the UI reads from. The WS will overwrite the cache
+    // once the TX confirms; QuestProgressService will reconcile
+    // userProgress on the next refresh cycle.
+    const isDailyCert = questId === 'daily-certification'
+    const isDailyVote = questId === 'daily-vote'
+    const cacheRollback = isDailyCert
+      ? applyOptimisticDailyStreak(queryClient, walletAddress, 'cert')
+      : isDailyVote
+        ? applyOptimisticDailyStreak(queryClient, walletAddress, 'vote')
+        : null
+
+    let progressRollback: (() => void) | null = null
+    if (isDailyCert || isDailyVote) {
+      const today = new Date().toISOString().split('T')[0]
+      const snapshot = userProgress
+      progressRollback = () => setUserProgress(snapshot)
+      const datesKey = isDailyCert ? 'certActivityDates' : 'voteActivityDates'
+      const existing = snapshot[datesKey]
+      const nextDates = existing.includes(today)
+        ? existing
+        : [...existing, today].sort()
+      setUserProgress({
+        ...snapshot,
+        ...(isDailyCert
+          ? {
+              hasCertificationToday: true,
+              certActivityDates: nextDates
+            }
+          : {
+              hasVotedToday: true,
+              voteActivityDates: nextDates
+            })
+      })
+    }
+
+    const optimisticRollback =
+      cacheRollback || progressRollback
+        ? () => {
+            cacheRollback?.()
+            progressRollback?.()
+          }
+        : null
+
     try {
       logger.info('Creating on-chain badge for quest', { title: quest.title })
 
@@ -343,6 +394,9 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
         setClaimedQuestIds(newClaimed)
         await QuestBadgeService.saveClaimedQuestIds(walletAddress, newClaimed)
         logger.info('Claimed XP for quest', { claimId })
+      } else if (optimisticRollback) {
+        // Non-throwing failure (service returned success:false) — undo the flip.
+        optimisticRollback()
       }
 
       return result
@@ -356,12 +410,18 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
         errorMessage.includes('Triple creation failed')
 
       if (isTripleExistsError) {
+        // Badge already claimed on-chain — the optimistic state matches
+        // reality, leave it in place.
         logger.info('Badge already exists on-chain, marking as claimed')
         const newClaimed = new Set(claimedQuestIds)
         newClaimed.add(claimId)
         setClaimedQuestIds(newClaimed)
         await QuestBadgeService.saveClaimedQuestIds(walletAddress, newClaimed)
         return { success: true, error: 'Badge already claimed on-chain' }
+      }
+
+      if (optimisticRollback) {
+        optimisticRollback()
       }
 
       setError(errorMessage)
