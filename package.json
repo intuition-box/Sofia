@@ -7,7 +7,7 @@
     "dev:extension": "pnpm --filter extension dev",
     "dev:og": "pnpm --filter og dev",
     "dev:landing": "pnpm --filter landing start",
-    "build": "pnpm -r --filter './apps/**' build",
+    "build": "pnpm -r build",
     "typecheck": "pnpm -r --filter './apps/**' typecheck"
   }
 }
