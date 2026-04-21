@@ -1,0 +1,62 @@
+---
+
+slug: logbook-30-01
+
+title: Logbook 30/01
+
+authors: [Samuel, Maxime]
+
+---
+
+import ImageCarousel from '@site/src/components/ImageCarousel';
+
+This week, we shipped full multi-wallet support — Sofia now discovers wallet providers via EIP-6963 (MIPD) and bridges multiple wallets (Rabby, MetaMask, etc.) and isolates all user data (tokens, bookmarks, quests, XP) per wallet address. We also securing postMessage origins, enforcing HTTPS for transactions, and adding crypto-based OAuth state. On the UX side, a complete onboarding flow with tutorial slides and bookmark selection is now live, alongside a new URL normalization layer that strips tracking params and uses page titles as atom names. Finally, we cleaned up the EchoesTab by excluding follow triples from group cards, fixed group levels from on-chain data, and removed legacy dead code.
+
+{/* truncate */}
+
+## Multi-Wallet Support & Storage Isolation
+
+- EIP-6963 (MIPD) wallet discovery: detection of restricted pages + provider bridge for different wallets (Rabby, MetaMask, etc.)
+- Wallet-agnostic provider selection: method routing to the correct provider
+- Storage refactoring per wallet: tokens, bookmarks, quests, XP and all user memory tied to a wallet key
+- Full storage isolation per wallet: each wallet gets its own storage space for user identity
+- OAuth predicate IDs in chainConfig: OAuth predicates now count towards group levels
+- Connect/disconnect wallet: local data cleared when a new wallet is detected
+
+## Security Hardening
+- Removed eth_sign, secured postMessage origin, crypto-based OAuth state, dead code removal, relay timeout
+- HTTPS warning page: alert when a wallet transaction is attempted on a non-HTTPS page
+
+## Onboarding Flow
+
+<ImageCarousel images={[
+  { src: require('./start-onboarding.png').default, alt: 'Onboarding start' },
+  { src: require('./onboarding.png').default, alt: 'Onboarding' },
+  { src: require('./certify-onboarding-.png').default, alt: 'Certify onboarding' },
+  { src: require('./proof-analysys-onboarding.png').default, alt: 'Proof analysis onboarding' },
+  { src: require('./connect-your-friend-on-boarding.png').default, alt: 'Connect your friend onboarding' },
+  { src: require('./bookmarkonboarding.png').default, alt: 'Bookmark onboarding' },
+  { src: require('./select-bookmark-tab.png').default, alt: 'Select bookmark tab' },
+]} />
+
+- Tutorial slides + bookmark selection during onboarding
+- Blur card, new slide, dark background, tutorial replay button, UI refinements for trust and intention pills buttons
+- Pills refactoring: updated pill sizing
+
+## URL Normalization & Atom Naming
+- normalizeUrl() strips tracking params, cleanTitle() removes site suffixes ("- YouTube")
+- Page titles used as atom names
+- Fix for recurring quest claims: deposit on existing triple
+
+## EchoesTab & Group Levels
+- Follow triples no longer create cards in EchoesTab, auto-removal of empty groups
+- Fixed group levels: restored levels from on-chain data + English UI translation
+
+
+## Cleanup & Refactoring
+- Removed dead code and old dependencies
+- Refactored social predicates: uses pre-existing term IDs for social verification instead of creating new ones
+- Centralized ignored domains: shared constants + fix SettingsPage to clear per-wallet storage keys
+
+## Fixes
+- Fixed bookmark: null redirect after creation
