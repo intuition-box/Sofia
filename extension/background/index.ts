@@ -1,6 +1,7 @@
 import { setupMessageHandlers } from "./messageHandlers";
 import { MessageBus } from "../lib/services";
 import { initializeThemeIconManager } from "./themeIconManager";
+import { initializeRealtime } from "./realtime";
 import { createServiceLogger } from '../lib/utils/logger'
 import "./oauth/index"; // Initialize OAuth service
 
@@ -34,6 +35,11 @@ async function init(): Promise<void> {
   try {
     // Initialize theme-aware icon system
     await initializeThemeIconManager()
+
+    // Initialize realtime WS subscriptions (Phase 1.B — SW-level).
+    // Reads current wallet from chrome.storage.session and subscribes;
+    // reconnects on wallet change via chrome.storage.onChanged.
+    await initializeRealtime()
 
     // Setup message handlers (has internal guard against duplicates)
     setupMessageHandlers()

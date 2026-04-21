@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import { WagmiProvider } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { configureClient } from '@0xsofia/graphql'
 import "./components/styles/Global.css"
 
 import { wagmiConfig } from "./lib/config/wagmi"
+import { QueryProvider } from "./lib/providers/queryProvider"
 import RouterProvider, { useRouter } from "./components/layout/RouterProvider"
 import AppLayout from "./components/layout/AppLayout"
 import BottomNavigation from "./components/layout/BottomNavigation"
@@ -24,20 +24,10 @@ import OnboardingBookmarkSelectPage from "./components/pages/OnboardingBookmarkS
 import OnboardingClaimModal from "./components/modals/OnboardingClaimModal"
 import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
 
-// Configure GraphQL client BEFORE creating QueryClient
+// Configure GraphQL client BEFORE the QueryProvider mounts
 configureClient({
   apiUrl: 'https://mainnet.intuition.sh/v1/graphql'
 })
-
-// Query client for React Query
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-    },
-  },
-})
-
 
 const SidePanelContent = () => {
   const { currentPage, navigateTo, firstClaimData, setFirstClaimData } = useRouter()
@@ -125,13 +115,13 @@ const SidePanelContent = () => {
 
 function SidePanel() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryProvider>
       <WagmiProvider config={wagmiConfig}>
         <RouterProvider initialPage="home">
           <SidePanelContent />
         </RouterProvider>
       </WagmiProvider>
-    </QueryClientProvider>
+    </QueryProvider>
   )
 }
 

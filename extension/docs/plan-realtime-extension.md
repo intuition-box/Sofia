@@ -113,26 +113,36 @@ throwaway messaging code.
    - `derivations.ts`
    - `wsStatus.ts`
 
-3. In the extension app:
+3. In the extension app (shipped in Phase 1.B — SW-direct, not offscreen):
    - Add `PLASMO_PUBLIC_GRAPHQL_WS_URL` env var (default
      `wss://mainnet.intuition.sh/v1/graphql`).
-   - Create the offscreen document (`background/offscreen/realtime.html` +
-     `realtime.ts`). SW spawns it via `chrome.offscreen.createDocument({
-     reasons: ['WORKERS'], justification: 'WebSocket subscription for user
-     positions' })` on wallet-connect, closes on wallet-disconnect.
-   - Offscreen holds the `SubscriptionManager` instance + `setInterval(ping,
-     25000)` keepalive (WS `ConnectionAck`).
-   - Wallet flow: popup writes `sofia-active-wallet` to `chrome.storage.local`
-     → SW listens via `chrome.storage.onChanged` → ensures offscreen doc →
-     offscreen reads the wallet and calls `manager.connect(wallet)`.
-   - Wallet switch: popup rewrites `sofia-active-wallet` → offscreen receives
-     `onChanged` → `manager.disconnect() + manager.connect(newWallet)`.
-   - Security: every `chrome.runtime.onMessage` handler guards
-     `sender.id === chrome.runtime.id`.
+   - Create `extension/background/realtime.ts` that holds the
+     `SubscriptionManager` instance in the service worker directly. MV3
+     keeps the SW alive as long as an open WebSocket is active, so the
+     30s idle shutdown doesn't apply while a user is connected.
+   - Wallet flow: the popup already writes `walletAddress` to
+     `chrome.storage.session` (existing convention). SW listens via
+     `chrome.storage.onChanged` → `manager.connect(wallet)` on write,
+     `manager.disconnect()` on removal.
+   - Wallet switch: onChanged fires with a new value → manager reconnects.
 
-**Acceptance**: open the popup with a wallet connected, check chrome://inspect
-for the offscreen doc, see `[WS positions]` logs with N positions. Switch
-wallet in popup → new subscription kicks in within 1s.
+**Why SW-direct over offscreen document**: the extension already owns
+one offscreen doc (`public/offscreen.html`, theme detection) and Chrome
+caps us at one per extension. Merging theme + realtime is feasible but
+invasive (migrate vanilla JS → TS, rewire CSS for theme detection's
+Canvas trick). Phase 5 can migrate to a unified offscreen if SW kills
+are observed under memory pressure. For Phase 1.B, SW-direct is the
+path of least resistance and meets the acceptance criteria.
+
+**Security** (deferred to Phase 4 messaging): new `chrome.runtime.onMessage`
+handlers guard `sender.id === chrome.runtime.id`. Phase 1.B adds no new
+onMessage handlers (driven by `storage.onChanged`), so no guards needed
+here.
+
+**Acceptance**: open the popup with a wallet connected, inspect the SW in
+`chrome://extensions/ → Inspect views: service worker` — see
+`[WS positions] N positions for 0xabc123…` logs. Switch wallet in popup
+→ new subscription kicks in within 1s.
 
 ### Phase 2 — React Query persister + cross-context bus (1-2 d)
 
@@ -165,44 +175,103 @@ cross-context propagation bus.
 from cache, no loading spinner. Bump `CACHE_VERSION` to `"v2"` and reload →
 cache wiped, fresh fetch.
 
-### Phase 3 — Derivations + cache writes (1 d)
+### Phase 3 — Derivations + hook migrations
 
-Port `src/lib/realtime/derivations.ts` from Explorer. Wire
-`onPositionsUpdate` + `onTrackedPositionsUpdate` in the offscreen to write:
+Split into two sub-PRs to keep reviewable chunks:
 
-- `['positions', wallet]`
-- `['verified-platforms', wallet]`
-- `['user-profile-derived', wallet]`
-- `['user-stats', wallet]`
-- `['topic-positions-map', wallet]` (from tracked subscription)
-- `['category-positions-map', wallet]`
-- `['platform-positions-map', wallet]`
+#### Phase 3.A — Sofia-specific derivations (shipped)
+
+Replaces the Phase 1.B stubs with real derivation logic adapted to
+Sofia's atom set (no "topics/categories/platforms" à la Explorer — Sofia
+models things differently).
+
+`onPositionsUpdate` now writes 8 cache keys per WS push:
+
+- `['positions', wallet]` — raw payload
+- `['user-profile-derived', wallet]` — full profile view
+- `['user-stats', wallet]` — aggregate counts / staked total
+- `['trust-circle', wallet]` — `{accountTermId, accountLabel, shares, tripleTermId}[]` from predicate TRUSTS
+- `['following', wallet]` — same shape from predicate FOLLOW (curve_id=1)
+- `['daily-streak', wallet]` — `{certifiedToday, votedToday}` booleans from DAILY_CERTIFICATION/VOTE atoms
+- `['verified-oauth-platforms', wallet]` — set of platforms from MEMBER_OF/OWNER_OF/TOP_ARTIST/TOP_TRACK/AM predicates
+- `['intention-groups', wallet]` — VISITS_FOR_* positions grouped by URL/domain
+- `['global-stake-position', wallet]` — position on Beta season pool atom
+- `['verified-platforms', wallet]` — legacy alias for OAuth platforms
+
+`TRACKED_TERM_IDS` now contains:
+- `DAILY_CERTIFICATION_ATOM_ID`
+- `DAILY_VOTE_ATOM_ID`
+- `GLOBAL_STAKE.TERM_ID`
+
+This guarantees these positions arrive regardless of the user's total
+position count (1-TRUST daily stakes would otherwise drop below the
+top-500 cap for power users).
 
 All keys scoped by `wallet` for multi-wallet correctness.
 
-Port hook migrations from Explorer commits tagged `Phase 3`: `useTopicPositions`,
-`useUserProfile`, etc. Grep matching extension hooks and apply the same
-`staleTime: 10min, gcTime: 24h, refetchOnWindowFocus: false`.
+**Acceptance**: SW console shows `[WS tracked] N positions` on connect
+(N ∈ [0..3] depending on user's quest activity). Inspect cache in popup
+devtools: `queryClient.getQueryData(['trust-circle', wallet])` returns
+the expected trust list.
 
-### Phase 4 — Optimistic updates (1 d)
+#### Phase 3.B — Hook migrations (not started)
 
-Port `applyOptimisticPosition` / `clearOptimisticPosition` from
-`sofia-explorer/src/lib/realtime/derivations.ts`.
+Migrate 5 candidate hooks to read from the WS-backed cache keys with
+`staleTime: Infinity, enabled: !!wallet`. Drop their HTTP fetchers.
 
-**Transport: direct `chrome.runtime.sendMessage` popup → offscreen** (NOT via
-persister — storage latency of 5-50ms breaks the "instant UI" feel).
+Candidates from the Phase 3 audit:
+- `useTrustCircle` → `['trust-circle', wallet]`
+- `useFollowing` → `['following', wallet]`
+- `useFollowers` → requires dynamic My Account atom tracking (deferred)
+- `useUserSignals` → partial migration (top-100 positions only)
+- `useAccountStats` → `['user-stats', wallet]`
 
-Flow:
-1. User clicks "Deposit 10 TRUST" in popup
-2. Popup applies optimistic on **its own** `QueryClient` → UI updates in 0ms
-3. Popup fires `{ type: 'OPTIMISTIC_POSITION', payload }` to offscreen
-4. Offscreen applies same optimistic on its `QueryClient` (persister → storage
-   → popup rehydrate is idempotent, no-op in practice)
-5. TX broadcasts on-chain, WS subscription receives the event, overwrites optimistic
-6. TX failure → popup sends `{ type: 'CLEAR_OPTIMISTIC' }` → rollback
+Plus `useQuestSystem` gets a light trigger-based refetch: WS sees a
+position on DAILY_* → invalidate the HTTP streak count query.
 
-Hook into the extension's deposit/redeem flows (grep `executeSingleDeposit`
-or similar).
+Blockers that stay HTTP:
+- `useUserDiscoveryScore` (cross-user, different wallet)
+- `useUserCertifications` singleton (>500 possible, refactor invasive)
+- `useTrendingCertifications` (cross-user firehose)
+
+### Phase 4 — Optimistic updates (shipped as "mini")
+
+Scoped down to the two flows where an optimistic flip is genuinely
+visible (the rest would need Phase 3.B v2 consumers to matter).
+
+**Shipped**:
+- `applyOptimisticDailyStreak(qc, wallet, kind)` in `derivations.ts` —
+  flips `['daily-streak', wallet]` cache key, returns a rollback closure
+  that restores the exact pre-apply snapshot (not a blind set-to-false,
+  which would be wrong if the user already acted earlier today).
+- `clearOptimisticDailyStreak(qc, wallet)` helper for explicit removal.
+- `useQuestSystem.claimQuestXP` wires the cache flip AND a parallel
+  `setUserProgress` update so the quest icon turns green in 0ms
+  regardless of whether the consumer reads from the WS cache or from
+  local `userProgress` state. Rollback on throw or success:false;
+  TripleExists treated as success.
+- `useDebateClaims.handleStakeSubmit` (Resonance support/oppose claim)
+  — `setLocalVotes` moved from the `result.success` branch to BEFORE
+  the `await depositWithPool`, so the green support/oppose arrow
+  appears the moment the user confirms the stake modal. Previous vote
+  captured for precise rollback.
+
+**Transport**: direct setState — no offscreen messaging needed since we
+run SW-direct, not offscreen. The popup's QueryClient is the one the
+UI reads, so mutating it directly is enough. The SW's QueryClient
+catches up via chrome.storage.onChanged when the WS push arrives.
+
+**Deferred to Phase 3.B v2**:
+- Generic `applyOptimisticPosition(qc, wallet, termId, delta)` that
+  routes by termId type (topic / category / platform / triple). Needs
+  per-termId metadata Sofia doesn't cleanly expose yet — ship alongside
+  the hook migration attempts for trust / follow / intentions.
+
+**Flows still not optimistic**:
+- Cart submit (batch certifications, intentions, trust/distrust) — the
+  ModalWeight UI already shows a processing/success state, optimistic
+  would just duplicate that
+- Regular deposit / redeem — no WS-fed consumer to benefit yet
 
 ### Phase 5 — Offline badge + HTTP fallback (1 d)
 
