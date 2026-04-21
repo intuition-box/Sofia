@@ -1,0 +1,13 @@
+{
+  "name": "sofia-core",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev:explorer": "pnpm --filter explorer dev",
+    "dev:extension": "pnpm --filter extension dev",
+    "dev:og": "pnpm --filter og dev",
+    "dev:landing": "pnpm --filter landing start",
+    "build": "pnpm -r --filter './apps/**' build",
+    "typecheck": "pnpm -r --filter './apps/**' typecheck"
+  }
+}

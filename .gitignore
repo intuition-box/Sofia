@@ -74,3 +74,10 @@ WORLD_ENTITY_MEMORY_LEAK_ANALYSIS.md
 sofia-agent-latest.tar.gz
 
 /PLAN.md
+
+# Monorepo
+.turbo/
+.pnpm-store/
+.next/
+.vercel/
+.docusaurus/
