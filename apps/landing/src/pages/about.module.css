@@ -1,0 +1,240 @@
+.aboutMain {
+  position: relative;
+  z-index: 1;
+  background: #000000;
+  min-height: 100vh;
+  padding: 8rem 0 4rem 0;
+  color: #ffffff;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  font-size: 4rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  margin-bottom: 4rem;
+  color: #ffffff;
+  font-family: 'Lalezar', cursive;
+  width: fit-content;
+}
+
+/* Box around TEAM title */
+.section:first-child .sectionTitle {
+  padding: none;
+}
+
+/* Team Section */
+.teamGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.teamMember {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.memberHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  min-height: 120px;
+}
+
+.memberImage {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.memberInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.memberRole {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+.memberName {
+  font-size: 2rem;
+  font-weight: 400;
+  margin: 0;
+  color: #ffffff;
+  font-family: 'Lalezar', cursive;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.socialIcon {
+  color: #ffffff;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+.socialIcon:hover {
+  color: #888888;
+}
+
+.memberQuote {
+  font-size: 1.125rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: #ffffff;
+  max-width: 800px;
+}
+
+.memberAchievements {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0;
+  max-width: 800px;
+}
+
+.memberAchievements li {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+/* Advisors Section */
+.advisorsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.advisor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.advisorRole {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+.advisorName {
+  font-size: 2rem;
+  font-weight: 400;
+  margin: 0;
+  color: #ffffff;
+  font-family: 'Lalezar', cursive;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+  .container {
+    gap: 4rem;
+  }
+
+  .teamGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionTitle {
+    font-size: 3rem;
+  }
+
+  .memberHeader {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .memberInfo {
+    align-items: center;
+  }
+
+  .socialLinks {
+    justify-content: center;
+  }
+
+  .memberQuote,
+  .memberAchievements {
+    text-align: left;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .aboutMain {
+    padding: 2rem 0;
+  }
+
+  .container {
+    padding: 65px 2rem;
+    gap: 3rem;
+  }
+
+  .teamGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionTitle {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .section:first-child .sectionTitle {
+    padding: 0.3rem 1rem;
+  }
+
+  .memberImage {
+    width: 100px;
+    height: 100px;
+  }
+
+  .memberName {
+    font-size: 1.5rem;
+  }
+
+  .memberRole {
+    font-size: 1rem;
+  }
+
+  .memberQuote {
+    font-size: 1rem;
+  }
+
+  .advisorRole {
+    font-size: 1.25rem;
+  }
+
+  .advisorName {
+    font-size: 1.5rem;
+  }
+}

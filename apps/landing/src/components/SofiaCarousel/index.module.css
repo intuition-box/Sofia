@@ -1,0 +1,89 @@
+.carousel {
+  max-width: 3000px;
+  margin: 1.8rem auto;
+  position: relative;
+  overflow: hidden;
+ border-radius: 15px;
+}
+
+.scrollContainer {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+
+.scrollTrack {
+  display: flex;
+  animation: scrollRightToLeft 80s linear infinite;
+  gap: 2.5rem;
+}
+
+.imageSlide {
+  flex-shrink: 0;
+  width: 400px;
+  height: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background: #00000018; */
+  border-radius: 15px;
+  box-shadow: none;
+}
+
+.carouselImage {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  opacity: 92%;
+  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); */
+
+}
+
+@keyframes scrollRightToLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-6 * (400px + 2.5rem)));
+  }
+}
+
+.scrollTrack:hover {
+  animation-play-state: paused;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .carousel {
+    max-width: 100%;
+    margin: 1.5rem auto;
+  }
+
+  .imageSlide {
+    width: 460px;
+    height: 295px;
+  }
+
+  .scrollTrack {
+    gap: 0.3rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .imageSlide {
+    width: 195px;
+    height: 156px;
+  }
+
+  .scrollTrack {
+    gap: 0.2rem;
+  }
+
+  .carouselImage {
+    max-width: 95%;
+    max-height: 95%;
+  }
+}

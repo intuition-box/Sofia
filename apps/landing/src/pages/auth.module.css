@@ -1,0 +1,216 @@
+/**
+ * Authentication page styles - matches Sofia site design
+ */
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  background: rgba(2, 0, 11, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 320px;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+  object-fit: contain;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+  font-family: 'Overpass Mono', monospace;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top: 3px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.checkmark {
+  font-size: 3rem;
+  color: #4ade80;
+  margin-bottom: 1.5rem;
+}
+
+.errorIcon {
+  font-size: 3rem;
+  color: #f87171;
+  margin-bottom: 1.5rem;
+}
+
+.text {
+  color: #ffffff !important;
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+  font-family: 'Overpass Mono', monospace;
+  font-weight: 600;
+}
+
+.subtext {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 0.875rem;
+  margin: 0;
+  font-family: 'Overpass Mono', monospace;
+}
+
+.walletAddress {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-family: 'Overpass Mono', monospace;
+  font-size: 0.75rem;
+  color: #ffffff !important;
+  margin: 1rem 0;
+  word-break: break-all;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn {
+  margin-top: 1.5rem;
+  padding: 0.875rem 2rem;
+  background: #02000B;
+  color: #ffffff !important;
+  border: 2px solid #ffffff;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Overpass Mono', monospace;
+}
+
+.btn:hover {
+  background: #ffffff;
+  color: #02000B !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.btnSecondary {
+  margin-top: 1.5rem;
+  margin-left: 0.75rem;
+  padding: 0.875rem 2rem;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff !important;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Overpass Mono', monospace;
+}
+
+.btnSecondary:hover {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.closeBtn {
+  margin-top: 1.5rem;
+  padding: 0.5rem 1.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff !important;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Overpass Mono', monospace;
+}
+
+.closeBtn:hover {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.disconnectBtn {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff !important;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Overpass Mono', monospace;
+  opacity: 0.7;
+}
+
+.disconnectBtn:hover {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.instructions {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.instructionsText {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  margin: 0;
+  font-family: 'Overpass Mono', monospace;
+}
+
+/* Responsive */
+@media screen and (max-width: 480px) {
+  .card {
+    padding: 2rem 1.5rem;
+    min-width: 280px;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+  }
+
+  .btnSecondary {
+    margin-left: 0;
+  }
+}

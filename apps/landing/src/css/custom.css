@@ -1,0 +1,436 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* Import custom fonts */
+@import url('https://fonts.googleapis.com/css2?family=Overpass+Mono:ital,wght@0,300..700;1,300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lalezar&display=swap');
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #02000B;
+  --ifm-color-primary-dark: #02000B;
+  --ifm-color-primary-darker: rgb(24, 24, 24);
+  --ifm-color-primary-darkest: #02000B;
+  --ifm-color-primary-light: rgb(107, 107, 107);
+  --ifm-color-primary-lighter: #4d4d4d;
+  --ifm-color-primary-lightest: #666666;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-background-color: transparent;
+  --ifm-background-surface-color: transparent;
+  --ifm-navbar-background-color: transparent;
+  --ifm-color-content: #02000B;
+  --ifm-color-content-secondary: #02000B;
+  --ifm-link-color: #02000B;
+  --ifm-link-hover-color: #02000B;
+  --ifm-font-color-base: #02000B;
+  --ifm-font-family-base: 'Overpass Mono', monospace;
+  --ifm-heading-font-family: 'Overpass Mono', monospace;
+  --ifm-navbar-height: 9rem;
+  --dark: #ffffff;
+}
+
+.authorSocialLink_O1ZE svg path {
+  fill: #ffffff !important;
+}
+
+
+/* Make navbar logo 30% larger */
+.navbar__logo img {
+  height: 4.8rem !important;
+}
+
+/* Hide the default navbar completely */
+.navbar {
+  display: none !important;
+}
+
+/* Make footer background transparent and text color consistent */
+.footer {
+  background-color: transparent !important;
+  color: #02000B !important;
+  position: relative !important;
+  z-index: 100 !important;
+}
+
+.footer * {
+  color: #02000B !important;
+}
+
+
+
+.footer a {
+  color: #02000B !important;
+}
+
+.footer a:hover {
+  color: #02000B !important;
+}
+
+/* Footer full-width inline display */
+.footer__links {
+  justify-content: center !important;
+  gap: 3rem !important;
+  flex-wrap: wrap !important;
+}
+
+.footer__col {
+  margin-right: 0 !important;
+  text-align: center !important;
+}
+
+.footer__title {
+  margin-bottom: 1rem !important;
+}
+
+.footer__items {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 2rem !important;
+  flex-wrap: wrap !important;
+}
+
+/* LinkedIn author icon styling - remove CSS override since we swizzled the component */
+
+/* Increase author profile image size */
+.avatar__photo {
+  width: 4rem !important;
+  height: 4rem !important;
+}
+
+.blog-post-authors .avatar__photo {
+  width: 3rem !important;
+  height: 3rem !important;
+}
+
+/* Blog layout adjustments - only for individual blog post pages */
+[class*="blogPostPage"] .blog-wrapper,
+.theme-blog-post-page .blog-wrapper {
+  display: flex;
+  gap: 2rem;
+}
+
+[class*="blogPostPage"] .blog-sidebar,
+.theme-blog-post-page .blog-sidebar {
+  width: 250px !important;
+  min-width: 250px;
+  flex-shrink: 0;
+  /* top: 13rem !important */
+}
+
+[class*="blogPostPage"] .blog-content,
+.theme-blog-post-page .blog-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Adjust only blog post page layout for better spacing */
+[class*="blogPostPage"] .container.margin-vert--lg,
+.theme-blog-post-page .container.margin-vert--lg {
+  max-width: none !important;
+}
+
+/* Specific adjustments for individual blog post layout */
+[class*="blogPostPage"] article .container,
+.theme-blog-post-page article .container {
+  max-width: none !important;
+}
+
+/* Ensure sidebar stays compact on blog post pages */
+[class*="blogPostPage"] .theme-blog-sidebar,
+.theme-blog-post-page .theme-blog-sidebar {
+  width: 250px !important;
+  margin-right: 2rem;
+}
+
+/* Hide dark/light mode toggle */
+[data-theme] .navbar__item.navbar__toggle {
+  display: none !important;
+}
+
+html[data-theme] .toggle_node_modules-\@docusaurus-theme-classic-lib-theme-ColorModeToggle-styles-module {
+  display: none !important;
+}
+
+.navbar .colorModeToggle_node_modules-\@docusaurus-theme-classic-lib-theme-ColorModeToggle-styles-module {
+  display: none !important;
+}
+
+/* Alternative selector for color mode toggle */
+.navbar [class*="colorModeToggle"] {
+  display: none !important;
+}
+
+/* Hide only color mode toggle, not mobile menu */
+.navbar [class*="colorModeToggle"],
+.navbar [data-value="light"],
+.navbar [data-value="dark"] {
+  display: none !important;
+}
+
+/* Restore mobile menu burger on small screens */
+@media (max-width: 996px) {
+  .navbar__toggle {
+    display: flex !important;
+  }
+
+  /* Mobile menu background */
+  .navbar-sidebar__backdrop,
+  .theme-layout-navbar-sidebar-panel {
+    background-color: rgba(245, 245, 245, 1) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  .navbar-sidebar__item {
+    background-color: rgba(245, 245, 245, 0.9) !important;
+    top: 13rem
+  }
+
+  /* Use different logo in mobile sidebar */
+  .navbar-sidebar .navbar__brand img {
+    content: url('/img/logoBrut.png') !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    object-fit: contain !important;
+  }
+}
+
+/* Footer social icons styling for PNG images */
+.footer__link-item img {
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  filter: none;
+}
+
+.footer__link-item:hover img {
+  transform: scale(1.2);
+  opacity: 0.8;
+}
+
+/* Footer social links layout */
+.footer .footer__items {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 1.5rem !important;
+  flex-wrap: wrap !important;
+}
+
+/* Remove text decoration from footer links */
+.footer .footer__link-item {
+  text-decoration: none !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.footer .footer__link-item:hover {
+  text-decoration: none !important;
+  color: #02000B !important;
+  cursor: pointer !important;
+}
+
+/* Ensure footer links are clickable */
+.footer a, .footer a:hover, .footer a:visited {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  color: #02000B !important;
+}
+
+/* Global text color overrides and background setup for PixelBlast */
+body, html {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  position: relative !important;
+}
+
+/* Main wrapper to allow PixelBlast background to show */
+#__docusaurus {
+  background-color: transparent !important;
+  position: relative !important;
+}
+
+.main-wrapper {
+  background-color: transparent !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Add padding-top to main content to avoid CardNav overlap */
+main {
+  padding-top: 5rem !important;
+}
+
+/* Override for home page which has its own hero section spacing */
+.theme-doc-page-layout main,
+body[class*="index"] main {
+  padding-top: 0 !important;
+}
+
+* {
+  color: #ffffff !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff !important;
+}
+
+p, span, div {
+  color: #ffffff !important;
+}
+
+/* Exception for nav-cards only */
+.nav-card,
+.nav-card *,
+.nav-card h1, .nav-card h2, .nav-card h3, .nav-card h4, .nav-card h5, .nav-card h6,
+.nav-card p, .nav-card span, .nav-card div,
+.nav-card a {
+  color: #000 !important;
+}
+
+.hero__title, .hero__subtitle {
+  color: #ffffff !important;
+}
+
+/* Navbar Blog link positioning */
+.navbar__items--right .navbar__item {
+  align-self: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+/* Removed all scroll and text animations */
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Button styling with higher specificity */
+a.button.button--primary.button--lg,
+.button.button--primary.button--lg {
+  color: white !important;
+  background-color: #02000B !important;
+  border-color: #ffffff !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  pointer-events: auto !important;
+}
+
+a.button.button--primary.button--lg:hover,
+.button.button--primary.button--lg:hover,
+a.button.button--primary.button--lg:focus,
+.button.button--primary.button--lg:focus {
+  background-color: #333333 !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(2, 0, 11, 0.2) !important;
+  text-decoration: none !important;
+}
+
+a.button.button--outline.button--primary.button--lg,
+.button.button--outline.button--primary.button--lg {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border-color: #02000B !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  pointer-events: auto !important;
+}
+
+a.button.button--outline.button--primary.button--lg:hover,
+.button.button--outline.button--primary.button--lg:hover,
+a.button.button--outline.button--primary.button--lg:focus,
+.button.button--outline.button--primary.button--lg:focus {
+  background-color: #02000B !important;
+  color: white !important;
+  border-color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(2, 0, 11, 0.2) !important;
+  text-decoration: none !important;
+}
+
+
+/* Sidebar active link styling */
+aside [class*="sidebarItemLinkActive"],
+aside [class*="sidebarItemLinkActive"] a,
+aside [class*="sidebarItemLinkActive"] > *,
+.theme-doc-sidebar-item-link-level-1[class*="sidebarItemLinkActive"],
+.theme-doc-sidebar-item-link-level-2[class*="sidebarItemLinkActive"],
+.theme-doc-sidebar-item-link-level-3[class*="sidebarItemLinkActive"] {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+[class*="sidebarItemLinkActive"] {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-left: 3px solid #ffffff !important;
+}
+
+/* Sidebar link hover */
+[class*="sidebarItemLink"]:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Litepaper pages backdrop filter */
+[class*="docPage"] .container,
+.theme-doc-page-layout .container,
+[class*="docMainContainer"] {
+  background-color: rgba(2, 0, 11, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+  padding: 2rem !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  margin-top:95px
+}
+
+/* Sidebar backdrop filter */
+[class*="docSidebar"],
+.theme-doc-sidebar-container {
+  background-color: rgba(2, 0, 11, 0.4) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  margin-right: 1rem !important;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-section,
+  .animated-text,
+  .parallax-section {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .animated-text--split-words .split-word {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Override CSS variable for sidebar links */
+aside nav,
+aside [class*="menu"],
+aside [class*="sidebar"] {
+  --ifm-color-primary: #ffffff;
+  --ifm-link-color: #ffffff;
+}
+
+/* Force white color and bold for active sidebar links - highest priority */
+html body aside [class*="sidebarItemLinkActive"],
+html body aside [class*="sidebarItemLinkActive"] *,
+aside [class*="sidebarItemLinkActive"] {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}

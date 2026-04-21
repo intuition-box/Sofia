@@ -1,0 +1,227 @@
+/* Card Container */
+.card {
+  background: rgb(255, 205, 0);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  min-height: 320px;
+}
+
+.card:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Content Section */
+.content {
+  flex: 1;
+  margin-bottom: 1.5rem;
+}
+
+.name {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #000000 !important;
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+.description {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: rgba(0, 0, 0, 0.7) !important;
+  margin: 0;
+}
+
+/* Vote Section */
+.voteSection {
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  padding-top: 1.5rem;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voteButtons {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.voteBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  border: 2px solid;
+  font-family: 'Overpass Mono', monospace;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.4);
+  gap: 0.25rem;
+}
+
+.voteLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #000000 !important;
+}
+
+.stakeAmount {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.voteCount {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  color: #000000 !important;
+}
+
+/* Support Button */
+.supportBtn {
+  border-color: #000000;
+  color: #000000 !important;
+}
+
+.supportBtn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Oppose Button */
+.opposeBtn {
+  border-color: #000000;
+  color: #000000 !important;
+}
+
+.opposeBtn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Transaction States */
+.txPending,
+.txSuccess,
+.txError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  width: 100%;
+}
+
+.txText {
+  font-size: 0.95rem;
+  color: #000000 !important;
+  margin: 0;
+}
+
+.txSubtext {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.6) !important;
+  margin: 0;
+}
+
+/* Spinner */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid rgba(0, 0, 0, 0.15);
+  border-top: 2.5px solid #000000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Success State */
+.checkmark {
+  font-size: 1.75rem;
+  color: #4ade80;
+}
+
+.txLink {
+  color: rgba(0, 0, 0, 0.7) !important;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.txLink:hover {
+  color: #000000 !important;
+}
+
+/* Error State */
+.errorIcon {
+  font-size: 1.75rem;
+  color: #f87171;
+}
+
+/* Reset/Retry Buttons */
+.resetBtn,
+.retryBtn {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 50px;
+  color: rgba(0, 0, 0, 0.8) !important;
+  font-size: 0.8rem;
+  font-family: 'Overpass Mono', monospace;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.resetBtn:hover,
+.retryBtn:hover {
+  border-color: #000000;
+  background: rgba(0, 0, 0, 0.1);
+  color: #000000 !important;
+}
+
+/* Mobile Responsive */
+@media screen and (max-width: 768px) {
+  .card {
+    padding: 1.5rem;
+    min-height: auto;
+  }
+
+  .name {
+    font-size: 1.2rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+  }
+
+  .voteButtons {
+    gap: 0.75rem;
+  }
+
+  .voteBtn {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .voteLabel {
+    font-size: 0.85rem;
+  }
+
+  .stakeAmount {
+    font-size: 0.7rem;
+  }
+}
