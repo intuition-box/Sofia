@@ -1,0 +1,17 @@
+query GetTrendingByPredicateLabel($predicateLabel: String!, $limit: Int!) {
+  triples(
+    where: { predicate: { label: { _eq: $predicateLabel } } }
+    order_by: [{ positions_aggregate: { count: desc } }, { created_at: desc }]
+    limit: $limit
+  ) {
+    term_id
+    counter_term_id
+    object {
+      label
+      value { thing { url } }
+    }
+    all_positions: positions(where: { shares: { _gt: "0" } }) {
+      account { id }
+    }
+  }
+}

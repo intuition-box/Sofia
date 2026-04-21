@@ -1,0 +1,6 @@
+/* ── PageHeader ── */
+.ph-container { position: relative; overflow: hidden; padding: 32px 20px 40px; border-radius: 14px; }
+.ph-title { font-size: 60px; font-weight: 900; color: #1a1a1a; line-height: 1; position: relative; z-index: 2; }
+.ph-subtitle { font-size: 14px; color: rgba(0, 0, 0, 0.5); margin-top: 8px; position: relative; z-index: 2; }
+.ph-deco { position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(-12deg); width: 180px; height: 180px; border-radius: 20px; background: rgba(0, 0, 0, 0.15); z-index: 1; }
+.ph-avatar { width: 64px; height: 64px; min-width: 64px; }

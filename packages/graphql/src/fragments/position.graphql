@@ -1,0 +1,61 @@
+fragment PositionFields on positions {
+  account {
+    id
+    label
+  }
+  shares
+  vault {
+    term_id
+    total_shares
+    current_share_price
+  }
+}
+
+fragment PositionWithVaultDetails on positions {
+  shares
+  term_id
+  curve_id
+  vault {
+    term_id
+    total_shares
+    current_share_price
+    term {
+      atom {
+        label
+        term_id
+        type
+        value {
+          thing {
+            url
+            name
+          }
+          account {
+            id
+            label
+          }
+        }
+      }
+      triple {
+        term_id
+        subject {
+          label
+          term_id
+        }
+        predicate {
+          label
+          term_id
+        }
+        object {
+          label
+          term_id
+          value {
+            thing {
+              url
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+subscription WatchUserTrackedPositions($accountId: String!, $termIds: [String!]!) {
+  positions(
+    where: {
+      account_id: { _ilike: $accountId }
+      term_id: { _in: $termIds }
+    }
+    order_by: { shares: desc }
+    limit: 500
+  ) {
+    ...PositionWithVaultDetails
+  }
+}

@@ -1,0 +1,283 @@
+/* ── PlatformMarketCard ── */
+
+.pm-card {
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+}
+
+.pm-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.pm-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.pm-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.pm-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-pnl {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.pm-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+}
+
+.pm-stat-icon {
+  width: 12px;
+  height: 12px;
+  opacity: 0.6;
+}
+
+.pm-stat-value {
+  font-weight: 600;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-stat-label {
+  opacity: 0.6;
+}
+
+/* Grid layout for platform market list */
+.pm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+/* ── Topic groups (grid view) ── */
+.pm-topics {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pm-topic-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pm-topic-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.pm-topic-count {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+/* ── List / Table view ── */
+.pm-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pm-table-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.pm-table-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.pm-table-row:last-child {
+  border-bottom: none;
+}
+.pm-table-row:hover {
+  background: color-mix(in oklab, var(--muted) 30%, transparent);
+}
+
+.pm-table-col-rank {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-table-col-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-table-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.pm-table-col-mcap {
+  min-width: 70px;
+  text-align: right;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-table-col-price {
+  min-width: 70px;
+  text-align: right;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-table-col-holders {
+  min-width: 50px;
+  text-align: center;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.pm-table-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.1s;
+}
+.pm-table-sortable:hover {
+  color: var(--foreground);
+}
+.pm-table-sorted {
+  color: var(--primary) !important;
+  font-weight: 800;
+}
+
+.pm-table-col-pnl {
+  min-width: 55px;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Toolbar ── */
+.pm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  justify-content: flex-end;
+}
+
+.pm-sort-select {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+  outline: none;
+}
+.pm-sort-select:focus {
+  border-color: var(--primary);
+}
+
+/* ── View switcher (compact) ── */
+.pm-view-switcher {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--muted) 40%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 25%, transparent);
+  width: fit-content;
+  margin-left: auto;
+  margin-bottom: 12px;
+}
+
+.pm-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pm-view-btn:hover {
+  color: var(--foreground);
+}
+
+.pm-view-btn--active {
+  background: var(--background);
+  color: var(--foreground);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}

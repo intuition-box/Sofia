@@ -1,0 +1,14 @@
+query GetEthccPositions($address: String!, $termIds: [String!]!) {
+  positions(
+    where: {
+      account_id: { _ilike: $address }
+      vault: { term_id: { _in: $termIds } }
+      shares: { _gt: "0" }
+    }
+  ) {
+    vault {
+      term_id
+    }
+    shares
+  }
+}

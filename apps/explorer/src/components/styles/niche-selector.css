@@ -1,0 +1,35 @@
+/* ── NicheSelector ── */
+.ns-card { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.ns-header { display: flex; align-items: center; justify-content: space-between; }
+.ns-title { font-size: 17px; }
+
+.ns-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.ns-cat-card {
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.ns-cat-card:hover {
+  border-color: var(--muted-foreground);
+  transform: scale(1.02);
+}
+.ns-cat-selected {
+  border-width: 2px;
+}
+.ns-cat-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+.ns-cat-count {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}

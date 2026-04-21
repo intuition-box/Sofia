@@ -1,0 +1,634 @@
+/* ── Wallet banner ── */
+.pp-wallet-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border: 1px dashed color-mix(in oklab, var(--border) 60%, transparent);
+  background: color-mix(in oklab, var(--muted) 30%, transparent);
+}
+
+.pp-wallet-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── ProfilePage sections ── */
+.pp-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pp-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.pp-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+}
+
+/* ── Public profile stats ── */
+.pub-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.pub-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.pub-stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.pub-stat-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+/* ── Public profile interests ── */
+.pub-interests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.pub-interest-card {
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pub-interest-card:hover {
+  border-color: var(--primary);
+}
+
+.pub-interest-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pub-interest-count {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+
+/* ── LastActivitySection ── */
+.las-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 10px;
+  min-width: 0;
+}
+
+.las-loading,
+.las-empty {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+/* ── InterestsGrid ── */
+.ig-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 12px;
+}
+
+.ig-empty {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.ig-card {
+  cursor: pointer;
+  padding: 16px;
+  height: 100%;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ig-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.ig-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ig-card-remove {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+.ig-card:hover .ig-card-remove {
+  opacity: 1;
+}
+.ig-card-remove:hover {
+  background: color-mix(in oklab, var(--destructive) 15%, transparent);
+  color: var(--destructive);
+}
+
+.ig-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.ig-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ig-card-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.ig-card-niches {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.ig-card-score {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
+}
+
+.ig-card-score-value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--foreground);
+}
+
+.ig-card-score-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ig-add-card {
+  cursor: pointer;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  min-height: 100px;
+  border: 2px dashed color-mix(in oklab, var(--border) 60%, transparent);
+  background: transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ig-add-card:hover {
+  border-color: var(--border);
+  background: color-mix(in oklab, var(--muted) 30%, transparent);
+}
+
+.ig-add-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--muted-foreground);
+}
+
+.ig-add-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+/* ── ActivityCard ── */
+.ac-card {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-width: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ac-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.ac-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ac-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ac-favicon {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.ac-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ac-time {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+.ac-intentions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.ac-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.ac-link-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted-foreground);
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.ac-link-icon:hover {
+  color: var(--foreground);
+}
+
+/* ── Mini position board ── */
+.ac-positions {
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--muted) 40%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+  overflow: hidden;
+}
+
+.ac-pos-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 20%, transparent);
+  transition: background 0.1s;
+}
+.ac-pos-row:last-child {
+  border-bottom: none;
+}
+.ac-pos-row:hover {
+  background: color-mix(in oklab, var(--muted) 30%, transparent);
+}
+
+.ac-pos-row--you {
+  background: color-mix(in oklab, var(--primary) 6%, transparent);
+  border-left: 2px solid var(--primary);
+}
+
+.ac-pos-rank {
+  font-weight: 700;
+  color: var(--muted-foreground);
+  min-width: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-pos-row:first-child .ac-pos-rank {
+  color: #D4A843;
+}
+
+.ac-pos-label {
+  flex: 1;
+  color: var(--foreground);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ac-pos-row--you .ac-pos-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.ac-pos-you {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.ac-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.ac-actions > button,
+.ac-actions > a {
+  position: relative;
+  z-index: 1;
+}
+
+.ac-btn {
+  font-size: 11px;
+  height: 28px;
+  gap: 4px;
+}
+
+.ac-btn-icon {
+  height: 28px;
+  width: 28px;
+  padding: 0;
+}
+
+.ac-btn-share {
+  height: 28px;
+  width: 28px;
+  padding: 0;
+  margin-left: auto;
+}
+
+/* ── TopClaimsSection ── */
+.tc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tc-card {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-width: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.tc-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.tc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tc-favicon {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.tc-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tc-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--muted) 40%, transparent);
+}
+
+.tc-stat-block {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted-foreground);
+}
+
+.tc-stat-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.tc-stat-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.tc-pnl {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tc-pnl--up {
+  color: #22C55E;
+  background: color-mix(in oklab, #22C55E 10%, transparent);
+}
+
+.tc-pnl--down {
+  color: #EF4444;
+  background: color-mix(in oklab, #EF4444 10%, transparent);
+}
+
+.tc-pnl-value {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tc-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.tc-stat {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.tc-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+}
+
+/* ── Skeletons ── */
+.sk-card {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.sk-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sk-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.sk-line {
+  height: 10px;
+  border-radius: 4px;
+  background: var(--muted);
+  animation: sk-pulse 1.5s ease-in-out infinite;
+}
+
+.sk-box {
+  border-radius: 6px;
+  background: var(--muted);
+  animation: sk-pulse 1.5s ease-in-out infinite;
+}
+
+.sk-pill {
+  width: 60px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--muted);
+  animation: sk-pulse 1.5s ease-in-out infinite;
+}
+
+.sk-btn {
+  width: 80px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--muted);
+  animation: sk-pulse 1.5s ease-in-out infinite;
+}
+
+.sk-favicon { width: 28px; height: 28px; }
+.sk-share { width: 28px; height: 28px; margin-left: auto; }
+.sk-icon { width: 40px; height: 40px; border-radius: 10px; }
+.sk-divider { height: 1px; background: var(--muted); margin: 4px 0; }
+
+.sk-w20 { width: 20%; }
+.sk-w30 { width: 30%; }
+.sk-w40 { width: 40%; }
+.sk-w50 { width: 50%; }
+.sk-w60 { width: 60%; }
+.sk-ml-auto { margin-left: auto; }
+.sk-big { height: 18px; }
+
+.sk-claim { min-height: 80px; }
+.sk-interest { min-height: 100px; }
+
+@keyframes sk-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}

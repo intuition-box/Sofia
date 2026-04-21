@@ -1,0 +1,518 @@
+/* ── InterestPage layout ── */
+.ip-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.ip-back {
+  gap: 6px;
+  font-size: 12px;
+  align-self: flex-start;
+}
+
+.ip-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.ip-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+}
+
+.ip-loader {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+/* ── Stats ── */
+.ip-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.ip-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 8px;
+}
+
+.ip-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--foreground);
+}
+
+.ip-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ip-stat-info {
+  width: 11px;
+  height: 11px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.ip-stat-card--clickable {
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+
+.ip-stat-card--clickable:hover {
+  border-color: color-mix(in oklab, var(--foreground) 20%, transparent);
+}
+
+.ip-stat-card--clickable:hover .ip-stat-info {
+  opacity: 0.9;
+}
+
+.ip-stat-card--clickable:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+.ip-stat-refresh {
+  margin-left: 6px;
+  font-size: 14px;
+  color: var(--muted-foreground);
+  opacity: 0.6;
+  animation: ip-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ip-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* ── Niches Detail ── */
+.ip-niches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 10px;
+}
+
+.ip-niche-card {
+  cursor: default;
+  padding: 14px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ip-niche-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ip-niche-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.ip-niche-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ip-niche-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ip-niche-remove {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+.ip-niche-card:hover .ip-niche-remove {
+  opacity: 1;
+}
+.ip-niche-remove:hover {
+  background: color-mix(in oklab, var(--destructive) 15%, transparent);
+  color: var(--destructive);
+}
+
+.ip-niche-score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
+}
+
+.ip-niche-score-value {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ip-niche-score-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ip-niche-breakdown {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.ip-niche-bd-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ip-niche-bd-bar {
+  height: 3px;
+  border-radius: 1.5px;
+  background: var(--muted);
+  overflow: hidden;
+}
+
+.ip-niche-bd-bar-fill {
+  height: 100%;
+  border-radius: 1.5px;
+}
+
+.ip-niche-bd-label {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+
+.ip-niche-add {
+  cursor: pointer;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  min-height: 100px;
+  border: 2px dashed color-mix(in oklab, var(--border) 60%, transparent);
+  background: transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ip-niche-add:hover {
+  border-color: var(--border);
+  background: color-mix(in oklab, var(--muted) 30%, transparent);
+}
+
+.ip-niche-add-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--muted-foreground);
+}
+
+.ip-niche-add-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+/* ── Trending ── */
+.ip-trending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.ip-trending-card {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ip-trending-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.ip-trending-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ip-trending-favicon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.ip-trending-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ip-trending-pnl {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ip-trending-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ip-trending-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.ip-trending-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.ip-trending-market {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+}
+
+.ip-trending-market-stats {
+  display: flex;
+  gap: 10px;
+}
+
+.ip-trending-market-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.ip-trending-market-stat svg {
+  opacity: 0.5;
+}
+
+.ip-trending-invest-btn {
+  font-size: 10px;
+  height: 24px;
+  gap: 4px;
+  padding: 0 10px;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.ip-trending-invest-btn:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* ── Platforms ── */
+.ip-platforms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.ip-platform-card {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0.5;
+}
+
+.ip-platform-connected {
+  opacity: 1;
+}
+
+.ip-platform-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ip-platform-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.ip-platform-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ip-platform-status {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+
+.ip-platform-on {
+  color: #22C55E;
+}
+
+.ip-platform-add {
+  cursor: pointer;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 2px dashed color-mix(in oklab, var(--border) 60%, transparent);
+  background: transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ip-platform-add:hover {
+  border-color: var(--border);
+  background: color-mix(in oklab, var(--muted) 30%, transparent);
+}
+
+.ip-platform-add-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--muted-foreground);
+}
+
+.ip-platform-add-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.ip-platform-skeleton {
+  border: 2px dashed color-mix(in oklab, var(--border) 35%, transparent);
+  border-radius: var(--radius);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ip-skeleton-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--muted-foreground) 50%, transparent);
+}
+
+/* ── Claims grid ── */
+.ip-claims-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.ip-claim-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ip-claim-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.ip-claim-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1.3;
+}
+
+/* ── Certifications ── */
+.ip-certs-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ip-cert-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  transition: box-shadow 0.15s ease;
+}
+.ip-cert-card:hover {
+  box-shadow: 0 4px 16px color-mix(in oklab, var(--foreground) 8%, transparent);
+}

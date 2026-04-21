@@ -1,0 +1,17 @@
+{
+  "name": "sofia-core",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev:explorer": "bun run --filter explorer dev",
+    "dev:extension": "bun run --filter extension dev",
+    "dev:og": "bun run --filter og dev",
+    "dev:landing": "bun run --filter landing start",
+    "build": "bun run --filter '*' build",
+    "typecheck": "bun run --filter './apps/**' typecheck"
+  }
+}
