@@ -3,7 +3,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { BrowserRouter } from 'react-router-dom'
-import { configureClient } from '@0xsofia/dashboard-graphql'
+import { configureClient } from '@0xsofia/graphql'
 import { PRIVY_APP_ID, GRAPHQL_URL, GRAPHQL_WS_URL } from '../config'
 import { CartProvider } from '../hooks/useCart'
 import { ViewAsProvider } from '../hooks/useViewAs'

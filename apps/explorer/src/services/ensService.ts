@@ -1,7 +1,7 @@
 import { getAddress } from 'viem'
 import { createAvatar } from '@dicebear/core'
 import { glass } from '@dicebear/collection'
-import { useGetAccountLabelsQuery } from '@0xsofia/dashboard-graphql'
+import { useGetAccountLabelsQuery } from '@0xsofia/graphql'
 
 // Global caches persist as module-level singletons
 const labelCache = new Map<string, string | null>()

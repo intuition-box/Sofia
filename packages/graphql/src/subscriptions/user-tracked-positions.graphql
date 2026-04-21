@@ -1,4 +1,7 @@
-subscription WatchUserTrackedPositions($accountId: String!, $termIds: [String!]!) {
+subscription WatchUserTrackedPositions(
+  $accountId: String!
+  $termIds: [String!]!
+) {
   positions(
     where: {
       account_id: { _ilike: $accountId }

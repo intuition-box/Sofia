@@ -1,7 +1,7 @@
 import {
   useGetProxyDepositDaysQuery,
   useGetStreakVaultPositionsQuery,
-} from '@0xsofia/dashboard-graphql'
+} from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '../config'
 
 // Same atom IDs as extension (mainnet)

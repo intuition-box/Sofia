@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useGetStreakVaultPositionsQuery } from '@0xsofia/dashboard-graphql'
+import { useGetStreakVaultPositionsQuery } from '@0xsofia/graphql'
 import { useEffect } from 'react'
 import { fetchVaultStats } from '@/services/vaultTooltipService'
 

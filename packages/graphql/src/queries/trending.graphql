@@ -1,17 +1,86 @@
-query GetTrendingByPredicate($predicateId: String!, $limit: Int!) {
+# Get trending certifications for a specific predicate type
+# Counts actual positions (not triple_vault.position_count which is unreliable)
+# Used by: useTrendingCertifications
+query GetTrendingByPredicate(
+  $predicateId: String!
+  $limit: Int!
+  $offset: Int = 0
+) {
+  total: triples_aggregate(
+    where: {
+      predicate_id: { _eq: $predicateId }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
   triples(
-    where: { predicate_id: { _eq: $predicateId } }
-    order_by: [{ positions_aggregate: { count: desc } }, { created_at: desc }]
+    where: {
+      predicate_id: { _eq: $predicateId }
+    }
+    order_by: [
+      { positions_aggregate: { count: desc } }
+      { created_at: desc }
+    ]
     limit: $limit
+    offset: $offset
   ) {
     term_id
     counter_term_id
+    created_at
     object {
+      term_id
       label
-      value { thing { url } }
+      image
+      value {
+        thing {
+          url
+        }
+      }
+    }
+    positions_aggregate(where: { shares: { _gt: "0" } }) {
+      aggregate {
+        count
+      }
+    }
+    positions(where: { shares: { _gt: "0" } }, order_by: { shares: desc }, limit: 3) {
+      account {
+        id
+        label
+        image
+      }
     }
     all_positions: positions(where: { shares: { _gt: "0" } }) {
-      account { id }
+      account {
+        id
+      }
     }
+    triple_vault {
+      total_shares
+    }
+  }
+}
+
+# Get certifiers (position holders) for a specific triple
+# Used by: TrendingTab detail view on click
+query GetTripleCertifiers(
+  $termId: String!
+  $limit: Int!
+) {
+  positions(
+    where: {
+      vault: { term_id: { _eq: $termId } }
+    }
+    order_by: { shares: desc }
+    limit: $limit
+  ) {
+    account {
+      id
+      label
+      image
+    }
+    shares
+    created_at
   }
 }

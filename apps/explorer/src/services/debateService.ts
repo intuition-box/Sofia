@@ -1,4 +1,4 @@
-import { useGetClaimsByTermIdsQuery } from '@0xsofia/dashboard-graphql'
+import { useGetClaimsByTermIdsQuery } from '@0xsofia/graphql'
 import {
   INTUITION_FEATURED_CLAIMS,
   SOFIA_CLAIMS,

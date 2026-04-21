@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useGetSeasonPoolPositionsQuery } from '@0xsofia/dashboard-graphql'
+import { useGetSeasonPoolPositionsQuery } from '@0xsofia/graphql'
 import { SEASON_POOL_TERM_ID, SEASON_POOL_CURVE_ID } from '@/config'
 import { processPositions } from '@/services/seasonPoolService'
 import type { PoolPosition, VaultStats } from '@/types'

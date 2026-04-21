@@ -11,7 +11,7 @@
  * - Signals: total terms_aggregate (same as extension)
  */
 
-import { useGetUserSignalsCountQuery } from '@0xsofia/dashboard-graphql'
+import { useGetUserSignalsCountQuery } from '@0xsofia/graphql'
 import { GRAPHQL_URL, SUBJECT_IDS, PREDICATE_IDS } from '../config'
 
 // ---------------------------------------------------------------------------

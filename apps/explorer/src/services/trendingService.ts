@@ -1,7 +1,7 @@
 import {
   useGetTrendingByPredicateQuery,
   type GetTrendingByPredicateQuery,
-} from '@0xsofia/dashboard-graphql'
+} from '@0xsofia/graphql'
 import { PREDICATE_IDS } from '@/config'
 import type { IntentCategory, TrendingItemLive } from '@/types'
 import { extractDomain } from '@/utils/formatting'

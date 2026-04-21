@@ -1,4 +1,4 @@
-import { useGetTripleVaultStatsQuery } from '@0xsofia/dashboard-graphql'
+import { useGetTripleVaultStatsQuery } from '@0xsofia/graphql'
 
 export interface VaultStats {
   supportMarketCap: string

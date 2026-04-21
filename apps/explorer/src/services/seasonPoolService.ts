@@ -1,6 +1,6 @@
 import { formatEther } from 'viem'
 import type { Address } from 'viem'
-import type { GetSeasonPoolPositionsQuery } from '@0xsofia/dashboard-graphql'
+import type { GetSeasonPoolPositionsQuery } from '@0xsofia/graphql'
 import type { PoolPosition, VaultStats } from '@/types'
 
 type VaultRaw = GetSeasonPoolPositionsQuery['vaults'][number]
