@@ -1,0 +1,26 @@
+query GetSeasonPoolPositions($termId: String!, $curveId: numeric!) {
+  vaults(where: { term_id: { _eq: $termId }, curve_id: { _eq: $curveId } }) {
+    current_share_price
+    total_shares
+    total_assets
+    position_count
+    positions(order_by: { shares: desc }) {
+      account_id
+      shares
+      total_deposit_assets_after_total_fees
+      total_redeem_assets_for_receiver
+    }
+  }
+}
+
+query GetAccountLabels($ids: [String!]!) {
+  accounts(where: { id: { _in: $ids } }) {
+    id
+    label
+    image
+    atom {
+      label
+      image
+    }
+  }
+}

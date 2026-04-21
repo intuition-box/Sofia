@@ -1,0 +1,391 @@
+/* ── Landing Page — Split Screen ── */
+
+.lp-split {
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ── Left panel ── */
+.lp-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.1vw;
+  position: relative;
+  overflow: hidden;
+  background: #02000E;
+}
+
+/* Logo as background texture */
+.lp-left-bg-logo {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lp-left-inner {
+  display: flex;
+  flex-direction: column;
+  max-width: 22vw;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Tagline */
+.lp-tagline {
+  font-size: 1.46vw;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  color: #ffffff;
+  margin-bottom: 1.875vw;
+  text-align: center;
+}
+
+/* ── CTA buttons ── */
+.lp-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625vw;
+}
+
+.lp-btn-connect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42vw;
+  width: 100%;
+  padding: 0.73vw 1.25vw;
+  font-size: 0.73vw;
+  font-weight: 700;
+  border-radius: 0.52vw;
+  border: none;
+  cursor: pointer;
+  background: #ffffff;
+  color: #02000E;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.lp-btn-connect:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Separator */
+.lp-separator {
+  display: flex;
+  align-items: center;
+  gap: 0.625vw;
+}
+
+.lp-separator-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.lp-separator-text {
+  font-size: 0.625vw;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: lowercase;
+}
+
+/* Google button */
+.lp-btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.52vw;
+  width: 100%;
+  padding: 0.73vw 1.25vw;
+  font-size: 0.73vw;
+  font-weight: 600;
+  border-radius: 0.52vw;
+  cursor: pointer;
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.lp-btn-google:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.lp-google-icon {
+  width: 0.94vw;
+  height: 0.94vw;
+  flex-shrink: 0;
+}
+
+/* Explore button */
+.lp-btn-explore {
+  width: 100%;
+  padding: 0.73vw 1.25vw;
+  font-size: 0.73vw;
+  font-weight: 600;
+  border-radius: 0.52vw;
+  cursor: pointer;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.lp-btn-explore:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Privy mention */
+.lp-privy-mention {
+  margin-top: 1.04vw;
+  font-size: 0.57vw;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.31vw;
+}
+
+.lp-privy-icon {
+  width: 0.73vw;
+  height: 0.73vw;
+  flex-shrink: 0;
+}
+
+.lp-privy-mention a {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.lp-privy-mention a:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Right panel ── */
+.lp-right {
+  flex: 1;
+  position: relative;
+  background: #ffc6b0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.1vw;
+  overflow: hidden;
+}
+
+.dark .lp-right {
+  background: rgb(255, 198, 176);
+}
+
+/* Decorative square */
+.lp-deco {
+  position: absolute;
+  right: -8.49vw;
+  bottom: -19.17vw;
+  transform: rotate(4deg);
+  width: 58.33vw;
+  height: 58.33vw;
+  border-radius: 5.83vw;
+  background: rgba(0, 0, 0, 0.12);
+  z-index: 0;
+}
+
+/* Right tagline */
+.lp-right-tagline {
+  font-size: 1.56vw;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: #1a1a1a;
+  margin-bottom: 0.625vw;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 23vw;
+}
+
+.dark .lp-right-tagline {
+  color: #1a1a1a;
+}
+
+.lp-right-subtitle {
+  font-size: 0.73vw;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.5);
+  line-height: 1.6;
+  margin-bottom: 1.875vw;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 23vw;
+}
+
+.dark .lp-right-subtitle {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* Feature cards */
+.lp-right-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625vw;
+  width: 100%;
+  max-width: 23vw;
+  position: relative;
+  z-index: 1;
+}
+
+.lp-right-feature {
+  display: flex;
+  align-items: center;
+  gap: 0.73vw;
+  padding: 0.83vw 0.94vw;
+  border-radius: 0.73vw;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: transform 0.2s, background 0.2s;
+}
+.lp-right-feature:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.dark .lp-right-feature {
+  background: rgba(255, 255, 255, 0.45);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.dark .lp-right-feature:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.lp-right-feature-icon {
+  width: 2.08vw;
+  height: 2.08vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.52vw;
+  flex-shrink: 0;
+  color: #340218;
+}
+
+.lp-right-feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1vw;
+  min-width: 0;
+}
+
+.lp-right-feature-title {
+  font-size: 0.68vw;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.lp-right-feature-desc {
+  font-size: 0.57vw;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.5);
+  line-height: 1.4;
+}
+
+.dark .lp-right-feature-title {
+  color: #1a1a1a;
+}
+
+.dark .lp-right-feature-desc {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .lp-split {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .lp-left {
+    min-height: 50vh;
+    min-height: 50dvh;
+    padding: 6vw;
+  }
+  .lp-left-inner {
+    max-width: 70vw;
+  }
+  .lp-tagline {
+    font-size: 4.5vw;
+  }
+  .lp-btn-connect,
+  .lp-btn-google,
+  .lp-btn-explore {
+    font-size: 2.5vw;
+    padding: 2.5vw 4vw;
+    border-radius: 1.8vw;
+  }
+  .lp-separator-text {
+    font-size: 2vw;
+  }
+  .lp-privy-mention {
+    font-size: 1.8vw;
+  }
+  .lp-right {
+    min-height: 50vh;
+    min-height: 50dvh;
+    padding: 6vw;
+  }
+  .lp-right-tagline {
+    font-size: 4vw;
+    max-width: 70vw;
+  }
+  .lp-right-subtitle {
+    font-size: 2.5vw;
+    max-width: 70vw;
+  }
+  .lp-right-features {
+    grid-template-columns: 1fr;
+    max-width: 70vw;
+  }
+  .lp-right-feature {
+    padding: 2.5vw 3vw;
+    gap: 2.5vw;
+    border-radius: 2.5vw;
+  }
+  .lp-right-feature-icon {
+    width: 7vw;
+    height: 7vw;
+    border-radius: 1.5vw;
+  }
+  .lp-right-feature-title {
+    font-size: 2.2vw;
+  }
+  .lp-right-feature-desc {
+    font-size: 1.8vw;
+  }
+  .lp-google-icon {
+    width: 3vw;
+    height: 3vw;
+  }
+  .lp-privy-icon {
+    width: 2.5vw;
+    height: 2.5vw;
+  }
+}

@@ -1,0 +1,69 @@
+# Debate / Vote queries — fetch curated claims by their term_ids
+
+query GetClaimsByTermIds($termIds: [String!]!, $address: String) {
+  triples(where: { term_id: { _in: $termIds } }) {
+    term_id
+    counter_term_id
+    created_at
+    subject {
+      term_id
+      label
+      image
+      cached_image {
+        url
+      }
+      value {
+        thing { image url }
+        person { image }
+        organization { image }
+      }
+    }
+    predicate {
+      term_id
+      label
+    }
+    object {
+      term_id
+      label
+      image
+      cached_image {
+        url
+      }
+      value {
+        thing { image url }
+        person { image }
+        organization { image }
+      }
+    }
+    term {
+      vaults {
+        market_cap
+        total_shares
+        position_count
+        current_share_price
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+          total_deposit_assets_after_total_fees
+          account {
+            id
+          }
+        }
+      }
+    }
+    counter_term {
+      vaults {
+        market_cap
+        total_shares
+        position_count
+        current_share_price
+        positions(where: { account_id: { _ilike: $address } }) {
+          shares
+          total_deposit_assets_after_total_fees
+          account {
+            id
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+/* ── Header dropdown ── */
+.hdr-dropdown { min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 8px; }
+.hdr-user-info { display: flex; align-items: center; gap: 10px; padding: 8px 8px 12px; }
+.hdr-user-meta { min-width: 0; }
+.hdr-user-name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--foreground); }
+.hdr-user-address { font-size: 12px; color: var(--muted-foreground); }
+.hdr-divider { height: 1px; background: var(--border); margin: 0 4px 4px; }
+.hdr-menu-item { border-radius: 8px; padding: 10px 12px; font-size: 14px; color: var(--foreground); }
+.hdr-cart-btn { background-color: oklch(0.80 0.06 25 / 0.3); }
+
+/* Profile avatar transition */
+.hdr-profile-btn {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.hdr-profile-btn.hdr-profile-hidden {
+  opacity: 0;
+  transform: translateX(20px);
+  pointer-events: none;
+}

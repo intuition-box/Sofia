@@ -1,0 +1,34 @@
+{
+  "pins": {
+    "topic:tech-dev": "ipfs://bafkreihu2pzme7zutsd4pj7xntu2772x3ng75hnfkafuuwyfj55qgjtupi",
+    "topic:design-creative": "ipfs://bafkreifvanjgfothuopdlswplafjb52jwu5mj6q34zgbkyamsuq6cuykme",
+    "topic:music-audio": "ipfs://bafkreigydbfgvbweg7ywl3uoczqllyq4celww3vi64v3ub6aknlxf6o6ie",
+    "topic:gaming": "ipfs://bafkreiek3wulwjcejqnmkratbxabdgpbho62mskpmmn6fgnww35lhpubfe",
+    "topic:web3-crypto": "ipfs://bafkreids4vxkmtnpr63sjqngs5mcerklwvn6eculoeuzn5iqiun46xb7qa",
+    "topic:science": "ipfs://bafkreibwcmc7zb6xt7xc3cd5hf3gaczxquwustgiclyquvl5asyltc2l3i",
+    "topic:sport-health": "ipfs://bafkreih7ot5fumv3xzjumx7ydrkbwn6mb74cxxyty363yk6mffkjrlpaf4",
+    "topic:video-cinema": "ipfs://bafkreiex7plckl2ndoechqlthiebaubcw4naxdl2ca4b3cq2zy7xvkgu3y",
+    "topic:entrepreneurship": "ipfs://bafkreiaxgwu3ehkrdpkumifyp2ux5bzqgs36iamywwqj3w3zyaicdngapu",
+    "topic:performing-arts": "ipfs://bafkreif53rcrje2nmjgg4c2umfqvrchb2yijwpwc2tvqzcddstxq5ep5ae",
+    "topic:nature-environment": "ipfs://bafkreih4rbswhoywy6kys7dvtlpa45cztiqbnpsi624qyca6dmymwygsju",
+    "topic:food-lifestyle": "ipfs://bafkreih4um2tnaik45q6wrfexfanezph5jkuaq5elj3pcvlhvks4yzupza",
+    "topic:literature": "ipfs://bafkreia57wpak3m27qaqjc3q3vouamdaulix3s5liowd5rngaaixhadboi",
+    "topic:personal-dev": "ipfs://bafkreiaa5f3z5ukaz2theyrrqctvz6onbx6h6p57ejfdvjp34ye2ovr4ry"
+  },
+  "atomIds": {
+    "tech-dev": "0x61524d6e0b5632736b5dc1cd5f77d3a87eb67f6f36824eaad3410feba9004c56",
+    "design-creative": "0x420ea4d0eba3364dbca6e84f6ed7f27c8fc4c197a0b4fcf8954e93a017a51f11",
+    "music-audio": "0x3416b9be13730261f12433b29adc7634e47e58c85814e418061a063d91ea645a",
+    "gaming": "0x9fbc9108b7d8127642cd5eccd1334b4258d9e4529e8ed788b618016487d65f96",
+    "web3-crypto": "0xb155d936c6cbe66b55f870d9bbf256509c5cf5289d8d8837232f65ad84a4451a",
+    "science": "0x323137957c96dd40718aa8592c1a2dd7964c0d5aa0c2ea39311d66524236fea9",
+    "sport-health": "0xedcba0b4443fd76ecacd5048533d60c987b973ed58a0d19d69d8dc2766a932c9",
+    "video-cinema": "0x56c5988f2489e6557a8abfa03e1a9bbe5aee7332587c15a6f4fe3ce51738938b",
+    "entrepreneurship": "0xcce17461209093770314177674fd5d63d876112a94295db79c82cb978280886d",
+    "performing-arts": "0xecfd93a579bf98bb1d9e7737b333805367bb2b66e434c03aa7ec3bb16be35dbe",
+    "nature-environment": "0x001a3f804ac76ccc90f80a96c5d60eb21b0fe9f6da424de427192e7ff29a58ff",
+    "food-lifestyle": "0x38173dfb0b4aef222fa0aa354d2437b35b703d766a2aa6ee374299b218807202",
+    "literature": "0x98e0dac5206f5e089f25057cb2feec9d35d89ba6e765f60db8e5e093ec8ff166",
+    "personal-dev": "0x36e25f1b36a2597e093feeb7b59357d06c318fc88c1452faffe9ef5ee6d001c1"
+  }
+}

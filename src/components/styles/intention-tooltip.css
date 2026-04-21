@@ -1,0 +1,9 @@
+/* ── IntentionTooltip ── */
+.it-tooltip {
+  min-width: 200px;
+  opacity: 1 !important;
+}
+.it-tooltip > span {
+  background: var(--popover);
+  opacity: 1;
+}

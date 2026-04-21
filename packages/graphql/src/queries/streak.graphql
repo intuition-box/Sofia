@@ -1,0 +1,30 @@
+query GetProxyDepositDays($senderId: String!, $termId: String!) {
+  deposits(
+    where: {
+      sender_id: { _ilike: $senderId }
+      term_id: { _ilike: $termId }
+      assets_after_fees: { _neq: "0" }
+    }
+    order_by: { created_at: desc }
+  ) {
+    receiver_id
+    created_at
+  }
+}
+
+query GetStreakVaultPositions($termId: String!, $curveId: numeric!, $limit: Int!) {
+  positions(
+    where: {
+      vault: { term_id: { _ilike: $termId }, curve_id: { _eq: $curveId } }
+      shares: { _gt: "0" }
+    }
+    order_by: { shares: desc }
+    limit: $limit
+  ) {
+    account {
+      id
+      label
+    }
+    shares
+  }
+}

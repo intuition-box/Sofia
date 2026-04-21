@@ -1,0 +1,391 @@
+/* ── PositionBoardDialog ── */
+.pbd-content {
+  max-width: 580px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.pbd-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding-right: 28px;
+}
+
+.pbd-favicon {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.pbd-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ── Metrics ── */
+.pbd-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pbd-metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--muted) 40%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+  font-size: 11px;
+}
+
+.pbd-metric-label {
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.pbd-metric-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--foreground);
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.pbd-metric-price {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  margin-left: auto;
+}
+
+.pbd-metric--pnl,
+.pbd-metric--rank {
+  grid-column: span 1;
+}
+
+.pbd-pnl-value {
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.pbd-rank-value {
+  font-weight: 700;
+  color: var(--primary);
+  margin-left: auto;
+}
+
+.pbd-metrics-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  padding: 8px;
+}
+
+/* ── Dual boards layout ── */
+.pbd-dual-boards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.pbd-lb-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+}
+
+/* ── Leaderboard ── */
+.pbd-leaderboard {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  border: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.pbd-lb-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.pbd-lb-rows {
+  overflow-y: auto;
+  max-height: 320px;
+  scrollbar-width: none;
+}
+.pbd-lb-rows::-webkit-scrollbar {
+  display: none;
+}
+
+.pbd-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 15%, transparent);
+  transition: background 0.1s;
+}
+.pbd-lb-row:last-child {
+  border-bottom: none;
+}
+.pbd-lb-row:hover {
+  background: color-mix(in oklab, var(--muted) 25%, transparent);
+}
+
+.pbd-lb-row--you {
+  background: color-mix(in oklab, var(--primary) 6%, transparent);
+  border-left: 2px solid var(--primary);
+}
+
+.pbd-lb-col-rank {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.pbd-lb-rank-gold {
+  color: #D4A843;
+}
+
+.pbd-lb-col-user {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pbd-lb-row--you .pbd-lb-col-user {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.pbd-lb-you-tag {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  flex-shrink: 0;
+}
+
+.pbd-curve-badge {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+}
+.pbd-curve-badge--exp {}
+
+.pbd-lb-col-shares {
+  min-width: 60px;
+  text-align: right;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.pbd-lb-loading,
+.pbd-lb-empty {
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  padding: 20px;
+}
+
+/* ── Support / Oppose buttons ── */
+.pbd-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pbd-btn-support,
+.pbd-btn-oppose {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, filter 0.15s;
+}
+
+.pbd-btn-support {
+  background: color-mix(in oklab, #86EFAC 15%, transparent);
+  color: #86EFAC;
+  border: 1px solid color-mix(in oklab, #86EFAC 35%, transparent);
+}
+.pbd-btn-support:hover:not(:disabled) {
+  background: color-mix(in oklab, #86EFAC 28%, transparent);
+}
+
+.pbd-btn-oppose {
+  background: color-mix(in oklab, #FCA5A5 15%, transparent);
+  color: #FCA5A5;
+  border: 1px solid color-mix(in oklab, #FCA5A5 35%, transparent);
+}
+.pbd-btn-oppose:hover:not(:disabled) {
+  background: color-mix(in oklab, #FCA5A5 28%, transparent);
+}
+
+.pbd-btn-support:disabled,
+.pbd-btn-oppose:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pbd-no-wallet {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  padding: 10px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--muted) 40%, transparent);
+  border: 1px dashed color-mix(in oklab, var(--border) 50%, transparent);
+}
+
+/* ── Skeleton ── */
+.pbd-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pbd-sk-box {
+  border-radius: 6px;
+  background: var(--muted);
+  animation: pbd-pulse 1.5s ease-in-out infinite;
+}
+
+.pbd-sk-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pbd-sk-metric {
+  height: 40px;
+}
+
+.pbd-sk-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+}
+
+.pbd-sk-table-header {
+  height: 32px;
+  border-radius: 0;
+}
+
+.pbd-sk-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-top: 1px solid color-mix(in oklab, var(--border) 15%, transparent);
+}
+
+.pbd-sk-rank {
+  width: 24px;
+  height: 14px;
+}
+
+.pbd-sk-user {
+  flex: 1;
+  height: 14px;
+}
+
+.pbd-sk-shares {
+  width: 50px;
+  height: 14px;
+}
+
+.pbd-sk-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pbd-sk-btn {
+  flex: 1;
+  height: 38px;
+  border-radius: 8px;
+}
+
+@keyframes pbd-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* ── Clickable mini position board ── */
+.ac-positions--clickable {
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ac-positions--clickable:hover {
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+  border-color: color-mix(in oklab, var(--border) 50%, transparent);
+}

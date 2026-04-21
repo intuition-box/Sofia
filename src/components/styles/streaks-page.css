@@ -1,0 +1,271 @@
+/* ── Streaks Page — Premium Podium ── */
+
+/* Podium container */
+.streak-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  padding: 32px 0 0;
+  position: relative;
+}
+
+/* Podium pedestals */
+.streak-pedestal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.streak-pedestal__block {
+  width: 120px;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 16px;
+  font-weight: 800;
+  font-size: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shine on blocks */
+.streak-pedestal__block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+}
+
+/* #1 — Gold */
+.streak-pedestal--1st .streak-pedestal__block {
+  height: 100px;
+  background: linear-gradient(180deg, #FCD34D 0%, #F59E0B 100%);
+}
+
+/* #2 — Silver */
+.streak-pedestal--2nd .streak-pedestal__block {
+  height: 72px;
+  background: linear-gradient(180deg, #D1D5DB 0%, #9CA3AF 100%);
+}
+
+/* #3 — Bronze */
+.streak-pedestal--3rd .streak-pedestal__block {
+  height: 56px;
+  background: linear-gradient(180deg, #D4A373 0%, #B08968 100%);
+}
+
+/* Avatar area above pedestal */
+.streak-pedestal__avatar-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+/* Glow behind avatar */
+.streak-pedestal--1st .streak-pedestal__avatar-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(252, 211, 77, 0.45) 0%, transparent 70%);
+  animation: streak-glow 2.5s ease-in-out infinite;
+}
+
+.streak-pedestal--2nd .streak-pedestal__avatar-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(209, 213, 219, 0.35) 0%, transparent 70%);
+}
+
+.streak-pedestal--3rd .streak-pedestal__avatar-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 163, 115, 0.35) 0%, transparent 70%);
+}
+
+@keyframes streak-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+/* Rank label inside pedestal block */
+.streak-badge {
+  font-size: 18px;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.25);
+  line-height: 1;
+}
+
+/* Name & streak below avatar, above pedestal */
+.streak-pedestal__info {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.streak-pedestal__name {
+  font-size: 13px;
+  font-weight: 600;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0 auto;
+}
+
+.streak-pedestal--1st .streak-pedestal__name {
+  font-size: 14px;
+}
+
+.streak-pedestal__streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.streak-pedestal__streak-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #F97316;
+}
+
+.streak-pedestal--1st .streak-pedestal__streak-text {
+  font-size: 16px;
+}
+
+/* ── Ranking list #4+ ── */
+
+.streak-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.streak-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.streak-row:hover {
+  background: var(--muted);
+}
+
+/* Rank badge */
+.streak-rank {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+/* User info */
+.streak-row__user {
+  flex: 1;
+  min-width: 0;
+}
+
+.streak-row__name {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.streak-row__address {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+/* Streak days column */
+.streak-row__days {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.streak-row__days-num {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Active streak highlight */
+.streak-row__days--active .streak-row__days-num {
+  color: #F97316;
+}
+
+/* Trust column */
+.streak-row__trust {
+  min-width: 70px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.streak-row__trust-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.streak-row__trust-label {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  margin-left: 3px;
+}
+
+/* ── Staggered entrance ── */
+
+@keyframes streak-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.streak-podium {
+  animation: streak-slide-up 0.5s ease 0.1s both;
+}
+
+.streak-list .streak-row {
+  animation: streak-slide-up 0.35s ease both;
+}
+
+.streak-list .streak-row:nth-child(1) { animation-delay: 0.15s; }
+.streak-list .streak-row:nth-child(2) { animation-delay: 0.18s; }
+.streak-list .streak-row:nth-child(3) { animation-delay: 0.21s; }
+.streak-list .streak-row:nth-child(4) { animation-delay: 0.24s; }
+.streak-list .streak-row:nth-child(5) { animation-delay: 0.27s; }
+.streak-list .streak-row:nth-child(6) { animation-delay: 0.30s; }
+.streak-list .streak-row:nth-child(7) { animation-delay: 0.33s; }
+.streak-list .streak-row:nth-child(8) { animation-delay: 0.36s; }
+.streak-list .streak-row:nth-child(9) { animation-delay: 0.39s; }
+.streak-list .streak-row:nth-child(10) { animation-delay: 0.42s; }
+.streak-list .streak-row:nth-child(n+11) { animation-delay: 0.45s; }
+
+/* Pedestal entrance — pop up one by one */
+@keyframes pedestal-rise {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.streak-pedestal--2nd { animation: pedestal-rise 0.45s ease 0.2s both; }
+.streak-pedestal--1st { animation: pedestal-rise 0.5s ease 0.35s both; }
+.streak-pedestal--3rd { animation: pedestal-rise 0.45s ease 0.25s both; }

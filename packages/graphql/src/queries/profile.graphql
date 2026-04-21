@@ -1,0 +1,61 @@
+query GetUserPositions($accountId: String!) {
+  total: positions_aggregate(
+    where: { account_id: { _ilike: $accountId } }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  positions(
+    where: { account_id: { _ilike: $accountId } }
+    order_by: { shares: desc }
+    limit: 200
+  ) {
+    ...PositionWithVaultDetails
+  }
+}
+
+query GetUserPositionsCount($accountId: String!) {
+  positions_aggregate(
+    where: { account_id: { _ilike: $accountId } }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}
+
+query GetUserSignalsCount($accountId: String!, $subjectId: String!) {
+  signalsCount: terms_aggregate(
+    where: {
+      _and: [
+        { type: { _eq: Triple } }
+        { triple: { subject: { term_id: { _eq: $subjectId } } } }
+        { positions: { account: { id: { _eq: $accountId } } } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}
+
+query GetUserCertifications($accountId: String!, $predicateIds: [String!]!) {
+  positions(
+    where: {
+      account_id: { _ilike: $accountId }
+      vault: {
+        term: {
+          triple: {
+            predicate: { term_id: { _in: $predicateIds } }
+          }
+        }
+      }
+    }
+    order_by: { shares: desc }
+    limit: 100
+  ) {
+    ...PositionWithVaultDetails
+  }
+}
