@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { formatUnits } from 'viem'
 import { useDiscoveryScore, useGlobalStake } from "~/hooks"
+import DiscoveryScoreModal from '../../modals/DiscoveryScoreModal'
 import GlobalStakeModal from '../../modals/GlobalStakeModal'
 import SofiaLoader from '../../ui/SofiaLoader'
 import { DISCOVERY_GOLD_REWARDS } from "~/types/discovery"
@@ -52,6 +53,7 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
   const { config: gsConfig, position: gsPosition, vaultStats: gsVaultStats } = useGlobalStake()
   const [gsModalOpen, setGsModalOpen] = useState(false)
   const [gsModalMode, setGsModalMode] = useState<"deposit" | "redeem">("deposit")
+  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false)
 
   // Tier badges carousel
   const currentTierIndex = getTierIndex(level)
@@ -114,6 +116,14 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
       {/* Discovery Badges Section */}
       <div className="discovery-section">
         <div className="discovery-section-header">
+          <button
+            type="button"
+            className="discovery-why-button"
+            onClick={() => setIsScoreModalOpen(true)}
+            aria-label="Why this score?"
+            title="Why this score?">
+            ? Why this score
+          </button>
         </div>
 
         <div className="discovery-badges-row">
@@ -288,6 +298,12 @@ const StatsTab = ({ walletAddress, trustedByCount, level = 1, totalXP = 0, signa
           />
         </div>
       )}
+
+      <DiscoveryScoreModal
+        isOpen={isScoreModalOpen}
+        onClose={() => setIsScoreModalOpen(false)}
+        stats={stats ?? null}
+      />
     </div>
   )
 }
