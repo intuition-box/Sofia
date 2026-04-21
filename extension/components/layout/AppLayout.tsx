@@ -1,5 +1,6 @@
 import { useWalletFromStorage } from '../../hooks'
 import Background from './background'
+import WsStatusBadge from '../ui/WsStatusBadge'
 import { useRouter } from './RouterProvider'
 import '../styles/Global.css'
 import '../styles/AppLayout.css'
@@ -25,6 +26,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <div className="app-content">
         {children}
       </div>
+      <WsStatusBadge />
     </div>
   )
 }
