@@ -30,7 +30,17 @@ import {
   queryClient
 } from "../lib/providers/queryClient"
 import { SubscriptionManager } from "../lib/realtime/SubscriptionManager"
+import {
+  getWsStatus,
+  subscribeWsStatus,
+  type WsStatusSnapshot
+} from "../lib/realtime/wsStatus"
 import { createServiceLogger } from "../lib/utils/logger"
+
+/** chrome.storage.local key holding the current WS status snapshot.
+ *  Popup subscribes to changes via chrome.storage.onChanged to render
+ *  the offline badge. */
+const WS_STATUS_STORAGE_KEY = "sofia-ws-status"
 
 const logger = createServiceLogger("Realtime")
 const manager = new SubscriptionManager(queryClient)
@@ -67,6 +77,14 @@ async function syncWalletFromStorage(): Promise<void> {
   }
 }
 
+async function persistWsStatus(snapshot: WsStatusSnapshot): Promise<void> {
+  try {
+    await chrome.storage.local.set({ [WS_STATUS_STORAGE_KEY]: snapshot })
+  } catch (err) {
+    logger.warn("failed to persist ws status", err)
+  }
+}
+
 export async function initializeRealtime(): Promise<void> {
   if (initialized) return
   initialized = true
@@ -74,6 +92,15 @@ export async function initializeRealtime(): Promise<void> {
   const wsUrl = process.env.PLASMO_PUBLIC_GRAPHQL_WS_URL ?? API_WS_PROD
   configureWsClient({ wsUrl })
   logger.info("configured", { wsUrl })
+
+  // Mirror the in-memory wsStatus store into chrome.storage.local on
+  // every change. Popup reads via onChanged to render the offline badge.
+  // Write the initial snapshot once so the popup has something to hydrate
+  // from even if it mounts before the first status transition.
+  void persistWsStatus(getWsStatus())
+  subscribeWsStatus(() => {
+    void persistWsStatus(getWsStatus())
+  })
 
   ensurePersisted()
   await syncWalletFromStorage()
