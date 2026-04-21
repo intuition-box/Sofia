@@ -1,0 +1,221 @@
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Wallet Connection Banner */
+.walletBanner {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Connected State */
+.connectedInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.connectedDot {
+  width: 8px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+}
+
+.networkLabel {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5) !important;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.address {
+  font-family: 'Overpass Mono', monospace;
+  font-size: 0.9rem;
+  color: #ffffff !important;
+}
+
+/* Connect Section */
+.connectSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.connectHint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4) !important;
+  margin: 0;
+}
+
+/* Buttons */
+.connectBtn,
+.disconnectBtn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-family: 'Overpass Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.connectBtn {
+  background: #ffffff;
+  color: #02000B !important;
+  border: none;
+}
+
+.connectBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.connectBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.disconnectBtn {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+.disconnectBtn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff !important;
+}
+
+/* Error Banner */
+.errorBanner {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.errorText {
+  font-size: 0.9rem;
+  color: #fca5a5 !important;
+  margin: 0;
+}
+
+.errorDismiss {
+  background: transparent;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: #fca5a5 !important;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Overpass Mono', monospace;
+}
+
+.errorDismiss:hover {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: #f87171;
+}
+
+/* Values Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Info Footer */
+.infoFooter {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.infoText {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4) !important;
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.infoLink {
+  color: rgba(255, 255, 255, 0.6) !important;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.infoLink:hover {
+  color: #ffffff !important;
+}
+
+/* Mobile Responsive */
+@media screen and (max-width: 768px) {
+  .walletBanner {
+    padding: 1rem;
+  }
+
+  .connectedInfo {
+    gap: 0.5rem;
+  }
+
+  .address {
+    font-size: 0.85rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .errorBanner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .infoFooter {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+  }
+
+  .infoText {
+    font-size: 0.8rem;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

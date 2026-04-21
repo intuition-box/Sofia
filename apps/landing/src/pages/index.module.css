@@ -1,0 +1,383 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+/* Hero Section */
+.heroSection {
+  padding: 8rem 0 4rem 0;
+  text-align: center;
+  position: relative;
+  background: transparent;
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+}
+
+.buttonsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 120px;
+}
+
+
+
+
+
+/* Gallery Section */
+.gallerySection {
+  padding: 4rem 0;
+  background: transparent;
+  position: relative;
+}
+
+/* Logo Section */
+.logoSection {
+  padding: 4rem 0;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 996px) {
+  .heroSection {
+    padding: 6rem 2rem 3rem 2rem;
+    min-height: 30vh;
+  }
+
+  .gallerySection {
+    padding: 3rem 0;
+  }
+}
+
+.hero {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.imagesContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin: 2rem 0;
+}
+
+.heroLogo {
+  max-width: 300px;
+  height: auto;
+  margin: 0;
+  display: block;
+  opacity: 1;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  flex: 1;
+  max-width: 45%;
+}
+
+@media screen and (max-width: 768px) {
+  .imagesContainer {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .heroLogo {
+    max-width: 80%;
+  }
+}
+
+.heroLogomanifesto {
+  max-width: 300px;
+  height: auto;
+  margin: 0 auto 0.5rem auto;
+  display: block;
+  opacity: 0.7;
+  border-radius: 10px;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+@media screen and (max-width: 768px) {
+  .buttons {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .heroLogo {
+    max-width: 150px;
+  }
+}
+
+/* Hero Content */
+.heroContent {
+  padding: 4rem 2rem;
+  text-align: left;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Stats Section */
+.statsSection {
+  padding: 2rem 0;
+  background: transparent;
+}
+
+.statsGrid {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.statBox {
+  background: #02000B;
+  color: white;
+  padding: 1rem 3rem;
+  border: 2px solid #02000B;
+  border-radius: 50px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(2, 0, 11, 0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: auto;
+}
+
+.statBox:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(2, 0, 11, 0.3);
+}
+
+.statNumber {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: white !important;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  color: white !important;
+}
+
+.manifestoSection {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.manifestoButton {
+  display: inline-block;
+  background: transparent;
+  color: #ffffff !important;
+  padding: 1rem 3rem;
+  border: 2px solid #02000B;
+  border-radius: 50px;
+  text-decoration: none !important;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.manifestoButton:hover {
+  background: #02000B;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(2, 0, 11, 0.3);
+  text-decoration: none !important;
+}
+
+/* Section Styles */
+.visionSection,
+.missionSection,
+.problemSection,
+.painSection,
+.solutionSection {
+  padding: 1rem 0;
+  background: transparent;
+  color: #02000B;
+  position: relative;
+}
+
+/* Typography */
+.heroTitle {
+  font-size: 4.5rem;
+  font-weight: 450;
+  color: #ffffff !important;
+  text-align: center;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10rem;
+  margin-bottom: 4rem;
+}
+
+.sectionTitle {
+  font-size: 2.18rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #02000B !important;
+  text-align: center;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sectionTitlemanifesto {
+  font-size: 2.18rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #ffffff !important;
+  text-align: left;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.manifestoList{
+  text-align: left;
+}
+
+.sectionText {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+  color: #ffffff !important;
+  text-align: center;
+}
+
+.sectionTextmanifesto {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+  color: #ffffff !important;
+  text-align: left;
+}
+
+.manifestoArticle {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.manifestoList {
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+  padding-left: 2rem;
+  color: #ffffff !important;
+}
+
+.manifestoList li {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #ffffff !important;
+}
+
+@media screen and (max-width: 768px) {
+  .heroSection {
+    padding: 4rem 1rem 2rem 1rem;
+    min-height: 25vh;
+  }
+
+  .gallerySection {
+    padding: 2rem 0;
+  }
+
+  .heroTitle {
+    font-size: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+    padding: 0 1rem;
+    line-height: 1.2;
+  }
+
+  .sectionTitle {
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .sectionText {
+    font-size: 1.33rem;
+    line-height: 1.6;
+    padding: 0 1rem;
+  }
+}
+
+/* Animation Classes */
+.scroll-section {
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.animated-text {
+  color: #02000B !important;
+}
+
+.animated-text--split-words .split-word {
+  display: inline-block;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* Parallax and Sticky Sections */
+.parallax-section {
+  will-change: transform;
+}
+
+.sticky-reveal-container {
+  position: relative;
+}
+
+.sticky-reveal-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Performance Optimizations */
+.scroll-section,
+.animated-text,
+.parallax-section {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: auto;
+}
+
+/* Optimize animations for GPU acceleration */
+.scroll-section {
+  transform: translate3d(0, 50px, 0);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.scroll-section.animate-in {
+  transform: translate3d(0, 0, 0);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+  .missionSection,
+  .problemSection,
+  .solutionSection {
+    padding: 6rem 0;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .missionSection,
+  .problemSection,
+  .solutionSection {
+    padding: 4rem 0;
+  }
+}

@@ -1,0 +1,24 @@
+Maxime:
+  name: Maxime Saint-Joannis
+  title: Co-founder
+  url: sofia.intuition.box
+  image_url: https://avatars.githubusercontent.com/u/193876743?v=4
+  page: true
+  socials:
+    x: MoodzMaxime
+    linkedin: maxime-saint-joannis-65163b345
+    github: Wieedze
+
+Samuel:
+  name: Samuel Chauche
+  title: Co-founder
+  url: sofia.intuition.box
+  image_url: https://avatars.githubusercontent.com/u/193877792?s=400&u=b40a4d61b73ba9be24d01694392ac4cb700f82a6&v=4
+  page:
+    # customize the url of the author page at /blog/authors/<permalink>
+    permalink: '/all-Samuel-Chauche-articles'
+  socials:
+    x: Passive_Records
+    linkedin: Samuel-Chauche
+    github: SamuelChauche
+

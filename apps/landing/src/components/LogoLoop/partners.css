@@ -1,0 +1,24 @@
+/* Logos qui sont déjà en blanc (pas besoin de filtre) */
+.logo-intuition {
+  filter: none !important;
+  opacity: 0.9 !important;
+}
+
+.logo-intuition:hover {
+  opacity: 1 !important;
+}
+
+/* Logos noirs/sombres qui ont besoin d'être inversés */
+.logo-mastra,
+.logo-gaianet,
+.logo-ollama {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.9 !important;
+}
+
+.logo-mastra:hover,
+.logo-gaianet:hover,
+.logo-ollama:hover {
+  opacity: 1 !important;
+  filter: brightness(0) invert(1) brightness(1.1) !important;
+}

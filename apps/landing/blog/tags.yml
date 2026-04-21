@@ -1,0 +1,19 @@
+facebook:
+  label: Gaia
+  permalink: /gaia
+  description: gaia tag description
+
+hello:
+  label: Intuition
+  permalink: /Intuition
+  description: Intuition tag description
+
+docusaurus:
+  label: Sofia
+  permalink: /Sofia
+  description: Sofia tag description
+
+hola:
+  label: Hola
+  permalink: /hola
+  description: Hola tag description
