@@ -9,7 +9,7 @@ import {
   useGetUserPositionsQuery,
   useGetUserSignalsCountQuery,
   type GetUserPositionsQuery,
-} from '@0xsofia/dashboard-graphql'
+} from '@0xsofia/graphql'
 import { SUBJECT_IDS } from '../config'
 
 // ── Types ──

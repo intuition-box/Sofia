@@ -2,7 +2,7 @@ import {
   useGetTrustCircleAccountsQuery,
   useGetSofiaTrustedActivityQuery,
   useGetFollowingCountQuery,
-} from '@0xsofia/dashboard-graphql'
+} from '@0xsofia/graphql'
 import { getAddress } from 'viem'
 import { SOFIA_PROXY_ADDRESS, PREDICATE_IDS, SUBJECT_IDS } from '../config'
 import { processEvents, enrichWithTopicContexts } from './feedProcessing'

@@ -1,7 +1,7 @@
 import {
   useGetTrendingByPredicateQuery,
   type GetTrendingByPredicateQuery,
-} from '@0xsofia/dashboard-graphql'
+} from '@0xsofia/graphql'
 import { GRAPHQL_URL } from '@/config'
 import { getPlatformsByTopic } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'

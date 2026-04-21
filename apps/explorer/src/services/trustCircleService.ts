@@ -1,4 +1,4 @@
-import { useGetMyTrustCircleQuery } from '@0xsofia/dashboard-graphql'
+import { useGetMyTrustCircleQuery } from '@0xsofia/graphql'
 import { getAddress } from 'viem'
 import { SUBJECT_IDS, PREDICATE_IDS } from '../config'
 

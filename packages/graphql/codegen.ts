@@ -44,7 +44,7 @@ const config: CodegenConfig = {
     },
   },
   ignoreNoDocuments: true,
-  documents: ['src/**/*.graphql'],
+  documents: ['**/*.graphql'],
   generates: {
     './src/generated/index.ts': {
       config: {

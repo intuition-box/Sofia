@@ -1,6 +1,6 @@
 import {
   useGetAllActivityQuery,
-} from '@0xsofia/dashboard-graphql'
+} from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '../config'
 import { processEvents, enrichWithTopicContexts } from './feedProcessing'
 import type { CircleItem } from './circleService'

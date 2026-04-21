@@ -1,3 +1,117 @@
+query GetTrustCirclePositions(
+  $subjectId: String!
+  $predicateId: String!
+  $address: String!
+  $offset: Int
+  $positionsOrderBy: [positions_order_by!]
+) {
+  triples_aggregate(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { positions: { account_id: { _ilike: $address } } }
+      ]
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  triples(
+    offset: $offset
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+        { positions: { account_id: { _ilike: $address } } }
+      ]
+    }
+  ) {
+    term_id
+    subject {
+      label
+    }
+    predicate {
+      label
+    }
+    object {
+      term_id
+      label
+      type
+      accounts {
+        id
+        label
+        image
+      }
+    }
+    term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        total_shares
+        current_share_price
+        positions_aggregate {
+          aggregate {
+            count
+            sum {
+              shares
+            }
+          }
+        }
+        positions(
+          where: { account_id: { _ilike: $address } }
+          order_by: $positionsOrderBy
+        ) {
+          account_id
+          account {
+            id
+            label
+          }
+          shares
+        }
+      }
+    }
+  }
+}
+
+query GetTrustCircleAccounts(
+  $subjectId: String!
+  $predicateId: String!
+  $walletAddress: String!
+) {
+  triples(
+    where: {
+      _and: [
+        { subject_id: { _eq: $subjectId } }
+        { predicate_id: { _eq: $predicateId } }
+        { object: { type: { _eq: "Account" } } }
+      ]
+    }
+  ) {
+    object {
+      term_id
+      label
+      type
+      accounts {
+        id
+        label
+        image
+      }
+    }
+    term {
+      vaults(
+        where: { curve_id: { _eq: "2" } }
+        order_by: { curve_id: asc }
+      ) {
+        positions(where: { account_id: { _ilike: $walletAddress } }) {
+          account_id
+          shares
+        }
+      }
+    }
+  }
+}
+
 query GetCircleFeed($address: String!) {
   positions_from_following(
     args: { address: $address }
@@ -49,87 +163,6 @@ query GetFollowingCount($address: String!) {
   }
 }
 
-# Pour circleService (feed My Circle) — version originale, NE PAS MODIFIER
-query GetTrustCircleAccounts(
-  $subjectId: String!
-  $predicateId: String!
-  $walletAddress: String!
-) {
-  triples(
-    where: {
-      _and: [
-        { subject_id: { _eq: $subjectId } }
-        { predicate_id: { _eq: $predicateId } }
-        { object: { type: { _eq: "Account" } } }
-      ]
-    }
-  ) {
-    object {
-      term_id
-      label
-      type
-      accounts {
-        id
-        label
-        image
-      }
-    }
-    term {
-      vaults(
-        where: { curve_id: { _eq: "2" } }
-        order_by: { curve_id: asc }
-      ) {
-        positions(where: { account_id: { _ilike: $walletAddress } }) {
-          account_id
-          shares
-        }
-      }
-    }
-  }
-}
-
-# Pour trustCircleService (drawer) — copie de l'extension
-query GetMyTrustCircle(
-  $subjectId: String!
-  $predicateId: String!
-  $walletAddress: String!
-) {
-  triples(
-    where: {
-      _and: [
-        { subject_id: { _eq: $subjectId } }
-        { predicate_id: { _eq: $predicateId } }
-        { object: { type: { _eq: "Account" } } }
-        { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
-      ]
-    }
-  ) {
-    term_id
-    created_at
-    object {
-      term_id
-      data
-      image
-      label
-      type
-      wallet_id
-      accounts {
-        id
-      }
-    }
-    term {
-      vaults(order_by: { curve_id: asc }) {
-        curve_id
-        positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
-          account_id
-          shares
-          created_at
-        }
-      }
-    }
-  }
-}
-
 query GetSofiaTrustedActivity(
   $trustedWallets: [String!]!
   $proxy: String!
@@ -143,6 +176,7 @@ query GetSofiaTrustedActivity(
     where: {
       _and: [
         { type: { _neq: "FeesTransfered" } }
+
         {
           _or: [
             {
@@ -153,6 +187,7 @@ query GetSofiaTrustedActivity(
                 { deposit: { assets_after_fees: { _neq: "0" } } }
               ]
             }
+
             {
               _and: [
                 { type: { _eq: "Redeemed" } }
@@ -183,6 +218,8 @@ query GetSofiaTrustedActivity(
     id
     type
     created_at
+    transaction_hash
+
     deposit {
       sender_id
       assets_after_fees
@@ -190,15 +227,25 @@ query GetSofiaTrustedActivity(
       sender { id label image }
       receiver { id label image }
     }
+
     redemption {
       sender_id
       assets
       shares
       sender { id label image }
     }
+
+    atom {
+      term_id
+      label
+      type
+      creator { id label image }
+    }
+
     triple {
       term_id
       counter_term_id
+      creator { id label image }
       subject { label term_id }
       predicate { label term_id }
       object {
@@ -206,9 +253,29 @@ query GetSofiaTrustedActivity(
         term_id
         value {
           thing {
-            url
-            name
+              url
           }
+        }
+      }
+    }
+  }
+}
+
+query FindUserPositionsOnTriples(
+  $termIds: [String!]!
+  $address: String!
+  $limit: Int = 500
+) {
+  triples(where: { term_id: { _in: $termIds } }, limit: $limit) {
+    term_id
+    counter_term_id
+    positions(where: { account_id: { _eq: $address } }) {
+      shares
+    }
+    counter_term {
+      vaults(where: { curve_id: { _eq: "1" } }) {
+        positions(where: { account_id: { _eq: $address } }) {
+          shares
         }
       }
     }

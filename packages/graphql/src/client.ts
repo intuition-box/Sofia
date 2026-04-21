@@ -1,3 +1,5 @@
+import { GraphQLClient } from 'graphql-request'
+
 import { API_URL_PROD } from './constants'
 import { configureWsClient } from './wsClient'
 
@@ -6,21 +8,47 @@ export interface ClientConfig {
   apiUrl?: string
 }
 
+const DEFAULT_API_URL = API_URL_PROD
+
 let globalConfig: { apiUrl?: string } = {
-  apiUrl: API_URL_PROD,
+  apiUrl: DEFAULT_API_URL,
 }
 
-/**
- * Configure both the HTTP fetcher and the optional WebSocket client in one call.
- *
- * @param config.apiUrl — HTTPS GraphQL endpoint (required)
- * @param config.wsUrl — WSS GraphQL endpoint for subscriptions (optional).
- *                       If omitted, subscriptions will use the default mainnet URL.
- */
-export function configureClient(config: { apiUrl: string; wsUrl?: string }) {
+export function configureClient(config: {
+  apiUrl: string
+  wsUrl?: string
+}) {
   globalConfig = { ...globalConfig, apiUrl: config.apiUrl }
   if (config.wsUrl) {
     configureWsClient({ wsUrl: config.wsUrl })
+  }
+}
+
+export function getClientConfig(token?: string): ClientConfig {
+  return {
+    headers: {
+      ...(token && { authorization: `Bearer ${token}` }),
+      'Content-Type': 'application/json',
+    },
+    apiUrl: globalConfig.apiUrl,
+  }
+}
+
+export function createServerClient({ token }: { token?: string }) {
+  const config = getClientConfig(token)
+  if (!config.apiUrl) {
+    throw new Error(
+      'GraphQL API URL not configured. Call configureClient first.',
+    )
+  }
+  return new GraphQLClient(config.apiUrl, config)
+}
+
+export const fetchParams = () => {
+  return {
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
   }
 }
 
@@ -38,10 +66,8 @@ export function fetcher<TData, TVariables>(
 
     const res = await fetch(globalConfig.apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        ...(options as Record<string, string>),
-      },
+      ...fetchParams(),
+      ...options,
       body: JSON.stringify({ query, variables }),
     })
 

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   useGetUserActivityQuery,
   useGetBatchTripleVaultStatsQuery,
-} from '@0xsofia/dashboard-graphql'
+} from '@0xsofia/graphql'
 import { SOFIA_PROXY_ADDRESS } from '@/config'
 import { extractSide, type VaultStats, statsCache } from '@/services/vaultTooltipService'
 import { INTUITION_FEATURED_CLAIMS, SOFIA_CLAIMS } from '@/config/debateConfig'

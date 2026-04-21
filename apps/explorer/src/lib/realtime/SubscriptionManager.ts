@@ -2,7 +2,7 @@
  * SubscriptionManager — single source of truth for real-time data.
  *
  * Opens one WebSocket connection (via the graphql-ws client in
- * @0xsofia/dashboard-graphql) and subscribes to wallet-scoped queries.
+ * @0xsofia/graphql) and subscribes to wallet-scoped queries.
  * Each delta is pushed into the React Query cache via setQueryData(),
  * so components consuming those keys re-render without fetching.
  *
@@ -25,7 +25,7 @@ import {
   type WatchUserPositionsSubscriptionVariables,
   type WatchUserTrackedPositionsSubscription,
   type WatchUserTrackedPositionsSubscriptionVariables,
-} from '@0xsofia/dashboard-graphql'
+} from '@0xsofia/graphql'
 import {
   TOPIC_ATOM_IDS,
   CATEGORY_ATOM_IDS,

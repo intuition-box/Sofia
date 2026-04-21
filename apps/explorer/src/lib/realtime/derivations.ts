@@ -12,7 +12,7 @@
  */
 
 import type { QueryClient } from '@tanstack/react-query'
-import type { WatchUserPositionsSubscription } from '@0xsofia/dashboard-graphql'
+import type { WatchUserPositionsSubscription } from '@0xsofia/graphql'
 import {
   TOPIC_ATOM_IDS,
   CATEGORY_ATOM_IDS,
