@@ -13,6 +13,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useWalletFromStorage } from './useWalletFromStorage'
 import { useBookmarks } from './useBookmarks'
 import { useDiscoveryScore } from './useDiscoveryScore'
@@ -22,6 +23,8 @@ import { QuestBadgeService, QuestProgressService } from '../lib/services'
 import { DAILY_CERTIFICATION_ATOM_ID, DAILY_VOTE_ATOM_ID } from '../lib/config/chainConfig'
 import { computeQuestStatuses, calculateLevelFromXP, calculateXPForNextLevel, getClaimId, getWalletKey } from '../lib/utils'
 import { createHookLogger } from '../lib/utils/logger'
+import { realtimeKeys } from '../lib/realtime/derivations'
+import type { DailyStreakStatus } from '../lib/realtime/derivations'
 import { QUEST_DEFINITIONS } from '../types/questTypes'
 import type { Quest, UserProgress, QuestSystemResult } from '../types/questTypes'
 
@@ -55,6 +58,39 @@ export const useQuestSystem = (targetWalletAddress?: string): QuestSystemResult 
   // On-chain streak data (same source as LeaderboardTab)
   const certStreak = useOnChainStreak(DAILY_CERTIFICATION_ATOM_ID, walletAddress)
   const voteStreak = useOnChainStreak(DAILY_VOTE_ATOM_ID, walletAddress)
+
+  // Live WS trigger: when the SubscriptionManager pushes a new position on
+  // the daily-cert or daily-vote atoms (user just certified / voted), the
+  // ['daily-streak', wallet] cache key updates. The streak *count* itself
+  // comes from deposits history (GetProxyDepositDays) — not positions — so
+  // we can't derive it from the WS payload. Instead we use the WS update
+  // as a signal to re-fetch the HTTP streak without polling.
+  const walletLowerForStreak = walletAddress?.toLowerCase()
+  const { data: dailyStreakStatus } = useQuery<DailyStreakStatus | undefined>({
+    queryKey: walletLowerForStreak
+      ? realtimeKeys.dailyStreak(walletLowerForStreak)
+      : ['daily-streak', 'none'],
+    queryFn: () => Promise.resolve(undefined),
+    enabled: !!walletLowerForStreak,
+    staleTime: Infinity,
+    gcTime: Infinity
+  })
+
+  const lastStreakFingerprintRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!dailyStreakStatus || !walletAddress) return
+    // Fingerprint the WS payload — only refetch when it actually changed.
+    // certifiedToday/votedToday are the fields that flip when user acts.
+    const fingerprint = `${dailyStreakStatus.certifiedToday}|${dailyStreakStatus.votedToday}|${dailyStreakStatus.certificationShares}|${dailyStreakStatus.voteShares}`
+    if (lastStreakFingerprintRef.current === fingerprint) return
+    // Skip the very first observation — the streaks already fetched on mount.
+    if (lastStreakFingerprintRef.current !== null) {
+      logger.debug('WS daily-streak changed → refetching streak counts')
+      certStreak.refetch().catch(() => {})
+      voteStreak.refetch().catch(() => {})
+    }
+    lastStreakFingerprintRef.current = fingerprint
+  }, [dailyStreakStatus, walletAddress, certStreak, voteStreak])
 
   // React state
   const [userProgress, setUserProgress] = useState<UserProgress>({

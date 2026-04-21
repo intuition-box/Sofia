@@ -20,6 +20,9 @@ export interface OnChainStreakResult {
   streak: number
   activityDates: string[]
   loading: boolean
+  /** Force a refetch — used by useQuestSystem to refresh the streak count
+   *  when the WS pushes a new daily-streak position (cert/vote today). */
+  refetch: () => Promise<void>
 }
 
 export const useOnChainStreak = (
@@ -72,5 +75,5 @@ export const useOnChainStreak = (
     fetchStreak()
   }, [fetchStreak])
 
-  return { streak, activityDates, loading }
+  return { streak, activityDates, loading, refetch: fetchStreak }
 }
