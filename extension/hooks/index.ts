@@ -79,6 +79,7 @@ export { useStreakLeaderboard } from './useStreakLeaderboard'
 export type { LeaderboardEntry } from './useStreakLeaderboard'
 export { useOnChainStreak } from './useOnChainStreak'
 export type { OnChainStreakResult } from './useOnChainStreak'
+export { useWsStatus } from './useWsStatus'
 
 // Global Stake
 export { useGlobalStake, GS_FEE_DENOMINATOR } from './useGlobalStake'
