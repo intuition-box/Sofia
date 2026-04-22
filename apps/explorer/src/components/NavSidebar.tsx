@@ -129,7 +129,11 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
 
   return (
     <DsNavSidebar>
-      <NavBrand name="Sofia Explorer" tag="v0.4" />
+      <NavBrand
+        name="Sofia Explorer"
+        tag="v0.4"
+        logo={<img src="/logo_invert.png" alt="" className="nav-brand-logo" />}
+      />
 
       {/* Toolbar — cart / notifications / theme toggle. Home lives as a
           nav-item below (Navigation section). */}
@@ -258,37 +262,11 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
         </NavSection>
       ) : null}
 
-      <div
-        style={{
-          marginTop: 'auto',
-          padding: 12,
-          border: '1px solid var(--ds-border)',
-          borderRadius: 10,
-          background: 'var(--ds-bg-subtle)',
-        }}
-      >
-        <p
-          style={{
-            fontFamily: '"JetBrains Mono", monospace',
-            fontSize: 12,
-            fontWeight: 700,
-            margin: 0,
-            color: 'var(--ds-ink)',
-          }}
-        >
+      <div className="ns-countdown">
+        <p className="ns-countdown-time">
           {timeLeft.days}d {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m {pad(timeLeft.seconds)}s
         </p>
-        <p
-          style={{
-            fontSize: 10,
-            color: 'var(--ds-muted)',
-            marginTop: 4,
-            marginBottom: 0,
-            lineHeight: 1.4,
-          }}
-        >
-          remaining — Alpha Reward Program is live
-        </p>
+        <p className="ns-countdown-hint">remaining — Alpha Reward Program is live</p>
       </div>
     </DsNavSidebar>
   )

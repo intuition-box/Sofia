@@ -1,9 +1,11 @@
 /* ── App main layout ── */
-.main-content { margin-left: 248px; margin-right: 280px; margin-top: 5px; padding-bottom: 48px; padding-left: 12px; padding-right: 12px; transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+/* margin-top: breathing room between the top of the viewport and the hero
+   banner now that the app has no fixed header. */
+.main-content { margin-left: 248px; margin-right: 280px; margin-top: 28px; padding-bottom: 48px; padding-left: 12px; padding-right: 12px; transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
 /* ProfileDrawer is 400px wide (see profile-drawer.css .pd-aside) — reserve
    exactly that so the main content stops where the drawer starts. */
 .main-content--profile { margin-right: 400px; }
-.main-content--no-sidebar { margin-left: 0; margin-right: 0; margin-top: 5px; }
+.main-content--no-sidebar { margin-left: 0; margin-right: 0; margin-top: 28px; }
 
 /* ── RightSidebar ── */
 .rs-aside {
