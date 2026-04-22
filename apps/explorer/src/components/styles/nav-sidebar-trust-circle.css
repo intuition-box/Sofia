@@ -1,0 +1,78 @@
+/* ── Trust Circle — compact rows inside the left NavSidebar ─────────
+ * Scoped to .ns-tc-* so it doesn't collide with the old .pd-circle-*
+ * rules from ProfileDrawer. Designed for the 248px-wide nav rail.
+ */
+
+.ns-tc-empty {
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+
+.ns-tc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border) transparent;
+}
+.ns-tc-list::-webkit-scrollbar {
+  width: 4px;
+}
+.ns-tc-list::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 999px;
+}
+.ns-tc-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ns-tc-item {
+  display: grid;
+  grid-template-columns: 16px 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.ns-tc-item:hover {
+  background: var(--ds-bg-subtle);
+}
+
+.ns-tc-rank {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.ns-tc-avatar {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.ns-tc-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.ns-tc-amount {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--ds-muted);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}

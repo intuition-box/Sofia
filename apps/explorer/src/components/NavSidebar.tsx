@@ -18,7 +18,10 @@ import {
   Globe,
 } from 'lucide-react'
 import { useTopicSelection } from '../hooks/useDomainSelection'
+import { useTrustCircle } from '../hooks/useTrustCircle'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { SEASON_END } from '../config'
+import './styles/nav-sidebar-trust-circle.css'
 
 function getTimeLeft() {
   const diff = SEASON_END.getTime() - Date.now()
@@ -35,8 +38,10 @@ const pad = (n: number) => String(n).padStart(2, '0')
 
 export function NavSidebar() {
   const location = useLocation()
-  const { authenticated } = usePrivy()
+  const { authenticated, user } = usePrivy()
+  const address = user?.wallet?.address ?? ''
   const { selectedTopics } = useTopicSelection()
+  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(address || undefined)
   const [timeLeft, setTimeLeft] = useState(getTimeLeft)
 
   useEffect(() => {
@@ -107,6 +112,32 @@ export function NavSidebar() {
               />
             </Link>
           ))}
+        </NavSection>
+      ) : null}
+
+      {authenticated ? (
+        <NavSection title="Trust Circle">
+          {trustLoading ? (
+            <p className="ns-tc-empty">Loading…</p>
+          ) : trustCircle.length === 0 ? (
+            <p className="ns-tc-empty">No accounts yet.</p>
+          ) : (
+            <div className="ns-tc-list">
+              {trustCircle.slice(0, 6).map((a, i) => (
+                <div key={a.termId} className="ns-tc-item" title={`${a.label} — ${a.trustAmount.toFixed(4)} T`}>
+                  <span className="ns-tc-rank">{i + 1}</span>
+                  <Avatar className="ns-tc-avatar">
+                    {a.image && <AvatarImage src={a.image} alt={a.label} />}
+                    <AvatarFallback className="text-[10px]">
+                      {a.label.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="ns-tc-label">{a.label}</span>
+                  <span className="ns-tc-amount">{a.trustAmount.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </NavSection>
       ) : null}
 

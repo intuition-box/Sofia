@@ -7,7 +7,6 @@ import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
 import { useSignals } from '../hooks/useSignals'
 import { useShareProfile } from '../hooks/useShareProfile'
-import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
@@ -87,7 +86,6 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const { signals } = useSignals(address || undefined)
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustScore, signals)
   const topicScores = scores?.topics ?? []
-  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(address || undefined)
   const { topicById } = useTaxonomy()
 
   const {
@@ -223,39 +221,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </div>
           )}
 
-          {/* Trust Circle — explorer extra, kept because the list surfaces
-              real on-chain delegations the proto has no equivalent for. */}
-          <div className="pd-section pd-section--grow">
-            <p className="pd-section-title">
-              My Trust Circle
-              {!trustLoading && <span className="pd-circle-count">{trustCircle.length}</span>}
-            </p>
-            {trustLoading ? (
-              <div className="pd-circle-loading">
-                <span className="pd-circle-loading-text">Loading…</span>
-              </div>
-            ) : trustCircle.length === 0 ? (
-              <p className="pd-circle-empty">No accounts in trust circle yet.</p>
-            ) : (
-              <div className="pd-circle-list">
-                {trustCircle.map((account, i) => (
-                  <div key={account.termId} className="pd-circle-item">
-                    <span className="pd-circle-rank">{i + 1}</span>
-                    <Avatar className="pd-circle-avatar">
-                      {account.image && <AvatarImage src={account.image} alt={account.label} />}
-                      <AvatarFallback className="text-xs">
-                        {account.label.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="pd-circle-info">
-                      <span className="pd-circle-label">{account.label}</span>
-                      <span className="pd-circle-trust">{account.trustAmount.toFixed(6)} T</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Filler so the CTA sits at the bottom of the drawer. */}
+          <div className="pd-section pd-section--grow" />
 
           {/* CTA — Start your journey */}
           <div className="pd-section">
