@@ -78,16 +78,16 @@
 }
 
 .ns-mav {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 2px solid var(--ds-card);
-  margin-left: -5px;
+  margin-left: -8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: "JetBrains Mono", monospace;
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
   color: #02000e;
   flex-shrink: 0;
@@ -101,7 +101,7 @@
 .ns-mav-more {
   background: var(--ds-bg-subtle);
   color: var(--ds-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 [data-theme="dark"] .ns-mav-more,
 .dark .ns-mav-more {
@@ -112,7 +112,7 @@
   background: var(--ds-ink);
   color: var(--ds-bg);
   cursor: default;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 400;
   line-height: 1;
   margin-left: 4px;
