@@ -35,17 +35,6 @@
   flex-direction: column;
 }
 
-.pp-section-title {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted-foreground);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
-}
-
 /* ── Public profile stats ── */
 .pub-stats-grid {
   display: grid;

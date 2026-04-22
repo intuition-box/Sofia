@@ -16,17 +16,6 @@
   flex-direction: column;
 }
 
-.ip-section-title {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted-foreground);
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
-}
-
 .ip-loader {
   display: flex;
   justify-content: center;

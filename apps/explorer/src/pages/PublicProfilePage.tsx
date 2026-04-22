@@ -18,6 +18,7 @@ import { TOPIC_META } from '@/config/topicMeta'
 import TopClaimsSection from '@/components/profile/TopClaimsSection'
 import LastActivitySection from '@/components/profile/LastActivitySection'
 import PageHeader from '@/components/PageHeader'
+import { SectionTitle } from '@0xsofia/design-system'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { Card } from '@/components/ui/card'
 import { Users, Award, BarChart3, Layers, Shield, Globe } from 'lucide-react'
@@ -153,7 +154,7 @@ export default function PublicProfilePage() {
           <div style={{ textAlign: 'center', padding: 20 }}><SofiaLoader size={32} /></div>
         ) : profile && (
           <section className="pp-section">
-            <h3 className="pp-section-title">Stats</h3>
+            <SectionTitle>Stats</SectionTitle>
             <div className="pub-stats-grid">
               <Card className="pub-stat-card">
                 <Layers className="h-4 w-4 text-muted-foreground" />
@@ -191,7 +192,7 @@ export default function PublicProfilePage() {
         {/* Interests derived from on-chain positions */}
         {sortedTopics.length > 0 && (
           <section className="pp-section">
-            <h3 className="pp-section-title">Interests</h3>
+            <SectionTitle>Interests</SectionTitle>
             <div className="pub-interests-grid">
               {sortedTopics.map(([slug, count]) => {
                 const meta = TOPIC_META[slug]
@@ -215,7 +216,7 @@ export default function PublicProfilePage() {
         {/* Top Claims */}
         {(claimsLoading || topClaims.length > 0) && (
           <section className="pp-section">
-            <h3 className="pp-section-title">Top Claims</h3>
+            <SectionTitle>Top Claims</SectionTitle>
             <TopClaimsSection
               claims={topClaims}
               loading={claimsLoading}
@@ -227,7 +228,7 @@ export default function PublicProfilePage() {
 
         {/* Activity */}
         <section className="pp-section">
-          <h3 className="pp-section-title">Activity</h3>
+          <SectionTitle>Activity</SectionTitle>
           <LastActivitySection
             items={activityItems}
             loading={activityLoading}

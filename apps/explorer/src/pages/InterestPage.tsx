@@ -17,7 +17,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, ThumbsUp, ThumbsDown, Plus, ExternalLink, Info } from 'lucide-react'
-import { InterestHero, getTopicEmoji } from '@0xsofia/design-system'
+import { InterestHero, SectionTitle, getTopicEmoji } from '@0xsofia/design-system'
 import NicheDetailList from '@/components/profile/NicheDetailList'
 import TrendingCard from '@/components/TrendingCard'
 import PositionBoardDialog from '@/components/profile/PositionBoardDialog'
@@ -96,7 +96,7 @@ export default function InterestPage() {
 
         {/* Stats */}
         <section className="ip-section">
-          <h3 className="ip-section-title">Stats</h3>
+          <SectionTitle>Stats</SectionTitle>
           <div className="ip-stats-grid">
             <Card
               className="ip-stat-card ip-stat-card--clickable"
@@ -134,7 +134,7 @@ export default function InterestPage() {
 
         {/* Categories */}
         <section className="ip-section">
-          <h3 className="ip-section-title">Categories ({nicheCount})</h3>
+          <SectionTitle>Categories ({nicheCount})</SectionTitle>
           <NicheDetailList
             topicId={topicId!}
             topicColor={color}
@@ -146,7 +146,7 @@ export default function InterestPage() {
 
         {/* Trending Platforms */}
         <section className="ip-section">
-          <h3 className="ip-section-title">Trending in {topic.label}</h3>
+          <SectionTitle>Trending in {topic.label}</SectionTitle>
           {trendingLoading ? (
             <div className="ip-loader"><SofiaLoader size={48} /></div>
           ) : trending.length === 0 ? (
@@ -166,7 +166,7 @@ export default function InterestPage() {
 
         {/* Platforms */}
         <section className="ip-section">
-          <h3 className="ip-section-title">Platforms ({connectedPlatforms.length}/{platforms.length})</h3>
+          <SectionTitle>Platforms ({connectedPlatforms.length}/{platforms.length})</SectionTitle>
           <div className="ip-platforms-grid">
             {connectedPlatforms.map((p) => (
               <Card key={p.id} className="ip-platform-card ip-platform-connected">
@@ -196,7 +196,7 @@ export default function InterestPage() {
 
         {/* Claims / Vote */}
         <section className="ip-section">
-          <h3 className="ip-section-title">Claims</h3>
+          <SectionTitle>Claims</SectionTitle>
           {claimsLoading ? (
             <div className="ip-loader"><SofiaLoader size={48} /></div>
           ) : claims.length === 0 ? (
@@ -300,7 +300,7 @@ export default function InterestPage() {
 
         {/* Certified in this topic */}
         <section className="ip-section">
-          <h3 className="ip-section-title">Certified in {topic.label}</h3>
+          <SectionTitle>Certified in {topic.label}</SectionTitle>
           {certsLoading ? (
             <div className="ip-loader"><SofiaLoader size={48} /></div>
           ) : certifications.length === 0 ? (
