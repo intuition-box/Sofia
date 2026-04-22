@@ -21,7 +21,8 @@
     "./styles/user-badge.css": "./src/styles/user-badge.css",
     "./styles/interests.css": "./src/styles/interests.css",
     "./styles/nav-sidebar.css": "./src/styles/nav-sidebar.css",
-    "./styles/app-shell.css": "./src/styles/app-shell.css"
+    "./styles/app-shell.css": "./src/styles/app-shell.css",
+    "./styles/page-hero.css": "./src/styles/page-hero.css"
   },
   "files": [
     "src"

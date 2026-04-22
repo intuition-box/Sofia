@@ -14,7 +14,7 @@ import TopClaimsSection from '../components/profile/TopClaimsSection'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Wallet, User } from 'lucide-react'
-import PageHeader from '../components/PageHeader'
+import { PageHero } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
@@ -56,7 +56,11 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <PageHeader color={pc.color} glow={pc.glow} title={isViewingAs ? shortAddr : pc.title} subtitle={isViewingAs ? 'Viewing profile' : pc.subtitle} />
+      <PageHero
+        title={isViewingAs ? shortAddr : pc.title}
+        description={isViewingAs ? 'Viewing profile' : pc.subtitle}
+        background={pc.color}
+      />
 
       {/* View-as banner */}
       {isViewingAs && (

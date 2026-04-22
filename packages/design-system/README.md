@@ -18,10 +18,12 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | `src/components/GroupBentoCard` + `src/hooks/useIntentionGroups` | ✅ Done | Echoes composite card + bucketing / sorting helpers |
 | `src/components/InterestsGrid` + `InterestCard` + `AddInterestCard` | ✅ Done | 3-column interests grid with hover-reveal color layer |
 | `src/components/AppShell` + `NavSidebar` + `NavBrand` + `NavSection` + `NavItem` | ✅ Done | Root 3-column grid + left-rail nav primitives |
+| `src/components/PageHero` | ✅ Done | Peach banner with Fraunces title + description + tilted deco square |
 | Explorer dependency wired | ✅ Done | `apps/explorer` now depends on `@0xsofia/design-system` (workspace:*) |
 | Explorer migration — `LastActivitySection` | ✅ Done | Bento grid + `useIntentionGroups` |
 | Explorer migration — `InterestsGrid` | ✅ Done | Three-column interests grid with reveal layer |
-| Explorer migration — left nav sidebar | ✅ Done | Replaces `Sidebar.tsx`; removes the two `zoom: 1.25` hacks in `App.tsx` and `Sidebar.tsx` |
+| Explorer migration — left nav sidebar | ✅ Done | Replaces `Sidebar.tsx`; removes the two `zoom: 1.25` hacks |
+| Explorer migration — profile page hero | ✅ Done | `<PageHero>` replaces `<PageHeader>` on `ProfilePage` |
 
 ## Usage
 
