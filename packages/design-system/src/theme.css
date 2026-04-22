@@ -42,7 +42,13 @@
   --ds-radius: 10px;
 }
 
-[data-theme="dark"] {
+/* Dark selectors:
+ *   - [data-theme="dark"]  — standard data-attribute toggle
+ *   - .dark                — shadcn / next-themes class toggle (explorer uses this)
+ * Both are listed so host apps using either mechanism flip the tokens
+ * without any per-app configuration. */
+[data-theme="dark"],
+.dark {
   --ds-bg: #0b0a12;
   --ds-bg-subtle: #121120;
   --ds-card: #13121f;
@@ -70,7 +76,8 @@
    via `var(--work)` / `var(--trusted)` / etc. No collision with shadcn. */
 :root,
 [data-theme="light"],
-[data-theme="dark"] {
+[data-theme="dark"],
+.dark {
   --trusted: #22c55e;
   --distrusted: #ef4444;
   --work: #3b82f6;
