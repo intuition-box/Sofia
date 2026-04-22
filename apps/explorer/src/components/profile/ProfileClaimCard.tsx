@@ -166,7 +166,7 @@ export function deriveClaimBadge(opts: {
 }): ClaimBadge {
   const { supportCount, opposeCount, pnlPct, position } = opts
   if (position === 'oppose' && opposeCount > supportCount) return 'contrarian'
-  if (supportCount <= 3) return 'pioneer'
-  if (supportCount >= 20 || pnlPct >= 80) return 'viral'
+  if (supportCount <= 2) return 'pioneer'
+  if (supportCount >= 8 || pnlPct >= 30) return 'viral'
   return 'early'
 }
