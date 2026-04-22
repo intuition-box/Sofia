@@ -17,8 +17,7 @@ import { ATOM_ID_TO_TOPIC, ATOM_ID_TO_CATEGORY, ATOM_ID_TO_PLATFORM } from '@/co
 import { TOPIC_META } from '@/config/topicMeta'
 import TopClaimsSection from '@/components/profile/TopClaimsSection'
 import LastActivitySection from '@/components/profile/LastActivitySection'
-import PageHeader from '@/components/PageHeader'
-import { SectionTitle } from '@0xsofia/design-system'
+import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { Card } from '@/components/ui/card'
 import { Users, Award, BarChart3, Layers, Shield, Globe } from 'lucide-react'
@@ -140,11 +139,10 @@ export default function PublicProfilePage() {
 
   return (
     <div className="pf-view page-enter">
-      <PageHeader
-        color="#627EEA"
-        glow="#627EEA66"
+      <PageHero
+        background="#627EEA"
         title={displayName}
-        subtitle={shortAddress !== displayName ? shortAddress : 'Public profile'}
+        description={shortAddress !== displayName ? shortAddress : 'Public profile'}
       />
 
       <div className="pp-sections">

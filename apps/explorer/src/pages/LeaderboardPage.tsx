@@ -8,7 +8,7 @@ import StatsRibbon from '../components/StatsRibbon'
 import PersonalStats from '../components/PersonalStats'
 import Leaderboard from '../components/Leaderboard'
 import FooterCTA from '../components/FooterCTA'
-import PageHeader from '../components/PageHeader'
+import { PageHero } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
 
@@ -40,7 +40,7 @@ export default function LeaderboardPage() {
 
   return (
     <div>
-      <PageHeader color={pc.color} glow={pc.glow} title={pc.title} subtitle={pc.subtitle} />
+      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
       <div className="space-y-6 page-content page-enter">
       <StatsRibbon stats={alphaLoading ? [] : stats} />
 

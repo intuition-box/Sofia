@@ -35,6 +35,9 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | `<TopicPicker>` + `<TopicCard>` | ✅ Done | Grid of topic cards (emoji + Fraunces label + topic-colored active + checkmark + disabled). 1:1 proto port. Adopted on `DomainSelector` (inside `DomainSelectionPage`). |
 | `<NicheChips>` + `<NicheChip>` | ✅ Done | Pill-shaped toggle chips (sm/lg variants). 1:1 proto port. Adopted on `NicheSelector` (inside `NicheSelectionPage` + `DomainNicheSelectionPage`). |
 | `<PlatformsGrid>` + `<PlatformCard>` + `<PlatformAddCard>` + `<PlatformSkeleton>` | ✅ Done | Platform card grid ported 1:1 from proto `.pf-platform-*`. Favicon 36px rounded + name + JetBrains Mono status + connected green tint + dashed Connect/Skeleton slots. Adopted on `InterestPage`. `PlatformGrid` in `PlatformConnectionPage` kept local for now — it has auth/verify/disconnect flows beyond proto scope. |
+| Legacy `<PageHeader>` retired | ✅ Done | All 7 consumers (Dashboard/Leaderboard/Streaks/Vote/AllPlatforms/Scores/PublicProfile) swapped to `<PageHero>`. `apps/explorer/src/components/PageHeader.tsx` and `styles/page-header.css` deleted. Remaining `.ph-*` rules now live authoritatively in `design-system/styles/page-hero.css`. |
+| Dead `Sidebar.tsx` removed | ✅ Done | `apps/explorer/src/components/Sidebar.tsx` and `styles/sidebar.css` deleted — no consumers since `<NavSidebar>` migration (Wave 3). |
+| Body typography + ambient | ✅ Done | Geist body font + radial grid-dot background + pastel CSS predicate tokens — all aligned with proto's `styles.css`. |
 
 ## Usage
 

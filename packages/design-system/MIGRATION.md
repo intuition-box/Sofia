@@ -379,9 +379,9 @@ Not yet in explorer — proto has a composer page with 3D compile button (`three
 
 | Task | Status |
 |---|---|
-| Replace `@/config/intentions` with `@0xsofia/design-system` across remaining consumers (DashboardPage, CircleCard, CartDrawer, DepositModal, PredicatePicker, ActivityCard → already deleted, PositionBoardDialog, WeightModal, feedProcessing, domainTrendingService) | ⬜ 10 files left |
-| Delete `apps/explorer/src/components/PageHeader.tsx` once VotePage/DashboardPage/LeaderboardPage/StreaksPage/ScoresPage/AllPlatformsPage/PublicProfilePage migrate to `<PageHero>` | ⬜ 7 call sites |
-| Delete `apps/explorer/src/components/Sidebar.tsx` (still on disk, no imports) | ⬜ dead file |
+| Replace `@/config/intentions` with `@0xsofia/design-system` across remaining consumers (DashboardPage, CircleCard, CartDrawer, DepositModal, PredicatePicker, PositionBoardDialog, WeightModal, feedProcessing, domainTrendingService) | ⬜ 9 files left |
+| Delete `apps/explorer/src/components/PageHeader.tsx` once VotePage/DashboardPage/LeaderboardPage/StreaksPage/ScoresPage/AllPlatformsPage/PublicProfilePage migrate to `<PageHero>` | ✅ done — 7 pages migrated, file deleted |
+| Delete `apps/explorer/src/components/Sidebar.tsx` (still on disk, no imports) | ✅ done |
 | Extension adoption of `@0xsofia/design-system` (ManifestV3 / Plasmo) | ⬜ future wave |
 
 ---

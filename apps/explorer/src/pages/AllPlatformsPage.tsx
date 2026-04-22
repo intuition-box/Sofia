@@ -7,7 +7,7 @@ import { useTaxonomy } from '@/hooks/useTaxonomy'
 import PlatformGrid from '@/components/profile/PlatformGrid'
 import PlatformMarketCard from '@/components/PlatformMarketCard'
 import AtomDetailDialog from '@/components/AtomDetailDialog'
-import PageHeader from '@/components/PageHeader'
+import { PageHero } from '@0xsofia/design-system'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { PAGE_COLORS } from '@/config/pageColors'
 import { ATOM_ID_TO_PLATFORM, PLATFORM_ATOM_IDS } from '@/config/atomIds'
@@ -69,7 +69,7 @@ export default function AllPlatformsPage() {
 
   return (
     <div>
-      <PageHeader color={pc.color} glow={pc.glow} title={pc.title} subtitle={pc.subtitle} />
+      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
       <div className="page-content page-enter">
 
         <div className="pm-toolbar">
