@@ -1,312 +1,75 @@
 /* ── Scores page ───────────────────────────────────────────────────
- * Rich page showing how the user's reputation score is built:
- * overview pie + totals, formula explainer, per-topic breakdown,
- * discovery badges, and the composite trust bar.
- *
- * Class prefix `.sc-*`. The page uses the shared .pf-view wrapper
- * inherited from the profile-sections stylesheet.
+ * 1:1 port of proto-explorer/src/styles/profile-trust.css. Proto tokens
+ * (--border, --card, --ink, --muted, --shadow-card, --border-soft,
+ * --bg-subtle) remapped to --ds-*. Trusted/distrusted CSS variables
+ * already live in theme.css.
  */
 
-.sc-section {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 32px;
+.pf-ts-back-row {
+  margin-bottom: 16px;
 }
 
-/* ── Overview: big pie + stats row ───────────────────────────────── */
+/* ── Header card — kicker + Fraunces title + description + big total ── */
 
-.sc-overview {
+.pf-ts-header {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 32px;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  padding: 24px 20px;
-  border: 1px solid var(--ds-border);
+  gap: 16px;
+  padding: 24px 24px;
+  margin-bottom: 24px;
   border-radius: 14px;
   background: var(--ds-card);
+  border: 1px solid var(--ds-border);
   box-shadow: var(--ds-shadow-card);
-  position: relative;
-  overflow: hidden;
 }
-.sc-overview::before {
-  content: '';
-  position: absolute;
-  inset: -40% -20% auto auto;
-  width: 60%;
-  height: 120%;
-  background: radial-gradient(circle at center, var(--ds-accent-soft) 0%, transparent 60%);
-  opacity: 0.4;
-  pointer-events: none;
-}
-.sc-overview > * {
-  position: relative;
-  z-index: 1;
-}
-
-@media (max-width: 720px) {
-  .sc-overview {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-}
-
-.sc-pie-wrap {
-  position: relative;
-  width: 180px;
-  height: 180px;
-  flex-shrink: 0;
-}
-.sc-pie {
-  width: 100%;
-  height: 100%;
-  display: block;
-  filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--ds-ink) 14%, transparent));
-}
-.sc-pie-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-}
-.sc-pie-value {
-  font-family: "Fraunces", serif;
-  font-size: 38px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
-}
-.sc-pie-label {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-}
-
-.sc-overview-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px 18px;
-}
-@media (max-width: 560px) {
-  .sc-overview-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.sc-stat {
+.pf-ts-header-title-block {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.sc-stat-value {
-  font-family: "Fraunces", serif;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: var(--ds-ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
-}
-.sc-stat-label {
+.pf-ts-header-kicker {
   font-family: "JetBrains Mono", monospace;
   font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ds-muted);
 }
-
-/* ── Formula explainer ────────────────────────────────────────────── */
-
-.sc-formula-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px 20px;
-  border: 1px solid var(--ds-border);
-  border-radius: 14px;
-  background: var(--ds-card);
-  box-shadow: var(--ds-shadow-card);
+.pf-ts-header-title {
+  font-family: "Fraunces", serif;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 4px 0 6px;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
 }
-
-.sc-formula-row {
-  display: grid;
-  grid-template-columns: 10px 1fr auto;
-  align-items: center;
-  gap: 10px;
+.pf-ts-header-desc {
+  margin: 0;
   font-size: 13px;
-  color: var(--ds-ink);
-}
-.sc-formula-row.sc-formula-total {
-  grid-template-columns: 1fr auto;
-  padding-top: 4px;
-  font-family: "Fraunces", serif;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.sc-formula-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-.sc-formula-label {
-  min-width: 0;
-}
-.sc-formula-value {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ds-ink);
-  font-variant-numeric: tabular-nums;
-}
-.sc-formula-total .sc-formula-value {
-  font-family: "Fraunces", serif;
-  font-size: 22px;
-}
-
-.sc-formula-divider {
-  height: 1px;
-  background: var(--ds-border);
-  margin: 4px 0;
-}
-
-.sc-formula-hint {
-  margin: 4px 0 0;
-  font-size: 12px;
+  color: var(--ds-muted);
+  max-width: 560px;
   line-height: 1.5;
-  color: var(--ds-muted);
 }
-
-/* ── Per-topic breakdown ─────────────────────────────────────────── */
-
-.sc-topic-list {
+.pf-ts-header-stat {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: flex-end;
+  gap: 4px;
+  padding-left: 16px;
+  border-left: 1px dashed var(--ds-border-soft);
 }
-
-.sc-topic-row {
-  padding: 14px 16px;
-  border: 1px solid var(--ds-border);
-  border-radius: 12px;
-  background: var(--ds-card);
-  transition: border-color 0.15s ease, transform 0.15s ease;
-  border-left: 3px solid var(--topic-color, var(--ds-muted));
-}
-.sc-topic-row:hover {
-  border-color: var(--topic-color, var(--ds-ink-soft));
-  transform: translateY(-2px);
-}
-
-.sc-topic-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.sc-topic-emoji {
-  font-size: 16px;
-  line-height: 1;
-}
-.sc-topic-label {
+.pf-ts-header-stat-value {
   font-family: "Fraunces", serif;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--ds-ink);
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.sc-topic-score {
-  font-family: "Fraunces", serif;
-  font-size: 20px;
+  font-size: 48px;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--topic-color, var(--ds-ink));
-  font-variant-numeric: tabular-nums;
-}
-
-.sc-topic-bar {
-  height: 6px;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--topic-color, var(--ds-muted)) 12%, transparent);
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-.sc-topic-bar-fill {
-  height: 100%;
-  background: var(--topic-color, var(--ds-muted));
-  border-radius: 999px 0 0 999px;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--topic-color, var(--ds-muted)) 40%, transparent);
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sc-topic-sub {
-  display: flex;
-  gap: 6px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  color: var(--ds-muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── Discovery badges ────────────────────────────────────────────── */
-
-.sc-badges {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-@media (max-width: 560px) {
-  .sc-badges {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.sc-badge-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 16px 10px;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--badge-color, var(--ds-accent)) 24%, transparent);
-  background: color-mix(in srgb, var(--badge-color, var(--ds-accent)) 7%, var(--ds-card));
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.sc-badge-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--badge-color, var(--ds-accent)) 60%, transparent);
-}
-.sc-badge-icon {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-}
-.sc-badge-value {
-  font-family: "Fraunces", serif;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--ds-ink);
+  color: var(--trusted, #6dd4a0);
 }
-.sc-badge-label {
+.pf-ts-header-stat-label {
   font-family: "JetBrains Mono", monospace;
   font-size: 9px;
   font-weight: 600;
@@ -315,57 +78,239 @@
   color: var(--ds-muted);
 }
 
-/* ── Trust score bar ─────────────────────────────────────────────── */
+/* ── Reputation by topic (bars) ─────────────────────────────────── */
 
-.sc-trust {
-  padding: 18px 20px;
+.pf-trust-topics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 680px) {
+  .pf-trust-topics {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pf-trust-topic {
+  padding: 14px 16px;
   border: 1px solid var(--ds-border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--ds-card);
+  border-left: 3px solid var(--topic-color, var(--ds-muted));
   box-shadow: var(--ds-shadow-card);
 }
-
-.sc-trust-head {
+.pf-trust-topic-head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-.sc-trust-label {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
-}
-.sc-trust-value {
-  font-family: "Fraunces", serif;
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--trusted, #6dd4a0);
-  font-variant-numeric: tabular-nums;
+.pf-trust-topic-emoji {
+  font-size: 20px;
   line-height: 1;
 }
-
-.sc-trust-bar {
-  height: 8px;
+.pf-trust-topic-label {
+  flex: 1;
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-trust-topic-score {
+  font-family: "Fraunces", serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--topic-color, var(--ds-ink));
+  line-height: 1;
+}
+.pf-trust-topic-bar {
+  height: 6px;
   border-radius: 999px;
-  background: color-mix(in oklab, var(--trusted, #6dd4a0) 15%, transparent);
+  background: var(--ds-border-soft);
   overflow: hidden;
 }
-.sc-trust-fill {
+.pf-trust-topic-bar > span {
+  display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--trusted, #6dd4a0), var(--work, #7bade0));
-  border-radius: 999px 0 0 999px;
-  box-shadow: 0 0 16px color-mix(in srgb, var(--trusted, #6dd4a0) 45%, transparent);
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--topic-color, var(--ds-muted)) 70%, transparent),
+    var(--topic-color, var(--ds-muted)));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--topic-color, var(--ds-muted)) 40%, transparent);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sc-trust-hint {
-  margin: 10px 0 0;
+/* ── Reputation by verb (grid of compact cards — same shape as topic) ── */
+
+.pf-verb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* ── Badges earned on URLs ───────────────────────────────────────── */
+
+.pf-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.pf-badge-block {
+  padding: 16px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-card);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--ds-shadow-card);
+}
+.pf-badge-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pf-badge-head-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+.pf-badge-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pf-badge-head-label {
+  font-family: "Fraunces", serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+.pf-badge-head-desc {
   font-size: 12px;
   color: var(--ds-muted);
-  line-height: 1.5;
+}
+.pf-badge-urls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pf-ts-url-item {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.pf-ts-url-item:hover {
+  background: var(--ds-bg-subtle);
+}
+.pf-ts-url-fav {
+  border-radius: 4px;
+  border: 1px solid var(--ds-border-soft);
+  padding: 2px;
+}
+.pf-ts-url-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.pf-ts-url-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-ts-url-host {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  color: var(--ds-muted);
+}
+
+/* ── Engagement on your URLs ──────────────────────────────────── */
+
+.pf-engage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-card);
+  padding: 10px;
+  box-shadow: var(--ds-shadow-card);
+}
+.pf-engage-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 120px auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.pf-engage-row:hover {
+  background: var(--ds-bg-subtle);
+}
+.pf-engage-fav {
+  border-radius: 5px;
+  border: 1px solid var(--ds-border-soft);
+  padding: 2px;
+}
+.pf-engage-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.pf-engage-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-engage-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+}
+.pf-engage-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--distrusted, #e87c7c) 75%, transparent);
+  overflow: hidden;
+}
+.pf-engage-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--trusted, #6dd4a0);
+}
+.pf-engage-counts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pf-engage-sup {
+  color: var(--trusted, #6dd4a0);
+}
+.pf-engage-opp {
+  color: var(--distrusted, #e87c7c);
 }
