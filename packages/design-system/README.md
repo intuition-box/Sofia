@@ -110,7 +110,15 @@ The package ships **plain class-selector CSS** — no Tailwind directives, no `@
 ```bash
 # Type-check package source
 bun run --filter @0xsofia/design-system typecheck
+
+# Run the vitest unit tests
+bun run --filter @0xsofia/design-system test
+
+# Vitest in watch mode
+bun run --filter @0xsofia/design-system test:watch
 ```
+
+Current coverage: **48 tests across 4 files** — level math (boundaries, overrides, max-level), taxonomy lookups (label / badge / color helpers + reverse maps), intention-groups bucketing + filters + sort strategies, and duration formatting.
 
 ## Directory layout
 

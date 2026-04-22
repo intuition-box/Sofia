@@ -45,15 +45,21 @@ export function calculateLevelProgress(
 ): LevelProgress {
   const level = baseLevel ?? calculateLevel(certifiedCount)
   const currentThreshold = LEVEL_THRESHOLDS[level - 1] ?? 0
-  const nextThreshold = LEVEL_THRESHOLDS[level] ?? currentThreshold + 10
-  const xpToNext = nextThreshold - certifiedCount
-  const progress = ((certifiedCount - currentThreshold) / (nextThreshold - currentThreshold)) * 100
+  const isMaxLevel = level >= LEVEL_THRESHOLDS.length
+  const nextThreshold = isMaxLevel ? currentThreshold : LEVEL_THRESHOLDS[level] ?? currentThreshold
+  const range = nextThreshold - currentThreshold
+
+  const progress = isMaxLevel || range <= 0
+    ? 100
+    : ((certifiedCount - currentThreshold) / range) * 100
+
+  const xpToNext = isMaxLevel ? 0 : Math.max(0, nextThreshold - certifiedCount)
 
   return {
     level,
     currentThreshold,
     nextThreshold,
     progressPercent: Math.min(100, Math.max(0, progress)),
-    xpToNextLevel: Math.max(0, xpToNext),
+    xpToNextLevel: xpToNext,
   }
 }
