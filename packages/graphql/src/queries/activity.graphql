@@ -28,7 +28,7 @@ query GetAllActivity($proxy: String!, $limit: Int!, $offset: Int!) {
   }
 }
 
-query GetUserActivity($proxy: String!, $receiver: String!, $limit: Int!, $offset: Int!) {
+query GetUserActivity($proxy: String!, $receivers: [String!]!, $limit: Int!, $offset: Int!) {
   events(
     limit: $limit
     offset: $offset
@@ -37,7 +37,7 @@ query GetUserActivity($proxy: String!, $receiver: String!, $limit: Int!, $offset
       type: { _eq: "Deposited" }
       deposit: {
         sender_id: { _ilike: $proxy }
-        receiver_id: { _ilike: $receiver }
+        receiver_id: { _in: $receivers }
         assets_after_fees: { _neq: "0" }
       }
     }

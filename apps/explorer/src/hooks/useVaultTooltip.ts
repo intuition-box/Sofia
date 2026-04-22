@@ -1,6 +1,10 @@
 import { useState, useCallback, useRef } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
-import { fetchVaultStats, statsCache } from '@/services/vaultTooltipService'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
+import {
+  fetchVaultStats,
+  statsCache,
+  cacheKey,
+} from '@/services/vaultTooltipService'
 import type { VaultStats } from '@/services/vaultTooltipService'
 
 // Re-export for consumers
@@ -11,14 +15,13 @@ export function useVaultTooltip() {
   const [stats, setStats] = useState<VaultStats | null>(null)
   const [loading, setLoading] = useState(false)
   const activeTermId = useRef<string | null>(null)
-  const { user } = usePrivy()
-  const walletAddress = user?.wallet?.address || ''
+  const { addresses } = useLinkedWallets()
 
   const fetchStats = useCallback(async (termId: string) => {
     if (!termId) return
 
     // Check cache
-    const cached = statsCache.get(termId)
+    const cached = statsCache.get(cacheKey(termId, addresses))
     if (cached) {
       setStats(cached)
       return
@@ -28,7 +31,7 @@ export function useVaultTooltip() {
     setLoading(true)
 
     try {
-      const result = await fetchVaultStats(termId, walletAddress)
+      const result = await fetchVaultStats(termId, addresses)
 
       // Only update if still the active request
       if (activeTermId.current === termId) {
@@ -41,7 +44,7 @@ export function useVaultTooltip() {
         setLoading(false)
       }
     }
-  }, [walletAddress])
+  }, [addresses])
 
   const clear = useCallback(() => {
     activeTermId.current = null

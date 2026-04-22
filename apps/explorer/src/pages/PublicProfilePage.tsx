@@ -72,7 +72,7 @@ export default function PublicProfilePage() {
   // Fetch data
   const { profile, isLoading: profileLoading } = useUserProfile(walletAddress)
   const { claims: topClaims, loading: claimsLoading } = useTopClaims(walletAddress)
-  const { items: activityItems, loading: activityLoading } = useUserActivity(walletAddress)
+  const { items: activityItems, loading: activityLoading } = useUserActivity(addresses)
   const { score: trustScore } = useTrustScore(walletAddress)
 
   // Derive interests from positions
