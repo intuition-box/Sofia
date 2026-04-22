@@ -22,8 +22,11 @@ export const PREDICATE_IDS = {
 
 // ── Display-label mappings ───────────────────────────────────────────────
 
-/** Map on-chain predicate ID → display intention label (Trusted, Work, …). */
-export const PREDICATE_TO_INTENTION: Record<string, string> = {
+/**
+ * Map on-chain predicate ID → display intention label (Trusted, Work, …).
+ * Unknown keys resolve to `undefined` at runtime — the type reflects that.
+ */
+export const PREDICATE_TO_INTENTION: Record<string, string | undefined> = {
   [PREDICATE_IDS.TRUSTS]: 'Trusted',
   [PREDICATE_IDS.DISTRUST]: 'Distrusted',
   [PREDICATE_IDS.VISITS_FOR_WORK]: 'Work',
@@ -32,8 +35,11 @@ export const PREDICATE_TO_INTENTION: Record<string, string> = {
   [PREDICATE_IDS.VISITS_FOR_INSPIRATION]: 'Inspiration',
 }
 
-/** Map human-readable predicate label → display intention label. */
-export const LABEL_TO_INTENTION: Record<string, string> = {
+/**
+ * Map human-readable predicate label → display intention label.
+ * Unknown keys resolve to `undefined` at runtime — the type reflects that.
+ */
+export const LABEL_TO_INTENTION: Record<string, string | undefined> = {
   trusts: 'Trusted',
   distrust: 'Distrusted',
   'visits for work': 'Work',

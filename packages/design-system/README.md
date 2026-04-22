@@ -39,6 +39,7 @@ import {
   getIntentionBadge,
   getSideColor,
   intentionBadgeStyle,
+  displayLabelToIntentionType,
 
   // Predicates
   PREDICATE_IDS,
@@ -154,7 +155,7 @@ packages/design-system/
 
 | Entry | Selector highlights |
 |-------|---------------------|
-| `@0xsofia/design-system/theme.css` | `:root` / `[data-theme="dark"]` — surfaces, text, accent, predicate colors (`--trusted`, `--work`, …), `--shadow-card`, `--radius` |
+| `@0xsofia/design-system/theme.css` | `:root` / `[data-theme="dark"]` — surfaces, text, accent all prefixed `--ds-*` to avoid shadcn collision (`--ds-bg`, `--ds-card`, `--ds-ink`, `--ds-muted`, `--ds-accent`, `--ds-border`, `--ds-shadow-card`, `--ds-radius`, …). Predicate colors are unprefixed (`--trusted`, `--work`, `--learning`, …) because they have no collision with host apps. |
 | `@0xsofia/design-system/styles/favicon.css` | `.favicon` (scale via `--fav-size`) |
 | `@0xsofia/design-system/styles/verb-tag.css` | `.fc-verb-tag.{trusted\|distrusted\|work\|learning\|fun\|inspiration\|buying\|music}` |
 | `@0xsofia/design-system/styles/bento.css` | `.triples-container`, `.groups-section`, `.bento-grid`, `.bento-grid-3`, `.bento-card` (`.bento-small\|.bento-tall\|.bento-mega`), `.group-bento-card` (`.can-level-up`), `.group-bento-header`, `.group-bento-favicon`, `.group-bento-domain-info`, `.group-bento-title`, `.group-bento-predicate`, `.group-bento-level`, `.level-badge`, `.group-bento-stats` (`.stat-item` / `.stat-value` / `.stat-label`), `.group-bento-progress`, `.progress-bar-container` / `.progress-bar-fill` / `.progress-label`, `.certification-dots` / `.cert-dot`, `.groups-empty` |

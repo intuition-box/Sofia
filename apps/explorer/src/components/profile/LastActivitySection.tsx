@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import {
   GroupBentoCard,
-  INTENTION_CONFIG,
+  displayLabelToIntentionType,
   useIntentionGroups,
   type IntentionActivityInput,
   type IntentionType,
@@ -18,23 +18,10 @@ interface LastActivitySectionProps {
   walletAddress: string
 }
 
-/**
- * Reverse-lookup from the display label used by `CircleItem.intentions`
- * ("Work", "Learning", …) back to the canonical IntentionType.
- * Returns null for unknown labels — they're dropped from the bento view.
- */
-function labelToIntentionType(label: string): IntentionType | null {
-  const needle = label.trim().toLowerCase()
-  for (const [type, cfg] of Object.entries(INTENTION_CONFIG) as [IntentionType, typeof INTENTION_CONFIG[IntentionType]][]) {
-    if (cfg.label.toLowerCase() === needle) return type
-  }
-  return null
-}
-
 /** Map a filtered CircleItem into the design-system's IntentionActivityInput. */
 function toActivityInput(item: CircleItem): IntentionActivityInput | null {
   const intents = item.intentions
-    .map(labelToIntentionType)
+    .map(displayLabelToIntentionType)
     .filter((x): x is IntentionType => x !== null)
   if (intents.length === 0) return null
   return {

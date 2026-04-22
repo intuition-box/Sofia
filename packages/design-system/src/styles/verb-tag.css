@@ -19,7 +19,7 @@
   display: inline-flex;
   align-items: center;
   line-height: 1;
-  background: var(--accent);
+  background: var(--ds-accent);
 }
 
 /* Canonical intent classes (mirror INTENTION_CONFIG). */

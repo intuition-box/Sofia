@@ -141,6 +141,21 @@ export function intentionBadgeStyle(color: string): { backgroundColor: string; b
   return { backgroundColor: `${color}20`, border: `1px solid ${color}40` }
 }
 
+/**
+ * Reverse lookup from the display label (`"Work"`, `"Learning"`, …) back to
+ * the canonical IntentionType. Use this when consuming pre-computed display
+ * labels surfaced by `CircleItem.intentions` or similar feed-processing
+ * output. Returns `null` for labels outside the canonical set (quest badges,
+ * legacy free-text predicates).
+ */
+export function displayLabelToIntentionType(label: string): IntentionType | null {
+  const needle = label.trim().toLowerCase()
+  for (const [type, cfg] of Object.entries(INTENTION_CONFIG) as [IntentionType, IntentionConfigEntry][]) {
+    if (cfg.label.toLowerCase() === needle) return type
+  }
+  return null
+}
+
 // ── Legacy types (kept for existing consumers) ───────────────────────────
 
 export interface CategoryUrl {

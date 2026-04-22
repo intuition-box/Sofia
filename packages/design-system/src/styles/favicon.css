@@ -18,7 +18,7 @@
   height: var(--fav-size);
   border-radius: 8px;
   background: #ffffff;
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--ds-border-soft);
   padding: calc(var(--fav-size) * 0.12);
   box-sizing: border-box;
   flex-shrink: 0;

@@ -20,7 +20,9 @@ export const LEVEL_TIER_COLORS: readonly string[] = [
 /** Solid color for the given level (clamped to the ramp). */
 export function getLevelColor(level: number): string {
   const idx = Math.min(Math.max(level - 1, 0), LEVEL_TIER_COLORS.length - 1)
-  return LEVEL_TIER_COLORS[idx]
+  // Safe because idx is clamped to [0, LEVEL_TIER_COLORS.length - 1]; the
+  // array is a readonly tuple populated at module load.
+  return LEVEL_TIER_COLORS[idx] ?? '#94A3B8'
 }
 
 /** Transparent tint derived from `getLevelColor`. Uses `color-mix`. */

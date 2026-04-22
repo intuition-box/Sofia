@@ -1,13 +1,11 @@
 /**
  * @0xsofia/design-system — theme tokens
  *
- * Single source of truth for layout, typography and color variables used by
- * every component in this package. Ported from the proto (proto-explorer).
- *
- * - `:root` / `[data-theme="light"]` → light palette
- * - `[data-theme="dark"]`           → dark palette
- * - Sofia predicate colors (`--trusted`, `--work`, …) mirror INTENTION_CONFIG
- *   in `src/taxonomy/intentions.ts` and stay constant across themes.
+ * All surface / text / accent variables are prefixed with `--ds-` to avoid
+ * colliding with host-app tokens (explorer ships Tailwind v4 / shadcn tokens
+ * at `--card`, `--muted`, `--accent`, etc.). The Sofia predicate colors
+ * (`--trusted`, `--work`, …) are UNPREFIXED — they have no collision with
+ * shadcn and are the shared vocabulary between apps.
  *
  * Import once at the root of each consuming app:
  *   `@import "@0xsofia/design-system/theme.css";`
@@ -16,57 +14,60 @@
 :root,
 [data-theme="light"] {
   /* Surface */
-  --bg: #ffffff;
-  --bg-subtle: #f7f6f2;
-  --card: #ffffff;
-  --border: #ececf0;
-  --border-soft: #f3f2f5;
+  --ds-bg: #ffffff;
+  --ds-bg-subtle: #f7f6f2;
+  --ds-card: #ffffff;
+  --ds-border: #ececf0;
+  --ds-border-soft: #f3f2f5;
 
   /* Text */
-  --ink: #02000e;
-  --ink-soft: #1a1727;
-  --muted: #6b6880;
-  --muted-soft: #a8a5bb;
+  --ds-ink: #02000e;
+  --ds-ink-soft: #1a1727;
+  --ds-muted: #6b6880;
+  --ds-muted-soft: #a8a5bb;
 
   /* Decorative */
-  --grid-dot: rgba(10, 10, 10, 0.045);
+  --ds-grid-dot: rgba(10, 10, 10, 0.045);
 
   /* Accent (peach) */
-  --accent: #ffc6b0;
-  --accent-ink: #7a3a1e;
-  --accent-soft: #ffe9df;
-  --on-accent: #02000e;
+  --ds-accent: #ffc6b0;
+  --ds-accent-ink: #7a3a1e;
+  --ds-accent-soft: #ffe9df;
+  --ds-on-accent: #02000e;
 
   /* Effects */
-  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.02);
+  --ds-shadow-card: 0 1px 0 rgba(0, 0, 0, 0.02);
+
+  /* Shape */
+  --ds-radius: 10px;
 }
 
 [data-theme="dark"] {
-  --bg: #0b0a12;
-  --bg-subtle: #121120;
-  --card: #13121f;
-  --border: #25223a;
-  --border-soft: #1c1a2b;
+  --ds-bg: #0b0a12;
+  --ds-bg-subtle: #121120;
+  --ds-card: #13121f;
+  --ds-border: #25223a;
+  --ds-border-soft: #1c1a2b;
 
-  --ink: #f5f3ff;
-  --ink-soft: #e5e2f5;
-  --muted: #8f8ca8;
-  --muted-soft: #55526c;
+  --ds-ink: #f5f3ff;
+  --ds-ink-soft: #e5e2f5;
+  --ds-muted: #8f8ca8;
+  --ds-muted-soft: #55526c;
 
-  --grid-dot: rgba(255, 255, 255, 0.05);
+  --ds-grid-dot: rgba(255, 255, 255, 0.05);
 
-  --accent: #ffc6b0;
-  --accent-ink: #ffc6b0;
-  --accent-soft: rgba(255, 198, 176, 0.12);
-  --on-accent: #0b0a12;
+  --ds-accent: #ffc6b0;
+  --ds-accent-ink: #ffc6b0;
+  --ds-accent-soft: rgba(255, 198, 176, 0.12);
+  --ds-on-accent: #0b0a12;
 
-  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03);
+  --ds-shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* ── Sofia predicate colors ── */
+/* ── Sofia predicate colors (unprefixed — shared vocabulary) ── */
 /* These mirror INTENTION_CONFIG (src/taxonomy/intentions.ts) and are the
    same across both themes. Used by verb-tag.css, bento.css, and by app code
-   via `var(--work)` / `var(--trusted)` / etc. */
+   via `var(--work)` / `var(--trusted)` / etc. No collision with shadcn. */
 :root,
 [data-theme="light"],
 [data-theme="dark"] {
@@ -78,7 +79,4 @@
   --inspiration: #8b5cf6;
   --buying: #ec4899;
   --music: #ff5722;
-
-  /* Shared radius */
-  --radius: 10px;
 }

@@ -103,8 +103,9 @@ export function buildIntentionGroups(
     for (const i of a.intents) {
       g.certificationBreakdown[i] = (g.certificationBreakdown[i] ?? 0) + 1
     }
-    if (a.intents.length > 0) {
-      g.urls.push({ url: a.domain, intent: a.intents[0] })
+    const firstIntent = a.intents[0]
+    if (firstIntent !== undefined) {
+      g.urls.push({ url: a.domain, intent: firstIntent })
     }
   }
 
@@ -167,7 +168,10 @@ export function useIntentionGroups(
 ): IntentionGroupWithStats[] {
   return useMemo(
     () => buildIntentionGroups(activities, opts),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- stable opts object expected
+    // Deps are the individual scalar fields of `opts` — intentional. Passing
+    // the full object would force a new reference per render in callers that
+    // build `opts` inline. Do NOT re-add `opts` to the dep list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [activities, opts.topicFilter, opts.verbFilter, opts.sort],
   )
 }

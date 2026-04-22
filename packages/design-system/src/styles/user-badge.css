@@ -28,5 +28,5 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--badge-color, var(--muted));
+  background: var(--badge-color, var(--ds-muted));
 }

@@ -52,8 +52,9 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
     size = 'small',
     className,
     children,
+    style: callerStyle,
     ...rest
-  } = props
+  } = props as GroupBentoCardProps & { style?: React.CSSProperties }
 
   const displayLevel = g.level
   const xp = calculateLevelProgress(g.certifiedCount, displayLevel)
@@ -75,7 +76,7 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
     .filter(Boolean)
     .join(' ')
 
-  const borderColor = `color-mix(in srgb, ${dominantColor} 25%, var(--border))`
+  const borderColor = `color-mix(in srgb, ${dominantColor} 25%, var(--ds-border))`
 
   const innerBody = (
     <>
@@ -148,24 +149,24 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
     </>
   )
 
-  const style = { borderColor, ...(rest as { style?: React.CSSProperties }).style }
+  const mergedStyle: React.CSSProperties = { borderColor, ...callerStyle }
 
   if (rest.as === 'a') {
-    const { as: _omit, ...anchorRest } = rest
+    const { as: _as, ...anchorRest } = rest
+    void _as
     return (
-      <a className={rootClass} style={style} {...anchorRest}>
+      <a className={rootClass} style={mergedStyle} {...anchorRest}>
         {innerBody}
       </a>
     )
   }
-  const { as: _omit, ...divRest } = rest
+  const { as: _as, ...divRest } = rest
+  void _as
   return (
-    <div className={rootClass} style={style} {...divRest}>
+    <div className={rootClass} style={mergedStyle} {...divRest}>
       {innerBody}
     </div>
   )
 }
 
-// Suppress the unused destructured `_omit` warning. (_ prefix is the idiomatic
-// TS marker for "declared because we must, discarded intentionally".)
 export type { IntentionGroupWithStats }

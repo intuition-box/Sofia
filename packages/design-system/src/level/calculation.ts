@@ -16,7 +16,8 @@ export const LEVEL_THRESHOLDS: readonly number[] = [0, 3, 7, 12, 18, 25, 33, 42,
  */
 export function calculateLevel(certifiedCount: number): number {
   for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-    if (certifiedCount >= LEVEL_THRESHOLDS[i]) return i + 1
+    const t = LEVEL_THRESHOLDS[i]
+    if (t !== undefined && certifiedCount >= t) return i + 1
   }
   return 1
 }
