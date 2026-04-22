@@ -17,6 +17,231 @@ one-liner summary, this file is the flat punch list.
 
 ---
 
+## Placement rules — where does this code go?
+
+Use this decision tree for every ⬜ item before writing code.
+
+### A. Shared primitive → `packages/design-system/`
+
+A piece belongs in the design-system if **at least one** is true:
+- It will be used by ≥2 consumers (explorer + extension, or multiple pages).
+- It has no explorer-specific dependency (no `@/hooks`, no `@/services`, no
+  react-router, no Privy, no Tailwind `@apply`).
+- It renders proto-faithful markup + CSS that the extension will also need.
+
+File layout when adding a new primitive `Foo`:
+
+| Concern | Path |
+|---|---|
+| React component | `packages/design-system/src/components/Foo.tsx` |
+| Stylesheet (plain CSS, no Tailwind) | `packages/design-system/src/styles/foo.css` |
+| Barrel export | add line to `packages/design-system/src/components/index.ts` |
+| CSS export | add line to `packages/design-system/package.json` `exports` |
+| Tests (if pure logic) | `packages/design-system/src/**/*.test.ts` next to source |
+| Type exports | named exports from the component file — no separate `types.ts` |
+
+Class-name prefix convention:
+- `ph-*` → PageHero (legacy proto class, kept 1:1)
+- `pf-*` → Profile-proto primitives (`pf-view`, `pf-interest-header-*`, `pf-sub-*`)
+- `ds-*` → new generic primitives (`ds-section-title`)
+- `fc-*` → compact cards (verb-tag, user-badge)
+- `ig-*` → interests grid
+- `favicon`, `bento-*`, `group-bento-*` → kept from extension/proto heritage
+
+Consumer import pattern:
+```tsx
+import { Foo } from '@0xsofia/design-system'
+// and in the app's CSS entry (design-system.css):
+@import "@0xsofia/design-system/styles/foo.css";
+```
+
+### B. Explorer-specific composition → `apps/explorer/src/`
+
+A piece stays in explorer if **any** of:
+- Binds to explorer hooks (`useTopicSync`, `useUserActivity`, `usePlatformMarket`, …).
+- Uses Privy, react-router, Tailwind v4, or shadcn/ui components.
+- Handles explorer-specific routing (`navigate('/profile/topics')`).
+- Orchestrates data-fetching + design-system primitives (e.g. `TopClaimsSection`
+  composes `<FaviconWrapper>` + explorer's `useTopClaims`).
+
+File layout:
+- Pages → `apps/explorer/src/pages/<Name>Page.tsx`
+- Profile-scoped components → `apps/explorer/src/components/profile/<Name>.tsx`
+- Generic explorer components → `apps/explorer/src/components/<Name>.tsx`
+- App-specific CSS → `apps/explorer/src/components/styles/<scope>.css`
+- CSS imports: `@import "@0xsofia/design-system/styles/xxx.css"` goes in
+  `apps/explorer/src/components/styles/design-system.css` (single entry).
+
+### C. Pure logic / taxonomy → `packages/design-system/src/`
+
+Anything that is pure TypeScript with no React, no DOM, no explorer deps:
+
+| Kind | Path |
+|---|---|
+| Predicate / intention data | `packages/design-system/src/taxonomy/` |
+| Level math | `packages/design-system/src/level/` |
+| Small formatters (`formatDuration`, `formatEth`) | `packages/design-system/src/lib/` |
+| React hooks that encapsulate shared logic | `packages/design-system/src/hooks/` |
+
+### D. Data-fetching hooks → `apps/explorer/src/hooks/`
+
+Anything calling explorer services / GraphQL / wagmi / Privy stays in explorer.
+If a hook is purely derived (e.g. `useIntentionGroups` that groups an already-
+fetched list), it can live in design-system.
+
+### E. Tokens & fonts
+
+- CSS custom properties (`--ds-ink`, `--ds-muted`, …) → `design-system/src/theme.css`.
+- Google Fonts `<link>` → `apps/explorer/index.html` (each consumer loads its own
+  fonts so the design-system never mandates network requests).
+
+---
+
+## Per-page inventory (where does each building block live?)
+
+Page-by-page map of every explorer route. Each page lists:
+- **DS** — primitives pulled from `@0xsofia/design-system`
+- **Explorer** — composition files in `apps/explorer/src/` (pages, components, hooks, CSS)
+- **TODO** — remaining work for that page
+
+### `/profile` → `ProfilePage`
+
+| Layer | Where |
+|---|---|
+| DS: hero | `<PageHero>` |
+| DS: section titles | `<SectionTitle>` ×3 |
+| DS: cards | `<GroupBentoCard>` + `useIntentionGroups` (via `LastActivitySection`), `<InterestsGrid>` + `<InterestCard>` + `<AddInterestCard>`, `<FaviconWrapper>` + intention helpers (via `TopClaimsSection`) |
+| Explorer page | `apps/explorer/src/pages/ProfilePage.tsx` |
+| Explorer sections | `apps/explorer/src/components/profile/{InterestsGrid,LastActivitySection,TopClaimsSection}.tsx` |
+| Explorer CSS | `apps/explorer/src/components/styles/{profile-sections.css,pages.css}` (only `.pf-view`, `.pp-sections`, `.pp-wallet-banner`, `.tc-*`) |
+| Hooks | `useTopicSync`, `useUserActivity`, `useTopClaims`, `useTrustScore`, `useSignals`, `usePlatformMarket`, `useReputationScores`, `usePlatformConnections` |
+| TODO | Wire Echoes sort tabs (`platform`/`verb`/`topic`) — `useIntentionGroups` already supports it |
+
+### `/profile/interest/:topicId` → `InterestPage`
+
+| Layer | Where |
+|---|---|
+| DS: hero | `<InterestHero>` (emoji + kicker + Fraunces + Topic score) |
+| DS: section titles | `<SectionTitle>` ×6 (Stats, Categories, Trending, Platforms, Claims, Certified) |
+| DS: helpers | `getTopicEmoji`, `SubHeader` (NOT used here — hero is dominant) |
+| Explorer page | `apps/explorer/src/pages/InterestPage.tsx` |
+| Explorer local components | `NicheDetailList.tsx`, `TrendingCard.tsx`, `PositionBoardDialog.tsx`, `ScoreExplanationDialog.tsx` |
+| Explorer CSS | `apps/explorer/src/components/styles/interest-page.css` (`.ip-stats-grid`, `.ip-stat-card`, `.ip-platforms-grid`, `.ip-platform-card`, `.ip-claims-grid`, `.ip-claim-card`, `.ip-certs-grid`, `.ip-cert-card`, `.ip-trending-grid`) |
+| Hooks | `useDomainTrending`, `useDomainClaims`, `useTopicCertifications`, `usePlatformCatalog`, `useCart` |
+| TODO | ⬜ port `.ip-platform-card` → DS `<PlatformCard>` · ⬜ port `.ip-cert-card` → DS `<CertifiedUrlRow>` (proto uses `urlCard.ts` compact tier) · 🟡 decide if Stats/Categories/Trending/Claims sections should stay (proto only has Platforms + Certified) |
+
+### `/profile/topics` → `DomainSelectionPage`
+
+| Layer | Where |
+|---|---|
+| DS | `<SubHeader>` (crumbs `Profile › Select Topics`, pill `Selected X / 3`) |
+| Explorer page | `apps/explorer/src/pages/DomainSelectionPage.tsx` |
+| Explorer local | `apps/explorer/src/components/profile/DomainSelector.tsx` |
+| Hooks | `useTopicSync` |
+| TODO | ⬜ port `<DomainSelector>` grid → DS `<TopicPicker>` (proto `.pf-topic-card` with emoji + label + checkmark + disabled state when `>= MAX_TOPICS`) |
+
+### `/profile/interest/:topicId/categories` → `DomainNicheSelectionPage`
+
+| Layer | Where |
+|---|---|
+| DS | `<SubHeader>` (3 crumbs w/ topic color, pill `Selected X / N` colored) + `getTopicEmoji` |
+| Explorer page | `apps/explorer/src/pages/DomainNicheSelectionPage.tsx` |
+| Explorer local | `apps/explorer/src/components/profile/NicheSelector.tsx` |
+| Hooks | `useTopicSelection` (via `useDomainSelection`), `useTaxonomy` |
+| TODO | ⬜ port `<NicheSelector>` chip grid → DS `<NicheChips>` (proto `.pf-niche-chip-lg` with optional check icon) |
+
+### `/profile/categories` → `NicheSelectionPage`
+
+| Layer | Where |
+|---|---|
+| DS | `<SubHeader>` (crumbs `Profile › Select Categories`, no pill) |
+| Explorer page | `apps/explorer/src/pages/NicheSelectionPage.tsx` |
+| Explorer local | reuses `<NicheSelector>` from above |
+| Hooks | `useTopicSelection` |
+| TODO | same primitive as DomainNicheSelectionPage |
+
+### `/profile/interest/:topicId/platforms` → `PlatformConnectionPage`
+
+| Layer | Where |
+|---|---|
+| DS | `<SubHeader>` (3 crumbs, `Connected X / N` pill) + `getTopicEmoji` |
+| Explorer page | `apps/explorer/src/pages/PlatformConnectionPage.tsx` |
+| Explorer local | `apps/explorer/src/components/profile/PlatformGrid.tsx` |
+| Hooks | `usePlatformConnections`, `usePlatformCatalog`, `useTopicSelection`, `useTaxonomy` |
+| TODO | ⬜ port `<PlatformGrid>` → DS `<PlatformsGrid>` + `<PlatformCard>` (status chip + connect/disconnect CTA) |
+
+### `/profile/:address` → `PublicProfilePage`
+
+| Layer | Where |
+|---|---|
+| DS: section titles | `<SectionTitle>` ×4 (Stats, Interests, Top Claims, Activity) |
+| DS: cards | `<FaviconWrapper>`, `<TopClaimsSection>` (inherits via migration) |
+| Explorer page | `apps/explorer/src/pages/PublicProfilePage.tsx` |
+| Explorer local | `pub-stat-card` grid inline (no primitive) |
+| Legacy | still imports `@/components/PageHeader` (not migrated) |
+| Hooks | `useUserProfile`, `useTopClaims`, `useUserActivity`, `useEnsNames`, `useTrustScore` |
+| TODO | ⬜ replace `<PageHeader>` with `<PublicProfileHero>` (avatar + ENS + shortAddress + trust score) — needs new DS primitive · ⬜ extract `pub-stat-card` into DS `<StatCard>` (Layers/Award/BarChart/Shield icons + value + label) |
+
+### `/feed` → `DashboardPage`
+
+| Layer | Where |
+|---|---|
+| DS | _none yet_ — still uses legacy `<PageHeader>` + Tailwind cards |
+| Explorer page | `apps/explorer/src/pages/DashboardPage.tsx` |
+| Explorer local | `Post.tsx`, `CircleCard.tsx`, `Hero.tsx`, `PersonalStats.tsx`, `StatsRibbon.tsx`, `Leaderboard.tsx` |
+| TODO | ⬜ port `views/feed.ts` + `components/urlCard.ts` → DS `<UrlCard>` (tier variants `compact`/`full`, actor + badges + share) · ⬜ port `components/filterSidebar.ts` + `verbFilter.ts` → DS `<FilterSidebar>` · ⬜ replace `<PageHeader>` with `<PageHero>` |
+
+### `/leaderboard` → `LeaderboardPage`
+
+| Layer | Where |
+|---|---|
+| DS | _none_ — legacy `<PageHeader>` |
+| Explorer page | `apps/explorer/src/pages/LeaderboardPage.tsx` + `Leaderboard.tsx` component |
+| TODO | ⬜ replace `<PageHeader>` with `<PageHero>` (proto-style peach banner) · 🟡 check if proto has a dedicated leaderboard design |
+
+### `/streaks` → `StreaksPage`
+
+| Layer | Where |
+|---|---|
+| DS | _none_ — legacy `<PageHeader>` |
+| Explorer page | `apps/explorer/src/pages/StreaksPage.tsx` |
+| TODO | ⬜ migrate `<PageHeader>` → `<PageHero>` · 🟡 proto probably has no equivalent (streaks is explorer-specific) |
+
+### `/vote` → `VotePage`
+
+| Layer | Where |
+|---|---|
+| DS | _none_ — legacy `<PageHeader>` + tabs + claim cards |
+| Explorer page | `apps/explorer/src/pages/VotePage.tsx` |
+| Explorer local | `.vp-tabs`, `.vp-tab`, `.vp-claim-card`, `.vp-claim-list-card` |
+| TODO | ⬜ migrate `<PageHeader>` → `<PageHero>` · 🟡 proto has `renderResults` — unclear mapping to Vote page |
+
+### `/platforms` → `AllPlatformsPage`
+
+| Layer | Where |
+|---|---|
+| DS | _none_ — legacy `<PageHeader>` + local market cards |
+| Explorer page | `apps/explorer/src/pages/AllPlatformsPage.tsx` |
+| Explorer local | `PlatformMarketCard.tsx`, `PlatformGrid.tsx` |
+| TODO | ⬜ migrate `<PageHeader>` → `<PageHero>` · share `<PlatformsGrid>` primitive with PlatformConnectionPage once built |
+
+### `/scores` → `ScoresPage`
+
+| Layer | Where |
+|---|---|
+| DS | _none_ — placeholder page |
+| TODO | ⬜ currently `Coming soon` — design depends on proto equivalent (unknown) |
+
+### `/` (landing) → `LandingPage`
+
+| Layer | Where |
+|---|---|
+| DS | _none_ — separate marketing-style hero |
+| Explorer page | `apps/explorer/src/pages/LandingPage.tsx` + `FooterCTA.tsx` |
+| TODO | 🟡 landing is out of scope of the proto migration — leave as-is unless proto has an aligned design |
+
+---
+
 ## 0 · Foundation
 
 | Proto | Target | Status |
