@@ -147,18 +147,26 @@ export default function ProfileClaimCard({
   )
 }
 
-/** Convenience helper: pick a badge + reason for an explorer TopClaim based
- *  on simple heuristics matching the proto's TOP_CLAIMS metadata. */
+/** Derive a badge for a claim from its stats.
+ *
+ *  Tiers match proto TOP_CLAIMS metadata intent:
+ *   - contrarian: user opposed and their side is winning
+ *   - pioneer:    only a handful of people certified (user was among the first)
+ *   - early:      supported before consensus built up
+ *   - viral:      reached a wide audience, or user's P&L blew up
+ *
+ *  Every claim returns SOMETHING (default = 'early') so the Scores page
+ *  always surfaces the user's URLs. Tune the thresholds if they feel off.
+ */
 export function deriveClaimBadge(opts: {
   supportCount: number
   opposeCount: number
   pnlPct: number
   position: ClaimPosition
-}): ClaimBadge | undefined {
+}): ClaimBadge {
   const { supportCount, opposeCount, pnlPct, position } = opts
   if (position === 'oppose' && opposeCount > supportCount) return 'contrarian'
-  if (pnlPct >= 100) return 'viral'
-  if (supportCount < 9) return 'early'
-  if (supportCount >= 25) return 'pioneer'
-  return undefined
+  if (supportCount <= 3) return 'pioneer'
+  if (supportCount >= 20 || pnlPct >= 80) return 'viral'
+  return 'early'
 }
