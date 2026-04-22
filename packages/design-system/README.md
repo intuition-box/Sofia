@@ -25,6 +25,7 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | Explorer migration — left nav sidebar | ✅ Done | Replaces `Sidebar.tsx`; removes the two `zoom: 1.25` hacks |
 | Explorer migration — profile page hero | ✅ Done | `<PageHero>` replaces `<PageHeader>` on `ProfilePage` |
 | Explorer migration — profile layout polish | ✅ Done | Peach banner color, `.pf-view` max-width 1040px wrapper, Fraunces loaded, third `zoom: 1.25` removed from `RightSidebar`, `rs-aside` → 280px |
+| Explorer migration — `TopClaimsSection` | ✅ Done | `INTENTION_COLORS_BY_LABEL` + `LABEL_TO_INTENTION` + `intentionBadgeStyle` + `FaviconWrapper` from design-system; drops local `predicateToIntention` + dead `.tc-favicon` CSS |
 
 ## Usage
 
