@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
-import { Header } from './components/Header'
 import { NavSidebar } from './components/NavSidebar'
 import { RightSidebar } from './components/RightSidebar'
 import CartDrawer from './components/CartDrawer'
@@ -91,8 +90,7 @@ export default function App() {
       {/* Hydrates topics/categories from on-chain positions — union-merges into localStorage. */}
       <InterestsHydrationBoundary />
       <WsStatusBadge />
-      <Header onCartClick={() => setCartOpen(o => !o)} onMenuClick={sidebar.toggleLeft} showMenu={!sidebar.isDesktop} compact={!sidebar.isDesktop} onProfileDrawerClick={() => setProfileDrawerOpen(o => !o)} showProfileDrawer={!sidebar.isDesktop && isProfilePage} />
-      <NavSidebar />
+      <NavSidebar onCartClick={() => setCartOpen((o) => !o)} />
       <RightSidebar hidden={isProfilePage || cartOpen || !sidebar.isDesktop} />
 
       <CartDrawer

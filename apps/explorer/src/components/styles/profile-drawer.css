@@ -3,9 +3,9 @@
  * extras (Trust Circle section) kept. Proto tokens remapped to --ds-*. */
 
 .pd-aside {
-  top: 62px;
+  top: 0;
   width: 400px;
-  height: calc(100vh - 58px);
+  height: 100vh;
   z-index: 9999;
   border-left: 1px solid var(--ds-border);
   background: linear-gradient(170deg, color-mix(in oklab, var(--ds-accent) 6%, var(--ds-bg)) 0%, var(--ds-bg) 60%);
@@ -408,8 +408,8 @@
 }
 @media (min-width: 768px) and (max-width: 1279px) {
   .pd-aside {
-    top: 56px;
-    height: calc(100vh - 56px);
+    top: 0;
+    height: 100vh;
   }
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { usePrivy } from '@privy-io/react-auth'
+import { usePrivy, useLogin, useLogout, useLinkAccount } from '@privy-io/react-auth'
 import {
   NavSidebar as DsNavSidebar,
   NavBrand,
@@ -16,12 +16,30 @@ import {
   Vote,
   BarChart3,
   Globe,
+  Bell,
+  Sun,
+  Moon,
+  Wallet,
+  LogOut,
+  ShoppingCart,
 } from 'lucide-react'
+import type { Address } from 'viem'
 import { useTopicSelection } from '../hooks/useDomainSelection'
 import { useTrustCircle } from '../hooks/useTrustCircle'
+import { useCart } from '../hooks/useCart'
+import { useTheme } from '../hooks/useTheme'
+import { useEnsNames } from '../hooks/useEnsNames'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { Button } from './ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 import { SEASON_END } from '../config'
 import './styles/nav-sidebar-trust-circle.css'
+import './styles/nav-sidebar-toolbar.css'
 
 function getTimeLeft() {
   const diff = SEASON_END.getTime() - Date.now()
@@ -36,13 +54,33 @@ function getTimeLeft() {
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-export function NavSidebar() {
+interface NavSidebarProps {
+  /** Toggles the cart drawer. Receives the new open state so the parent can
+   *  mirror it into its own state. */
+  onCartClick?: () => void
+}
+
+export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
   const location = useLocation()
-  const { authenticated, user } = usePrivy()
+  const { ready, authenticated, user } = usePrivy()
+  const { login } = useLogin()
+  const { logout } = useLogout()
+  const { linkWallet } = useLinkAccount({ onSuccess: () => window.location.reload() })
   const address = user?.wallet?.address ?? ''
   const { selectedTopics } = useTopicSelection()
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(address || undefined)
+  const cart = useCart()
+  const { theme, toggleTheme } = useTheme()
   const [timeLeft, setTimeLeft] = useState(getTimeLeft)
+
+  const addresses: Address[] = address ? [address as Address] : []
+  const { getDisplay, getAvatar } = useEnsNames(addresses)
+  const ensName = address ? getDisplay(address as Address) : ''
+  const ensAvatar = address ? getAvatar(address as Address) : ''
+  const displayAddr = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
+  const googleAccount = user?.google as { name?: string; profilePictureUrl?: string; email?: string } | undefined
+  const profileAvatar = googleAccount?.profilePictureUrl || ensAvatar || ''
+  const profileName = googleAccount?.name || ensName || googleAccount?.email || user?.email?.address || displayAddr || 'User'
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft(getTimeLeft()), 1_000)
@@ -92,6 +130,85 @@ export function NavSidebar() {
   return (
     <DsNavSidebar>
       <NavBrand name="Sofia Explorer" tag="v0.4" />
+
+      {/* Toolbar — cart / notifications / theme toggle. Home lives as a
+          nav-item below (Navigation section). */}
+      <div className="ns-toolbar" role="toolbar" aria-label="Quick actions">
+        <button
+          type="button"
+          className="ns-tool-btn"
+          onClick={onCartClick}
+          aria-label="Cart"
+          title="Cart"
+        >
+          <ShoppingCart className="h-4 w-4" />
+          {cart.count > 0 && <span className="ns-tool-badge">{cart.count}</span>}
+        </button>
+        <button
+          type="button"
+          className="ns-tool-btn"
+          aria-label="Notifications"
+          title="Notifications"
+        >
+          <Bell className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          className="ns-tool-btn"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
+      </div>
+
+      {/* Auth — connect button when logged out / avatar chip + menu when logged in */}
+      {ready && !authenticated && (
+        <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
+          <Wallet className="h-4 w-4 mr-1" />
+          Connect
+        </Button>
+      )}
+      {ready && authenticated && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button type="button" className="ns-auth-chip" aria-label="Account menu">
+              {profileAvatar ? (
+                <img
+                  src={profileAvatar}
+                  alt={profileName}
+                  referrerPolicy="no-referrer"
+                  className="ns-auth-avatar"
+                />
+              ) : (
+                <span className="ns-auth-avatar ns-auth-avatar--fallback">
+                  {profileName.slice(0, 2).toUpperCase()}
+                </span>
+              )}
+              <span className="ns-auth-meta">
+                <span className="ns-auth-name">{profileName}</span>
+                {displayAddr && <span className="ns-auth-sub">{displayAddr}</span>}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {!address && (
+              <DropdownMenuItem onClick={() => linkWallet()}>
+                <Wallet className="mr-2 h-4 w-4" />
+                Link Wallet
+              </DropdownMenuItem>
+            )}
+            <Link to="/profile">
+              <DropdownMenuItem>My Profile</DropdownMenuItem>
+            </Link>
+            <DropdownMenuItem onClick={() => logout()}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Disconnect
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       <NavSection title="Navigation">{navItems.map(renderItem)}</NavSection>
 
