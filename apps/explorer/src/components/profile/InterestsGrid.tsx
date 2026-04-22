@@ -67,6 +67,8 @@ export default function InterestsGrid({
           <InterestCard
             key={topicId}
             as="button"
+            title={topic.label}
+            aria-label={topic.label}
             topicColor={topic.color}
             topicLabel={topic.label}
             visual={emoji ? <span className="ig-card-emoji">{emoji}</span> : undefined}

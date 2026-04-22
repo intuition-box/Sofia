@@ -20,6 +20,31 @@ function angleFor(i: number, n: number): number {
   return -Math.PI / 2 + (2 * Math.PI / n) * i
 }
 
+/**
+ * Build a closed SVG path from a list of points using Catmull-Rom →
+ * cubic Bézier smoothing. `tension` ~0.05–0.15 softens the corners
+ * without distorting the on-axis values.
+ */
+function smoothClosedPath(points: readonly [number, number][], tension = 0.1): string {
+  const len = points.length
+  if (len === 0) return ''
+  if (len === 1) return `M ${points[0][0]} ${points[0][1]} Z`
+  let d = `M ${points[0][0].toFixed(2)} ${points[0][1].toFixed(2)}`
+  for (let i = 0; i < len; i++) {
+    const p0 = points[(i - 1 + len) % len]
+    const p1 = points[i]
+    const p2 = points[(i + 1) % len]
+    const p3 = points[(i + 2) % len]
+    const c1x = p1[0] + (p2[0] - p0[0]) * tension
+    const c1y = p1[1] + (p2[1] - p0[1]) * tension
+    const c2x = p2[0] - (p3[0] - p1[0]) * tension
+    const c2y = p2[1] - (p3[1] - p1[1]) * tension
+    d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`
+  }
+  d += ' Z'
+  return d
+}
+
 interface RadarChartProps {
   topicAxes: RadarTopicAxis[]
   verbSeries: RadarVerbSeries[]
@@ -95,6 +120,25 @@ export default function RadarChart({
             <feFlood floodColor="#6dd4a0" />
             <feComposite operator="in" in2="edge" />
           </filter>
+          {/* Per-verb radial fade: fully transparent at the chart centre,
+              dense near the outer edge. A polygon reaching the outer ring
+              will read dense at its tips; segments closer to the centre
+              stay almost invisible — matches the "transparent au centre,
+              dense sur les bords" direction. */}
+          {verbSeries.map((s) => (
+            <radialGradient
+              key={`fade-${s.verb.id}`}
+              id={`radar-fade-${s.verb.id}`}
+              cx={CX}
+              cy={CY}
+              r={OUTER_R}
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0%" stopColor={s.verb.color} stopOpacity={0} />
+              <stop offset="55%" stopColor={s.verb.color} stopOpacity={0.1} />
+              <stop offset="100%" stopColor={s.verb.color} stopOpacity={0.45} />
+            </radialGradient>
+          ))}
         </defs>
 
         {/* Grid rings */}
@@ -133,32 +177,34 @@ export default function RadarChart({
 
         {/* Verb polygons */}
         {verbSeries.map((s) => {
-          const points = topicAxes
-            .map((d, i) => {
-              const angle = angleFor(i, n)
-              const val = focusedIdx >= 0 && i !== focusedIdx ? 0 : s.counts[d.id] ?? 0
-              const r = (val / maxCount) * OUTER_R
-              return `${(CX + Math.cos(angle) * r).toFixed(1)},${(CY + Math.sin(angle) * r).toFixed(1)}`
-            })
-            .join(' ')
+          const rawPoints: [number, number][] = topicAxes.map((d, i) => {
+            const angle = angleFor(i, n)
+            const val = focusedIdx >= 0 && i !== focusedIdx ? 0 : s.counts[d.id] ?? 0
+            const r = (val / maxCount) * OUTER_R
+            return [CX + Math.cos(angle) * r, CY + Math.sin(angle) * r]
+          })
+          // Catmull-Rom smoothing — low tension rounds the corners
+          // without distorting the on-axis values.
+          const pathD = smoothClosedPath(rawPoints, 0.03)
 
           const isActive = verbFilter === s.verb.id
           const allMode = verbFilter === 'all'
           const opacity = allMode ? 0.75 : isActive ? 1 : 0.08
           const strokeW = isActive ? 4 : allMode ? 3 : 2
-          const glow = isActive ? `drop-shadow(0 0 10px ${s.verb.color})` : undefined
+          const glow = isActive
+            ? `drop-shadow(0 0 8px ${s.verb.color})`
+            : `drop-shadow(0 0 3px color-mix(in srgb, ${s.verb.color} 45%, transparent))`
 
           return (
             <g
               key={s.verb.id}
               className={`pc-radar-verb-poly${isActive ? ' active' : ''}`}
               data-verb={s.verb.id}
-              style={glow ? { filter: glow } : undefined}
+              style={{ filter: glow }}
             >
-              <polygon
-                points={points}
-                fill={s.verb.color}
-                fillOpacity={0.14}
+              <path
+                d={pathD}
+                fill={`url(#radar-fade-${s.verb.id})`}
                 stroke={s.verb.color}
                 strokeWidth={strokeW}
                 strokeLinejoin="round"
