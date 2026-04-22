@@ -1,7 +1,7 @@
-query GetEthccPositions($address: String!, $termIds: [String!]!) {
+query GetEthccPositions($addresses: [String!]!, $termIds: [String!]!) {
   positions(
     where: {
-      account_id: { _ilike: $address }
+      account_id: { _in: $addresses }
       vault: { term_id: { _in: $termIds } }
       shares: { _gt: "0" }
     }

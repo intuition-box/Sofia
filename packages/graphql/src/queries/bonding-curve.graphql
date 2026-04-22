@@ -5,7 +5,7 @@
 query GetTripleBondingCurveData(
   $tripleId: String!
   $curveId: numeric!
-  $walletAddress: String!
+  $walletAddresses: [String!]!
 ) {
   share_price_changes(
     order_by: {block_timestamp: asc}
@@ -21,7 +21,7 @@ query GetTripleBondingCurveData(
     }
     current_share_price
     total_shares
-    positions(where: {account_id: {_eq: $walletAddress}}) {
+    positions(where: {account_id: {_in: $walletAddresses}}) {
       shares
       total_deposit_assets_after_total_fees
       total_redeem_assets_for_receiver
@@ -33,13 +33,13 @@ query GetTripleBondingCurveData(
 query GetAtomVaultData(
   $atomId: String!
   $curveId: numeric!
-  $walletAddress: String!
+  $walletAddresses: [String!]!
 ) {
   vaults(where: {term_id: {_eq: $atomId}, curve_id: {_eq: $curveId}}) {
     current_share_price
     total_shares
     position_count
-    positions(where: {account_id: {_ilike: $walletAddress}}) {
+    positions(where: {account_id: {_in: $walletAddresses}}) {
       shares
       total_deposit_assets_after_total_fees
       total_redeem_assets_for_receiver

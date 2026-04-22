@@ -1,4 +1,4 @@
-query GetTripleVaultStats($termId: String!, $address: String) {
+query GetTripleVaultStats($termId: String!, $addresses: [String!]) {
   triples(where: { term_id: { _eq: $termId } }) {
     term_id
     term {
@@ -7,7 +7,7 @@ query GetTripleVaultStats($termId: String!, $address: String) {
         total_shares
         position_count
         current_share_price
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
           total_deposit_assets_after_total_fees
         }
@@ -19,7 +19,7 @@ query GetTripleVaultStats($termId: String!, $address: String) {
         total_shares
         position_count
         current_share_price
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
           total_deposit_assets_after_total_fees
         }
@@ -28,7 +28,7 @@ query GetTripleVaultStats($termId: String!, $address: String) {
   }
 }
 
-query GetBatchTripleVaultStats($termIds: [String!]!, $address: String) {
+query GetBatchTripleVaultStats($termIds: [String!]!, $addresses: [String!]) {
   triples(where: { term_id: { _in: $termIds } }) {
     term_id
     subject { label term_id }
@@ -44,7 +44,7 @@ query GetBatchTripleVaultStats($termIds: [String!]!, $address: String) {
         total_shares
         position_count
         current_share_price
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
           total_deposit_assets_after_total_fees
         }
@@ -56,7 +56,7 @@ query GetBatchTripleVaultStats($termIds: [String!]!, $address: String) {
         total_shares
         position_count
         current_share_price
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
           total_deposit_assets_after_total_fees
         }

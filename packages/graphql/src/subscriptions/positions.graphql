@@ -1,6 +1,6 @@
-subscription WatchUserPositions($accountId: String!) {
+subscription WatchUserPositions($accountIds: [String!]!) {
   positions(
-    where: { account_id: { _ilike: $accountId } }
+    where: { account_id: { _in: $accountIds } }
     order_by: { shares: desc }
     limit: 500
   ) {
