@@ -1,0 +1,13 @@
+/**
+ * Design system entry point — imports the shared CSS from
+ * @0xsofia/design-system.
+ *
+ * Loaded once from App.tsx. See packages/design-system/INTEGRATION.md §2.4
+ * for why we import individual stylesheets instead of a single bundle.
+ */
+
+@import "@0xsofia/design-system/theme.css";
+@import "@0xsofia/design-system/styles/favicon.css";
+@import "@0xsofia/design-system/styles/verb-tag.css";
+@import "@0xsofia/design-system/styles/user-badge.css";
+@import "@0xsofia/design-system/styles/bento.css";

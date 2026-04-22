@@ -29,6 +29,7 @@ import VotePage from './pages/VotePage'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
 import PublicProfilePage from './pages/PublicProfilePage'
 import { useViewAs } from './hooks/useViewAs'
+import './components/styles/design-system.css'
 import './components/styles/layout.css'
 
 function InterestsHydrationBoundary() {

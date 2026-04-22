@@ -17,7 +17,7 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | `src/components/` — primitives (`FaviconWrapper`, `VerbTag`, `UserBadge`) | ✅ Done | React components consuming the CSS above |
 | `src/components/GroupBentoCard` + `src/hooks/useIntentionGroups` | ✅ Done | Echoes composite card + bucketing / sorting helpers |
 | Explorer dependency wired | ✅ Done | `apps/explorer` now depends on `@0xsofia/design-system` (workspace:*) |
-| Explorer migration (pilot: `LastActivitySection`) | ⏳ Next | First component flipped to `<GroupBentoCard>` |
+| Explorer migration (pilot: `LastActivitySection`) | ✅ Done | First component flipped to `<GroupBentoCard>` + `useIntentionGroups` |
 
 ## Usage
 

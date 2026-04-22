@@ -1,44 +1,98 @@
-import ActivityCard from './ActivityCard'
+import { useMemo } from 'react'
+import {
+  GroupBentoCard,
+  INTENTION_CONFIG,
+  useIntentionGroups,
+  type IntentionActivityInput,
+  type IntentionType,
+} from '@0xsofia/design-system'
 import type { CircleItem } from '@/services/circleService'
+import { getFaviconUrl } from '@/utils/favicon'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
 
 interface LastActivitySectionProps {
   items: CircleItem[]
   loading: boolean
+  /** Kept in the props contract for API parity with the previous component,
+   *  even though the bento-card layout doesn't surface the wallet directly. */
   walletAddress: string
 }
 
-export default function LastActivitySection({ items, loading, walletAddress }: LastActivitySectionProps) {
+/**
+ * Reverse-lookup from the display label used by `CircleItem.intentions`
+ * ("Work", "Learning", …) back to the canonical IntentionType.
+ * Returns null for unknown labels — they're dropped from the bento view.
+ */
+function labelToIntentionType(label: string): IntentionType | null {
+  const needle = label.trim().toLowerCase()
+  for (const [type, cfg] of Object.entries(INTENTION_CONFIG) as [IntentionType, typeof INTENTION_CONFIG[IntentionType]][]) {
+    if (cfg.label.toLowerCase() === needle) return type
+  }
+  return null
+}
+
+/** Map a filtered CircleItem into the design-system's IntentionActivityInput. */
+function toActivityInput(item: CircleItem): IntentionActivityInput | null {
+  const intents = item.intentions
+    .map(labelToIntentionType)
+    .filter((x): x is IntentionType => x !== null)
+  if (intents.length === 0) return null
+  return {
+    domain: item.domain || item.url,
+    intents,
+    tags: item.topicContexts,
+    // Any intention with an on-chain vault counts as a certification.
+    isCertification: Object.keys(item.intentionVaults).length > 0,
+  }
+}
+
+export default function LastActivitySection({ items, loading }: LastActivitySectionProps) {
+  const activities = useMemo<IntentionActivityInput[]>(() => {
+    // Filter out quest items (Daily Certification, Daily Voter, …) — same
+    // rule as the previous implementation.
+    const certifications = items.filter(
+      (item) => !item.intentions.some((i) => i.startsWith('quest:')),
+    )
+    return certifications
+      .map(toActivityInput)
+      .filter((x): x is IntentionActivityInput => x !== null)
+  }, [items])
+
+  const groups = useIntentionGroups(activities, { sort: 'platform' })
+
   if (loading) {
     return (
-      <div className="las-grid">
-        {Array.from({ length: 4 }).map((_, i) => <ActivityCardSkeleton key={i} />)}
+      <div className="bento-grid bento-grid-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <ActivityCardSkeleton key={i} />
+        ))}
       </div>
     )
   }
 
-  // Filter out quest items (Daily Certification, Daily Voter, etc.)
-  const certifications = items.filter((item) => !item.intentions.some((i) => i.startsWith('quest:')))
-
-  if (certifications.length === 0) {
+  if (groups.length === 0) {
     return (
-      <div className="las-empty">
-        <p className="text-sm text-muted-foreground">No activity yet. Start certifying pages with Sofia!</p>
+      <div className="groups-empty">
+        <p className="text-sm text-muted-foreground">
+          No activity yet. Start certifying pages with Sofia!
+        </p>
       </div>
     )
   }
-
-  const display = certifications.slice(0, 12)
 
   return (
-    <div className="las-grid">
-      {display.map((item) => (
-        <ActivityCard
-          key={item.id}
-          item={item}
-          walletAddress={walletAddress}
-        />
-      ))}
+    <div className="triples-container">
+      <div className="groups-section">
+        <div className="bento-grid bento-grid-3">
+          {groups.map((g) => (
+            <GroupBentoCard
+              key={g.id}
+              group={g}
+              faviconUrl={(domain) => getFaviconUrl(domain)}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
