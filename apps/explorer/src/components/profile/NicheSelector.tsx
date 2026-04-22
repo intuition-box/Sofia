@@ -4,6 +4,7 @@ import { Badge } from '../ui/badge'
 import { Card } from '../ui/card'
 import { ScrollArea } from '../ui/scroll-area'
 import { ArrowLeft } from 'lucide-react'
+import { NicheChips, NicheChip } from '@0xsofia/design-system'
 import '../styles/niche-selector.css'
 
 interface CategorySelectorProps {
@@ -45,21 +46,21 @@ export default function NicheSelector({
                   )}
                 </div>
 
-                <div className="ns-cat-grid">
+                <NicheChips size="lg">
                   {topic.categories.map((category) => {
                     const isSelected = selectedCategories.includes(category.id)
                     return (
-                      <Card
+                      <NicheChip
                         key={category.id}
-                        className={`ns-cat-card ${isSelected ? 'ns-cat-selected' : ''}`}
-                        style={isSelected ? { borderColor: topic.color, background: `${topic.color}12` } : undefined}
+                        active={isSelected}
+                        size="lg"
                         onClick={() => onToggleCategory(category.id)}
                       >
-                        <span className="ns-cat-name">{category.label}</span>
-                      </Card>
+                        {category.label}
+                      </NicheChip>
                     )
                   })}
-                </div>
+                </NicheChips>
               </Card>
             )
           })}

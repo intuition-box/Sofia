@@ -32,6 +32,8 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | `<InterestHero>` + `interest-hero.css` | ✅ Done | Emoji + kicker + Fraunces title + description + Topic-score pill. 1:1 port of proto `.pf-interest-header`. Replaces explorer's `<PageHeader>` on `InterestPage`. Requires JetBrains Mono (added to `index.html`). |
 | `<SubHeader>` + `sub-header.css` | ✅ Done | Breadcrumb-style header (back circle + `›` crumbs + right pill + description) ported from proto `subHeader`. Adopted on `DomainSelectionPage`, `NicheSelectionPage`, `DomainNicheSelectionPage`, `PlatformConnectionPage`. Proto unprefixed tokens remapped to `--ds-*`. |
 | Profile drawer overlap fix | ✅ Done | `.main-content--profile { margin-right: 400px }` to match `ProfileDrawer`'s 400px width; all `/profile*` routes wrap content + hero inside `.pf-view` so nothing bleeds under the drawer. |
+| `<TopicPicker>` + `<TopicCard>` | ✅ Done | Grid of topic cards (emoji + Fraunces label + topic-colored active + checkmark + disabled). 1:1 proto port. Adopted on `DomainSelector` (inside `DomainSelectionPage`). |
+| `<NicheChips>` + `<NicheChip>` | ✅ Done | Pill-shaped toggle chips (sm/lg variants). 1:1 proto port. Adopted on `NicheSelector` (inside `NicheSelectionPage` + `DomainNicheSelectionPage`). |
 
 ## Usage
 

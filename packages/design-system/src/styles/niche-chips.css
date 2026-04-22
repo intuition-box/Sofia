@@ -1,0 +1,45 @@
+/**
+ * Niche chips — pill-shaped toggle chips for category selection.
+ * Ported 1:1 from proto-explorer/src/styles/profile.css:592-618.
+ * Proto tokens (--border, --card, --ink, --ink-soft, --accent, --accent-soft,
+ * --accent-ink) remapped to --ds-*.
+ */
+
+.pf-niche-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pf-niche-grid-lg {
+  gap: 10px;
+}
+
+.pf-niche-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.pf-niche-chip:hover {
+  border-color: var(--ds-ink-soft);
+}
+.pf-niche-chip.active {
+  background: var(--ds-accent-soft);
+  border-color: var(--ds-accent);
+  color: var(--ds-accent-ink);
+  font-weight: 600;
+}
+
+.pf-niche-chip-lg {
+  padding: 10px 20px;
+  font-size: 14px;
+}

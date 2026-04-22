@@ -136,9 +136,10 @@ Page-by-page map of every explorer route. Each page lists:
 |---|---|
 | DS | `<SubHeader>` (crumbs `Profile › Select Topics`, pill `Selected X / 3`) |
 | Explorer page | `apps/explorer/src/pages/DomainSelectionPage.tsx` |
-| Explorer local | `apps/explorer/src/components/profile/DomainSelector.tsx` |
+| DS: grid | `<TopicPicker>` + `<TopicCard>` |
+| Explorer local | `apps/explorer/src/components/profile/DomainSelector.tsx` (now just wraps DS primitives + Back/Continue buttons) |
 | Hooks | `useTopicSync` |
-| TODO | ⬜ port `<DomainSelector>` grid → DS `<TopicPicker>` (proto `.pf-topic-card` with emoji + label + checkmark + disabled state when `>= MAX_TOPICS`) |
+| TODO | ✅ done |
 
 ### `/profile/interest/:topicId/categories` → `DomainNicheSelectionPage`
 
@@ -146,9 +147,10 @@ Page-by-page map of every explorer route. Each page lists:
 |---|---|
 | DS | `<SubHeader>` (3 crumbs w/ topic color, pill `Selected X / N` colored) + `getTopicEmoji` |
 | Explorer page | `apps/explorer/src/pages/DomainNicheSelectionPage.tsx` |
-| Explorer local | `apps/explorer/src/components/profile/NicheSelector.tsx` |
+| DS: chips | `<NicheChips size="lg">` + `<NicheChip>` |
+| Explorer local | `apps/explorer/src/components/profile/NicheSelector.tsx` (now wraps DS chips + ScrollArea + Back/Continue) |
 | Hooks | `useTopicSelection` (via `useDomainSelection`), `useTaxonomy` |
-| TODO | ⬜ port `<NicheSelector>` chip grid → DS `<NicheChips>` (proto `.pf-niche-chip-lg` with optional check icon) |
+| TODO | ✅ done |
 
 ### `/profile/categories` → `NicheSelectionPage`
 
