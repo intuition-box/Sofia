@@ -1,0 +1,32 @@
+/**
+ * User badge — pioneer / explorer / contributor.
+ *
+ * Thin wrapper around the icon image. No background / border — the icon
+ * itself carries the visual weight. Colors are only used when an icon is
+ * unavailable, via the tier-specific `--badge-color` fallback.
+ */
+
+.fc-user-badge {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.fc-user-badge-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Color-only fallback when no icon is provided. */
+.fc-user-badge.has-dot::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--badge-color, var(--muted));
+}

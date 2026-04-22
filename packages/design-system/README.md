@@ -13,9 +13,9 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | Package scaffold (`package.json`, `tsconfig.json`, `index.ts`) | ✅ Done | Raw TS source, peer deps, `sideEffects: ["**/*.css"]` |
 | `src/taxonomy/` — intentions, predicates, quests | ✅ Done | Consolidates extension + explorer configs |
 | `src/level/` — level thresholds and progress math | ✅ Done | Ported from extension |
-| `src/theme.css` + `src/styles/` | ✅ Done | Tokens (light/dark + predicate colors) + bento/favicon/verb-tag CSS |
-| `src/components/` — primitives (`FaviconWrapper`, `VerbTag`, `UserBadge`) | ⏳ Next | |
-| `src/components/GroupBentoCard` + `src/hooks/useIntentionGroups` | ⏳ Pending | |
+| `src/theme.css` + `src/styles/` | ✅ Done | Tokens (light/dark + predicate colors) + bento/favicon/verb-tag/user-badge CSS |
+| `src/components/` — primitives (`FaviconWrapper`, `VerbTag`, `UserBadge`) | ✅ Done | React components consuming the CSS above |
+| `src/components/GroupBentoCard` + `src/hooks/useIntentionGroups` | ⏳ Next | |
 | Explorer migration (pilot: `LastActivitySection`) | ⏳ Pending | |
 
 ## Usage
@@ -54,6 +54,16 @@ import {
   calculateLevel,
   calculateLevelProgress,
   type LevelProgress,
+
+  // Primitive components
+  FaviconWrapper,
+  VerbTag,
+  UserBadge,
+  USER_BADGE_COLORS,
+  type FaviconWrapperProps,
+  type VerbTagProps,
+  type UserBadgeProps,
+  type UserBadgeTier,
 } from '@0xsofia/design-system'
 ```
 
@@ -101,9 +111,15 @@ packages/design-system/
     ├── level/
     │   ├── calculation.ts    # LEVEL_THRESHOLDS, calculateLevel*
     │   └── index.ts
+    ├── components/
+    │   ├── FaviconWrapper.tsx  # <FaviconWrapper size=32 src="…" />
+    │   ├── VerbTag.tsx         # <VerbTag intent="work" />
+    │   ├── UserBadge.tsx       # <UserBadge tier="pioneer" iconUrl="…" />
+    │   └── index.ts
     └── styles/
         ├── favicon.css       # .favicon reusable wrapper
         ├── verb-tag.css      # .fc-verb-tag pill (8 intent variants)
+        ├── user-badge.css    # .fc-user-badge + dot fallback
         └── bento.css         # .triples-container / .bento-grid / .group-bento-card
 ```
 
@@ -115,3 +131,4 @@ packages/design-system/
 | `@0xsofia/design-system/styles/favicon.css` | `.favicon` (scale via `--fav-size`) |
 | `@0xsofia/design-system/styles/verb-tag.css` | `.fc-verb-tag.{trusted\|distrusted\|work\|learning\|fun\|inspiration\|buying\|music}` |
 | `@0xsofia/design-system/styles/bento.css` | `.triples-container`, `.groups-section`, `.bento-grid`, `.bento-grid-3`, `.bento-card` (`.bento-small\|.bento-tall\|.bento-mega`), `.group-bento-card` (`.can-level-up`), `.group-bento-header`, `.group-bento-favicon`, `.group-bento-domain-info`, `.group-bento-title`, `.group-bento-predicate`, `.group-bento-level`, `.level-badge`, `.group-bento-stats` (`.stat-item` / `.stat-value` / `.stat-label`), `.group-bento-progress`, `.progress-bar-container` / `.progress-bar-fill` / `.progress-label`, `.certification-dots` / `.cert-dot`, `.groups-empty` |
+| `@0xsofia/design-system/styles/user-badge.css` | `.fc-user-badge`, `.fc-user-badge-icon`, `.fc-user-badge.has-dot` |

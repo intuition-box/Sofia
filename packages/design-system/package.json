@@ -17,7 +17,8 @@
     "./theme.css": "./src/theme.css",
     "./styles/bento.css": "./src/styles/bento.css",
     "./styles/favicon.css": "./src/styles/favicon.css",
-    "./styles/verb-tag.css": "./src/styles/verb-tag.css"
+    "./styles/verb-tag.css": "./src/styles/verb-tag.css",
+    "./styles/user-badge.css": "./src/styles/user-badge.css"
   },
   "files": [
     "src"
