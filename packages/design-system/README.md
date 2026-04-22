@@ -16,8 +16,10 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | `src/theme.css` + `src/styles/` | ✅ Done | Tokens (light/dark + predicate colors) + bento/favicon/verb-tag/user-badge CSS |
 | `src/components/` — primitives (`FaviconWrapper`, `VerbTag`, `UserBadge`) | ✅ Done | React components consuming the CSS above |
 | `src/components/GroupBentoCard` + `src/hooks/useIntentionGroups` | ✅ Done | Echoes composite card + bucketing / sorting helpers |
+| `src/components/InterestsGrid` + `InterestCard` + `AddInterestCard` | ✅ Done | 3-column interests grid with hover-reveal color layer |
 | Explorer dependency wired | ✅ Done | `apps/explorer` now depends on `@0xsofia/design-system` (workspace:*) |
-| Explorer migration (pilot: `LastActivitySection`) | ✅ Done | First component flipped to `<GroupBentoCard>` + `useIntentionGroups` |
+| Explorer migration — `LastActivitySection` | ✅ Done | Bento grid + `useIntentionGroups` |
+| Explorer migration — `InterestsGrid` | ✅ Done | Three-column interests grid with reveal layer |
 
 ## Usage
 
@@ -78,12 +80,18 @@ import {
   VerbTag,
   UserBadge,
   GroupBentoCard,
+  InterestsGrid,
+  InterestCard,
+  AddInterestCard,
   USER_BADGE_COLORS,
   type FaviconWrapperProps,
   type VerbTagProps,
   type UserBadgeProps,
   type UserBadgeTier,
   type GroupBentoCardProps,
+  type InterestsGridProps,
+  type InterestCardProps,
+  type AddInterestCardProps,
 } from '@0xsofia/design-system'
 ```
 
@@ -147,15 +155,19 @@ packages/design-system/
     │   ├── useIntentionGroups.ts  # buildIntentionGroups + React hook + helpers
     │   └── index.ts
     ├── components/
-    │   ├── FaviconWrapper.tsx  # <FaviconWrapper size=32 src="…" />
-    │   ├── VerbTag.tsx         # <VerbTag intent="work" />
-    │   ├── UserBadge.tsx       # <UserBadge tier="pioneer" iconUrl="…" />
-    │   ├── GroupBentoCard.tsx  # <GroupBentoCard group={…} faviconUrl={…} />
+    │   ├── FaviconWrapper.tsx     # <FaviconWrapper size=32 src="…" />
+    │   ├── VerbTag.tsx            # <VerbTag intent="work" />
+    │   ├── UserBadge.tsx          # <UserBadge tier="pioneer" iconUrl="…" />
+    │   ├── GroupBentoCard.tsx     # <GroupBentoCard group={…} faviconUrl={…} />
+    │   ├── InterestsGrid.tsx      # <InterestsGrid>{children}</InterestsGrid>
+    │   ├── InterestCard.tsx       # <InterestCard topicColor=… topicLabel=… stats=[…] onRemove=… />
+    │   ├── AddInterestCard.tsx    # <AddInterestCard onClick={…} />
     │   └── index.ts
     └── styles/
         ├── favicon.css       # .favicon reusable wrapper
         ├── verb-tag.css      # .fc-verb-tag pill (8 intent variants)
         ├── user-badge.css    # .fc-user-badge + dot fallback
+        ├── interests.css     # .ig-grid / .ig-card (front + reveal) / .ig-add-card
         └── bento.css         # .triples-container / .bento-grid / .group-bento-card
 ```
 
@@ -168,3 +180,4 @@ packages/design-system/
 | `@0xsofia/design-system/styles/verb-tag.css` | `.fc-verb-tag.{trusted\|distrusted\|work\|learning\|fun\|inspiration\|buying\|music}` |
 | `@0xsofia/design-system/styles/bento.css` | `.triples-container`, `.groups-section`, `.bento-grid`, `.bento-grid-3`, `.bento-card` (`.bento-small\|.bento-tall\|.bento-mega`), `.group-bento-card` (`.can-level-up`), `.group-bento-header`, `.group-bento-favicon`, `.group-bento-domain-info`, `.group-bento-title`, `.group-bento-predicate`, `.group-bento-level`, `.level-badge`, `.group-bento-stats` (`.stat-item` / `.stat-value` / `.stat-label`), `.group-bento-progress`, `.progress-bar-container` / `.progress-bar-fill` / `.progress-label`, `.certification-dots` / `.cert-dot`, `.groups-empty` |
 | `@0xsofia/design-system/styles/user-badge.css` | `.fc-user-badge`, `.fc-user-badge-icon`, `.fc-user-badge.has-dot` |
+| `@0xsofia/design-system/styles/interests.css` | `.ig-grid`, `.ig-card` (+ `.ig-card-front` / `.ig-card-emoji` / `.ig-card-label` / `.ig-card-sub`), `.ig-card-reveal` (+ `.ig-card-reveal-head` / `.ig-card-reveal-stats` / `.ig-card-reveal-value` / `.ig-card-reveal-label-sm` / `.ig-card-reveal-cta`), `.ig-card-remove`, `.ig-add-card` (+ `.ig-add-icon` / `.ig-add-label`) |
