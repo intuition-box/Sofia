@@ -8,6 +8,9 @@ import { getTopicEmoji } from '@/config/topicEmoji'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import type { TopicScore } from '@/types/reputation'
 
+/** Mirrors proto-explorer `MAX_INTERESTS` — profile always shows 3 slots. */
+export const MAX_INTERESTS = 3
+
 interface InterestsGridProps {
   selectedTopics: string[]
   selectedCategories: string[]
@@ -26,21 +29,24 @@ export default function InterestsGrid({
   const navigate = useNavigate()
   const { topicById } = useTaxonomy()
 
-  if (selectedTopics.length === 0) {
-    return (
-      <DsInterestsGrid>
-        <AddInterestCard onClick={onAddTopic} />
-      </DsInterestsGrid>
-    )
-  }
-
   const scoreMap = new Map(topicScores.map((d) => [d.topicId, d]))
+
+  // Always render exactly MAX_INTERESTS slots, mirroring the proto:
+  // selected topics first, then AddInterestCard placeholders to fill.
+  const slots: (string | null)[] = selectedTopics.slice(0, MAX_INTERESTS)
+  while (slots.length < MAX_INTERESTS) slots.push(null)
 
   return (
     <DsInterestsGrid>
-      {selectedTopics.map((topicId) => {
+      {slots.map((topicId, idx) => {
+        if (!topicId) {
+          return <AddInterestCard key={`add-${idx}`} onClick={onAddTopic} />
+        }
+
         const topic = topicById(topicId)
-        if (!topic) return null
+        if (!topic) {
+          return <AddInterestCard key={`add-${idx}`} onClick={onAddTopic} />
+        }
 
         const categoryCount = topic.categories.filter((c) =>
           selectedCategories.includes(c.id),
@@ -71,8 +77,6 @@ export default function InterestsGrid({
           />
         )
       })}
-
-      <AddInterestCard onClick={onAddTopic} />
     </DsInterestsGrid>
   )
 }

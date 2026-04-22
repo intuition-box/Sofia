@@ -100,6 +100,18 @@ export default function ProfilePage() {
 
       <div className="pp-sections">
 
+        {/* Interests */}
+        <section className="pp-section">
+          <SectionTitle>{isViewingAs ? 'Interests' : 'My Interests'}</SectionTitle>
+          <InterestsGrid
+            selectedTopics={selectedTopics}
+            selectedCategories={selectedCategories}
+            topicScores={topicScores}
+            onAddTopic={isViewingAs ? undefined : () => navigate('/profile/topics')}
+            onRemoveTopic={isViewingAs ? undefined : removeTopic}
+          />
+        </section>
+
         {/* Top Claims */}
         {(claimsLoading || topClaims.length > 0) && (
           <section className="pp-section">
@@ -112,18 +124,6 @@ export default function ProfilePage() {
             />
           </section>
         )}
-
-        {/* Interests */}
-        <section className="pp-section">
-          <SectionTitle>{isViewingAs ? 'Interests' : 'My Interests'}</SectionTitle>
-          <InterestsGrid
-            selectedTopics={selectedTopics}
-            selectedCategories={selectedCategories}
-            topicScores={topicScores}
-            onAddTopic={isViewingAs ? undefined : () => navigate('/profile/topics')}
-            onRemoveTopic={isViewingAs ? undefined : removeTopic}
-          />
-        </section>
 
         {/* Echoes */}
         <section className="pp-section">
