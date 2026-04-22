@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import PlatformGrid from '@/components/profile/PlatformGrid'
-import { SubHeader } from '@0xsofia/design-system'
+import { InterestHero } from '@0xsofia/design-system'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import '@/components/styles/pages.css'
 
@@ -36,17 +37,25 @@ export default function PlatformConnectionPage() {
 
   return (
     <div className="pf-view page-enter">
-      <SubHeader
-        onBack={() => navigate(`/profile/interest/${topicId}`)}
-        backLabel={`Back to ${topic.label}`}
-        crumbs={[
-          { label: 'Profile' },
-          { label: `${getTopicEmoji(topicId!)} ${topic.label}`, topicColor: topic.color },
-          { label: 'Platforms' },
-        ]}
-        rightPill={{ label: 'Connected', value: `${connectedCount} / ${platforms.length}`, color: topic.color }}
-        description={`Certify your presence on the platforms that matter for ${topic.label}.`}
+      <div className="pf-ts-back-row">
+        <button
+          type="button"
+          className="pf-btn"
+          onClick={() => navigate(`/profile/interest/${topicId}`)}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to {topic.label}
+        </button>
+      </div>
+
+      <InterestHero
+        emoji={getTopicEmoji(topicId!)}
+        title={`${topic.label} platforms`}
+        description={`Certify your presence on the platforms that matter for ${topic.label}. Connect once, earn reputation forever.`}
+        topicColor={topic.color}
+        stat={{ value: `${connectedCount} / ${platforms.length}`, label: 'Connected' }}
       />
+
       <PlatformGrid
         selectedCategories={selectedCategories}
         getStatus={getStatus}

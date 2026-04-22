@@ -105,11 +105,6 @@
   border-radius: 12px;
   border: 1px solid var(--ds-border);
   background: var(--ds-card);
-  transition: transform 0.18s ease, border-color 0.18s ease;
-}
-.pd-topic-score:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--trusted, #6dd4a0) 40%, var(--ds-border));
 }
 .pd-topic-score .pd-section-title {
   align-self: flex-start;

@@ -11,6 +11,8 @@
 
 /* ── Header card — kicker + Fraunces title + description + big total ── */
 
+/* Inverted hero: black card in light mode, white card in dark mode.
+   Colors are hard-coded per theme so the contrast stays consistent. */
 .pf-ts-header {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -19,22 +21,23 @@
   padding: 24px 24px;
   margin-bottom: 24px;
   border-radius: 14px;
-  background: var(--ds-card);
-  border: 1px solid var(--ds-border);
-  box-shadow: var(--ds-shadow-card);
+  background: #02000e;
+  border: 1px solid #02000e;
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.35);
+  color: #f5f3ff;
 }
+[data-theme="dark"] .pf-ts-header,
+.dark .pf-ts-header {
+  background: #ffffff;
+  border-color: #ececf0;
+  color: #02000e;
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.25);
+}
+
 .pf-ts-header-title-block {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-.pf-ts-header-kicker {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ds-muted);
 }
 .pf-ts-header-title {
   font-family: "Fraunces", serif;
@@ -43,39 +46,59 @@
   letter-spacing: -0.03em;
   line-height: 1;
   margin: 4px 0 6px;
-  color: var(--ds-ink);
+  color: #f5f3ff;
   font-variation-settings: "SOFT" 30, "opsz" 144;
 }
+[data-theme="dark"] .pf-ts-header-title,
+.dark .pf-ts-header-title {
+  color: #02000e;
+}
+
 .pf-ts-header-desc {
   margin: 0;
   font-size: 13px;
-  color: var(--ds-muted);
+  color: rgba(245, 243, 255, 0.72);
   max-width: 560px;
   line-height: 1.5;
 }
+[data-theme="dark"] .pf-ts-header-desc,
+.dark .pf-ts-header-desc {
+  color: #6b6880;
+}
+
 .pf-ts-header-stat {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
   padding-left: 16px;
-  border-left: 1px dashed var(--ds-border-soft);
+  border-left: 1px dashed rgba(245, 243, 255, 0.22);
 }
+[data-theme="dark"] .pf-ts-header-stat,
+.dark .pf-ts-header-stat {
+  border-left-color: #f3f2f5;
+}
+
 .pf-ts-header-stat-value {
   font-family: "Fraunces", serif;
   font-size: 48px;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--trusted, #6dd4a0);
+  color: #6dd4a0;
 }
+
 .pf-ts-header-stat-label {
   font-family: "JetBrains Mono", monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ds-muted);
+  color: rgba(245, 243, 255, 0.7);
+}
+[data-theme="dark"] .pf-ts-header-stat-label,
+.dark .pf-ts-header-stat-label {
+  color: #6b6880;
 }
 
 /* ── Reputation by topic (bars) ─────────────────────────────────── */

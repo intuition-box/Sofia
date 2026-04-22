@@ -7,7 +7,7 @@ export interface InterestHeroProps extends HTMLAttributes<HTMLDivElement> {
   title: string
   /** Description paragraph under the title. */
   description: string
-  /** Small uppercase kicker above the title. Defaults to `Profile · Interest`. */
+  /** Small uppercase kicker above the title. Hidden when omitted. */
   kicker?: string
   /** Topic accent color — drives `--topic-color` (banner background). */
   topicColor: string
@@ -26,7 +26,7 @@ export function InterestHero({
   emoji,
   title,
   description,
-  kicker = 'Profile · Interest',
+  kicker,
   topicColor,
   stat,
   className,
@@ -43,7 +43,7 @@ export function InterestHero({
       <div className="pf-interest-header-left">
         <span className="pf-interest-header-emoji" aria-hidden="true">{emoji}</span>
         <div className="pf-interest-header-text">
-          <span className="pf-interest-header-kicker">{kicker}</span>
+          {kicker ? <span className="pf-interest-header-kicker">{kicker}</span> : null}
           <h1 className="pf-interest-header-title">{title}</h1>
           <p className="pf-interest-header-desc">{description}</p>
         </div>
