@@ -7,7 +7,6 @@ import {
   NavSection,
   NavItem,
 } from '@0xsofia/design-system'
-import { getTopicEmoji } from '@/config/topicEmoji'
 import {
   Home,
   User,
@@ -24,7 +23,6 @@ import {
   ShoppingCart,
 } from 'lucide-react'
 import type { Address } from 'viem'
-import { useTopicSelection } from '../hooks/useDomainSelection'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useCart } from '../hooks/useCart'
 import { useTheme } from '../hooks/useTheme'
@@ -67,7 +65,6 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
   const { logout } = useLogout()
   const { linkWallet } = useLinkAccount({ onSuccess: () => window.location.reload() })
   const address = user?.wallet?.address ?? ''
-  const { selectedTopics } = useTopicSelection()
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(address || undefined)
   const cart = useCart()
   const { theme, toggleTheme } = useTheme()
@@ -176,24 +173,6 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
       <NavSection title="Navigation">{navItems.map(renderItem)}</NavSection>
 
       <NavSection title="Quick Access">{quickLinks.map(renderItem)}</NavSection>
-
-      {authenticated && selectedTopics.length > 0 ? (
-        <NavSection title="My Interests">
-          {selectedTopics.slice(0, 6).map((topicId) => (
-            <Link
-              key={topicId}
-              to={`/feed?space=${topicId}`}
-              style={{ display: 'block' }}
-            >
-              <NavItem
-                as="button"
-                icon={<span className="text-sm">{getTopicEmoji(topicId) || '📌'}</span>}
-                label={topicId.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-              />
-            </Link>
-          ))}
-        </NavSection>
-      ) : null}
 
       {authenticated ? (
         <NavSection title="Trust Circle">
