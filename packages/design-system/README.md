@@ -15,8 +15,8 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | `src/level/` — level thresholds and progress math | ✅ Done | Ported from extension |
 | `src/theme.css` + `src/styles/` | ✅ Done | Tokens (light/dark + predicate colors) + bento/favicon/verb-tag/user-badge CSS |
 | `src/components/` — primitives (`FaviconWrapper`, `VerbTag`, `UserBadge`) | ✅ Done | React components consuming the CSS above |
-| `src/components/GroupBentoCard` + `src/hooks/useIntentionGroups` | ⏳ Next | |
-| Explorer migration (pilot: `LastActivitySection`) | ⏳ Pending | |
+| `src/components/GroupBentoCard` + `src/hooks/useIntentionGroups` | ✅ Done | Echoes composite card + bucketing / sorting helpers |
+| Explorer migration (pilot: `LastActivitySection`) | ⏳ Next | |
 
 ## Usage
 
@@ -49,21 +49,39 @@ import {
   QUEST_BADGES,
   type QuestBadge,
 
-  // Level math
+  // Level math + colors
   LEVEL_THRESHOLDS,
   calculateLevel,
   calculateLevelProgress,
   type LevelProgress,
+  LEVEL_TIER_COLORS,
+  getLevelColor,
+  getLevelColorAlpha,
 
-  // Primitive components
+  // Lib helpers
+  formatDuration,
+
+  // Hooks + pure helpers
+  buildIntentionGroups,
+  useIntentionGroups,
+  pickDominantIntent,
+  pickDominantColor,
+  type IntentionActivityInput,
+  type IntentionGroupWithStats,
+  type BuildIntentionGroupsOptions,
+  type EchoesSort,
+
+  // Components
   FaviconWrapper,
   VerbTag,
   UserBadge,
+  GroupBentoCard,
   USER_BADGE_COLORS,
   type FaviconWrapperProps,
   type VerbTagProps,
   type UserBadgeProps,
   type UserBadgeTier,
+  type GroupBentoCardProps,
 } from '@0xsofia/design-system'
 ```
 
@@ -110,11 +128,19 @@ packages/design-system/
     │   └── index.ts
     ├── level/
     │   ├── calculation.ts    # LEVEL_THRESHOLDS, calculateLevel*
+    │   ├── colors.ts         # getLevelColor, getLevelColorAlpha
+    │   └── index.ts
+    ├── lib/
+    │   ├── formatDuration.ts   # "120" → "2m"
+    │   └── index.ts
+    ├── hooks/
+    │   ├── useIntentionGroups.ts  # buildIntentionGroups + React hook + helpers
     │   └── index.ts
     ├── components/
     │   ├── FaviconWrapper.tsx  # <FaviconWrapper size=32 src="…" />
     │   ├── VerbTag.tsx         # <VerbTag intent="work" />
     │   ├── UserBadge.tsx       # <UserBadge tier="pioneer" iconUrl="…" />
+    │   ├── GroupBentoCard.tsx  # <GroupBentoCard group={…} faviconUrl={…} />
     │   └── index.ts
     └── styles/
         ├── favicon.css       # .favicon reusable wrapper
