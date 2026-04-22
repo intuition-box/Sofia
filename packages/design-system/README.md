@@ -4,6 +4,8 @@ Sofia design system — shared taxonomy, components, hooks, and styles consumed 
 
 Full architecture, migration plan, and TDD flow: [`INTEGRATION.md`](./INTEGRATION.md).
 
+Flat per-page / per-component TODO mapping proto → target: [`MIGRATION.md`](./MIGRATION.md).
+
 ## Status
 
 Scaffold + first-wave submodules landing incrementally on `feat/design-system-package`.
