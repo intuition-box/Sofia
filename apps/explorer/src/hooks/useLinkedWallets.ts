@@ -1,4 +1,4 @@
-cd /home/max/Project/sofia-core/core && bun run --filter @0xsofia/graphql codegenimport { useMemo } from 'react'
+import { useMemo } from 'react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { getAddress, type Address } from 'viem'
 
