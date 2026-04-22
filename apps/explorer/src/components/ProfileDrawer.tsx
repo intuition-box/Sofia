@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useDiscoveryScore } from '../hooks/useDiscoveryScore'
@@ -8,9 +9,12 @@ import { useSignals } from '../hooks/useSignals'
 import { useShareProfile } from '../hooks/useShareProfile'
 import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useTrustScore } from '../hooks/useTrustScore'
+import { useTaxonomy } from '../hooks/useTaxonomy'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
+import { getTopicEmoji } from '@/config/topicEmoji'
+import { getIntentionColor } from '@/config/intentions'
 import type { Address } from 'viem'
 import './styles/profile-drawer.css'
 
@@ -19,18 +23,72 @@ interface ProfileDrawerProps {
   onClose: () => void
 }
 
-export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
+// ── Pie chart helper ───────────────────────────────────────────────────
+// Proto renderTopicPie ported to React (profileDrawer.ts:57-86).
+
+interface TopicPieSlice {
+  id: string
+  label: string
+  emoji: string
+  color: string
+  score: number
+}
+
+function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
+  const total = slices.reduce((a, s) => a + s.score, 0)
+  const r = 50
+  const C = 2 * Math.PI * r
+  let cursor = 0
+
+  return (
+    <div className="pd-ts-pie-wrap">
+      <svg className="pd-ts-pie" viewBox="0 0 120 120" aria-hidden="true">
+        {slices.map((t) => {
+          const pct = total > 0 ? t.score / total : 0
+          const sliceLen = pct * C
+          const rest = C - sliceLen
+          const startDeg = -90 + (total > 0 ? (cursor / total) * 360 : 0)
+          cursor += t.score
+          return (
+            <circle
+              key={t.id}
+              cx={60}
+              cy={60}
+              r={r}
+              fill="none"
+              stroke={t.color}
+              strokeWidth={14}
+              strokeDasharray={`${sliceLen.toFixed(2)} ${rest.toFixed(2)}`}
+              transform={`rotate(${startDeg.toFixed(2)} 60 60)`}
+            />
+          )
+        })}
+        <circle cx={60} cy={60} r={36} fill="var(--ds-card)" />
+      </svg>
+      <div className="pd-ts-pie-center">
+        <span className="pd-ts-pie-value">{Math.round(total)}</span>
+        <span className="pd-ts-pie-label">total</span>
+      </div>
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────
+
+export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
+  const navigate = useNavigate()
   const { authenticated, user } = usePrivy()
   const address = user?.wallet?.address ?? ''
   const { getDisplay, getAvatar } = useEnsNames(address ? [address as Address] : [])
   const { stats } = useDiscoveryScore(address || undefined)
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus, connectedCount } = usePlatformConnections()
-  const { score: trustScore, loading: trustScoreLoading } = useTrustScore(address || undefined)
+  const { score: trustScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustScore, signals)
   const topicScores = scores?.topics ?? []
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(address || undefined)
+  const { topicById } = useTaxonomy()
 
   const {
     isModalOpen,
@@ -57,12 +115,25 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
   const shortAddr = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
   const initials = (displayName || address).slice(0, 2).toUpperCase()
 
-  const statItems = [
-    { label: 'Topics', value: selectedTopics.length },
-    { label: 'Categories', value: selectedCategories.length },
-    { label: 'Platforms', value: connectedCount },
-    { label: 'Signals', value: stats?.totalCertifications ?? 0 },
-  ]
+  const pieSlices: TopicPieSlice[] = selectedTopics
+    .map((id) => {
+      const topic = topicById(id)
+      if (!topic) return null
+      const scoreEntry = topicScores.find((s) => s.topicId === id)
+      return {
+        id,
+        label: topic.label,
+        emoji: getTopicEmoji(id) || '📌',
+        color: topic.color ?? getIntentionColor('inspiration'),
+        score: Math.round(scoreEntry?.score ?? 0),
+      }
+    })
+    .filter((x): x is TopicPieSlice => x !== null && x.score > 0)
+
+  // Rough percentile from trustScore (0-100). Falls back to 'Top 50%' when unknown.
+  const percentileLabel = trustScore != null
+    ? `Top ${Math.max(1, Math.round(100 - trustScore))}% · View details`
+    : 'View details'
 
   return (
     <>
@@ -75,7 +146,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
               {avatar && <AvatarImage src={avatar} alt={displayName} />}
               <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
             </Avatar>
-            <div className="text-center">
+            <div className="pd-name-wrap">
               <p className="pd-name">{displayName}</p>
               <p className="pd-address">{shortAddr}</p>
             </div>
@@ -93,53 +164,56 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="px-3 pt-6 pb-4">
-            <p className="pd-section-title" style={{ padding: 10, marginBottom: 0 }}></p>
-            <div className="pd-stat-grid">
-              {statItems.map((s) => (
-                <div key={s.label} className="pd-stat-card">
-                  <span className="pd-stat-value">{s.value}</span>
-                  <span className="pd-stat-label">{s.label}</span>
+          {/* Topic Score pie chart */}
+          <div className="pd-topic-score">
+            <span className="pd-section-title">Score</span>
+            {pieSlices.length > 0 ? (
+              <>
+                <TopicScorePie slices={pieSlices} />
+                <div className="pd-ts-legend">
+                  {pieSlices.map((t) => (
+                    <span
+                      key={t.id}
+                      className="pd-ts-legend-item"
+                      style={{ ['--slice-color' as string]: t.color }}
+                    >
+                      <span className="pd-ts-legend-dot" />
+                      <span className="pd-ts-legend-label">{t.emoji} {t.label}</span>
+                      <span className="pd-ts-legend-val">{t.score}</span>
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              <p className="pd-ts-empty">Pick topics to see your score breakdown.</p>
+            )}
           </div>
 
-          {/* Trust Score */}
-          {trustScore !== null && (
-            <div className="px-3 pt-2 pb-0">
-              <div className="pd-trust-card">
-                <div className="pd-trust-header">
-                  <span className="pd-trust-label">Trust Score</span>
-                  <span className="pd-trust-value">{trustScore.toFixed(0)}</span>
-                </div>
-                <div className="pd-trust-bar">
-                  <div className="pd-trust-fill" style={{ width: `${Math.min(trustScore, 100)}%` }} />
-                </div>
-              </div>
-            </div>
-          )}
-          {trustScoreLoading && (
-            <div className="px-3 pt-2 pb-0">
-              <div className="pd-trust-card">
-                <span className="pd-trust-label" style={{ opacity: 0.5 }}>Loading trust score...</span>
-              </div>
-            </div>
-          )}
+          <button
+            type="button"
+            className="pd-ts-view-btn"
+            onClick={() => navigate('/profile/scores')}
+          >
+            <span>{percentileLabel}</span>
+            <span className="pd-ts-view-arrow">→</span>
+          </button>
 
           {/* Discovery badges */}
           {stats && (
-            <div className="px-3  pt-8 pb-4">
-              <p className="pd-section-title" style={{ padding: 10, marginBottom: 10 }}></p>
+            <div className="pd-section">
+              <p className="pd-section-title">Discovery</p>
               <div className="pd-badge-row">
                 {[
-                  { label: 'Pioneer', value: stats.pioneerCount, icon: '/badges/pioneer.png' },
-                  { label: 'Explorer', value: stats.explorerCount, icon: '/badges/explorer.png' },
-                  { label: 'Contributor', value: stats.contributorCount, icon: '/badges/contributor.png' },
-                  { label: 'Trusted', value: stats.trustedCount, icon: '/badges/trust.png' },
+                  { label: 'Pioneer', value: stats.pioneerCount, icon: '/badges/pioneer.png', color: '#e4b95a' },
+                  { label: 'Explorer', value: stats.explorerCount, icon: '/badges/explorer.png', color: '#5cc4d6' },
+                  { label: 'Contributor', value: stats.contributorCount, icon: '/badges/contributor.png', color: '#a78bdb' },
+                  { label: 'Trusted', value: stats.trustedCount, icon: '/badges/trust.png', color: '#6dd4a0' },
                 ].map((b) => (
-                  <div key={b.label} className="pd-badge-card">
+                  <div
+                    key={b.label}
+                    className="pd-badge-card"
+                    style={{ ['--badge-color' as string]: b.color }}
+                  >
                     <img src={b.icon} alt={b.label} className="pd-badge-icon" />
                     <span className="pd-badge-label">{b.label}</span>
                     <span className="pd-badge-value">{b.value}</span>
@@ -149,19 +223,19 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
             </div>
           )}
 
-          {/* Trust Circle */}
-          <div className="px-3 pt-8 pb-7 flex-1">
-            <p className="pd-section-title" style={{ padding: 20, marginBottom: 10 }}>
+          {/* Trust Circle — explorer extra, kept because the list surfaces
+              real on-chain delegations the proto has no equivalent for. */}
+          <div className="pd-section pd-section--grow">
+            <p className="pd-section-title">
               My Trust Circle
               {!trustLoading && <span className="pd-circle-count">{trustCircle.length}</span>}
             </p>
-
             {trustLoading ? (
               <div className="pd-circle-loading">
-                <span className="pd-circle-loading-text">Loading...</span>
+                <span className="pd-circle-loading-text">Loading…</span>
               </div>
             ) : trustCircle.length === 0 ? (
-              <p className="pd-circle-empty">No accounts in trust circle yet</p>
+              <p className="pd-circle-empty">No accounts in trust circle yet.</p>
             ) : (
               <div className="pd-circle-list">
                 {trustCircle.map((account, i) => (
@@ -182,6 +256,19 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
               </div>
             )}
           </div>
+
+          {/* CTA — Start your journey */}
+          <div className="pd-section">
+            <button
+              type="button"
+              className="pd-cta"
+              onClick={() => navigate('/profile/topics')}
+            >
+              <span>Start your journey</span>
+              <span className="pd-cta-arrow">→</span>
+            </button>
+          </div>
+
         </div>
       </aside>
 
