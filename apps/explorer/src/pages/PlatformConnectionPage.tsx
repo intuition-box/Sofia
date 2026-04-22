@@ -4,7 +4,8 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import PlatformGrid from '@/components/profile/PlatformGrid'
-import { SubHeader, getTopicEmoji } from '@0xsofia/design-system'
+import { SubHeader } from '@0xsofia/design-system'
+import { getTopicEmoji } from '@/config/topicEmoji'
 import '@/components/styles/pages.css'
 
 export default function PlatformConnectionPage() {

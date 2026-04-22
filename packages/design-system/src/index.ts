@@ -1,8 +1,10 @@
 // @0xsofia/design-system — public entry point.
-// Submodules land per wave as they are migrated out of apps/* (see
-// INTEGRATION.md). Today: taxonomy + level + components + hooks + lib.
-export * from './taxonomy'
-export * from './level'
+//
+// The DS is now a strictly presentational kit: components, styles, tokens,
+// and the tiny `INTENTION_HEX` palette. Anything taxonomy-, predicate-,
+// quest-, level- or hook-shaped (aka business logic) lives in the consuming
+// app (`apps/explorer/src/config` / `src/lib` / `src/hooks`).
+
+export * from './palette'
 export * from './lib'
-export * from './hooks'
 export * from './components'

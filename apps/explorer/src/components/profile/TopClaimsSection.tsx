@@ -3,12 +3,12 @@ import { Button } from '../ui/button'
 import { Share2, Users, TrendingUp, TrendingDown } from 'lucide-react'
 import type { TopClaim } from '@/hooks/useTopClaims'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
+import { FaviconWrapper } from '@0xsofia/design-system'
 import {
   INTENTION_COLORS_BY_LABEL,
   intentionBadgeStyle,
   LABEL_TO_INTENTION,
-  FaviconWrapper,
-} from '@0xsofia/design-system'
+} from '@/config/intentions'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import { formatEth } from '@/services/vaultTooltipService'
 import type { PlatformVaultData } from '@/services/platformMarketService'

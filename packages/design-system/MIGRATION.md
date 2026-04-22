@@ -379,7 +379,7 @@ Not yet in explorer — proto has a composer page with 3D compile button (`three
 
 | Task | Status |
 |---|---|
-| Replace `@/config/intentions` with `@0xsofia/design-system` across remaining consumers (DashboardPage, CircleCard, CartDrawer, DepositModal, PredicatePicker, PositionBoardDialog, WeightModal, feedProcessing, domainTrendingService) | ⬜ 9 files left |
+| ~~Replace `@/config/intentions` with `@0xsofia/design-system`~~ — **inverted**: taxonomy/hooks/level now live in `apps/explorer/src/config` + `src/hooks` + `src/lib/level`. DS only ships palette + components. | ✅ done |
 | Delete `apps/explorer/src/components/PageHeader.tsx` once VotePage/DashboardPage/LeaderboardPage/StreaksPage/ScoresPage/AllPlatformsPage/PublicProfilePage migrate to `<PageHero>` | ✅ done — 7 pages migrated, file deleted |
 | Delete `apps/explorer/src/components/Sidebar.tsx` (still on disk, no imports) | ✅ done |
 | Extension adoption of `@0xsofia/design-system` (ManifestV3 / Plasmo) | ⬜ future wave |

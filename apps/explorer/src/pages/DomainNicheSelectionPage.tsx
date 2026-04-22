@@ -2,7 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import NicheSelector from '@/components/profile/NicheSelector'
-import { SubHeader, getTopicEmoji } from '@0xsofia/design-system'
+import { SubHeader } from '@0xsofia/design-system'
+import { getTopicEmoji } from '@/config/topicEmoji'
 import '@/components/styles/pages.css'
 
 export default function DomainNicheSelectionPage() {

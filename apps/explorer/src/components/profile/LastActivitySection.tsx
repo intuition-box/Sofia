@@ -1,11 +1,18 @@
 import { useMemo } from 'react'
+import { GroupBentoCard, type CertificationDot, formatDuration } from '@0xsofia/design-system'
 import {
-  GroupBentoCard,
   displayLabelToIntentionType,
-  useIntentionGroups,
-  type IntentionActivityInput,
+  CERTIFICATION_COLORS,
   type IntentionType,
-} from '@0xsofia/design-system'
+} from '@/config/intentions'
+import {
+  useIntentionGroups,
+  pickDominantColor,
+  type IntentionActivityInput,
+  type IntentionGroupWithStats,
+} from '@/hooks/useIntentionGroups'
+import { calculateLevelProgress } from '@/lib/level/calculation'
+import { getLevelColor, getLevelColorAlpha } from '@/lib/level/colors'
 import type { CircleItem } from '@/services/circleService'
 import { getFaviconUrl } from '@/utils/favicon'
 import { ActivityCardSkeleton } from './ProfileSkeletons'
@@ -13,12 +20,10 @@ import { ActivityCardSkeleton } from './ProfileSkeletons'
 interface LastActivitySectionProps {
   items: CircleItem[]
   loading: boolean
-  /** Kept in the props contract for API parity with the previous component,
-   *  even though the bento-card layout doesn't surface the wallet directly. */
   walletAddress: string
 }
 
-/** Map a filtered CircleItem into the design-system's IntentionActivityInput. */
+/** Map a filtered CircleItem into the hook's activity input shape. */
 function toActivityInput(item: CircleItem): IntentionActivityInput | null {
   const intents = item.intentions
     .map(displayLabelToIntentionType)
@@ -28,15 +33,45 @@ function toActivityInput(item: CircleItem): IntentionActivityInput | null {
     domain: item.domain || item.url,
     intents,
     tags: item.topicContexts,
-    // Any intention with an on-chain vault counts as a certification.
     isCertification: Object.keys(item.intentionVaults).length > 0,
+  }
+}
+
+/** Build the prop bag consumed by the presentational <GroupBentoCard>. */
+function toCardProps(g: IntentionGroupWithStats) {
+  const xp = calculateLevelProgress(g.certifiedCount, g.level)
+  const dots: CertificationDot[] = (
+    Object.entries(g.certificationBreakdown) as [IntentionType, number | undefined][]
+  )
+    .filter(([, c]) => (c ?? 0) > 0)
+    .map(([type]) => ({
+      key: type,
+      color: CERTIFICATION_COLORS[type],
+      title: type,
+    }))
+  return {
+    domain: g.domain,
+    faviconSrc: getFaviconUrl(g.domain),
+    currentPredicate: g.currentPredicate,
+    activeUrlCount: g.activeUrlCount,
+    certifiedCount: g.certifiedCount,
+    timeLabel: formatDuration(g.totalAttentionTime),
+    level: g.level,
+    levelColor: getLevelColor(g.level),
+    levelColorAlpha: getLevelColorAlpha(g.level),
+    progressPercent: xp.progressPercent,
+    progressLabel:
+      xp.xpToNextLevel > 0
+        ? `${xp.xpToNextLevel} cert${xp.xpToNextLevel > 1 ? 's' : ''} to LVL ${g.level + 1}`
+        : 'Max level!',
+    dominantColor: pickDominantColor(g),
+    certificationDots: dots,
+    canLevelUp: g.level > 1 && g.certifiedCount > 0,
   }
 }
 
 export default function LastActivitySection({ items, loading }: LastActivitySectionProps) {
   const activities = useMemo<IntentionActivityInput[]>(() => {
-    // Filter out quest items (Daily Certification, Daily Voter, …) — same
-    // rule as the previous implementation.
     const certifications = items.filter(
       (item) => !item.intentions.some((i) => i.startsWith('quest:')),
     )
@@ -72,11 +107,7 @@ export default function LastActivitySection({ items, loading }: LastActivitySect
       <div className="groups-section">
         <div className="bento-grid bento-grid-3">
           {groups.map((g) => (
-            <GroupBentoCard
-              key={g.id}
-              group={g}
-              faviconUrl={(domain) => getFaviconUrl(domain)}
-            />
+            <GroupBentoCard key={g.id} {...toCardProps(g)} />
           ))}
         </div>
       </div>

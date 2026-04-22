@@ -3,8 +3,8 @@ import {
   InterestsGrid as DsInterestsGrid,
   InterestCard,
   AddInterestCard,
-  getTopicEmoji,
 } from '@0xsofia/design-system'
+import { getTopicEmoji } from '@/config/topicEmoji'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import type { TopicScore } from '@/types/reputation'
 

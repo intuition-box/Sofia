@@ -38,6 +38,7 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | Legacy `<PageHeader>` retired | ✅ Done | All 7 consumers (Dashboard/Leaderboard/Streaks/Vote/AllPlatforms/Scores/PublicProfile) swapped to `<PageHero>`. `apps/explorer/src/components/PageHeader.tsx` and `styles/page-header.css` deleted. Remaining `.ph-*` rules now live authoritatively in `design-system/styles/page-hero.css`. |
 | Dead `Sidebar.tsx` removed | ✅ Done | `apps/explorer/src/components/Sidebar.tsx` and `styles/sidebar.css` deleted — no consumers since `<NavSidebar>` migration (Wave 3). |
 | Body typography + ambient | ✅ Done | Geist body font + radial grid-dot background + pastel CSS predicate tokens — all aligned with proto's `styles.css`. |
+| DS → pure UI kit | ✅ Done | Taxonomy, predicates, quests, topic emojis, level math, `useIntentionGroups` **moved out of the package** into explorer. DS now exports only: components, styles, `theme.css`, and a minimal `INTENTION_HEX` + `IntentionSlug` palette. DS components (`<VerbTag>`, `<GroupBentoCard>`) refactored to be presentational — they receive labels, colors and pre-computed progress/time values as props. |
 
 ## Usage
 

@@ -6,8 +6,8 @@ import {
   NavBrand,
   NavSection,
   NavItem,
-  getTopicEmoji,
 } from '@0xsofia/design-system'
+import { getTopicEmoji } from '@/config/topicEmoji'
 import {
   Home,
   User,

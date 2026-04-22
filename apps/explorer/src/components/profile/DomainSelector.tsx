@@ -1,7 +1,9 @@
 import { SOFIA_TOPICS } from '../../config/taxonomy'
 import { Button } from '../ui/button'
 import { ArrowLeft } from 'lucide-react'
-import { TopicPicker, TopicCard, getTopicEmoji, getIntentionColor } from '@0xsofia/design-system'
+import { TopicPicker, TopicCard } from '@0xsofia/design-system'
+import { getTopicEmoji } from '@/config/topicEmoji'
+import { getIntentionColor } from '@/config/intentions'
 
 const MAX_TOPICS = 3
 

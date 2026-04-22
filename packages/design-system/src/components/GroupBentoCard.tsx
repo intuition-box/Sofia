@@ -1,34 +1,56 @@
 import type { AnchorHTMLAttributes, HTMLAttributes, ReactNode } from 'react'
-import { CERTIFICATION_COLORS, type IntentionType } from '../taxonomy/intentions'
-import { calculateLevelProgress } from '../level/calculation'
-import { getLevelColor, getLevelColorAlpha } from '../level/colors'
-import { formatDuration } from '../lib/formatDuration'
 import { FaviconWrapper } from './FaviconWrapper'
-import {
-  type IntentionGroupWithStats,
-  pickDominantIntent,
-  pickDominantColor,
-} from '../hooks/useIntentionGroups'
 
 // ── Props ────────────────────────────────────────────────────────────────
+
+/** One colored dot under the stats row (one per certification type). */
+export interface CertificationDot {
+  /** Unique key (e.g. IntentionType slug). */
+  key: string
+  /** Background color for the dot. */
+  color: string
+  /** Tooltip text. */
+  title?: string
+}
 
 type CardElementProps =
   | ({ as?: 'div' } & HTMLAttributes<HTMLDivElement>)
   | ({ as: 'a'; href: string } & AnchorHTMLAttributes<HTMLAnchorElement>)
 
 export type GroupBentoCardProps = {
-  /** The rolled-up group the card should render. */
-  group: IntentionGroupWithStats
-  /** Function that returns the favicon URL for a given domain. Consumers
-   *  own their favicon strategy (`getFaviconUrl` in explorer, google s2
-   *  in extension, …). */
-  faviconUrl?: (domain: string) => string
+  /** Domain / title rendered in the header. */
+  domain: string
+  /** Favicon URL for the header. */
+  faviconSrc?: string
+  /** Small predicate label quoted under the domain. */
+  currentPredicate?: string | null
+  /** `URLs` stat. */
+  activeUrlCount: number
+  /** `On-chain` stat. */
+  certifiedCount: number
+  /** Pre-formatted time label (e.g. `"2m"`). */
+  timeLabel: string
+  /** Level badge number. */
+  level: number
+  /** Foreground color for the level badge. */
+  levelColor: string
+  /** Background tint for the level badge (usually an alpha version of `levelColor`). */
+  levelColorAlpha: string
+  /** Progress bar fill (0–100). */
+  progressPercent: number
+  /** Progress bar label (e.g. `"3 certs to LVL 5"` or `"Max level!"`). */
+  progressLabel: string
+  /** Color of the progress bar + the group's accent border tint. */
+  dominantColor: string
+  /** Certification dots row — one per certification type in the group. */
+  certificationDots?: CertificationDot[]
+  /** Adds `.can-level-up` on the root (drives a subtle glow). */
+  canLevelUp?: boolean
   /** Size of the bento card within the grid. Mirrors the CSS utility classes. */
   size?: 'small' | 'tall' | 'mega'
   /** Extra class names appended to the root `.bento-card.group-bento-card`. */
   className?: string
-  /** Optional children rendered AFTER the built-in sections (progress/dots).
-   *  Use to inject bespoke per-card footer content. */
+  /** Optional children rendered AFTER the built-in sections. */
   children?: ReactNode
 } & CardElementProps
 
@@ -37,8 +59,10 @@ export type GroupBentoCardProps = {
 /**
  * `<GroupBentoCard>` — the Echoes bento card.
  *
- * Assembles favicon header, domain + predicate, level badge, three stats
- * (URLs / on-chain / time), progress bar, and the certification dots row.
+ * Pure presentational: every label/color/progress value is a pre-computed
+ * prop. Consumers (explorer `useIntentionGroups` + taxonomy helpers) own
+ * the business logic. See `apps/explorer/src/components/profile/LastActivitySection.tsx`
+ * for the reference consumer.
  *
  * Requires stylesheets:
  *   `@import "@0xsofia/design-system/theme.css";`
@@ -47,24 +71,26 @@ export type GroupBentoCardProps = {
  */
 export function GroupBentoCard(props: GroupBentoCardProps) {
   const {
-    group: g,
-    faviconUrl,
+    domain,
+    faviconSrc,
+    currentPredicate,
+    activeUrlCount,
+    certifiedCount,
+    timeLabel,
+    level,
+    levelColor,
+    levelColorAlpha,
+    progressPercent,
+    progressLabel,
+    dominantColor,
+    certificationDots,
+    canLevelUp,
     size = 'small',
     className,
     children,
     style: callerStyle,
     ...rest
   } = props as GroupBentoCardProps & { style?: React.CSSProperties }
-
-  const displayLevel = g.level
-  const xp = calculateLevelProgress(g.certifiedCount, displayLevel)
-  const dominant = pickDominantIntent(g)
-  const dominantColor = pickDominantColor(g)
-  const canLevelUp = displayLevel > 1 && g.certifiedCount > 0
-
-  const breakdownEntries = (
-    Object.entries(g.certificationBreakdown) as [IntentionType, number | undefined][]
-  ).filter(([, c]) => (c ?? 0) > 0)
 
   const rootClass = [
     'bento-card',
@@ -84,36 +110,36 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
         <FaviconWrapper
           className="group-bento-favicon"
           size={24}
-          src={faviconUrl ? faviconUrl(g.domain) : undefined}
-          alt={g.domain}
+          src={faviconSrc}
+          alt={domain}
         />
         <div className="group-bento-domain-info">
-          <h3 className="group-bento-title">{g.domain}</h3>
-          {g.currentPredicate ? (
-            <span className="group-bento-predicate">&quot;{g.currentPredicate}&quot;</span>
+          <h3 className="group-bento-title">{domain}</h3>
+          {currentPredicate ? (
+            <span className="group-bento-predicate">&quot;{currentPredicate}&quot;</span>
           ) : null}
         </div>
         <div className="group-bento-level">
           <span
             className="level-badge"
-            style={{ color: getLevelColor(displayLevel), background: getLevelColorAlpha(displayLevel) }}
+            style={{ color: levelColor, background: levelColorAlpha }}
           >
-            LVL {displayLevel}
+            LVL {level}
           </span>
         </div>
       </div>
 
       <div className="group-bento-stats">
         <div className="stat-item">
-          <span className="stat-value">{g.activeUrlCount}</span>
+          <span className="stat-value">{activeUrlCount}</span>
           <span className="stat-label">URLs</span>
         </div>
         <div className="stat-item">
-          <span className="stat-value">{g.certifiedCount}</span>
+          <span className="stat-value">{certifiedCount}</span>
           <span className="stat-label">On-chain</span>
         </div>
         <div className="stat-item">
-          <span className="stat-value">{formatDuration(g.totalAttentionTime)}</span>
+          <span className="stat-value">{timeLabel}</span>
           <span className="stat-label">Time</span>
         </div>
       </div>
@@ -122,24 +148,20 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
         <div className="progress-bar-container">
           <div
             className="progress-bar-fill"
-            style={{ width: `${xp.progressPercent}%`, background: dominantColor }}
+            style={{ width: `${progressPercent}%`, background: dominantColor }}
           />
         </div>
-        <span className="progress-label">
-          {xp.xpToNextLevel > 0
-            ? `${xp.xpToNextLevel} cert${xp.xpToNextLevel > 1 ? 's' : ''} to LVL ${displayLevel + 1}`
-            : 'Max level!'}
-        </span>
+        <span className="progress-label">{progressLabel}</span>
       </div>
 
-      {breakdownEntries.length > 0 ? (
+      {certificationDots && certificationDots.length > 0 ? (
         <div className="certification-dots">
-          {breakdownEntries.map(([cert]) => (
+          {certificationDots.map((d) => (
             <div
-              key={cert}
+              key={d.key}
               className="cert-dot"
-              style={{ backgroundColor: CERTIFICATION_COLORS[cert] }}
-              title={cert}
+              style={{ backgroundColor: d.color }}
+              title={d.title}
             />
           ))}
         </div>
@@ -168,5 +190,3 @@ export function GroupBentoCard(props: GroupBentoCardProps) {
     </div>
   )
 }
-
-export type { IntentionGroupWithStats }

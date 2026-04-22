@@ -3,39 +3,21 @@ import {
   CERTIFICATION_COLORS,
   INTENTION_CONFIG,
   type IntentionType,
-} from '../taxonomy/intentions'
-import { calculateLevel } from '../level/calculation'
+} from '../config/intentions'
+import { calculateLevel } from '../lib/level/calculation'
 
 // ── Input contract ───────────────────────────────────────────────────────
 
-/**
- * Normalised activity row consumed by {@link buildIntentionGroups}. Callers
- * adapt their own activity types (explorer's `useAllActivity`, extension's
- * `useIntentionGroups`, etc.) into this shape before passing it in.
- */
 export interface IntentionActivityInput {
-  /** Domain / host string the activity refers to — e.g. `github.com`. */
   domain: string
-  /** All intent types associated with the underlying URL. */
   intents: IntentionType[]
-  /** Topic / domain tags of the URL (used when sorting by `topic`). */
   tags?: string[]
-  /** Whether this activity counts as an on-chain certification. */
   isCertification?: boolean
-  /**
-   * Contribution to the group's total attention time, in seconds. Callers
-   * that have real attention data should sum their own measurements; mock
-   * data providers can generate a deterministic value.
-   */
   attentionSeconds?: number
 }
 
 // ── Output shape ─────────────────────────────────────────────────────────
 
-/**
- * Rolled-up per-domain state derived from one or more activity rows. Matches
- * the shape the extension's bento card renderer expects.
- */
 export interface IntentionGroupWithStats {
   id: string
   domain: string
@@ -53,20 +35,13 @@ export interface IntentionGroupWithStats {
 export type EchoesSort = 'platform' | 'verb' | 'topic'
 
 export interface BuildIntentionGroupsOptions {
-  /** Keep only activities tagged with this topic (id). Set to `'all'` to disable. */
   topicFilter?: string | 'all'
-  /** Keep only activities matching this intent type. Set to `'all'` to disable. */
   verbFilter?: IntentionType | 'all'
-  /** Order the resulting groups. Defaults to `'platform'`. */
   sort?: EchoesSort
 }
 
 // ── Core pure function ───────────────────────────────────────────────────
 
-/**
- * Bucket activities by domain, compute certification/level stats, and
- * return the sorted list. Pure function — callers can memoise as needed.
- */
 export function buildIntentionGroups(
   activities: readonly IntentionActivityInput[],
   opts: BuildIntentionGroupsOptions = {},
@@ -109,7 +84,6 @@ export function buildIntentionGroups(
     }
   }
 
-  // Derive level + dominant predicate per group.
   for (const g of groups.values()) {
     g.level = calculateLevel(g.certifiedCount + Math.floor(g.activeUrlCount / 2))
     const dominant = pickDominantIntent(g)
@@ -130,8 +104,6 @@ export function buildIntentionGroups(
       break
     }
     case 'topic': {
-      // Topic sort uses the most frequent tag across the group's activities;
-      // the caller is responsible for populating `tags` on inputs.
       const topicKey = (g: IntentionGroupWithStats, lookup: Map<string, string[]>): string => {
         const tagCounts = new Map<string, number>()
         for (const u of g.urls) {
@@ -142,7 +114,6 @@ export function buildIntentionGroups(
         const top = [...tagCounts.entries()].sort((a, b) => b[1] - a[1])[0]
         return top ? top[0] : 'zz'
       }
-      // Build lookup from activities (only path that knows tags).
       const lookup = new Map<string, string[]>()
       for (const a of activities) {
         if (a.tags && a.tags.length > 0) lookup.set(a.domain, a.tags)
@@ -157,20 +128,12 @@ export function buildIntentionGroups(
 
 // ── React hook ───────────────────────────────────────────────────────────
 
-/**
- * React-friendly wrapper around {@link buildIntentionGroups} — memoised on
- * the activity list and the options. Use directly from components that need
- * the bento grid data.
- */
 export function useIntentionGroups(
   activities: readonly IntentionActivityInput[],
   opts: BuildIntentionGroupsOptions = {},
 ): IntentionGroupWithStats[] {
   return useMemo(
     () => buildIntentionGroups(activities, opts),
-    // Deps are the individual scalar fields of `opts` — intentional. Passing
-    // the full object would force a new reference per render in callers that
-    // build `opts` inline. Do NOT re-add `opts` to the dep list.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [activities, opts.topicFilter, opts.verbFilter, opts.sort],
   )
@@ -178,7 +141,6 @@ export function useIntentionGroups(
 
 // ── Pure helpers re-used by consumers ────────────────────────────────────
 
-/** Return the intent with the highest breakdown count, or null. */
 export function pickDominantIntent(
   g: Pick<IntentionGroupWithStats, 'certificationBreakdown'>,
 ): IntentionType | null {
@@ -190,7 +152,6 @@ export function pickDominantIntent(
   return best ? best[0] : null
 }
 
-/** Return the hex color for the dominant intent, or a neutral fallback. */
 export function pickDominantColor(
   g: Pick<IntentionGroupWithStats, 'certificationBreakdown'>,
   fallback = '#C7866C',
