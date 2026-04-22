@@ -175,26 +175,38 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
       <NavSection title="Quick Access">{quickLinks.map(renderItem)}</NavSection>
 
       {authenticated ? (
-        <NavSection title="Trust Circle">
+        <NavSection title="Circles">
           {trustLoading ? (
             <p className="ns-tc-empty">Loading…</p>
           ) : trustCircle.length === 0 ? (
             <p className="ns-tc-empty">No accounts yet.</p>
           ) : (
-            <div className="ns-tc-list">
-              {trustCircle.slice(0, 6).map((a, i) => (
-                <div key={a.termId} className="ns-tc-item" title={`${a.label} — ${a.trustAmount.toFixed(4)} T`}>
-                  <span className="ns-tc-rank">{i + 1}</span>
-                  <Avatar className="ns-tc-avatar">
-                    {a.image && <AvatarImage src={a.image} alt={a.label} />}
-                    <AvatarFallback className="text-[10px]">
-                      {a.label.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="ns-tc-label">{a.label}</span>
-                  <span className="ns-tc-amount">{a.trustAmount.toFixed(2)}</span>
+            <div className="ns-circles-list">
+              <button
+                type="button"
+                className="ns-circle"
+                title={`Trust Circle — ${trustCircle.length} member${trustCircle.length === 1 ? '' : 's'}`}
+              >
+                <div className="ns-circle-head">
+                  <span className="ns-circle-dot" style={{ background: 'var(--trusted, #6dd4a0)' }} />
+                  <span className="ns-circle-name">Trust Circle</span>
+                  <span className="ns-circle-count">{trustCircle.length}</span>
                 </div>
-              ))}
+                <div className="ns-circle-avatars">
+                  {trustCircle.slice(0, 5).map((a) => (
+                    <Avatar key={a.termId} className="ns-mav">
+                      {a.image && <AvatarImage src={a.image} alt={a.label} />}
+                      <AvatarFallback className="text-[9px]">
+                        {a.label.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                  {trustCircle.length > 5 && (
+                    <span className="ns-mav ns-mav-more">+{trustCircle.length - 5}</span>
+                  )}
+                  <span className="ns-mav ns-mav-add" aria-hidden="true">+</span>
+                </div>
+              </button>
             </div>
           )}
         </NavSection>

@@ -1,6 +1,8 @@
-/* ── Trust Circle — compact rows inside the left NavSidebar ─────────
- * Scoped to .ns-tc-* so it doesn't collide with the old .pd-circle-*
- * rules from ProfileDrawer. Designed for the 248px-wide nav rail.
+/* ── Circles inside NavSidebar (proto-aligned) ─────────────────────
+ * One grouped card per circle: dot + name + count on top, overlapping
+ * avatar stack + '+N' overflow + add button below. Ported from
+ * proto-explorer/src/styles.css .circle / .c-head / .c-avatars / .mav.
+ * Scoped to .ns-* so it coexists with .ns-tool-* and .ns-auth-*.
  */
 
 .ns-tc-empty {
@@ -10,69 +12,108 @@
   color: var(--ds-muted);
 }
 
-.ns-tc-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 220px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--ds-border) transparent;
-}
-.ns-tc-list::-webkit-scrollbar {
-  width: 4px;
-}
-.ns-tc-list::-webkit-scrollbar-thumb {
-  background: var(--ds-border);
-  border-radius: 999px;
-}
-.ns-tc-list::-webkit-scrollbar-track {
-  background: transparent;
+.ns-circles-list {
+  display: grid;
+  gap: 4px;
 }
 
-.ns-tc-item {
-  display: grid;
-  grid-template-columns: 16px 24px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 8px;
+.ns-circle {
+  padding: 10px 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
   transition: background 0.15s ease;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  font: inherit;
 }
-.ns-tc-item:hover {
+.ns-circle:hover {
   background: var(--ds-bg-subtle);
 }
 
-.ns-tc-rank {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--ds-muted);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
-
-.ns-tc-avatar {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-}
-
-.ns-tc-label {
+.ns-circle-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   font-weight: 600;
   color: var(--ds-ink);
+  margin-bottom: 8px;
+}
+
+.ns-circle-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ns-circle-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  flex: 1;
+  text-align: left;
 }
 
-.ns-tc-amount {
+.ns-circle-count {
+  margin-left: auto;
   font-family: "JetBrains Mono", monospace;
   font-size: 9px;
-  font-weight: 700;
   color: var(--ds-muted);
-  letter-spacing: 0.02em;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.ns-circle-avatars {
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+}
+
+.ns-mav {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--ds-card);
+  margin-left: -5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  font-weight: 700;
+  color: #02000e;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.ns-mav:first-child {
+  margin-left: 0;
+}
+
+.ns-mav-more {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+  font-size: 8px;
+}
+[data-theme="dark"] .ns-mav-more,
+.dark .ns-mav-more {
+  background: var(--ds-border);
+}
+
+.ns-mav-add {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  cursor: default;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  margin-left: 4px;
 }
