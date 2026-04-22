@@ -7,12 +7,11 @@ import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import { useReputationScores } from '@/hooks/useReputationScores'
 import { useSignals } from '@/hooks/useSignals'
 import { useTopicCertifications } from '@/hooks/useTopicCertifications'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
-import { InterestHero, SectionTitle, PlatformsGrid, PlatformCard, PlatformAddCard, PlatformSkeleton } from '@0xsofia/design-system'
+import { InterestHero, SectionTitle, PlatformsGrid, PlatformCard, PlatformAddCard, PlatformSkeleton, FaviconWrapper } from '@0xsofia/design-system'
 import { getTopicEmoji } from '@/config/topicEmoji'
+import { INTENTION_COLORS_BY_LABEL, LABEL_TO_INTENTION, displayLabelToIntentionType } from '@/config/intentions'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/interest-page.css'
 
@@ -31,7 +30,14 @@ export default function InterestPage() {
   const topicScore = scores?.topics.find((d) => d.topicId === topicId)
 
   const walletAddress = user?.wallet?.address
-  const { certifications, loading: certsLoading } = useTopicCertifications(topicId, walletAddress)
+  const { certifications: allCertifications, loading: certsLoading } = useTopicCertifications(topicId, walletAddress)
+
+  // Only show certifications the user personally made: the service query
+  // filters positions to the wallet address via _ilike, so a non-empty
+  // certifiers array means the user holds shares on this cert triple.
+  const certifications = walletAddress
+    ? allCertifications.filter((c) => c.certifiers.length > 0)
+    : []
 
   const platforms = topicId ? getPlatformsByTopic(topicId) : []
   const connectedPlatforms = platforms.filter((p) => getStatus(p.id) === 'connected')
@@ -93,33 +99,48 @@ export default function InterestPage() {
           {certsLoading ? (
             <div className="ip-loader"><SofiaLoader size={48} /></div>
           ) : certifications.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No certifications in this topic yet.</p>
+            <p className="text-sm text-muted-foreground">You haven't certified any URL in this topic yet.</p>
           ) : (
             <div className="ip-certs-grid">
-              {certifications.map((cert) => (
-                <Card key={cert.termId} className="ip-cert-card">
-                  <a href={`https://${cert.domain}`} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                    <img
+              {certifications.map((cert) => {
+                const intentLabel =
+                  LABEL_TO_INTENTION[cert.intention.trim().toLowerCase()] ?? cert.intention
+                const intentColor =
+                  INTENTION_COLORS_BY_LABEL[intentLabel] ?? 'var(--ds-muted)'
+                const intentSlug = displayLabelToIntentionType(intentLabel)
+                return (
+                  <a
+                    key={cert.termId}
+                    className="ip-cert-card"
+                    href={cert.url || `https://${cert.domain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ ['--cert-color' as string]: intentColor }}
+                  >
+                    <FaviconWrapper
+                      size={36}
                       src={cert.favicon}
-                      alt=""
-                      className="h-8 w-8 rounded-lg bg-muted hover:opacity-80 transition-opacity"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      alt={cert.domain}
+                      className="ip-cert-fav"
                     />
+                    <div className="ip-cert-meta">
+                      <span className="ip-cert-title">{cert.domain || cert.platformLabel}</span>
+                      {intentSlug ? (
+                        <span className={`fc-verb-tag ${intentSlug} ip-cert-verb`}>{intentLabel}</span>
+                      ) : (
+                        <span className="ip-cert-verb-plain">{intentLabel}</span>
+                      )}
+                    </div>
+                    <div className="ip-cert-right">
+                      <span className="ip-cert-holders">{cert.positionCount}</span>
+                      <span className="ip-cert-holders-label">holders</span>
+                    </div>
+                    <span className="ip-cert-link" aria-hidden="true">
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </span>
                   </a>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{cert.domain || cert.platformLabel}</p>
-                    <p className="text-xs text-muted-foreground">{cert.intention}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant="secondary" className="text-xs">{cert.positionCount} holders</Badge>
-                    {cert.url && (
-                      <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    )}
-                  </div>
-                </Card>
-              ))}
+                )
+              })}
             </div>
           )}
         </section>
