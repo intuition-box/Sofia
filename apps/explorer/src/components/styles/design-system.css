@@ -21,6 +21,8 @@
 @import "@0xsofia/design-system/styles/topic-picker.css";
 @import "@0xsofia/design-system/styles/niche-chips.css";
 @import "@0xsofia/design-system/styles/platforms-grid.css";
+@import "@0xsofia/design-system/styles/section-h2.css";
+@import "@0xsofia/design-system/styles/echoes-sort-tabs.css";
 
 /* ── Explorer-specific positioning of the design-system nav sidebar ── */
 /* The shared .nav-sidebar stylesheet is layout-agnostic. Explorer lays it

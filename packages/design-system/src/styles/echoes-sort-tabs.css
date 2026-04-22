@@ -1,0 +1,42 @@
+/**
+ * Echoes sort tabs — pill-shaped segmented control.
+ * Ported 1:1 from proto-explorer/src/styles/profile.css:1184-1217.
+ */
+
+.pf-echoes-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pf-echoes-sort {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: var(--ds-card);
+}
+
+.pf-sort-btn {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--ds-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pf-sort-btn:hover {
+  color: var(--ds-ink);
+}
+.pf-sort-btn.active {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+}

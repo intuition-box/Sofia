@@ -28,7 +28,9 @@
     "./styles/sub-header.css": "./src/styles/sub-header.css",
     "./styles/topic-picker.css": "./src/styles/topic-picker.css",
     "./styles/niche-chips.css": "./src/styles/niche-chips.css",
-    "./styles/platforms-grid.css": "./src/styles/platforms-grid.css"
+    "./styles/platforms-grid.css": "./src/styles/platforms-grid.css",
+    "./styles/section-h2.css": "./src/styles/section-h2.css",
+    "./styles/echoes-sort-tabs.css": "./src/styles/echoes-sort-tabs.css"
   },
   "files": [
     "src"

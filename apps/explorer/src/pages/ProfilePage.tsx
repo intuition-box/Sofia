@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePrivy, useLogin, useLinkAccount } from '@privy-io/react-auth'
 import { useViewAs } from '@/hooks/useViewAs'
@@ -14,7 +15,7 @@ import TopClaimsSection from '../components/profile/TopClaimsSection'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Wallet, User } from 'lucide-react'
-import { PageHero, SectionTitle } from '@0xsofia/design-system'
+import { PageHero, SectionTitle, SectionH2, EchoesSortTabs, type EchoesSortKey } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
@@ -53,12 +54,18 @@ export default function ProfilePage() {
 
   const pc = PAGE_COLORS['/profile']
   const shortAddr = address ? address.slice(0, 6) + '...' + address.slice(-4) : ''
+  const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
+  const heroDescription = isViewingAs
+    ? 'Viewing profile'
+    : address
+      ? `Your on-chain footprint at ${shortAddr}.`
+      : pc.subtitle
 
   return (
     <div className="pf-view page-enter">
       <PageHero
         title={isViewingAs ? shortAddr : pc.title}
-        description={isViewingAs ? 'Viewing profile' : pc.subtitle}
+        description={heroDescription}
         background={pc.color}
       />
 
@@ -118,13 +125,17 @@ export default function ProfilePage() {
           />
         </section>
 
-        {/* Last Activity */}
+        {/* Echoes */}
         <section className="pp-section">
-          <SectionTitle>Last Activity</SectionTitle>
+          <div className="pf-echoes-head">
+            <SectionH2>Echoes</SectionH2>
+            <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
+          </div>
           <LastActivitySection
             items={activityItems}
             loading={activityLoading}
             walletAddress={address}
+            sort={echoesSort}
           />
         </section>
 

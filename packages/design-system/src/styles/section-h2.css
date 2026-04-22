@@ -1,0 +1,15 @@
+/**
+ * H2 section heading — Fraunces 28px 800 SOFT:30.
+ * Ported 1:1 from proto-explorer/src/styles/profile.css:1012-1021.
+ */
+
+.pf-section-h2 {
+  font-family: "Fraunces", serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0 0 4px;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}

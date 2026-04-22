@@ -21,6 +21,8 @@ interface LastActivitySectionProps {
   items: CircleItem[]
   loading: boolean
   walletAddress: string
+  /** Sort strategy — defaults to `platform`. Proto offers `platform | verb | topic`. */
+  sort?: 'platform' | 'verb' | 'topic'
 }
 
 /** Map a filtered CircleItem into the hook's activity input shape. */
@@ -70,7 +72,7 @@ function toCardProps(g: IntentionGroupWithStats) {
   }
 }
 
-export default function LastActivitySection({ items, loading }: LastActivitySectionProps) {
+export default function LastActivitySection({ items, loading, sort = 'platform' }: LastActivitySectionProps) {
   const activities = useMemo<IntentionActivityInput[]>(() => {
     const certifications = items.filter(
       (item) => !item.intentions.some((i) => i.startsWith('quest:')),
@@ -80,7 +82,7 @@ export default function LastActivitySection({ items, loading }: LastActivitySect
       .filter((x): x is IntentionActivityInput => x !== null)
   }, [items])
 
-  const groups = useIntentionGroups(activities, { sort: 'platform' })
+  const groups = useIntentionGroups(activities, { sort })
 
   if (loading) {
     return (
