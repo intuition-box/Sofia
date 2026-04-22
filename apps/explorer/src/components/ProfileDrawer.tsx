@@ -209,7 +209,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
           <button
             type="button"
             className="pd-ts-view-btn"
-            onClick={() => navigate('/profile/scores')}
+            onClick={() => navigate('/scores')}
           >
             <span>{percentileLabel}</span>
             <span className="pd-ts-view-arrow">→</span>

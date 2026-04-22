@@ -36,10 +36,10 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
     subtitle: 'Your reputation overview',
     glow: 'rgba(255,198,176,0.4)',
   },
-  '/profile/scores': {
+  '/scores': {
     color: '#5CC4D6',
     title: 'My Stats',
-    subtitle: 'Your reputation statistics',
+    subtitle: 'How your reputation score adds up',
     glow: 'rgba(92,196,214,0.4)',
   },
   '/profile/platforms': {
