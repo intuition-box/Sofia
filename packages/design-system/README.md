@@ -53,6 +53,10 @@ import {
   QUEST_BADGES,
   type QuestBadge,
 
+  // Topic emoji
+  TOPIC_EMOJI,
+  getTopicEmoji,
+
   // Level math + colors
   LEVEL_THRESHOLDS,
   calculateLevel,
@@ -143,6 +147,7 @@ packages/design-system/
     │   ├── intentions.ts     # INTENTION_CONFIG (8 types) + helpers
     │   ├── predicates.ts     # PREDICATE_IDS + label lookups
     │   ├── quests.ts         # QUEST_BADGES catalog
+    │   ├── topic-emoji.ts    # TOPIC_EMOJI per canonical slug + getTopicEmoji
     │   └── index.ts
     ├── level/
     │   ├── calculation.ts    # LEVEL_THRESHOLDS, calculateLevel*

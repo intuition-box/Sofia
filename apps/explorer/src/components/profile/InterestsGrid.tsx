@@ -3,6 +3,7 @@ import {
   InterestsGrid as DsInterestsGrid,
   InterestCard,
   AddInterestCard,
+  getTopicEmoji,
 } from '@0xsofia/design-system'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import type { TopicScore } from '@/types/reputation'
@@ -54,12 +55,15 @@ export default function InterestsGrid({
           { value: score?.platformCount ?? 0, label: 'Platforms' },
         ]
 
+        const emoji = getTopicEmoji(topicId)
+
         return (
           <InterestCard
             key={topicId}
             as="button"
             topicColor={topic.color}
             topicLabel={topic.label}
+            visual={emoji ? <span className="ig-card-emoji">{emoji}</span> : undefined}
             subLabel={subLabel}
             stats={stats}
             onClick={() => navigate(`/profile/interest/${topicId}`)}
