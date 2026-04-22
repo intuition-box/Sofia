@@ -9,11 +9,13 @@ import { useSignals } from '../hooks/useSignals'
 import { useShareProfile } from '../hooks/useShareProfile'
 import { useTrustScore } from '../hooks/useTrustScore'
 import { useTaxonomy } from '../hooks/useTaxonomy'
+import { useUserActivity } from '../hooks/useUserActivity'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
+import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { Address } from 'viem'
 import './styles/profile-drawer.css'
 
@@ -87,6 +89,15 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustScore, signals)
   const topicScores = scores?.topics ?? []
   const { topicById } = useTaxonomy()
+  const { items: activityItems } = useUserActivity(address || undefined)
+
+  // Last Activity — restrict to support/oppose events for now (items whose
+  // predicate resolved to Trusted or Distrusted). Sorted newest-first, top 10.
+  const lastActivity = activityItems
+    .filter((it) =>
+      it.intentions.some((i) => i === 'Trusted' || i === 'Distrusted'),
+    )
+    .slice(0, 10)
 
   const {
     isModalOpen,
@@ -217,6 +228,66 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
                     <span className="pd-badge-value">{b.value}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Last Activity — support/oppose only for now */}
+          {lastActivity.length > 0 && (
+            <div className="pd-section">
+              <p className="pd-section-title">Last activity</p>
+              <div className="pd-la-list">
+                {lastActivity.map((a) => {
+                  const isOppose = a.intentions.includes('Distrusted')
+                  const actionLabel = isOppose ? 'Opposed' : 'Supported'
+                  const root = extractDomain(a.url || '') || a.domain
+                  return (
+                    <a
+                      key={a.id}
+                      className="pd-la-row"
+                      href={a.url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className="pd-la-anchor">
+                        <span className="favicon" style={{ ['--fav-size' as string]: '32px' }}>
+                          {a.favicon ? (
+                            <img
+                              src={a.favicon}
+                              alt=""
+                              onError={(e) => {
+                                ;(e.target as HTMLImageElement).style.display = 'none'
+                              }}
+                            />
+                          ) : null}
+                        </span>
+                        <span
+                          className={`pd-la-badge ${isOppose ? 'oppose' : 'support'}`}
+                          aria-hidden="true"
+                        >
+                          {isOppose ? (
+                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 6 6 18" />
+                              <path d="M6 6l12 12" />
+                            </svg>
+                          ) : (
+                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </span>
+                      </span>
+                      <span className="pd-la-text">
+                        <span className="pd-la-title">
+                          {actionLabel} <strong>{a.title}</strong>
+                        </span>
+                        <span className="pd-la-sub">
+                          {root}{root ? ' · ' : ''}{timeAgo(a.timestamp)}
+                        </span>
+                      </span>
+                    </a>
+                  )
+                })}
               </div>
             </div>
           )}
