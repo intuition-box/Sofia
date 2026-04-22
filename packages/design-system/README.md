@@ -13,8 +13,8 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | Package scaffold (`package.json`, `tsconfig.json`, `index.ts`) | ✅ Done | Raw TS source, peer deps, `sideEffects: ["**/*.css"]` |
 | `src/taxonomy/` — intentions, predicates, quests | ✅ Done | Consolidates extension + explorer configs |
 | `src/level/` — level thresholds and progress math | ✅ Done | Ported from extension |
-| `src/theme.css` + `src/styles/` | ⏳ Next | Tokens + bento/favicon/verb-tag CSS |
-| `src/components/` — primitives (`FaviconWrapper`, `VerbTag`, `UserBadge`) | ⏳ Pending | |
+| `src/theme.css` + `src/styles/` | ✅ Done | Tokens (light/dark + predicate colors) + bento/favicon/verb-tag CSS |
+| `src/components/` — primitives (`FaviconWrapper`, `VerbTag`, `UserBadge`) | ⏳ Next | |
 | `src/components/GroupBentoCard` + `src/hooks/useIntentionGroups` | ⏳ Pending | |
 | Explorer migration (pilot: `LastActivitySection`) | ⏳ Pending | |
 
@@ -92,12 +92,26 @@ packages/design-system/
 ├── README.md                 # this file
 └── src/
     ├── index.ts              # barrel — re-exports taxonomy + level
+    ├── theme.css             # light/dark tokens + predicate color vars
     ├── taxonomy/
     │   ├── intentions.ts     # INTENTION_CONFIG (8 types) + helpers
     │   ├── predicates.ts     # PREDICATE_IDS + label lookups
     │   ├── quests.ts         # QUEST_BADGES catalog
     │   └── index.ts
-    └── level/
-        ├── calculation.ts    # LEVEL_THRESHOLDS, calculateLevel*
-        └── index.ts
+    ├── level/
+    │   ├── calculation.ts    # LEVEL_THRESHOLDS, calculateLevel*
+    │   └── index.ts
+    └── styles/
+        ├── favicon.css       # .favicon reusable wrapper
+        ├── verb-tag.css      # .fc-verb-tag pill (8 intent variants)
+        └── bento.css         # .triples-container / .bento-grid / .group-bento-card
 ```
+
+## Stylesheets exposed
+
+| Entry | Selector highlights |
+|-------|---------------------|
+| `@0xsofia/design-system/theme.css` | `:root` / `[data-theme="dark"]` — surfaces, text, accent, predicate colors (`--trusted`, `--work`, …), `--shadow-card`, `--radius` |
+| `@0xsofia/design-system/styles/favicon.css` | `.favicon` (scale via `--fav-size`) |
+| `@0xsofia/design-system/styles/verb-tag.css` | `.fc-verb-tag.{trusted\|distrusted\|work\|learning\|fun\|inspiration\|buying\|music}` |
+| `@0xsofia/design-system/styles/bento.css` | `.triples-container`, `.groups-section`, `.bento-grid`, `.bento-grid-3`, `.bento-card` (`.bento-small\|.bento-tall\|.bento-mega`), `.group-bento-card` (`.can-level-up`), `.group-bento-header`, `.group-bento-favicon`, `.group-bento-domain-info`, `.group-bento-title`, `.group-bento-predicate`, `.group-bento-level`, `.level-badge`, `.group-bento-stats` (`.stat-item` / `.stat-value` / `.stat-label`), `.group-bento-progress`, `.progress-bar-container` / `.progress-bar-fill` / `.progress-label`, `.certification-dots` / `.cert-dot`, `.groups-empty` |

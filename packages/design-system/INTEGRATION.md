@@ -138,6 +138,12 @@ These do NOT affect explorer, but must be addressed when the extension consumes 
 - Base: `origin/dev` (after Wave 3 merge — see preflight #1)
 - Merge target: `dev` (PR when `LastActivitySection` migration is green AND design has signed off on palette — see preflight #6)
 
+### Commit conventions
+
+- **Each commit runs `bun run --filter @0xsofia/design-system typecheck` before landing.**
+- **`README.md` is refreshed in the same commit** whenever a new submodule (taxonomy, level, styles, components, hooks) lands or its surface changes. The README's status table and "Stylesheets exposed" / directory layout sections are the authoritative view of what ships.
+- Commits are split by layer (scaffold → taxonomy → level → styles → primitives → composites → explorer migration). Never mix two layers in one commit.
+
 ### Commit split (target)
 1. `chore(design-system): scaffold package` — package.json, tsconfig, folder skeleton, INTEGRATION.md
 2. `feat(design-system): consolidate intention taxonomy` — superset merge of extension + explorer configs
