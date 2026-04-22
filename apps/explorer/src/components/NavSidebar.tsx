@@ -143,7 +143,7 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
       <div className="ns-toolbar" role="toolbar" aria-label="Quick actions">
         <button
           type="button"
-          className="ns-tool-btn"
+          className={`ns-tool-btn${cart.count > 0 ? ' ns-tool-btn--filled' : ''}`}
           onClick={onCartClick}
           aria-label="Cart"
           title="Cart"

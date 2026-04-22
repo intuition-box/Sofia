@@ -37,6 +37,20 @@
   color: var(--ds-ink);
 }
 
+/* Filled state — applied to the cart button when cart.count > 0 so the
+   basket visibly flags it has items. Echoes the peach accent used by
+   the 'Start your journey' CTA. */
+.ns-tool-btn--filled {
+  background: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-card));
+  border-color: var(--ds-accent);
+  color: var(--ds-accent-ink);
+}
+.ns-tool-btn--filled:hover {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-on-accent);
+}
+
 .ns-tool-badge {
   position: absolute;
   top: -5px;
