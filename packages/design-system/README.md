@@ -34,6 +34,7 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | Profile drawer overlap fix | ✅ Done | `.main-content--profile { margin-right: 400px }` to match `ProfileDrawer`'s 400px width; all `/profile*` routes wrap content + hero inside `.pf-view` so nothing bleeds under the drawer. |
 | `<TopicPicker>` + `<TopicCard>` | ✅ Done | Grid of topic cards (emoji + Fraunces label + topic-colored active + checkmark + disabled). 1:1 proto port. Adopted on `DomainSelector` (inside `DomainSelectionPage`). |
 | `<NicheChips>` + `<NicheChip>` | ✅ Done | Pill-shaped toggle chips (sm/lg variants). 1:1 proto port. Adopted on `NicheSelector` (inside `NicheSelectionPage` + `DomainNicheSelectionPage`). |
+| `<PlatformsGrid>` + `<PlatformCard>` + `<PlatformAddCard>` + `<PlatformSkeleton>` | ✅ Done | Platform card grid ported 1:1 from proto `.pf-platform-*`. Favicon 36px rounded + name + JetBrains Mono status + connected green tint + dashed Connect/Skeleton slots. Adopted on `InterestPage`. `PlatformGrid` in `PlatformConnectionPage` kept local for now — it has auth/verify/disconnect flows beyond proto scope. |
 
 ## Usage
 

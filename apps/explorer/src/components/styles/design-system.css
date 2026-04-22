@@ -20,6 +20,7 @@
 @import "@0xsofia/design-system/styles/sub-header.css";
 @import "@0xsofia/design-system/styles/topic-picker.css";
 @import "@0xsofia/design-system/styles/niche-chips.css";
+@import "@0xsofia/design-system/styles/platforms-grid.css";
 
 /* ── Explorer-specific positioning of the design-system nav sidebar ── */
 /* The shared .nav-sidebar stylesheet is layout-agnostic. Explorer lays it

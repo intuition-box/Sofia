@@ -126,9 +126,10 @@ Page-by-page map of every explorer route. Each page lists:
 | DS: helpers | `getTopicEmoji`, `SubHeader` (NOT used here — hero is dominant) |
 | Explorer page | `apps/explorer/src/pages/InterestPage.tsx` |
 | Explorer local components | `NicheDetailList.tsx`, `TrendingCard.tsx`, `PositionBoardDialog.tsx`, `ScoreExplanationDialog.tsx` |
-| Explorer CSS | `apps/explorer/src/components/styles/interest-page.css` (`.ip-stats-grid`, `.ip-stat-card`, `.ip-platforms-grid`, `.ip-platform-card`, `.ip-claims-grid`, `.ip-claim-card`, `.ip-certs-grid`, `.ip-cert-card`, `.ip-trending-grid`) |
+| DS: platforms grid | `<PlatformsGrid>` + `<PlatformCard>` + `<PlatformAddCard>` + `<PlatformSkeleton>` |
+| Explorer CSS | `apps/explorer/src/components/styles/interest-page.css` (`.ip-stats-grid`, `.ip-stat-card`, `.ip-claims-grid`, `.ip-claim-card`, `.ip-certs-grid`, `.ip-cert-card`, `.ip-trending-grid`) — `.ip-platform-*` rules removed |
 | Hooks | `useDomainTrending`, `useDomainClaims`, `useTopicCertifications`, `usePlatformCatalog`, `useCart` |
-| TODO | ⬜ port `.ip-platform-card` → DS `<PlatformCard>` · ⬜ port `.ip-cert-card` → DS `<CertifiedUrlRow>` (proto uses `urlCard.ts` compact tier) · 🟡 decide if Stats/Categories/Trending/Claims sections should stay (proto only has Platforms + Certified) |
+| TODO | ⬜ port `.ip-cert-card` → DS `<CertifiedUrlRow>` (proto uses `urlCard.ts` compact tier) · 🟡 decide if Stats/Categories/Trending/Claims sections should stay (proto only has Platforms + Certified) |
 
 ### `/profile/topics` → `DomainSelectionPage`
 

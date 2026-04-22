@@ -27,7 +27,8 @@
     "./styles/interest-hero.css": "./src/styles/interest-hero.css",
     "./styles/sub-header.css": "./src/styles/sub-header.css",
     "./styles/topic-picker.css": "./src/styles/topic-picker.css",
-    "./styles/niche-chips.css": "./src/styles/niche-chips.css"
+    "./styles/niche-chips.css": "./src/styles/niche-chips.css",
+    "./styles/platforms-grid.css": "./src/styles/platforms-grid.css"
   },
   "files": [
     "src"

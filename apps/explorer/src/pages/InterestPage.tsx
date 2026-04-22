@@ -16,8 +16,8 @@ import { useCart } from '@/hooks/useCart'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, ThumbsUp, ThumbsDown, Plus, ExternalLink, Info } from 'lucide-react'
-import { InterestHero, SectionTitle, getTopicEmoji } from '@0xsofia/design-system'
+import { ArrowLeft, ThumbsUp, ThumbsDown, ExternalLink, Info } from 'lucide-react'
+import { InterestHero, SectionTitle, PlatformsGrid, PlatformCard, PlatformAddCard, PlatformSkeleton, getTopicEmoji } from '@0xsofia/design-system'
 import NicheDetailList from '@/components/profile/NicheDetailList'
 import TrendingCard from '@/components/TrendingCard'
 import PositionBoardDialog from '@/components/profile/PositionBoardDialog'
@@ -167,31 +167,21 @@ export default function InterestPage() {
         {/* Platforms */}
         <section className="ip-section">
           <SectionTitle>Platforms ({connectedPlatforms.length}/{platforms.length})</SectionTitle>
-          <div className="ip-platforms-grid">
+          <PlatformsGrid>
             {connectedPlatforms.map((p) => (
-              <Card key={p.id} className="ip-platform-card ip-platform-connected">
-                <div className="ip-platform-header">
-                  <img
-                    src={`/favicons/${p.id}.png`}
-                    alt=""
-                    className="ip-platform-icon"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                  />
-                  <span className="ip-platform-name">{p.name}</span>
-                </div>
-                <span className="ip-platform-status ip-platform-on">Connected</span>
-              </Card>
+              <PlatformCard
+                key={p.id}
+                faviconSrc={`/favicons/${p.id}.png`}
+                name={p.name}
+                status="Connected"
+                connected
+              />
             ))}
-            <Card className="ip-platform-add" onClick={() => navigate(`/profile/interest/${topicId}/platforms`)}>
-              <Plus className="ip-platform-add-icon" />
-              <span className="ip-platform-add-label">Connect</span>
-            </Card>
+            <PlatformAddCard onClick={() => navigate(`/profile/interest/${topicId}/platforms`)} />
             {Array.from({ length: Math.max(0, 11 - connectedPlatforms.length) }, (_, i) => (
-              <div key={`skel-${i}`} className="ip-platform-skeleton">
-                <span className="ip-skeleton-label">Connect platform</span>
-              </div>
+              <PlatformSkeleton key={`skel-${i}`} label="Connect platform" />
             ))}
-          </div>
+          </PlatformsGrid>
         </section>
 
         {/* Claims / Vote */}
