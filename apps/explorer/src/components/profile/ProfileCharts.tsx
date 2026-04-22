@@ -25,6 +25,9 @@ import { useMemo, useState } from 'react'
 import type { TopClaim } from '@/hooks/useTopClaims'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
+import { usePlatformConnections } from '@/hooks/usePlatformConnections'
+import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
+import type { TopicScore } from '@/types/reputation'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import { buildSyntheticCalendarSeries, type CalendarTopicSeries } from '@/lib/activityCalendar'
 import { buildSyntheticVerbSeries, type RadarTopicAxis, type VerbFilter } from '@/lib/radar'
@@ -34,6 +37,7 @@ import TopClaimsSection from './TopClaimsSection'
 import ActivityCalendar from './ActivityCalendar'
 import RadarChart from './RadarChart'
 import TopPlatforms, { type TopPlatformStat } from './TopPlatforms'
+import ProfileDetailsPanel, { type ProfileTopicStats } from './ProfileDetailsPanel'
 import '../styles/profile-charts.css'
 
 interface ProfileChartsProps {
@@ -43,6 +47,10 @@ interface ProfileChartsProps {
   hideplatformPositions?: boolean
   /** Selected topic slugs — drives the calendar legend + radar axes. */
   selectedTopics?: string[]
+  /** Selected category ids — used by the details panel stats. */
+  selectedCategories?: string[]
+  /** Topic reputation scores — fed into the details panel "Topic Score" row. */
+  topicScores?: TopicScore[]
 }
 
 export default function ProfileCharts({
@@ -51,9 +59,13 @@ export default function ProfileCharts({
   walletAddress,
   hideplatformPositions,
   selectedTopics = [],
+  selectedCategories = [],
+  topicScores = [],
 }: ProfileChartsProps) {
   const { topicById } = useTaxonomy()
   const { markets } = usePlatformMarket()
+  const { getStatus } = usePlatformConnections()
+  const { getPlatformsByTopic } = usePlatformCatalog()
   const showcaseClaims = topClaims.slice(0, 1)
 
   const [verbFilter, setVerbFilter] = useState<VerbFilter>('all')
@@ -80,6 +92,42 @@ export default function ProfileCharts({
   // Radar series: synthetic for now; real source (user's intention counts by
   // topic) will be wired from useUserActivity / useTopicCertifications.
   const verbSeries = useMemo(() => buildSyntheticVerbSeries(topicAxes), [topicAxes])
+
+  // Per-topic stats fed into the details panel. Signals + pnl are 0 until
+  // real activity / deposit series are wired; everything else is real.
+  const topicStats: ProfileTopicStats[] = useMemo(() => {
+    const scoreMap = new Map(topicScores.map((s) => [s.topicId, s]))
+    return selectedTopics
+      .map((id) => {
+        const topic = topicById(id)
+        if (!topic) return null
+        const categoriesCount = topic.categories.filter((c) =>
+          selectedCategories.includes(c.id),
+        ).length
+        const platforms = getPlatformsByTopic(id) ?? []
+        const platformsCount = platforms.filter((p) => getStatus(p.id) === 'connected').length
+        const score = scoreMap.get(id)
+        return {
+          id,
+          label: topic.label,
+          emoji: getTopicEmoji(id) || '📌',
+          color: topic.color ?? getIntentionColor('inspiration'),
+          categoriesCount,
+          platformsCount,
+          signals: 0,
+          pnl: 0,
+          score: Math.round(score?.score ?? categoriesCount * 5 + platformsCount * 10),
+        }
+      })
+      .filter((x): x is ProfileTopicStats => x !== null)
+  }, [
+    selectedTopics,
+    selectedCategories,
+    topicById,
+    topicScores,
+    getPlatformsByTopic,
+    getStatus,
+  ])
 
   // Calendar series.
   const calendarSeries: CalendarTopicSeries[] = useMemo(
@@ -155,9 +203,11 @@ export default function ProfileCharts({
             onTopicFilterChange={setTopicFilter}
           />
           <div className="pc-main-right">
-            <div className="pc-empty">
-              Topic stats panel — picks up the active topic filter
-            </div>
+            <ProfileDetailsPanel
+              topics={topicStats}
+              topicFilter={topicFilter}
+              onClearFilter={() => setTopicFilter('all')}
+            />
             <div className="pc-main-cal">
               <ActivityCalendar topicSeries={calendarSeries} />
             </div>

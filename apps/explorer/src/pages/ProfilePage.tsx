@@ -119,6 +119,8 @@ export default function ProfilePage() {
           walletAddress={address}
           hideplatformPositions={isViewingAs}
           selectedTopics={selectedTopics}
+          selectedCategories={selectedCategories}
+          topicScores={topicScores}
         />
 
         {/* Echoes */}

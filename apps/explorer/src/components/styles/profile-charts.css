@@ -533,3 +533,113 @@
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+
+/* ── Details panel ───────────────────────────────────────────────── */
+/* Ported from proto profile-charts.css:247-361. */
+
+.pc-details {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.pc-details-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pc-details-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-muted);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 1;
+}
+.pc-details-clear:hover {
+  border-color: var(--topic-color, var(--ds-ink-soft));
+  color: var(--topic-color, var(--ds-ink));
+}
+
+.pc-details-title {
+  font-family: "Fraunces", serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--topic-color, var(--ds-ink));
+}
+
+.pc-details-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pc-details-score {
+  font-family: "Fraunces", serif;
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}
+.pc-details-score-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.pc-details-delta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+.pc-details-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px dashed var(--ds-border-soft);
+}
+.pc-details-row:first-child {
+  border-top: none;
+}
+.pc-details-row-label {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.pc-details-row-value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+}
