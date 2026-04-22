@@ -1,21 +1,38 @@
 /**
- * Radar chart helpers — verb series + synthetic fallback.
- * Ported from proto-explorer/src/components/profileCharts.ts:99-133.
+ * Radar chart helpers — generic axes + series model.
+ *
+ * The chart has two symmetric roles:
+ *   - `axes`: the spokes (one per axis item, emoji labels at the rim)
+ *   - `series`: one polygon per series, each with counts keyed by axis id
+ *
+ * Either shape can play either role — e.g. on /profile we now draw topic
+ * polygons over verb axes; the old flavour drew verb polygons over topic
+ * axes. Both `RadarAxis` and `RadarSeries` carry the same metadata so
+ * the semantics are defined by the caller.
  */
 import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
 
 export type RadarVerbId = Exclude<IntentionType, 'trusted' | 'distrusted'>
-export type VerbFilter = 'all' | RadarVerbId
+export type SeriesFilter = 'all' | string
 
-export interface RadarVerb {
-  id: RadarVerbId
+export interface RadarAxis {
+  id: string
   label: string
   emoji: string
   color: string
 }
 
+export interface RadarSeries extends RadarAxis {
+  /** Counts keyed by axis id (the spokes). */
+  counts: Record<string, number>
+}
+
+/** Backwards-compat aliases — old code may still import these names. */
+export type RadarTopicAxis = RadarAxis
+export type VerbFilter = SeriesFilter
+
 /** Six-verb ordering used by the proto radar chart (trust + distrust excluded). */
-export const RADAR_VERBS: readonly RadarVerb[] = [
+export const RADAR_VERBS: readonly RadarAxis[] = [
   { id: 'work',        label: INTENTION_CONFIG.work.label,        emoji: '💼', color: INTENTION_CONFIG.work.color },
   { id: 'learning',    label: INTENTION_CONFIG.learning.label,    emoji: '📚', color: INTENTION_CONFIG.learning.color },
   { id: 'inspiration', label: INTENTION_CONFIG.inspiration.label, emoji: '✨', color: INTENTION_CONFIG.inspiration.color },
@@ -24,39 +41,25 @@ export const RADAR_VERBS: readonly RadarVerb[] = [
   { id: 'music',       label: INTENTION_CONFIG.music.label,       emoji: '🎵', color: INTENTION_CONFIG.music.color },
 ]
 
-/** One axis of the radar — a topic with its visual identity. */
-export interface RadarTopicAxis {
-  id: string
-  label: string
-  emoji: string
-  color: string
+/** Deterministic synthetic count for a (seriesKey, axisKey) pair — 0..12. */
+export function syntheticCount(seriesKey: string, axisKey: string): number {
+  let hash = 2166136261 >>> 0
+  const key = `${seriesKey}:${axisKey}`
+  for (let i = 0; i < key.length; i++) {
+    hash ^= key.charCodeAt(i)
+    hash = Math.imul(hash, 16777619) >>> 0
+  }
+  return hash % 13
 }
 
-/** Count per topic for a given verb. */
-export interface RadarVerbSeries {
-  verb: RadarVerb
-  /** Keyed by topic id (axis). */
-  counts: Record<string, number>
-}
-
-/**
- * Deterministic synthetic per-(verb, topic) count pattern — a stable hash
- * of the pair seeds a pseudo-random 0..12 count. Same role as the
- * calendar's synthetic builder: keeps the radar readable before the
- * real on-chain count series is wired.
- */
-export function buildSyntheticVerbSeries(axes: RadarTopicAxis[]): RadarVerbSeries[] {
-  return RADAR_VERBS.map((v) => {
+/** Build synthetic series from a list of series-meta + axes. */
+export function buildSyntheticSeries(
+  seriesMeta: readonly RadarAxis[],
+  axes: readonly RadarAxis[],
+): RadarSeries[] {
+  return seriesMeta.map((s) => {
     const counts: Record<string, number> = {}
-    for (const axis of axes) {
-      const key = `${v.id}:${axis.id}`
-      let hash = 2166136261 >>> 0
-      for (let i = 0; i < key.length; i++) {
-        hash ^= key.charCodeAt(i)
-        hash = Math.imul(hash, 16777619) >>> 0
-      }
-      counts[axis.id] = hash % 13
-    }
-    return { verb: v, counts }
+    for (const a of axes) counts[a.id] = syntheticCount(s.id, a.id)
+    return { ...s, counts }
   })
 }

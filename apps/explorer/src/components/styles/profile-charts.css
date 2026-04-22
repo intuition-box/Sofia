@@ -414,6 +414,16 @@
   stroke-width: 2;
 }
 
+.pc-radar-half-label {
+  fill: var(--ds-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
 /* ── Top platforms list ─────────────────────────────────────────── */
 /* Ported from proto profile-charts.css:365-481. */
 

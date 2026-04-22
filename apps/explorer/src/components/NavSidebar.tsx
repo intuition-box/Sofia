@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useTrustCircle } from '../hooks/useTrustCircle'
+import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useTheme } from '../hooks/useTheme'
 import { useEnsNames } from '../hooks/useEnsNames'
@@ -193,14 +194,20 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
                   <span className="ns-circle-count">{trustCircle.length}</span>
                 </div>
                 <div className="ns-circle-avatars">
-                  {trustCircle.slice(0, 5).map((a) => (
-                    <Avatar key={a.termId} className="ns-mav">
-                      {a.image && <AvatarImage src={a.image} alt={a.label} />}
-                      <AvatarFallback className="text-[9px]">
-                        {a.label.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
+                  {trustCircle.slice(0, 5).map((a) => {
+                    const bg = avatarColor(a.termId || a.label)
+                    return (
+                      <Avatar key={a.termId} className="ns-mav" style={{ background: bg }}>
+                        {a.image && <AvatarImage src={a.image} alt={a.label} />}
+                        <AvatarFallback
+                          className="text-[9px]"
+                          style={{ background: bg, color: '#02000e' }}
+                        >
+                          {a.label.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    )
+                  })}
                   {trustCircle.length > 5 && (
                     <span className="ns-mav ns-mav-more">+{trustCircle.length - 5}</span>
                   )}

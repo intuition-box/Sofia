@@ -4,6 +4,7 @@
  * Falls back to static platformCatalog.ts during loading.
  */
 
+import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import {
   fetchPlatformCatalog,
@@ -12,7 +13,7 @@ import {
   type CategoryToTopicMap,
 } from "@/services/platformCatalogService"
 import { useTaxonomy } from "@/hooks/useTaxonomy"
-import { PLATFORM_CATALOG, getPlatformsByTopic as staticGetByTopic } from "@/config/platformCatalog"
+import { PLATFORM_CATALOG } from "@/config/platformCatalog"
 import { PLATFORM_ATOM_IDS } from "@/config/atomIds"
 
 // Build static fallback that matches OnChainPlatform shape
@@ -76,11 +77,34 @@ export function usePlatformCatalog() {
 
   const catalog = data || staticFallback
 
+  // Rebuild the lookup helpers from the serializable `platforms` array.
+  // The Map instances and function methods on `catalog` don't survive
+  // PersistQueryClientProvider's JSON round-trip, so relying on them
+  // directly throws "X is not a function" after a cache rehydrate.
+  const lookups = useMemo(() => {
+    const byId = new Map<string, OnChainPlatform>()
+    const byTopic = new Map<string, OnChainPlatform[]>()
+    const byCategory = new Map<string, OnChainPlatform[]>()
+    for (const p of catalog.platforms) {
+      byId.set(p.id, p)
+      for (const tid of p.topicIds) {
+        if (!byTopic.has(tid)) byTopic.set(tid, [])
+        byTopic.get(tid)!.push(p)
+      }
+      for (const cid of p.categoryIds) {
+        if (!byCategory.has(cid)) byCategory.set(cid, [])
+        byCategory.get(cid)!.push(p)
+      }
+    }
+    return { byId, byTopic, byCategory }
+  }, [catalog.platforms])
+
   return {
     platforms: catalog.platforms,
-    platformById: (id: string) => catalog.platformById.get(id),
-    getPlatformsByTopic: catalog.getPlatformsByTopic,
-    getPlatformsByCategory: catalog.getPlatformsByCategory,
+    platformById: (id: string) => lookups.byId.get(id),
+    getPlatformsByTopic: (topicId: string) => lookups.byTopic.get(topicId) ?? [],
+    getPlatformsByCategory: (categoryId: string) =>
+      lookups.byCategory.get(categoryId) ?? [],
     isLoading,
     isOnChain: data !== staticFallback,
     error: error ? String(error) : null,

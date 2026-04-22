@@ -1,14 +1,18 @@
 /**
- * RadarChart — N-axis radar with verb polygons.
- * Ported from proto-explorer/src/components/profileCharts.ts renderRadarChart.
+ * RadarChart — split radar: top semicircle = `topAxes`, bottom = `bottomAxes`.
+ *
+ * The chart is directionless: the caller decides what each half represents.
+ * On /profile we draw topic axes in the top half (interests) and verb axes
+ * in the bottom half (intents), with topic polygons overlaid.
  *
  * Pure view. Caller supplies:
- *   - `topicAxes`: one per topic the chart renders (order = clockwise from top)
- *   - `verbSeries`: one polygon per verb
- *   - `verbFilter` / `onVerbFilterChange`: controlled verb pill selection
- *   - `topicFilter` / `onTopicFilterChange`: controlled topic axis focus
+ *   - `topAxes` / `bottomAxes`: spokes distributed across each half
+ *   - `series`: one polygon per item (each with counts keyed by axis id)
+ *   - `seriesFilter`/onSeriesFilterChange: pill-row selection (ALL + one per series)
+ *   - `axisFilter`/onAxisFilterChange: click a rim emoji to focus one spoke
+ *   - `topLabel`/`bottomLabel`: divider-line kickers
  */
-import { RADAR_VERBS, type RadarTopicAxis, type RadarVerbSeries, type VerbFilter } from '@/lib/radar'
+import type { RadarAxis, RadarSeries, SeriesFilter } from '@/lib/radar'
 
 const W = 420
 const H = 420
@@ -16,16 +20,21 @@ const CX = W / 2
 const CY = H / 2
 const OUTER_R = 150
 
-function angleFor(i: number, n: number): number {
-  return -Math.PI / 2 + (2 * Math.PI / n) * i
-}
+type PositionedAxis = RadarAxis & { angle: number }
 
 /**
- * Build a closed SVG path from a list of points using Catmull-Rom →
- * cubic Bézier smoothing. `tension` ~0.05–0.15 softens the corners
- * without distorting the on-axis values.
+ * Evenly distribute `n` axes inside one semicircle.
+ *   top    → angles in (-π, 0)  (sin < 0, upper half of the SVG)
+ *   bottom → angles in (0, π)   (sin > 0, lower half of the SVG)
  */
-function smoothClosedPath(points: readonly [number, number][], tension = 0.1): string {
+function angleInHalf(i: number, n: number, half: 'top' | 'bottom'): number {
+  const gap = Math.PI / (n + 1)
+  const t = gap * (i + 1)
+  return half === 'top' ? -Math.PI + t : t
+}
+
+/** Build a closed SVG path from points using Catmull-Rom → cubic smoothing. */
+function smoothClosedPath(points: readonly [number, number][], tension = 0.03): string {
   const len = points.length
   if (len === 0) return ''
   if (len === 1) return `M ${points[0][0]} ${points[0][1]} Z`
@@ -46,97 +55,129 @@ function smoothClosedPath(points: readonly [number, number][], tension = 0.1): s
 }
 
 interface RadarChartProps {
-  topicAxes: RadarTopicAxis[]
-  verbSeries: RadarVerbSeries[]
-  verbFilter: VerbFilter
-  onVerbFilterChange: (v: VerbFilter) => void
-  /** Topic axis filter. `'all'` renders every polygon; a topic id collapses
-   *  all polygons onto that axis with dots at each verb's value. */
-  topicFilter: string | 'all'
-  onTopicFilterChange: (t: string | 'all') => void
+  topAxes: RadarAxis[]
+  bottomAxes: RadarAxis[]
+  series: RadarSeries[]
+  seriesFilter: SeriesFilter
+  onSeriesFilterChange: (v: SeriesFilter) => void
+  axisFilter: string | 'all'
+  onAxisFilterChange: (t: string | 'all') => void
+  /** Override the pill row with an explicit list of clickable items. Falls
+   *  back to `series` when omitted. Use this to expose both halves of the
+   *  split radar (topics + verbs) in the same pill row. */
+  pillItems?: readonly RadarAxis[]
+  /** Kicker labels for each half — rendered on the divider line. */
+  topLabel?: string
+  bottomLabel?: string
+  /** Position for the filter pill row — defaults to 'top'. */
+  pillsPosition?: 'top' | 'bottom'
 }
 
 export default function RadarChart({
-  topicAxes,
-  verbSeries,
-  verbFilter,
-  onVerbFilterChange,
-  topicFilter,
-  onTopicFilterChange,
+  topAxes,
+  bottomAxes,
+  series,
+  seriesFilter,
+  onSeriesFilterChange,
+  axisFilter,
+  onAxisFilterChange,
+  pillItems,
+  topLabel = 'interests',
+  bottomLabel = 'intents',
+  pillsPosition = 'top',
 }: RadarChartProps) {
-  const n = topicAxes.length
-  // Guard against a zero-axis state (no selected topic yet).
-  if (n === 0) {
-    return (
-      <div className="pc-empty">
-        Pick a topic to chart your verbs.
-      </div>
-    )
+  const pillList: readonly RadarAxis[] = pillItems ?? series
+  const total = topAxes.length + bottomAxes.length
+  if (total === 0) {
+    return <div className="pc-empty">Pick a topic to chart your verbs.</div>
   }
 
-  const maxCount = Math.max(1, ...verbSeries.flatMap((s) => Object.values(s.counts)))
-  const focusedIdx = topicFilter !== 'all' ? topicAxes.findIndex((a) => a.id === topicFilter) : -1
+  const positioned: PositionedAxis[] = [
+    ...topAxes.map((a, i) => ({ ...a, angle: angleInHalf(i, topAxes.length, 'top') })),
+    ...bottomAxes.map((a, i) => ({ ...a, angle: angleInHalf(i, bottomAxes.length, 'bottom') })),
+  ]
+
+  const maxCount = Math.max(1, ...series.flatMap((s) => Object.values(s.counts)))
+
+  /** Drive both filters at once so axis clicks, pill clicks and the centre
+   *  reset all feel coherent (the chart converges on a single focus id). */
+  const setFocus = (id: string) => {
+    onSeriesFilterChange(id)
+    onAxisFilterChange(id)
+  }
+  const handleAxisClick = (axisId: string) => {
+    setFocus(axisFilter === axisId ? 'all' : axisId)
+  }
+
+  // Arc radii + paths for curved half-labels (compass-style). Both arcs run
+  // left→right: sweep=1 traces the top half, sweep=0 the bottom half. In
+  // both cases the tangent at the midpoint points right, so the glyphs
+  // stand upright on the outside of the chart.
+  const LABEL_R = OUTER_R + 46
+  const topArcPath =
+    `M ${CX - LABEL_R} ${CY} ` +
+    `A ${LABEL_R} ${LABEL_R} 0 0 1 ${CX + LABEL_R} ${CY}`
+  const bottomArcPath =
+    `M ${CX - LABEL_R} ${CY} ` +
+    `A ${LABEL_R} ${LABEL_R} 0 0 0 ${CX + LABEL_R} ${CY}`
+
+  const pills = (
+    <div className="pc-radar-verbs">
+      <button
+        type="button"
+        className={`pc-radar-verb${seriesFilter === 'all' ? ' active' : ''}`}
+        data-verb-radar="all"
+        onClick={() => setFocus('all')}
+      >
+        All
+      </button>
+      {pillList.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          className={`pc-radar-verb${seriesFilter === s.id ? ' active' : ''}`}
+          data-verb-radar={s.id}
+          style={{ ['--verb-color' as string]: s.color }}
+          onClick={() => setFocus(s.id)}
+        >
+          <span className="pc-radar-verb-emoji">{s.emoji}</span>
+          {s.label}
+        </button>
+      ))}
+    </div>
+  )
+
+  const dividerX1 = CX - OUTER_R - 18
+  const dividerX2 = CX + OUTER_R + 18
 
   return (
     <div className="pc-radar-wrap">
-      <div className="pc-radar-verbs">
-        <button
-          type="button"
-          className={`pc-radar-verb${verbFilter === 'all' ? ' active' : ''}`}
-          data-verb-radar="all"
-          onClick={() => onVerbFilterChange('all')}
-        >
-          All
-        </button>
-        {RADAR_VERBS.map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            className={`pc-radar-verb${verbFilter === v.id ? ' active' : ''}`}
-            data-verb-radar={v.id}
-            style={{ ['--verb-color' as string]: v.color }}
-            onClick={() => onVerbFilterChange(v.id)}
-          >
-            <span className="pc-radar-verb-emoji">{v.emoji}</span>
-            {v.label}
-          </button>
-        ))}
-      </div>
+      {pillsPosition === 'top' ? pills : null}
 
-      <svg
-        className="pc-radar"
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="xMidYMid meet"
-      >
+      <svg className="pc-radar" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="radar-glow" x="-25%" y="-25%" width="150%" height="150%">
             <feGaussianBlur stdDeviation="3.5" />
           </filter>
-          {/* Green outline on the center logo: dilate the alpha, subtract the
-              original to get just the edge ring, then flood it green. */}
           <filter id="radar-logo-outline">
             <feMorphology in="SourceAlpha" operator="dilate" radius="1.2" result="dilated" />
             <feComposite in="dilated" in2="SourceAlpha" operator="out" result="edge" />
             <feFlood floodColor="#6dd4a0" />
             <feComposite operator="in" in2="edge" />
           </filter>
-          {/* Per-verb radial fade: fully transparent at the chart centre,
-              dense near the outer edge. A polygon reaching the outer ring
-              will read dense at its tips; segments closer to the centre
-              stay almost invisible — matches the "transparent au centre,
-              dense sur les bords" direction. */}
-          {verbSeries.map((s) => (
+          {/* Per-series radial fade: transparent at centre, dense near the outer edge. */}
+          {series.map((s) => (
             <radialGradient
-              key={`fade-${s.verb.id}`}
-              id={`radar-fade-${s.verb.id}`}
+              key={`fade-${s.id}`}
+              id={`radar-fade-${s.id}`}
               cx={CX}
               cy={CY}
               r={OUTER_R}
               gradientUnits="userSpaceOnUse"
             >
-              <stop offset="0%" stopColor={s.verb.color} stopOpacity={0} />
-              <stop offset="55%" stopColor={s.verb.color} stopOpacity={0.1} />
-              <stop offset="100%" stopColor={s.verb.color} stopOpacity={0.45} />
+              <stop offset="0%" stopColor={s.color} stopOpacity={0} />
+              <stop offset="55%" stopColor={s.color} stopOpacity={0.1} />
+              <stop offset="100%" stopColor={s.color} stopOpacity={0.45} />
             </radialGradient>
           ))}
         </defs>
@@ -155,12 +196,42 @@ export default function RadarChart({
           />
         ))}
 
-        {/* Spokes */}
-        {topicAxes.map((d, i) => {
-          const angle = angleFor(i, n)
-          const ex = CX + Math.cos(angle) * OUTER_R
-          const ey = CY + Math.sin(angle) * OUTER_R
-          const isActive = topicFilter === d.id
+        {/* Half-divider: dashed horizontal line + compass-style curved labels. */}
+        <line
+          x1={dividerX1}
+          y1={CY}
+          x2={dividerX2}
+          y2={CY}
+          stroke="currentColor"
+          strokeOpacity={0.2}
+          strokeDasharray="3 4"
+          strokeWidth={1}
+        />
+        <defs>
+          <path id="radar-arc-top" d={topArcPath} />
+          <path id="radar-arc-bottom" d={bottomArcPath} />
+        </defs>
+        <text className="pc-radar-half-label">
+          <textPath href="#radar-arc-top" startOffset="50%" textAnchor="middle">
+            {topLabel}
+          </textPath>
+        </text>
+        <text className="pc-radar-half-label">
+          <textPath
+            href="#radar-arc-bottom"
+            startOffset="50%"
+            textAnchor="middle"
+            side="right"
+          >
+            {bottomLabel}
+          </textPath>
+        </text>
+
+        {/* Spokes — one per axis */}
+        {positioned.map((d) => {
+          const ex = CX + Math.cos(d.angle) * OUTER_R
+          const ey = CY + Math.sin(d.angle) * OUTER_R
+          const isActive = axisFilter === d.id
           return (
             <line
               key={d.id}
@@ -175,37 +246,43 @@ export default function RadarChart({
           )
         })}
 
-        {/* Verb polygons */}
-        {verbSeries.map((s) => {
-          const rawPoints: [number, number][] = topicAxes.map((d, i) => {
-            const angle = angleFor(i, n)
-            const val = focusedIdx >= 0 && i !== focusedIdx ? 0 : s.counts[d.id] ?? 0
+        {/* Series polygons — only visit axes this series actually has a count
+            for. Skipping irrelevant axes keeps the curve from dipping back
+            through the centre on every missing spoke. Axis focus only
+            highlights the spoke; polygons stay intact. */}
+        {series.map((s) => {
+          const relevant = positioned.filter((d) => d.id in s.counts)
+          const rawPoints: [number, number][] = relevant.map((d) => {
+            const val = s.counts[d.id] ?? 0
             const r = (val / maxCount) * OUTER_R
-            return [CX + Math.cos(angle) * r, CY + Math.sin(angle) * r]
+            return [CX + Math.cos(d.angle) * r, CY + Math.sin(d.angle) * r]
           })
-          // Catmull-Rom smoothing — low tension rounds the corners
-          // without distorting the on-axis values.
           const pathD = smoothClosedPath(rawPoints, 0.03)
 
-          const isActive = verbFilter === s.verb.id
-          const allMode = verbFilter === 'all'
-          const opacity = allMode ? 0.75 : isActive ? 1 : 0.08
+          const isActive = seriesFilter === s.id
+          const allMode = seriesFilter === 'all'
+          // When an axis is focused, dim any polygon with no count on that
+          // axis so the chart actually reduces to relevant curves.
+          const axisRelevant =
+            axisFilter === 'all' || (s.counts[axisFilter] ?? 0) > 0
+          const baseOpacity = allMode ? 0.75 : isActive ? 1 : 0.08
+          const opacity = axisRelevant ? baseOpacity : 0.05
           const strokeW = isActive ? 4 : allMode ? 3 : 2
           const glow = isActive
-            ? `drop-shadow(0 0 8px ${s.verb.color})`
-            : `drop-shadow(0 0 3px color-mix(in srgb, ${s.verb.color} 45%, transparent))`
+            ? `drop-shadow(0 0 8px ${s.color})`
+            : `drop-shadow(0 0 3px color-mix(in srgb, ${s.color} 45%, transparent))`
 
           return (
             <g
-              key={s.verb.id}
+              key={s.id}
               className={`pc-radar-verb-poly${isActive ? ' active' : ''}`}
-              data-verb={s.verb.id}
+              data-series={s.id}
               style={{ filter: glow }}
             >
               <path
                 d={pathD}
-                fill={`url(#radar-fade-${s.verb.id})`}
-                stroke={s.verb.color}
+                fill={`url(#radar-fade-${s.id})`}
+                stroke={s.color}
                 strokeWidth={strokeW}
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -215,40 +292,19 @@ export default function RadarChart({
           )
         })}
 
-        {/* Focus dots when topic filter is active */}
-        {focusedIdx >= 0 && verbSeries.map((s) => {
-          const topicId = topicAxes[focusedIdx].id
-          const count = s.counts[topicId] ?? 0
-          const angle = angleFor(focusedIdx, n)
-          const r = (count / maxCount) * OUTER_R
-          return (
-            <circle
-              key={`dot-${s.verb.id}`}
-              cx={(CX + Math.cos(angle) * r).toFixed(1)}
-              cy={(CY + Math.sin(angle) * r).toFixed(1)}
-              r={6}
-              fill={s.verb.color}
-              stroke="var(--ds-card)"
-              strokeWidth={2}
-              style={{ filter: `drop-shadow(0 0 6px ${s.verb.color})` }}
-            />
-          )
-        })}
-
-        {/* Topic axis labels (emoji badges) */}
-        {topicAxes.map((d, i) => {
-          const angle = angleFor(i, n)
-          const lx = CX + Math.cos(angle) * (OUTER_R + 26)
-          const ly = CY + Math.sin(angle) * (OUTER_R + 26)
-          const isActive = topicFilter === d.id
+        {/* Axis rim labels (emoji badges) — click to focus */}
+        {positioned.map((d) => {
+          const lx = CX + Math.cos(d.angle) * (OUTER_R + 26)
+          const ly = CY + Math.sin(d.angle) * (OUTER_R + 26)
+          const isActive = axisFilter === d.id
           return (
             <g
               key={d.id}
               className={`pc-radar-label${isActive ? ' active' : ''}`}
-              data-topic-filter={d.id}
+              data-axis-filter={d.id}
               style={{ ['--topic-color' as string]: d.color, cursor: 'pointer' }}
               transform={`translate(${lx.toFixed(1)}, ${ly.toFixed(1)})`}
-              onClick={() => onTopicFilterChange(isActive ? 'all' : d.id)}
+              onClick={() => handleAxisClick(d.id)}
             >
               <circle r="15" className="pc-radar-label-bg" />
               <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fontSize="14">
@@ -258,12 +314,12 @@ export default function RadarChart({
           )
         })}
 
-        {/* Center clear button (logo) */}
+        {/* Centre Sofia logo — click to clear the axis filter */}
         <g
           className="pc-radar-clear"
-          data-topic-filter="all"
+          data-axis-filter="all"
           style={{ cursor: 'pointer' }}
-          onClick={() => onTopicFilterChange('all')}
+          onClick={() => setFocus('all')}
         >
           <circle
             cx={CX}
@@ -285,6 +341,8 @@ export default function RadarChart({
           <title>Clear filter</title>
         </g>
       </svg>
+
+      {pillsPosition === 'bottom' ? pills : null}
     </div>
   )
 }

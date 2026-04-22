@@ -14,7 +14,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "tech-dev",
     label: "Tech & Dev",
     icon: "keyboard",
-    color: "#4472C4",
+    color: "#7bade0",
     primaryPlatforms: [
       "github",
       "stackoverflow",
@@ -217,7 +217,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "design-creative",
     label: "Design & Visual Arts",
     icon: "palette",
-    color: "#E06C75",
+    color: "#d98cb3",
     primaryPlatforms: [
       "figma",
       "behance",
@@ -382,7 +382,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "music-audio",
     label: "Music & Audio",
     icon: "music",
-    color: "#61AFEF",
+    color: "#e0896a",
     primaryPlatforms: [
       "soundcloud",
       "mixcloud",
@@ -589,7 +589,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "gaming",
     label: "Gaming",
     icon: "gamepad",
-    color: "#C678DD",
+    color: "#a78bdb",
     primaryPlatforms: [
       "chess-com",
       "lichess",
@@ -763,7 +763,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "web3-crypto",
     label: "Web3 & Crypto",
     icon: "link",
-    color: "#627EEA",
+    color: "#6dd4a0",
     primaryPlatforms: [
       "wallet-siwe",
       "the-graph",
@@ -1026,7 +1026,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "science",
     label: "Science & Knowledge",
     icon: "microscope",
-    color: "#98C379",
+    color: "#5cc4d6",
     primaryPlatforms: [
       "orcid",
       "arxiv",
@@ -1227,7 +1227,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "sport-health",
     label: "Sport & Health",
     icon: "running",
-    color: "#E5C07B",
+    color: "#e4b95a",
     primaryPlatforms: [
       "strava",
       "garmin",
@@ -1417,7 +1417,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "video-cinema",
     label: "Video & Cinema",
     icon: "film",
-    color: "#E06C75",
+    color: "#ff9aa2",
     primaryPlatforms: [
       "twitch",
       "youtube",
@@ -1587,7 +1587,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "entrepreneurship",
     label: "Entrepreneurship & Business",
     icon: "rocket",
-    color: "#D19A66",
+    color: "#ffc6b0",
     primaryPlatforms: [
       "producthunt",
       "linear",
@@ -1770,7 +1770,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "performing-arts",
     label: "Performing Arts",
     icon: "theater",
-    color: "#E06C75",
+    color: "#c890d9",
     primaryPlatforms: ["twitch", "youtube", "discord"],
     categories: [
       {
@@ -1944,7 +1944,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "nature-environment",
     label: "Nature & Environment",
     icon: "leaf",
-    color: "#98C379",
+    color: "#8ed1a8",
     primaryPlatforms: [
       "inaturalist",
       "ebird",
@@ -2117,7 +2117,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "food-lifestyle",
     label: "Food, Fashion & Lifestyle",
     icon: "utensils",
-    color: "#E5C07B",
+    color: "#f2c36b",
     primaryPlatforms: [
       "untappd",
       "vivino",
@@ -2302,7 +2302,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "literature",
     label: "Literature & Writing",
     icon: "book",
-    color: "#ABB2BF",
+    color: "#9fb6e2",
     primaryPlatforms: [
       "openlibrary",
       "librarything",
@@ -2471,7 +2471,7 @@ export const SOFIA_TOPICS: Topic[] = [
     id: "personal-dev",
     label: "Personal Development",
     icon: "lotus",
-    color: "#C678DD",
+    color: "#b5d68f",
     primaryPlatforms: ["duolingo", "todoist", "reddit"],
     categories: [
       {
