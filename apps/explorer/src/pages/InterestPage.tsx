@@ -1,38 +1,20 @@
-import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
-import { formatEther } from 'viem'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import { useReputationScores } from '@/hooks/useReputationScores'
 import { useSignals } from '@/hooks/useSignals'
-import { useDomainTrending } from '@/hooks/useDomainTrending'
-import { useDomainClaims } from '@/hooks/useDomainClaims'
 import { useTopicCertifications } from '@/hooks/useTopicCertifications'
-import { usePrefetchClaimDialogs } from '@/hooks/useClaimPositions'
-import { useCart } from '@/hooks/useCart'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, ThumbsUp, ThumbsDown, ExternalLink, Info } from 'lucide-react'
+import { ArrowLeft, ExternalLink } from 'lucide-react'
 import { InterestHero, SectionTitle, PlatformsGrid, PlatformCard, PlatformAddCard, PlatformSkeleton } from '@0xsofia/design-system'
 import { getTopicEmoji } from '@/config/topicEmoji'
-import NicheDetailList from '@/components/profile/NicheDetailList'
-import TrendingCard from '@/components/TrendingCard'
-import PositionBoardDialog from '@/components/profile/PositionBoardDialog'
-import ScoreExplanationDialog from '@/components/ScoreExplanationDialog'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import '@/components/styles/interest-page.css'
-
-function formatMarketCap(value: bigint): string {
-  const num = parseFloat(formatEther(value))
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'k T'
-  if (num >= 1) return num.toFixed(2) + ' T'
-  if (num >= 0.001) return num.toFixed(4) + ' T'
-  return '0 ETH'
-}
 
 export default function InterestPage() {
   const { topicId } = useParams<{ topicId: string }>()
@@ -42,29 +24,17 @@ export default function InterestPage() {
   const { getPlatformsByTopic } = usePlatformCatalog()
   const topic = topicId ? topicById(topicId) : undefined
 
-  const { selectedTopics, selectedCategories, toggleCategory } = useTopicSelection()
+  const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus } = usePlatformConnections()
-  const { signals, isFetching: signalsRefreshing } = useSignals(user?.wallet?.address)
+  const { signals } = useSignals(user?.wallet?.address)
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, undefined, signals)
   const topicScore = scores?.topics.find((d) => d.topicId === topicId)
 
   const walletAddress = user?.wallet?.address
-  const { items: trending, loading: trendingLoading } = useDomainTrending(topicId)
-  const { claims, loading: claimsLoading } = useDomainClaims(topicId)
   const { certifications, loading: certsLoading } = useTopicCertifications(topicId, walletAddress)
-  const cart = useCart()
-  const [dialogClaim, setDialogClaim] = useState<typeof claims[number] | null>(null)
-  const [scoreDialogOpen, setScoreDialogOpen] = useState(false)
-
-  // Prefetch all claim dialog data so modals open instantly
-  usePrefetchClaimDialogs(claims, walletAddress)
 
   const platforms = topicId ? getPlatformsByTopic(topicId) : []
   const connectedPlatforms = platforms.filter((p) => getStatus(p.id) === 'connected')
-
-  const nicheCount = topic
-    ? topic.categories.filter((c) => selectedCategories.includes(c.id)).length
-    : 0
 
   if (!topic) {
     return (
@@ -81,6 +51,13 @@ export default function InterestPage() {
 
   return (
     <div className="pf-view page-enter">
+      <div className="pf-ts-back-row">
+        <button type="button" className="pf-btn" onClick={() => navigate('/profile')}>
+          <ArrowLeft className="h-4 w-4" />
+          Back to Profile
+        </button>
+      </div>
+
       <InterestHero
         emoji={getTopicEmoji(topicId!)}
         title={topic.label}
@@ -89,82 +66,6 @@ export default function InterestPage() {
         stat={{ value: topicScore?.score ?? 0, label: 'Topic score' }}
       />
       <div className="ip-sections">
-
-        {/* Back */}
-        <button type="button" className="pf-btn ip-back" onClick={() => navigate('/profile')}>
-          <ArrowLeft className="h-4 w-4" />
-          Back to Profile
-        </button>
-
-        {/* Stats */}
-        <section className="ip-section">
-          <SectionTitle>Stats</SectionTitle>
-          <div className="ip-stats-grid">
-            <Card
-              className="ip-stat-card ip-stat-card--clickable"
-              role="button"
-              tabIndex={0}
-              onClick={() => setScoreDialogOpen(true)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setScoreDialogOpen(true) }}
-              aria-label="Explain score"
-            >
-              <span className="ip-stat-value" style={{ color }}>
-                {topicScore?.score ?? 0}
-                {signalsRefreshing && (
-                  <span className="ip-stat-refresh" aria-label="Refreshing scores">&middot;&middot;&middot;</span>
-                )}
-              </span>
-              <span className="ip-stat-label">
-                Score
-                <Info className="ip-stat-info" aria-hidden />
-              </span>
-            </Card>
-            <Card className="ip-stat-card">
-              <span className="ip-stat-value">{nicheCount}</span>
-              <span className="ip-stat-label">Categories</span>
-            </Card>
-            <Card className="ip-stat-card">
-              <span className="ip-stat-value">{connectedPlatforms.length}</span>
-              <span className="ip-stat-label">Platforms</span>
-            </Card>
-            <Card className="ip-stat-card">
-              <span className="ip-stat-value">{platforms.length}</span>
-              <span className="ip-stat-label">Available</span>
-            </Card>
-          </div>
-        </section>
-
-        {/* Categories */}
-        <section className="ip-section">
-          <SectionTitle>Categories ({nicheCount})</SectionTitle>
-          <NicheDetailList
-            topicId={topicId!}
-            topicColor={color}
-            selectedCategories={selectedCategories}
-            nicheScores={topicScore?.topNiches ?? []}
-            onToggleCategory={toggleCategory}
-          />
-        </section>
-
-        {/* Trending Platforms */}
-        <section className="ip-section">
-          <SectionTitle>Trending in {topic.label}</SectionTitle>
-          {trendingLoading ? (
-            <div className="ip-loader"><SofiaLoader size={48} /></div>
-          ) : trending.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No trending platforms for this topic yet.</p>
-          ) : (
-            <div className="ip-trending-grid">
-              {trending.map((platform) => (
-                <TrendingCard
-                  key={platform.platformDomain}
-                  platform={platform}
-                  domainLabel={topic.label}
-                />
-              ))}
-            </div>
-          )}
-        </section>
 
         {/* Platforms */}
         <section className="ip-section">
@@ -184,110 +85,6 @@ export default function InterestPage() {
               <PlatformSkeleton key={`skel-${i}`} label="Connect platform" />
             ))}
           </PlatformsGrid>
-        </section>
-
-        {/* Claims / Vote */}
-        <section className="ip-section">
-          <SectionTitle>Claims</SectionTitle>
-          {claimsLoading ? (
-            <div className="ip-loader"><SofiaLoader size={48} /></div>
-          ) : claims.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No claims for this topic yet.</p>
-          ) : (
-            <div className="ip-claims-grid">
-              {claims.map((c) => {
-                const totalMcap = c.supportMarketCap + c.opposeMarketCap
-                const totalPositions = c.supportCount + c.opposeCount
-                const pct = totalMcap > 0n
-                  ? Math.round(Number((c.supportMarketCap * 100n) / totalMcap))
-                  : 50
-                const title = `${c.subject} ${c.predicate} ${c.object}`
-                const userVote = cart.items.find((ci) => ci.termId === c.termId)?.side
-                  ?? cart.items.find((ci) => ci.termId === c.counterTermId)?.side
-                const handleClaimVote = (type: 'support' | 'oppose') => {
-                  const termId = type === 'support' ? c.termId : c.counterTermId
-                  cart.addItem({
-                    id: `${termId}-${type}`,
-                    side: type,
-                    termId,
-                    intention: type === 'support' ? 'Support' : 'Oppose',
-                    title,
-                    favicon: '',
-                    intentionColor: type === 'support' ? '#22C55E' : '#EF4444',
-                  })
-                }
-                return (
-                  <Card key={c.id} className="ip-claim-card" onClick={() => setDialogClaim(c)}>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary">{totalPositions} positions</Badge>
-                      <span className="text-xs text-muted-foreground">{formatMarketCap(totalMcap)}</span>
-                    </div>
-
-                    <h2 className="ip-claim-title">{title}</h2>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs">
-                        <span style={{ color: '#22C55E' }}>Support {pct}%</span>
-                        <span style={{ color: '#EF4444' }}>Oppose {100 - pct}%</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden flex">
-                        <div className="transition-all" style={{ width: `${pct}%`, backgroundColor: '#22C55E' }} />
-                        <div style={{ backgroundColor: '#EF4444', flex: 1 }} />
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{formatMarketCap(c.supportMarketCap)} · {c.supportCount}</span>
-                        <span>{c.opposeCount} · {formatMarketCap(c.opposeMarketCap)}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                      <Button
-                        className="flex-1"
-                        variant="outline"
-                        disabled={!!userVote && userVote !== 'support'}
-                        style={userVote === 'support' ? { borderColor: '#22C55E', color: '#22C55E', background: 'rgba(34,197,94,0.1)' } : undefined}
-                        onClick={(e) => { e.stopPropagation(); handleClaimVote('support') }}
-                      >
-                        <ThumbsUp className="h-4 w-4 mr-2" />
-                        {userVote === 'support' ? 'Supported' : 'Support'}
-                      </Button>
-                      <Button
-                        className="flex-1"
-                        variant="outline"
-                        disabled={!!userVote && userVote !== 'oppose'}
-                        style={userVote === 'oppose' ? { borderColor: '#EF4444', color: '#EF4444', background: 'rgba(239,68,68,0.1)' } : undefined}
-                        onClick={(e) => { e.stopPropagation(); handleClaimVote('oppose') }}
-                      >
-                        <ThumbsDown className="h-4 w-4 mr-2" />
-                        {userVote === 'oppose' ? 'Opposed' : 'Oppose'}
-                      </Button>
-                    </div>
-
-                    {userVote && (
-                      <p className="text-xs text-center text-muted-foreground">
-                        Added to cart as {userVote}.
-                      </p>
-                    )}
-                  </Card>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Claim detail dialog */}
-          {dialogClaim && (
-            <PositionBoardDialog
-              open={!!dialogClaim}
-              onOpenChange={(open) => { if (!open) setDialogClaim(null) }}
-              termId={dialogClaim.termId}
-              counterTermId={dialogClaim.counterTermId}
-              title={`${dialogClaim.subject} ${dialogClaim.predicate} ${dialogClaim.object}`}
-              favicon=""
-              intention="Claim"
-              intentionColor={topic?.color || '#8B5CF6'}
-              walletAddress={walletAddress}
-            />
-          )}
         </section>
 
         {/* Certified in this topic */}
@@ -328,14 +125,6 @@ export default function InterestPage() {
         </section>
 
       </div>
-
-      <ScoreExplanationDialog
-        open={scoreDialogOpen}
-        onOpenChange={setScoreDialogOpen}
-        topicLabel={topic.label}
-        topicColor={color}
-        explanation={topicScore?.explanation}
-      />
     </div>
   )
 }
