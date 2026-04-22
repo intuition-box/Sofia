@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import { useLinkedWallets } from './useLinkedWallets'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 
 // ── Mocks ─────────────────────────────────────────────────────────
 // Privy hooks are fully mocked. The mock module exposes two setters to let
