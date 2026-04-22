@@ -133,24 +133,13 @@
 }
 
 /* ── User region separator ───────────────────────────────────────── */
-/* Dashed divider below the toolbar+chip cluster so the nav sections
-   read as a separate visual group. */
-.ns-auth-chip,
-.ns-auth-connect {
-  margin-bottom: 18px;
-}
-.ns-toolbar + .ns-auth-chip,
-.ns-toolbar + .ns-auth-connect {
-  margin-top: 0;
-}
-.ns-auth-chip + .nav-section,
-.ns-auth-connect + .nav-section,
+/* Dashed divider below the toolbar so the nav sections read as a
+   separate visual group. The auth chip / connect button is now pinned
+   to the bottom of the rail (see the margin-top: auto rule below). */
 .ns-toolbar + .nav-section {
   position: relative;
   padding-top: 14px;
 }
-.ns-auth-chip + .nav-section::before,
-.ns-auth-connect + .nav-section::before,
 .ns-toolbar + .nav-section::before {
   content: '';
   position: absolute;
@@ -161,9 +150,20 @@
   background: linear-gradient(90deg, transparent, var(--ds-border), transparent);
 }
 
+/* Pin the auth chip / connect pill to the bottom of the rail. Whichever
+   one renders, it carries margin-top: auto so the countdown naturally
+   sits just below it. */
+.ns-auth-chip,
+.ns-auth-connect {
+  margin-top: auto;
+  margin-bottom: 10px;
+}
+
 /* ── Season countdown (pinned to the bottom) ─────────────────────── */
 
 .ns-countdown {
+  /* Also margin-top:auto so the countdown still pins to the bottom when
+     no auth element precedes it (signed out + Privy not ready yet). */
   margin-top: auto;
   padding: 12px 14px;
   border: 1px solid var(--ds-border);
