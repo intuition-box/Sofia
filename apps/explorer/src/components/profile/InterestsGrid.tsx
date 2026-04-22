@@ -8,8 +8,8 @@ import { getTopicEmoji } from '@/config/topicEmoji'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import type { TopicScore } from '@/types/reputation'
 
-/** Mirrors proto-explorer `MAX_INTERESTS` — profile always shows 3 slots. */
-export const MAX_INTERESTS = 3
+/** Profile renders 4 interest slots. (Proto was 3 — product override.) */
+export const MAX_INTERESTS = 4
 
 interface InterestsGridProps {
   selectedTopics: string[]

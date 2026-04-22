@@ -643,3 +643,207 @@
   color: var(--ds-ink);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Top Claim card (showcase inside ProfileCharts) ─────────────── */
+/* Ported 1:1 from proto profile.css:143-307. */
+
+.pc-claim-card-wrap > .pc-claims-scroll {
+  flex: 1;
+  min-height: 0;
+}
+.pc-claims-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.pc-claims-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.pf-claim-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px 14px;
+  min-height: 204px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--ds-shadow-card);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  border-left: 3px solid var(--pos-color, var(--ds-muted));
+}
+.pf-claim-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--pos-color, var(--ds-ink-soft));
+  box-shadow: 0 14px 32px -18px color-mix(in srgb, var(--pos-color, var(--ds-ink)) 50%, transparent);
+}
+
+.pf-claim-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+/* The DS FaviconWrapper handles the white bg; override its box to the proto's
+   rounded 6px + 3px padding. */
+.pf-claim-fav {
+  border-radius: 6px;
+  border: 1px solid var(--ds-border-soft);
+  padding: 3px;
+}
+.pf-claim-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pf-claim-title {
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-claim-host {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pf-claim-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--badge-color, var(--ds-muted)) 16%, transparent);
+  color: var(--badge-color, var(--ds-muted));
+  border: 1px solid color-mix(in srgb, var(--badge-color, var(--ds-muted)) 32%, transparent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.pf-claim-badge-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pf-claim-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.pf-claim-pnl {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.pf-claim-pnl-pct {
+  font-family: "Fraunces", serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--trusted, #6dd4a0);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-claim-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #e87c7c 70%, transparent);
+  overflow: hidden;
+  position: relative;
+}
+.pf-claim-bar-sup {
+  display: block;
+  height: 100%;
+  background: #6dd4a0;
+  border-radius: 999px 0 0 999px;
+}
+.pf-claim-stats {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.pf-claim-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.pf-claim-stat svg {
+  display: block;
+}
+.pf-claim-stat.support {
+  color: #2f9c6a;
+  background: color-mix(in srgb, #6dd4a0 14%, transparent);
+  border-color: color-mix(in srgb, #6dd4a0 32%, transparent);
+}
+.pf-claim-stat.oppose {
+  color: #c15353;
+  background: color-mix(in srgb, #e87c7c 12%, transparent);
+  border-color: color-mix(in srgb, #e87c7c 32%, transparent);
+}
+.pf-claim-stat-val {
+  font-family: "Fraunces", serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.pf-claim-reason {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ds-muted);
+  padding-top: 10px;
+  border-top: 1px dashed var(--ds-border-soft);
+  font-style: italic;
+}
+
+/* Small helper used only inside the claim card chips row. */
+.fc-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  background: color-mix(in srgb, var(--ds-muted) 8%, var(--ds-card));
+  border: 1px solid var(--ds-border-soft);
+}

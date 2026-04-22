@@ -83,6 +83,20 @@ export default function RadarChart({
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMid meet"
       >
+        <defs>
+          <filter id="radar-glow" x="-25%" y="-25%" width="150%" height="150%">
+            <feGaussianBlur stdDeviation="3.5" />
+          </filter>
+          {/* Green outline on the center logo: dilate the alpha, subtract the
+              original to get just the edge ring, then flood it green. */}
+          <filter id="radar-logo-outline">
+            <feMorphology in="SourceAlpha" operator="dilate" radius="1.2" result="dilated" />
+            <feComposite in="dilated" in2="SourceAlpha" operator="out" result="edge" />
+            <feFlood floodColor="#6dd4a0" />
+            <feComposite operator="in" in2="edge" />
+          </filter>
+        </defs>
+
         {/* Grid rings */}
         {[0.25, 0.5, 0.75, 1].map((frac) => (
           <circle
@@ -219,6 +233,7 @@ export default function RadarChart({
             y={CY - 20}
             width={40}
             height={40}
+            filter="url(#radar-logo-outline)"
             style={{ pointerEvents: 'none' }}
           />
           <title>Clear filter</title>

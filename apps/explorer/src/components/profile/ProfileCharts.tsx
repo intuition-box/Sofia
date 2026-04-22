@@ -33,11 +33,13 @@ import { buildSyntheticCalendarSeries, type CalendarTopicSeries } from '@/lib/ac
 import { buildSyntheticVerbSeries, type RadarTopicAxis, type VerbFilter } from '@/lib/radar'
 import { getIntentionColor } from '@/config/intentions'
 import { getTopicEmoji } from '@/config/topicEmoji'
-import TopClaimsSection from './TopClaimsSection'
 import ActivityCalendar from './ActivityCalendar'
 import RadarChart from './RadarChart'
 import TopPlatforms, { type TopPlatformStat } from './TopPlatforms'
 import ProfileDetailsPanel, { type ProfileTopicStats } from './ProfileDetailsPanel'
+import ProfileClaimCard, { deriveClaimBadge } from './ProfileClaimCard'
+import { getFaviconUrl } from '@/utils/favicon'
+import { extractDomain } from '@/utils/formatting'
 import '../styles/profile-charts.css'
 
 interface ProfileChartsProps {
@@ -56,8 +58,6 @@ interface ProfileChartsProps {
 export default function ProfileCharts({
   topClaims,
   claimsLoading,
-  walletAddress,
-  hideplatformPositions,
   selectedTopics = [],
   selectedCategories = [],
   topicScores = [],
@@ -66,7 +66,12 @@ export default function ProfileCharts({
   const { markets } = usePlatformMarket()
   const { getStatus } = usePlatformConnections()
   const { getPlatformsByTopic } = usePlatformCatalog()
-  const showcaseClaims = topClaims.slice(0, 1)
+
+  // Top 3 claims sorted by PnL for the showcase card.
+  const showcaseClaims = useMemo(
+    () => [...topClaims].sort((a, b) => (b.stats.userPnlPct ?? 0) - (a.stats.userPnlPct ?? 0)).slice(0, 3),
+    [topClaims],
+  )
 
   const [verbFilter, setVerbFilter] = useState<VerbFilter>('all')
   const [topicFilter, setTopicFilter] = useState<string | 'all'>('all')
@@ -229,12 +234,46 @@ export default function ProfileCharts({
               <span className="pc-kicker">Top Claims</span>
               <span className="pc-card-meta">{topClaimMeta}</span>
             </div>
-            <TopClaimsSection
-              claims={showcaseClaims}
-              loading={claimsLoading}
-              walletAddress={walletAddress}
-              hideplatformPositions={hideplatformPositions}
-            />
+            {claimsLoading ? (
+              <div className="pc-empty">Loading claims…</div>
+            ) : showcaseClaims.length === 0 ? (
+              <div className="pc-empty">No top claims yet.</div>
+            ) : (
+              <div className="pc-claims-scroll">
+                {showcaseClaims.map((c) => {
+                  const domain = c.objectUrl ? extractDomain(c.objectUrl) : ''
+                  // TopClaim doesn't surface topic contexts yet — once
+                  // resolveTopClaims exposes them, we can map here.
+                  const topicChips: { id: string; label: string }[] = []
+                  const position = c.predicateLabel.toLowerCase().includes('distrust') ? 'oppose' : 'support'
+                  const pnlPct = c.stats.userPnlPct ?? 0
+                  const badge = deriveClaimBadge({
+                    supportCount: c.stats.supportCount,
+                    opposeCount: c.stats.opposeCount,
+                    pnlPct,
+                    position,
+                  })
+                  return (
+                    <ProfileClaimCard
+                      key={c.termId}
+                      href={c.objectUrl || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={c.objectLabel}
+                      host={domain}
+                      faviconSrc={domain ? getFaviconUrl(domain) : undefined}
+                      predicateLabel={c.predicateLabel}
+                      topicChips={topicChips}
+                      position={position}
+                      badge={badge}
+                      pnlPct={pnlPct}
+                      supportCount={c.stats.supportCount}
+                      opposeCount={c.stats.opposeCount}
+                    />
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

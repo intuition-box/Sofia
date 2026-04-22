@@ -4,7 +4,7 @@ import DomainSelector from '@/components/profile/DomainSelector'
 import { SubHeader } from '@0xsofia/design-system'
 import '@/components/styles/pages.css'
 
-const MAX_TOPICS = 3
+const MAX_TOPICS = 4
 
 export default function DomainSelectionPage() {
   const navigate = useNavigate()
