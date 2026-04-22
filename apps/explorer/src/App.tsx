@@ -50,7 +50,9 @@ export default function App() {
   const isLanding = location.pathname === '/'
   const cart = useCart()
   const sidebar = useSidebarState()
-  const isProfilePage = location.pathname.startsWith('/profile')
+  // Routes that surface the ProfileDrawer on the right rail.
+  const isProfilePage =
+    location.pathname.startsWith('/profile') || location.pathname === '/scores'
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)

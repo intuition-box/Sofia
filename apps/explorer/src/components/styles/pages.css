@@ -1,6 +1,31 @@
 /* ── Page content ── */
 .page-content { padding: 16px 8px; }
 
+/* ── Generic proto-styled button (.btn from proto) ── */
+/* Bordered card-toned pill used for 'Back to X' and similar neutral
+   actions across the app. Prefer this over shadcn Button ghost whenever
+   the surrounding surface is light / the hover background of ghost
+   would clash with the design-system's ambient palette. */
+.pf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: var(--ds-card);
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pf-btn:hover {
+  border-color: var(--ds-ink);
+  transform: translateY(-1px);
+}
+
 /* ── Page content enter animation ── */
 @keyframes page-fade-in {
   from { opacity: 0; transform: translateY(12px); }

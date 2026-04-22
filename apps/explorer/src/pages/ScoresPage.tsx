@@ -100,6 +100,9 @@ export default function ScoresPage() {
   }).filter((v) => v.count > 0)
 
   // Badges earned on URLs — bucket top claims by derived badge.
+  // All 3 groups are always rendered (empty state shown when no claim
+  // qualifies) so the user always sees Pioneer / Explorer / Contributor
+  // side by side.
   const perBadgeUrls = BADGE_GROUPS.map((g) => {
     const urls = topClaims
       .filter((c) => {
@@ -115,7 +118,7 @@ export default function ScoresPage() {
       })
       .slice(0, 3)
     return { group: g, urls }
-  }).filter((b) => b.urls.length > 0)
+  })
 
   // Engagement on your URLs — top 5 by total position count.
   const engagement = [...topClaims]
@@ -128,10 +131,10 @@ export default function ScoresPage() {
   return (
     <div className="pf-view page-enter">
       <div className="pf-ts-back-row">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
+        <button type="button" className="pf-btn" onClick={() => navigate('/profile')}>
+          <ArrowLeft className="h-4 w-4" />
           Back to my profile
-        </Button>
+        </button>
       </div>
 
       <div className="pf-ts-header">
@@ -198,19 +201,19 @@ export default function ScoresPage() {
           </section>
         )}
 
-        {perBadgeUrls.length > 0 && (
-          <section className="pp-section">
-            <SectionTitle>Badges earned on URLs</SectionTitle>
-            <div className="pf-badge-grid">
-              {perBadgeUrls.map(({ group, urls }) => (
-                <div key={group.id} className="pf-badge-block">
-                  <div className="pf-badge-head">
-                    <img className="pf-badge-head-icon" src={group.icon} alt={group.label} />
-                    <div className="pf-badge-head-text">
-                      <span className="pf-badge-head-label">{group.label}</span>
-                      <span className="pf-badge-head-desc">{group.description}</span>
-                    </div>
+        <section className="pp-section">
+          <SectionTitle>Badges earned on URLs</SectionTitle>
+          <div className="pf-badge-grid">
+            {perBadgeUrls.map(({ group, urls }) => (
+              <div key={group.id} className="pf-badge-block">
+                <div className="pf-badge-head">
+                  <img className="pf-badge-head-icon" src={group.icon} alt={group.label} />
+                  <div className="pf-badge-head-text">
+                    <span className="pf-badge-head-label">{group.label}</span>
+                    <span className="pf-badge-head-desc">{group.description}</span>
                   </div>
+                </div>
+                {urls.length > 0 ? (
                   <div className="pf-badge-urls">
                     {urls.map((c) => {
                       const domain = c.objectUrl ? extractDomain(c.objectUrl) : ''
@@ -241,11 +244,13 @@ export default function ScoresPage() {
                       )
                     })}
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+                ) : (
+                  <p className="pf-badge-empty">No claim in this tier yet.</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
 
         {engagement.length > 0 && (
           <section className="pp-section">

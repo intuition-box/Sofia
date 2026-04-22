@@ -91,9 +91,10 @@ export default function InterestPage() {
       <div className="ip-sections">
 
         {/* Back */}
-        <Button variant="ghost" size="sm" className="ip-back" onClick={() => navigate('/profile')}>
-          <ArrowLeft className="h-4 w-4" /> Back to Profile
-        </Button>
+        <button type="button" className="pf-btn ip-back" onClick={() => navigate('/profile')}>
+          <ArrowLeft className="h-4 w-4" />
+          Back to Profile
+        </button>
 
         {/* Stats */}
         <section className="ip-section">

@@ -200,6 +200,16 @@
   flex-direction: column;
   gap: 6px;
 }
+.pf-badge-empty {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--ds-muted);
+  text-align: center;
+  border: 1px dashed var(--ds-border-soft);
+  border-radius: 8px;
+  background: var(--ds-bg-subtle);
+}
 
 .pf-ts-url-item {
   display: grid;
