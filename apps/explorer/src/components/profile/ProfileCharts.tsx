@@ -21,9 +21,13 @@
  *   - Top Platforms list (proto renderTopPlatforms)
  *   - Single top claim showcase — reuses <TopClaimsSection> from explorer.
  */
-import type { ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import type { TopClaim } from '@/hooks/useTopClaims'
+import { useTaxonomy } from '@/hooks/useTaxonomy'
+import { buildSyntheticCalendarSeries, type CalendarTopicSeries } from '@/lib/activityCalendar'
+import { getIntentionColor } from '@/config/intentions'
 import TopClaimsSection from './TopClaimsSection'
+import ActivityCalendar from './ActivityCalendar'
 import '../styles/profile-charts.css'
 
 interface ProfileChartsProps {
@@ -31,6 +35,8 @@ interface ProfileChartsProps {
   claimsLoading: boolean
   walletAddress?: string
   hideplatformPositions?: boolean
+  /** Selected topic slugs — drives the calendar legend + series. */
+  selectedTopics?: string[]
 }
 
 function Placeholder({ children }: { children: ReactNode }) {
@@ -42,10 +48,29 @@ export default function ProfileCharts({
   claimsLoading,
   walletAddress,
   hideplatformPositions,
+  selectedTopics = [],
 }: ProfileChartsProps) {
-  // Pick the single top claim for the showcase card. Fallback: section renders
-  // the empty / loading state of <TopClaimsSection> with a 1-slice array.
+  const { topicById } = useTaxonomy()
   const showcaseClaims = topClaims.slice(0, 1)
+
+  // Synthetic series per selected topic — will be replaced with real on-chain
+  // activity data in a follow-up (useTopicCertifications × useUserActivity).
+  const calendarSeries: CalendarTopicSeries[] = useMemo(
+    () =>
+      selectedTopics
+        .map((id) => {
+          const topic = topicById(id)
+          if (!topic) return null
+          return {
+            id,
+            label: topic.label,
+            color: topic.color ?? getIntentionColor('inspiration'),
+            counts: buildSyntheticCalendarSeries(id),
+          }
+        })
+        .filter((x): x is CalendarTopicSeries => x !== null),
+    [selectedTopics, topicById],
+  )
 
   return (
     <section className="pc-section">
@@ -56,7 +81,7 @@ export default function ProfileCharts({
           <div className="pc-main-right">
             <Placeholder>Topic stats panel — picks up the active topic filter</Placeholder>
             <div className="pc-main-cal">
-              <Placeholder>Activity calendar (52-week heatmap) coming soon</Placeholder>
+              <ActivityCalendar topicSeries={calendarSeries} />
             </div>
           </div>
         </div>

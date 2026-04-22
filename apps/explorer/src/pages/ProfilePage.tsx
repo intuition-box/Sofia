@@ -118,6 +118,7 @@ export default function ProfilePage() {
           claimsLoading={claimsLoading}
           walletAddress={address}
           hideplatformPositions={isViewingAs}
+          selectedTopics={selectedTopics}
         />
 
         {/* Echoes */}
