@@ -1,0 +1,144 @@
+/**
+ * ProfileCharts — shell styles (grid + cards + kicker).
+ * Inner panels (radar, calendar, top platforms, top claim) land in their
+ * own rules as they get ported. Based on
+ * proto-explorer/src/styles/profile-charts.css:1-135.
+ */
+
+.pc-section {
+  margin-bottom: 32px;
+}
+
+.pc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.pc-card-wide {
+  grid-column: 1 / -1;
+}
+
+.pc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  box-shadow: var(--ds-shadow-card);
+  overflow: hidden;
+}
+.pc-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 60%;
+  height: 120%;
+  background: radial-gradient(circle at center, var(--ds-accent-soft) 0%, transparent 60%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+.pc-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pc-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pc-kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.pc-card-meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.pc-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--ds-muted);
+  font-size: 13px;
+  border: 1px dashed var(--ds-border-soft);
+  border-radius: 10px;
+  background: var(--ds-bg-subtle);
+}
+
+/* ── Main card: radar + details + calendar ─────────────────────────── */
+
+.pc-main {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 24px;
+  min-height: 280px;
+}
+@media (max-width: 900px) {
+  .pc-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pc-main-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: 16px;
+  border-left: 1px dashed var(--ds-border-soft);
+}
+.pc-main-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--ds-border-soft);
+}
+@media (max-width: 900px) {
+  .pc-main-right {
+    padding-left: 0;
+    padding-top: 16px;
+    border-left: none;
+    border-top: 1px dashed var(--ds-border-soft);
+  }
+}
+
+/* ── Bottom row: Top Platforms + Top Claim ─────────────────────────── */
+
+.pc-platforms-claim-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 500px;
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .pc-platforms-claim-row {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+}
+.pc-platforms-claim-row > .pc-card {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pc-claim-card-wrap {
+  display: flex;
+  flex-direction: column;
+}

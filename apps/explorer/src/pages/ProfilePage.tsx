@@ -11,7 +11,7 @@ import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
 import LastActivitySection from '../components/profile/LastActivitySection'
 import InterestsGrid from '../components/profile/InterestsGrid'
-import TopClaimsSection from '../components/profile/TopClaimsSection'
+import ProfileCharts from '../components/profile/ProfileCharts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Wallet, User } from 'lucide-react'
@@ -112,18 +112,13 @@ export default function ProfilePage() {
           />
         </section>
 
-        {/* Top Claims */}
-        {(claimsLoading || topClaims.length > 0) && (
-          <section className="pp-section">
-            <SectionTitle>Top Claims</SectionTitle>
-            <TopClaimsSection
-              claims={topClaims}
-              loading={claimsLoading}
-              walletAddress={address}
-              hideplatformPositions={isViewingAs}
-            />
-          </section>
-        )}
+        {/* Profile charts — radar + details + calendar + top platforms + top claim */}
+        <ProfileCharts
+          topClaims={topClaims}
+          claimsLoading={claimsLoading}
+          walletAddress={address}
+          hideplatformPositions={isViewingAs}
+        />
 
         {/* Echoes */}
         <section className="pp-section">
