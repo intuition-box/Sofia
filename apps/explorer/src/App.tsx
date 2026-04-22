@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { Header } from './components/Header'
-import { Sidebar } from './components/Sidebar'
+import { NavSidebar } from './components/NavSidebar'
 import { RightSidebar } from './components/RightSidebar'
 import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
@@ -92,7 +92,7 @@ export default function App() {
       <InterestsHydrationBoundary />
       <WsStatusBadge />
       <Header onCartClick={() => setCartOpen(o => !o)} onMenuClick={sidebar.toggleLeft} showMenu={!sidebar.isDesktop} compact={!sidebar.isDesktop} onProfileDrawerClick={() => setProfileDrawerOpen(o => !o)} showProfileDrawer={!sidebar.isDesktop && isProfilePage} />
-      <Sidebar isOpen={sidebar.isDesktop || sidebar.leftOpen} onClose={sidebar.closeLeft} isOverlay={!sidebar.isDesktop} />
+      <NavSidebar />
       <RightSidebar hidden={isProfilePage || cartOpen || !sidebar.isDesktop} />
 
       <CartDrawer
@@ -116,7 +116,7 @@ export default function App() {
         onSuccess={handleDepositSuccess}
       />
 
-      <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`} style={{ zoom: sidebar.isDesktop ? 1.25 : 1 }}>
+      <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`}>
         <RouteErrorBoundary key={location.pathname}>
         <Routes>
           {/* Public routes */}

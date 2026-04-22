@@ -1,0 +1,51 @@
+/**
+ * Root app shell — 3-column grid (nav / main / right-rail). Ported from the
+ * proto.
+ *
+ * Usage:
+ *   <body>
+ *     <div class="app [nav-collapsed] [no-right-rail]">
+ *       <aside class="nav-sidebar">…</aside>
+ *       <main class="app-main">…</main>
+ *       <aside class="app-right-rail">…</aside>   (optional)
+ *     </div>
+ *   </body>
+ */
+
+.app {
+  display: grid;
+  grid-template-columns: 248px 1fr 312px;
+  min-height: 100vh;
+  transition: grid-template-columns 0.25s ease;
+  /* Dotted grid background is owned by the host app, not by the design
+     system — keep this surface visually neutral. */
+}
+
+.app.nav-collapsed {
+  grid-template-columns: 68px 1fr 312px;
+}
+
+.app.no-right-rail {
+  grid-template-columns: 248px 1fr;
+}
+
+.app.no-right-rail.nav-collapsed {
+  grid-template-columns: 68px 1fr;
+}
+
+.app > .nav-sidebar {
+  grid-column: 1;
+}
+
+.app > .app-right-rail {
+  grid-column: 3;
+  grid-row: 1;
+  border-left: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  overflow-y: auto;
+}
+
+.app > .app-main {
+  grid-column: 2;
+  min-width: 0; /* allow children to shrink below intrinsic size */
+}

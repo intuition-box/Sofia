@@ -12,3 +12,17 @@
 @import "@0xsofia/design-system/styles/user-badge.css";
 @import "@0xsofia/design-system/styles/bento.css";
 @import "@0xsofia/design-system/styles/interests.css";
+@import "@0xsofia/design-system/styles/nav-sidebar.css";
+@import "@0xsofia/design-system/styles/app-shell.css";
+
+/* ── Explorer-specific positioning of the design-system nav sidebar ── */
+/* The shared .nav-sidebar stylesheet is layout-agnostic. Explorer lays it
+   out as a fixed left rail matching the existing .main-content margin. */
+.nav-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 248px;
+  z-index: 40;
+}
