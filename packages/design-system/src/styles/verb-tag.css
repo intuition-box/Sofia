@@ -1,0 +1,33 @@
+/**
+ * Verb tag pill — shape matches `.fc-tag`, background is the intent color,
+ * text is always ink. Backgrounds MUST stay in sync with INTENTION_CONFIG
+ * in `src/taxonomy/intentions.ts`.
+ *
+ * Usage: <span class="fc-verb-tag work">Work</span>
+ */
+
+.fc-verb-tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #02000e;
+  padding: 5px 11px;
+  border-radius: 6px;
+  border: none;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  background: var(--accent);
+}
+
+/* Canonical intent classes (mirror INTENTION_CONFIG). */
+.fc-verb-tag.trusted     { background: var(--trusted); }
+.fc-verb-tag.distrusted  { background: var(--distrusted); }
+.fc-verb-tag.work        { background: var(--work); }
+.fc-verb-tag.learning    { background: var(--learning); }
+.fc-verb-tag.fun         { background: var(--fun); }
+.fc-verb-tag.inspiration { background: var(--inspiration); }
+.fc-verb-tag.buying      { background: var(--buying); }
+.fc-verb-tag.music       { background: var(--music); }

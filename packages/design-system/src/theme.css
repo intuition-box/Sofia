@@ -1,0 +1,84 @@
+/**
+ * @0xsofia/design-system — theme tokens
+ *
+ * Single source of truth for layout, typography and color variables used by
+ * every component in this package. Ported from the proto (proto-explorer).
+ *
+ * - `:root` / `[data-theme="light"]` → light palette
+ * - `[data-theme="dark"]`           → dark palette
+ * - Sofia predicate colors (`--trusted`, `--work`, …) mirror INTENTION_CONFIG
+ *   in `src/taxonomy/intentions.ts` and stay constant across themes.
+ *
+ * Import once at the root of each consuming app:
+ *   `@import "@0xsofia/design-system/theme.css";`
+ */
+
+:root,
+[data-theme="light"] {
+  /* Surface */
+  --bg: #ffffff;
+  --bg-subtle: #f7f6f2;
+  --card: #ffffff;
+  --border: #ececf0;
+  --border-soft: #f3f2f5;
+
+  /* Text */
+  --ink: #02000e;
+  --ink-soft: #1a1727;
+  --muted: #6b6880;
+  --muted-soft: #a8a5bb;
+
+  /* Decorative */
+  --grid-dot: rgba(10, 10, 10, 0.045);
+
+  /* Accent (peach) */
+  --accent: #ffc6b0;
+  --accent-ink: #7a3a1e;
+  --accent-soft: #ffe9df;
+  --on-accent: #02000e;
+
+  /* Effects */
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] {
+  --bg: #0b0a12;
+  --bg-subtle: #121120;
+  --card: #13121f;
+  --border: #25223a;
+  --border-soft: #1c1a2b;
+
+  --ink: #f5f3ff;
+  --ink-soft: #e5e2f5;
+  --muted: #8f8ca8;
+  --muted-soft: #55526c;
+
+  --grid-dot: rgba(255, 255, 255, 0.05);
+
+  --accent: #ffc6b0;
+  --accent-ink: #ffc6b0;
+  --accent-soft: rgba(255, 198, 176, 0.12);
+  --on-accent: #0b0a12;
+
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* ── Sofia predicate colors ── */
+/* These mirror INTENTION_CONFIG (src/taxonomy/intentions.ts) and are the
+   same across both themes. Used by verb-tag.css, bento.css, and by app code
+   via `var(--work)` / `var(--trusted)` / etc. */
+:root,
+[data-theme="light"],
+[data-theme="dark"] {
+  --trusted: #22c55e;
+  --distrusted: #ef4444;
+  --work: #3b82f6;
+  --learning: #06b6d4;
+  --fun: #f59e0b;
+  --inspiration: #8b5cf6;
+  --buying: #ec4899;
+  --music: #ff5722;
+
+  /* Shared radius */
+  --radius: 10px;
+}
