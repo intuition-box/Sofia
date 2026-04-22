@@ -1,3 +1,10 @@
+/* ── Profile view wrapper (ported from proto `.pf-view`) ── */
+.pf-view {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
 /* ── Wallet banner ── */
 .pp-wallet-banner {
   display: flex;

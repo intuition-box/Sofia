@@ -24,6 +24,7 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | Explorer migration — `InterestsGrid` | ✅ Done | Three-column interests grid with reveal layer |
 | Explorer migration — left nav sidebar | ✅ Done | Replaces `Sidebar.tsx`; removes the two `zoom: 1.25` hacks |
 | Explorer migration — profile page hero | ✅ Done | `<PageHero>` replaces `<PageHeader>` on `ProfilePage` |
+| Explorer migration — profile layout polish | ✅ Done | Peach banner color, `.pf-view` max-width 1040px wrapper, Fraunces loaded, third `zoom: 1.25` removed from `RightSidebar`, `rs-aside` → 280px |
 
 ## Usage
 

@@ -55,7 +55,7 @@ export default function ProfilePage() {
   const shortAddr = address ? address.slice(0, 6) + '...' + address.slice(-4) : ''
 
   return (
-    <div>
+    <div className="pf-view page-enter">
       <PageHero
         title={isViewingAs ? shortAddr : pc.title}
         description={isViewingAs ? 'Viewing profile' : pc.subtitle}
@@ -91,7 +91,7 @@ export default function ProfilePage() {
         </Card>
       )}
 
-      <div className="pp-sections page-content page-enter">
+      <div className="pp-sections">
 
         {/* Top Claims */}
         {(claimsLoading || topClaims.length > 0) && (

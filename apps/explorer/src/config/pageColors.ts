@@ -31,10 +31,10 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
     glow: 'rgba(215,144,199,0.4)',
   },
   '/profile': {
-    color: '#ffffff',
+    color: '#ffc6b0',
     title: 'My Profile',
     subtitle: 'Your reputation overview',
-    glow: 'rgba(255,255,255,0.2)',
+    glow: 'rgba(255,198,176,0.4)',
   },
   '/profile/scores': {
     color: '#5CC4D6',
