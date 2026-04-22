@@ -212,10 +212,17 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
         </NavSection>
       ) : null}
 
-      {/* Bottom cluster — auth block + season countdown. margin-top:auto
-          on .ns-bottom pushes the group to the bottom; the countdown
-          sits directly under the auth card. */}
+      {/* Bottom cluster — countdown sits on top, auth (profile/disconnect)
+          pinned right below it. margin-top:auto on .ns-bottom pulls the
+          whole group to the bottom of the rail. */}
       <div className="ns-bottom">
+        <div className="ns-countdown">
+          <p className="ns-countdown-time">
+            {timeLeft.days}d {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m {pad(timeLeft.seconds)}s
+          </p>
+          <p className="ns-countdown-hint">remaining — Alpha Reward Program is live</p>
+        </div>
+
         {ready && !authenticated && (
           <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
             <Wallet className="h-4 w-4 mr-1" />
@@ -258,13 +265,6 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
-        <div className="ns-countdown">
-          <p className="ns-countdown-time">
-            {timeLeft.days}d {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m {pad(timeLeft.seconds)}s
-          </p>
-          <p className="ns-countdown-hint">remaining — Alpha Reward Program is live</p>
-        </div>
       </div>
     </DsNavSidebar>
   )
