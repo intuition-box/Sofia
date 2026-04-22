@@ -1,8 +1,9 @@
 /* ── InterestPage layout ── */
+/* Aligned with proto .pf-sections / .pf-section (gap 32px / 14px). */
 .ip-sections {
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 32px;
 }
 
 .ip-back {
@@ -14,6 +15,7 @@
 .ip-section {
   display: flex;
   flex-direction: column;
+  gap: 14px;
 }
 
 .ip-loader {

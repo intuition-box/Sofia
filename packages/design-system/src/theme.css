@@ -71,19 +71,24 @@
 }
 
 /* ── Sofia predicate colors (unprefixed — shared vocabulary) ── */
-/* These mirror INTENTION_CONFIG (src/taxonomy/intentions.ts) and are the
-   same across both themes. Used by verb-tag.css, bento.css, and by app code
-   via `var(--work)` / `var(--trusted)` / etc. No collision with shadcn. */
+/* Ported 1:1 from proto-explorer/src/styles.css:42-49.
+   NOTE: these are the PASTEL versions used in ambient CSS (borders, soft
+   tints, .pf-platform-card.connected, .fc-verb-tag backgrounds). The VIVID
+   versions (#22c55e / #ef4444 / #3b82f6 / …) live in
+   INTENTION_CONFIG (src/taxonomy/intentions.ts) and are pulled via
+   `getIntentionColor()` whenever a pill, badge, or accent needs to read
+   confidently in a white bg. Mixing both is intentional — same mapping as
+   the proto. */
 :root,
 [data-theme="light"],
 [data-theme="dark"],
 .dark {
-  --trusted: #22c55e;
-  --distrusted: #ef4444;
-  --work: #3b82f6;
-  --learning: #06b6d4;
-  --fun: #f59e0b;
-  --inspiration: #8b5cf6;
-  --buying: #ec4899;
-  --music: #ff5722;
+  --trusted: #6dd4a0;
+  --distrusted: #e87c7c;
+  --work: #7bade0;
+  --learning: #5cc4d6;
+  --fun: #e4b95a;
+  --inspiration: #a78bdb;
+  --buying: #d98cb3;
+  --music: #e0896a;
 }

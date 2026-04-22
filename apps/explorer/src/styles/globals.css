@@ -186,8 +186,15 @@
 
 html {
   font-size: var(--font-size);
-  font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+  /* Proto uses Geist as body font (see proto-explorer/src/styles.css). */
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
+}
+
+/* Grid-dot ambient background — ported from proto-explorer/src/styles.css body rule. */
+body {
+  background-image: radial-gradient(circle at 1px 1px, var(--ds-grid-dot) 1px, transparent 0);
+  background-size: 24px 24px;
 }
 
 /* Display heading utility */
