@@ -22,7 +22,10 @@
     "./styles/interests.css": "./src/styles/interests.css",
     "./styles/nav-sidebar.css": "./src/styles/nav-sidebar.css",
     "./styles/app-shell.css": "./src/styles/app-shell.css",
-    "./styles/page-hero.css": "./src/styles/page-hero.css"
+    "./styles/page-hero.css": "./src/styles/page-hero.css",
+    "./styles/section-title.css": "./src/styles/section-title.css",
+    "./styles/interest-hero.css": "./src/styles/interest-hero.css",
+    "./styles/sub-header.css": "./src/styles/sub-header.css"
   },
   "files": [
     "src"

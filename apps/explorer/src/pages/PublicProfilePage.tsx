@@ -122,7 +122,7 @@ export default function PublicProfilePage() {
 
   if (resolving) {
     return (
-      <div className="page-content page-enter" style={{ textAlign: 'center', padding: 60 }}>
+      <div className="pf-view page-enter" style={{ textAlign: 'center' }}>
         <SofiaLoader size={48} />
         <p className="text-sm text-muted-foreground mt-4">Resolving {rawAddress}...</p>
       </div>
@@ -131,14 +131,14 @@ export default function PublicProfilePage() {
 
   if (resolveError) {
     return (
-      <div className="page-content page-enter" style={{ textAlign: 'center', padding: 60 }}>
+      <div className="pf-view page-enter" style={{ textAlign: 'center' }}>
         <p className="text-sm text-muted-foreground">{resolveError}</p>
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="pf-view page-enter">
       <PageHeader
         color="#627EEA"
         glow="#627EEA66"
@@ -146,7 +146,7 @@ export default function PublicProfilePage() {
         subtitle={shortAddress !== displayName ? shortAddress : 'Public profile'}
       />
 
-      <div className="pp-sections page-content page-enter">
+      <div className="pp-sections">
 
         {/* Stats */}
         {profileLoading ? (

@@ -15,6 +15,9 @@
 @import "@0xsofia/design-system/styles/nav-sidebar.css";
 @import "@0xsofia/design-system/styles/app-shell.css";
 @import "@0xsofia/design-system/styles/page-hero.css";
+@import "@0xsofia/design-system/styles/section-title.css";
+@import "@0xsofia/design-system/styles/interest-hero.css";
+@import "@0xsofia/design-system/styles/sub-header.css";
 
 /* ── Explorer-specific positioning of the design-system nav sidebar ── */
 /* The shared .nav-sidebar stylesheet is layout-agnostic. Explorer lays it

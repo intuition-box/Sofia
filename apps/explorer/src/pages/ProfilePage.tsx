@@ -14,7 +14,7 @@ import TopClaimsSection from '../components/profile/TopClaimsSection'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Wallet, User } from 'lucide-react'
-import { PageHero } from '@0xsofia/design-system'
+import { PageHero, SectionTitle } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
@@ -96,7 +96,7 @@ export default function ProfilePage() {
         {/* Top Claims */}
         {(claimsLoading || topClaims.length > 0) && (
           <section className="pp-section">
-            <h3 className="pp-section-title">Top Claims</h3>
+            <SectionTitle>Top Claims</SectionTitle>
             <TopClaimsSection
               claims={topClaims}
               loading={claimsLoading}
@@ -108,7 +108,7 @@ export default function ProfilePage() {
 
         {/* Interests */}
         <section className="pp-section">
-          <h3 className="pp-section-title">{isViewingAs ? 'Interests' : 'My Interests'}</h3>
+          <SectionTitle>{isViewingAs ? 'Interests' : 'My Interests'}</SectionTitle>
           <InterestsGrid
             selectedTopics={selectedTopics}
             selectedCategories={selectedCategories}
@@ -120,7 +120,7 @@ export default function ProfilePage() {
 
         {/* Last Activity */}
         <section className="pp-section">
-          <h3 className="pp-section-title">Last Activity</h3>
+          <SectionTitle>Last Activity</SectionTitle>
           <LastActivitySection
             items={activityItems}
             loading={activityLoading}

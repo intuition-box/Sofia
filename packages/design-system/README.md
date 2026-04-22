@@ -26,6 +26,10 @@ Scaffold + first-wave submodules landing incrementally on `feat/design-system-pa
 | Explorer migration — profile page hero | ✅ Done | `<PageHero>` replaces `<PageHeader>` on `ProfilePage` |
 | Explorer migration — profile layout polish | ✅ Done | Peach banner color, `.pf-view` max-width 1040px wrapper, Fraunces loaded, third `zoom: 1.25` removed from `RightSidebar`, `rs-aside` → 280px |
 | Explorer migration — `TopClaimsSection` | ✅ Done | `INTENTION_COLORS_BY_LABEL` + `LABEL_TO_INTENTION` + `intentionBadgeStyle` + `FaviconWrapper` from design-system; drops local `predicateToIntention` + dead `.tc-favicon` CSS |
+| `<SectionTitle>` + `section-title.css` | ✅ Done | Uppercase tracked eyebrow ported 1:1 from proto. Adopted on `ProfilePage` sections (Top Claims / Interests / Last Activity) |
+| `<InterestHero>` + `interest-hero.css` | ✅ Done | Emoji + kicker + Fraunces title + description + Topic-score pill. 1:1 port of proto `.pf-interest-header`. Replaces explorer's `<PageHeader>` on `InterestPage`. Requires JetBrains Mono (added to `index.html`). |
+| `<SubHeader>` + `sub-header.css` | ✅ Done | Breadcrumb-style header (back circle + `›` crumbs + right pill + description) ported from proto `subHeader`. Adopted on `DomainSelectionPage`, `NicheSelectionPage`, `DomainNicheSelectionPage`, `PlatformConnectionPage`. Proto unprefixed tokens remapped to `--ds-*`. |
+| Profile drawer overlap fix | ✅ Done | `.main-content--profile { margin-right: 400px }` to match `ProfileDrawer`'s 400px width; all `/profile*` routes wrap content + hero inside `.pf-view` so nothing bleeds under the drawer. |
 
 ## Usage
 

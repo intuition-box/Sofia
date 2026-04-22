@@ -1,0 +1,110 @@
+/**
+ * Sub-header — breadcrumb-style header on Profile sub-pages.
+ * Ported 1:1 from the proto's `.pf-sub-header-wrap` / `.pf-sub-*` block
+ * (proto-explorer/src/styles/profile.css:33-130). Unprefixed proto tokens
+ * (--ink, --muted, --card, --border, --border-soft, --muted-soft) remapped
+ * to the design-system's --ds-* tokens.
+ */
+
+.pf-sub-header-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0 20px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--ds-border-soft);
+}
+
+.pf-sub-description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ds-muted);
+  max-width: 680px;
+}
+
+.pf-sub-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pf-back {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-ink);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+}
+.pf-back:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateX(-2px);
+}
+
+.pf-sub-crumbs {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pf-sub-crumb {
+  color: var(--ds-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pf-sub-crumb:last-child {
+  font-family: "Fraunces", serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+.pf-sub-crumb-topic:last-child {
+  color: var(--crumb-color, var(--ds-ink));
+}
+
+.pf-sub-sep {
+  color: var(--ds-muted-soft);
+  font-size: 14px;
+}
+
+.pf-sub-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pill-color, var(--ds-muted)) 10%, var(--ds-card));
+  border: 1px solid color-mix(in srgb, var(--pill-color, var(--ds-border)) 28%, var(--ds-border-soft));
+  flex-shrink: 0;
+}
+
+.pf-sub-pill-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ds-muted);
+}
+
+.pf-sub-pill-value {
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--pill-color, var(--ds-ink));
+  line-height: 1;
+}

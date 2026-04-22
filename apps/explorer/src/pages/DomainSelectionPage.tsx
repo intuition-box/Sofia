@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useTopicSync } from '@/hooks/useTopicSync'
 import DomainSelector from '@/components/profile/DomainSelector'
-import PageHeader from '@/components/PageHeader'
+import { SubHeader } from '@0xsofia/design-system'
 import '@/components/styles/pages.css'
+
+const MAX_TOPICS = 3
 
 export default function DomainSelectionPage() {
   const navigate = useNavigate()
@@ -18,18 +20,22 @@ export default function DomainSelectionPage() {
   }
 
   return (
-    <div>
-      <PageHeader color="#ffffff" glow="rgba(255,255,255,0.2)" title="Select Topics" subtitle="Choose your areas of interest" />
-      <div className="page-content page-enter">
-        <DomainSelector
-          selectedTopics={selectedTopics}
-          onToggle={handleToggle}
-          onContinue={() => navigate('/profile')}
-          onBack={() => navigate('/profile')}
-          hasPosition={hasPosition}
-          isPending={isPending}
-        />
-      </div>
+    <div className="pf-view page-enter">
+      <SubHeader
+        onBack={() => navigate('/profile')}
+        backLabel="Back to Profile"
+        crumbs={[{ label: 'Profile' }, { label: 'Select Topics' }]}
+        rightPill={{ label: 'Selected', value: `${selectedTopics.length} / ${MAX_TOPICS}` }}
+        description="Pick the topics that anchor your knowledge graph."
+      />
+      <DomainSelector
+        selectedTopics={selectedTopics}
+        onToggle={handleToggle}
+        onContinue={() => navigate('/profile')}
+        onBack={() => navigate('/profile')}
+        hasPosition={hasPosition}
+        isPending={isPending}
+      />
     </div>
   )
 }

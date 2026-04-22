@@ -17,7 +17,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, ThumbsUp, ThumbsDown, Plus, ExternalLink, Info } from 'lucide-react'
-import PageHeader from '@/components/PageHeader'
+import { InterestHero, getTopicEmoji } from '@0xsofia/design-system'
 import NicheDetailList from '@/components/profile/NicheDetailList'
 import TrendingCard from '@/components/TrendingCard'
 import PositionBoardDialog from '@/components/profile/PositionBoardDialog'
@@ -67,7 +67,7 @@ export default function InterestPage() {
 
   if (!topic) {
     return (
-      <div className="page-content page-enter">
+      <div className="pf-view page-enter">
         <p className="text-sm text-muted-foreground">Topic not found.</p>
         <Button variant="ghost" className="mt-4" onClick={() => navigate('/profile')}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
@@ -77,12 +77,17 @@ export default function InterestPage() {
   }
 
   const color = topic.color
-  const glow = `${color}66`
 
   return (
-    <div>
-      <PageHeader color={color} glow={glow} title={topic.label} subtitle="Interest overview" />
-      <div className="ip-sections page-content page-enter">
+    <div className="pf-view page-enter">
+      <InterestHero
+        emoji={getTopicEmoji(topicId!)}
+        title={topic.label}
+        description={`Your footprint in ${topic.label} — categories you own, platforms you certified, and what the network signals here.`}
+        topicColor={color}
+        stat={{ value: topicScore?.score ?? 0, label: 'Topic score' }}
+      />
+      <div className="ip-sections">
 
         {/* Back */}
         <Button variant="ghost" size="sm" className="ip-back" onClick={() => navigate('/profile')}>

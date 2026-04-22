@@ -4,7 +4,7 @@ import { usePlatformCatalog } from '@/hooks/usePlatformCatalog'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import { usePlatformConnections } from '@/hooks/usePlatformConnections'
 import PlatformGrid from '@/components/profile/PlatformGrid'
-import PageHeader from '@/components/PageHeader'
+import { SubHeader, getTopicEmoji } from '@0xsofia/design-system'
 import '@/components/styles/pages.css'
 
 export default function PlatformConnectionPage() {
@@ -25,32 +25,39 @@ export default function PlatformConnectionPage() {
 
   if (!topic) {
     return (
-      <div className="page-content page-enter">
+      <div className="pf-view page-enter">
         <p className="text-sm text-muted-foreground">Topic not found.</p>
       </div>
     )
   }
 
-  const color = topic.color
-  const glow = `${color}66`
+  const connectedCount = platforms.filter((p) => getStatus(p.id) === 'connected').length
 
   return (
-    <div>
-      <PageHeader color={color} glow={glow} title={`${topic.label} Platforms`} subtitle={`${platforms.length} platforms available`} />
-      <div className="page-content page-enter">
-        <PlatformGrid
-          selectedCategories={selectedCategories}
-          getStatus={getStatus}
-          getConnection={getConnection}
-          onConnect={connect}
-          onDisconnect={disconnect}
-          onStartChallenge={startChallenge}
-          onVerifyChallenge={verifyChallengeCode}
-          onBack={() => navigate(`/profile/interest/${topicId}`)}
-          platforms={platforms}
-          currentTopic={topicId}
-        />
-      </div>
+    <div className="pf-view page-enter">
+      <SubHeader
+        onBack={() => navigate(`/profile/interest/${topicId}`)}
+        backLabel={`Back to ${topic.label}`}
+        crumbs={[
+          { label: 'Profile' },
+          { label: `${getTopicEmoji(topicId!)} ${topic.label}`, topicColor: topic.color },
+          { label: 'Platforms' },
+        ]}
+        rightPill={{ label: 'Connected', value: `${connectedCount} / ${platforms.length}`, color: topic.color }}
+        description={`Certify your presence on the platforms that matter for ${topic.label}.`}
+      />
+      <PlatformGrid
+        selectedCategories={selectedCategories}
+        getStatus={getStatus}
+        getConnection={getConnection}
+        onConnect={connect}
+        onDisconnect={disconnect}
+        onStartChallenge={startChallenge}
+        onVerifyChallenge={verifyChallengeCode}
+        onBack={() => navigate(`/profile/interest/${topicId}`)}
+        platforms={platforms}
+        currentTopic={topicId}
+      />
     </div>
   )
 }
