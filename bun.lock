@@ -9,6 +9,7 @@
       "name": "explorer",
       "version": "0.1.0",
       "dependencies": {
+        "@0xsofia/design-system": "workspace:*",
         "@0xsofia/graphql": "workspace:*",
         "@dicebear/collection": "^9.0.0",
         "@dicebear/core": "^9.0.0",
