@@ -36,7 +36,11 @@ interface TopicPieSlice {
 }
 
 function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
-  const total = slices.reduce((a, s) => a + s.score, 0)
+  const realTotal = slices.reduce((a, s) => a + s.score, 0)
+  // When no topic has scored yet, fall back to equal slices so the ring
+  // still teases the colour breakdown of the user's picked topics.
+  const equalFallback = realTotal === 0 && slices.length > 0
+  const denom = equalFallback ? slices.length : realTotal
   const r = 50
   const C = 2 * Math.PI * r
   let cursor = 0
@@ -45,11 +49,12 @@ function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
     <div className="pd-ts-pie-wrap">
       <svg className="pd-ts-pie" viewBox="0 0 120 120" aria-hidden="true">
         {slices.map((t) => {
-          const pct = total > 0 ? t.score / total : 0
+          const value = equalFallback ? 1 : t.score
+          const pct = denom > 0 ? value / denom : 0
           const sliceLen = pct * C
           const rest = C - sliceLen
-          const startDeg = -90 + (total > 0 ? (cursor / total) * 360 : 0)
-          cursor += t.score
+          const startDeg = -90 + (denom > 0 ? (cursor / denom) * 360 : 0)
+          cursor += value
           return (
             <circle
               key={t.id}
@@ -60,6 +65,7 @@ function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
               stroke={t.color}
               strokeWidth={14}
               strokeDasharray={`${sliceLen.toFixed(2)} ${rest.toFixed(2)}`}
+              strokeOpacity={equalFallback ? 0.35 : 1}
               transform={`rotate(${startDeg.toFixed(2)} 60 60)`}
             />
           )
@@ -67,8 +73,10 @@ function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
         <circle cx={60} cy={60} r={36} fill="var(--ds-card)" />
       </svg>
       <div className="pd-ts-pie-center">
-        <span className="pd-ts-pie-value">{Math.round(total)}</span>
-        <span className="pd-ts-pie-label">total</span>
+        <span className="pd-ts-pie-value">{Math.round(realTotal)}</span>
+        <span className="pd-ts-pie-label">
+          {equalFallback ? 'build it up' : 'total'}
+        </span>
       </div>
     </div>
   )
@@ -137,7 +145,7 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
         score: Math.round(scoreEntry?.score ?? 0),
       }
     })
-    .filter((x): x is TopicPieSlice => x !== null && x.score > 0)
+    .filter((x): x is TopicPieSlice => x !== null)
 
   // Rough percentile from trustScore (0-100). Falls back to 'Top 50%' when unknown.
   const percentileLabel = trustScore != null
