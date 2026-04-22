@@ -150,21 +150,23 @@
   background: linear-gradient(90deg, transparent, var(--ds-border), transparent);
 }
 
-/* Pin the auth chip / connect pill to the bottom of the rail. Whichever
-   one renders, it carries margin-top: auto so the countdown naturally
-   sits just below it. */
+/* Bottom cluster wrapper — holds the auth block + countdown and pins
+   the whole group to the bottom of the rail (whether auth renders or
+   not). Items stack with a 10px gap. */
+.ns-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .ns-auth-chip,
 .ns-auth-connect {
-  margin-top: auto;
-  margin-bottom: 10px;
+  margin: 0;
 }
 
-/* ── Season countdown (pinned to the bottom) ─────────────────────── */
+/* ── Season countdown ─────────────────────────────────────────────── */
 
 .ns-countdown {
-  /* Also margin-top:auto so the countdown still pins to the bottom when
-     no auth element precedes it (signed out + Privy not ready yet). */
-  margin-top: auto;
   padding: 12px 14px;
   border: 1px solid var(--ds-border);
   border-radius: 12px;

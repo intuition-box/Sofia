@@ -39,8 +39,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
+  letter-spacing: -0.005em;
   color: var(--ds-ink);
   margin-bottom: 8px;
 }

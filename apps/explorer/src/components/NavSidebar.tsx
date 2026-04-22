@@ -212,56 +212,59 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
         </NavSection>
       ) : null}
 
-      {/* Auth (pinned just above the countdown) — connect when logged out,
-          avatar chip + Disconnect menu when logged in. */}
-      {ready && !authenticated && (
-        <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
-          <Wallet className="h-4 w-4 mr-1" />
-          Connect
-        </Button>
-      )}
-      {ready && authenticated && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button type="button" className="ns-auth-chip" aria-label="Account menu">
-              {profileAvatar ? (
-                <img
-                  src={profileAvatar}
-                  alt={profileName}
-                  referrerPolicy="no-referrer"
-                  className="ns-auth-avatar"
-                />
-              ) : (
-                <span className="ns-auth-avatar ns-auth-avatar--fallback">
-                  {profileName.slice(0, 2).toUpperCase()}
+      {/* Bottom cluster — auth block + season countdown. margin-top:auto
+          on .ns-bottom pushes the group to the bottom; the countdown
+          sits directly under the auth card. */}
+      <div className="ns-bottom">
+        {ready && !authenticated && (
+          <Button size="sm" className="ns-auth-connect" onClick={() => login()}>
+            <Wallet className="h-4 w-4 mr-1" />
+            Connect
+          </Button>
+        )}
+        {ready && authenticated && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className="ns-auth-chip" aria-label="Account menu">
+                {profileAvatar ? (
+                  <img
+                    src={profileAvatar}
+                    alt={profileName}
+                    referrerPolicy="no-referrer"
+                    className="ns-auth-avatar"
+                  />
+                ) : (
+                  <span className="ns-auth-avatar ns-auth-avatar--fallback">
+                    {profileName.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <span className="ns-auth-meta">
+                  <span className="ns-auth-name">{profileName}</span>
+                  {displayAddr && <span className="ns-auth-sub">{displayAddr}</span>}
                 </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top">
+              {!address && (
+                <DropdownMenuItem onClick={() => linkWallet()}>
+                  <Wallet className="mr-2 h-4 w-4" />
+                  Link Wallet
+                </DropdownMenuItem>
               )}
-              <span className="ns-auth-meta">
-                <span className="ns-auth-name">{profileName}</span>
-                {displayAddr && <span className="ns-auth-sub">{displayAddr}</span>}
-              </span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="top">
-            {!address && (
-              <DropdownMenuItem onClick={() => linkWallet()}>
-                <Wallet className="mr-2 h-4 w-4" />
-                Link Wallet
+              <DropdownMenuItem onClick={() => logout()}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Disconnect
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={() => logout()}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Disconnect
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
-      <div className="ns-countdown">
-        <p className="ns-countdown-time">
-          {timeLeft.days}d {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m {pad(timeLeft.seconds)}s
-        </p>
-        <p className="ns-countdown-hint">remaining — Alpha Reward Program is live</p>
+        <div className="ns-countdown">
+          <p className="ns-countdown-time">
+            {timeLeft.days}d {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m {pad(timeLeft.seconds)}s
+          </p>
+          <p className="ns-countdown-hint">remaining — Alpha Reward Program is live</p>
+        </div>
       </div>
     </DsNavSidebar>
   )
