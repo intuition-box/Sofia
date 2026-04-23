@@ -79,7 +79,7 @@ query GetTriplesWithPositions(
   $offset: Int
   $orderBy: [triples_order_by!]
   $where: triples_bool_exp
-  $address: String
+  $addresses: [String!]
 ) {
   total: triples_aggregate(where: $where) {
     aggregate {
@@ -108,7 +108,7 @@ query GetTriplesWithPositions(
       vaults {
         total_shares
         position_count
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           account {
             id
             label
@@ -122,7 +122,7 @@ query GetTriplesWithPositions(
       vaults {
         total_shares
         position_count
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           account {
             id
             label
@@ -137,7 +137,7 @@ query GetTriplesWithPositions(
 
 query FindTriples(
   $where: triples_bool_exp = {}
-  $address: String!
+  $addresses: [String!]!
   $limit: Int = 100
 ) {
   triples(where: $where, limit: $limit) {
@@ -145,7 +145,7 @@ query FindTriples(
     subject_id
     predicate_id
     object_id
-    positions(where: { account_id: { _eq: $address } }) {
+    positions(where: { account_id: { _in: $addresses } }) {
       shares
     }
   }

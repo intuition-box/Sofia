@@ -1,5 +1,6 @@
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
+import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useDiscoveryScore } from '../hooks/useDiscoveryScore'
 import { useTopicSelection } from '../hooks/useDomainSelection'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
@@ -11,6 +12,7 @@ import { useTrustScore } from '../hooks/useTrustScore'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
+import LinkedWalletsSection from './profile/LinkedWalletsSection'
 import type { Address } from 'viem'
 import './styles/profile-drawer.css'
 
@@ -22,15 +24,18 @@ interface ProfileDrawerProps {
 export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
   const { authenticated, user } = usePrivy()
   const address = user?.wallet?.address ?? ''
+  const { addresses: linkedAddresses } = useLinkedWallets()
   const { getDisplay, getAvatar } = useEnsNames(address ? [address as Address] : [])
-  const { stats } = useDiscoveryScore(address || undefined)
+  const { stats } = useDiscoveryScore(linkedAddresses.length > 0 ? linkedAddresses : undefined)
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus, connectedCount } = usePlatformConnections()
   const { score: trustScore, loading: trustScoreLoading } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustScore, signals)
   const topicScores = scores?.topics ?? []
-  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(address || undefined)
+  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
+    linkedAddresses.length > 0 ? linkedAddresses : undefined,
+  )
 
   const {
     isModalOpen,
@@ -182,6 +187,9 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
               </div>
             )}
           </div>
+
+          {/* Linked wallets — read-only list for transparency on multi-wallet accounts */}
+          <LinkedWalletsSection />
         </div>
       </aside>
 

@@ -45,16 +45,26 @@ export function extractSide(vaults: any[] | undefined, decimals = 18n): SideResu
   return { marketCap: String(totalMarketCap), count: totalCount, userPnlPct }
 }
 
-// Global cache to avoid re-fetching
+// Global cache to avoid re-fetching. Key includes the addresses set because
+// userPnlPct depends on which wallets own positions on the triple.
 export const statsCache = new Map<string, VaultStats>()
 
-export async function fetchVaultStats(termId: string, walletAddress: string): Promise<VaultStats | null> {
-  const cached = statsCache.get(termId)
+export function cacheKey(termId: string, addresses: string[]): string {
+  if (addresses.length === 0) return `${termId}::`
+  return `${termId}::${[...addresses].sort().join(',')}`
+}
+
+export async function fetchVaultStats(
+  termId: string,
+  addresses: string[],
+): Promise<VaultStats | null> {
+  const key = cacheKey(termId, addresses)
+  const cached = statsCache.get(key)
   if (cached) return cached
 
   const data = await useGetTripleVaultStatsQuery.fetcher({
     termId,
-    address: walletAddress || '0x0000000000000000000000000000000000000000',
+    addresses,
   })()
 
   const triple = data.triples?.[0]
@@ -73,7 +83,7 @@ export async function fetchVaultStats(termId: string, walletAddress: string): Pr
     userPnlPct,
   }
 
-  statsCache.set(termId, result)
+  statsCache.set(key, result)
   return result
 }
 

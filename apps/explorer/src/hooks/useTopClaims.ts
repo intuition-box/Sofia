@@ -21,11 +21,12 @@ export interface TopClaim {
   totalMarketCap: bigint
 }
 
-async function resolveTopClaims(walletAddress: string): Promise<TopClaim[]> {
+async function resolveTopClaims(addresses: string[]): Promise<TopClaim[]> {
+  if (addresses.length === 0) return []
   // 1. Fetch user's activity filtered by Sofia proxy (server-side)
   const activityData = await useGetUserActivityQuery.fetcher({
     proxy: SOFIA_PROXY_ADDRESS.toLowerCase(),
-    receiver: walletAddress.toLowerCase(),
+    receivers: addresses.map((a) => a.toLowerCase()),
     limit: 200,
     offset: 0,
   })()
@@ -53,7 +54,7 @@ async function resolveTopClaims(walletAddress: string): Promise<TopClaim[]> {
   // 3. Batch fetch vault stats — ONE query
   const statsData = await useGetBatchTripleVaultStatsQuery.fetcher({
     termIds: tripleTermIds,
-    address: walletAddress,
+    addresses,
   })()
 
   // 4. Process results
@@ -72,8 +73,12 @@ async function resolveTopClaims(walletAddress: string): Promise<TopClaim[]> {
       userPnlPct: support.userPnlPct ?? oppose.userPnlPct,
     }
 
-    // Cache for tooltip reuse
-    statsCache.set(triple.term_id, stats)
+    // Cache for tooltip reuse — keyed on (termId, addresses) because PnL
+    // depends on which wallets hold positions.
+    statsCache.set(
+      `${triple.term_id}::${[...addresses].sort().join(',')}`,
+      stats,
+    )
 
     claims.push({
       termId: triple.term_id,
@@ -90,11 +95,15 @@ async function resolveTopClaims(walletAddress: string): Promise<TopClaim[]> {
     .slice(0, 4)
 }
 
-export function useTopClaims(walletAddress: string | undefined) {
+export function useTopClaims(addresses: string[] | undefined) {
+  const normalized = addresses ? [...addresses].sort() : []
+  const cacheKey = normalized.join(',') || undefined
+  const enabled = !!addresses && addresses.length > 0
+
   const { data, isLoading } = useQuery<TopClaim[]>({
-    queryKey: ['topClaims', walletAddress],
-    queryFn: () => resolveTopClaims(walletAddress!),
-    enabled: !!walletAddress,
+    queryKey: cacheKey ? ['topClaims', cacheKey] : ['topClaims', undefined],
+    queryFn: () => resolveTopClaims(addresses!),
+    enabled,
     // Trust the persister between sessions; the data moves on the
     // order of minutes and our custom serializer handles the bigint
     // totalMarketCap. Background refresh happens on explicit refresh

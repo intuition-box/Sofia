@@ -1,7 +1,7 @@
 query GetFollowingPositions(
   $subjectId: String!
   $predicateId: String!
-  $address: String!
+  $addresses: [String!]!
   $limit: Int
   $offset: Int
   $positionsOrderBy: [positions_order_by!]
@@ -11,7 +11,7 @@ query GetFollowingPositions(
       _and: [
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
-        { positions: { account_id: { _ilike: $address }, shares: { _gt: "0" } } }
+        { positions: { account_id: { _in: $addresses }, shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -27,7 +27,7 @@ query GetFollowingPositions(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
-        { positions: { account_id: { _ilike: $address }, shares: { _gt: "0" } } }
+        { positions: { account_id: { _in: $addresses }, shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -71,7 +71,7 @@ query GetFollowingPositions(
           }
         }
         positions(
-          where: { account_id: { _ilike: $address }, shares: { _gt: "0" } }
+          where: { account_id: { _in: $addresses }, shares: { _gt: "0" } }
           order_by: $positionsOrderBy
         ) {
           account_id
@@ -221,7 +221,7 @@ query GetConnectionsCount(
   $subjectId: String!
   $predicateId: String!
   $objectId: String!
-  $address: String!
+  $addresses: [String!]!
 ) {
   # Following count
   following_count: triples_aggregate(
@@ -229,7 +229,7 @@ query GetConnectionsCount(
       _and: [
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
-        { positions: { account_id: { _ilike: $address } } }
+        { positions: { account_id: { _in: $addresses } } }
       ]
     }
   ) {
@@ -268,7 +268,7 @@ query GetConnectionsCount(
 query GetMyFollowing(
   $subjectId: String!
   $predicateId: String!
-  $walletAddress: String!
+  $walletAddresses: [String!]!
 ) {
   triples(
     where: {
@@ -276,7 +276,7 @@ query GetMyFollowing(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
-        { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
+        { positions: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -293,7 +293,7 @@ query GetMyFollowing(
     }
     term {
       vaults(where: { curve_id: { _eq: "1" } }, order_by: { curve_id: asc }) {
-        positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
+        positions(where: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } }) {
           account_id
           shares
           created_at
@@ -308,7 +308,7 @@ query GetMyFollowing(
 query GetMyTrustCircle(
   $subjectId: String!
   $predicateId: String!
-  $walletAddress: String!
+  $walletAddresses: [String!]!
 ) {
   triples(
     where: {
@@ -316,7 +316,7 @@ query GetMyTrustCircle(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
-        { positions: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } } }
+        { positions: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } } }
       ]
     }
   ) {
@@ -334,7 +334,7 @@ query GetMyTrustCircle(
     term {
       vaults(order_by: { curve_id: asc }) {
         curve_id
-        positions(where: { account_id: { _eq: $walletAddress }, shares: { _gt: "0" } }) {
+        positions(where: { account_id: { _in: $walletAddresses }, shares: { _gt: "0" } }) {
           account_id
           shares
           created_at
@@ -345,11 +345,11 @@ query GetMyTrustCircle(
 }
 
 # Query to find user's Account atom by wallet address
-query GetAccountAtomByWallet($address: String!) {
+query GetAccountAtomByWallet($addresses: [String!]!) {
   atoms(
     where: {
       _and: [
-        { data: { _ilike: $address } }
+        { data: { _in: $addresses } }
         { type: { _eq: "Account" } }
       ]
     }

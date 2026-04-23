@@ -1,10 +1,10 @@
 subscription WatchUserTrackedPositions(
-  $accountId: String!
+  $accountIds: [String!]!
   $termIds: [String!]!
 ) {
   positions(
     where: {
-      account_id: { _ilike: $accountId }
+      account_id: { _in: $accountIds }
       term_id: { _in: $termIds }
     }
     order_by: { shares: desc }

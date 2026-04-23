@@ -70,9 +70,9 @@ export default function PublicProfilePage() {
   const { getDisplay, getAvatar } = useEnsNames(addresses)
 
   // Fetch data
-  const { profile, isLoading: profileLoading } = useUserProfile(walletAddress)
-  const { claims: topClaims, loading: claimsLoading } = useTopClaims(walletAddress)
-  const { items: activityItems, loading: activityLoading } = useUserActivity(walletAddress)
+  const { profile, isLoading: profileLoading } = useUserProfile(addresses)
+  const { claims: topClaims, loading: claimsLoading } = useTopClaims(addresses)
+  const { items: activityItems, loading: activityLoading } = useUserActivity(addresses)
   const { score: trustScore } = useTrustScore(walletAddress)
 
   // Derive interests from positions

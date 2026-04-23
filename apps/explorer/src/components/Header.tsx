@@ -5,11 +5,10 @@ import { isAddress } from 'viem'
 import { Button } from "./ui/button";
 import { Search, Bell, Home, Wallet, LogOut, Sun, Moon, User, Menu, PanelRight } from "lucide-react";
 import { useTheme } from '../hooks/useTheme'
-import { useEnsNames } from '../hooks/useEnsNames'
+import { useMyEns } from '../hooks/useMyEns'
 import { useCart } from '../hooks/useCart'
 import { useViewAs } from '../hooks/useViewAs'
 import { resolveEnsToAddress } from '../services/ensService'
-import type { Address } from 'viem'
 import './styles/header.css'
 import {
   DropdownMenu,
@@ -61,10 +60,7 @@ export function Header({ onCartClick, onMenuClick, showMenu, compact, onProfileD
   }
 
   const walletAddress = user?.wallet?.address
-  const addresses = walletAddress ? [walletAddress as Address] : []
-  const { getDisplay, getAvatar } = useEnsNames(addresses)
-  const ensName = walletAddress ? getDisplay(walletAddress as Address) : ''
-  const ensAvatar = walletAddress ? getAvatar(walletAddress as Address) : ''
+  const { displayName: ensName, avatar: ensAvatar } = useMyEns()
   const displayAddress = walletAddress
     ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4)
     : ''

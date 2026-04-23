@@ -14,16 +14,21 @@ export interface TrustCircleAccount {
 }
 
 /**
- * Fetch accounts the user has trusted (I → TRUSTS → Account with positions)
- * Mirrors extension's useTrustCircle logic exactly.
+ * Fetch accounts the user has trusted (I → TRUSTS → Account with positions),
+ * unioned across all linked wallets. Mirrors the extension's useTrustCircle
+ * logic — a triple is included if *any* linked wallet holds a position on it.
  */
-export async function fetchTrustCircle(walletAddress: string): Promise<TrustCircleAccount[]> {
-  const checksumAddress = getAddress(walletAddress)
+export async function fetchTrustCircle(
+  addresses: string[],
+): Promise<TrustCircleAccount[]> {
+  if (addresses.length === 0) return []
+
+  const checksumAddresses = addresses.map((a) => getAddress(a))
 
   const response = await useGetMyTrustCircleQuery.fetcher({
     subjectId: SUBJECT_IDS.I,
     predicateId: PREDICATE_IDS.TRUSTS,
-    walletAddress: checksumAddress,
+    walletAddresses: checksumAddresses,
   })()
 
   if (!response?.triples) return []

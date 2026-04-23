@@ -26,7 +26,7 @@ export default function ActivityCard({ item, walletAddress }: ActivityCardProps)
 
   const { data: stats } = useQuery({
     queryKey: ['vaultStats', termId],
-    queryFn: () => fetchVaultStats(termId!, walletAddress || ''),
+    queryFn: () => fetchVaultStats(termId!, walletAddress ? [walletAddress] : []),
     enabled: !!termId,
     staleTime: 120_000,
   })
