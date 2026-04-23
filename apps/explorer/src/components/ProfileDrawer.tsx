@@ -12,6 +12,7 @@ import { useTrustScore } from '../hooks/useTrustScore'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
+import LinkedWalletsSection from './profile/LinkedWalletsSection'
 import type { Address } from 'viem'
 import './styles/profile-drawer.css'
 
@@ -186,6 +187,9 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
               </div>
             )}
           </div>
+
+          {/* Linked wallets — read-only list for transparency on multi-wallet accounts */}
+          <LinkedWalletsSection />
         </div>
       </aside>
 
