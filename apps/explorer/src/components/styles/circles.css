@@ -371,6 +371,79 @@
   padding: 0;
   color: #ffffff;
 }
+
+/* ── Hover color-picker on the avatar (Trust Circle) ─────────────
+ * Wraps `.crd-hero-logo`. On hover/focus, 8 swatches bloom radially
+ * from the centre of the avatar using --angle set per-swatch inline.
+ * The picker itself is a 160×160 invisible disc centred on the
+ * avatar, acting as a persistent hover zone so the cursor can reach
+ * the outer swatches without the hover dropping. */
+.crd-hero-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 14px;
+  outline: none;
+  cursor: pointer;
+}
+.crd-hero-avatar-wrap:focus-visible {
+  box-shadow: 0 0 0 2px var(--ds-accent);
+}
+
+.crd-hero-color-picker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 160px;
+  height: 160px;
+  margin: -80px 0 0 -80px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 20;
+}
+.crd-hero-avatar-wrap:hover .crd-hero-color-picker,
+.crd-hero-avatar-wrap:focus-within .crd-hero-color-picker {
+  pointer-events: auto;
+}
+
+.crd-color-swatch {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  background-clip: padding-box;
+  /* Collapsed state — all swatches stacked at the avatar centre. */
+  transform: rotate(var(--angle, 0deg)) translateY(0) scale(0.2);
+  opacity: 0;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.crd-hero-avatar-wrap:hover .crd-color-swatch,
+.crd-hero-avatar-wrap:focus-within .crd-color-swatch {
+  /* Bloomed state — each swatch flies to its --angle on a 56px radius. */
+  transform: rotate(var(--angle, 0deg)) translateY(-56px) scale(1);
+  opacity: 1;
+}
+.crd-color-swatch:hover {
+  transform: rotate(var(--angle, 0deg)) translateY(-56px) scale(1.15);
+}
+.crd-color-swatch[aria-checked="true"] {
+  border-color: var(--ds-ink);
+}
+.crd-color-swatch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ds-accent);
+}
+
 .crd-hero-title-wrap {
   flex: 1;
   min-width: 0;
