@@ -21,6 +21,7 @@ import {
   Wallet,
   LogOut,
   ShoppingCart,
+  Users,
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useTrustCircle } from '../hooks/useTrustCircle'
@@ -57,9 +58,13 @@ interface NavSidebarProps {
   /** Toggles the cart drawer. Receives the new open state so the parent can
    *  mirror it into its own state. */
   onCartClick?: () => void
+  /** Collapsed state — flips the chevron + hides labels. */
+  collapsed?: boolean
+  /** Fires when the user clicks the collapse chevron. */
+  onToggleCollapse?: () => void
 }
 
-export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
+export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSidebarProps = {}) {
   const location = useLocation()
   const { ready, authenticated, user } = usePrivy()
   const { login } = useLogin()
@@ -88,6 +93,7 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
   const navItems: { to: string; icon: typeof Home; label: string; public: boolean }[] = [
     { to: '/feed', icon: Home, label: 'Home', public: true },
     { to: '/profile', icon: User, label: 'My Profile', public: false },
+    { to: '/circles', icon: Users, label: 'Circles', public: false },
   ]
 
   const quickLinks: { to: string; icon: typeof Home; label: string; public: boolean }[] = [
@@ -130,6 +136,8 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
       <NavBrand
         name="Sofia Explorer"
         tag="v0.4"
+        collapsed={collapsed}
+        onToggleCollapse={onToggleCollapse}
         logo={
           <img
             src={theme === 'dark' ? '/logo.png' : '/logo_invert.png'}
@@ -183,8 +191,8 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
             <p className="ns-tc-empty">No accounts yet.</p>
           ) : (
             <div className="ns-circles-list">
-              <button
-                type="button"
+              <Link
+                to="/circles/trust"
                 className="ns-circle"
                 title={`Trust Circle — ${trustCircle.length} member${trustCircle.length === 1 ? '' : 's'}`}
               >
@@ -213,7 +221,7 @@ export function NavSidebar({ onCartClick }: NavSidebarProps = {}) {
                   )}
                   <span className="ns-mav ns-mav-add" aria-hidden="true">+</span>
                 </div>
-              </button>
+              </Link>
             </div>
           )}
         </NavSection>

@@ -9,6 +9,11 @@
 .main-content--profile { margin-right: 290px; }
 .main-content--no-sidebar { margin-left: 0; margin-right: 0; padding-top: 48px; }
 
+/* Nav collapsed — main follows the narrower 68px rail. `--no-sidebar`
+   already forces margin-left:0, so it wins regardless. */
+.nav-collapsed .main-content { margin-left: 68px; }
+.nav-collapsed .main-content.main-content--no-sidebar { margin-left: 0; }
+
 /* ── RightSidebar ── */
 .rs-aside {
   width: 290px;

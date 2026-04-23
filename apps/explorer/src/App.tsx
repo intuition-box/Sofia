@@ -7,6 +7,7 @@ import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
 import WeightModal from './components/WeightModal'
 import { useCart } from './hooks/useCart'
+import { useNavCollapse } from './hooks/useNavCollapse'
 import { useSidebarState } from './hooks/useSidebarState'
 import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
@@ -23,6 +24,7 @@ import PlatformConnectionPage from './pages/PlatformConnectionPage'
 import DomainNicheSelectionPage from './pages/DomainNicheSelectionPage'
 import AllPlatformsPage from './pages/AllPlatformsPage'
 import ScoresPage from './pages/ScoresPage'
+import CirclesPage from './pages/CirclesPage'
 import StreaksPage from './pages/StreaksPage'
 import VotePage from './pages/VotePage'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
@@ -50,6 +52,7 @@ export default function App() {
   const isLanding = location.pathname === '/'
   const cart = useCart()
   const sidebar = useSidebarState()
+  const { collapsed: navCollapsed, toggle: toggleNavCollapsed } = useNavCollapse()
   // Routes that surface the ProfileDrawer on the right rail.
   const isProfilePage =
     location.pathname.startsWith('/profile') || location.pathname === '/scores'
@@ -85,14 +88,18 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background${navCollapsed ? ' nav-collapsed' : ''}`}>
       {/* Opens the WS connection and subscribes to the user's positions.
           Invisible — pushes deltas into the React Query cache. */}
       <RealtimeSyncBoundary />
       {/* Hydrates topics/categories from on-chain positions — union-merges into localStorage. */}
       <InterestsHydrationBoundary />
       <WsStatusBadge />
-      <NavSidebar onCartClick={() => setCartOpen((o) => !o)} />
+      <NavSidebar
+        onCartClick={() => setCartOpen((o) => !o)}
+        collapsed={navCollapsed}
+        onToggleCollapse={toggleNavCollapsed}
+      />
       <RightSidebar hidden={isProfilePage || cartOpen || !sidebar.isDesktop} />
 
       <CartDrawer
@@ -134,6 +141,8 @@ export default function App() {
           <Route path="/profile/categories" element={<ProtectedRoute><NicheSelectionPage /></ProtectedRoute>} />
           <Route path="/platforms" element={<ProtectedRoute><AllPlatformsPage /></ProtectedRoute>} />
           <Route path="/scores" element={<ProtectedRoute><ScoresPage /></ProtectedRoute>} />
+          <Route path="/circles" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
+          <Route path="/circles/:id" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
           <Route path="/streaks" element={<ProtectedRoute><StreaksPage /></ProtectedRoute>} />
           <Route path="/vote" element={<ProtectedRoute><VotePage /></ProtectedRoute>} />
         </Routes>
