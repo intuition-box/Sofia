@@ -7,10 +7,10 @@
  * scaffolding with mock values — marked with TODOs.
  */
 import { useNavigate, useParams } from 'react-router-dom'
-import { usePrivy } from '@privy-io/react-auth'
 import { ArrowLeft } from 'lucide-react'
 import { PageHero } from '@0xsofia/design-system'
 import { useTrustCircle } from '@/hooks/useTrustCircle'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import CirclesFilters from '@/components/circles/CirclesFilters'
 import TrustCircleCard from '@/components/circles/TrustCircleCard'
@@ -35,9 +35,8 @@ const TRUST_CIRCLE_META = {
 export default function CirclesPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { user } = usePrivy()
-  const address = user?.wallet?.address
-  const { accounts: members, loading } = useTrustCircle(address || undefined)
+  const { addresses } = useLinkedWallets()
+  const { accounts: members, loading } = useTrustCircle(addresses)
   const { selectedTopics } = useTopicSelection()
 
   if (id === 'trust') {
@@ -68,7 +67,7 @@ export default function CirclesPage() {
         </div>
 
         <CircleFeedSection
-          walletAddress={address || undefined}
+          addresses={addresses}
           circleName={TRUST_CIRCLE_META.name}
         />
       </div>

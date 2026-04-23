@@ -5,14 +5,15 @@
  */
 import { useCircleFeed } from '@/hooks/useCircleFeed'
 import CircleCard from '@/components/CircleCard'
+import type { Address } from 'viem'
 
 interface CircleFeedSectionProps {
-  walletAddress: string | undefined
+  addresses: Address[]
   circleName: string
 }
 
-export default function CircleFeedSection({ walletAddress, circleName }: CircleFeedSectionProps) {
-  const { items, loading, error } = useCircleFeed(walletAddress)
+export default function CircleFeedSection({ addresses, circleName }: CircleFeedSectionProps) {
+  const { items, loading, error } = useCircleFeed(addresses)
   const shown = items.slice(0, 12)
 
   return (
