@@ -1,0 +1,427 @@
+/* ── Home page — interest tiles + drill-down ──────────────────────
+ * Ported 1:1 from proto-explorer/src/styles/shared.css `.hm-*` rules.
+ * Proto tokens (`--card`, `--border`, `--ink`, `--ink-soft`, `--muted`,
+ * `--border-soft`, `--bg-subtle`) remapped to `--ds-*`. Proto's
+ * `--verb-color` inline var is preserved for per-tile tint.
+ */
+
+/* ── Page-level layout override ─────────────────────────────────── */
+/* Home runs full-width — the RightSidebar is hidden on `/feed`, so we
+   also release the 290px right margin that `.main-content` reserves
+   by default. Scoped via :has() on home's grid classes so nothing
+   leaks to other routes. */
+.main-content:has(.hm-grid),
+.main-content:has(.hm-drill-grid) {
+  margin-right: 0;
+}
+
+/* ── Head ───────────────────────────────────────────────────────── */
+
+.hm-head {
+  margin: 8px 0 24px;
+}
+.hm-head h2 {
+  font-family: "Fraunces", serif;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  margin: 0 0 6px;
+}
+.hm-head h2 em {
+  font-style: italic;
+  color: var(--ds-accent);
+}
+.hm-sub {
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  color: var(--ds-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Masonry grid ───────────────────────────────────────────────── */
+
+.hm-grid {
+  column-count: 3;
+  column-gap: 14px;
+}
+@media (max-width: 1200px) {
+  .hm-grid { column-count: 2; }
+}
+@media (max-width: 700px) {
+  .hm-grid { column-count: 1; }
+}
+.hm-grid > .hm-tile {
+  break-inside: avoid;
+  margin-bottom: 14px;
+  width: 100%;
+}
+
+/* ── Tile ────────────────────────────────────────────────────────── */
+
+.hm-tile {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+.hm-tile.hm-verb {
+  border-left: 3px solid var(--verb-color, var(--ds-accent));
+}
+.hm-tile:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+.hm-tile-label {
+  font-family: "Fraunces", serif;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  line-height: 1.1;
+}
+
+/* ── Platform strip (compact tiles) ─────────────────────────────── */
+
+.hm-platforms {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--ds-border);
+}
+.hm-platform-favs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+/* ── URL preview rows (featured / hero) ─────────────────────────── */
+
+.hm-urls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ds-border);
+}
+.hm-url-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.hm-tile:hover .hm-url-row {
+  border-color: color-mix(in oklab, var(--ds-ink) 25%, transparent);
+}
+.hm-url-host {
+  flex: 1;
+  min-width: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hero tile — bigger favicon + host. */
+.hm-tile.hm-hero .hm-url-row { padding: 10px 12px; }
+.hm-tile.hm-hero .hm-url-host { font-size: 12px; }
+
+/* ── Drill-down header ──────────────────────────────────────────── */
+
+/* When `.hm-drill-head` is the first child of `.page-content`, kill
+   the wrapper's top padding so PageHero's margin-bottom can margin-
+   collapse with drill-head's margin-top — identical behaviour to
+   CirclesPage (`.pf-view` has no top padding so `.cr-filters` collapses
+   with PageHero). Result: exactly 28px between the banner and the
+   drill header card, matching Circles. */
+.page-content:has(> .hm-drill-head:first-child) {
+  padding-top: 0;
+}
+
+.hm-drill-head {
+  --drill-color: var(--ds-accent);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 28px 0 20px;
+  padding: 14px 18px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-left: 4px solid var(--drill-color);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+.hm-drill-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: var(--ds-bg);
+  font-family: "Geist", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-ink-soft);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.hm-drill-back:hover {
+  border-color: var(--ds-ink-soft);
+  color: var(--ds-ink);
+}
+
+.hm-drill-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  background: var(--ds-bg);
+  font-family: "Geist", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.hm-drill-clear:hover {
+  border-color: var(--distrusted, #e87c7c);
+  color: var(--distrusted, #e87c7c);
+}
+.hm-drill-kind {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.hm-drill-label {
+  font-family: "Fraunces", serif;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--drill-color);
+  line-height: 1;
+}
+.hm-drill-count {
+  margin-left: auto;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Drill masonry ──────────────────────────────────────────────── */
+
+.hm-drill-grid {
+  column-count: 2;
+  column-gap: 16px;
+}
+@media (max-width: 900px) {
+  .hm-drill-grid { column-count: 1; }
+}
+.hm-drill-grid > * {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  display: block;
+  width: 100%;
+}
+
+/* ── Feed card (proto-styled) ───────────────────────────────────── */
+
+.fc {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px 16px;
+  margin: 0 0 16px;
+  border-radius: 12px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease;
+  position: relative;
+  overflow: visible;
+}
+.fc:last-child {
+  margin-bottom: 0;
+}
+.fc:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-2px);
+}
+.fc:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+.fc-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.fc-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.fc-title {
+  font-family: "Geist", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  letter-spacing: -0.005em;
+}
+.fc-host {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Actor line — certifier + time ago. */
+.fc-actor-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.fc-actor-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.fc-actor-ens {
+  font-family: "Geist", sans-serif;
+  font-weight: 600;
+  color: var(--ds-ink);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fc-actor-ago {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+}
+
+/* Bottom — tags on the left, thumbs on the right. */
+.fc-bottom {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ds-border);
+}
+.fc-tags {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.fc-tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  background: var(--ds-bg);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--ds-border);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+.fc-verb-tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #02000e;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.fc-positions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.fc-pos {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  padding: 0;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.fc-pos:hover:not(:disabled) {
+  color: var(--ds-ink);
+  transform: scale(1.05);
+}
+.fc-pos.support:hover:not(:disabled) {
+  color: var(--trusted, #6dd4a0);
+  border-color: var(--trusted, #6dd4a0);
+}
+.fc-pos.oppose:hover:not(:disabled) {
+  color: var(--distrusted, #e87c7c);
+  border-color: var(--distrusted, #e87c7c);
+}
+.fc-pos:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

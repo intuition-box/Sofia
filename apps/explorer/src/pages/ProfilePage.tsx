@@ -61,9 +61,9 @@ export default function ProfilePage() {
   const shortAddr = address ? address.slice(0, 6) + '...' + address.slice(-4) : ''
   const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
   const heroDescription = isViewingAs
-    ? 'Viewing profile'
+    ? 'Exploring this wallet — pick an interest to dive in.'
     : address
-      ? `Your on-chain footprint at ${shortAddr}.`
+      ? `Pick your interests, link platforms and grow your reputation from ${shortAddr}.`
       : pc.subtitle
 
   return (
@@ -110,7 +110,6 @@ export default function ProfilePage() {
           <SectionTitle>{isViewingAs ? 'Interests' : 'My Interests'}</SectionTitle>
           <InterestsGrid
             selectedTopics={selectedTopics}
-            selectedCategories={selectedCategories}
             topicScores={topicScores}
             onAddTopic={isViewingAs ? undefined : () => navigate('/profile/topics')}
             onRemoveTopic={isViewingAs ? undefined : removeTopic}

@@ -32,10 +32,10 @@
 
 .cr-filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 18px 28px;
-  align-items: center;
-  margin: 28px 0 20px;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+  margin: 16px 0 20px;
   padding: 14px 18px;
   background: var(--ds-card);
   border: 1px solid var(--ds-border);
@@ -45,10 +45,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: nowrap;
-}
-.cr-filter-group:last-child {
-  margin-left: auto;
+  flex-wrap: wrap;
 }
 .cr-filter-label {
   font-family: "JetBrains Mono", monospace;
@@ -60,11 +57,14 @@
 }
 .cr-chips {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .cr-chip {
-  padding: 6px 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--ds-border);
   background: var(--ds-bg);
@@ -76,7 +76,9 @@
   transition: all 0.15s ease;
 }
 .cr-chip:hover {
-  border-color: var(--ds-ink-soft);
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
   transform: translateY(-1px);
 }
 .cr-chip.active {
@@ -117,7 +119,7 @@
 .cr-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 24px;
 }
 
 .cr-card {
@@ -799,6 +801,31 @@
   color: var(--ds-ink);
   border-color: var(--ds-ink-soft);
 }
+
+.crd-members-invite-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 20px 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.crd-members-invite-btn:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+  transform: translateY(-1px);
+}
+
 .crd-members-list {
   display: flex;
   flex-direction: column;

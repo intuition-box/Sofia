@@ -99,11 +99,11 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
   ]
 
   const quickLinks: { to: string; icon: typeof Home; label: string; public: boolean }[] = [
+    { to: '/platforms', icon: Globe, label: 'Platform Market', public: false },
     { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: true },
     { to: '/streaks', icon: Flame, label: 'Streaks', public: false },
     { to: '/vote', icon: Vote, label: 'Vote', public: false },
     { to: '/scores', icon: BarChart3, label: 'My Stats', public: false },
-    { to: '/platforms', icon: Globe, label: 'Platform Market', public: false },
   ]
 
   const renderItem = (item: { to: string; icon: typeof Home; label: string; public: boolean }) => {

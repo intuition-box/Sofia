@@ -8,6 +8,7 @@ import { useEffect } from 'react'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import type { Address } from 'viem'
+import { UserPlus } from 'lucide-react'
 import MemberAvatar from './MemberAvatar'
 
 const shortAddress = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`
@@ -68,6 +69,21 @@ export default function AllMembersPanel({
             ✕
           </button>
         </div>
+
+        <button
+          type="button"
+          className="crd-members-invite-btn"
+          onClick={() => {
+            // TODO: wire to real invite flow once available.
+            // Placeholder: copy a prefilled share link to clipboard.
+            const url = `${window.location.origin}/circles/trust?invite=1`
+            navigator.clipboard?.writeText(url).catch(() => {})
+          }}
+        >
+          <UserPlus className="h-4 w-4" />
+          Invite a member
+        </button>
+
         <div className="crd-members-list">
           {members.length === 0 ? (
             <p className="crd-feed-empty">No members yet.</p>

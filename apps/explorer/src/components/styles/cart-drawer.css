@@ -1,8 +1,8 @@
 /* ── CartDrawer ── */
 .cd-aside {
-  top: 62px;
+  top: 0;
   width: 333px;
-  height: calc(100vh - 58px);
+  height: 100vh;
   z-index: 10000;
   background: var(--sidebar);
   border-left: 1px solid var(--border);
@@ -21,15 +21,6 @@
 @media (max-width: 767px) {
   .cd-aside {
     width: 100%;
-    top: 56px;
-    height: calc(100vh - 56px);
     border-left: none;
-  }
-}
-/* Tablet: slightly narrower */
-@media (min-width: 768px) and (max-width: 1279px) {
-  .cd-aside {
-    top: 56px;
-    height: calc(100vh - 56px);
   }
 }

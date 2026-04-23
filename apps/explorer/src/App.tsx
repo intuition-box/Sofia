@@ -11,6 +11,7 @@ import { useNavCollapse } from './hooks/useNavCollapse'
 import { useSidebarState } from './hooks/useSidebarState'
 import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
+import { RightRailProvider } from './contexts/RightRailContext'
 import WsStatusBadge from './components/WsStatusBadge'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import LandingPage from './pages/LandingPage'
@@ -57,7 +58,9 @@ export default function App() {
   const isProfilePage =
     location.pathname.startsWith('/profile') || location.pathname === '/scores'
   // Routes that run full-width — no ProfileDrawer, no RightSidebar.
-  const isFullWidthPage = location.pathname.startsWith('/circles')
+  const isFullWidthPage =
+    location.pathname.startsWith('/circles') ||
+    location.pathname.startsWith('/feed')
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
@@ -90,6 +93,7 @@ export default function App() {
   }
 
   return (
+    <RightRailProvider>
     <div className={`min-h-screen bg-background${navCollapsed ? ' nav-collapsed' : ''}`}>
       {/* Opens the WS connection and subscribes to the user's positions.
           Invisible — pushes deltas into the React Query cache. */}
@@ -151,5 +155,6 @@ export default function App() {
         </RouteErrorBoundary>
       </main>
     </div>
+    </RightRailProvider>
   )
 }

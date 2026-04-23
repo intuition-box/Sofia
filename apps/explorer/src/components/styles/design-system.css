@@ -108,3 +108,22 @@
   background: var(--ds-bg-subtle);
   outline: none;
 }
+
+/* ── Radix Dialog content ──
+ * Same Tailwind-class issue as Select: `bg-background border` don't
+ * resolve in the pre-compiled build. Give every dialog a concrete
+ * surface so they don't render transparent over the page.
+ */
+[data-slot="dialog-overlay"] {
+  /* Tone matches the page instead of inverting it: light mode gets a
+     soft white haze, dark mode a dark veil. The blur does the focusing. */
+  background: color-mix(in srgb, var(--ds-bg) 70%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+[data-slot="dialog-content"] {
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+  box-shadow: 0 30px 80px -40px color-mix(in srgb, var(--ds-ink) 80%, transparent);
+}

@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
-import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useSearchParams } from 'react-router-dom'
-import { useCircleFeed } from '../hooks/useCircleFeed'
 import { useAllActivity } from '../hooks/useAllActivity'
 import type { CircleItem } from '../services/circleService'
 import { PLATFORM_CATALOG } from '../config/platformCatalog' // kept for getPlatformIdsForTopic helper
@@ -10,7 +8,7 @@ import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { Button } from '../components/ui/button'
-import { Users, Globe, X } from 'lucide-react'
+import { Globe, X, XCircle } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import type { Address } from 'viem'
@@ -18,11 +16,17 @@ import { PageHero } from '@0xsofia/design-system'
 import PredicatePicker from '../components/PredicatePicker'
 import QuestCard from '../components/QuestCard'
 import CircleCard from '../components/CircleCard'
+import FeedCard from '../components/home/FeedCard'
+import InterestTilesGrid from '../components/home/InterestTilesGrid'
+import type { InterestPreset } from '../components/home/useInterestTiles'
+import { useTaxonomy } from '../hooks/useTaxonomy'
+import { INTENTION_PASTEL } from '@0xsofia/design-system'
 import { useCart } from '../hooks/useCart'
 import type { CartItem } from '../hooks/useCart'
 import { PAGE_COLORS } from '../config/pageColors'
 import { INTENTION_COLORS } from '../config/intentions'
 import '@/components/styles/pages.css'
+import '@/components/styles/home.css'
 
 /** Build a Set of platform IDs that belong to a given Sofia topic */
 function getPlatformIdsForTopic(topicId: string): Set<string> {
@@ -48,11 +52,12 @@ const INTENT_FILTERS = ['All', 'Trusted', 'Distrusted', 'Work', 'Learning', 'Fun
 
 export default function DashboardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [filter, setFilter] = useState<'all' | 'circle'>('all')
   const [intentFilter, setIntentFilter] = useState('All')
+  // Drill preset — when set, the feed filters to this topic/verb and the
+  // tiles grid is hidden. `null` = tiles view.
+  const [drill, setDrill] = useState<InterestPreset | null>(null)
   const { authenticated, user } = usePrivy()
   const walletAddress = user?.wallet?.address
-  const { addresses: linkedAddresses } = useLinkedWallets()
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   // Cart system
@@ -124,15 +129,14 @@ export default function DashboardPage() {
     setSearchParams(searchParams)
   }
 
-  const { items: allItems, loading: allLoading, loadingMore: allLoadingMore, error: allError, hasMore: allHasMore, loadMore: allLoadMore } = useAllActivity()
-  const { items: circleItems, loading: circleLoading, loadingMore: circleLoadingMore, error: circleError, hasMore: circleHasMore, loadMore: circleLoadMore } = useCircleFeed(
-    filter === 'circle' ? linkedAddresses : undefined,
-  )
-
-  const sourceItems = filter === 'all' ? allItems : circleItems
-  const loadingMore = filter === 'all' ? allLoadingMore : circleLoadingMore
-  const hasMore = filter === 'all' ? allHasMore : circleHasMore
-  const loadMore = filter === 'all' ? allLoadMore : circleLoadMore
+  const {
+    items: sourceItems,
+    loading,
+    loadingMore,
+    error: feedError,
+    hasMore,
+    loadMore,
+  } = useAllActivity()
 
   const allCertifiers = useMemo(() => {
     const addrs = new Set<Address>()
@@ -143,17 +147,41 @@ export default function DashboardPage() {
   }, [sourceItems])
 
   const { getDisplay, getAvatar } = useEnsNames(allCertifiers)
-  const loading = filter === 'all' ? allLoading : circleLoading
-  const feedError = filter === 'all' ? allError : circleError
 
-  // Apply space filter then intention filter
+  // Apply space filter then drill preset (from tile click) then intention
+  // filter. Drill narrows the items by topic slug or verb.
   const spaceFiltered = spacePlatformIds
     ? sourceItems.filter((item) => itemMatchesTopic(item, spacePlatformIds))
     : sourceItems
 
-  const filteredItems = intentFilter === 'All'
+  const drillFiltered = !drill
     ? spaceFiltered
-    : spaceFiltered.filter((item) => item.intentions.includes(intentFilter))
+    : drill.kind === 'topic'
+      ? spaceFiltered.filter((item) => item.topicContexts.includes(drill.id))
+      : spaceFiltered.filter((item) =>
+          item.intentions.some((i) => i.toLowerCase() === drill.id.toLowerCase()),
+        )
+
+  const filteredItems = intentFilter === 'All'
+    ? drillFiltered
+    : drillFiltered.filter((item) => item.intentions.includes(intentFilter))
+
+  const { topics } = useTaxonomy()
+  const drillLabel = useMemo(() => {
+    if (!drill) return ''
+    if (drill.kind === 'verb') return drill.id[0].toUpperCase() + drill.id.slice(1)
+    return topics.find((t) => t.id === drill.id)?.label ?? drill.id
+  }, [drill, topics])
+  const drillColor = useMemo(() => {
+    if (!drill) return undefined
+    if (drill.kind === 'verb') {
+      return (
+        INTENTION_PASTEL[drill.id as keyof typeof INTENTION_PASTEL] ??
+        'var(--ds-accent)'
+      )
+    }
+    return topics.find((t) => t.id === drill.id)?.color ?? 'var(--ds-accent)'
+  }, [drill, topics])
 
   // Infinite scroll observer — large rootMargin triggers loading well before bottom
   useEffect(() => {
@@ -166,7 +194,7 @@ export default function DashboardPage() {
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [filter, loadMore, filteredItems.length])
+  }, [loadMore, filteredItems.length])
 
   const spaceLabel = spaceParam
     ? spaceParam.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -178,26 +206,46 @@ export default function DashboardPage() {
     <div>
       <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
       <div className="space-y-4 page-content page-enter">
-      {/* Feed mode toggle */}
-      <div className="flex items-center gap-3 mb-2">
-        <Button
-          variant={filter === 'all' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => { setFilter('all'); setIntentFilter('All') }}
+
+      {/* Tiles view — default. Shows the interest masonry built from the
+          current source items (All or Circle). Click a tile to drill. */}
+      {drill == null && !loading && (
+        <>
+          <div className="hm-head">
+            <h2>What are you <em>into</em> today?</h2>
+            <p className="hm-sub">Pick a topic to see URLs endorsed across every circle you follow.</p>
+          </div>
+          <InterestTilesGrid items={spaceFiltered} onPick={setDrill} />
+        </>
+      )}
+
+      {/* Drill-down header — only when a preset is active. Inherits the
+          picked tile's colour so the drill visually echoes the tile. */}
+      {drill && (
+        <div
+          className="hm-drill-head"
+          style={drillColor ? ({ ['--drill-color' as string]: drillColor }) : undefined}
         >
-          <Globe className="h-3 w-3 mr-1" />
-          All Activity
-        </Button>
-        <Button
-          variant={filter === 'circle' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => { setFilter('circle'); setIntentFilter('All') }}
-          disabled={!authenticated}
-        >
-          <Users className="h-3 w-3 mr-1" />
-          My Circle
-        </Button>
-      </div>
+          <span className="hm-drill-kind">{drill.kind === 'verb' ? 'Verb' : 'Topic'}</span>
+          <span className="hm-drill-label">{drillLabel}</span>
+          <span className="hm-drill-count">
+            {filteredItems.length} {filteredItems.length === 1 ? 'url' : 'urls'}
+          </span>
+          <button
+            type="button"
+            className="hm-drill-clear"
+            onClick={() => setDrill(null)}
+          >
+            <XCircle className="h-3.5 w-3.5" />
+            Clear filter
+          </button>
+        </div>
+      )}
+
+      {/* Feed — drill view only. The tiles masonry replaces the feed
+          by default; clicking a tile sets `drill` and reveals this. */}
+      {drill && (
+        <>
 
       {/* Space filter badge */}
       {spaceParam && (
@@ -211,26 +259,30 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Intention filters */}
-      <ScrollArea className="w-full mb-2">
-        <div className="flex gap-2 pb-2">
-          {INTENT_FILTERS.map((intent) => {
-            const isActive = intentFilter === intent
-            const color = INTENTION_COLORS[intent]
-            return (
-              <button
-                key={intent}
-                className="feed-intent-pill"
-                data-active={isActive || undefined}
-                style={color ? { '--pill-color': color } as React.CSSProperties : undefined}
-                onClick={() => setIntentFilter(intent)}
-              >
-                {intent}
-              </button>
-            )
-          })}
-        </div>
-      </ScrollArea>
+      {/* Intention filters — hidden when drilling on a verb (the drill
+          preset is already narrowing by intent, so the pills would
+          either duplicate or contradict it). */}
+      {drill?.kind !== 'verb' && (
+        <ScrollArea className="w-full mb-2">
+          <div className="flex gap-2 pb-2">
+            {INTENT_FILTERS.map((intent) => {
+              const isActive = intentFilter === intent
+              const color = INTENTION_COLORS[intent]
+              return (
+                <button
+                  key={intent}
+                  className="feed-intent-pill"
+                  data-active={isActive || undefined}
+                  style={color ? { '--pill-color': color } as React.CSSProperties : undefined}
+                  onClick={() => setIntentFilter(intent)}
+                >
+                  {intent}
+                </button>
+              )
+            })}
+          </div>
+        </ScrollArea>
+      )}
 
       {/* Loading */}
       {loading && (
@@ -251,38 +303,23 @@ export default function DashboardPage() {
         <>
           {filteredItems.length === 0 ? (
             <Card className="p-10 text-center">
-              {filter === 'circle' ? (
-                <>
-                  <Users className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                  <h3 className="mt-4 font-medium">Your Circle</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {circleItems.length === 0
-                      ? 'Certify pages and trust users to build your circle.'
-                      : `No ${intentFilter.toLowerCase()} items in your circle.`}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <Globe className="h-10 w-10 mx-auto text-muted-foreground/40" />
-                  <h3 className="mt-4 font-medium">No activity yet</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Recent certifications will appear here.
-                  </p>
-                </>
-              )}
+              <Globe className="h-10 w-10 mx-auto text-muted-foreground/40" />
+              <h3 className="mt-4 font-medium">No activity yet</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Recent certifications will appear here.
+              </p>
             </Card>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="hm-drill-grid">
                 {filteredItems.map((item) => {
                   const addr = item.certifierAddress as Address
                   const name = addr ? getDisplay(addr) : item.certifier
                   const av = addr ? getAvatar(addr) : ''
                   const isQuest = item.intentions[0]?.startsWith('quest:')
-                  const priv = filter === 'all'
                   return isQuest
-                    ? <QuestCard key={item.id} item={item} displayName={name} avatar={av} isPrivate={priv} />
-                    : <CircleCard key={item.id} item={item} displayName={name} avatar={av} isPrivate={priv} onDeposit={handleDeposit} />
+                    ? <QuestCard key={item.id} item={item} displayName={name} avatar={av} />
+                    : <FeedCard key={item.id} item={item} displayName={name} avatar={av} onDeposit={handleDeposit} />
                 })}
               </div>
 
@@ -294,6 +331,8 @@ export default function DashboardPage() {
               )}
             </>
           )}
+        </>
+      )}
         </>
       )}
 

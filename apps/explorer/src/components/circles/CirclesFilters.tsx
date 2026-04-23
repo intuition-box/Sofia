@@ -1,18 +1,11 @@
 /**
- * CirclesFilters — topic dropdown + sort chips above the grid. UI-only
- * until we have more than one real circle; interactions update local
- * state but don't filter the list yet.
+ * CirclesFilters — topic + sort chips above the grid. UI-only until we
+ * have more than one real circle; interactions update local state but
+ * don't filter the list yet.
  */
 import { useState } from 'react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { getTopicEmoji } from '@/config/topicEmoji'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 
 const SORT_OPTIONS = [
   { id: 'activity', label: 'Active today' },
@@ -29,22 +22,26 @@ export default function CirclesFilters() {
     <div className="cr-filters">
       <div className="cr-filter-group">
         <span className="cr-filter-label">Topic</span>
-        <Select value={topic} onValueChange={setTopic}>
-          <SelectTrigger className="cr-topic-trigger" aria-label="Filter circles by topic">
-            <SelectValue placeholder="All topics" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All topics</SelectItem>
-            {topics.map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                <span className="cr-topic-item">
-                  <span aria-hidden="true">{getTopicEmoji(t.id) || '📌'}</span>
-                  {t.label}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="cr-chips">
+          <button
+            type="button"
+            className={`cr-chip${topic === 'all' ? ' active' : ''}`}
+            onClick={() => setTopic('all')}
+          >
+            All
+          </button>
+          {topics.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`cr-chip${topic === t.id ? ' active' : ''}`}
+              onClick={() => setTopic(t.id)}
+            >
+              <span aria-hidden="true">{getTopicEmoji(t.id) || '📌'}</span>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="cr-filter-group">

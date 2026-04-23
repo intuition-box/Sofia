@@ -110,7 +110,7 @@ export default function CirclesPage() {
     <div className="pf-view cr-page">
       <PageHero
         title="Circles"
-        description="People whose taste you value — their signals shape your feed."
+        description="Explore the circles whose signals shape your feed and dive into yours."
       />
 
       <CirclesFilters />
