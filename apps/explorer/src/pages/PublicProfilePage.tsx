@@ -71,7 +71,7 @@ export default function PublicProfilePage() {
 
   // Fetch data
   const { profile, isLoading: profileLoading } = useUserProfile(addresses)
-  const { claims: topClaims, loading: claimsLoading } = useTopClaims(walletAddress)
+  const { claims: topClaims, loading: claimsLoading } = useTopClaims(addresses)
   const { items: activityItems, loading: activityLoading } = useUserActivity(addresses)
   const { score: trustScore } = useTrustScore(walletAddress)
 

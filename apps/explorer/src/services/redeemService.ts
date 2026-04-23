@@ -46,6 +46,7 @@ export async function getShares(
     abi: MultiVaultAbi,
     functionName: 'getShares',
     args: [account as `0x${string}`, termId as `0x${string}`, CURVE_ID],
+    authorizationList: undefined,
   }) as bigint
 }
 
@@ -131,6 +132,8 @@ export async function redeemAtom(
     abi: MultiVaultAbi,
     functionName: 'redeem',
     args,
+    chain: undefined,
+    account: address,
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -196,6 +199,8 @@ export async function redeemBatchAtoms(
     abi: MultiVaultAbi,
     functionName: 'redeemBatch',
     args,
+    chain: undefined,
+    account: address,
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })

@@ -14,7 +14,10 @@ const commonGenerateOptions: Types.ConfiguredOutput = {
     exposeFetcher: true,
     exposeQueryKeys: true,
     exposeMutationKeys: true,
-    addInfiniteQuery: true,
+    // Infinite queries are unused in the consumers and the generated code
+    // emits `{...variables}` spreads that TS 5 rejects when variables include
+    // only optional fields. Re-enable only when a consumer actually needs it.
+    addInfiniteQuery: false,
     enumsAsTypes: true,
     dedupeFragments: true,
     documentMode: 'documentNode',

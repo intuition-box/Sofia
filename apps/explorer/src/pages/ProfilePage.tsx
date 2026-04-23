@@ -38,7 +38,7 @@ export default function ProfilePage() {
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustCompositeScore, signals)
   const topicScores = scores?.topics ?? []
   const { items: activityItems, loading: activityLoading } = useUserActivity(activityAddresses.length > 0 ? activityAddresses : undefined)
-  const { claims: topClaims, loading: claimsLoading } = useTopClaims(address || undefined)
+  const { claims: topClaims, loading: claimsLoading } = useTopClaims(activityAddresses.length > 0 ? activityAddresses : undefined)
 
   if (!authenticated && !isViewingAs) {
     return (

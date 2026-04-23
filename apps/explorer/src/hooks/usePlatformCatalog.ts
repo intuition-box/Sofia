@@ -24,6 +24,7 @@ function buildStaticFallback(): PlatformCatalogData {
     website: p.website,
     image: undefined,
     description: undefined,
+    color: "",
     categoryIds: p.targetCategories,
     topicIds: p.targetTopics,
   }))

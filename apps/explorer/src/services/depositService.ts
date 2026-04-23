@@ -90,6 +90,7 @@ export async function calculateFee(
     abi: SofiaFeeProxyAbi,
     functionName: 'calculateDepositFee',
     args: [BigInt(depositCount), totalDeposit],
+    authorizationList: undefined,
   })
 }
 
@@ -103,14 +104,14 @@ export async function getFeeParams(): Promise<FeeParams> {
   if (feeParamsCache) return feeParamsCache
 
   const [depositFixed, depositPct, feeDenom] = await Promise.all([
-    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'depositFixedFee' }) as Promise<bigint>,
-    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'depositPercentageFee' }) as Promise<bigint>,
-    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'FEE_DENOMINATOR' }) as Promise<bigint>,
+    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'depositFixedFee', authorizationList: undefined }) as Promise<bigint>,
+    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'depositPercentageFee', authorizationList: undefined }) as Promise<bigint>,
+    publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'FEE_DENOMINATOR', authorizationList: undefined }) as Promise<bigint>,
   ])
 
   let creationFixed = 0n
   try {
-    creationFixed = await publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'creationFixedFee' }) as bigint
+    creationFixed = await publicClient.readContract({ address: PROXY_ADDRESS, abi: SofiaFeeProxyAbi, functionName: 'creationFixedFee', authorizationList: undefined }) as bigint
   } catch {
     // creationFixedFee not available on older contract deployments
   }
@@ -168,6 +169,7 @@ export async function executeSingleDeposit(
     abi: SofiaFeeProxyAbi,
     functionName: 'getTotalDepositCost',
     args: [depositWei],
+    authorizationList: undefined,
   })
 
   await publicClient.simulateContract({
@@ -185,6 +187,8 @@ export async function executeSingleDeposit(
     functionName: 'deposit',
     args: [address, termId as `0x${string}`, 1n, 0n],
     value: totalCost,
+    chain: undefined,
+    account: address,
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })
@@ -227,6 +231,8 @@ export async function executeBatchDeposit(
     functionName: 'depositBatch',
     args: [address, termIds, curveIds, assets, minShares],
     value: totalValue,
+    chain: undefined,
+    account: address,
   })
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash })
