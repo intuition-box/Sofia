@@ -1,5 +1,6 @@
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
+import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useDiscoveryScore } from '../hooks/useDiscoveryScore'
 import { useTopicSelection } from '../hooks/useDomainSelection'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
@@ -22,6 +23,7 @@ interface ProfileDrawerProps {
 export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
   const { authenticated, user } = usePrivy()
   const address = user?.wallet?.address ?? ''
+  const { addresses: linkedAddresses } = useLinkedWallets()
   const { getDisplay, getAvatar } = useEnsNames(address ? [address as Address] : [])
   const { stats } = useDiscoveryScore(address || undefined)
   const { selectedTopics, selectedCategories } = useTopicSelection()
@@ -30,7 +32,9 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
   const { signals } = useSignals(address || undefined)
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustScore, signals)
   const topicScores = scores?.topics ?? []
-  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(address || undefined)
+  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
+    linkedAddresses.length > 0 ? linkedAddresses : undefined,
+  )
 
   const {
     isModalOpen,

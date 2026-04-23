@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
+import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useSearchParams } from 'react-router-dom'
 import { useCircleFeed } from '../hooks/useCircleFeed'
 import { useAllActivity } from '../hooks/useAllActivity'
@@ -51,6 +52,7 @@ export default function DashboardPage() {
   const [intentFilter, setIntentFilter] = useState('All')
   const { authenticated, user } = usePrivy()
   const walletAddress = user?.wallet?.address
+  const { addresses: linkedAddresses } = useLinkedWallets()
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   // Cart system
@@ -124,7 +126,7 @@ export default function DashboardPage() {
 
   const { items: allItems, loading: allLoading, loadingMore: allLoadingMore, error: allError, hasMore: allHasMore, loadMore: allLoadMore } = useAllActivity()
   const { items: circleItems, loading: circleLoading, loadingMore: circleLoadingMore, error: circleError, hasMore: circleHasMore, loadMore: circleLoadMore } = useCircleFeed(
-    filter === 'circle' ? walletAddress : undefined,
+    filter === 'circle' ? linkedAddresses : undefined,
   )
 
   const sourceItems = filter === 'all' ? allItems : circleItems
