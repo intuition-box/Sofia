@@ -25,7 +25,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
   const address = user?.wallet?.address ?? ''
   const { addresses: linkedAddresses } = useLinkedWallets()
   const { getDisplay, getAvatar } = useEnsNames(address ? [address as Address] : [])
-  const { stats } = useDiscoveryScore(address || undefined)
+  const { stats } = useDiscoveryScore(linkedAddresses.length > 0 ? linkedAddresses : undefined)
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus, connectedCount } = usePlatformConnections()
   const { score: trustScore, loading: trustScoreLoading } = useTrustScore(address || undefined)

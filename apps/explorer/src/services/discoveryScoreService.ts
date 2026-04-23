@@ -1,13 +1,13 @@
 /**
  * Discovery Score Service
  *
- * Calculates Pioneer / Explorer / Contributor / Trusted counts.
- * Optimized: uses server-side aggregates instead of client-side pagination.
+ * Calculates Pioneer / Explorer / Contributor / Trusted counts, unioned
+ * across the user's linked wallets.
  *
  * - Pioneer: user is the only certifier (1 position holder)
  * - Explorer: 2-10 certifiers
  * - Contributor: 11+ certifiers
- * - Trusted: count of trust positions on the user
+ * - Trusted: count of trust positions on the user's account atoms
  * - Signals: total terms_aggregate (same as extension)
  */
 
@@ -43,13 +43,13 @@ const CERTIFICATION_PREDICATE_LABELS = [
 ]
 
 // ---------------------------------------------------------------------------
-// GraphQL — single query with positions_aggregate for certifier counts
+// GraphQL — non-codegen queries that filter on the union of linked wallets
 // ---------------------------------------------------------------------------
 
 const USER_TRIPLES_WITH_COUNTS_QUERY = `
   query UserTriplesWithCounts(
     $predicateLabels: [String!]!
-    $userAddress: String!
+    $userAddresses: [String!]!
     $limit: Int!
     $offset: Int!
   ) {
@@ -57,7 +57,7 @@ const USER_TRIPLES_WITH_COUNTS_QUERY = `
       where: {
         predicate: { label: { _in: $predicateLabels } }
         positions: {
-          account_id: { _ilike: $userAddress }
+          account_id: { _in: $userAddresses }
           shares: { _gt: "0" }
         }
       }
@@ -72,16 +72,15 @@ const USER_TRIPLES_WITH_COUNTS_QUERY = `
   }
 `
 
-const FIND_ACCOUNT_ATOM_QUERY = `
-  query FindAccountAtom($address: String!) {
+const FIND_ACCOUNT_ATOMS_QUERY = `
+  query FindAccountAtoms($addresses: [String!]!) {
     atoms(
       where: {
         _and: [
-          { data: { _ilike: $address } }
+          { data: { _in: $addresses } }
           { type: { _eq: "Account" } }
         ]
       }
-      limit: 1
     ) {
       term_id
     }
@@ -89,13 +88,13 @@ const FIND_ACCOUNT_ATOM_QUERY = `
 `
 
 const TRUSTED_BY_POSITIONS_QUERY = `
-  query GetTrustedByPositions($subjectId: String!, $predicateId: String!, $objectId: String!) {
+  query GetTrustedByPositions($subjectId: String!, $predicateId: String!, $objectIds: [String!]!) {
     triples(
       where: {
         _and: [
           { subject_id: { _eq: $subjectId } }
           { predicate_id: { _eq: $predicateId } }
-          { object_id: { _eq: $objectId } }
+          { object_id: { _in: $objectIds } }
         ]
       }
     ) {
@@ -134,28 +133,38 @@ interface TripleWithCount {
   positions_aggregate?: { aggregate?: { count?: number } }
 }
 
-export async function fetchDiscoveryStats(walletAddress: string): Promise<DiscoveryStats> {
-  const userAddress = walletAddress.toLowerCase()
+const EMPTY_STATS: DiscoveryStats = {
+  pioneerCount: 0,
+  explorerCount: 0,
+  contributorCount: 0,
+  trustedCount: 0,
+  totalCertifications: 0,
+}
+
+export async function fetchDiscoveryStats(addresses: string[]): Promise<DiscoveryStats> {
+  if (addresses.length === 0) return EMPTY_STATS
+
+  const userAddresses = addresses.map((a) => a.toLowerCase())
 
   // Launch all independent queries in parallel
   const [triplesResult, signalsResult, atomResult] = await Promise.all([
     // 1. User triples with position counts (server-side aggregate)
     gqlRequest<{ triples: TripleWithCount[] }>(USER_TRIPLES_WITH_COUNTS_QUERY, {
       predicateLabels: CERTIFICATION_PREDICATE_LABELS,
-      userAddress,
+      userAddresses,
       limit: 1000,
       offset: 0,
     }),
 
-    // 2. Signals count (same as extension)
+    // 2. Signals count (same aggregate, union via accountIds)
     useGetUserSignalsCountQuery.fetcher({
-      accountId: walletAddress,
+      accountIds: addresses,
       subjectId: SUBJECT_IDS.I,
     })().catch(() => null),
 
-    // 3. Account atom for trusted count
-    gqlRequest<{ atoms: { term_id: string }[] }>(FIND_ACCOUNT_ATOM_QUERY, {
-      address: `%${userAddress}%`,
+    // 3. Account atoms for all linked wallets (for trusted count)
+    gqlRequest<{ atoms: { term_id: string }[] }>(FIND_ACCOUNT_ATOMS_QUERY, {
+      addresses: userAddresses,
     }).catch(() => ({ atoms: [] })),
   ])
 
@@ -180,10 +189,10 @@ export async function fetchDiscoveryStats(walletAddress: string): Promise<Discov
     }
   }
 
-  // Trusted count — fetch if we found the account atom
+  // Trusted count — fetch trust positions on any of the user's account atoms
   let trustedCount = 0
-  const myAtomId = atomResult.atoms?.[0]?.term_id
-  if (myAtomId) {
+  const myAtomIds = (atomResult.atoms ?? []).map((a) => a.term_id).filter(Boolean)
+  if (myAtomIds.length > 0) {
     try {
       const res = await gqlRequest<{
         triples: {
@@ -192,7 +201,7 @@ export async function fetchDiscoveryStats(walletAddress: string): Promise<Discov
       }>(TRUSTED_BY_POSITIONS_QUERY, {
         subjectId: SUBJECT_IDS.I,
         predicateId: PREDICATE_IDS.TRUSTS,
-        objectId: myAtomId,
+        objectIds: myAtomIds,
       })
       for (const triple of res.triples || []) {
         for (const vault of triple.term?.vaults || []) {
