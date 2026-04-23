@@ -15,6 +15,7 @@ import {
 import { useTaxonomy } from "@/hooks/useTaxonomy"
 import { PLATFORM_CATALOG } from "@/config/platformCatalog"
 import { PLATFORM_ATOM_IDS } from "@/config/atomIds"
+import { TOPIC_META } from "@/config/topicMeta"
 
 // Build static fallback that matches OnChainPlatform shape
 function buildStaticFallback(): PlatformCatalogData {
@@ -25,6 +26,7 @@ function buildStaticFallback(): PlatformCatalogData {
     website: p.website,
     image: undefined,
     description: undefined,
+    color: TOPIC_META[p.targetTopics[0]]?.color ?? "#888888",
     categoryIds: p.targetCategories,
     topicIds: p.targetTopics,
   }))
