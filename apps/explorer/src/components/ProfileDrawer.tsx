@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
+import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { useDiscoveryScore } from '../hooks/useDiscoveryScore'
 import { useTopicSelection } from '../hooks/useDomainSelection'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
@@ -13,6 +14,7 @@ import { useUserActivity } from '../hooks/useUserActivity'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
+import LinkedWalletsSection from './profile/LinkedWalletsSection'
 import { getTopicEmoji } from '@/config/topicEmoji'
 import { getIntentionColor } from '@/config/intentions'
 import { timeAgo, extractDomain } from '@/utils/formatting'
@@ -88,8 +90,9 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const navigate = useNavigate()
   const { authenticated, user } = usePrivy()
   const address = user?.wallet?.address ?? ''
+  const { addresses: linkedAddresses } = useLinkedWallets()
   const { getDisplay, getAvatar } = useEnsNames(address ? [address as Address] : [])
-  const { stats } = useDiscoveryScore(address || undefined)
+  const { stats } = useDiscoveryScore(linkedAddresses.length > 0 ? linkedAddresses : undefined)
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus, connectedCount } = usePlatformConnections()
   const { score: trustScore } = useTrustScore(address || undefined)
@@ -97,7 +100,11 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustScore, signals)
   const topicScores = scores?.topics ?? []
   const { topicById } = useTaxonomy()
-  const { items: activityItems } = useUserActivity(address || undefined)
+  // Activity unioned across all linked wallets — the current user's full
+  // footprint, even after they subscribe and get an embedded wallet.
+  const { items: activityItems } = useUserActivity(
+    linkedAddresses.length > 0 ? linkedAddresses : undefined,
+  )
 
   // Last Activity — restrict to support/oppose events for now (items whose
   // predicate resolved to Trusted or Distrusted). Sorted newest-first, top 10.
@@ -310,6 +317,8 @@ export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
             </div>
           )}
 
+          {/* Linked wallets — read-only list for transparency on multi-wallet accounts */}
+          <LinkedWalletsSection />
         </div>
       </aside>
 

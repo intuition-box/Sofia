@@ -1,13 +1,13 @@
-query GetUserPositions($accountId: String!) {
+query GetUserPositions($accountIds: [String!]!) {
   total: positions_aggregate(
-    where: { account_id: { _ilike: $accountId } }
+    where: { account_id: { _in: $accountIds } }
   ) {
     aggregate {
       count
     }
   }
   positions(
-    where: { account_id: { _ilike: $accountId } }
+    where: { account_id: { _in: $accountIds } }
     order_by: { shares: desc }
     limit: 200
   ) {
@@ -15,9 +15,9 @@ query GetUserPositions($accountId: String!) {
   }
 }
 
-query GetUserPositionsCount($accountId: String!) {
+query GetUserPositionsCount($accountIds: [String!]!) {
   positions_aggregate(
-    where: { account_id: { _ilike: $accountId } }
+    where: { account_id: { _in: $accountIds } }
   ) {
     aggregate {
       count
@@ -25,13 +25,13 @@ query GetUserPositionsCount($accountId: String!) {
   }
 }
 
-query GetUserSignalsCount($accountId: String!, $subjectId: String!) {
+query GetUserSignalsCount($accountIds: [String!]!, $subjectId: String!) {
   signalsCount: terms_aggregate(
     where: {
       _and: [
         { type: { _eq: Triple } }
         { triple: { subject: { term_id: { _eq: $subjectId } } } }
-        { positions: { account: { id: { _eq: $accountId } } } }
+        { positions: { account: { id: { _in: $accountIds } } } }
       ]
     }
   ) {
@@ -41,10 +41,10 @@ query GetUserSignalsCount($accountId: String!, $subjectId: String!) {
   }
 }
 
-query GetUserCertifications($accountId: String!, $predicateIds: [String!]!) {
+query GetUserCertifications($accountIds: [String!]!, $predicateIds: [String!]!) {
   positions(
     where: {
-      account_id: { _ilike: $accountId }
+      account_id: { _in: $accountIds }
       vault: {
         term: {
           triple: {

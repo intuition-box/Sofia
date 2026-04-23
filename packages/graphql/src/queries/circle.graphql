@@ -1,7 +1,7 @@
 query GetTrustCirclePositions(
   $subjectId: String!
   $predicateId: String!
-  $address: String!
+  $addresses: [String!]!
   $offset: Int
   $positionsOrderBy: [positions_order_by!]
 ) {
@@ -10,7 +10,7 @@ query GetTrustCirclePositions(
       _and: [
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
-        { positions: { account_id: { _ilike: $address } } }
+        { positions: { account_id: { _in: $addresses } } }
       ]
     }
   ) {
@@ -25,7 +25,7 @@ query GetTrustCirclePositions(
         { subject_id: { _eq: $subjectId } }
         { predicate_id: { _eq: $predicateId } }
         { object: { type: { _eq: "Account" } } }
-        { positions: { account_id: { _ilike: $address } } }
+        { positions: { account_id: { _in: $addresses } } }
       ]
     }
   ) {
@@ -59,7 +59,7 @@ query GetTrustCirclePositions(
           }
         }
         positions(
-          where: { account_id: { _ilike: $address } }
+          where: { account_id: { _in: $addresses } }
           order_by: $positionsOrderBy
         ) {
           account_id
@@ -77,7 +77,7 @@ query GetTrustCirclePositions(
 query GetTrustCircleAccounts(
   $subjectId: String!
   $predicateId: String!
-  $walletAddress: String!
+  $walletAddresses: [String!]!
 ) {
   triples(
     where: {
@@ -103,7 +103,7 @@ query GetTrustCircleAccounts(
         where: { curve_id: { _eq: "2" } }
         order_by: { curve_id: asc }
       ) {
-        positions(where: { account_id: { _ilike: $walletAddress } }) {
+        positions(where: { account_id: { _in: $walletAddresses } }) {
           account_id
           shares
         }
@@ -263,18 +263,18 @@ query GetSofiaTrustedActivity(
 
 query FindUserPositionsOnTriples(
   $termIds: [String!]!
-  $address: String!
+  $addresses: [String!]!
   $limit: Int = 500
 ) {
   triples(where: { term_id: { _in: $termIds } }, limit: $limit) {
     term_id
     counter_term_id
-    positions(where: { account_id: { _eq: $address } }) {
+    positions(where: { account_id: { _in: $addresses } }) {
       shares
     }
     counter_term {
       vaults(where: { curve_id: { _eq: "1" } }) {
-        positions(where: { account_id: { _eq: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
         }
       }

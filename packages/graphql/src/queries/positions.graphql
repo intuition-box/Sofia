@@ -23,7 +23,7 @@ query GetTriplePositionsByAddress(
   $offset: Int
   $orderBy: [positions_order_by!]
   $where: positions_bool_exp
-  $address: String!
+  $addresses: [String!]!
 ) {
   total: positions_aggregate(where: $where) {
     aggregate {
@@ -40,7 +40,7 @@ query GetTriplePositionsByAddress(
       term {
         triple {
           term {
-            positions(where: { account_id: { _ilike: $address } }) {
+            positions(where: { account_id: { _in: $addresses } }) {
               account {
                 id
                 label
@@ -50,7 +50,7 @@ query GetTriplePositionsByAddress(
             }
           }
           counter_term {
-            positions(where: { account_id: { _ilike: $address } }) {
+            positions(where: { account_id: { _in: $addresses } }) {
               account {
                 id
                 label

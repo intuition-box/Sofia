@@ -60,7 +60,7 @@ export async function fetchDebateClaims(): Promise<DebateClaim[]> {
 
   const data = await useGetClaimsByTermIdsQuery.fetcher({
     termIds,
-    address: '',
+    addresses: [],
   })()
 
   const triples = data.triples ?? []

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useBalance } from 'wagmi'
 import { formatUnits, getAddress } from 'viem'
@@ -9,8 +9,6 @@ import { useWalletFromStorage, useGoldSystem, useFeeEstimate, useGlobalStake, GS
 import type { ModalTriplet } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
 import { createHookLogger } from "~/lib/utils"
-import type { IntentionPurpose } from "~/types/discovery"
-import type { IntentionType } from "~/types/intentionCategories"
 import { getIntentionBadge } from "~/types/intentionCategories"
 import { TOPIC_LABELS, TOPIC_COLORS } from "~/lib/config/topicConfig"
 import '../styles/Modal.css'

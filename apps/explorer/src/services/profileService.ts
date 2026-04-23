@@ -42,28 +42,40 @@ export interface UserProfileData {
 type PositionRaw = GetUserPositionsQuery['positions'][number]
 
 /**
- * Fetch only the signalsCount aggregate. Used as a separate pull query by
- * useUserProfile / useDiscoveryScore — the WS subscription doesn't stream
- * server-side aggregates, so this stays HTTP.
+ * Fetch only the signalsCount aggregate, union across all linked wallets.
+ * Used as a separate pull query by useUserProfile / useDiscoveryScore — the
+ * WS subscription doesn't stream server-side aggregates, so this stays HTTP.
  */
-export async function fetchSignalsCount(walletAddress: string): Promise<number> {
+export async function fetchSignalsCount(addresses: string[]): Promise<number> {
+  if (addresses.length === 0) return 0
   const data = await useGetUserSignalsCountQuery.fetcher({
-    accountId: walletAddress,
+    accountIds: addresses,
     subjectId: SUBJECT_IDS.I,
   })()
   return data.signalsCount.aggregate?.count ?? 0
 }
 
 /**
- * Fetch user's on-chain positions (vault shares).
- * Each position = user has deposited into an atom or triple vault.
+ * Fetch user's on-chain positions (vault shares), unioned across all linked
+ * wallets. Each position = user has deposited into an atom or triple vault.
  * Triple positions with "visits for *" predicates = certifications.
  */
 export async function fetchUserProfile(
-  walletAddress: string,
+  addresses: string[],
 ): Promise<UserProfileData> {
+  if (addresses.length === 0) {
+    return {
+      positions: [],
+      totalPositions: 0,
+      totalCertifications: 0,
+      totalAtomPositions: 0,
+      totalStaked: 0,
+      verifiedPlatforms: [],
+    }
+  }
+
   const data = await useGetUserPositionsQuery.fetcher({
-    accountId: walletAddress,
+    accountIds: addresses,
   })()
 
   const positions: UserPosition[] = data.positions.map((p: PositionRaw) => ({
@@ -99,7 +111,7 @@ export async function fetchUserProfile(
 
   // Signals count — same logic as the extension (terms_aggregate with subject "I")
   const signalsData = await useGetUserSignalsCountQuery.fetcher({
-    accountId: walletAddress,
+    accountIds: addresses,
     subjectId: SUBJECT_IDS.I,
   })()
   const signalsCount = signalsData.signalsCount.aggregate?.count ?? 0

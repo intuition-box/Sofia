@@ -135,7 +135,7 @@ query GetListDetails(
 query GetListDetailsWithPosition(
   $globalWhere: triples_bool_exp
   $tagPredicateId: String
-  $address: String
+  $addresses: [String!]
   $limit: Int
   $offset: Int
   $orderBy: [triples_order_by!]
@@ -205,7 +205,7 @@ query GetListDetailsWithPosition(
         position_count
         total_shares
       }
-      positions(where: { account_id: { _ilike: $address } }) {
+      positions(where: { account_id: { _in: $addresses } }) {
         account {
           id
           label
@@ -220,7 +220,7 @@ query GetListDetailsWithPosition(
         position_count
         total_shares
       }
-      positions(where: { account_id: { _ilike: $address } }) {
+      positions(where: { account_id: { _in: $addresses } }) {
         account {
           id
           label
@@ -236,7 +236,7 @@ query GetListDetailsWithUser(
   $globalWhere: triples_bool_exp
   $userWhere: triples_bool_exp
   $tagPredicateId: String
-  $address: String
+  $addresses: [String!]
   $limit: Int
   $offset: Int
   $orderBy: [triples_order_by!]
@@ -306,7 +306,7 @@ query GetListDetailsWithUser(
         position_count
         total_shares
       }
-      positions(where: { account_id: { _ilike: $address } }) {
+      positions(where: { account_id: { _in: $addresses } }) {
         account {
           id
           label
@@ -321,7 +321,7 @@ query GetListDetailsWithUser(
         position_count
         total_shares
       }
-      positions(where: { account_id: { _ilike: $address } }) {
+      positions(where: { account_id: { _in: $addresses } }) {
         account {
           id
           label
@@ -391,7 +391,7 @@ query GetListDetailsWithUser(
         position_count
         total_shares
       }
-      positions(where: { account_id: { _ilike: $address } }) {
+      positions(where: { account_id: { _in: $addresses } }) {
         account {
           id
           label
@@ -406,7 +406,7 @@ query GetListDetailsWithUser(
         position_count
         total_shares
       }
-      positions(where: { account_id: { _ilike: $address } }) {
+      positions(where: { account_id: { _in: $addresses } }) {
         account {
           id
           label
@@ -420,7 +420,7 @@ query GetListDetailsWithUser(
 
 query GetListDetailsSimplified(
   $globalWhere: triples_bool_exp
-  $address: String
+  $addresses: [String!]
   $limit: Int
   $offset: Int
   $orderBy: [triples_order_by!]
@@ -471,7 +471,7 @@ query GetListDetailsSimplified(
         current_share_price
         position_count
         total_shares
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           account {
             id
             label
@@ -486,7 +486,7 @@ query GetListDetailsSimplified(
         current_share_price
         position_count
         total_shares
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           account {
             id
             label

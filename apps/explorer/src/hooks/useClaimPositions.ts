@@ -73,7 +73,7 @@ export function usePrefetchClaimDialogs(
     gcTime: 24 * 60 * 60 * 1000,
         })
         // Prefetch vault stats
-        fetchVaultStats(c.termId, walletAddress || '').catch(() => {})
+        fetchVaultStats(c.termId, walletAddress ? [walletAddress] : []).catch(() => {})
       }
       // Prefetch oppose positions
       if (c.counterTermId) {

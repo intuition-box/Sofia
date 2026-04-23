@@ -1,17 +1,16 @@
 /**
- * useUserProfile — reads the user's profile from the push-based cache.
+ * useUserProfile — reads the user's profile, unioned across linked wallets.
  *
  * Two parallel React Query entries compose the final shape:
- *   1. ['user-profile-derived', wallet] — positions-derived fields, fed by
- *      the WS subscription. Seeded once via fetchUserProfile so reloads are
- *      instant even before the first WS delta.
- *   2. ['user-signals-count', wallet] — signalsCount aggregate, pulled
+ *   1. ['user-profile-derived', walletsKey] — positions-derived fields, fed
+ *      by the WS subscription. Seeded once via fetchUserProfile so reloads
+ *      are instant even before the first WS delta.
+ *   2. ['user-signals-count', walletsKey] — signalsCount aggregate, pulled
  *      separately because Hasura aggregates aren't streamed over WS.
  *
- * Both have staleTime:Infinity + refetchOnMount:false — the persister
- * holds last known values across reloads; the WS updates the first key
- * live; the second is invalidated manually after actions that could
- * change it.
+ * Callers pass an array of addresses. For viewing someone else's profile,
+ * pass `[otherUser.address]`. For viewing the current user, pass
+ * `useLinkedWallets().addresses`.
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -26,8 +25,8 @@ interface UseUserProfileResult {
   refresh: () => void
 }
 
-async function seedProfileDerived(walletAddress: string) {
-  const full = await fetchUserProfile(walletAddress)
+async function seedProfileDerived(addresses: string[]) {
+  const full = await fetchUserProfile(addresses)
   // Drop totalCertifications — that's owned by the signalsCount query so
   // the two caches stay independent. The WS-fed derivation doesn't populate
   // it either.
@@ -36,21 +35,25 @@ async function seedProfileDerived(walletAddress: string) {
   return derived
 }
 
-export function useUserProfile(walletAddress: string | undefined): UseUserProfileResult {
-  const address = walletAddress?.toLowerCase()
+export function useUserProfile(addresses: string[] | undefined): UseUserProfileResult {
+  const normalized = addresses ? [...addresses].sort() : []
+  const walletsKey = normalized.join(',') || undefined
+  const enabled = !!addresses && addresses.length > 0
 
   const derivedQ = useQuery({
-    queryKey: address ? realtimeKeys.userProfileDerived(address) : ['user-profile-derived', undefined],
-    queryFn: () => seedProfileDerived(walletAddress!),
-    enabled: !!walletAddress,
+    queryKey: walletsKey
+      ? realtimeKeys.userProfileDerived(walletsKey)
+      : ['user-profile-derived', undefined],
+    queryFn: () => seedProfileDerived(addresses!),
+    enabled,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   })
 
   const signalsQ = useQuery({
-    queryKey: address ? ['user-signals-count', address] : ['user-signals-count', undefined],
-    queryFn: () => fetchSignalsCount(walletAddress!),
-    enabled: !!walletAddress,
+    queryKey: walletsKey ? ['user-signals-count', walletsKey] : ['user-signals-count', undefined],
+    queryFn: () => fetchSignalsCount(addresses!),
+    enabled,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   })

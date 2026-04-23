@@ -71,7 +71,9 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
   const { logout } = useLogout()
   const { linkWallet } = useLinkAccount({ onSuccess: () => window.location.reload() })
   const address = user?.wallet?.address ?? ''
-  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(address || undefined)
+  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
+    address ? [address] : undefined,
+  )
   const cart = useCart()
   const { theme, toggleTheme } = useTheme()
   const [timeLeft, setTimeLeft] = useState(getTimeLeft)

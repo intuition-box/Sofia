@@ -2,18 +2,19 @@
  * useRealtimeSync — wires the SubscriptionManager to the user's auth state.
  *
  * Opens/closes WebSocket subscriptions as Privy ready/wallet changes.
- * Mount exactly once per app via <RealtimeSyncBoundary /> in App.tsx.
+ * Subscribes for the union of all linked wallets. Mount exactly once per
+ * app via <RealtimeSyncBoundary /> in App.tsx.
  */
 
 import { useEffect, useRef } from 'react'
-import { usePrivy, useWallets } from '@privy-io/react-auth'
+import { usePrivy } from '@privy-io/react-auth'
 import { useQueryClient } from '@tanstack/react-query'
 import { SubscriptionManager } from '@/lib/realtime/SubscriptionManager'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 
 export function useRealtimeSync() {
   const { ready, authenticated } = usePrivy()
-  const { wallets } = useWallets()
-  const wallet = wallets[0]
+  const { addresses } = useLinkedWallets()
   const queryClient = useQueryClient()
   const managerRef = useRef<SubscriptionManager | null>(null)
 
@@ -21,16 +22,21 @@ export function useRealtimeSync() {
     managerRef.current = new SubscriptionManager(queryClient)
   }
 
+  // Stable dependency: the sorted, joined address set. Reconnect only when
+  // the set actually changes, not on every render.
+  const addressesKey = [...addresses].sort().join(',')
+
   useEffect(() => {
-    if (!ready || !authenticated || !wallet?.address) {
+    if (!ready || !authenticated || addresses.length === 0) {
       managerRef.current?.disconnect()
       return
     }
-    managerRef.current?.connect(wallet.address)
+    managerRef.current?.connect(addresses)
     return () => {
       managerRef.current?.disconnect()
     }
-  }, [ready, authenticated, wallet?.address])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, authenticated, addressesKey])
 }
 
 /**

@@ -1,5 +1,6 @@
 /**
- * useDiscoveryScore — Pioneer/Explorer/Contributor/Trusted counts.
+ * useDiscoveryScore — Pioneer/Explorer/Contributor/Trusted counts, unioned
+ * across the user's linked wallets.
  *
  * Stays HTTP-pull (server-side aggregates aren't streamed by the WS layer),
  * but converted to useQuery so the persister holds the value across reloads
@@ -12,13 +13,15 @@ import type { DiscoveryStats } from '@/services/discoveryScoreService'
 
 export type { DiscoveryStats }
 
-export function useDiscoveryScore(walletAddress: string | undefined) {
-  const address = walletAddress?.toLowerCase()
+export function useDiscoveryScore(addresses: string[] | undefined) {
+  const normalized = addresses ? [...addresses].sort() : []
+  const cacheKey = normalized.join(',') || undefined
+  const enabled = !!addresses && addresses.length > 0
 
   const { data, isLoading } = useQuery({
-    queryKey: address ? ['discovery-score', address] : ['discovery-score', undefined],
-    queryFn: () => fetchDiscoveryStats(walletAddress!),
-    enabled: !!walletAddress,
+    queryKey: cacheKey ? ['discovery-score', cacheKey] : ['discovery-score', undefined],
+    queryFn: () => fetchDiscoveryStats(addresses!),
+    enabled,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,

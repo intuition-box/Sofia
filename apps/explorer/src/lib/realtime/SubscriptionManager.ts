@@ -2,13 +2,14 @@
  * SubscriptionManager — single source of truth for real-time data.
  *
  * Opens one WebSocket connection (via the graphql-ws client in
- * @0xsofia/graphql) and subscribes to wallet-scoped queries.
- * Each delta is pushed into the React Query cache via setQueryData(),
- * so components consuming those keys re-render without fetching.
+ * @0xsofia/graphql) and subscribes to wallet-scoped queries for the union of
+ * the user's linked wallets. Each delta is pushed into the React Query cache
+ * via setQueryData(), so components consuming those keys re-render without
+ * fetching.
  *
- * If the WS stays offline past FALLBACK_DELAY_MS, an HTTP polling loop
- * takes over using the same onPositionsUpdate pipeline. Connection
- * health flows through wsStatus so the UI can surface a badge.
+ * If the WS stays offline past FALLBACK_DELAY_MS, an HTTP polling loop takes
+ * over using the same onPositionsUpdate pipeline. Connection health flows
+ * through wsStatus so the UI can surface a badge.
  *
  * No GraphQL strings live here — DocumentNodes come from the package.
  */
@@ -60,6 +61,11 @@ function toQueryString(doc: unknown): string {
   return print(doc as DocumentNode)
 }
 
+/** Stable cache identifier derived from the addresses set (order-independent). */
+function walletsKeyFor(addresses: string[]): string {
+  return [...addresses].map((a) => a.toLowerCase()).sort().join(',')
+}
+
 /** Grace period before we assume a disconnect is persistent. */
 const FALLBACK_DELAY_MS = 30_000
 /** Cadence of HTTP polling once the fallback is active. */
@@ -69,7 +75,8 @@ type Unsubscribe = () => void
 
 export class SubscriptionManager {
   private queryClient: QueryClient
-  private walletAddress: string | null = null
+  private addresses: string[] = []
+  private walletsKey: string | null = null
   private subscriptions = new Map<string, Unsubscribe>()
   private statusListenerUnsubs: Array<() => void> = []
   private fallbackInterval: ReturnType<typeof setInterval> | null = null
@@ -79,11 +86,16 @@ export class SubscriptionManager {
     this.queryClient = queryClient
   }
 
-  connect(walletAddress: string) {
-    const normalized = walletAddress.toLowerCase()
-    if (this.walletAddress === normalized) return
+  connect(addresses: string[]) {
+    if (addresses.length === 0) {
+      this.disconnect()
+      return
+    }
+    const key = walletsKeyFor(addresses)
+    if (this.walletsKey === key) return
     this.disconnect()
-    this.walletAddress = normalized
+    this.addresses = addresses
+    this.walletsKey = key
     this.attachStatusListeners()
     this.subscribePositions()
     this.subscribeTrackedPositions()
@@ -96,7 +108,8 @@ export class SubscriptionManager {
     this.subscriptions.clear()
     this.detachStatusListeners()
     this.stopHttpFallback()
-    this.walletAddress = null
+    this.addresses = []
+    this.walletsKey = null
   }
 
   /** Dispose the shared WS client. Use on full logout. */
@@ -147,7 +160,7 @@ export class SubscriptionManager {
       this.fallbackTimeout = null
       // If the WS came back during the grace period, don't start polling.
       if (getWsStatus().status === 'connected') return
-      if (!this.walletAddress) return
+      if (!this.walletsKey) return
 
       if (import.meta.env.DEV) {
         console.warn('[WS] offline for', FALLBACK_DELAY_MS, 'ms — starting HTTP fallback')
@@ -172,10 +185,9 @@ export class SubscriptionManager {
   }
 
   private async httpFetch() {
-    const wallet = this.walletAddress
-    if (!wallet) return
+    if (this.addresses.length === 0) return
     try {
-      const data = await useGetUserPositionsQuery.fetcher({ accountId: wallet })()
+      const data = await useGetUserPositionsQuery.fetcher({ accountIds: this.addresses })()
       // Same shape as the subscription payload (same fragment).
       this.onPositionsUpdate({ positions: data.positions } as unknown as WatchUserPositionsSubscription)
     } catch (err) {
@@ -188,10 +200,10 @@ export class SubscriptionManager {
   // ── Subscriptions ─────────────────────────────────────────────────────────
 
   private subscribePositions() {
-    if (!this.walletAddress) return
+    if (this.addresses.length === 0) return
 
     const variables: WatchUserPositionsSubscriptionVariables = {
-      accountId: this.walletAddress,
+      accountIds: this.addresses,
     }
 
     const unsub = getWsClient().subscribe<WatchUserPositionsSubscription>(
@@ -225,10 +237,10 @@ export class SubscriptionManager {
    * real-time updates for those views.
    */
   private subscribeTrackedPositions() {
-    if (!this.walletAddress) return
+    if (this.addresses.length === 0) return
 
     const variables: WatchUserTrackedPositionsSubscriptionVariables = {
-      accountId: this.walletAddress,
+      accountIds: this.addresses,
       termIds: TRACKED_TERM_IDS,
     }
 
@@ -259,8 +271,8 @@ export class SubscriptionManager {
   private onPositionsUpdate(data: WatchUserPositionsSubscription) {
     const positions = data.positions ?? []
     const count = positions.length
-    const wallet = this.walletAddress
-    if (!wallet) return
+    const key = this.walletsKey
+    if (!key) return
 
     const qc = this.queryClient
 
@@ -278,16 +290,16 @@ export class SubscriptionManager {
     // payload (profile aggregate, user stats, verified platforms — a user
     // with >100 verified platforms is vanishingly rare).
     try {
-      qc.setQueryData(realtimeKeys.positions(wallet), positions)
-      qc.setQueryData(realtimeKeys.verifiedPlatforms(wallet), deriveVerifiedPlatforms(positions))
-      qc.setQueryData(realtimeKeys.userProfileDerived(wallet), deriveUserProfile(positions))
-      qc.setQueryData(realtimeKeys.userStats(wallet), deriveUserStats(positions))
+      qc.setQueryData(realtimeKeys.positions(key), positions)
+      qc.setQueryData(realtimeKeys.verifiedPlatforms(key), deriveVerifiedPlatforms(positions))
+      qc.setQueryData(realtimeKeys.userProfileDerived(key), deriveUserProfile(positions))
+      qc.setQueryData(realtimeKeys.userStats(key), deriveUserStats(positions))
     } catch (err) {
       console.error('[WS positions] derivation/setQueryData failed', err)
     }
 
     if (import.meta.env.DEV) {
-      console.log(`[WS positions] ${count} positions for ${wallet.slice(0, 8)}…`)
+      console.log(`[WS positions] ${count} positions for ${key.slice(0, 8)}…`)
     }
   }
 
@@ -299,21 +311,21 @@ export class SubscriptionManager {
    */
   private onTrackedPositionsUpdate(data: WatchUserTrackedPositionsSubscription) {
     const positions = data.positions ?? []
-    const wallet = this.walletAddress
-    if (!wallet) return
+    const key = this.walletsKey
+    if (!key) return
 
     const qc = this.queryClient
     try {
       qc.setQueryData(
-        realtimeKeys.topicPositionsMap(wallet),
+        realtimeKeys.topicPositionsMap(key),
         derivePositionsByTopic(positions as unknown as Parameters<typeof derivePositionsByTopic>[0]),
       )
       qc.setQueryData(
-        realtimeKeys.categoryPositionsMap(wallet),
+        realtimeKeys.categoryPositionsMap(key),
         derivePositionsByCategory(positions as unknown as Parameters<typeof derivePositionsByCategory>[0]),
       )
       qc.setQueryData(
-        ['platform-positions-map', wallet],
+        ['platform-positions-map', key],
         derivePositionsByPlatform(positions as unknown as Parameters<typeof derivePositionsByPlatform>[0]),
       )
     } catch (err) {
@@ -321,7 +333,7 @@ export class SubscriptionManager {
     }
 
     if (import.meta.env.DEV) {
-      console.log(`[WS tracked] ${positions.length} tracked positions for ${wallet.slice(0, 8)}…`)
+      console.log(`[WS tracked] ${positions.length} tracked positions for ${key.slice(0, 8)}…`)
     }
   }
 }

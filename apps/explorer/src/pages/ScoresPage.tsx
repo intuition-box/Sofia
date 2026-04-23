@@ -60,8 +60,8 @@ export default function ScoresPage() {
   const { getStatus } = usePlatformConnections()
   const { getPlatformsByTopic } = usePlatformCatalog()
   const { topicById } = useTaxonomy()
-  const { items: activity } = useUserActivity(address || undefined)
-  const { claims: topClaims } = useTopClaims(address || undefined)
+  const { items: activity } = useUserActivity(address ? [address] : undefined)
+  const { claims: topClaims } = useTopClaims(address ? [address] : undefined)
 
   // Reputation by topic — proto formula: categories × 5 + platforms × 10.
   const topicScores = selectedTopics

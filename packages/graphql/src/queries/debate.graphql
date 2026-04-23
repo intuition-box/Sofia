@@ -1,6 +1,6 @@
 # Debate Tab queries — fetch curated claims and featured lists by their term_ids
 
-query GetClaimsByTermIds($termIds: [String!]!, $address: String) {
+query GetClaimsByTermIds($termIds: [String!]!, $addresses: [String!]) {
   triples(where: { term_id: { _in: $termIds } }) {
     term_id
     counter_term_id
@@ -41,7 +41,7 @@ query GetClaimsByTermIds($termIds: [String!]!, $address: String) {
         total_shares
         position_count
         current_share_price
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
           total_deposit_assets_after_total_fees
           account {
@@ -56,7 +56,7 @@ query GetClaimsByTermIds($termIds: [String!]!, $address: String) {
         total_shares
         position_count
         current_share_price
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
           total_deposit_assets_after_total_fees
           account {
@@ -110,7 +110,7 @@ query GetFeaturedListsByObjectIds($objectIds: [String!]!) {
   }
 }
 
-query GetListEntries($predicateId: String!, $objectId: String!, $address: String) {
+query GetListEntries($predicateId: String!, $objectId: String!, $addresses: [String!]) {
   triples(
     where: {
       predicate_id: { _eq: $predicateId }
@@ -156,7 +156,7 @@ query GetListEntries($predicateId: String!, $objectId: String!, $address: String
         total_shares
         position_count
         current_share_price
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
           total_deposit_assets_after_total_fees
           account {
@@ -171,7 +171,7 @@ query GetListEntries($predicateId: String!, $objectId: String!, $address: String
         total_shares
         position_count
         current_share_price
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           shares
           total_deposit_assets_after_total_fees
           account {

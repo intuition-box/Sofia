@@ -26,7 +26,7 @@ query GetAtomsWithPositions(
   $offset: Int
   $orderBy: [atoms_order_by!]
   $where: atoms_bool_exp
-  $address: String
+  $addresses: [String!]
 ) {
   total: atoms_aggregate(where: $where) {
     aggregate {
@@ -49,7 +49,7 @@ query GetAtomsWithPositions(
             }
           }
         }
-        positions(where: { account_id: { _ilike: $address } }) {
+        positions(where: { account_id: { _in: $addresses } }) {
           id
           account {
             label

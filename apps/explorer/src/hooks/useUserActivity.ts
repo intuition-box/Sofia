@@ -1,10 +1,12 @@
 /**
- * useUserActivity — user's recent on-chain activity feed.
+ * useUserActivity — on-chain activity feed for a user (or a user's linked wallets).
  *
- * Backed by a persisted React Query entry so reloads paint instantly
- * from localStorage while the background refresh (when triggered) pulls
- * the latest events. fetchUserActivity already has retry+backoff via
- * fetchWithRetry.
+ * Callers pass an array of addresses. For viewing someone else's profile, pass
+ * `[otherUser.address]`. For viewing the current user's aggregated activity,
+ * pass `useLinkedWallets().addresses`.
+ *
+ * Backed by a persisted React Query entry so reloads paint instantly from
+ * localStorage. fetchUserActivity has retry+backoff via fetchWithRetry.
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -14,13 +16,14 @@ import type { CircleItem } from '../services/circleService'
 
 const BATCH_SIZE = 200
 
-export function useUserActivity(walletAddress: string | undefined) {
-  const address = walletAddress?.toLowerCase()
+export function useUserActivity(addresses: string[] | undefined) {
+  const normalized = addresses ? [...addresses].sort() : []
+  const cacheKey = normalized.join(',') || undefined
 
   const { data, isLoading, error, refetch } = useQuery<CircleItem[]>({
-    queryKey: address ? ['user-activity', address] : ['user-activity', undefined],
-    queryFn: () => fetchWithRetry(() => fetchUserActivity(walletAddress!, BATCH_SIZE, 0)),
-    enabled: !!walletAddress,
+    queryKey: cacheKey ? ['user-activity', cacheKey] : ['user-activity', undefined],
+    queryFn: () => fetchWithRetry(() => fetchUserActivity(addresses!, BATCH_SIZE, 0)),
+    enabled: !!addresses && addresses.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,

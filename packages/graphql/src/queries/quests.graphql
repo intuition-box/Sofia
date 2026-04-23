@@ -97,7 +97,7 @@ query CheckSocialLinks(
 
 # Get user signals (triples with subject = "I")
 query GetUserSignals(
-  $accountId: String!
+  $accountIds: [String!]!
   $subjectId: String!
   $limit: Int!
   $offset: Int!
@@ -107,7 +107,7 @@ query GetUserSignals(
       _and: [
         { type: { _eq: Triple } },
         { triple: { subject: { term_id: { _eq: $subjectId } } } },
-        { positions: { account: { id: { _eq: $accountId } } } }
+        { positions: { account: { id: { _in: $accountIds } } } }
       ]
     }
     limit: $limit
@@ -119,14 +119,14 @@ query GetUserSignals(
 
 # Get follow count for a user
 query GetFollowCount(
-  $accountId: String!
+  $accountIds: [String!]!
   $subjectId: String!
   $predicateId: String!
 ) {
   triples(
     where: {
       _and: [
-        { positions: { account: { id: { _eq: $accountId } } } },
+        { positions: { account: { id: { _in: $accountIds } } } },
         { subject_id: { _eq: $subjectId } },
         { predicate_id: { _eq: $predicateId } },
         { object: { type: { _eq: "Account" } } }

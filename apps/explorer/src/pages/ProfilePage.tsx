@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePrivy, useLogin, useLinkAccount } from '@privy-io/react-auth'
 import { useViewAs } from '@/hooks/useViewAs'
+import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useTopicSync } from '../hooks/useTopicSync'
 import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
@@ -25,7 +26,11 @@ export default function ProfilePage() {
   const { login } = useLogin()
   const { linkWallet } = useLinkAccount({ onSuccess: () => window.location.reload() })
   const { viewAsAddress, isViewingAs, clearViewAs } = useViewAs()
+  const { addresses: myAddresses } = useLinkedWallets()
   const address = viewAsAddress || user?.wallet?.address || ''
+  // When viewing yourself, aggregate across all linked wallets. When viewing
+  // someone else (isViewingAs), use only their address.
+  const activityAddresses = viewAsAddress ? [viewAsAddress] : myAddresses
   const { selectedTopics, selectedCategories, removeTopic } = useTopicSync()
   const navigate = useNavigate()
   const { getStatus } = usePlatformConnections()
@@ -33,8 +38,8 @@ export default function ProfilePage() {
   const { signals } = useSignals(address || undefined)
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustCompositeScore, signals)
   const topicScores = scores?.topics ?? []
-  const { items: activityItems, loading: activityLoading } = useUserActivity(address || undefined)
-  const { claims: topClaims, loading: claimsLoading } = useTopClaims(address || undefined)
+  const { items: activityItems, loading: activityLoading } = useUserActivity(activityAddresses.length > 0 ? activityAddresses : undefined)
+  const { claims: topClaims, loading: claimsLoading } = useTopClaims(activityAddresses.length > 0 ? activityAddresses : undefined)
 
   if (!authenticated && !isViewingAs) {
     return (
