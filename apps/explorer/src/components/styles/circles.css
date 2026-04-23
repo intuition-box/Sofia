@@ -8,6 +8,22 @@
  * package (see INTEGRATION.md §5).
  */
 
+/* ── Page-level layout override ─────────────────────────────────── */
+/* Circles runs full-width — no RightSidebar is reserved. Collapses
+   `.main-content`'s default 290px right margin via :has(). Scoped to
+   the two Circles root classes so it never leaks to other routes. */
+.main-content:has(.cr-page),
+.main-content:has(.crd-detail) {
+  margin-right: 0;
+}
+
+/* Circles reuses the `.pf-view` wrapper for its back row + padding,
+   but needs to bust the 1040px max-width cap that profile pages use. */
+.pf-view.cr-page,
+.pf-view.crd-detail {
+  max-width: none;
+}
+
 /* ── List view ──────────────────────────────────────────────────── */
 
 .cr-page {

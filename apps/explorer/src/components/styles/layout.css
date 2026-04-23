@@ -3,17 +3,14 @@
    banner now that the app has no fixed header. */
 /* padding-top: breathing room between the top of the viewport and the
    hero banner now that the app has no fixed header. */
-.main-content { margin-left: 290px; margin-right: 290px; padding-top: 48px; padding-bottom: 48px; padding-left: 12px; padding-right: 12px; transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
-/* ProfileDrawer is 290px wide — matches the nav rail for symmetry.
-   Reserve exactly that so the main content stops where the drawer starts. */
-.main-content--profile { margin-right: 290px; }
-.main-content--no-right { margin-right: 0; }
-.main-content--no-sidebar { margin-left: 0; margin-right: 0; padding-top: 48px; }
+.main-content { margin-left: 290px; margin-right: 290px; padding-top: 48px; padding-bottom: 48px; padding-left: 56px; padding-right: 56px; transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
 
-/* Nav collapsed — main follows the narrower 68px rail. `--no-sidebar`
-   already forces margin-left:0, so it wins regardless. */
+/* Nav collapsed — main follows the narrower 68px rail. */
 .nav-collapsed .main-content { margin-left: 68px; }
-.nav-collapsed .main-content.main-content--no-sidebar { margin-left: 0; }
+
+/* ProfileDrawer is 350px wide. When open, widen the main's right margin
+   so the drawer doesn't overlap content. Padding-right stays intact. */
+body:has(.pd-aside.pd-open) .main-content { margin-right: 350px; }
 
 /* ── RightSidebar ── */
 .rs-aside {

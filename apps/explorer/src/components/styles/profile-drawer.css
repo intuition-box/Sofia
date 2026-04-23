@@ -4,7 +4,7 @@
 
 .pd-aside {
   top: 0;
-  width: 290px;
+  width: 350px;
   height: 100vh;
   z-index: 9999;
   border-left: 1px solid var(--ds-border);

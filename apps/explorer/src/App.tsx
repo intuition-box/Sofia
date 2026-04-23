@@ -125,13 +125,7 @@ export default function App() {
         onSuccess={handleDepositSuccess}
       />
 
-      <main
-        className={`main-content${
-          isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''
-        }${
-          isFullWidthPage && sidebar.isDesktop ? ' main-content--no-right' : ''
-        }${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`}
-      >
+      <main className="main-content">
         <RouteErrorBoundary key={location.pathname}>
         <Routes>
           {/* Public routes */}

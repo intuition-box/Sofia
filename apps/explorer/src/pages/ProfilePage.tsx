@@ -67,7 +67,7 @@ export default function ProfilePage() {
       : pc.subtitle
 
   return (
-    <div className="pf-view page-enter">
+    <div className="pf-view pf-home page-enter">
       <PageHero
         title={isViewingAs ? shortAddr : pc.title}
         description={heroDescription}
