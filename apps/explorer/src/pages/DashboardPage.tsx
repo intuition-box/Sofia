@@ -14,7 +14,7 @@ import { Users, Globe, X } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import type { Address } from 'viem'
-import PageHeader from '../components/PageHeader'
+import { PageHero } from '@0xsofia/design-system'
 import PredicatePicker from '../components/PredicatePicker'
 import QuestCard from '../components/QuestCard'
 import CircleCard from '../components/CircleCard'
@@ -176,7 +176,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <PageHeader color={pc.color} glow={pc.glow} title={pc.title} subtitle={pc.subtitle} />
+      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
       <div className="space-y-4 page-content page-enter">
       {/* Feed mode toggle */}
       <div className="flex items-center gap-3 mb-2">

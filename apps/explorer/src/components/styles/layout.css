@@ -1,14 +1,26 @@
 /* ── App main layout ── */
-.main-content { margin-left: 262px; margin-right: 262px; margin-top: 5px; padding-bottom: 48px; padding-left: 12px; padding-right: 12px; transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
-.main-content--profile { margin-right: 322px; }
-.main-content--no-sidebar { margin-left: 0; margin-right: 0; margin-top: 5px; }
+/* margin-top: breathing room between the top of the viewport and the hero
+   banner now that the app has no fixed header. */
+/* padding-top: breathing room between the top of the viewport and the
+   hero banner now that the app has no fixed header. */
+.main-content { margin-left: 290px; margin-right: 290px; padding-top: 48px; padding-bottom: 48px; padding-left: 12px; padding-right: 12px; transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+/* ProfileDrawer is 290px wide — matches the nav rail for symmetry.
+   Reserve exactly that so the main content stops where the drawer starts. */
+.main-content--profile { margin-right: 290px; }
+.main-content--no-sidebar { margin-left: 0; margin-right: 0; padding-top: 48px; }
+
+/* Nav collapsed — main follows the narrower 68px rail. `--no-sidebar`
+   already forces margin-left:0, so it wins regardless. */
+.nav-collapsed .main-content { margin-left: 68px; }
+.nav-collapsed .main-content.main-content--no-sidebar { margin-left: 0; }
 
 /* ── RightSidebar ── */
 .rs-aside {
-  width: 320px;
+  width: 290px;
   background: var(--sidebar);
   border-left: 1px solid var(--border);
-  padding-top: 71px;
+  padding-top: 16px;
+  top: 0;
   transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   height: 100vh;
 }

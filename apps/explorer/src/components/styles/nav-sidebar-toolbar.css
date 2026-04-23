@@ -1,0 +1,221 @@
+/* ── NavSidebar — toolbar, auth chip, countdown ─────────────────────
+ * Sits inside the DS `.nav-sidebar` which already owns 24px top + 18px
+ * horizontal padding. All rules here stay at 0-margin horizontally so
+ * they extend edge-to-edge within that container.
+ *
+ * Scoped to `.ns-*` to keep a clear visual identity separate from the
+ * DS `.nav-*` items and the (removed) `.hdr-*` header classes.
+ */
+
+/* ── Toolbar ────────────────────────────────────────────────────── */
+
+.ns-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.ns-tool-btn {
+  position: relative;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink-soft);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ns-tool-btn:hover {
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+}
+
+/* Filled state — applied to the cart button when cart.count > 0 so the
+   basket visibly flags it has items. Echoes the peach accent used by
+   the 'Start your journey' CTA. */
+.ns-tool-btn--filled {
+  background: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-card));
+  border-color: var(--ds-accent);
+  color: var(--ds-accent-ink);
+}
+.ns-tool-btn--filled:hover {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-on-accent);
+}
+
+.ns-tool-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--distrusted, #e87c7c);
+  color: #ffffff;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  border: 2px solid var(--ds-card);
+}
+
+/* ── Auth: Connect button & avatar chip ─────────────────────────── */
+
+.ns-auth-connect {
+  width: 100%;
+  border-radius: 999px;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-weight: 700;
+  box-shadow: 0 4px 14px -6px color-mix(in srgb, var(--ds-accent) 60%, transparent);
+}
+.ns-auth-connect:hover {
+  background: color-mix(in srgb, var(--ds-accent) 90%, #000);
+}
+
+.ns-auth-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+.ns-auth-chip:hover {
+  border-color: var(--ds-ink-soft);
+  background: var(--ds-bg-subtle);
+}
+
+.ns-auth-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.ns-auth-avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--ds-accent) 25%, var(--ds-card));
+  color: var(--ds-accent-ink);
+}
+
+.ns-auth-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+.ns-auth-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+.ns-auth-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── User region separator ───────────────────────────────────────── */
+/* Dashed divider below the toolbar so the nav sections read as a
+   separate visual group. The auth chip / connect button is now pinned
+   to the bottom of the rail (see the margin-top: auto rule below). */
+.ns-toolbar + .nav-section {
+  position: relative;
+  padding-top: 14px;
+}
+.ns-toolbar + .nav-section::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ds-border), transparent);
+}
+
+/* Bottom cluster wrapper — holds the auth block + countdown and pins
+   the whole group to the bottom of the rail (whether auth renders or
+   not). Items stack with a 10px gap. */
+.ns-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ns-auth-chip,
+.ns-auth-connect {
+  margin: 0;
+}
+
+/* ── Season countdown ─────────────────────────────────────────────── */
+
+.ns-countdown {
+  padding: 12px 14px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-bg-subtle);
+  position: relative;
+  overflow: hidden;
+}
+.ns-countdown::before {
+  content: '';
+  position: absolute;
+  inset: -1px -1px auto auto;
+  width: 70px;
+  height: 70px;
+  background: radial-gradient(circle at top right, var(--ds-accent) 0%, transparent 70%);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.ns-countdown > * {
+  position: relative;
+}
+.ns-countdown-time {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.ns-countdown-hint {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  color: var(--ds-muted);
+  margin: 4px 0 0;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

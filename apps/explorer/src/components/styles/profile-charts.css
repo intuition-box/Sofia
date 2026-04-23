@@ -1,0 +1,859 @@
+/**
+ * ProfileCharts — shell styles (grid + cards + kicker).
+ * Inner panels (radar, calendar, top platforms, top claim) land in their
+ * own rules as they get ported. Based on
+ * proto-explorer/src/styles/profile-charts.css:1-135.
+ */
+
+.pc-section {
+  margin-bottom: 32px;
+}
+
+.pc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.pc-card-wide {
+  grid-column: 1 / -1;
+}
+
+.pc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  box-shadow: var(--ds-shadow-card);
+  overflow: hidden;
+}
+.pc-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 60%;
+  height: 120%;
+  background: radial-gradient(circle at center, var(--ds-accent-soft) 0%, transparent 60%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+.pc-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pc-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pc-kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.pc-card-meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.pc-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--ds-muted);
+  font-size: 13px;
+  border: 1px dashed var(--ds-border-soft);
+  border-radius: 10px;
+  background: var(--ds-bg-subtle);
+}
+
+/* ── Main card: radar + details + calendar ─────────────────────────── */
+
+.pc-main {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 24px;
+  min-height: 280px;
+}
+@media (max-width: 900px) {
+  .pc-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pc-main-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: 16px;
+  border-left: 1px dashed var(--ds-border-soft);
+}
+.pc-main-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--ds-border-soft);
+}
+@media (max-width: 900px) {
+  .pc-main-right {
+    padding-left: 0;
+    padding-top: 16px;
+    border-left: none;
+    border-top: 1px dashed var(--ds-border-soft);
+  }
+}
+
+/* ── Bottom row: Top Platforms + Top Claim ─────────────────────────── */
+
+.pc-platforms-claim-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 500px;
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .pc-platforms-claim-row {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+}
+.pc-platforms-claim-row > .pc-card {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pc-claim-card-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Chart shell shared bits ──────────────────────────────────────── */
+
+.pc-chart-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.pc-chart-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ds-muted);
+  text-transform: uppercase;
+}
+.pc-chart-hint {
+  opacity: 0.7;
+}
+
+/* ── Activity calendar ────────────────────────────────────────────── */
+/* Ported from proto-explorer/src/styles/profile-charts.css:519-647 with
+   proto unprefixed tokens (--border-soft, --muted, --ink, --bg-subtle,
+   --card) remapped to --ds-*. */
+
+.pc-cal-wrap {
+  position: relative;
+  --cal-0: var(--ds-border-soft);
+}
+
+.pc-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pc-cal-surface {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  grid-template-rows: auto 1fr;
+  row-gap: 6px;
+  column-gap: 6px;
+  width: 100%;
+}
+
+.pc-cal-corner {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.pc-cal-months {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(18, minmax(0, 1fr));
+  column-gap: 3px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.pc-cal-month {
+  grid-row: 1;
+  white-space: nowrap;
+}
+
+.pc-cal-days {
+  grid-column: 1;
+  grid-row: 2;
+  display: grid;
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  row-gap: 3px;
+  align-items: center;
+  justify-items: end;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ds-muted);
+  opacity: 0.8;
+}
+
+.pc-cal-grid {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: repeat(18, minmax(0, 1fr));
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  grid-auto-flow: column;
+  column-gap: 3px;
+  row-gap: 3px;
+  aspect-ratio: 18 / 7;
+  width: 100%;
+}
+
+.pc-cal-cell {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--cal-0);
+  transition: transform 0.15s ease, outline-color 0.15s ease;
+  outline: 1px solid transparent;
+}
+.pc-cal-cell[data-day] {
+  cursor: pointer;
+}
+.pc-cal-cell[data-day]:hover {
+  transform: scale(1.3);
+  outline-color: var(--ds-ink);
+  outline-offset: 1px;
+  z-index: 2;
+  position: relative;
+}
+.pc-cal-cell.l0 {
+  background: var(--cal-0);
+}
+
+/* Days with multiple topics active get a tiny corner notch. */
+.pc-cal-cell.multi {
+  position: relative;
+}
+.pc-cal-cell.multi::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ds-card);
+  opacity: 0.9;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ds-ink) 25%, transparent);
+}
+
+.pc-cal-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  justify-content: flex-end;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  padding-top: 4px;
+}
+.pc-cal-legend-topic {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--leg-color, var(--ds-muted));
+}
+.pc-cal-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--leg-color, var(--ds-muted));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--leg-color, var(--ds-muted)) 50%, transparent);
+}
+
+/* ── Radar verb chips ────────────────────────────────────────────── */
+/* Ported from proto profile-charts.css:150-191. */
+
+.pc-radar-verbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -4px;
+  margin-bottom: 12px;
+  z-index: 3;
+  align-self: flex-start;
+}
+.pc-radar-verb {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pc-radar-verb:hover {
+  border-color: var(--verb-color, var(--ds-ink-soft));
+  color: var(--verb-color, var(--ds-ink));
+}
+.pc-radar-verb.active {
+  background: color-mix(in srgb, var(--verb-color, var(--ds-accent)) 14%, var(--ds-card));
+  border-color: var(--verb-color, var(--ds-accent));
+  color: var(--verb-color, var(--ds-accent-ink));
+}
+.pc-radar-verb-emoji {
+  font-size: 11px;
+  line-height: 1;
+  text-transform: none;
+  font-family: "Geist", sans-serif;
+}
+
+/* ── Radar chart ────────────────────────────────────────────────── */
+/* Ported from proto profile-charts.css:193-245. */
+
+.pc-radar-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 440px;
+  padding: 4px 10px 10px;
+  overflow: visible;
+}
+.pc-radar {
+  width: 100%;
+  height: 100%;
+  max-height: 460px;
+  max-width: 460px;
+  overflow: visible;
+  flex: 1;
+}
+.pc-radar-label {
+  cursor: pointer;
+  transition: transform 0.18s ease;
+}
+.pc-radar-label:hover {
+  transform-origin: center;
+}
+.pc-radar-clear {
+  transition: filter 0.25s ease;
+}
+.pc-radar-clear:hover {
+  filter:
+    drop-shadow(0 0 8px #6dd4a0)
+    drop-shadow(0 0 18px color-mix(in srgb, #6dd4a0 65%, transparent))
+    drop-shadow(0 0 30px color-mix(in srgb, #6dd4a0 35%, transparent));
+}
+.pc-radar-clear circle {
+  transition: stroke 0.25s ease, stroke-width 0.25s ease;
+}
+.pc-radar-clear:hover circle {
+  stroke: #6dd4a0;
+  stroke-width: 2;
+}
+.pc-radar-label-bg {
+  fill: var(--ds-card);
+  stroke: var(--ds-border);
+  stroke-width: 1;
+  transition: all 0.18s ease;
+}
+.pc-radar-label:hover .pc-radar-label-bg,
+.pc-radar-label.active .pc-radar-label-bg {
+  fill: color-mix(in srgb, var(--topic-color, var(--ds-muted)) 18%, var(--ds-card));
+  stroke: var(--topic-color, var(--ds-muted));
+  stroke-width: 2;
+}
+
+.pc-radar-half-label {
+  fill: var(--ds-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+/* ── Top platforms list ─────────────────────────────────────────── */
+/* Ported from proto profile-charts.css:365-481. */
+
+.pc-platforms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pc-plat-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px 28px minmax(90px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+  overflow: hidden;
+}
+.pc-plat-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--plat-bar, 0%);
+  background: linear-gradient(to right,
+    color-mix(in srgb, var(--plat-color, var(--ds-muted)) 8%, transparent),
+    transparent);
+  pointer-events: none;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.pc-plat-row:hover {
+  background: var(--ds-bg-subtle);
+  border-color: var(--ds-border-soft);
+}
+.pc-plat-row.pc-plat-top {
+  border-color: color-mix(in srgb, var(--plat-color, var(--ds-accent)) 25%, transparent);
+  background: color-mix(in srgb, var(--plat-color, var(--ds-accent)) 4%, transparent);
+}
+.pc-plat-rank {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+.pc-plat-top .pc-plat-rank {
+  color: var(--plat-color, var(--ds-accent));
+  opacity: 1;
+}
+.pc-plat-fav {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #ffffff;
+  border: 1px solid var(--ds-border-soft);
+  padding: 3px;
+  object-fit: contain;
+  box-sizing: border-box;
+}
+.pc-plat-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.pc-plat-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+.pc-plat-topic {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--plat-color, var(--ds-muted));
+  line-height: 1;
+}
+.pc-plat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--plat-color, var(--ds-muted));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--plat-color, var(--ds-muted)) 50%, transparent);
+}
+.pc-plat-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.pc-plat-count {
+  font-family: "Fraunces", serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  line-height: 1;
+}
+.pc-plat-delta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ── Details panel ───────────────────────────────────────────────── */
+/* Ported from proto profile-charts.css:247-361. */
+
+.pc-details {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.pc-details-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pc-details-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  color: var(--ds-muted);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 1;
+}
+.pc-details-clear:hover {
+  border-color: var(--topic-color, var(--ds-ink-soft));
+  color: var(--topic-color, var(--ds-ink));
+}
+
+.pc-details-title {
+  font-family: "Fraunces", serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--topic-color, var(--ds-ink));
+}
+
+.pc-details-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pc-details-score {
+  font-family: "Fraunces", serif;
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}
+.pc-details-score-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.pc-details-delta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+.pc-details-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px dashed var(--ds-border-soft);
+}
+.pc-details-row:first-child {
+  border-top: none;
+}
+.pc-details-row-label {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.pc-details-row-value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Top Claim card (showcase inside ProfileCharts) ─────────────── */
+/* Ported 1:1 from proto profile.css:143-307. */
+
+.pc-claim-card-wrap > .pc-claims-scroll {
+  flex: 1;
+  min-height: 0;
+}
+.pc-claims-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.pc-claims-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.pf-claim-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px 14px;
+  min-height: 204px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--ds-shadow-card);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  border-left: 3px solid var(--pos-color, var(--ds-muted));
+}
+.pf-claim-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--pos-color, var(--ds-ink-soft));
+  box-shadow: 0 14px 32px -18px color-mix(in srgb, var(--pos-color, var(--ds-ink)) 50%, transparent);
+}
+
+.pf-claim-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+/* The DS FaviconWrapper handles the white bg; override its box to the proto's
+   rounded 6px + 3px padding. */
+.pf-claim-fav {
+  border-radius: 6px;
+  border: 1px solid var(--ds-border-soft);
+  padding: 3px;
+}
+.pf-claim-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pf-claim-title {
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-claim-host {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pf-claim-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--badge-color, var(--ds-muted)) 16%, transparent);
+  color: var(--badge-color, var(--ds-muted));
+  border: 1px solid color-mix(in srgb, var(--badge-color, var(--ds-muted)) 32%, transparent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.pf-claim-badge-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pf-claim-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.pf-claim-pnl {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.pf-claim-pnl-pct {
+  font-family: "Fraunces", serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--trusted, #6dd4a0);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-claim-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #e87c7c 70%, transparent);
+  overflow: hidden;
+  position: relative;
+}
+.pf-claim-bar-sup {
+  display: block;
+  height: 100%;
+  background: #6dd4a0;
+  border-radius: 999px 0 0 999px;
+}
+.pf-claim-stats {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.pf-claim-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.pf-claim-stat svg {
+  display: block;
+}
+.pf-claim-stat.support {
+  color: #2f9c6a;
+  background: color-mix(in srgb, #6dd4a0 14%, transparent);
+  border-color: color-mix(in srgb, #6dd4a0 32%, transparent);
+}
+.pf-claim-stat.oppose {
+  color: #c15353;
+  background: color-mix(in srgb, #e87c7c 12%, transparent);
+  border-color: color-mix(in srgb, #e87c7c 32%, transparent);
+}
+.pf-claim-stat-val {
+  font-family: "Fraunces", serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.pf-claim-reason {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ds-muted);
+  padding-top: 10px;
+  border-top: 1px dashed var(--ds-border-soft);
+  font-style: italic;
+}
+
+/* Small helper used only inside the claim card chips row. */
+.fc-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  background: color-mix(in srgb, var(--ds-muted) 8%, var(--ds-card));
+  border: 1px solid var(--ds-border-soft);
+}

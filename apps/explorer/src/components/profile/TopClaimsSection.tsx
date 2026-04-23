@@ -1,9 +1,14 @@
 import { Card } from '../ui/card'
 import { Button } from '../ui/button'
-import { Share2, Users, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { Share2, Users, TrendingUp, TrendingDown } from 'lucide-react'
 import type { TopClaim } from '@/hooks/useTopClaims'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
-import { INTENTION_COLORS, intentionBadgeStyle } from '@/config/intentions'
+import { FaviconWrapper } from '@0xsofia/design-system'
+import {
+  INTENTION_COLORS_BY_LABEL,
+  intentionBadgeStyle,
+  LABEL_TO_INTENTION,
+} from '@/config/intentions'
 import { ATOM_ID_TO_PLATFORM } from '@/config/atomIds'
 import { formatEth } from '@/services/vaultTooltipService'
 import type { PlatformVaultData } from '@/services/platformMarketService'
@@ -24,23 +29,9 @@ interface TopClaimsSectionProps {
   hideplatformPositions?: boolean
 }
 
-/** Map predicate label to intention display name */
-function predicateToIntention(predLabel: string): string {
-  const lower = predLabel.toLowerCase()
-  if (lower.includes('work')) return 'Work'
-  if (lower.includes('learning')) return 'Learning'
-  if (lower.includes('fun')) return 'Fun'
-  if (lower.includes('inspiration')) return 'Inspiration'
-  if (lower.includes('buying')) return 'Buying'
-  if (lower.includes('music')) return 'Music'
-  if (lower === 'trusts') return 'Trusted'
-  if (lower === 'distrust') return 'Distrust'
-  return predLabel
-}
-
 function TopClaimCard({ claim, walletAddress }: { claim: TopClaim; walletAddress?: string }) {
-  const intention = predicateToIntention(claim.predicateLabel)
-  const color = INTENTION_COLORS[intention] ?? '#888'
+  const intention = LABEL_TO_INTENTION[claim.predicateLabel.trim().toLowerCase()] ?? claim.predicateLabel
+  const color = INTENTION_COLORS_BY_LABEL[intention] ?? '#888888'
   const totalMcap = formatEth(String(claim.totalMarketCap))
   const posCount = claim.stats.supportCount + claim.stats.opposeCount
   const [boardOpen, setBoardOpen] = useState(false)
@@ -51,14 +42,7 @@ function TopClaimCard({ claim, walletAddress }: { claim: TopClaim; walletAddress
     <>
       <Card className="tc-card" style={{ cursor: 'pointer' }} onClick={() => setBoardOpen(true)}>
         <div className="tc-header">
-          {favicon && (
-            <img
-              src={favicon}
-              alt=""
-              className="tc-favicon"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
-          )}
+          {favicon && <FaviconWrapper size={20} src={favicon} alt={domain} />}
           <span className="tc-title">{claim.objectLabel}</span>
         </div>
 
@@ -134,12 +118,7 @@ function PlatformPositionCard({ market, walletAddress }: { market: PlatformVault
     <>
       <Card className="tc-card" style={{ cursor: 'pointer' }} onClick={() => setDialogOpen(true)}>
         <div className="tc-header">
-          <img
-            src={`/favicons/${slug}.png`}
-            alt=""
-            className="tc-favicon"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-          />
+          <FaviconWrapper size={20} src={`/favicons/${slug}.png`} alt={market.label} />
           <span className="tc-title">{market.label}</span>
         </div>
 

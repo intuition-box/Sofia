@@ -1,0 +1,677 @@
+/**
+ * Circles page — 1:1 port of proto-explorer/src/styles.css (`.cr-*` list +
+ * `.crd-*` detail). Proto tokens (`--card`, `--border`, `--ink`, `--muted`,
+ * `--bg-subtle`, `--accent`, `--on-accent`, `--ink-soft`) remapped to
+ * `--ds-*`.
+ *
+ * Kept layered so a future wave can lift the styles into the design-system
+ * package (see INTEGRATION.md §5).
+ */
+
+/* ── List view ──────────────────────────────────────────────────── */
+
+.cr-page {
+  animation: pf-fadein 0.4s ease both;
+}
+
+.cr-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 28px;
+  align-items: center;
+  margin: 28px 0 20px;
+  padding: 14px 18px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+}
+.cr-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+.cr-filter-group:last-child {
+  margin-left: auto;
+}
+.cr-filter-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.cr-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cr-chip {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink-soft);
+  font-family: "Geist", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cr-chip:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-1px);
+}
+.cr-chip.active {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
+}
+
+/* Topic dropdown — sits in the same row as the chips but is a Select. */
+.cr-topic-trigger {
+  min-width: 180px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+.cr-topic-trigger:hover {
+  border-color: var(--ds-ink-soft);
+}
+.cr-topic-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-theme="dark"] .cr-chip.active,
+.dark .cr-chip.active {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+
+.cr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.cr-card {
+  position: relative;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: 14px;
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 188px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+.cr-card:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+}
+
+.cr-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cr-card-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid var(--ds-border-soft);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-family: "Fraunces", serif;
+  font-weight: 900;
+  font-size: 16px;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+.cr-card-logo.fallback {
+  padding: 0;
+  color: #ffffff;
+}
+.cr-name-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.cr-name {
+  font-family: "Fraunces", serif;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cr-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  color: var(--ds-muted);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+.cr-role {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.cr-role-owner {
+  background: color-mix(in srgb, var(--ds-accent) 25%, transparent);
+  color: var(--ds-accent-ink, var(--ds-accent));
+}
+.cr-role-member {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+  border: 1px solid var(--ds-border);
+}
+
+.cr-avatars {
+  display: flex;
+  align-items: center;
+}
+.cr-avatars .mav {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--ds-card);
+  margin-left: -8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #02000e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.cr-avatars .mav:first-child {
+  margin-left: 0;
+}
+.cr-avatars .mav.more {
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+}
+
+/* Hover actions live in the flow at the bottom of the card so they never
+   overlap avatars. Always reserve their row; fade in on hover. */
+.cr-hover-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+}
+.cr-hover-actions .cr-btn-sm {
+  flex: 1;
+  text-align: center;
+  justify-content: center;
+}
+.cr-card:hover .cr-hover-actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.cr-btn-sm {
+  padding: 8px 16px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cr-btn-sm:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+.cr-btn-sm.danger {
+  color: #e87c7c;
+  border-color: color-mix(in srgb, #e87c7c 40%, var(--ds-border));
+}
+.cr-btn-sm.danger:hover {
+  background: color-mix(in srgb, #e87c7c 18%, transparent);
+  color: #e87c7c;
+  border-color: #e87c7c;
+}
+
+.cr-card-new {
+  border: 1px dashed var(--ds-border);
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 20px;
+  color: var(--ds-muted);
+  min-height: 188px;
+}
+.cr-card-new:hover {
+  border-color: var(--ds-ink);
+  color: var(--ds-ink);
+}
+.cr-card-new-plus {
+  font-family: "Fraunces", serif;
+  font-size: 44px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1;
+}
+.cr-card-new-label {
+  font-family: "Fraunces", serif;
+  font-size: 16px;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--ds-ink);
+  letter-spacing: -0.01em;
+}
+
+/* ── Detail view ────────────────────────────────────────────────── */
+
+.crd-detail {
+  animation: pf-fadein 0.4s ease both;
+}
+.crd-detail > .pf-ts-back-row {
+  margin-bottom: 20px;
+}
+
+.crd-hero {
+  padding: 28px 30px;
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: stretch;
+  gap: 32px;
+  border-left: 4px solid var(--circle-color, var(--ds-accent));
+}
+.crd-hero-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.crd-hero-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.crd-hero-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid var(--ds-border);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-family: "Fraunces", serif;
+  font-weight: 900;
+  font-size: 24px;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+.crd-hero-logo.fallback {
+  padding: 0;
+  color: #ffffff;
+}
+.crd-hero-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.crd-hero-name {
+  font-family: "Fraunces", serif;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+  line-height: 1;
+}
+.crd-hero-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+.crd-hero-desc {
+  margin: 0;
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ds-ink-soft);
+  max-width: 52ch;
+}
+
+.crd-hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+  width: min(420px, 45%);
+  border-left: 1px solid var(--ds-border);
+  padding-left: 28px;
+}
+
+@media (max-width: 800px) {
+  .crd-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .crd-hero-right {
+    width: auto;
+    border-left: none;
+    border-top: 1px solid var(--ds-border);
+    padding-left: 0;
+    padding-top: 20px;
+  }
+}
+
+/* Actions budget — inside the hero right rail */
+.crd-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.crd-actions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cr-section-head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.crd-get-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--ds-ink);
+  border-radius: 7px;
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  font-family: "Geist", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.crd-get-more:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+.crd-actions-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.crd-actions-big {
+  font-family: "Fraunces", serif;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}
+.crd-actions-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+.crd-actions-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crd-actions-bar {
+  height: 8px;
+  background: var(--ds-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.crd-actions-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ds-accent), var(--ds-ink));
+  border-radius: 999px;
+}
+.crd-actions-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  letter-spacing: 0.02em;
+}
+
+/* Info row: members card + top topics */
+.crd-info-row {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 22px;
+  align-items: start;
+  margin: 0 0 22px;
+}
+@media (max-width: 900px) {
+  .crd-info-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crd-members-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+}
+.crd-members-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.crd-members-card-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.crd-members-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.crd-members-stack {
+  display: inline-flex;
+  align-items: center;
+}
+.crd-members-stack .mav {
+  width: 36px;
+  height: 36px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #02000e;
+  margin-left: -10px;
+  border: 2px solid var(--ds-card);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.crd-members-stack .mav:first-child {
+  margin-left: 0;
+}
+.crd-members-more {
+  padding: 6px 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.crd-members-more:hover {
+  background: var(--ds-ink);
+  color: var(--ds-card);
+  border-color: var(--ds-ink);
+}
+.crd-view-all {
+  margin-top: 12px;
+  width: 100%;
+  justify-content: center;
+  padding: 7px 14px;
+  border: 1px solid var(--ds-border);
+  border-radius: 7px;
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.crd-view-all:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+
+.crd-topics-section {
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cr-topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cr-topics-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+}
+.cr-topics-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+.cr-topics-num {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+.cr-topics-bar {
+  grid-column: 1 / -1;
+  height: 3px;
+  background: var(--ds-border-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.cr-topics-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+/* Feed section */
+.crd-feed-section {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.crd-feed-title {
+  font-family: "Fraunces", serif;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  color: var(--ds-ink);
+  margin: 0 0 6px;
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}
+.crd-feed-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--ds-muted);
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: 14px;
+  border: 1px dashed var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-bg-subtle);
+}
+.crd-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}

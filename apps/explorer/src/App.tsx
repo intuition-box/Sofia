@@ -1,13 +1,13 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
-import { Header } from './components/Header'
-import { Sidebar } from './components/Sidebar'
+import { NavSidebar } from './components/NavSidebar'
 import { RightSidebar } from './components/RightSidebar'
 import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
 import WeightModal from './components/WeightModal'
 import { useCart } from './hooks/useCart'
+import { useNavCollapse } from './hooks/useNavCollapse'
 import { useSidebarState } from './hooks/useSidebarState'
 import { RealtimeSyncBoundary } from './hooks/useRealtimeSync'
 import { useInterestsHydration } from './hooks/useInterestsHydration'
@@ -24,11 +24,13 @@ import PlatformConnectionPage from './pages/PlatformConnectionPage'
 import DomainNicheSelectionPage from './pages/DomainNicheSelectionPage'
 import AllPlatformsPage from './pages/AllPlatformsPage'
 import ScoresPage from './pages/ScoresPage'
+import CirclesPage from './pages/CirclesPage'
 import StreaksPage from './pages/StreaksPage'
 import VotePage from './pages/VotePage'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
 import PublicProfilePage from './pages/PublicProfilePage'
 import { useViewAs } from './hooks/useViewAs'
+import './components/styles/design-system.css'
 import './components/styles/layout.css'
 
 function InterestsHydrationBoundary() {
@@ -50,7 +52,10 @@ export default function App() {
   const isLanding = location.pathname === '/'
   const cart = useCart()
   const sidebar = useSidebarState()
-  const isProfilePage = location.pathname.startsWith('/profile')
+  const { collapsed: navCollapsed, toggle: toggleNavCollapsed } = useNavCollapse()
+  // Routes that surface the ProfileDrawer on the right rail.
+  const isProfilePage =
+    location.pathname.startsWith('/profile') || location.pathname === '/scores'
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
@@ -83,15 +88,18 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background${navCollapsed ? ' nav-collapsed' : ''}`}>
       {/* Opens the WS connection and subscribes to the user's positions.
           Invisible — pushes deltas into the React Query cache. */}
       <RealtimeSyncBoundary />
       {/* Hydrates topics/categories from on-chain positions — union-merges into localStorage. */}
       <InterestsHydrationBoundary />
       <WsStatusBadge />
-      <Header onCartClick={() => setCartOpen(o => !o)} onMenuClick={sidebar.toggleLeft} showMenu={!sidebar.isDesktop} compact={!sidebar.isDesktop} onProfileDrawerClick={() => setProfileDrawerOpen(o => !o)} showProfileDrawer={!sidebar.isDesktop && isProfilePage} />
-      <Sidebar isOpen={sidebar.isDesktop || sidebar.leftOpen} onClose={sidebar.closeLeft} isOverlay={!sidebar.isDesktop} />
+      <NavSidebar
+        onCartClick={() => setCartOpen((o) => !o)}
+        collapsed={navCollapsed}
+        onToggleCollapse={toggleNavCollapsed}
+      />
       <RightSidebar hidden={isProfilePage || cartOpen || !sidebar.isDesktop} />
 
       <CartDrawer
@@ -115,7 +123,7 @@ export default function App() {
         onSuccess={handleDepositSuccess}
       />
 
-      <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`} style={{ zoom: sidebar.isDesktop ? 1.25 : 1 }}>
+      <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`}>
         <RouteErrorBoundary key={location.pathname}>
         <Routes>
           {/* Public routes */}
@@ -133,6 +141,8 @@ export default function App() {
           <Route path="/profile/categories" element={<ProtectedRoute><NicheSelectionPage /></ProtectedRoute>} />
           <Route path="/platforms" element={<ProtectedRoute><AllPlatformsPage /></ProtectedRoute>} />
           <Route path="/scores" element={<ProtectedRoute><ScoresPage /></ProtectedRoute>} />
+          <Route path="/circles" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
+          <Route path="/circles/:id" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
           <Route path="/streaks" element={<ProtectedRoute><StreaksPage /></ProtectedRoute>} />
           <Route path="/vote" element={<ProtectedRoute><VotePage /></ProtectedRoute>} />
         </Routes>

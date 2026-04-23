@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEnsNames } from '../hooks/useEnsNames'
 import { useLinkedWallets } from '../hooks/useLinkedWallets'
@@ -7,12 +8,16 @@ import { usePlatformConnections } from '../hooks/usePlatformConnections'
 import { useReputationScores } from '../hooks/useReputationScores'
 import { useSignals } from '../hooks/useSignals'
 import { useShareProfile } from '../hooks/useShareProfile'
-import { useTrustCircle } from '../hooks/useTrustCircle'
 import { useTrustScore } from '../hooks/useTrustScore'
+import { useTaxonomy } from '../hooks/useTaxonomy'
+import { useUserActivity } from '../hooks/useUserActivity'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import ShareProfileModal from './profile/ShareProfileModal'
 import LinkedWalletsSection from './profile/LinkedWalletsSection'
+import { getTopicEmoji } from '@/config/topicEmoji'
+import { getIntentionColor } from '@/config/intentions'
+import { timeAgo, extractDomain } from '@/utils/formatting'
 import type { Address } from 'viem'
 import './styles/profile-drawer.css'
 
@@ -21,7 +26,68 @@ interface ProfileDrawerProps {
   onClose: () => void
 }
 
-export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
+// ── Pie chart helper ───────────────────────────────────────────────────
+// Proto renderTopicPie ported to React (profileDrawer.ts:57-86).
+
+interface TopicPieSlice {
+  id: string
+  label: string
+  emoji: string
+  color: string
+  score: number
+}
+
+function TopicScorePie({ slices }: { slices: TopicPieSlice[] }) {
+  const realTotal = slices.reduce((a, s) => a + s.score, 0)
+  // When no topic has scored yet, fall back to equal slices so the ring
+  // still teases the colour breakdown of the user's picked topics.
+  const equalFallback = realTotal === 0 && slices.length > 0
+  const denom = equalFallback ? slices.length : realTotal
+  const r = 50
+  const C = 2 * Math.PI * r
+  let cursor = 0
+
+  return (
+    <div className="pd-ts-pie-wrap">
+      <svg className="pd-ts-pie" viewBox="0 0 120 120" aria-hidden="true">
+        {slices.map((t) => {
+          const value = equalFallback ? 1 : t.score
+          const pct = denom > 0 ? value / denom : 0
+          const sliceLen = pct * C
+          const rest = C - sliceLen
+          const startDeg = -90 + (denom > 0 ? (cursor / denom) * 360 : 0)
+          cursor += value
+          return (
+            <circle
+              key={t.id}
+              cx={60}
+              cy={60}
+              r={r}
+              fill="none"
+              stroke={t.color}
+              strokeWidth={14}
+              strokeDasharray={`${sliceLen.toFixed(2)} ${rest.toFixed(2)}`}
+              strokeOpacity={equalFallback ? 0.35 : 1}
+              transform={`rotate(${startDeg.toFixed(2)} 60 60)`}
+            />
+          )
+        })}
+        <circle cx={60} cy={60} r={36} fill="var(--ds-card)" />
+      </svg>
+      <div className="pd-ts-pie-center">
+        <span className="pd-ts-pie-value">{Math.round(realTotal)}</span>
+        <span className="pd-ts-pie-label">
+          {equalFallback ? 'build it up' : 'total'}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────
+
+export default function ProfileDrawer({ isOpen }: ProfileDrawerProps) {
+  const navigate = useNavigate()
   const { authenticated, user } = usePrivy()
   const address = user?.wallet?.address ?? ''
   const { addresses: linkedAddresses } = useLinkedWallets()
@@ -29,13 +95,24 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
   const { stats } = useDiscoveryScore(linkedAddresses.length > 0 ? linkedAddresses : undefined)
   const { selectedTopics, selectedCategories } = useTopicSelection()
   const { getStatus, connectedCount } = usePlatformConnections()
-  const { score: trustScore, loading: trustScoreLoading } = useTrustScore(address || undefined)
+  const { score: trustScore } = useTrustScore(address || undefined)
   const { signals } = useSignals(address || undefined)
   const scores = useReputationScores(getStatus, selectedTopics, selectedCategories, trustScore, signals)
   const topicScores = scores?.topics ?? []
-  const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
+  const { topicById } = useTaxonomy()
+  // Activity unioned across all linked wallets — the current user's full
+  // footprint, even after they subscribe and get an embedded wallet.
+  const { items: activityItems } = useUserActivity(
     linkedAddresses.length > 0 ? linkedAddresses : undefined,
   )
+
+  // Last Activity — restrict to support/oppose events for now (items whose
+  // predicate resolved to Trusted or Distrusted). Sorted newest-first, top 10.
+  const lastActivity = activityItems
+    .filter((it) =>
+      it.intentions.some((i) => i === 'Trusted' || i === 'Distrusted'),
+    )
+    .slice(0, 10)
 
   const {
     isModalOpen,
@@ -62,89 +139,115 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
   const shortAddr = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
   const initials = (displayName || address).slice(0, 2).toUpperCase()
 
-  const statItems = [
-    { label: 'Topics', value: selectedTopics.length },
-    { label: 'Categories', value: selectedCategories.length },
-    { label: 'Platforms', value: connectedCount },
-    { label: 'Signals', value: stats?.totalCertifications ?? 0 },
-  ]
+  const pieSlices: TopicPieSlice[] = selectedTopics
+    .map((id) => {
+      const topic = topicById(id)
+      if (!topic) return null
+      const scoreEntry = topicScores.find((s) => s.topicId === id)
+      return {
+        id,
+        label: topic.label,
+        emoji: getTopicEmoji(id) || '📌',
+        color: topic.color ?? getIntentionColor('inspiration'),
+        score: Math.round(scoreEntry?.score ?? 0),
+      }
+    })
+    .filter((x): x is TopicPieSlice => x !== null)
+
+  // Rough percentile from trustScore (0-100). Falls back to 'Top 50%' when unknown.
+  const percentileLabel = trustScore != null
+    ? `Top ${Math.max(1, Math.round(100 - trustScore))}% · View details`
+    : 'View details'
 
   return (
     <>
       <aside className={`fixed right-0 overflow-hidden pd-aside ${isOpen ? 'pd-open' : ''}`}>
         <div className="flex flex-col h-full overflow-y-auto">
 
-          {/* Banner — avatar + name + share */}
+          {/* Banner — avatar + name + share + journey CTA */}
           <div className="pd-banner">
             <Avatar className="pd-avatar border-2 border-border shadow-lg">
               {avatar && <AvatarImage src={avatar} alt={displayName} />}
               <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
             </Avatar>
-            <div className="text-center">
+            <div className="pd-name-wrap">
               <p className="pd-name">{displayName}</p>
               <p className="pd-address">{shortAddr}</p>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={openShareModal}
-              disabled={shareLoading}
-              className="pd-share-btn"
-            >
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-              {shareLoading ? 'Sharing...' : 'Share on X'}
-            </Button>
-          </div>
-
-          {/* Stats */}
-          <div className="px-3 pt-6 pb-4">
-            <p className="pd-section-title" style={{ padding: 10, marginBottom: 0 }}></p>
-            <div className="pd-stat-grid">
-              {statItems.map((s) => (
-                <div key={s.label} className="pd-stat-card">
-                  <span className="pd-stat-value">{s.value}</span>
-                  <span className="pd-stat-label">{s.label}</span>
-                </div>
-              ))}
+            <div className="pd-banner-actions">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={openShareModal}
+                disabled={shareLoading}
+                className="pd-share-btn"
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                {shareLoading ? 'Sharing...' : 'Share on X'}
+              </Button>
+              <button
+                type="button"
+                className="pd-journey-btn"
+                onClick={() => navigate('/profile/topics')}
+              >
+                Start your journey
+                <span className="pd-journey-arrow">→</span>
+              </button>
             </div>
           </div>
 
-          {/* Trust Score */}
-          {trustScore !== null && (
-            <div className="px-3 pt-2 pb-0">
-              <div className="pd-trust-card">
-                <div className="pd-trust-header">
-                  <span className="pd-trust-label">Trust Score</span>
-                  <span className="pd-trust-value">{trustScore.toFixed(0)}</span>
+          {/* Topic Score pie chart */}
+          <div className="pd-topic-score">
+            <span className="pd-section-title">Score</span>
+            {pieSlices.length > 0 ? (
+              <>
+                <TopicScorePie slices={pieSlices} />
+                <div className="pd-ts-legend">
+                  {pieSlices.map((t) => (
+                    <span
+                      key={t.id}
+                      className="pd-ts-legend-item"
+                      style={{ ['--slice-color' as string]: t.color }}
+                    >
+                      <span className="pd-ts-legend-dot" />
+                      <span className="pd-ts-legend-label">{t.emoji} {t.label}</span>
+                      <span className="pd-ts-legend-val">{t.score}</span>
+                    </span>
+                  ))}
                 </div>
-                <div className="pd-trust-bar">
-                  <div className="pd-trust-fill" style={{ width: `${Math.min(trustScore, 100)}%` }} />
-                </div>
-              </div>
-            </div>
-          )}
-          {trustScoreLoading && (
-            <div className="px-3 pt-2 pb-0">
-              <div className="pd-trust-card">
-                <span className="pd-trust-label" style={{ opacity: 0.5 }}>Loading trust score...</span>
-              </div>
-            </div>
-          )}
+              </>
+            ) : (
+              <p className="pd-ts-empty">Pick topics to see your score breakdown.</p>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="pd-ts-view-btn"
+            onClick={() => navigate('/scores')}
+          >
+            <span>{percentileLabel}</span>
+            <span className="pd-ts-view-arrow">→</span>
+          </button>
 
           {/* Discovery badges */}
           {stats && (
-            <div className="px-3  pt-8 pb-4">
-              <p className="pd-section-title" style={{ padding: 10, marginBottom: 10 }}></p>
+            <div className="pd-section">
+              <p className="pd-section-title">Discovery</p>
               <div className="pd-badge-row">
                 {[
-                  { label: 'Pioneer', value: stats.pioneerCount, icon: '/badges/pioneer.png' },
-                  { label: 'Explorer', value: stats.explorerCount, icon: '/badges/explorer.png' },
-                  { label: 'Contributor', value: stats.contributorCount, icon: '/badges/contributor.png' },
-                  { label: 'Trusted', value: stats.trustedCount, icon: '/badges/trust.png' },
+                  { label: 'Pioneer', value: stats.pioneerCount, icon: '/badges/pioneer.png', color: '#e4b95a' },
+                  { label: 'Explorer', value: stats.explorerCount, icon: '/badges/explorer.png', color: '#5cc4d6' },
+                  { label: 'Contributor', value: stats.contributorCount, icon: '/badges/contributor.png', color: '#a78bdb' },
+                  { label: 'Trusted', value: stats.trustedCount, icon: '/badges/trust.png', color: '#6dd4a0' },
                 ].map((b) => (
-                  <div key={b.label} className="pd-badge-card">
+                  <div
+                    key={b.label}
+                    className="pd-badge-card"
+                    style={{ ['--badge-color' as string]: b.color }}
+                  >
                     <img src={b.icon} alt={b.label} className="pd-badge-icon" />
                     <span className="pd-badge-label">{b.label}</span>
                     <span className="pd-badge-value">{b.value}</span>
@@ -154,39 +257,65 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
             </div>
           )}
 
-          {/* Trust Circle */}
-          <div className="px-3 pt-8 pb-7 flex-1">
-            <p className="pd-section-title" style={{ padding: 20, marginBottom: 10 }}>
-              My Trust Circle
-              {!trustLoading && <span className="pd-circle-count">{trustCircle.length}</span>}
-            </p>
-
-            {trustLoading ? (
-              <div className="pd-circle-loading">
-                <span className="pd-circle-loading-text">Loading...</span>
+          {/* Last Activity — support/oppose only for now */}
+          {lastActivity.length > 0 && (
+            <div className="pd-section">
+              <p className="pd-section-title">Last activity</p>
+              <div className="pd-la-list">
+                {lastActivity.map((a) => {
+                  const isOppose = a.intentions.includes('Distrusted')
+                  const actionLabel = isOppose ? 'Opposed' : 'Supported'
+                  const root = extractDomain(a.url || '') || a.domain
+                  return (
+                    <a
+                      key={a.id}
+                      className="pd-la-row"
+                      href={a.url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className="pd-la-anchor">
+                        <span className="favicon" style={{ ['--fav-size' as string]: '32px' }}>
+                          {a.favicon ? (
+                            <img
+                              src={a.favicon}
+                              alt=""
+                              onError={(e) => {
+                                ;(e.target as HTMLImageElement).style.display = 'none'
+                              }}
+                            />
+                          ) : null}
+                        </span>
+                        <span
+                          className={`pd-la-badge ${isOppose ? 'oppose' : 'support'}`}
+                          aria-hidden="true"
+                        >
+                          {isOppose ? (
+                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 6 6 18" />
+                              <path d="M6 6l12 12" />
+                            </svg>
+                          ) : (
+                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </span>
+                      </span>
+                      <span className="pd-la-text">
+                        <span className="pd-la-title">
+                          {actionLabel} <strong>{a.title}</strong>
+                        </span>
+                        <span className="pd-la-sub">
+                          {root}{root ? ' · ' : ''}{timeAgo(a.timestamp)}
+                        </span>
+                      </span>
+                    </a>
+                  )
+                })}
               </div>
-            ) : trustCircle.length === 0 ? (
-              <p className="pd-circle-empty">No accounts in trust circle yet</p>
-            ) : (
-              <div className="pd-circle-list">
-                {trustCircle.map((account, i) => (
-                  <div key={account.termId} className="pd-circle-item">
-                    <span className="pd-circle-rank">{i + 1}</span>
-                    <Avatar className="pd-circle-avatar">
-                      {account.image && <AvatarImage src={account.image} alt={account.label} />}
-                      <AvatarFallback className="text-xs">
-                        {account.label.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="pd-circle-info">
-                      <span className="pd-circle-label">{account.label}</span>
-                      <span className="pd-circle-trust">{account.trustAmount.toFixed(6)} T</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Linked wallets — read-only list for transparency on multi-wallet accounts */}
           <LinkedWalletsSection />

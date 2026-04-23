@@ -1,11 +1,14 @@
-/* ── ProfileDrawer ── */
+/* ── ProfileDrawer ─────────────────────────────────────────────────
+ * Ported from proto-explorer/src/styles/profile-drawer.css with explorer
+ * extras (Trust Circle section) kept. Proto tokens remapped to --ds-*. */
+
 .pd-aside {
-  top: 62px;
-  width: 400px;
-  height: calc(100vh - 58px);
+  top: 0;
+  width: 290px;
+  height: 100vh;
   z-index: 9999;
-  border-left: 1px solid var(--border);
-  background: linear-gradient(170deg, color-mix(in oklab, var(--accent) 6%, var(--background)) 0%, var(--background) 60%);
+  border-left: 1px solid var(--ds-border);
+  background: linear-gradient(170deg, color-mix(in oklab, var(--ds-accent) 6%, var(--ds-bg)) 0%, var(--ds-bg) 60%);
   backdrop-filter: blur(20px);
   transform: translateX(100%);
   opacity: 0;
@@ -18,10 +21,8 @@
   pointer-events: auto;
 }
 
-/* Avatar */
-.pd-avatar { width: 88px; height: 88px; }
+/* ── Banner ──────────────────────────────────────────────────────── */
 
-/* Profile banner area */
 .pd-banner {
   display: flex;
   flex-direction: column;
@@ -30,7 +31,6 @@
   padding: 32px 24px 24px;
   position: relative;
 }
-
 .pd-banner::after {
   content: '';
   position: absolute;
@@ -38,53 +38,203 @@
   left: 24px;
   right: 24px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  background: linear-gradient(90deg, transparent, var(--ds-border), transparent);
 }
 
-/* Name */
-.pd-name { font-size: 16px; font-weight: 700; line-height: 1.3; }
-.pd-address { font-size: 11px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.pd-avatar {
+  width: 88px;
+  height: 88px;
+}
 
-/* Stats */
-.pd-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-
-.pd-stat-card {
+.pd-name-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 14px 8px;
-  border-radius: 12px;
-  background: color-mix(in oklab, var(--card) 80%, transparent);
-  border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
-  transition: background 0.2s, border-color 0.2s;
+  gap: 2px;
 }
-.pd-stat-card:hover {
-  background: var(--card);
-  border-color: var(--border);
+.pd-name {
+  font-family: "Fraunces", serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ds-ink);
+}
+.pd-address {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--ds-muted);
+  font-variant-numeric: tabular-nums;
 }
 
-.pd-stat-value { font-size: 20px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
-.pd-stat-label { font-size: 10px; font-weight: 500; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.05em; }
+.pd-share-btn {
+  gap: 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
 
-/* Section title */
+/* ── Section scaffolding ─────────────────────────────────────────── */
+
+.pd-section {
+  padding: 18px 20px 0;
+}
+.pd-section--grow {
+  flex: 1;
+  min-height: 0;
+}
 .pd-section-title {
+  font-family: "JetBrains Mono", monospace;
   font-size: 10px;
   font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted-foreground);
-  padding: 0 24px;
-  margin-bottom: 8px;
+  color: var(--ds-muted);
+  margin: 0 0 10px;
 }
 
-/* Discovery badges — row with icons */
+/* ── Topic Score (pie + legend card) ─────────────────────────────── */
+
+.pd-topic-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 20px 0;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+}
+.pd-topic-score .pd-section-title {
+  align-self: flex-start;
+  padding: 0;
+  margin: 0;
+}
+
+.pd-ts-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ds-muted);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.pd-ts-pie-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+.pd-ts-pie {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 4px 14px color-mix(in srgb, var(--ds-ink) 12%, transparent));
+}
+.pd-ts-pie-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.pd-ts-pie-value {
+  font-family: "Fraunces", serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}
+.pd-ts-pie-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
+.pd-ts-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+}
+.pd-ts-legend-item {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.pd-ts-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--slice-color, var(--ds-muted));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--slice-color, var(--ds-muted)) 50%, transparent);
+}
+.pd-ts-legend-label {
+  color: var(--ds-ink);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pd-ts-legend-val {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--slice-color, var(--ds-ink));
+  font-variant-numeric: tabular-nums;
+}
+
+/* View-details pill under the score card. */
+.pd-ts-view-btn {
+  margin: 10px 20px 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  text-decoration: none;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.pd-ts-view-btn:hover {
+  border-color: color-mix(in srgb, var(--trusted, #6dd4a0) 40%, var(--ds-border));
+  color: #2f9c6a;
+  transform: translateX(2px);
+}
+.pd-ts-view-arrow {
+  font-size: 14px;
+  transition: transform 0.18s ease;
+}
+.pd-ts-view-btn:hover .pd-ts-view-arrow {
+  transform: translateX(3px);
+}
+
+/* ── Discovery badges ────────────────────────────────────────────── */
+
 .pd-badge-row {
   display: flex;
   justify-content: space-between;
   gap: 6px;
 }
-
 .pd-badge-card {
   display: flex;
   flex-direction: column;
@@ -93,25 +243,42 @@
   flex: 1;
   padding: 12px 4px;
   border-radius: 12px;
-  background: color-mix(in oklab, var(--accent) 6%, var(--card));
-  border: 1px solid color-mix(in oklab, var(--accent) 12%, transparent);
+  background: color-mix(in srgb, var(--badge-color, var(--ds-accent)) 8%, var(--ds-card));
+  border: 1px solid color-mix(in srgb, var(--badge-color, var(--ds-accent)) 22%, transparent);
+}
+.pd-badge-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+.pd-badge-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.pd-badge-value {
+  font-family: "Fraunces", serif;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
 }
 
-.pd-badge-icon { width: 40px; height: 40px; object-fit: contain; }
-.pd-badge-label { font-size: 10px; font-weight: 500; color: var(--muted-foreground); }
-.pd-badge-value { font-size: 20px; font-weight: 800; line-height: 1; color: var(--foreground); }
+/* ── Trust Circle (explorer extra) ───────────────────────────────── */
 
-/* Trust Circle */
 .pd-circle-count {
   margin-left: 6px;
   font-size: 10px;
   font-weight: 700;
-  color: var(--accent-foreground);
-  background: color-mix(in oklab, var(--accent) 20%, transparent);
+  color: var(--ds-accent-ink);
+  background: color-mix(in srgb, var(--ds-accent) 20%, transparent);
   padding: 1px 6px;
   border-radius: 99px;
 }
-
 .pd-circle-loading {
   display: flex;
   justify-content: center;
@@ -119,22 +286,30 @@
 }
 .pd-circle-loading-text {
   font-size: 12px;
-  color: var(--muted-foreground);
+  color: var(--ds-muted);
 }
-
 .pd-circle-empty {
   font-size: 12px;
-  color: var(--muted-foreground);
+  color: var(--ds-muted);
   text-align: center;
   padding: 20px 0;
 }
-
 .pd-circle-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border) transparent;
 }
-
+.pd-circle-list::-webkit-scrollbar {
+  width: 6px;
+}
+.pd-circle-list::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 999px;
+}
 .pd-circle-item {
   display: flex;
   align-items: center;
@@ -144,20 +319,21 @@
   transition: background 0.15s;
 }
 .pd-circle-item:hover {
-  background: color-mix(in oklab, var(--muted) 50%, transparent);
+  background: color-mix(in oklab, var(--ds-bg-subtle) 80%, transparent);
 }
-
 .pd-circle-rank {
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
-  font-weight: 600;
-  color: var(--muted-foreground);
+  font-weight: 700;
+  color: var(--ds-muted);
   min-width: 18px;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
-
-.pd-circle-avatar { width: 32px; height: 32px; }
-
+.pd-circle-avatar {
+  width: 32px;
+  height: 32px;
+}
 .pd-circle-info {
   display: flex;
   flex-direction: column;
@@ -165,67 +341,65 @@
   min-width: 0;
   flex: 1;
 }
-
 .pd-circle-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--ds-ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .pd-circle-trust {
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
-  color: var(--muted-foreground);
+  color: var(--ds-muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* Trust Score */
-.pd-trust-card {
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: color-mix(in oklab, var(--card) 80%, transparent);
-  border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
-}
+/* ── Banner actions (Share on X + Start your journey side-by-side) ── */
 
-.pd-trust-header {
+.pd-banner-actions {
   display: flex;
-  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.pd-journey-btn {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 6px;
+  padding: 4px 12px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px -6px color-mix(in srgb, var(--ds-accent) 65%, transparent);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.pd-journey-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--ds-accent) 80%, transparent);
+}
+.pd-journey-arrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 0.18s ease;
+}
+.pd-journey-btn:hover .pd-journey-arrow {
+  transform: translateX(2px);
 }
 
-.pd-trust-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted-foreground);
-}
+/* ── Responsive ──────────────────────────────────────────────────── */
 
-.pd-trust-value {
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--foreground);
-}
-
-.pd-trust-bar {
-  height: 6px;
-  border-radius: 3px;
-  background: color-mix(in oklab, var(--muted) 60%, transparent);
-  overflow: hidden;
-}
-
-.pd-trust-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, #10B981, #3B82F6);
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Mobile: full-width profile drawer */
 @media (max-width: 767px) {
   .pd-aside {
     width: 100%;
@@ -236,15 +410,99 @@
 }
 @media (min-width: 768px) and (max-width: 1279px) {
   .pd-aside {
-    top: 56px;
-    height: calc(100vh - 56px);
+    top: 0;
+    height: 100vh;
   }
 }
 
-/* Share button */
-.pd-share-btn {
-  gap: 6px;
+/* ── Last Activity (drawer) ──────────────────────────────────────── */
+/* Ported from proto profile-drawer.css:360-447. Tokens remapped to --ds-*. */
+
+.pd-la-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-border) transparent;
+}
+.pd-la-list::-webkit-scrollbar {
+  width: 6px;
+}
+.pd-la-list::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
   border-radius: 999px;
+}
+.pd-la-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pd-la-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+a.pd-la-row:hover {
+  background: var(--ds-bg-subtle);
+}
+
+.pd-la-anchor {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.pd-la-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  border: 2px solid var(--ds-card);
+}
+.pd-la-badge.support {
+  background: #6dd4a0;
+}
+.pd-la-badge.oppose {
+  background: #e87c7c;
+}
+
+.pd-la-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.pd-la-title {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--ds-ink);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.pd-la-title strong {
+  font-weight: 700;
+  color: var(--ds-ink);
+}
+.pd-la-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  letter-spacing: 0.02em;
 }

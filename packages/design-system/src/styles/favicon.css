@@ -1,0 +1,34 @@
+/**
+ * Reusable favicon wrapper.
+ *
+ * Usage:
+ *   <span class="favicon" style="--fav-size: 32px">
+ *     <img src="..." alt="" />
+ *   </span>
+ *
+ * White background + soft border ensures dark favicons (GitHub, Vercel, …)
+ * stay readable on any theme or surface.
+ */
+
+.favicon {
+  --fav-size: 32px;
+  display: inline-grid;
+  place-items: center;
+  width: var(--fav-size);
+  height: var(--fav-size);
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid var(--ds-border-soft);
+  padding: calc(var(--fav-size) * 0.12);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.favicon img,
+.favicon svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}

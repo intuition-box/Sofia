@@ -1,13 +1,12 @@
 import { useState, useMemo } from 'react'
 import { PLATFORM_CATALOG } from '../../config/platformCatalog'
 import { getSuggestedPlatforms } from '../../config/taxonomy'
-import { useTaxonomy } from '@/hooks/useTaxonomy'
 import type { ConnectionStatus, PlatformConnection, AuthType } from '../../types/reputation'
 import { Card } from '../ui/card'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Input } from '../ui/input'
-import { ArrowLeft, Search, ExternalLink, Check, Loader2, Wallet, Link, UserPlus } from 'lucide-react'
+import { Search, ExternalLink, Check, Loader2, Wallet, Link, UserPlus } from 'lucide-react'
 import { getCertifyUrl } from '../../utils/sofiaDetect'
 import '../styles/platform-grid.css'
 
@@ -33,7 +32,7 @@ interface PlatformGridProps {
   onDisconnect: (platformId: string) => void
   onStartChallenge: (platformId: string, username: string) => Promise<void>
   onVerifyChallenge: (platformId: string) => Promise<void>
-  onBack: () => void
+  onBack?: () => void
   platforms?: Array<{
     id: string
     name: string
@@ -64,14 +63,12 @@ export default function PlatformGrid({
   onDisconnect,
   onStartChallenge,
   onVerifyChallenge,
-  onBack,
   platforms: platformsProp,
   currentTopic,
 }: PlatformGridProps) {
   const [search, setSearch] = useState('')
   const [usernameInputs, setUsernameInputs] = useState<Record<string, string>>({})
   const [showUsernameFor, setShowUsernameFor] = useState<string | null>(null)
-  const { topicById } = useTaxonomy()
   const suggested = getSuggestedPlatforms(selectedCategories)
   const catalog = platformsProp ?? PLATFORM_CATALOG
 
@@ -106,13 +103,6 @@ export default function PlatformGrid({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h2 className="text-lg font-bold flex-1">Platforms ({catalog.length})</h2>
-      </div>
-
       <div className="relative">
         <Search className="absolute h-4 w-4 text-muted-foreground" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} />
         <Input
@@ -124,17 +114,8 @@ export default function PlatformGrid({
       </div>
 
       {[...grouped.entries()].map(([topicId, platforms]) => {
-        const topic = topicById(topicId)
-        const label = topic?.label || topicId
-
         return (
           <div key={topicId}>
-            <div className="pg-domain-header">
-              <h3 className="font-semibold pg-domain-title">
-                {label} <span className="text-muted-foreground pg-domain-count">({platforms.length})</span>
-              </h3>
-            </div>
-
             <div className="grid gap-3 pg-grid">
               {platforms.map((platform) => {
                 const status = getStatus(platform.id)

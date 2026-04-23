@@ -1,8 +1,15 @@
 import { useNavigate } from 'react-router-dom'
-import { Plus, X } from 'lucide-react'
+import {
+  InterestsGrid as DsInterestsGrid,
+  InterestCard,
+  AddInterestCard,
+} from '@0xsofia/design-system'
+import { getTopicEmoji } from '@/config/topicEmoji'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import type { TopicScore } from '@/types/reputation'
-import { Card } from '../ui/card'
+
+/** Profile renders 4 interest slots. (Proto was 3 — product override.) */
+export const MAX_INTERESTS = 4
 
 interface InterestsGridProps {
   selectedTopics: string[]
@@ -12,72 +19,66 @@ interface InterestsGridProps {
   onRemoveTopic?: (topicId: string) => void
 }
 
-export default function InterestsGrid({ selectedTopics, selectedCategories, topicScores, onAddTopic, onRemoveTopic }: InterestsGridProps) {
+export default function InterestsGrid({
+  selectedTopics,
+  selectedCategories,
+  topicScores,
+  onAddTopic,
+  onRemoveTopic,
+}: InterestsGridProps) {
   const navigate = useNavigate()
   const { topicById } = useTaxonomy()
 
-  if (selectedTopics.length === 0) {
-    return (
-      <div className="ig-grid">
-        <Card className="ig-add-card" onClick={onAddTopic}>
-          <Plus className="ig-add-icon" />
-          <span className="ig-add-label">Add Interest</span>
-        </Card>
-      </div>
-    )
-  }
-
   const scoreMap = new Map(topicScores.map((d) => [d.topicId, d]))
 
+  // Always render exactly MAX_INTERESTS slots, mirroring the proto:
+  // selected topics first, then AddInterestCard placeholders to fill.
+  const slots: (string | null)[] = selectedTopics.slice(0, MAX_INTERESTS)
+  while (slots.length < MAX_INTERESTS) slots.push(null)
+
   return (
-    <div className="ig-grid">
-      {selectedTopics.map((topicId) => {
+    <DsInterestsGrid>
+      {slots.map((topicId, idx) => {
+        if (!topicId) {
+          return <AddInterestCard key={`add-${idx}`} onClick={onAddTopic} />
+        }
+
         const topic = topicById(topicId)
-        if (!topic) return null
+        if (!topic) {
+          return <AddInterestCard key={`add-${idx}`} onClick={onAddTopic} />
+        }
 
-        const categoryCount = topic.categories
-          .filter((c) => selectedCategories.includes(c.id)).length
-
+        const categoryCount = topic.categories.filter((c) =>
+          selectedCategories.includes(c.id),
+        ).length
+        const totalCategories = topic.categories.length
         const score = scoreMap.get(topicId)
 
-        return (
-          <Card
-            key={topicId}
-            className="ig-card"
-            style={{ borderTop: `3px solid ${topic.color}` }}
-            onClick={() => navigate(`/profile/interest/${topicId}`)}
-          >
-            <div className="ig-card-header">
-              <div className="ig-card-icon" style={{ background: `${topic.color}20`, color: topic.color }}>
-                {topic.label.slice(0, 2).toUpperCase()}
-              </div>
-              <div className="ig-card-meta">
-                <span className="ig-card-label">{topic.label}</span>
-                <span className="ig-card-niches">{categoryCount} categor{categoryCount !== 1 ? 'ies' : 'y'}</span>
-              </div>
-              <button
-                className="ig-card-remove"
-                onClick={(e) => { e.stopPropagation(); onRemoveTopic?.(topicId) }}
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
+        const subLabel = `${categoryCount} / ${totalCategories} categor${totalCategories !== 1 ? 'ies' : 'y'}`
+        const stats = [
+          { value: Math.round(score?.score ?? 0), label: 'Score' },
+          { value: categoryCount, label: 'Categories' },
+          { value: score?.platformCount ?? 0, label: 'Platforms' },
+        ]
 
-            {score && (
-              <div className="ig-card-score">
-                <span className="ig-card-score-value">{score.score}</span>
-                <span className="ig-card-score-label">Score</span>
-              </div>
-            )}
-          </Card>
+        const emoji = getTopicEmoji(topicId)
+
+        return (
+          <InterestCard
+            key={topicId}
+            as="button"
+            title={topic.label}
+            aria-label={topic.label}
+            topicColor={topic.color}
+            topicLabel={topic.label}
+            visual={emoji ? <span className="ig-card-emoji">{emoji}</span> : undefined}
+            subLabel={subLabel}
+            stats={stats}
+            onClick={() => navigate(`/profile/interest/${topicId}`)}
+            onRemove={onRemoveTopic ? () => onRemoveTopic(topicId) : undefined}
+          />
         )
       })}
-
-      {/* Add topic card */}
-      <Card className="ig-add-card" onClick={onAddTopic}>
-        <Plus className="ig-add-icon" />
-        <span className="ig-add-label">Add Interest</span>
-      </Card>
-    </div>
+    </DsInterestsGrid>
   )
 }

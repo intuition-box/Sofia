@@ -1,0 +1,110 @@
+/**
+ * Design system entry point — imports the shared CSS from
+ * @0xsofia/design-system.
+ *
+ * Loaded once from App.tsx. See packages/design-system/INTEGRATION.md §2.4
+ * for why we import individual stylesheets instead of a single bundle.
+ */
+
+@import "@0xsofia/design-system/theme.css";
+@import "@0xsofia/design-system/styles/favicon.css";
+@import "@0xsofia/design-system/styles/verb-tag.css";
+@import "@0xsofia/design-system/styles/user-badge.css";
+@import "@0xsofia/design-system/styles/bento.css";
+@import "@0xsofia/design-system/styles/interests.css";
+@import "@0xsofia/design-system/styles/nav-sidebar.css";
+@import "@0xsofia/design-system/styles/app-shell.css";
+@import "@0xsofia/design-system/styles/page-hero.css";
+@import "@0xsofia/design-system/styles/section-title.css";
+@import "@0xsofia/design-system/styles/interest-hero.css";
+@import "@0xsofia/design-system/styles/sub-header.css";
+@import "@0xsofia/design-system/styles/topic-picker.css";
+@import "@0xsofia/design-system/styles/niche-chips.css";
+@import "@0xsofia/design-system/styles/platforms-grid.css";
+@import "@0xsofia/design-system/styles/section-h2.css";
+@import "@0xsofia/design-system/styles/echoes-sort-tabs.css";
+
+/* ── Explorer-specific positioning of the design-system nav sidebar ── */
+/* The shared .nav-sidebar stylesheet is layout-agnostic. Explorer lays it
+   out as a fixed left rail matching the existing .main-content margin. */
+.nav-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 290px;
+  z-index: 40;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Collapsed rail — parent `.nav-collapsed` is set on the root App wrapper.
+   The DS ships all the inner collapsed selectors (hides labels, centers
+   icons, rotates the chevron) scoped to `.nav-collapsed …`. */
+.nav-collapsed .nav-sidebar {
+  width: 68px;
+}
+
+/* Explorer-specific nav-sidebar inner pieces that aren't in the DS —
+   collapse/hide them so the 68px rail stays tidy. */
+
+/* Toolbar — cart / notifications / theme. Stack vertically, neutralise
+   the flex:1 row-sizing so each button stays a 40×34 icon square. */
+.nav-collapsed .ns-toolbar {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.nav-collapsed .ns-tool-btn {
+  flex: 0 0 auto;
+  width: 40px;
+  padding: 0;
+}
+
+/* Hide the countdown — too much text for a 68px rail. */
+.nav-collapsed .ns-countdown {
+  display: none;
+}
+
+/* Circles section — match proto behaviour: whole section hidden.
+   Covers both authenticated (`.ns-circles-list`) + loading/empty
+   (`.ns-tc-empty`) branches. */
+.nav-collapsed .nav-section:has(.ns-circles-list),
+.nav-collapsed .nav-section:has(.ns-tc-empty) {
+  display: none;
+}
+
+/* Auth chip — drop the name/address meta, keep just the avatar. */
+.nav-collapsed .ns-auth-meta {
+  display: none;
+}
+.nav-collapsed .ns-auth-chip {
+  justify-content: center;
+  padding: 6px;
+}
+.nav-collapsed .ns-auth-connect {
+  padding: 0;
+  width: 40px;
+  min-width: 0;
+}
+.nav-collapsed .ns-auth-connect > :not(svg) {
+  display: none;
+}
+
+/* ── Radix Select popover ──
+ * shadcn's Select content is styled via Tailwind utilities (`bg-popover`,
+ * `border`) that aren't generated in explorer's pre-compiled CSS. Give
+ * the portal a concrete surface so dropdowns aren't transparent.
+ */
+[data-slot="select-content"] {
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+  box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--ds-ink) 60%, transparent);
+}
+[data-slot="select-item"] {
+  color: var(--ds-ink);
+}
+[data-slot="select-item"][data-highlighted] {
+  background: var(--ds-bg-subtle);
+  outline: none;
+}

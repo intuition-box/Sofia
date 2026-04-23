@@ -9,7 +9,7 @@ import { Button } from '../components/ui/button'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { Avatar, AvatarFallback } from '../components/ui/avatar'
 import { Flame } from 'lucide-react'
-import PageHeader from '../components/PageHeader'
+import { PageHero } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
 import '@/components/styles/streaks-page.css'
@@ -58,7 +58,7 @@ export default function StreaksPage() {
 
   return (
     <div>
-      <PageHeader color={pc.color} glow={pc.glow} title={pc.title} subtitle={pc.subtitle} />
+      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
       <div className="space-y-8 page-content page-enter">
 
       {/* Tabs */}

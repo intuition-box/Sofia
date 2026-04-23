@@ -1,0 +1,15 @@
+/**
+ * Section title — uppercase tracked eyebrow above each page section.
+ * Ported from the proto's `.pp-section-title`.
+ */
+
+/* Ported 1:1 from proto-explorer/src/styles/profile.css:19-27 (.pf-section-title). */
+.ds-section-title {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin: 0;
+}
