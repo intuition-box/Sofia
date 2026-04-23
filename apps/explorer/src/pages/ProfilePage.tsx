@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePrivy, useLogin, useLinkAccount } from '@privy-io/react-auth'
 import { useViewAs } from '@/hooks/useViewAs'
@@ -11,11 +12,11 @@ import { useTrustScore } from '../hooks/useTrustScore'
 import { useSignals } from '../hooks/useSignals'
 import LastActivitySection from '../components/profile/LastActivitySection'
 import InterestsGrid from '../components/profile/InterestsGrid'
-import TopClaimsSection from '../components/profile/TopClaimsSection'
+import ProfileCharts from '../components/profile/ProfileCharts'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Wallet, User } from 'lucide-react'
-import PageHeader from '../components/PageHeader'
+import { PageHero, SectionTitle, SectionH2, EchoesSortTabs, type EchoesSortKey } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
 import '@/components/styles/profile-sections.css'
@@ -58,10 +59,20 @@ export default function ProfilePage() {
 
   const pc = PAGE_COLORS['/profile']
   const shortAddr = address ? address.slice(0, 6) + '...' + address.slice(-4) : ''
+  const [echoesSort, setEchoesSort] = useState<EchoesSortKey>('platform')
+  const heroDescription = isViewingAs
+    ? 'Viewing profile'
+    : address
+      ? `Your on-chain footprint at ${shortAddr}.`
+      : pc.subtitle
 
   return (
-    <div>
-      <PageHeader color={pc.color} glow={pc.glow} title={isViewingAs ? shortAddr : pc.title} subtitle={isViewingAs ? 'Viewing profile' : pc.subtitle} />
+    <div className="pf-view page-enter">
+      <PageHero
+        title={isViewingAs ? shortAddr : pc.title}
+        description={heroDescription}
+        background={pc.color}
+      />
 
       {/* View-as banner */}
       {isViewingAs && (
@@ -92,24 +103,11 @@ export default function ProfilePage() {
         </Card>
       )}
 
-      <div className="pp-sections page-content page-enter">
-
-        {/* Top Claims */}
-        {(claimsLoading || topClaims.length > 0) && (
-          <section className="pp-section">
-            <h3 className="pp-section-title">Top Claims</h3>
-            <TopClaimsSection
-              claims={topClaims}
-              loading={claimsLoading}
-              walletAddress={address}
-              hideplatformPositions={isViewingAs}
-            />
-          </section>
-        )}
+      <div className="pp-sections">
 
         {/* Interests */}
         <section className="pp-section">
-          <h3 className="pp-section-title">{isViewingAs ? 'Interests' : 'My Interests'}</h3>
+          <SectionTitle>{isViewingAs ? 'Interests' : 'My Interests'}</SectionTitle>
           <InterestsGrid
             selectedTopics={selectedTopics}
             selectedCategories={selectedCategories}
@@ -119,13 +117,28 @@ export default function ProfilePage() {
           />
         </section>
 
-        {/* Last Activity */}
+        {/* Profile charts — radar + details + calendar + top platforms + top claim */}
+        <ProfileCharts
+          topClaims={topClaims}
+          claimsLoading={claimsLoading}
+          walletAddress={address}
+          hideplatformPositions={isViewingAs}
+          selectedTopics={selectedTopics}
+          selectedCategories={selectedCategories}
+          topicScores={topicScores}
+        />
+
+        {/* Echoes */}
         <section className="pp-section">
-          <h3 className="pp-section-title">Last Activity</h3>
+          <div className="pf-echoes-head">
+            <SectionH2>Echoes</SectionH2>
+            <EchoesSortTabs value={echoesSort} onChange={setEchoesSort} />
+          </div>
           <LastActivitySection
             items={activityItems}
             loading={activityLoading}
             walletAddress={address}
+            sort={echoesSort}
           />
         </section>
 

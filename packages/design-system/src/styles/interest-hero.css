@@ -1,0 +1,116 @@
+/**
+ * Interest hero banner — ported 1:1 from the proto's `.pf-interest-header`.
+ * Emoji + kicker + Fraunces title + description on the left; optional
+ * dashed-border stat on the right.
+ *
+ * Requires the consumer to set `--topic-color` inline via the `topicColor`
+ * prop on `<InterestHero>`.
+ */
+
+.pf-interest-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 24px 40px;
+  margin-bottom: 24px;
+  border-radius: 14px;
+  background: var(--topic-color);
+  color: #02000e;
+  position: relative;
+  overflow: hidden;
+}
+
+.pf-interest-header::before {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  width: 180px;
+  height: 180px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) rotate(-12deg);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.pf-interest-header > * {
+  position: relative;
+  z-index: 2;
+}
+
+.pf-interest-header-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.pf-interest-header-emoji {
+  font-size: 52px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.18));
+}
+
+.pf-interest-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pf-interest-header-kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(2, 0, 14, 0.65);
+}
+
+.pf-interest-header-title {
+  font-family: "Fraunces", serif;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 4px 0 6px;
+  color: #02000e;
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}
+
+.pf-interest-header-desc {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(2, 0, 14, 0.78);
+  max-width: 560px;
+  line-height: 1.5;
+}
+
+.pf-interest-header-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding-left: 18px;
+  border-left: 1px dashed rgba(2, 0, 14, 0.25);
+}
+
+.pf-interest-header-stat-value {
+  font-family: "Fraunces", serif;
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #02000e;
+}
+
+.pf-interest-header-stat-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(2, 0, 14, 0.65);
+}

@@ -1,8 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
-import { Header } from './components/Header'
-import { Sidebar } from './components/Sidebar'
+import { NavSidebar } from './components/NavSidebar'
 import { RightSidebar } from './components/RightSidebar'
 import CartDrawer from './components/CartDrawer'
 import ProfileDrawer from './components/ProfileDrawer'
@@ -29,6 +28,7 @@ import VotePage from './pages/VotePage'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
 import PublicProfilePage from './pages/PublicProfilePage'
 import { useViewAs } from './hooks/useViewAs'
+import './components/styles/design-system.css'
 import './components/styles/layout.css'
 
 function InterestsHydrationBoundary() {
@@ -50,7 +50,9 @@ export default function App() {
   const isLanding = location.pathname === '/'
   const cart = useCart()
   const sidebar = useSidebarState()
-  const isProfilePage = location.pathname.startsWith('/profile')
+  // Routes that surface the ProfileDrawer on the right rail.
+  const isProfilePage =
+    location.pathname.startsWith('/profile') || location.pathname === '/scores'
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
@@ -90,8 +92,7 @@ export default function App() {
       {/* Hydrates topics/categories from on-chain positions — union-merges into localStorage. */}
       <InterestsHydrationBoundary />
       <WsStatusBadge />
-      <Header onCartClick={() => setCartOpen(o => !o)} onMenuClick={sidebar.toggleLeft} showMenu={!sidebar.isDesktop} compact={!sidebar.isDesktop} onProfileDrawerClick={() => setProfileDrawerOpen(o => !o)} showProfileDrawer={!sidebar.isDesktop && isProfilePage} />
-      <Sidebar isOpen={sidebar.isDesktop || sidebar.leftOpen} onClose={sidebar.closeLeft} isOverlay={!sidebar.isDesktop} />
+      <NavSidebar onCartClick={() => setCartOpen((o) => !o)} />
       <RightSidebar hidden={isProfilePage || cartOpen || !sidebar.isDesktop} />
 
       <CartDrawer
@@ -115,7 +116,7 @@ export default function App() {
         onSuccess={handleDepositSuccess}
       />
 
-      <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`} style={{ zoom: sidebar.isDesktop ? 1.25 : 1 }}>
+      <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`}>
         <RouteErrorBoundary key={location.pathname}>
         <Routes>
           {/* Public routes */}

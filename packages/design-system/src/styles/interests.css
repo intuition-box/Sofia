@@ -1,0 +1,265 @@
+/**
+ * Interests grid — `.ig-grid` / `.ig-card` / `.ig-add-card` and the hover
+ * reveal layer. Ported from the proto.
+ *
+ * The card has two layers:
+ *   - `.ig-card-front` — B&W emoji / label / sub, rests on top
+ *   - `.ig-card-reveal` — topic-colored gradient that slides down on hover,
+ *     showing score / category / platform counts + CTA
+ *
+ * The remove button (`.ig-card-remove`) is only visible on card hover.
+ */
+
+.ig-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 960px) {
+  .ig-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .ig-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Card shell ──────────────────────────────────────────────────────── */
+
+.ig-card {
+  position: relative;
+  display: block;
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  border-top: 3px solid var(--topic-color, var(--ds-muted));
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+  box-shadow: var(--ds-shadow-card);
+  min-height: 160px;
+  overflow: hidden;
+  cursor: pointer;
+  font: inherit;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+}
+
+.ig-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--topic-color, var(--ds-ink-soft));
+  box-shadow: 0 14px 32px -18px
+    color-mix(in srgb, var(--topic-color, var(--ds-ink)) 50%, transparent);
+}
+
+/* ── Front face — B&W at rest, colors in on hover ────────────────────── */
+
+.ig-card-front {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  height: 100%;
+  min-height: 160px;
+  filter: grayscale(0.9) contrast(0.95);
+  transition: filter 0.3s ease;
+}
+
+.ig-card:hover .ig-card-front {
+  filter: grayscale(0) contrast(1);
+}
+
+.ig-card-emoji {
+  font-size: 32px;
+  line-height: 1;
+  display: inline-grid;
+  place-items: center;
+}
+
+.ig-card-label {
+  font-family: "Fraunces", serif;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  line-height: 1.15;
+}
+
+.ig-card-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  margin-top: auto;
+}
+
+/* ── Reveal layer — slides down on hover, topic gradient + stats ────── */
+
+.ig-card-reveal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: linear-gradient(
+    180deg,
+    var(--topic-color, var(--ds-muted)) 0%,
+    color-mix(in srgb, var(--topic-color, var(--ds-muted)) 82%, var(--ds-ink)) 100%
+  );
+  color: var(--ds-on-accent);
+  transform: translateY(-100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0.05, 0.2, 1);
+  box-shadow: 0 12px 32px -12px
+    color-mix(in srgb, var(--topic-color, var(--ds-muted)) 60%, transparent);
+  z-index: 2;
+}
+
+.ig-card:hover .ig-card-reveal {
+  transform: translateY(0);
+}
+
+.ig-card-reveal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ig-card-reveal-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ig-card-reveal-label {
+  font-family: "Fraunces", serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ig-card-reveal-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-top: auto;
+}
+
+.ig-card-reveal-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.ig-card-reveal-value {
+  font-family: "Fraunces", serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.ig-card-reveal-label-sm {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.ig-card-reveal-cta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* ── Remove button — visible only on card hover ─────────────────────── */
+
+.ig-card-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 0;
+  border-radius: 50%;
+  background: var(--ds-card);
+  color: var(--ds-muted);
+  border: 1px solid var(--ds-border);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.18s ease;
+  z-index: 3;
+}
+
+.ig-card-remove svg {
+  display: block;
+}
+
+.ig-card:hover .ig-card-remove {
+  opacity: 1;
+}
+
+.ig-card-remove:hover {
+  color: var(--distrusted);
+  border-color: var(--distrusted);
+  background: color-mix(in srgb, var(--distrusted) 12%, var(--ds-card));
+}
+
+/* ── Add-interest card ──────────────────────────────────────────────── */
+
+.ig-add-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  border-radius: 14px;
+  border: 1px dashed var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  min-height: 140px;
+  font: inherit;
+}
+
+.ig-add-card:hover {
+  border-color: var(--ds-accent);
+  color: var(--ds-accent-ink);
+  background: var(--ds-accent-soft);
+}
+
+.ig-add-icon {
+  display: grid;
+  place-items: center;
+}
+
+.ig-add-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}

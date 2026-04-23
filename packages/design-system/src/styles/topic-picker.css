@@ -1,0 +1,67 @@
+/**
+ * Topic picker — grid of topic cards with emoji + Fraunces label.
+ * Ported 1:1 from proto-explorer/src/styles/profile.css:539-588.
+ * Proto tokens (--border, --card, --ink, --ink-soft, --accent, --on-accent,
+ * --shadow-card) remapped to --ds-*.
+ */
+
+.pf-topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.pf-topic-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: all 0.2s ease;
+  box-shadow: var(--ds-shadow-card);
+}
+.pf-topic-card:hover:not(.disabled) {
+  border-color: var(--topic-color, var(--ds-ink-soft));
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+}
+.pf-topic-card.active {
+  border-color: var(--topic-color, var(--ds-accent));
+  background: color-mix(in srgb, var(--topic-color, var(--ds-accent)) 8%, var(--ds-card));
+}
+.pf-topic-card.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pf-topic-emoji {
+  font-size: 26px;
+}
+
+.pf-topic-label {
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pf-topic-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--topic-color, var(--ds-accent));
+  color: var(--ds-on-accent);
+}

@@ -76,7 +76,7 @@ export function mergeRemoteSelection(remote: {
 export function useTopicSelection() {
   const state = useSyncExternalStore(subscribe, getSnapshotStable)
 
-  const MAX_TOPICS = 3
+  const MAX_TOPICS = 4
 
   const toggleTopic = useCallback((topicId: string) => {
     const current = getSnapshot()

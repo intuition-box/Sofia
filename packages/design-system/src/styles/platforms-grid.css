@@ -1,0 +1,103 @@
+/**
+ * Platforms grid — ported 1:1 from proto-explorer/src/styles/profile.css:642-728.
+ * Proto unprefixed tokens (--border, --card, --ink, --ink-soft, --border-soft,
+ * --muted, --muted-soft, --bg-subtle, --accent, --accent-soft, --accent-ink,
+ * --shadow-card, --trusted) remapped to --ds-*.
+ */
+
+.pf-platforms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.pf-platforms-grid-lg {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.pf-platform-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  cursor: pointer;
+  font: inherit;
+  transition: all 0.2s ease;
+  box-shadow: var(--ds-shadow-card);
+}
+.pf-platform-card:hover {
+  border-color: var(--ds-ink-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+}
+.pf-platform-card.connected {
+  border-color: var(--trusted, #22c55e);
+  background: color-mix(in srgb, var(--trusted, #22c55e) 8%, var(--ds-card));
+}
+
+/* Proto `.pf-platform-fav` overrides FaviconWrapper defaults: 36px, 10px
+   radius, white bg, 4px padding for the inner <img>. */
+.pf-platform-fav {
+  border-radius: 10px;
+  border: 1px solid var(--ds-border-soft);
+  padding: 4px;
+}
+
+.pf-platform-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+
+.pf-platform-status {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  color: var(--ds-muted);
+}
+.pf-platform-card.connected .pf-platform-status {
+  color: var(--trusted, #22c55e);
+}
+
+.pf-platform-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 108px;
+  padding: 16px 10px;
+  border-radius: 14px;
+  border: 1px dashed var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-muted);
+  cursor: pointer;
+  font: inherit;
+  transition: all 0.18s ease;
+}
+.pf-platform-add:hover {
+  border-color: var(--ds-accent);
+  color: var(--ds-accent-ink);
+  background: var(--ds-accent-soft);
+}
+
+.pf-platform-skeleton {
+  min-height: 108px;
+  border-radius: 14px;
+  border: 1px dashed var(--ds-border-soft);
+  display: grid;
+  place-items: center;
+  color: var(--ds-muted-soft);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}

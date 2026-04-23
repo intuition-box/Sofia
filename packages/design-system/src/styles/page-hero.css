@@ -1,0 +1,50 @@
+/**
+ * Page hero — the peach banner at the top of a page with title, description,
+ * and a decorative tilted square. Ported from the proto's `.ph-container`.
+ */
+
+.ph-container {
+  background: var(--ds-accent);
+  padding: 32px 24px 40px;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.ph-title {
+  font-family: "Fraunces", serif;
+  font-size: 60px;
+  font-weight: 900;
+  color: #1a1a1a;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  position: relative;
+  z-index: 2;
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+  margin: 0;
+}
+
+.ph-description {
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.72);
+  margin-top: 18px;
+  max-width: 640px;
+  position: relative;
+  z-index: 2;
+  letter-spacing: -0.005em;
+}
+
+.ph-deco {
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  width: 180px;
+  height: 180px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) rotate(-12deg);
+  z-index: 1;
+  pointer-events: none;
+}

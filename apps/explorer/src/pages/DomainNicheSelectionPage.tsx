@@ -2,7 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { useTopicSelection } from '@/hooks/useDomainSelection'
 import NicheSelector from '@/components/profile/NicheSelector'
-import PageHeader from '@/components/PageHeader'
+import { SubHeader } from '@0xsofia/design-system'
+import { getTopicEmoji } from '@/config/topicEmoji'
 import '@/components/styles/pages.css'
 
 export default function DomainNicheSelectionPage() {
@@ -14,27 +15,35 @@ export default function DomainNicheSelectionPage() {
 
   if (!topic) {
     return (
-      <div className="page-content page-enter">
+      <div className="pf-view page-enter">
         <p className="text-sm text-muted-foreground">Topic not found.</p>
       </div>
     )
   }
 
-  const color = topic.color
-  const glow = `${color}66`
+  const topicCategoryCount = topic.categories.length
+  const selectedInTopic = topic.categories.filter((c) => selectedCategories.includes(c.id)).length
 
   return (
-    <div>
-      <PageHeader color={color} glow={glow} title={`${topic.label} Categories`} subtitle="Select your areas of expertise" />
-      <div className="page-content page-enter">
-        <NicheSelector
-          selectedTopics={[topicId!]}
-          selectedCategories={selectedCategories}
-          onToggleCategory={toggleCategory}
-          onBack={() => navigate(`/profile/interest/${topicId}`)}
-          onContinue={() => navigate(`/profile/interest/${topicId}`)}
-        />
-      </div>
+    <div className="pf-view page-enter">
+      <SubHeader
+        onBack={() => navigate(`/profile/interest/${topicId}`)}
+        backLabel={`Back to ${topic.label}`}
+        crumbs={[
+          { label: 'Profile' },
+          { label: `${getTopicEmoji(topicId!)} ${topic.label}`, topicColor: topic.color },
+          { label: 'Categories' },
+        ]}
+        rightPill={{ label: 'Selected', value: `${selectedInTopic} / ${topicCategoryCount}`, color: topic.color }}
+        description={`Refine your expertise in ${topic.label}.`}
+      />
+      <NicheSelector
+        selectedTopics={[topicId!]}
+        selectedCategories={selectedCategories}
+        onToggleCategory={toggleCategory}
+        onBack={() => navigate(`/profile/interest/${topicId}`)}
+        onContinue={() => navigate(`/profile/interest/${topicId}`)}
+      />
     </div>
   )
 }

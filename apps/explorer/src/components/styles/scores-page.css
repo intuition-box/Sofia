@@ -1,0 +1,349 @@
+/* ── Scores page ───────────────────────────────────────────────────
+ * 1:1 port of proto-explorer/src/styles/profile-trust.css. Proto tokens
+ * (--border, --card, --ink, --muted, --shadow-card, --border-soft,
+ * --bg-subtle) remapped to --ds-*. Trusted/distrusted CSS variables
+ * already live in theme.css.
+ */
+
+.pf-ts-back-row {
+  margin-bottom: 16px;
+}
+
+/* ── Header card — kicker + Fraunces title + description + big total ── */
+
+/* Inverted hero: black card in light mode, white card in dark mode.
+   Colors are hard-coded per theme so the contrast stays consistent. */
+.pf-ts-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 24px;
+  margin-bottom: 24px;
+  border-radius: 14px;
+  background: #02000e;
+  border: 1px solid #02000e;
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.35);
+  color: #f5f3ff;
+}
+[data-theme="dark"] .pf-ts-header,
+.dark .pf-ts-header {
+  background: #ffffff;
+  border-color: #ececf0;
+  color: #02000e;
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.25);
+}
+
+.pf-ts-header-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pf-ts-header-title {
+  font-family: "Fraunces", serif;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 4px 0 6px;
+  color: #f5f3ff;
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}
+[data-theme="dark"] .pf-ts-header-title,
+.dark .pf-ts-header-title {
+  color: #02000e;
+}
+
+.pf-ts-header-desc {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(245, 243, 255, 0.72);
+  max-width: 560px;
+  line-height: 1.5;
+}
+[data-theme="dark"] .pf-ts-header-desc,
+.dark .pf-ts-header-desc {
+  color: #6b6880;
+}
+
+.pf-ts-header-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding-left: 16px;
+  border-left: 1px dashed rgba(245, 243, 255, 0.22);
+}
+[data-theme="dark"] .pf-ts-header-stat,
+.dark .pf-ts-header-stat {
+  border-left-color: #f3f2f5;
+}
+
+.pf-ts-header-stat-value {
+  font-family: "Fraunces", serif;
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #6dd4a0;
+}
+
+.pf-ts-header-stat-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(245, 243, 255, 0.7);
+}
+[data-theme="dark"] .pf-ts-header-stat-label,
+.dark .pf-ts-header-stat-label {
+  color: #6b6880;
+}
+
+/* ── Reputation by topic (bars) ─────────────────────────────────── */
+
+.pf-trust-topics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 680px) {
+  .pf-trust-topics {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pf-trust-topic {
+  padding: 14px 16px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-card);
+  border-left: 3px solid var(--topic-color, var(--ds-muted));
+  box-shadow: var(--ds-shadow-card);
+}
+.pf-trust-topic-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.pf-trust-topic-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+.pf-trust-topic-label {
+  flex: 1;
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-trust-topic-score {
+  font-family: "Fraunces", serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--topic-color, var(--ds-ink));
+  line-height: 1;
+}
+.pf-trust-topic-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ds-border-soft);
+  overflow: hidden;
+}
+.pf-trust-topic-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--topic-color, var(--ds-muted)) 70%, transparent),
+    var(--topic-color, var(--ds-muted)));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--topic-color, var(--ds-muted)) 40%, transparent);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reputation by verb (grid of compact cards — same shape as topic) ── */
+
+.pf-verb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* ── Badges earned on URLs ───────────────────────────────────────── */
+
+.pf-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.pf-badge-block {
+  padding: 16px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-card);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--ds-shadow-card);
+}
+.pf-badge-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pf-badge-head-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+.pf-badge-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pf-badge-head-label {
+  font-family: "Fraunces", serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+.pf-badge-head-desc {
+  font-size: 12px;
+  color: var(--ds-muted);
+}
+.pf-badge-urls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pf-badge-empty {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--ds-muted);
+  text-align: center;
+  border: 1px dashed var(--ds-border-soft);
+  border-radius: 8px;
+  background: var(--ds-bg-subtle);
+}
+
+.pf-ts-url-item {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.pf-ts-url-item:hover {
+  background: var(--ds-bg-subtle);
+}
+.pf-ts-url-fav {
+  border-radius: 4px;
+  border: 1px solid var(--ds-border-soft);
+  padding: 2px;
+}
+.pf-ts-url-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.pf-ts-url-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-ts-url-host {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  color: var(--ds-muted);
+}
+
+/* ── Engagement on your URLs ──────────────────────────────────── */
+
+.pf-engage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-card);
+  padding: 10px;
+  box-shadow: var(--ds-shadow-card);
+}
+.pf-engage-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 120px auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.pf-engage-row:hover {
+  background: var(--ds-bg-subtle);
+}
+.pf-engage-fav {
+  border-radius: 5px;
+  border: 1px solid var(--ds-border-soft);
+  padding: 2px;
+}
+.pf-engage-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.pf-engage-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-engage-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--ds-muted);
+}
+.pf-engage-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--distrusted, #e87c7c) 75%, transparent);
+  overflow: hidden;
+}
+.pf-engage-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--trusted, #6dd4a0);
+}
+.pf-engage-counts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pf-engage-sup {
+  color: var(--trusted, #6dd4a0);
+}
+.pf-engage-opp {
+  color: var(--distrusted, #e87c7c);
+}

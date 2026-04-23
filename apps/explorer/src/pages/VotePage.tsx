@@ -11,7 +11,7 @@ import { usePrefetchClaimDialogs } from '../hooks/useClaimPositions'
 import { useCart } from '../hooks/useCart'
 import { CLAIM_CATEGORIES, type ClaimCategory } from '../config/debateConfig'
 import PositionBoardDialog from '../components/profile/PositionBoardDialog'
-import PageHeader from '../components/PageHeader'
+import { PageHero } from '@0xsofia/design-system'
 import { PAGE_COLORS } from '../config/pageColors'
 import '@/components/styles/pages.css'
 
@@ -50,7 +50,7 @@ export default function VotePage() {
   if (loading) {
     return (
       <div>
-        <PageHeader color={pc.color} glow={pc.glow} title={pc.title} subtitle={pc.subtitle} />
+        <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
         <div className="flex items-center justify-center page-loader-sm">
           <SofiaLoader size={96} />
         </div>
@@ -61,7 +61,7 @@ export default function VotePage() {
   if (error || claims.length === 0) {
     return (
       <div>
-        <PageHeader color={pc.color} glow={pc.glow} title={pc.title} subtitle={pc.subtitle} />
+        <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
         <div className="page-content page-enter">
           <p className="text-sm text-muted-foreground">
             {error || 'No claims available.'}
@@ -104,7 +104,7 @@ export default function VotePage() {
 
   return (
     <div>
-      <PageHeader color={pc.color} glow={pc.glow} title={pc.title} subtitle={pc.subtitle} />
+      <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
       <div className="space-y-6 page-content page-enter">
 
       {/* Category tabs */}

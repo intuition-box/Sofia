@@ -1,0 +1,37 @@
+/**
+ * Design system entry point — imports the shared CSS from
+ * @0xsofia/design-system.
+ *
+ * Loaded once from App.tsx. See packages/design-system/INTEGRATION.md §2.4
+ * for why we import individual stylesheets instead of a single bundle.
+ */
+
+@import "@0xsofia/design-system/theme.css";
+@import "@0xsofia/design-system/styles/favicon.css";
+@import "@0xsofia/design-system/styles/verb-tag.css";
+@import "@0xsofia/design-system/styles/user-badge.css";
+@import "@0xsofia/design-system/styles/bento.css";
+@import "@0xsofia/design-system/styles/interests.css";
+@import "@0xsofia/design-system/styles/nav-sidebar.css";
+@import "@0xsofia/design-system/styles/app-shell.css";
+@import "@0xsofia/design-system/styles/page-hero.css";
+@import "@0xsofia/design-system/styles/section-title.css";
+@import "@0xsofia/design-system/styles/interest-hero.css";
+@import "@0xsofia/design-system/styles/sub-header.css";
+@import "@0xsofia/design-system/styles/topic-picker.css";
+@import "@0xsofia/design-system/styles/niche-chips.css";
+@import "@0xsofia/design-system/styles/platforms-grid.css";
+@import "@0xsofia/design-system/styles/section-h2.css";
+@import "@0xsofia/design-system/styles/echoes-sort-tabs.css";
+
+/* ── Explorer-specific positioning of the design-system nav sidebar ── */
+/* The shared .nav-sidebar stylesheet is layout-agnostic. Explorer lays it
+   out as a fixed left rail matching the existing .main-content margin. */
+.nav-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 290px;
+  z-index: 40;
+}
