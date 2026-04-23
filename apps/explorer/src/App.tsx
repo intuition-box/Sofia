@@ -56,6 +56,8 @@ export default function App() {
   // Routes that surface the ProfileDrawer on the right rail.
   const isProfilePage =
     location.pathname.startsWith('/profile') || location.pathname === '/scores'
+  // Routes that run full-width — no ProfileDrawer, no RightSidebar.
+  const isFullWidthPage = location.pathname.startsWith('/circles')
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
@@ -100,7 +102,7 @@ export default function App() {
         collapsed={navCollapsed}
         onToggleCollapse={toggleNavCollapsed}
       />
-      <RightSidebar hidden={isProfilePage || cartOpen || !sidebar.isDesktop} />
+      <RightSidebar hidden={isProfilePage || isFullWidthPage || cartOpen || !sidebar.isDesktop} />
 
       <CartDrawer
         items={cart.items}
@@ -123,7 +125,13 @@ export default function App() {
         onSuccess={handleDepositSuccess}
       />
 
-      <main className={`main-content${isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''}${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`}>
+      <main
+        className={`main-content${
+          isProfilePage && sidebar.isDesktop ? ' main-content--profile' : ''
+        }${
+          isFullWidthPage && sidebar.isDesktop ? ' main-content--no-right' : ''
+        }${!sidebar.isDesktop ? ' main-content--no-sidebar' : ''}`}
+      >
         <RouteErrorBoundary key={location.pathname}>
         <Routes>
           {/* Public routes */}

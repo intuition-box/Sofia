@@ -7,6 +7,7 @@
 /* ProfileDrawer is 290px wide — matches the nav rail for symmetry.
    Reserve exactly that so the main content stops where the drawer starts. */
 .main-content--profile { margin-right: 290px; }
+.main-content--no-right { margin-right: 0; }
 .main-content--no-sidebar { margin-left: 0; margin-right: 0; padding-top: 48px; }
 
 /* Nav collapsed — main follows the narrower 68px rail. `--no-sidebar`

@@ -6,6 +6,7 @@
  * leave, top-topics aggregation, sponsor budget) are rendered as UI
  * scaffolding with mock values — marked with TODOs.
  */
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { PageHero } from '@0xsofia/design-system'
@@ -19,6 +20,7 @@ import CircleDetailHero from '@/components/circles/CircleDetailHero'
 import CircleMembersCard from '@/components/circles/CircleMembersCard'
 import CircleTopTopicsCard from '@/components/circles/CircleTopTopicsCard'
 import CircleFeedSection from '@/components/circles/CircleFeedSection'
+import AllMembersPanel from '@/components/circles/AllMembersPanel'
 import '@/components/styles/pages.css'
 import '@/components/styles/circles.css'
 
@@ -38,6 +40,7 @@ export default function CirclesPage() {
   const { addresses } = useLinkedWallets()
   const { accounts: members, loading } = useTrustCircle(addresses)
   const { selectedTopics } = useTopicSelection()
+  const [allMembersOpen, setAllMembersOpen] = useState(false)
 
   if (id === 'trust') {
     return (
@@ -59,7 +62,10 @@ export default function CirclesPage() {
         />
 
         <div className="crd-info-row">
-          <CircleMembersCard members={members} />
+          <CircleMembersCard
+            members={members}
+            onViewAll={() => setAllMembersOpen(true)}
+          />
           <CircleTopTopicsCard
             topicIds={selectedTopics.slice(0, 4)}
             circleColor={TRUST_CIRCLE_META.color}
@@ -68,6 +74,14 @@ export default function CirclesPage() {
 
         <CircleFeedSection
           addresses={addresses}
+          circleName={TRUST_CIRCLE_META.name}
+          members={members}
+        />
+
+        <AllMembersPanel
+          open={allMembersOpen}
+          onClose={() => setAllMembersOpen(false)}
+          members={members}
           circleName={TRUST_CIRCLE_META.name}
         />
       </div>
