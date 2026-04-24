@@ -38,13 +38,15 @@
 
 .ph-deco {
   position: absolute;
-  right: -20px;
+  right: -90px;
   top: 50%;
-  width: 180px;
-  height: 180px;
-  border-radius: 20px;
+  width: 260px;
+  height: 260px;
   background: rgba(0, 0, 0, 0.15);
-  transform: translateY(-50%) rotate(-12deg);
+  /* Regular hexagon — flat top/bottom, pointy sides. Kept at the same
+     -12deg tilt as the previous rounded-square deco. */
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  transform: translateY(-35%) rotate(-12deg);
   z-index: 1;
   pointer-events: none;
 }

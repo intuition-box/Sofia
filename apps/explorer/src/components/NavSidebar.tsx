@@ -13,7 +13,6 @@ import {
   Trophy,
   Flame,
   Vote,
-  BarChart3,
   Globe,
   Bell,
   Sun,
@@ -22,9 +21,11 @@ import {
   LogOut,
   ShoppingCart,
   Users,
+  Layers,
 } from 'lucide-react'
 import type { Address } from 'viem'
 import { useTrustCircle } from '../hooks/useTrustCircle'
+import { useLinkedWallets } from '../hooks/useLinkedWallets'
 import { avatarColor } from '../utils/avatarColor'
 import { useCart } from '../hooks/useCart'
 import { useTheme } from '../hooks/useTheme'
@@ -35,6 +36,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { SEASON_END } from '../config'
@@ -71,6 +74,7 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
   const { logout } = useLogout()
   const { linkWallet } = useLinkAccount({ onSuccess: () => window.location.reload() })
   const address = user?.wallet?.address ?? ''
+  const { addresses: linkedAddresses, primary: primaryWallet } = useLinkedWallets()
   const { accounts: trustCircle, loading: trustLoading } = useTrustCircle(
     address ? [address] : undefined,
   )
@@ -96,6 +100,7 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
     { to: '/feed', icon: Home, label: 'Home', public: true },
     { to: '/profile', icon: User, label: 'My Profile', public: false },
     { to: '/circles', icon: Users, label: 'Circles', public: false },
+    { to: '/compose', icon: Layers, label: 'Compose', public: false },
   ]
 
   const quickLinks: { to: string; icon: typeof Home; label: string; public: boolean }[] = [
@@ -103,7 +108,6 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
     { to: '/leaderboard', icon: Trophy, label: 'Leaderboard', public: true },
     { to: '/streaks', icon: Flame, label: 'Streaks', public: false },
     { to: '/vote', icon: Vote, label: 'Vote', public: false },
-    { to: '/scores', icon: BarChart3, label: 'My Stats', public: false },
   ]
 
   const renderItem = (item: { to: string; icon: typeof Home; label: string; public: boolean }) => {
@@ -268,15 +272,72 @@ export function NavSidebar({ onCartClick, collapsed, onToggleCollapse }: NavSide
                 </span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top">
-              {!address && (
-                <DropdownMenuItem onClick={() => linkWallet()}>
-                  <Wallet className="mr-2 h-4 w-4" />
-                  Link Wallet
-                </DropdownMenuItem>
+            <DropdownMenuContent align="start" side="top" className="ns-auth-menu">
+              {/* Header — who's logged in */}
+              <div className="ns-auth-menu-head">
+                {profileAvatar ? (
+                  <img
+                    src={profileAvatar}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="ns-auth-menu-avatar"
+                  />
+                ) : (
+                  <span className="ns-auth-menu-avatar ns-auth-menu-avatar--fallback">
+                    {profileName.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <div className="ns-auth-menu-ident">
+                  <span className="ns-auth-menu-name">{profileName}</span>
+                  {displayAddr && (
+                    <span className="ns-auth-menu-sub">{displayAddr}</span>
+                  )}
+                </div>
+              </div>
+
+              {linkedAddresses.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="ns-auth-menu-label">
+                    Wallets
+                  </DropdownMenuLabel>
+                  {linkedAddresses.map((addr) => {
+                    const isPrimary = primaryWallet?.toLowerCase() === addr.toLowerCase()
+                    const short = `${addr.slice(0, 6)}…${addr.slice(-4)}`
+                    return (
+                      <DropdownMenuItem
+                        key={addr}
+                        className="ns-auth-menu-wallet"
+                        onSelect={(e) => e.preventDefault()}
+                        title={addr}
+                      >
+                        <span
+                          className={`ns-auth-menu-dot${isPrimary ? ' is-primary' : ''}`}
+                          aria-hidden="true"
+                        />
+                        <span className="ns-auth-menu-wallet-addr">{short}</span>
+                        {isPrimary && (
+                          <span className="ns-auth-menu-wallet-tag">primary</span>
+                        )}
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </>
               )}
-              <DropdownMenuItem onClick={() => logout()}>
-                <LogOut className="mr-2 h-4 w-4" />
+
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => linkWallet()}
+                className="ns-auth-menu-action"
+              >
+                <Wallet className="h-4 w-4" />
+                Link another wallet
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="ns-auth-menu-action ns-auth-menu-action--danger"
+              >
+                <LogOut className="h-4 w-4" />
                 Disconnect
               </DropdownMenuItem>
             </DropdownMenuContent>

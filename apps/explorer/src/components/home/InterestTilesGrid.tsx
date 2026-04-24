@@ -10,14 +10,24 @@ import { useInterestTiles, type InterestPreset } from './useInterestTiles'
 interface InterestTilesGridProps {
   items: CircleItem[]
   onPick: (preset: InterestPreset) => void
+  /** Case-insensitive substring filter on tile label. */
+  query?: string
 }
 
-export default function InterestTilesGrid({ items, onPick }: InterestTilesGridProps) {
+export default function InterestTilesGrid({ items, onPick, query }: InterestTilesGridProps) {
   const tiles = useInterestTiles(items)
+  const q = (query ?? '').trim().toLowerCase()
+  const visibleTiles = q
+    ? tiles.filter((t) => t.label.toLowerCase().includes(q))
+    : tiles
+
+  if (q && visibleTiles.length === 0) {
+    return <p className="hm-empty">No topic or intent matches “{query}”.</p>
+  }
 
   return (
     <div className="hm-grid">
-      {tiles.map((t) => (
+      {visibleTiles.map((t) => (
         <InterestTile
           key={`${t.kind}:${t.id}`}
           kind={t.kind}

@@ -43,9 +43,9 @@
 }
 .cr-filter-group {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 .cr-filter-label {
   font-family: "JetBrains Mono", monospace;
@@ -85,6 +85,15 @@
   background: var(--ds-ink);
   color: var(--ds-bg);
   border-color: var(--ds-ink);
+}
+
+.cr-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-ink) 10%, transparent);
 }
 
 /* Topic dropdown — sits in the same row as the chips but is a Select. */
@@ -140,9 +149,9 @@
   width: 100%;
 }
 .cr-card:hover {
-  border-color: var(--ds-ink-soft);
+  border-color: color-mix(in srgb, var(--ds-ink) 25%, var(--ds-border));
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ds-ink) 40%, transparent);
+  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ds-ink) 35%, transparent);
 }
 
 .cr-card-head {

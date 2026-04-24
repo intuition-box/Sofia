@@ -127,3 +127,28 @@
   border: 1px solid var(--ds-border);
   box-shadow: 0 30px 80px -40px color-mix(in srgb, var(--ds-ink) 80%, transparent);
 }
+
+/* ── Radix DropdownMenu content ──
+ * Translucent panel with a light blur so the page behind it stays
+ * faintly visible — matches Sofia's frosted-glass menus. */
+[data-slot="dropdown-menu-content"] {
+  background: color-mix(in srgb, var(--ds-card) 80%, transparent);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-border);
+  box-shadow: 0 18px 48px -20px color-mix(in srgb, var(--ds-ink) 60%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+[data-slot="dropdown-menu-item"] {
+  color: var(--ds-ink);
+}
+[data-slot="dropdown-menu-item"][data-highlighted] {
+  background: color-mix(in srgb, var(--ds-bg-subtle) 80%, transparent);
+  outline: none;
+}
+[data-slot="dropdown-menu-label"] {
+  color: var(--ds-muted);
+}
+[data-slot="dropdown-menu-separator"] {
+  background: var(--ds-border);
+}

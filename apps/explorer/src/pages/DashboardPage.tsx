@@ -8,7 +8,7 @@ import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { Button } from '../components/ui/button'
-import { Globe, X, XCircle } from 'lucide-react'
+import { Globe, Search, X, XCircle } from 'lucide-react'
 import SofiaLoader from '../components/ui/SofiaLoader'
 import { useEnsNames } from '../hooks/useEnsNames'
 import type { Address } from 'viem'
@@ -56,6 +56,8 @@ export default function DashboardPage() {
   // Drill preset — when set, the feed filters to this topic/verb and the
   // tiles grid is hidden. `null` = tiles view.
   const [drill, setDrill] = useState<InterestPreset | null>(null)
+  // Search query applied to the tiles view (filters topic + verb labels).
+  const [tileQuery, setTileQuery] = useState('')
   const { authenticated, user } = usePrivy()
   const walletAddress = user?.wallet?.address
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -215,7 +217,28 @@ export default function DashboardPage() {
             <h2>What are you <em>into</em> today?</h2>
             <p className="hm-sub">Pick a topic to see URLs endorsed across every circle you follow.</p>
           </div>
-          <InterestTilesGrid items={spaceFiltered} onPick={setDrill} />
+          <div className="hm-search">
+            <Search className="hm-search-icon h-3.5 w-3.5" aria-hidden="true" />
+            <input
+              type="search"
+              className="hm-search-input"
+              placeholder="Search topics or intents…"
+              value={tileQuery}
+              onChange={(e) => setTileQuery(e.target.value)}
+              aria-label="Search topics or intents"
+            />
+            {tileQuery && (
+              <button
+                type="button"
+                className="hm-search-clear"
+                onClick={() => setTileQuery('')}
+                aria-label="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <InterestTilesGrid items={spaceFiltered} onPick={setDrill} query={tileQuery} />
         </>
       )}
 

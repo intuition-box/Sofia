@@ -37,63 +37,7 @@
 .page-loader { min-height: calc(100vh - 200px); padding-top: 20vh; }
 .page-loader-sm { min-height: 300px; }
 
-/* ── Vote page ── */
-.vp-claim-card { padding: 28px; display: flex; flex-direction: column; gap: 20px; }
-.vp-claim-card--hover { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-.vp-claim-card--hover:hover { transform: scale(1.01); box-shadow: 0 4px 16px color-mix(in oklab, var(--foreground) 8%, transparent); }
-.vp-claim-list-card { padding: 16px; }
-
-.vp-tabs {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-.vp-tabs::-webkit-scrollbar { display: none; }
-
-.vp-tab {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  border: 1px solid color-mix(in oklab, var(--muted-foreground) 30%, transparent);
-  background: transparent;
-  color: var(--muted-foreground);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.vp-tab:hover {
-  background: color-mix(in oklab, var(--muted) 50%, transparent);
-}
-.vp-tab--active {
-  border-color: var(--foreground);
-  color: var(--foreground);
-  background: color-mix(in oklab, var(--muted) 40%, transparent);
-}
-
-.vp-tab-count {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  min-width: 16px;
-  text-align: center;
-}
-
-.vp-category-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 6px;
-  border: 1px solid;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
+/* ── Vote page styles live in vote-page.css ── */
 
 /* ── Dashboard space filter ── */
 .dp-space-filter { display: flex; align-items: center; gap: 8px; }

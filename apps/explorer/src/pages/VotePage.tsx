@@ -1,26 +1,37 @@
+/**
+ * VotePage — `/vote`. Browse debate claims, vote support/oppose (adds
+ * to cart on-chain later). Native proto-aligned markup on `--ds-*`
+ * tokens — no shadcn primitives.
+ */
 import { useMemo, useState } from 'react'
 import { formatEther } from 'viem'
 import { usePrivy } from '@privy-io/react-auth'
-import { Card } from '../components/ui/card'
-import { Button } from '../components/ui/button'
-import { Badge } from '../components/ui/badge'
-import { ThumbsUp, ThumbsDown, ChevronRight, ChevronLeft } from 'lucide-react'
-import SofiaLoader from '../components/ui/SofiaLoader'
-import { useDebateClaims } from '../hooks/useDebateClaims'
-import { usePrefetchClaimDialogs } from '../hooks/useClaimPositions'
-import { useCart } from '../hooks/useCart'
-import { CLAIM_CATEGORIES, type ClaimCategory } from '../config/debateConfig'
-import PositionBoardDialog from '../components/profile/PositionBoardDialog'
+import {
+  ChevronLeft,
+  ChevronRight,
+  ThumbsDown,
+  ThumbsUp,
+} from 'lucide-react'
+import SofiaLoader from '@/components/ui/SofiaLoader'
+import { useDebateClaims } from '@/hooks/useDebateClaims'
+import { usePrefetchClaimDialogs } from '@/hooks/useClaimPositions'
+import { useCart } from '@/hooks/useCart'
+import { CLAIM_CATEGORIES, type ClaimCategory } from '@/config/debateConfig'
+import PositionBoardDialog from '@/components/profile/PositionBoardDialog'
 import { PageHero } from '@0xsofia/design-system'
-import { PAGE_COLORS } from '../config/pageColors'
+import { PAGE_COLORS } from '@/config/pageColors'
 import '@/components/styles/pages.css'
+import '@/components/styles/vote-page.css'
+
+const SUPPORT_COLOR = '#6dd4a0'
+const OPPOSE_COLOR = '#e87c7c'
 
 function formatMarketCap(value: bigint): string {
   const num = parseFloat(formatEther(value))
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'k T'
-  if (num >= 1) return num.toFixed(2) + ' T'
-  if (num >= 0.001) return num.toFixed(4) + ' T'
-  return '0 T'
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'k'
+  if (num >= 1) return num.toFixed(2)
+  if (num >= 0.001) return num.toFixed(4)
+  return '0'
 }
 
 export default function VotePage() {
@@ -33,7 +44,6 @@ export default function VotePage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const pc = PAGE_COLORS['/vote']
 
-  // Prefetch all claim dialog data so modals open instantly
   usePrefetchClaimDialogs(claims, walletAddress)
 
   const filtered = useMemo(() => {
@@ -41,7 +51,6 @@ export default function VotePage() {
     return claims.filter((c) => c.category === activeTab)
   }, [claims, activeTab])
 
-  // Reset carousel index when tab changes
   const handleTabChange = (tab: ClaimCategory | 'all') => {
     setActiveTab(tab)
     setCurrentIndex(0)
@@ -49,9 +58,9 @@ export default function VotePage() {
 
   if (loading) {
     return (
-      <div>
+      <div className="page-content page-enter">
         <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
-        <div className="flex items-center justify-center page-loader-sm">
+        <div className="vp-loader">
           <SofiaLoader size={96} />
         </div>
       </div>
@@ -60,13 +69,9 @@ export default function VotePage() {
 
   if (error || claims.length === 0) {
     return (
-      <div>
+      <div className="page-content page-enter">
         <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
-        <div className="page-content page-enter">
-          <p className="text-sm text-muted-foreground">
-            {error || 'No claims available.'}
-          </p>
-        </div>
+        <div className="vp-empty">{error || 'No claims available.'}</div>
       </div>
     )
   }
@@ -79,10 +84,12 @@ export default function VotePage() {
       ? Math.round(Number((claim.supportMarketCap * 100n) / totalMarketCap))
       : 50
   const title = claim ? `${claim.subject} ${claim.predicate} ${claim.object}` : ''
-  const categoryInfo = claim?.category ? CLAIM_CATEGORIES.find((c) => c.id === claim.category) : undefined
+  const categoryInfo = claim?.category
+    ? CLAIM_CATEGORIES.find((c) => c.id === claim.category)
+    : undefined
   const userVote = claim
-    ? (cart.items.find((i) => i.termId === claim.termId)?.side
-      ?? cart.items.find((i) => i.termId === claim.counterTermId)?.side)
+    ? cart.items.find((i) => i.termId === claim.termId)?.side
+      ?? cart.items.find((i) => i.termId === claim.counterTermId)?.side
     : undefined
 
   const handleVote = (type: 'support' | 'oppose') => {
@@ -95,7 +102,7 @@ export default function VotePage() {
       intention: type === 'support' ? 'Support' : 'Oppose',
       title,
       favicon: '',
-      intentionColor: type === 'support' ? '#86EFAC' : '#FCA5A5',
+      intentionColor: type === 'support' ? SUPPORT_COLOR : OPPOSE_COLOR,
     })
   }
 
@@ -103,14 +110,15 @@ export default function VotePage() {
   const prev = () => setCurrentIndex((i) => Math.max(i - 1, 0))
 
   return (
-    <div>
+    <div className="page-content page-enter vp-page">
       <PageHero background={pc.color} title={pc.title} description={pc.subtitle} />
-      <div className="space-y-6 page-content page-enter">
 
-      {/* Category tabs */}
-      <div className="vp-tabs">
+      <div className="vp-tabs" role="tablist" aria-label="Claim category">
         <button
-          className={`vp-tab ${activeTab === 'all' ? 'vp-tab--active' : ''}`}
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'all'}
+          className={`vp-tab${activeTab === 'all' ? ' vp-tab--active' : ''}`}
           onClick={() => handleTabChange('all')}
         >
           All
@@ -119,11 +127,15 @@ export default function VotePage() {
         {CLAIM_CATEGORIES.map((cat) => {
           const count = claims.filter((c) => c.category === cat.id).length
           if (count === 0) return null
+          const active = activeTab === cat.id
           return (
             <button
               key={cat.id}
-              className={`vp-tab ${activeTab === cat.id ? 'vp-tab--active' : ''}`}
-              style={activeTab === cat.id ? { borderColor: cat.color, color: cat.color } : undefined}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={`vp-tab${active ? ' vp-tab--active' : ''}`}
+              style={active ? { ['--tab-color' as string]: cat.color } : undefined}
               onClick={() => handleTabChange(cat.id)}
             >
               {cat.label}
@@ -134,92 +146,124 @@ export default function VotePage() {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center">No claims in this category.</p>
+        <div className="vp-empty">No claims in this category.</div>
       ) : (
         <>
-          {/* Card navigation */}
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" size="icon" onClick={prev} disabled={currentIndex === 0}>
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <span className="text-sm text-muted-foreground">
+          <div className="vp-nav">
+            <button
+              type="button"
+              className="vp-nav-btn"
+              onClick={prev}
+              disabled={currentIndex === 0}
+              aria-label="Previous claim"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="vp-nav-count">
               {currentIndex + 1} / {filtered.length}
             </span>
-            <Button variant="ghost" size="icon" onClick={next} disabled={currentIndex === filtered.length - 1}>
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+            <button
+              type="button"
+              className="vp-nav-btn"
+              onClick={next}
+              disabled={currentIndex === filtered.length - 1}
+              aria-label="Next claim"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
 
-          {/* Claim card */}
-          {claim && (
-            <Card className="vp-claim-card vp-claim-card--hover" onClick={() => setDialogOpen(true)}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{totalPositions} positions</Badge>
-                  {categoryInfo && (
+          {claim ? (
+            <article
+              className="vp-claim-card"
+              onClick={() => setDialogOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setDialogOpen(true)
+                }
+              }}
+            >
+              <header className="vp-claim-head">
+                <div className="vp-claim-head-left">
+                  <span className="vp-pill">{totalPositions} positions</span>
+                  {categoryInfo ? (
                     <span
                       className="vp-category-badge"
-                      style={{ color: categoryInfo.color, borderColor: `${categoryInfo.color}40`, backgroundColor: `${categoryInfo.color}12` }}
+                      style={{ ['--cat-color' as string]: categoryInfo.color }}
                     >
                       {categoryInfo.label}
                     </span>
-                  )}
+                  ) : null}
                 </div>
-                <span className="text-xs text-muted-foreground">{formatMarketCap(totalMarketCap)}</span>
+                <span className="vp-mcap">{formatMarketCap(totalMarketCap)} T</span>
+              </header>
+
+              <h2 className="vp-claim-title">{title}</h2>
+
+              <div className="vp-bar-block">
+                <div className="vp-bar-labels">
+                  <span className="vp-bar-label vp-bar-label--support">
+                    Support {supportPercent}%
+                  </span>
+                  <span className="vp-bar-label vp-bar-label--oppose">
+                    Oppose {100 - supportPercent}%
+                  </span>
+                </div>
+                <div className="vp-bar">
+                  <div className="vp-bar-fill vp-bar-fill--support" style={{ width: `${supportPercent}%` }} />
+                  <div className="vp-bar-fill vp-bar-fill--oppose" />
+                </div>
+                <div className="vp-bar-foot">
+                  <span>
+                    {formatMarketCap(claim.supportMarketCap)} T · {claim.supportCount} votes
+                  </span>
+                  <span>
+                    {claim.opposeCount} votes · {formatMarketCap(claim.opposeMarketCap)} T
+                  </span>
+                </div>
               </div>
 
-              <h2 className="text-lg font-bold">{title}</h2>
-
-              {/* Vote bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span style={{ color: '#86EFAC' }}>Support {supportPercent}%</span>
-                  <span style={{ color: '#FCA5A5' }}>Oppose {100 - supportPercent}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden flex">
-                  <div className="transition-all" style={{ width: `${supportPercent}%`, backgroundColor: '#86EFAC' }} />
-                  <div style={{ backgroundColor: '#FCA5A5', flex: 1 }} />
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{formatMarketCap(claim.supportMarketCap)} · {claim.supportCount}</span>
-                  <span>{claim.opposeCount} · {formatMarketCap(claim.opposeMarketCap)}</span>
-                </div>
-              </div>
-
-              {/* Vote buttons */}
-              <div className="flex gap-3 pt-2">
-                <Button
-                  className="flex-1 btn-hover-support"
-                  variant="outline"
+              <div className="vp-actions">
+                <button
+                  type="button"
+                  className={`vp-vote-btn vp-vote-btn--support${
+                    userVote === 'support' ? ' is-active' : ''
+                  }`}
                   disabled={!!userVote && userVote !== 'support'}
-                  style={userVote === 'support' ? { borderColor: '#86EFAC', color: '#86EFAC', background: 'rgba(134,239,172,0.12)' } : undefined}
-                  onClick={(e) => { e.stopPropagation(); handleVote('support') }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleVote('support')
+                  }}
                 >
-                  <ThumbsUp className="h-4 w-4 mr-2" />
+                  <ThumbsUp className="h-4 w-4" />
                   {userVote === 'support' ? 'Supported' : 'Support'}
-                </Button>
-                <Button
-                  className="flex-1 btn-hover-oppose"
-                  variant="outline"
+                </button>
+                <button
+                  type="button"
+                  className={`vp-vote-btn vp-vote-btn--oppose${
+                    userVote === 'oppose' ? ' is-active' : ''
+                  }`}
                   disabled={!!userVote && userVote !== 'oppose'}
-                  style={userVote === 'oppose' ? { borderColor: '#FCA5A5', color: '#FCA5A5', background: 'rgba(252,165,165,0.12)' } : undefined}
-                  onClick={(e) => { e.stopPropagation(); handleVote('oppose') }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleVote('oppose')
+                  }}
                 >
-                  <ThumbsDown className="h-4 w-4 mr-2" />
+                  <ThumbsDown className="h-4 w-4" />
                   {userVote === 'oppose' ? 'Opposed' : 'Oppose'}
-                </Button>
+                </button>
               </div>
 
-              {userVote && (
-                <p className="text-xs text-center text-muted-foreground">
-                  Added to cart as {userVote}.
-                </p>
-              )}
-            </Card>
-          )}
+              {userVote ? (
+                <p className="vp-cart-hint">Added to your cart as {userVote}.</p>
+              ) : null}
+            </article>
+          ) : null}
 
-          {/* Claim detail dialog */}
-          {claim && (
+          {claim ? (
             <PositionBoardDialog
               open={dialogOpen}
               onOpenChange={setDialogOpen}
@@ -228,64 +272,94 @@ export default function VotePage() {
               title={title}
               favicon=""
               intention={categoryInfo?.label || 'Claim'}
-              intentionColor={categoryInfo?.color || '#8B5CF6'}
+              intentionColor={categoryInfo?.color || 'var(--ds-accent)'}
               walletAddress={walletAddress}
             />
-          )}
+          ) : null}
         </>
       )}
 
-      {/* All claims list */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-medium">All Claims ({filtered.length})</h3>
-        {filtered.map((c, i) => {
-          const cTotal = c.supportMarketCap + c.opposeMarketCap
-          const pct = cTotal > 0n
-            ? Math.round(Number((c.supportMarketCap * 100n) / cTotal))
-            : 50
-          const voted = cart.items.find((ci) => ci.termId === c.termId)?.side
-          const catInfo = c.category ? CLAIM_CATEGORIES.find((cat) => cat.id === c.category) : undefined
-          return (
-            <Card
-              key={c.id}
-              className={`cursor-pointer hover:shadow-sm transition-shadow vp-claim-list-card ${i === currentIndex ? 'ring-1 ring-primary' : ''}`}
-              onClick={() => setCurrentIndex(i)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium truncate">
-                      {c.subject} {c.predicate} {c.object}
-                    </p>
-                    {catInfo && (
-                      <span
-                        className="vp-category-badge"
-                        style={{ color: catInfo.color, borderColor: `${catInfo.color}40`, backgroundColor: `${catInfo.color}12` }}
-                      >
-                        {catInfo.label}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-muted-foreground">
-                      {c.supportCount + c.opposeCount} positions · {formatMarketCap(cTotal)}
+      <section className="vp-list">
+        <header className="vp-list-head">
+          <span className="vp-list-title">All claims</span>
+          <span className="vp-list-count">{filtered.length}</span>
+        </header>
+        <div className="vp-list-grid">
+          {filtered.map((c, i) => {
+            const cTotal = c.supportMarketCap + c.opposeMarketCap
+            const supPct =
+              cTotal > 0n
+                ? Math.round(Number((c.supportMarketCap * 100n) / cTotal))
+                : 50
+            const voted = cart.items.find((ci) => ci.termId === c.termId)?.side
+            const catInfo = c.category
+              ? CLAIM_CATEGORIES.find((cat) => cat.id === c.category)
+              : undefined
+            const isCurrent = i === currentIndex
+            const totalVotes = c.supportCount + c.opposeCount
+
+            return (
+              <article
+                key={c.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setCurrentIndex(i)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setCurrentIndex(i)
+                  }
+                }}
+                className={`vp-mini${isCurrent ? ' vp-mini--current' : ''}`}
+                style={catInfo ? { ['--cat-color' as string]: catInfo.color } : undefined}
+              >
+                <header className="vp-mini-head">
+                  {catInfo ? (
+                    <span className="vp-category-badge">{catInfo.label}</span>
+                  ) : (
+                    <span className="vp-mini-kicker">Claim</span>
+                  )}
+                  {voted ? (
+                    <span className={`vp-row-voted vp-row-voted--${voted}`}>
+                      {voted === 'support' ? '▲ voted' : '▼ voted'}
                     </span>
-                    {voted && (
-                      <Badge variant="outline" className="text-[10px]">
-                        {voted === 'support' ? '👍' : '👎'} Voted
-                      </Badge>
-                    )}
-                  </div>
+                  ) : null}
+                </header>
+
+                <p className="vp-mini-title">
+                  {c.subject} {c.predicate} {c.object}
+                </p>
+
+                <div className="vp-mini-bar">
+                  <div
+                    className="vp-mini-bar-fill vp-mini-bar-fill--support"
+                    style={{ width: `${supPct}%` }}
+                  />
+                  <div className="vp-mini-bar-fill vp-mini-bar-fill--oppose" />
                 </div>
-                <div className="text-right ml-3">
-                  <span className="text-sm font-bold" style={{ color: '#86EFAC' }}>{pct}%</span>
+                <div className="vp-mini-meta">
+                  <span className="vp-mini-meta-support">
+                    {supPct}% · {c.supportCount}
+                  </span>
+                  <span className="vp-mini-meta-mcap">{formatMarketCap(cTotal)} T</span>
+                  <span className="vp-mini-meta-oppose">
+                    {c.opposeCount} · {100 - supPct}%
+                  </span>
                 </div>
-              </div>
-            </Card>
-          )
-        })}
-      </div>
-      </div>
+
+                <footer className="vp-mini-foot">
+                  <span className="vp-mini-foot-votes">
+                    {totalVotes} {totalVotes === 1 ? 'vote' : 'votes'}
+                  </span>
+                  {isCurrent ? (
+                    <span className="vp-mini-foot-current">Now viewing</span>
+                  ) : null}
+                </footer>
+              </article>
+            )
+          })}
+        </div>
+      </section>
     </div>
   )
 }

@@ -114,7 +114,7 @@ export default function Leaderboard({
   const columns = isAlpha ? ALPHA_COLUMNS : POOL_COLUMNS
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden lb-card">
       {/* Header */}
       <div className="lb-header">
         <span className="lb-title">Leaderboard</span>

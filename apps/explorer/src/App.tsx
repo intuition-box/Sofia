@@ -26,6 +26,8 @@ import DomainNicheSelectionPage from './pages/DomainNicheSelectionPage'
 import AllPlatformsPage from './pages/AllPlatformsPage'
 import ScoresPage from './pages/ScoresPage'
 import CirclesPage from './pages/CirclesPage'
+import ComposePage from './pages/ComposePage'
+import PerspectivePage from './pages/PerspectivePage'
 import StreaksPage from './pages/StreaksPage'
 import VotePage from './pages/VotePage'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
@@ -60,7 +62,11 @@ export default function App() {
   // Routes that run full-width — no ProfileDrawer, no RightSidebar.
   const isFullWidthPage =
     location.pathname.startsWith('/circles') ||
-    location.pathname.startsWith('/feed')
+    location.pathname.startsWith('/feed') ||
+    location.pathname.startsWith('/compose') ||
+    location.pathname.startsWith('/perspective') ||
+    location.pathname.startsWith('/vote') ||
+    location.pathname.startsWith('/streaks')
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)
@@ -129,7 +135,16 @@ export default function App() {
         onSuccess={handleDepositSuccess}
       />
 
-      <main className="main-content">
+      <main
+        className={[
+          'main-content',
+          isProfilePage && sidebar.isDesktop ? 'main-content--profile' : '',
+          isFullWidthPage && sidebar.isDesktop ? 'main-content--no-right' : '',
+          !sidebar.isDesktop ? 'main-content--no-sidebar' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <RouteErrorBoundary key={location.pathname}>
         <Routes>
           {/* Public routes */}
@@ -149,6 +164,8 @@ export default function App() {
           <Route path="/scores" element={<ProtectedRoute><ScoresPage /></ProtectedRoute>} />
           <Route path="/circles" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
           <Route path="/circles/:id" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
+          <Route path="/compose" element={<ProtectedRoute><ComposePage /></ProtectedRoute>} />
+          <Route path="/perspective/:mode" element={<ProtectedRoute><PerspectivePage /></ProtectedRoute>} />
           <Route path="/streaks" element={<ProtectedRoute><StreaksPage /></ProtectedRoute>} />
           <Route path="/vote" element={<ProtectedRoute><VotePage /></ProtectedRoute>} />
         </Routes>

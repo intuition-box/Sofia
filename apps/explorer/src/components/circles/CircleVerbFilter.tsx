@@ -7,14 +7,14 @@ import { INTENTION_CONFIG, type IntentionType } from '@/config/intentions'
 
 export type VerbFilterId = 'all' | IntentionType
 
-const VERBS: { id: IntentionType; label: string; emoji: string }[] = [
-  { id: 'trusted',     label: INTENTION_CONFIG.trusted.label,     emoji: '🤝' },
-  { id: 'work',        label: INTENTION_CONFIG.work.label,        emoji: '💼' },
-  { id: 'learning',    label: INTENTION_CONFIG.learning.label,    emoji: '📚' },
-  { id: 'inspiration', label: INTENTION_CONFIG.inspiration.label, emoji: '✨' },
-  { id: 'fun',         label: INTENTION_CONFIG.fun.label,         emoji: '🎮' },
-  { id: 'buying',      label: INTENTION_CONFIG.buying.label,      emoji: '🛍️' },
-  { id: 'music',       label: INTENTION_CONFIG.music.label,       emoji: '🎵' },
+const VERBS: { id: IntentionType; label: string; color: string }[] = [
+  { id: 'trusted',     label: INTENTION_CONFIG.trusted.label,     color: INTENTION_CONFIG.trusted.color },
+  { id: 'work',        label: INTENTION_CONFIG.work.label,        color: INTENTION_CONFIG.work.color },
+  { id: 'learning',    label: INTENTION_CONFIG.learning.label,    color: INTENTION_CONFIG.learning.color },
+  { id: 'inspiration', label: INTENTION_CONFIG.inspiration.label, color: INTENTION_CONFIG.inspiration.color },
+  { id: 'fun',         label: INTENTION_CONFIG.fun.label,         color: INTENTION_CONFIG.fun.color },
+  { id: 'buying',      label: INTENTION_CONFIG.buying.label,      color: INTENTION_CONFIG.buying.color },
+  { id: 'music',       label: INTENTION_CONFIG.music.label,       color: INTENTION_CONFIG.music.color },
 ]
 
 interface CircleVerbFilterProps {
@@ -39,7 +39,11 @@ export default function CircleVerbFilter({ active, onChange }: CircleVerbFilterP
           className={`vf-chip${active === v.id ? ' active' : ''}`}
           onClick={() => onChange(v.id)}
         >
-          <span className="vf-chip-emoji" aria-hidden="true">{v.emoji}</span>
+          <span
+            className="vf-chip-dot"
+            aria-hidden="true"
+            style={{ background: v.color }}
+          />
           {v.label}
         </button>
       ))}

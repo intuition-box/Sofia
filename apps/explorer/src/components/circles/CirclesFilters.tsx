@@ -5,7 +5,6 @@
  */
 import { useState } from 'react'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
-import { getTopicEmoji } from '@/config/topicEmoji'
 
 const SORT_OPTIONS = [
   { id: 'activity', label: 'Active today' },
@@ -37,7 +36,11 @@ export default function CirclesFilters() {
               className={`cr-chip${topic === t.id ? ' active' : ''}`}
               onClick={() => setTopic(t.id)}
             >
-              <span aria-hidden="true">{getTopicEmoji(t.id) || '📌'}</span>
+              <span
+                className="cr-chip-dot"
+                aria-hidden="true"
+                style={{ background: t.color }}
+              />
               {t.label}
             </button>
           ))}

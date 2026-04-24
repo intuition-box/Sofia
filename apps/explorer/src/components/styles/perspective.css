@@ -1,0 +1,144 @@
+/**
+ * Perspective page — chips + empty-state for the compose → perspective
+ * stub. Replace the empty state with a masonry `CircleFeedCard` grid
+ * when the aggregation hook ships.
+ */
+
+.perspective-page .pf-ts-back-row {
+  margin-bottom: 16px;
+}
+
+/* Collapses the default right-side gutter on `.main-content` — same
+   pattern as circles/compose — so the feed can breathe. */
+.main-content:has(.perspective-page) {
+  margin-right: 0;
+}
+
+.psp-selection {
+  margin: 16px 0 20px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.psp-selection-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.psp-kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+}
+
+.psp-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.psp-edit:hover {
+  background: var(--ds-ink);
+  color: var(--ds-bg);
+  border-color: var(--ds-ink);
+}
+[data-theme="dark"] .psp-edit:hover,
+.dark .psp-edit:hover {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+}
+
+.psp-chip-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.psp-chip-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  font-weight: 600;
+  min-width: 60px;
+}
+
+.psp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.psp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-subtle);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+.psp-chip--circle {
+  background: color-mix(in srgb, #6dd4a0 14%, var(--ds-bg-subtle));
+  border-color: color-mix(in srgb, #6dd4a0 30%, var(--ds-border));
+}
+.psp-chip--topic {
+  background: color-mix(in srgb, var(--topic-color, var(--ds-accent)) 14%, var(--ds-bg-subtle));
+  border-color: color-mix(in srgb, var(--topic-color, var(--ds-accent)) 32%, var(--ds-border));
+}
+.psp-chip--empty {
+  font-style: italic;
+  color: var(--ds-muted);
+}
+
+.psp-empty {
+  margin-top: 8px;
+  padding: 40px 24px;
+  border: 1px dashed var(--ds-border);
+  border-radius: 14px;
+  background: var(--ds-bg-subtle);
+  text-align: center;
+}
+.psp-empty-title {
+  margin: 0 0 8px;
+  font-family: "Fraunces", serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+}
+.psp-empty-sub {
+  margin: 0 auto;
+  max-width: 52ch;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ds-muted);
+}

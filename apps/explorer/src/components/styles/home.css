@@ -40,6 +40,80 @@
   margin: 0;
 }
 
+/* ── Search bar (tiles view) ────────────────────────────────────── */
+
+.hm-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 0 20px;
+}
+.hm-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ds-muted);
+  pointer-events: none;
+}
+.hm-search-input {
+  width: 100%;
+  padding: 10px 40px 10px 40px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-card);
+  color: var(--ds-ink);
+  font-family: "Geist", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.hm-search-input::placeholder {
+  color: var(--ds-muted);
+}
+.hm-search-input:focus {
+  border-color: var(--ds-ink-soft);
+}
+.hm-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.hm-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ds-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.hm-search-clear:hover {
+  color: var(--ds-ink);
+  background: var(--ds-bg-subtle);
+}
+
+.hm-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--ds-muted);
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: 14px;
+  border: 1px dashed var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-bg-subtle);
+}
+
 /* ── Masonry grid ───────────────────────────────────────────────── */
 
 .hm-grid {
