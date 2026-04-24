@@ -1,3 +1,9 @@
+/* Leaderboard runs full-width — RightSidebar is hidden on /leaderboard,
+   release the 290px right margin `.main-content` reserves by default. */
+.main-content:has(.lb-card) {
+  margin-right: 0;
+}
+
 /* ── Leaderboard table cells ── */
 .lb-cell { padding: 12px 16px; font-size: 14px; vertical-align: middle; color: var(--ds-ink); }
 .lb-cell-num { padding: 12px 16px; font-size: 14px; vertical-align: middle; text-align: right; font-variant-numeric: tabular-nums; font-family: "Geist", ui-sans-serif, system-ui, sans-serif; font-weight: 500; letter-spacing: 0.01em; color: var(--ds-ink); }

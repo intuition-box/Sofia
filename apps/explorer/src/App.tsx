@@ -66,7 +66,8 @@ export default function App() {
     location.pathname.startsWith('/compose') ||
     location.pathname.startsWith('/perspective') ||
     location.pathname.startsWith('/vote') ||
-    location.pathname.startsWith('/streaks')
+    location.pathname.startsWith('/streaks') ||
+    location.pathname.startsWith('/leaderboard')
   const [cartOpen, setCartOpen] = useState(false)
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
   const [weightModalOpen, setWeightModalOpen] = useState(false)

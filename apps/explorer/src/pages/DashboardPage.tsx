@@ -198,6 +198,16 @@ export default function DashboardPage() {
     return () => observer.disconnect()
   }, [loadMore, filteredItems.length])
 
+  // Drill filters are client-side — if very few items match the current
+  // drill preset but `hasMore` is true, aggressively pull more pages
+  // until either we have a decent sample or we exhaust the backend.
+  useEffect(() => {
+    if (!drill) return
+    if (!hasMore || loadingMore) return
+    if (filteredItems.length >= 20) return
+    loadMore()
+  }, [drill, hasMore, loadingMore, filteredItems.length, loadMore])
+
   const spaceLabel = spaceParam
     ? spaceParam.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
     : ''
@@ -346,17 +356,20 @@ export default function DashboardPage() {
                 })}
               </div>
 
-              {/* Infinite scroll sentinel */}
-              {hasMore && (
-                <div ref={sentinelRef} className="flex justify-center py-6">
-                  {loadingMore && <SofiaLoader size={40} />}
-                </div>
-              )}
             </>
           )}
         </>
       )}
         </>
+      )}
+
+      {/* Infinite scroll sentinel — rendered once regardless of tiles /
+          drill mode so pagination keeps fetching in the background as
+          the user explores. Observer wired in a useEffect above. */}
+      {hasMore && (
+        <div ref={sentinelRef} className="flex justify-center py-6">
+          {loadingMore && <SofiaLoader size={40} />}
+        </div>
       )}
 
       {/* Predicate picker (multi-intention cards) */}
