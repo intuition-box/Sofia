@@ -14,6 +14,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "watch": "tsc --watch",
     "test": "tsc && node --experimental-specifier-resolution=node dist/test.js",
     "start:http": "PORT=3001 SERVER_MODE=http node --experimental-specifier-resolution=node dist/index.js",
@@ -31,6 +32,8 @@
     "graphql-request": "^6.1.0",
     "graphql-tag": "^2.12.6",
     "node-fetch": "^3.3.2",
+    "pino": "^9.5.0",
+    "pino-http": "^10.3.0",
     "universal-user-agent": "^7.0.2",
     "zod": "^3.22.4",
     "zod-to-json-schema": "^3.23.5"
@@ -41,6 +44,6 @@
     "@graphql-codegen/typescript-graphql-request": "^6.2.0",
     "@graphql-codegen/typescript-operations": "^4.2.0",
     "shx": "^0.3.4",
-    "typescript": "^5.6.2"
+    "typescript": "^5.9.3"
   },
 }
