@@ -15,7 +15,7 @@
 .intention-selector .intention-label {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   letter-spacing: 0.3px;
   white-space: nowrap;
   text-align: center;
@@ -36,7 +36,7 @@
   color: rgba(255, 255, 255, 0.75);
   font-size: 14px;
   font-weight: 200;
-  font-family: 'Montserrat', cursive;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   transition: all 0.15s ease;
   text-transform: lowercase;

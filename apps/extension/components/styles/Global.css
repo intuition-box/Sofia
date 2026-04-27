@@ -9,6 +9,27 @@
 @import "@0xsofia/design-system/styles/user-badge.css";
 @import "@0xsofia/design-system/styles/bento.css";
 
+/* Extension is always dark — pin DS tokens to dark-mode values.
+   theme.css defaults :root to light; this override ensures --ds-ink
+   is always #f5f3ff (not #02000e) regardless of system preference. */
+:root {
+  --ds-bg: #0b0a12;
+  --ds-bg-subtle: #121120;
+  --ds-card: #13121f;
+  --ds-border: #25223a;
+  --ds-border-soft: #1c1a2b;
+  --ds-ink: #f5f3ff;
+  --ds-ink-soft: #e5e2f5;
+  --ds-muted: #8f8ca8;
+  --ds-muted-soft: #55526c;
+  --ds-grid-dot: rgba(255, 255, 255, 0.05);
+  --ds-accent: #ffc6b0;
+  --ds-accent-ink: #ffc6b0;
+  --ds-accent-soft: rgba(255, 198, 176, 0.12);
+  --ds-on-accent: #0b0a12;
+  --ds-shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
 /* Reset CSS global */
 * {
   box-sizing: border-box;

@@ -615,7 +615,7 @@
 }
 
 .list-modal-tvl {
-  font-family: 'Rubik Mono One', sans-serif;
+  font-family: 'JetBrains Mono', monospace;
   font-size: var(--font-size-2xl);
   font-weight: 400;
   color: var(--color-text-primary);

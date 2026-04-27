@@ -81,7 +81,7 @@
   cursor: pointer;
   font-size: 16px;
   font-weight: 400;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -139,7 +139,7 @@
   padding: 12px 28px;
   font-size: 14px;
   font-weight: 500;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   color: #ffffff;
   cursor: pointer;
   transition: all 0.3s ease;

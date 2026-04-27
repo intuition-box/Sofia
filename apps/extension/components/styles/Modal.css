@@ -587,7 +587,7 @@
 }
 
 .modal-success-title {
-  font-family: 'Gotu', cursive;;
+  font-family: 'Fraunces', serif;;
   font-size: 28px;
   font-weight: 600;
   color: #f0e6d2;
@@ -659,7 +659,7 @@
 .reward-amount {
   font-size: 32px;
   font-weight: 600;
-  font-family:'Gotu', cursive;;
+  font-family: 'Fraunces', serif;
   background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 40%, #d97706 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -680,7 +680,7 @@
   box-shadow:
     0 2px 8px rgba(200, 150, 30, 0.3),
     inset 0 1px 0 rgba(255, 220, 120, 0.3);
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   letter-spacing: 0.3px;
 }
 
@@ -1832,7 +1832,7 @@
 /* New Buttons - Screenshot Style */
 .stake-btn {
   border-radius: 24px;
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 14px;
   font-weight: 600;
   border: none;
@@ -2010,7 +2010,7 @@
   box-shadow:
     0 2px 8px rgba(200, 150, 30, 0.3),
     inset 0 1px 0 rgba(255, 220, 120, 0.3);
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
 }
 
 .reward-continue-btn:hover {
@@ -2061,7 +2061,7 @@
 }
 
 .gs-slider-value {
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 15px;
   color: #ffb659;
   min-width: 36px;
@@ -2195,7 +2195,7 @@
 }
 
 .pp-slider-value {
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 15px;
   color: #22d3ee;
   min-width: 36px;
@@ -2369,7 +2369,7 @@
 }
 
 .pp-item-slider__value {
-  font-family: 'Gotu', cursive;
+  font-family: 'Fraunces', serif;
   font-size: 11px;
   color: #22d3ee;
   min-width: 28px;

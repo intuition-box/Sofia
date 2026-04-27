@@ -2085,7 +2085,7 @@
   align-items: center;
   gap: 8px;
   padding: 4px clamp(2px, 10vw, 284px);
-  font-family: Gotu, cursive;
+  font-family: 'Fraunces', serif;
   font-size: 14px;
   font-weight: 700;
   transition: all 1s;
